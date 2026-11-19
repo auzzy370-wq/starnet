@@ -17,7 +17,7 @@ carefully scoped features are welcome.
 Node.js 22 is recommended because it matches CI and the release train.
 
 ```bash
-git clone https://github.com/YOUR-GITHUB-USER/vultron.git
+git clone https://github.com/auzzy370-wq/starnet.git
 cd vultron
 npm ci
 npm run test:fast

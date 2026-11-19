@@ -7,11 +7,11 @@
   "author": "Andrew Sims",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/YOUR-GITHUB-USER/vultron.git"
+    "url": "git+https://github.com/auzzy370-wq/starnet.git"
   },
-  "homepage": "https://github.com/YOUR-GITHUB-USER/vultron#readme",
+  "homepage": "https://github.com/auzzy370-wq/starnet#readme",
   "bugs": {
-    "url": "https://github.com/YOUR-GITHUB-USER/vultron/issues"
+    "url": "https://github.com/auzzy370-wq/starnet/issues"
   },
   "keywords": [
     "ai-agents",

@@ -11,7 +11,7 @@ Vultron's public release train supports **Windows and macOS**:
 Linux packages may be produced by the manual/internal desktop-build workflow, but Linux is not
 part of the public release train and is not a supported release target.
 
-Download from the [Vultron releases page](https://github.com/YOUR-GITHUB-USER/vultron-releases/releases/latest).
+Download from the [Vultron releases page](https://github.com/androoAGI/starnet-releases/releases/latest).
 Use only an asset attached to the release you intend to install.
 
 ## What the public release train guarantees

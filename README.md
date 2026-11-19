@@ -4,12 +4,12 @@
 
 **A living pixel-art station where real AI agents do real work.**
 
-[![Download](https://img.shields.io/github/v/release/YOUR-GITHUB-USER/vultron-releases?label=download&color=f5a623)](https://github.com/YOUR-GITHUB-USER/vultron-releases/releases/latest)
+[![Download](https://img.shields.io/github/v/release/androoAGI/starnet-releases?label=download&color=f5a623)](https://github.com/androoAGI/starnet-releases/releases/latest)
 [![Platforms](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-4a90d9)](INSTALL.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-2ea44f)](LICENSE)
 [![Local-first](https://img.shields.io/badge/local--first-your%20machine%2C%20your%20data-8250df)](PRIVACY.md)
 
-[Download](https://github.com/YOUR-GITHUB-USER/vultron-releases/releases/latest) ·
+[Download](https://github.com/androoAGI/starnet-releases/releases/latest) ·
 [Install guide](INSTALL.md) ·
 [Run from source](#run-from-source) ·
 [Docs](docs/INDEX.md) ·
@@ -60,7 +60,7 @@ law is that **the interface must never assert state the harness cannot prove.**
 ## Download
 
 Desktop builds are published on the
-[Vultron releases page](https://github.com/YOUR-GITHUB-USER/vultron-releases/releases/latest).
+[Vultron releases page](https://github.com/androoAGI/starnet-releases/releases/latest).
 
 | Platform | Asset |
 | --- | --- |
@@ -90,7 +90,7 @@ Requirements: Node.js 18+ (Node.js 22 matches CI), Git. Rust and the
 The sidecar uses Node core modules only, so it runs without installing anything:
 
 ```bash
-git clone https://github.com/YOUR-GITHUB-USER/vultron.git
+git clone https://github.com/auzzy370-wq/starnet.git
 cd vultron
 node sidecar/index.js
 ```

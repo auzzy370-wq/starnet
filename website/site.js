@@ -24,7 +24,7 @@
   // hiding a bare link would leave the surrounding prose referring to a page nobody can reach.
   document.querySelectorAll('[data-pricing-link]').forEach(function(el){ el.hidden = !PRICING_LIVE; });
 
-  var RELEASES_REPO = 'YOUR-GITHUB-USER/vultron-releases';
+  var RELEASES_REPO = 'androoAGI/starnet-releases';
 
   // Vultron Credits (managed plans). There is NO billing service behind this build yet, so `live`
   // stays false and every buy button reads [ SOON ]: no button on this site may imply a purchase we
