@@ -118,10 +118,10 @@ function seedStream(stream, T, words, at, count, from, to) {
   mock.listen(0, '127.0.0.1'); await once(mock, 'listening');
   const orBase = 'http://127.0.0.1:' + mock.address().port + '/api/v1';
   fx = SidecarFixture.create({ prefix: 'retry-by-turn-', timeoutMs: 30000, env: {
-    SKYNET_OPENROUTER_BASE: orBase, STARNET_OPENROUTER_BASE: orBase,
-    SKYNET_OPENROUTER_KEY: 'sk-or-v1-retry-turn-fixture', STARNET_OPENROUTER_KEY: 'sk-or-v1-retry-turn-fixture',
-    SKYNET_DEFAULT_MODEL: 'test/model', STARNET_DEFAULT_MODEL: 'test/model',
-    SKYNET_CRON_ENABLED: '0', STARNET_CRON_ENABLED: '0', SKYNET_FULL_ACCESS: '1',
+    SKYNET_OPENROUTER_BASE: orBase, VULTRON_OPENROUTER_BASE: orBase,
+    SKYNET_OPENROUTER_KEY: 'sk-or-v1-retry-turn-fixture', VULTRON_OPENROUTER_KEY: 'sk-or-v1-retry-turn-fixture',
+    SKYNET_DEFAULT_MODEL: 'test/model', VULTRON_DEFAULT_MODEL: 'test/model',
+    SKYNET_CRON_ENABLED: '0', VULTRON_CRON_ENABLED: '0', SKYNET_FULL_ACCESS: '1',
     SKYNET_EDGE_TTS: '0', SKYNET_REFLECT: '0', SKYNET_SKILL_REVIEW: '0', SKYNET_AUX_BUDGET: '0'
   } });
   try {

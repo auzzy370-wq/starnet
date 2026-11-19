@@ -7,7 +7,7 @@
 
    ADVICE, from prose. classify() identifies only the narrow case: one explicit public hostname, direct inspect/read
    language, and no request to locate alternatives/history/the correct URL — and a FILE NAME is never the host
-   (namesFile). Its answer is advice and nothing else (domain-task-advisory; gh#58, starnet-releases#5): the ADVICE
+   (namesFile). Its answer is advice and nothing else (domain-task-advisory; gh#58, vultron-releases#5): the ADVICE
    block of prompt() and a note on a failed exact-host read (afterCall). It never grants, withholds, refuses, stops or
    budgets a tool: a false positive used to cost a run team.* and web_search, and a delegated worker its tool calls.
 
@@ -117,7 +117,7 @@
      on. Imperative forms only: "the order status", "the press release", "what type of site" are still advised as
      one-host page reads. */
   const INTERACTIVE_RE = /\b(?:log\s?(?:in|into|on)|sign\s?(?:in|into|up|on)|click(?:s|ing)?|tap\s+(?:on\s+)?(?:the|a|an)|fill\s+(?:in|out)|type\s+(?:in|into|my|the|a|an|our|your)|press\s+(?:the|a|an|enter|return)|submit|scroll|screenshots?|add\s+(?:\S+\s+){0,4}?to\s+(?:the\s+|my\s+|a\s+)?(?:cart|basket|bag|wishlist)|(?:buy|purchase|order|book)\s+(?:me\s+)?(?:a|an|the|some|\d+|it|them|this|that)|search\s+(?:for|on|it|there)|(?:in|with|using|through)\s+(?:the\s+|a\s+)?browser|browser[._]\w+|navigate\s+(?:to|through|around)|interact\s+with)\b/i;
-  /* THE BOUND A LEAD ASKS FOR (starnet-releases#5): team.dispatch / team.spawn bounded:true holds that one worker to
+  /* THE BOUND A LEAD ASKS FOR (vultron-releases#5): team.dispatch / team.spawn bounded:true holds that one worker to
      these turns and tool calls, plus the wall clock on dispatch (orchestration.js boundOf). Nothing here applies them:
      a brief's wording is never the lead asking, so classify() below carries no budget. */
   const WORKER_MAX_ITERS = 3;

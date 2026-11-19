@@ -3,14 +3,14 @@
    Instead of an HTTP call, a turn is a `claude -p` child process fed on stdin, whose `--output-format stream-json`
    lines are translated into the LLMProvider HarnessEvents (provider.js). An agent-loop turn rides ONE persistent child
    per run and sends only what is new since the last turn (see PERSISTENT CHILD); any other call — and every turn
-   under STARNET_CLAUDE_CLI_PERSIST=0 — spawns its own one-shot child with the whole transcript. Text streams only
+   under VULTRON_CLAUDE_CLI_PERSIST=0 — spawns its own one-shot child with the whole transcript. Text streams only
    while the CLI is answering, and exactly one 'done' is emitted when the turn has really ended with a result — the
    station never animates a brain that is not running.
 
    CAPABILITY BOUNDARY. The CLI is an agent with its own tools (Bash, Edit, MCP connectors…). Letting it use them
-   would bypass StarNet's capability gate and consent broker, so the child is started with NO tools at all:
+   would bypass Vultron's capability gate and consent broker, so the child is started with NO tools at all:
    `--tools ""`, an empty `--strict-mcp-config`, no skills/slash commands, no setting sources, no session file.
-   StarNet's own tools are described in the system prompt, and the model requests them with
+   Vultron's own tools are described in the system prompt, and the model requests them with
    <tool_call>{"name":…,"arguments":{…}}</tool_call> blocks. This adapter turns those blocks into the ordinary
    tool_start/tool_args/tool_done events, so loop.js executes them through the same gate as every other provider.
 
@@ -80,7 +80,7 @@
      in its place: the model is told a picture was there, never handed a description of one it did not get. */
   const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
   const MAX_IMAGES = 20;   // the newest are sent; the loop already ages old screenshots out (TOOL_IMAGE_KEEP)
-  const IMAGE_MARK = '\u0000starnet-image-';
+  const IMAGE_MARK = '\u0000vultron-image-';
   function imageBlockOf(p) {
     let s = p && p.type === 'image_url' ? (p.image_url && (p.image_url.url != null ? p.image_url.url : p.image_url)) : null;
     if (p && p.type === 'image' && p.source && typeof p.source === 'object') {
@@ -141,7 +141,7 @@
        file as-is, with none of the JSON escaping that broke big writes. <tool_call> blocks are still understood. */
     return [
       '# Tools',
-      'You cannot execute anything yourself; StarNet runs tools for you. To call tools, end your reply with a block exactly like:',
+      'You cannot execute anything yourself; Vultron runs tools for you. To call tools, end your reply with a block exactly like:',
       '<function_calls>',
       '<invoke name="TOOL_NAME">',
       '<parameter name="PARAM_NAME">value</parameter>',
@@ -184,7 +184,7 @@
   // prompt cache (see PROMPT CACHE).
   const TRANSCRIPT_NOTE = '# Conversation\nThe user message holds the conversation so far, oldest first, as <user>, <assistant>, <tool_result> and <system_note> blocks. Continue as the assistant: write only your next reply.';
   // The same for a persistent child (PERSISTENT CHILD): its first user message holds the conversation so far, and each
-  // later one only what StarNet added after the child's own reply.
+  // later one only what Vultron added after the child's own reply.
   const PERSIST_TRANSCRIPT_NOTE = '# Conversation\nThe first user message holds the conversation so far, oldest first, as <user>, <assistant>, <tool_result> and <system_note> blocks. Each later user message holds, in the same blocks, what happened after your previous reply. Continue as the assistant: write only your next reply.';
 
   /* Leading system messages become the CLI system prompt; everything after goes on stdin as ONE stream-json user
@@ -329,7 +329,7 @@
      tree goes with a SYNCHRONOUS taskkill /T (an exit handler cannot wait on anything async) of the child's OWN pid;
      only a real ChildProcess is ever killed by pid. */
   /* LIVE maps each child to the synchronous removal of its system-prompt temp file (review 2026-10-13: the exit hook
-     killed a parked child's tree but left %TEMP%\starnet-claude-cli-*.txt behind, holding the whole system prompt —
+     killed a parked child's tree but left %TEMP%\vultron-claude-cli-*.txt behind, holding the whole system prompt —
      persona, rules, tool list, task brief). A one-shot child is registered for its turn too, so a sidecar exiting
      mid-turn neither leaves it running nor leaves its prompt file. */
   const LIVE = new Map();
@@ -363,7 +363,7 @@
     let imageCount = 0;
     for (const e of entries) {
       const after = [];
-      const text = e.text.replace(/\u0000starnet-image-(\d+)\u0000/g, (_, k) => {
+      const text = e.text.replace(/\u0000vultron-image-(\d+)\u0000/g, (_, k) => {
         const idx = Number(k);
         if (idx < first) return '[earlier image no longer attached]';
         after.push({ type: 'text', text: 'Image ' + (idx + 1) + ':' }, images[idx]);
@@ -614,7 +614,7 @@
       return '';
     }
     function command() {
-      const configured = String(opts.bin || env.STARNET_CLAUDE_BIN || '').trim();
+      const configured = String(opts.bin || env.VULTRON_CLAUDE_BIN || '').trim();
       let bin = configured || which('claude');
       if (!bin && platform === 'win32' && env.USERPROFILE) {
         const native = path.join(env.USERPROFILE, '.local', 'bin', 'claude.exe');
@@ -656,8 +656,8 @@
       e.code = 'provider_not_configured';
       return e;
     }
-    /* The CLI gets the station-free env (child-env.js: no STARNET_/SKYNET_ secrets, no station-held key values),
-       and its own memory stays out of the turn: auto-memory would inject the CLI user's notes into a StarNet agent. */
+    /* The CLI gets the station-free env (child-env.js: no VULTRON_/SKYNET_ secrets, no station-held key values),
+       and its own memory stays out of the turn: auto-memory would inject the CLI user's notes into a Vultron agent. */
     function childEnv() {
       const out = childEnvLib.stationChildEnv(env);
       delete out.CLAUDECODE;               // a sidecar started from inside a Claude Code session is not a nested session
@@ -828,7 +828,7 @@
         raw: '',       // every text delta exactly as the CLI streamed it: what a persistent child keeps as this reply
         rest: '',      // what the model wrote past its call block inside the delta that ended it
         shown: '', calls: [],   // what this turn handed the loop (its text, its calls): the reply the loop records
-        compacted: false        // the CLI folded its own history: a persistent child no longer holds StarNet's
+        compacted: false        // the CLI folded its own history: a persistent child no longer holds Vultron's
       };
       function emitSplit(part, out) {
         for (const it of part.items) {
@@ -956,7 +956,7 @@
       const persistent = persistOn && Array.isArray(req.tools) && req.tools.length > 0 && !(session && session.busy);
       const box = {};   // the turn's line reader (makeTurn), once the turn has one: what its init line said about billing
       const turn = persistent ? persistentStream(req, cmd, box) : oneShotStream(req, cmd, box);
-      const logUsage = envOf('STARNET_CLAUDE_CLI_PERSIST_LOG') === '1';
+      const logUsage = envOf('VULTRON_CLAUDE_CLI_PERSIST_LOG') === '1';
       /* A SUBSCRIPTION CALL BILLS NOTHING PER CALL (80de2a75 review). Before this turn's first event, a subscription
          sign-in (init line apiKeySource 'none') says so as { type:'billing', perCall:false }: a Stop that cuts this
          call off mid-stream then cost nothing, so the loop never flags the run's spend as a floor or unknown. An
@@ -973,13 +973,13 @@
       }
     }
 
-    // ONE-SHOT: one `claude -p` child for one turn (STARNET_CLAUDE_CLI_PERSIST=0 runs every turn this way).
+    // ONE-SHOT: one `claude -p` child for one turn (VULTRON_CLAUDE_CLI_PERSIST=0 runs every turn this way).
     const ONE_SHOT_EXIT_GRACE_MS = Number(opts.oneShotExitGraceMs) > 0 ? Number(opts.oneShotExitGraceMs) : 3000;   // after its result line a child normally exits by itself in ~2 s
     async function* oneShotStream(req, cmd, box) {
       const signal = req.signal;
       const prompt = buildPrompt(req.messages, req.tools, req.cacheSystemPrefix);
       const turn = ++seq;
-      const sysFile = path.join(os.tmpdir(), 'starnet-claude-cli-' + process.pid + '-' + turn + '-' + require('crypto').randomBytes(6).toString('hex') + '.txt');
+      const sysFile = path.join(os.tmpdir(), 'vultron-claude-cli-' + process.pid + '-' + turn + '-' + require('crypto').randomBytes(6).toString('hex') + '.txt');
       const args = cliArgs(cmd, req, '');
       if (prompt.system) { fs.writeFileSync(sysFile, prompt.system, { encoding: 'utf8', mode: 0o600 }); args.push('--system-prompt-file', sysFile); }
 
@@ -1078,8 +1078,8 @@
     /* PERSISTENT CHILD (2026-10-12). One-shot children pay the CLI's start-up and session setup on every model turn
        (8.8-12.2 s a turn against Claude Code's 3.9-6.2 s on the same Opus model, gauntlet n=1). Now an agent-loop turn
        (one that carries tools) keeps ONE child per run, with the same isolation flags and stream-json input: it starts
-       with StarNet's whole transcript (the PROMPT CACHE blocks, one per entry), holds the conversation itself, and each
-       later turn sends only the entries StarNet added since its reply (the tool results, notes, steering) as its next
+       with Vultron's whole transcript (the PROMPT CACHE blocks, one per entry), holds the conversation itself, and each
+       later turn sends only the entries Vultron added since its reply (the tool results, notes, steering) as its next
        user message, in the same blocks. Its system prompt reads PERSIST_TRANSCRIPT_NOTE instead of TRANSCRIPT_NOTE.
        PROVEN on the installed CLI (2.1.284, scratchpad cli-persist/exp-*.log): one child answers successive user lines
        (each turn ends at its own `result` line; result.usage is per turn, total_cost_usd is the RUNNING total); a model
@@ -1087,22 +1087,22 @@
        then holds exactly the text that streamed; an interrupt keeps the streamed text AND adds a
        "[Request interrupted by user]" turn, so it is never used — a reply that runs on past its block is the one case
        that would diverge, and it closes the child instead.
-       IN SYNC OR START FRESH. The child is reused only while what it holds is provably StarNet's history: the same
+       IN SYNC OR START FRESH. The child is reused only while what it holds is provably Vultron's history: the same
        system prompt (persona, rules, brief), the same tools or more (a tool_search reveal is announced in that turn's
        message: TOOL REVEALS), model, effort, run and Stop signal; every earlier message unchanged (a fingerprint
        each); the reply it wrote recorded by the loop unedited (same text, same calls); nothing but new
        user/tool/system messages after it. Anything else (compaction, an aged-out screenshot, a dropped or repaired
        call, a retry after a failed turn, a model switch, a withdrawn or changed tool, the CLI compacting itself)
-       closes the child and the turn starts a fresh one from StarNet's whole history, exactly like a one-shot turn.
-       STARNET_CLAUDE_CLI_PERSIST_LOG=1 prints one line per decision (reuse, fresh + why, closed + why) and one per
+       closes the child and the turn starts a fresh one from Vultron's whole history, exactly like a one-shot turn.
+       VULTRON_CLAUDE_CLI_PERSIST_LOG=1 prints one line per decision (reuse, fresh + why, closed + why) and one per
        turn's usage (cache read vs written), on either path.
        LIFECYCLE. The child ends at the run's end (release(), called by the loop), on Stop (the run signal, even
        between turns), on any turn that did not end cleanly (error, crash, idle watchdog), after
-       STARNET_CLAUDE_CLI_PERSIST_IDLE_MS (default 5 min) parked, and when the sidecar exits; every kill takes the
-       child's whole process tree (taskkill /T on Windows). STARNET_CLAUDE_CLI_PERSIST=0 runs every turn one-shot. */
+       VULTRON_CLAUDE_CLI_PERSIST_IDLE_MS (default 5 min) parked, and when the sidecar exits; every kill takes the
+       child's whole process tree (taskkill /T on Windows). VULTRON_CLAUDE_CLI_PERSIST=0 runs every turn one-shot. */
     const envOf = k => String(host.env[k] == null ? '' : host.env[k]).trim();
-    const persistOn = opts.persist != null ? !!opts.persist : envOf('STARNET_CLAUDE_CLI_PERSIST') !== '0';
-    const persistIdleMs = Number(opts.persistIdleMs) > 0 ? Number(opts.persistIdleMs) : (Number(envOf('STARNET_CLAUDE_CLI_PERSIST_IDLE_MS')) > 0 ? Number(envOf('STARNET_CLAUDE_CLI_PERSIST_IDLE_MS')) : 300000);
+    const persistOn = opts.persist != null ? !!opts.persist : envOf('VULTRON_CLAUDE_CLI_PERSIST') !== '0';
+    const persistIdleMs = Number(opts.persistIdleMs) > 0 ? Number(opts.persistIdleMs) : (Number(envOf('VULTRON_CLAUDE_CLI_PERSIST_IDLE_MS')) > 0 ? Number(envOf('VULTRON_CLAUDE_CLI_PERSIST_IDLE_MS')) : 300000);
     const endGraceMs = Number(opts.persistEndGraceMs) > 0 ? Number(opts.persistEndGraceMs) : 3000;   // a reply's own end_turn after its block
     const PIPE_DRAIN_MS = Number(opts.persistPipeDrainMs) > 0 ? Number(opts.persistPipeDrainMs) : 2000;   // 'exit' seen, no 'close' yet: how long the pipes may still drain
     let session = null, sessionSeq = 0;
@@ -1112,11 +1112,11 @@
     const sha1 = s => require('crypto').createHash('sha1').update(s).digest('hex');
     const sessionKey = (req, system) => sha1(JSON.stringify([String(req.model || ''), effortOf(req), system]));
     const toolMap = tools => new Map(toolLines(tools).map(t => [t.name, t.line]));
-    // STARNET_CLAUDE_CLI_PERSIST_LOG=1: one console line per persistent-child decision (reuse / fresh + why / closed + why)
-    const plog = msg => { if (envOf('STARNET_CLAUDE_CLI_PERSIST_LOG') === '1') console.log('[claude-cli persist] ' + msg); };
+    // VULTRON_CLAUDE_CLI_PERSIST_LOG=1: one console line per persistent-child decision (reuse / fresh + why / closed + why)
+    const plog = msg => { if (envOf('VULTRON_CLAUDE_CLI_PERSIST_LOG') === '1') console.log('[claude-cli persist] ' + msg); };
 
     function openSession(cmd, req, system, key, runId) {
-      const sysFile = path.join(os.tmpdir(), 'starnet-claude-cli-' + process.pid + '-s' + (++sessionSeq) + '-' + require('crypto').randomBytes(6).toString('hex') + '.txt');
+      const sysFile = path.join(os.tmpdir(), 'vultron-claude-cli-' + process.pid + '-s' + (++sessionSeq) + '-' + require('crypto').randomBytes(6).toString('hex') + '.txt');
       fs.writeFileSync(sysFile, system, { encoding: 'utf8', mode: 0o600 });
       let child;
       try {
@@ -1347,8 +1347,8 @@
         if (T.blockDone) {
           /* The calls are complete. A model that ends its reply right there leaves the child holding exactly the text
              that streamed, and the child is kept. One that writes on (a guess at results) or goes quiet without
-             ending has put something StarNet will never record into the child's history: close it, and the next turn
-             starts a fresh child from StarNet's own transcript. */
+             ending has put something Vultron will never record into the child's history: close it, and the next turn
+             starts a fresh child from Vultron's own transcript. */
           let tail = T.rest, ended = null;
           /* KNOWN GAP (review 2026-10-13, kept on purpose): usage and done wait for the result line (30-70 ms, at most the
              grace), and a Stop that lands in that window ends the turn with no usage booked — the same abort-without-usage

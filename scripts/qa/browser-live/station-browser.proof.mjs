@@ -154,7 +154,7 @@ const SIDELOG = openSync(join(OUT, 'sidecar.log'), 'w');
 const bootWith = extra => require_cp.spawn(process.execPath, [join(REPO, 'sidecar', 'index.js')], { cwd: REPO, stdio: ['ignore', SIDELOG, SIDELOG],
   env: Object.assign({}, process.env, extra, { SKYNET_DEV: '1', SKYNET_FULL_ACCESS: '1', SKYNET_WORKSPACES: wsDir, SKYNET_PORT: String(port), SKYNET_DEFAULT_MODEL: MODEL, SKYNET_OPENROUTER_KEY: 'sk-or-v1-obproof-fake' }) });
 const sidecar = bootWith({
-  SKYNET_OPENROUTER_BASE: mock.base, STARNET_OPENROUTER_BASE: mock.base, SKYNET_QUEST_REFRESH: '0', SKYNET_SCOUT: '0',
+  SKYNET_OPENROUTER_BASE: mock.base, VULTRON_OPENROUTER_BASE: mock.base, SKYNET_QUEST_REFRESH: '0', SKYNET_SCOUT: '0',
   HOME: home, USERPROFILE: home, APPDATA: join(home, 'appdata'), LOCALAPPDATA: join(home, 'localappdata') });
 let chrome = null;
 try {
@@ -215,7 +215,7 @@ try {
   ok('the in-app picture is smooth: >= 20 frames/s on an animated page (was ~7)', fps >= 20, fps.toFixed(1) + ' fps');
   await shot('builtin-anim');
   // COVERED: another window on top of the station's Chrome window must not freeze the in-app picture (on Windows,
-  // StarNet's own window covering it froze it at 0 frames/s; macOS and Linux have their own occlusion rules)
+  // Vultron's own window covering it froze it at 0 frames/s; macOS and Linux have their own occlusion rules)
   {
     const T = requireRepo(join(REPO, 'sidecar', 'tools', 'builtin', 'browser.js'))._internals;
     const bin = (T.resolveChrome(true) || {}).path;
@@ -334,7 +334,7 @@ try {
   ok('no white/OS-painted controls in the window', os.length === 0, JSON.stringify(os));
   ok('no page exceptions', diag.exceptions.length === 0, diag.exceptions.slice(0, 3).join(' | '));
   console.log('console errors/warnings:', JSON.stringify(diag.consoleMsgs.slice(0, 8)));
-  // QUIT: quitting StarNet closes the shared Chrome window too (it used to stay open with a dead network proxy)
+  // QUIT: quitting Vultron closes the shared Chrome window too (it used to stay open with a dead network proxy)
   {
     const mine = () => chromeProcs(['browser-profile', basename(scratch)]);
     await type('127.0.0.1:' + site.port);

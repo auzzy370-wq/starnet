@@ -49,9 +49,9 @@ test('a job that ships on LINE A rides on to LINE B by SEND TO', async () => {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const base = 'http://127.0.0.1:' + server.address().port;
   const fixture = SidecarFixture.create({ prefix: 'handoff-', timeoutMs: 20000, env: {
-    STARNET_DEFAULT_MODEL: '', SKYNET_DEFAULT_MODEL: '',
-    STARNET_OPENROUTER_KEY: '', SKYNET_OPENROUTER_KEY: '',
-    SKYNET_FULL_ACCESS: '1', STARNET_FULL_ACCESS: '1',
+    VULTRON_DEFAULT_MODEL: '', SKYNET_DEFAULT_MODEL: '',
+    VULTRON_OPENROUTER_KEY: '', SKYNET_OPENROUTER_KEY: '',
+    SKYNET_FULL_ACCESS: '1', VULTRON_FULL_ACCESS: '1',
     CUSTOM_OPENAI_KEY: 'direct-fixture', CUSTOM_OPENAI_BASE_URL: base + '/v1'
   } });
   try {
@@ -221,9 +221,9 @@ test('hand-offs waiting when the station quits are said, never lost', async () =
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const base = 'http://127.0.0.1:' + server.address().port;
   const fixture = SidecarFixture.create({ prefix: 'handoff-quit-', timeoutMs: 20000, env: {
-    STARNET_DEFAULT_MODEL: '', SKYNET_DEFAULT_MODEL: '',
-    STARNET_OPENROUTER_KEY: '', SKYNET_OPENROUTER_KEY: '',
-    SKYNET_FULL_ACCESS: '1', STARNET_FULL_ACCESS: '1',
+    VULTRON_DEFAULT_MODEL: '', SKYNET_DEFAULT_MODEL: '',
+    VULTRON_OPENROUTER_KEY: '', SKYNET_OPENROUTER_KEY: '',
+    SKYNET_FULL_ACCESS: '1', VULTRON_FULL_ACCESS: '1',
     CUSTOM_OPENAI_KEY: 'direct-fixture', CUSTOM_OPENAI_BASE_URL: base + '/v1'
   } });
   try {

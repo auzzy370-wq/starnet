@@ -1,16 +1,16 @@
 /* node test/hosted-request-bytes.test.js — HOSTED REQUEST BYTES STAY THE BYTES (local-runtime-profile lane, done-means c).
 
-   The local-runtime-profile lane changes how StarNet treats a model server on THIS computer or THIS network (one send,
+   The local-runtime-profile lane changes how Vultron treats a model server on THIS computer or THIS network (one send,
    then local_timeout; a local connect ceiling; endpoint facts). None of that may reach a hosted provider. This file
    pins the exact request every hosted adapter sends: the URL, the headers and the body BYTES, built by the real
    adapters (through the real factory) against a fake fetch that answers catalogs and records each chat request.
 
    Fixed requests per provider: a plain chat, a turn with tools (and a prior tool round), a turn with a reasoning
-   effort, and a turn carrying an image. Providers: OpenAI, OpenRouter, Anthropic, Gemini, Codex, the StarNet managed
+   effort, and a turn carrying an image. Providers: OpenAI, OpenRouter, Anthropic, Gemini, Codex, the Vultron managed
    proxy, and a CUSTOM endpoint on a public host (by name and by public IP).
 
    test/fixtures/hosted-request-bytes.json was written at 0b8441064, BEFORE any lane change, and is compared byte for
-   byte. Re-writing it (STARNET_WRITE_HOSTED_FIXTURE=1) is only right for an intended hosted change: it defeats the
+   byte. Re-writing it (VULTRON_WRITE_HOSTED_FIXTURE=1) is only right for an intended hosted change: it defeats the
    point of this file otherwise. No network: the fake fetch answers everything. */
 'use strict';
 const A = require('./_assert.js');
@@ -25,7 +25,7 @@ const TOOLS = [
   { type: 'function', function: { name: 'web_search', description: 'Search the web.', parameters: { type: 'object', properties: { query: { type: 'string' }, limit: { type: 'integer' } }, required: ['query'] } } }
 ];
 const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
-const SYSTEM = { role: 'system', content: 'You are a StarNet agent. Answer briefly.' };
+const SYSTEM = { role: 'system', content: 'You are a Vultron agent. Answer briefly.' };
 
 const REQUESTS = {
   plain: () => ({ messages: [SYSTEM, { role: 'user', content: 'hello there' }] }),
@@ -46,11 +46,11 @@ const CUSTOM_MODELS = { data: [{ id: 'm-reason', object: 'model', supportsReason
 
 const PROVIDERS = [
   { id: 'openai', model: 'gpt-5.4', opts: { key: 'sk-test-openai-000000' } },
-  { id: 'openrouter', model: 'anthropic/claude-sonnet-4.5', opts: { key: 'sk-or-test-000000', referer: 'https://starnet.example' } },
+  { id: 'openrouter', model: 'anthropic/claude-sonnet-4.5', opts: { key: 'sk-or-test-000000', referer: 'https://vultron.example' } },
   { id: 'anthropic', model: 'claude-sonnet-4-5', opts: { key: 'sk-ant-test-000000' } },
   { id: 'gemini', model: 'gemini-2.5-pro', opts: { key: 'gemini-test-key-000000' } },
   { id: 'codex', model: 'gpt-5.4-codex', opts: { token: 'codex-test-token-000000' } },
-  { id: 'starnet', model: 'openai/gpt-5.4', opts: { key: 'snk-test-000000', baseUrl: 'https://cloud.starnet.example/v1' }, req: { runId: 'run-fixture-1' } },
+  { id: 'vultron', model: 'openai/gpt-5.4', opts: { key: 'snk-test-000000', baseUrl: 'https://cloud.vultron.example/v1' }, req: { runId: 'run-fixture-1' } },
   { id: 'custom', label: 'custom-public-name', model: 'm-reason', opts: { key: 'custom-key-000000', baseUrl: 'https://llm.example.com/v1' }, models: CUSTOM_MODELS },
   { id: 'custom', label: 'custom-public-ip', model: 'm-reason', opts: { baseUrl: 'http://203.0.113.10:8000/v1' }, models: CUSTOM_MODELS }
 ];
@@ -103,7 +103,7 @@ async function buildAll() {
 
 (async () => {
   const built = await buildAll();
-  if (process.env.STARNET_WRITE_HOSTED_FIXTURE === '1') {
+  if (process.env.VULTRON_WRITE_HOSTED_FIXTURE === '1') {
     fs.writeFileSync(FIXTURE, JSON.stringify(built, null, 2) + '\n');
     console.log('wrote ' + FIXTURE + ' (' + built.length + ' cases)');
   }
@@ -125,8 +125,8 @@ async function buildAll() {
   }
   // the fixture proves what it claims: every hosted adapter, every request shape, real request bodies
   const ids = new Set(fixture.map(c => c.case.split('/')[0]));
-  for (const id of ['openai', 'openrouter', 'anthropic', 'gemini', 'codex', 'starnet', 'custom-public-name', 'custom-public-ip']) A.ok(ids.has(id), 'fixture covers ' + id);
-  A.ok(fixture.every(c => c.requests.every(r => r.body.length > 50 && r.body.indexOf('StarNet agent') >= 0)), 'every recorded body carries the fixed system prompt');
+  for (const id of ['openai', 'openrouter', 'anthropic', 'gemini', 'codex', 'vultron', 'custom-public-name', 'custom-public-ip']) A.ok(ids.has(id), 'fixture covers ' + id);
+  A.ok(fixture.every(c => c.requests.every(r => r.body.length > 50 && r.body.indexOf('Vultron agent') >= 0)), 'every recorded body carries the fixed system prompt');
   A.ok(fixture.filter(c => /\/tools$/.test(c.case)).every(c => c.requests[0].body.indexOf('fs_read') >= 0), 'every tools case carries the tool schemas');
   A.report('hosted-request-bytes.test');
 })();

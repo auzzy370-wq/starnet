@@ -30,7 +30,7 @@ const TurnView = require('./turn-view.js');
 const EarlierConversation = require('./earlier-conversation.js');   // taintOf: the one rule for "these rows carry outside content"
 const { ATTACHMENT_TAINT, rowStoresAttachmentText } = require('./taint.js');   // the bare attachment stamp (the one that decays) and the test for "this message holds a file's text"
 
-const COVER = Symbol('starnet.summary.cover');
+const COVER = Symbol('vultron.summary.cover');
 
 // a note's coverage: { source: 'earlier' | 'record' | 'fold', rows, toRowId, taint, quoted }
 function tagNote(note, cover) {

@@ -104,7 +104,7 @@ pub fn judge_reuse(stamp: &Stamp, seen: &Seen) -> Verdict {
     }
 }
 
-/// A workspace-owner claim (`.starnet-workspace-owner.json`, version 1) — the PID and what its claimant stamped.
+/// A workspace-owner claim (`.vultron-workspace-owner.json`, version 1) — the PID and what its claimant stamped.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OwnerClaim {
     pub pid: u32,
@@ -324,7 +324,7 @@ fn unix_pid_exists(pid: u32) -> bool {
     if unsafe { kill(pid, 0) } == 0 {
         return true;
     }
-    // ESRCH is 3 on the Unix platforms StarNet ships (macOS and Linux)
+    // ESRCH is 3 on the Unix platforms Vultron ships (macOS and Linux)
     std::io::Error::last_os_error().raw_os_error() != Some(3)
 }
 

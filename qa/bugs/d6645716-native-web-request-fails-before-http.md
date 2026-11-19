@@ -9,8 +9,8 @@ found: 2026-10-03
 lane: agent/safe-egress-module-1103
 fix: d1e3d43f3
 origin: customer
-report: email E22 (qa/evidence/customer-release-1011/email-intake.json) and https://github.com/androoAGI/starnet/issues/82
-affected: StarNet 0.12.5-0.13.0 on Windows and Apple Silicon (3 email reporters; gh#82)
+report: email E22 (qa/evidence/customer-release-1011/email-intake.json) and https://github.com/YOUR-GITHUB-USER/vultron/issues/82
+affected: Vultron 0.12.5-0.13.0 on Windows and Apple Silicon (3 email reporters; gh#82)
 family: outbound-transport
 installer: unverified
 recovery: unconfirmed
@@ -30,7 +30,7 @@ Every web_request and web_fetch an agent made failed before any HTTP response wi
 
 ## Evidence
 
-- Root cause: sidecar/tools/builtin/web.js's pinned lookup (introduced by 7bab4b448 "pin outbound DNS for web and browser tools", first tag v0.12.5) always called `callback(null, address.address, address.family)`. Node 20+ connects with autoSelectFamily and asks the lookup for `{ all: true }`, expecting an array. Isolated on 2026-10-03 by the Mac fetch investigation (archived audit record 051f8c3b, commit 17c3aeb92) with bundled Node v22.23.2 and undici 6.28.1: native fetch and plain undici answered 200, StarNet's web_fetch failed with `ERR_INVALID_IP_ADDRESS`, and the instrumented `connect.lookup` options were `{hints:0,all:true}`.
+- Root cause: sidecar/tools/builtin/web.js's pinned lookup (introduced by 7bab4b448 "pin outbound DNS for web and browser tools", first tag v0.12.5) always called `callback(null, address.address, address.family)`. Node 20+ connects with autoSelectFamily and asks the lookup for `{ all: true }`, expecting an array. Isolated on 2026-10-03 by the Mac fetch investigation (archived audit record 051f8c3b, commit 17c3aeb92) with bundled Node v22.23.2 and undici 6.28.1: native fetch and plain undici answered 200, Vultron's web_fetch failed with `ERR_INVALID_IP_ADDRESS`, and the instrumented `connect.lookup` options were `{hints:0,all:true}`.
 - Fix: d1e3d43f3 (2026-10-04) answers `all: true` with the list of every validated address, so a network without working IPv6 still reaches IPv4, and names a transport failure's cause code and host instead of bare "fetch failed". Verified by `git merge-base --is-ancestor`: first tag v0.13.1; v0.13.0 does not contain it.
 - The class: each outbound path hand-rolled its own pinned connect lookup, and the copies disagreed (the gh#82 reporter pointed at sidecar/mcp/oauth-fetch.js, which already answered `all: true`). The safe-egress lane (agent/safe-egress-module-1103) closed the family: sidecar/net/safe-egress.js `pinnedLookup` is the one implementation, and test/safe-egress.conformance.test.js C11 refuses any other sidecar file that answers a connect-time lookup.
 - Live proof 2026-11-03 at e9d823479: scripts/canary/egress-floor.mjs passed under the installed bundled node v22.23.2 and PATH node v22.23.0 (web_request, web_fetch, connector OAuth, skill document and package fetches, browser proxy against https://example.com/): qa/evidence/safe-egress-1103/live-proof.json.

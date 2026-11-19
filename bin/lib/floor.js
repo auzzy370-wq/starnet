@@ -1,5 +1,5 @@
 /* bin/lib/floor.js — the FLOOR page: the whole crew in one room, drawn the way the CREW camera draws its agent (the app's own
-   skins and furniture, StarNet's palette, made of ASCII — camfeed.js asciiSixel), wide enough for everyone.
+   skins and furniture, Vultron's palette, made of ASCII — camfeed.js asciiSixel), wide enough for everyone.
 
    Who sits where: the LEAD (the agent whose run sent work out, else the agent shown in COMMS) at the desk against the back
    wall, the rest of the crew at a row of desks in front of it, in roster order (a desk stays its agent's).

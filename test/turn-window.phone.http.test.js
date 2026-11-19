@@ -13,7 +13,7 @@ const words = m => UserText.flatten(m && m.content, UserText.OPENAI);
       { streamId: 's', agentId: 'agent', role: 'assistant', content: 'PHONE_CANONICAL_ANSWER', turnId: 'phone_window_seed_001', kind: 'turn', ts: 1001 }
     ]);
     const previous = (await fx.json('GET', '/api/save?agent=agent')).save;
-    const saved = await fx.json('POST', '/api/save', { schema: 'starnet.save', version: 6, _saveRevision: previous._saveRevision,
+    const saved = await fx.json('POST', '/api/save', { schema: 'vultron.save', version: 6, _saveRevision: previous._saveRevision,
       updatedAt: Math.max(Date.now(), previous.updatedAt + 1), agent: { id: 'agent', createdAt: 1, name: 'TURN' },
       workstreams: [{ id: 's', agentId: 'agent', title: 'Window phone', history: [
         { role: 'assistant', content: 'PHONE_DESK_WARNING_ONLY', error: true, ts: 1002 }

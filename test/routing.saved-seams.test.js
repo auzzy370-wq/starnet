@@ -25,8 +25,8 @@
     10. the step-through test over the real authority: a floor that goes held mid-test ENDS it 'stopped' with the chain's refused stop
         and the hold's words (never 'done' after the first stage, never "no work line is armed"); a start while held is refused in
         the same words and makes no session; a paused test stays paused and CONTINUE refuses until the file is back;
-    11. INVARIANT held-says-how: a table names every hold status; a hold the person can end (migration-required: open StarNet once;
-        future: update StarNet) says that step in the one sentence every refusal reads, both from heldWhy and from the hold a real
+    11. INVARIANT held-says-how: a table names every hold status; a hold the person can end (migration-required: open Vultron once;
+        future: update Vultron) says that step in the one sentence every refusal reads, both from heldWhy and from the hold a real
         read of a real spoiled floor throws; every sentence still keeps the one grammar. */
 const A = require('./_assert.js');
 const fs = require('node:fs'), path = require('node:path'), os = require('node:os');
@@ -424,8 +424,8 @@ const empties = () => READERS.map(name => [name, JSON.stringify(EMPTY[name]())])
          name; NO_STEP is the holds with no single step to name (the file is gone, damaged, locked, mid-save or unproved), whose words say only
          what is wrong and that routing waits. THE TABLE NAMES EVERY STATUS: a hold added to HOLD_STATUSES lands only with a row here. */
       const STEP = {
-        'migration-required': /open StarNet once/,   // the page migrates a save one version behind, and saves it, when it opens (frontend/app/save.js)
-        future: /update StarNet/                       // a save a newer StarNet wrote is read by that StarNet, never migrated down
+        'migration-required': /open Vultron once/,   // the page migrates a save one version behind, and saves it, when it opens (frontend/app/save.js)
+        future: /update Vultron/                       // a save a newer Vultron wrote is read by that Vultron, never migrated down
       };
       const NO_STEP = ['absent', 'corrupt', 'unreadable', 'unavailable', 'unstamped', 'invalid', 'unvouched', 'unsupported-geometry', 'changed'];
       A.eq(Object.keys(STEP).concat(NO_STEP).sort(), HOLD_STATUSES.slice().sort(), 'the table names every hold status exactly once (a new hold must be added to it, endable or not, to land)');

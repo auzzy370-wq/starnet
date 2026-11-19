@@ -91,7 +91,7 @@ const hostRefusal = msg => Object.assign(new Error(msg), { hostAuthored: true })
     A.ok(/if \(name === 'agent\.tool_result' && payload && typeof payload\.reason === 'string'\) payload = Object\.assign\(\{\}, payload, \{ reason: HostPathScrub\.boundedScrub\(scrubOutbound, payload\.reason, 400\) \}\);/.test(head),
       'A3-REFUSAL-01 host: loopEmit runs a tool_result\'s WHOLE reason through scrubOutbound, then bounds it, before anything else sees it');
     A.ok(/const scrubOutbound = HostPathScrub\.makeHostPathScrub\(\{ fixed: \[WORKSPACES\]/.test(idx), 'P2 host: scrubOutbound is the one host-path scrub, over the workspaces root');
-    const WS = 'C:\\Users\\andro\\AppData\\Local\\StarNet\\workspaces';
+    const WS = 'C:\\Users\\andro\\AppData\\Local\\Vultron\\workspaces';
     const scrub = makeHostPathScrub({ fixed: [WS] });
     const shown = scrub('browser.upload: "notes.txt" cannot be read under ' + WS + '\\alpha\\notes.txt (EACCES)');
     A.ok(!/AppData|andro/i.test(shown) && /\[workspace\]\\alpha\\notes\.txt/.test(shown), 'P2 host: a workspace path in a reason is shown as [workspace]: ' + shown);
@@ -100,7 +100,7 @@ const hostRefusal = msg => Object.assign(new Error(msg), { hostAuthored: true })
     const reg2 = makeRegistry();
     let raw = '';
     reg2.register({ impact: 'none', name: 'browser.navigate', schema: { type: 'object', properties: {} }, run: async () => { throw hostRefusal('invalid URL: ' + raw); } });
-    const SYN = 'C:\\Users\\SYNTHETIC_OWNER\\AppData\\Local\\StarNet\\workspaces';
+    const SYN = 'C:\\Users\\SYNTHETIC_OWNER\\AppData\\Local\\Vultron\\workspaces';
     const scrubSyn = makeHostPathScrub({ fixed: [SYN], env: null });
     const forms = [SYN, SYN.split('\\').join('/'), encodeURIComponent(SYN), SYN.split('\\').join('\\\\'), SYN.toUpperCase()];
     let cases = 0, fragments = 0, over = 0, split = 0, sample = '';
@@ -144,7 +144,7 @@ const hostRefusal = msg => Object.assign(new Error(msg), { hostAuthored: true })
 
   // ---- 5. the walk's refusals are the host's ----
   {
-    const scratch = fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-p2-')));
+    const scratch = fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-p2-')));
     const ws = path.join(scratch, 'workspaces');
     fs.mkdirSync(path.join(ws, 'agent'), { recursive: true });
     fs.writeFileSync(path.join(ws, 'agent', '.env'), 'X=1');

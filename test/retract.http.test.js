@@ -15,14 +15,14 @@ const server = http.createServer((req, res) => {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const base = 'http://127.0.0.1:' + server.address().port;
   const fixture = SidecarFixture.create({ prefix: 'turn-retract-http-', env: {
-    STARNET_OPENROUTER_BASE: base, SKYNET_OPENROUTER_BASE: base, STARNET_OPENROUTER_KEY: 'fixture', SKYNET_OPENROUTER_KEY: 'fixture',
-    STARNET_DEFAULT_MODEL: 'test/model', SKYNET_DEFAULT_MODEL: 'test/model', STARNET_CRON_ENABLED: '0', SKYNET_CRON_ENABLED: '0',
-    STARNET_MAX_CONCURRENT_AGENTS: '1', SKYNET_MAX_CONCURRENT_AGENTS: '1'
+    VULTRON_OPENROUTER_BASE: base, SKYNET_OPENROUTER_BASE: base, VULTRON_OPENROUTER_KEY: 'fixture', SKYNET_OPENROUTER_KEY: 'fixture',
+    VULTRON_DEFAULT_MODEL: 'test/model', SKYNET_DEFAULT_MODEL: 'test/model', VULTRON_CRON_ENABLED: '0', SKYNET_CRON_ENABLED: '0',
+    VULTRON_MAX_CONCURRENT_AGENTS: '1', SKYNET_MAX_CONCURRENT_AGENTS: '1'
   } });
   // Fault the actual strict transcript write before any bytes are written. No product test hook:
   // the real sidecar loads this fixture-owned fs wrapper through Node's standard preload mechanism.
   const preload = path.join(fixture.profile, 'retract-fault.cjs'), arm = path.join(fixture.workspace, 'retract-fault.arm');
-  fs.writeFileSync(preload, "const fs=require('node:fs'),path=require('node:path');const write=fs.writeSync;fs.writeSync=function(fd,data,...args){if(Buffer.isBuffer(data)&&data.toString('utf8').includes('\"kind\":\"retract\"')&&fs.existsSync(path.join(process.env.STARNET_WORKSPACES,'retract-fault.arm'))){const e=new Error('fixture retract disk failure');e.code='EIO';throw e;}return write.call(this,fd,data,...args);};\n");
+  fs.writeFileSync(preload, "const fs=require('node:fs'),path=require('node:path');const write=fs.writeSync;fs.writeSync=function(fd,data,...args){if(Buffer.isBuffer(data)&&data.toString('utf8').includes('\"kind\":\"retract\"')&&fs.existsSync(path.join(process.env.VULTRON_WORKSPACES,'retract-fault.arm'))){const e=new Error('fixture retract disk failure');e.code='EIO';throw e;}return write.call(this,fd,data,...args);};\n");
   fixture.env.NODE_OPTIONS = '--require ' + JSON.stringify(preload);
   if (process.env.TURN_RETRACT_INDEX_CONTROL) {
     fixture.entry = path.join(fixture.profile, 'saved-index.cjs');

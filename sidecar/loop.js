@@ -1067,7 +1067,7 @@
        { reused, new } (rows served from a stored summary / rows this fold summarized), which ride agent.compact. A throw is
        noted and the fold stands: the cost of an unkept summary is one more fold. Absent = no-op (every existing caller). */
     const onFold = (typeof o.onFold === 'function') ? o.onFold : null;
-    const microCompaction = o.microCompaction !== false;   // the free elision tier (STARNET_COMPACT_MICRO=0 turns it off at the host)
+    const microCompaction = o.microCompaction !== false;   // the free elision tier (VULTRON_COMPACT_MICRO=0 turns it off at the host)
     // OPTIONAL: told the anchored prompt size and the fold line before each model call, after any fold. `trusted` is
     // false when a fold just ran or the size is only the local ruler while real counts are expected: a fold clears the
     // reading, and the ruler can undercount the real prompt by 2x. Three calls in a row with no reading means none are
@@ -1529,7 +1529,7 @@
       try { onRecovery(Object.assign({ sequence: ++recoveryAttemptSequence }, row || {})); } catch (e) { failNote('loop.onRecovery', e); }
     }
     // mid-stream retry backoff schedule (same shape as the adapters' pre-stream RETRY_DELAYS).
-    // Widened 2026-08-11 after the installed Hermes parity run: ~16.6s still lost all three StarNet
+    // Widened 2026-08-11 after the installed Hermes parity run: ~16.6s still lost all three Vultron
     // attempts inside one real Codex overload window while valid Hermes turns took up to ~102s. The
     // final 30s/60s rungs give the same model turn ~106s of bounded patience. This never re-dispatches
     // completed tools: the retry loop sits wholly inside the current model call, after prior tool
@@ -1694,11 +1694,11 @@
       if (endPayload.budgetScope) { out.budgetScope = endPayload.budgetScope; if (endPayload.budgetCapUsd != null) out.budgetCapUsd = endPayload.budgetCapUsd; if (endPayload.budgetProjected) out.budgetProjected = true; }
       if (endPayload.unpricedModel) {
         out.unpricedModel = endPayload.unpricedModel; out.unpricedTokens = endPayload.unpricedTokens; out.unpricedCapTokens = endPayload.unpricedCapTokens;
-        out.budgetNote = 'stopped: ' + endPayload.unpricedTokens.toLocaleString('en-US') + ' tokens on unpriced model ' + endPayload.unpricedModel + ' reached the ' + endPayload.unpricedCapTokens.toLocaleString('en-US') + '-token ceiling (no published rate - SETTINGS > APP & BACKUP > Runtime limits > UNPRICED MODEL TOKEN CEILING, or STARNET_MAX_UNPRICED_TOKENS, or a price in SKYNET_MODEL_PRICES)';
+        out.budgetNote = 'stopped: ' + endPayload.unpricedTokens.toLocaleString('en-US') + ' tokens on unpriced model ' + endPayload.unpricedModel + ' reached the ' + endPayload.unpricedCapTokens.toLocaleString('en-US') + '-token ceiling (no published rate - SETTINGS > APP & BACKUP > Runtime limits > UNPRICED MODEL TOKEN CEILING, or VULTRON_MAX_UNPRICED_TOKENS, or a price in SKYNET_MODEL_PRICES)';
       }
       if (endPayload.subscriptionModel) {
         out.subscriptionModel = endPayload.subscriptionModel; out.subscriptionTokens = endPayload.subscriptionTokens; out.subscriptionCapTokens = endPayload.subscriptionCapTokens;
-        out.budgetNote = 'stopped: ' + endPayload.subscriptionTokens.toLocaleString('en-US') + ' subscription tokens on ' + endPayload.subscriptionModel + ' (cache re-reads count 1/10) reached the ' + endPayload.subscriptionCapTokens.toLocaleString('en-US') + '-token per-run ceiling (SETTINGS > APP & BACKUP > Runtime limits > SIGN-IN TOKEN CEILING, or STARNET_MAX_SUBSCRIPTION_TOKENS)';
+        out.budgetNote = 'stopped: ' + endPayload.subscriptionTokens.toLocaleString('en-US') + ' subscription tokens on ' + endPayload.subscriptionModel + ' (cache re-reads count 1/10) reached the ' + endPayload.subscriptionCapTokens.toLocaleString('en-US') + '-token per-run ceiling (SETTINGS > APP & BACKUP > Runtime limits > SIGN-IN TOKEN CEILING, or VULTRON_MAX_SUBSCRIPTION_TOKENS)';
       }
       if (reason === 'cancelled' && abortedWait) out.cancelledWhile = Object.assign({}, abortedWait);   // #99: what the cancel interrupted
       if (compactionUsageMissing) out.usageMissing = true;   // observed compaction spend is a floor, even when the main run later succeeds
@@ -2305,7 +2305,7 @@
          'provider_stalled'). Any other failure class resets the count, and so does a fallback switch. */
       let idleStalls = 0;
       /* A BUSY LOCAL SERVER GETS ONE RE-SEND (local-runtime-profile review M1). A local /v1 server that went silent while
-         another StarNet call was open there marks its error localBusy (openai-compatible.js LOCAL SILENCE): ours may only
+         another Vultron call was open there marks its error localBusy (openai-compatible.js LOCAL SILENCE): ours may only
          have been queued. The next rung says it is that ONE re-send (req.localBusyResent), and the adapter ends a silence
          on it as local_timeout instead of handing the ladder another 300 s wait. A fallback switch starts over. */
       let localBusyResent = false;
@@ -2334,7 +2334,7 @@
         try {
           const req = { model, messages: wireMessages(), tools, signal, stream: true };   // stale screen captures -> placeholders
           if (typeof o.isTask === 'boolean') req.isTask = o.isTask;
-          if (o.runId) req.runId = o.runId;   // run attribution: only a profile that names a runIdHeader sends it (starnet)
+          if (o.runId) req.runId = o.runId;   // run attribution: only a profile that names a runIdHeader sends it (vultron)
           if (o.cacheSystemPrefix) req.cacheSystemPrefix = o.cacheSystemPrefix;
           if (o.reasoningEffort) req.reasoningEffort = o.reasoningEffort;   // a per-run override (station self-talk: the aux effort); absent = the provider's own default
           if (outputCapTokens > 0) req.maxTokens = outputCapTokens;   // the ceiling a provider named (output_cap)

@@ -44,14 +44,14 @@ async function terminate(child, timeoutMs, signal) {
 class SidecarFixture {
   constructor(options) {
     const opts = options || {};
-    this.workspace = fs.mkdtempSync(path.join(os.tmpdir(), opts.prefix || 'starnet-sidecar-'));
+    this.workspace = fs.mkdtempSync(path.join(os.tmpdir(), opts.prefix || 'vultron-sidecar-'));
     // HERMETIC PROFILE: the sidecar's boot-time station auto-recovery scans the REAL per-user
     // app-data roots (%APPDATA%/%LOCALAPPDATA%/XDG/~) for a lost station, and a fresh temp
-    // workspace looks exactly like one — so a machine with an installed StarNet station had its
+    // workspace looks exactly like one — so a machine with an installed Vultron station had its
     // real save COPIED INTO every test workspace (2026-08-20: broke schema-stamp on the dev box
     // the day the desktop app was first installed there). Point every profile root the candidate
     // scan reads at an empty scratch sibling so fixture boots never see, or touch, real user data.
-    this.profile = fs.mkdtempSync(path.join(os.tmpdir(), (opts.prefix || 'starnet-sidecar-') + 'profile-'));
+    this.profile = fs.mkdtempSync(path.join(os.tmpdir(), (opts.prefix || 'vultron-sidecar-') + 'profile-'));
     this.entry = opts.entry || DEFAULT_ENTRY;
     this.args = Array.isArray(opts.args) ? opts.args.slice() : [];
     this.env = Object.assign({}, opts.env || {});
@@ -101,12 +101,12 @@ class SidecarFixture {
     // startFloorProbe): no live traffic from a gate. A test that wants the probe sets it back on in its env.
     // Readiness may ask the local CLI for auth status without a Settings page. Never discover a real
     // installed account in a test fixture; callers testing CLI behavior can supply their fixture bin.
-    const quiet = { SKYNET_EDGE_TTS_PROBE: '0', STARNET_CLAUDE_BIN: path.join(this.profile, 'fixture-cli-absent.cmd') };
+    const quiet = { SKYNET_EDGE_TTS_PROBE: '0', VULTRON_CLAUDE_BIN: path.join(this.profile, 'fixture-cli-absent.cmd') };
     const env = Object.assign({}, process.env, hermeticProfile, quiet, this.env, extraEnv || {}, {
       SKYNET_PORT: String(this.port),
-      STARNET_PORT: String(this.port),
+      VULTRON_PORT: String(this.port),
       SKYNET_WORKSPACES: this.workspace,
-      STARNET_WORKSPACES: this.workspace
+      VULTRON_WORKSPACES: this.workspace
     });
     const child = spawn(process.execPath, [this.entry].concat(this.args), {
       env,
@@ -189,8 +189,8 @@ class SidecarFixture {
     const opts = Object.assign({}, options || {});
     const headers = Object.assign({}, opts.headers || {});
     if (!Object.keys(headers).some(key => key.toLowerCase() === 'origin')) headers.Origin = this.baseUrl;
-    if (this.token && !Object.keys(headers).some(key => key.toLowerCase() === 'x-starnet-token')) {
-      headers['X-StarNet-Token'] = this.token;
+    if (this.token && !Object.keys(headers).some(key => key.toLowerCase() === 'x-vultron-token')) {
+      headers['X-Vultron-Token'] = this.token;
     }
     opts.headers = headers;
     return fetch(this.baseUrl + route, opts);

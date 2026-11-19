@@ -15,7 +15,7 @@ origin: audit
 
 ## Symptom
 
-One paid OpenRouter run cannot be proven against what OpenRouter charged: StarNet's books agree with themselves, but the key's usage moved by a slightly different amount and there is no generation id to look the charge up by.
+One paid OpenRouter run cannot be proven against what OpenRouter charged: Vultron's books agree with themselves, but the key's usage moved by a slightly different amount and there is no generation id to look the charge up by.
 
 ## Repro
 
@@ -25,7 +25,7 @@ One paid OpenRouter run cannot be proven against what OpenRouter charged: StarNe
 
 ## Evidence
 
-The sweep's one paid smoke (mistralai/mistral-nemo, 2026-10-20 05:44 UTC): ledger `{"usd":0.0004234896,"tokens":25578,"cachedTokens":16,"model":"mistralai/mistral-nemo"}` = /api/runs row = /api/insights byModel ($0.000423) = /api/budget/status spentToday/lifetime = page `Harness.totals()` `{"tokens":25578,"cost":0.0004234896,"calls":1}`. OpenRouter key usage 218.206740941 → 218.207180402 (delta $0.000439461, stable over 45 s). Gap: $0.0000160 (3.6%). The key is shared (usage_daily $2.29 that day) and no StarNet run journal or pending-spend receipt was left behind, so the gap is most likely another consumer of the key, but it cannot be proven either way: `sidecar/providers/openrouter.js` never keeps the stream's `id` (the generation id OpenRouter's `/api/v1/generation?id=` would price exactly), and the ledger row has no field for it.
+The sweep's one paid smoke (mistralai/mistral-nemo, 2026-10-20 05:44 UTC): ledger `{"usd":0.0004234896,"tokens":25578,"cachedTokens":16,"model":"mistralai/mistral-nemo"}` = /api/runs row = /api/insights byModel ($0.000423) = /api/budget/status spentToday/lifetime = page `Harness.totals()` `{"tokens":25578,"cost":0.0004234896,"calls":1}`. OpenRouter key usage 218.206740941 → 218.207180402 (delta $0.000439461, stable over 45 s). Gap: $0.0000160 (3.6%). The key is shared (usage_daily $2.29 that day) and no Vultron run journal or pending-spend receipt was left behind, so the gap is most likely another consumer of the key, but it cannot be proven either way: `sidecar/providers/openrouter.js` never keeps the stream's `id` (the generation id OpenRouter's `/api/v1/generation?id=` would price exactly), and the ledger row has no field for it.
 
 _Found by the `sweep/providers` lane, 2026-10-20._
 

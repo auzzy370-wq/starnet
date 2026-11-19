@@ -34,7 +34,7 @@ const storage = {
   clear: () => { for (const k of Object.keys(mem)) delete mem[k]; }
 };
 global.localStorage = storage;
-const KEY = 'starnet.save';
+const KEY = 'vultron.save';
 const put = raw => { storage.clear(); mem[KEY] = raw; writes = 0; };   // a seed, not a write the code under test made
 
 const Save = require('../frontend/app/save.js');             // THIS build
@@ -144,7 +144,7 @@ const deepEq = (a, b, msg) => { try { assert.deepStrictEqual(a, b); A.ok(true); 
 
   // ---- 2. cloudsave.js's own ceiling IS Save.CURRENT, with Save loaded and without it (the load-order fallback) ----------------
   {
-    const at = version => ({ schema: 'starnet.save', version, updatedAt: 1, agent: { id: 'agent' } });
+    const at = version => ({ schema: 'vultron.save', version, updatedAt: 1, agent: { id: 'agent' } });
     const nothing = async () => { throw new Error('no network in this check'); };
     const withSave = cloudsaveOver({ CURRENT: Save.CURRENT }, nothing), without = cloudsaveOver(null, nothing), frozenCloud = cloudsaveOver(Frozen, nothing);
     A.eq([withSave._isFutureSave(at(Save.CURRENT)), withSave._isFutureSave(at(Save.CURRENT + 1))], [false, true], 'with Save loaded the ceiling is Save.CURRENT');
@@ -155,7 +155,7 @@ const deepEq = (a, b, msg) => { try { assert.deepStrictEqual(a, b); A.ok(true); 
   // ---- 3. the station holds the same line from its side: a merge from a page of an older format is refused, nothing is written -----
   {
     const SaveMerge = require('../sidecar/save-merge.js');
-    const stationDoc = { schema: 'starnet.save', version: Save.CURRENT, updatedAt: 10, _saveRevision: 3, agent: { id: 'agent', name: 'NOVA', createdAt: 1 }, workstreams: [] };
+    const stationDoc = { schema: 'vultron.save', version: Save.CURRENT, updatedAt: 10, _saveRevision: 3, agent: { id: 'agent', name: 'NOVA', createdAt: 1 }, workstreams: [] };
     const reads = [];
     const saveStore = { loadState: id => { reads.push(id); return { status: 'ok', doc: stationDoc }; } };
     const oldPage = Frozen.envelope({ agent: { id: 'agent', name: 'NOVA', createdAt: 1 }, _saveMerge: { by: 'w-old', top: [], rows: [], gone: [] } });

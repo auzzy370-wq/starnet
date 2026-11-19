@@ -126,7 +126,7 @@ function scenario(seed) {
 }
 
 // a station save holding one session
-const docOf = (history, extra) => Object.assign({ schema: 'starnet.save', version: 7, updatedAt: 5000, _saveRevision: 3, agent: { id: 'agent', name: 'NOVA', createdAt: 5000 },
+const docOf = (history, extra) => Object.assign({ schema: 'vultron.save', version: 7, updatedAt: 5000, _saveRevision: 3, agent: { id: 'agent', name: 'NOVA', createdAt: 5000 },
   agents: [], generalId: SID, activeId: SID, deletedIds: [], workstreams: [{ id: SID, title: 'T', history }] }, extra || null);
 const historyOf = doc => doc.workstreams.find(w => w.id === SID).history;
 
@@ -404,7 +404,7 @@ const historyOf = doc => doc.workstreams.find(w => w.id === SID).history;
   const tmp = () => { const r = fs.mkdtempSync(path.join(os.tmpdir(), 'sk-pre-history-ref-')); roots.push(r); return r; };
   const DAY = 24 * 60 * 60 * 1000;
   function session(id, extra) { return Object.assign({ id, title: id, history: [{ role: 'user', content: 'hello from ' + id }] }, extra || null); }
-  const env = (version, rev, over) => Object.assign({ schema: 'starnet.save', version, updatedAt: 100 + rev, _saveRevision: rev, _saveClient: 'tab1', agent: { id: 'agent', name: 'NOVA ' + version, createdAt: 5000 },
+  const env = (version, rev, over) => Object.assign({ schema: 'vultron.save', version, updatedAt: 100 + rev, _saveRevision: rev, _saveClient: 'tab1', agent: { id: 'agent', name: 'NOVA ' + version, createdAt: 5000 },
     workstreams: [session('general')] }, over || null);
   // a store over the real disk whose clock we hold, with a log of renames and a hook to make named paths fail
   function rig(root, o) {
@@ -722,7 +722,7 @@ const historyOf = doc => doc.workstreams.find(w => w.id === SID).history;
     for (let i = 1; i <= 8; i++) transcript.set(i, turnOf(i, i % 2 ? 'user' : 'assistant'));
     const seal = k => clone(transcript.get(Number(k.split(':')[1])));
     const packedIds = ids => H.pack(ids.map(id => clone(transcript.get(id))), { streamId: SID, seal });
-    const env = (history, over) => Object.assign({ schema: 'starnet.save', version: 7, agent: { id: 'agent', name: 'NOVA', createdAt: 5000 }, generalId: 'general', activeId: 'general', deletedIds: [],
+    const env = (history, over) => Object.assign({ schema: 'vultron.save', version: 7, agent: { id: 'agent', name: 'NOVA', createdAt: 5000 }, generalId: 'general', activeId: 'general', deletedIds: [],
       workstreams: [{ id: 'general', title: null, history: [] }, { id: SID, title: 'T', createdAt: 1, lastActiveAt: 5, history }] }, over || null);
     for (const withInflate of [true, false]) {
       const label = withInflate ? 'with the transcript' : 'without it';

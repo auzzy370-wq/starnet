@@ -5,7 +5,7 @@ const { makeConnectorVault } = require('../sidecar/connector-vault.js');
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 (async () => {
   const keyHex = '39'.repeat(32);
-  const app = SidecarFixture.create({ prefix: 'starnet-credential-recovery-', entry: path.join(__dirname, 'helpers/connector-reset-host.cjs'), env: { STARNET_DESKTOP_SHELL: '1', STARNET_CONNECTOR_ENCRYPTION_KEY: keyHex } });
+  const app = SidecarFixture.create({ prefix: 'vultron-credential-recovery-', entry: path.join(__dirname, 'helpers/connector-reset-host.cjs'), env: { VULTRON_DESKTOP_SHELL: '1', VULTRON_CONNECTOR_ENCRYPTION_KEY: keyHex } });
   const file = path.join(app.workspace, 'connectors/state.json');
   const marker = name => path.join(app.workspace, name);
   const set = (name, value = '1') => fs.writeFileSync(marker(name), value);

@@ -54,7 +54,7 @@ const HOSTILE = [
   ['a plain name', 'ledger.pdf']
 ];
 const asPdf = n => (/\.pdf$/.test(n) ? n : n + '.pdf');
-const BASE = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-attachment-label-'));
+const BASE = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-attachment-label-'));
 const worlds = [];
 
 function world() {

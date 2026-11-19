@@ -69,7 +69,7 @@ const isMemory = n => /^notebook[._-]?(write|read)$/.test(n);
   const fixture = SidecarFixture.create({ prefix: 'sk-saved-station-grants-', env: {
     SKYNET_DEV: '1', SKYNET_QUEST_REFRESH: '0',
     SKYNET_OPENROUTER_BASE: mock.base, SKYNET_OPENROUTER_KEY: 'sk-or-v1-saved-station-fake', SKYNET_DEFAULT_MODEL: 'test/model',
-    SKYNET_FULL_ACCESS: '', STARNET_FULL_ACCESS: ''
+    SKYNET_FULL_ACCESS: '', VULTRON_FULL_ACCESS: ''
   } });
   // one dev-channel task turn -> the tools of the widest provider request it made (a turn may also make toolless aux calls)
   const turn = async (label) => {

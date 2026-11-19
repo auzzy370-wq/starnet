@@ -1,4 +1,4 @@
-/* STARNET — util.js : helpers + event bus */
+/* VULTRON — util.js : helpers + event bus */
 'use strict';
 
 const U = {
@@ -204,7 +204,7 @@ const U = {
      preserving its sidecar-owned snapshot rather than accepting page authority. */
   async saveFile(opts) {
     const o = opts || {};
-    const name = String(o.name || 'starnet-export').replace(/[\x00-\x1f\x7f<>:"/\\|?*]/g, '-');
+    const name = String(o.name || 'vultron-export').replace(/[\x00-\x1f\x7f<>:"/\\|?*]/g, '-');
     const ext = String(o.ext || (name.match(/\.([a-z0-9]+)$/i) || [])[1] || 'txt').toLowerCase();
     if (!/^[a-z0-9]{1,10}$/.test(ext)) return { ok: false, where: 'none', file: name, line: 'export failed — the file extension is invalid' };
     const file = name.toLowerCase().endsWith('.' + ext) ? name : name + '.' + ext;

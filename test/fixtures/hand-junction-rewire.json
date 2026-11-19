@@ -1,11 +1,11 @@
 {
  "note": "THE HAND repair 2026-10-11: two floors (fuzz-found, trimmed) where a junction put on a belt tile let the floor reconcile hand the run to the wrong machine. ring: tile 61,22 of l3 (p6>p4) sits in the ring of a third bay p5. bothEnds: tile 69,9 of l3 (p5>p8) - the tile before it touches both ends.",
  "ring": {
-  "schema": "starnet.station",
+  "schema": "vultron.station",
   "version": 2,
   "_nid": 9,
   "meta": {
-   "name": "STARNET STATION",
+   "name": "VULTRON STATION",
    "createdAt": 1791693967962,
    "tier": 0,
    "spawnRoomId": "r1",
@@ -502,11 +502,11 @@
   ]
  },
  "bothEnds": {
-  "schema": "starnet.station",
+  "schema": "vultron.station",
   "version": 2,
   "_nid": 9,
   "meta": {
-   "name": "STARNET STATION",
+   "name": "VULTRON STATION",
    "createdAt": 1791694894071,
    "tier": 0,
    "spawnRoomId": "r1",

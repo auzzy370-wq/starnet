@@ -122,7 +122,7 @@ function makeTriggerRunner(deps) {
 
   /* ---- preflight: can THIS line take work right now? (no side effects) ---- */
   function preflight(t) {
-    if (halted()) return faulted() ? 'the station hit an internal fault and stopped its background work — restart StarNet and this trigger fires again' : 'automation is stopped (E-STOP) — resume it and this trigger fires again';
+    if (halted()) return faulted() ? 'the station hit an internal fault and stopped its background work — restart Vultron and this trigger fires again' : 'automation is stopped (E-STOP) — resume it and this trigger fires again';
     const heldWhy = heldOf();
     if (heldWhy) return heldWhy;   // the saved floor cannot be proved right now: nothing fires from a guess about it
     const plan = planOf();

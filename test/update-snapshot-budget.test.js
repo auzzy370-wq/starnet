@@ -18,7 +18,7 @@ const { writeFileDurable } = require('../sidecar/durable-write.js');
 const Prep = require('../sidecar/update-preparation.js');
 
 const REASON = 'too large for the pre-update recovery point';
-const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-snapshot-budget-'));
+const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-snapshot-budget-'));
 const ws = path.join(sandbox, 'workspaces');
 function write(rel, value) {
   const file = path.join(ws, ...rel.split('/'));
@@ -40,7 +40,7 @@ write('agent/build/out.bin', Buffer.alloc(40000, 2));
 write('.checkpoints/agent/git/objects/aa/bb', Buffer.alloc(30000, 3));
 
 const BIG = ['agent/node_modules/huge/index.js', 'agent/build/out.bin', '.checkpoints/agent/git/objects/aa/bb'];
-const browserStore = { 'starnet.save': JSON.stringify({ version: 5, updatedAt: 1 }) };
+const browserStore = { 'vultron.save': JSON.stringify({ version: 5, updatedAt: 1 }) };
 
 (async () => {
   try {
@@ -61,7 +61,7 @@ const browserStore = { 'starnet.save': JSON.stringify({ version: 5, updatedAt: 1
     const browserBytes = b.browser.reduce((n, e) => n + e.bytes, 0);
     A.ok(fileBytes + browserBytes <= budget, 'files + browser state stay within the budget (' + (fileBytes + browserBytes) + ' <= ' + budget + ')');
     A.eq(R.validate(b).ok, true, 'a budgeted bundle still validates');
-    const file = path.join(sandbox, 'out', 'budget.starnet-backup.json');
+    const file = path.join(sandbox, 'out', 'budget.vultron-backup.json');
     const written = R.writeBundleAtomic({ bundle: b, file, allowIncomplete: true });
     A.eq(R.readBundle(file).manifestSha256, written.manifestSha256, 'and it writes + reads back verified');
 

@@ -10,7 +10,7 @@ lane: release-0135-prep
 fix:
 origin: customer
 report: support-2026-10-09-drive-oauth-hard-block
-affected: Reported StarNet 0.13.1; operating system and exact installer artifact unverified
+affected: Reported Vultron 0.13.1; operating system and exact installer artifact unverified
 family: google-drive-oauth-block
 installer: unverified
 recovery: unconfirmed
@@ -40,7 +40,7 @@ Investigation anchors: sidecar/mcp/google-client.js, sidecar/mcp/catalog.js and 
 
 ## Verdict
 
-Re-triaged P1 to P2 (external): Google Drive authorization is blocked by Google app verification, outside StarNet code; tracked until Google verifies the app. Andrew approved this disposition for the 0.13.5 cut (10-15).
+Re-triaged P1 to P2 (external): Google Drive authorization is blocked by Google app verification, outside Vultron code; tracked until Google verifies the app. Andrew approved this disposition for the 0.13.5 cut (10-15).
 
 ## Regression
 

@@ -24,7 +24,7 @@ const countSrc = A.fnBody(idx, 'function runningReviews');
 const settleSrc = A.fnBody(idx, 'function settleRun(');
 const cap = (idx.match(/\nconst REVIEW_RUNS_AT_ONCE = (\d+);/) || [])[1];
 
-const root = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-overseer-busy-'));
+const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-overseer-busy-'));
 const diskClosers = [];
 const page = { generalId: 'convA', deletedIds: [], workstreams: ['convA', 'convB', 'convC'].map(id => ({ id, title: 'Conversation ' + id.slice(4), agentId: 'agent' })) };
 const flush = async () => { for (let i = 0; i < 25; i++) await new Promise(r => setImmediate(r)); };

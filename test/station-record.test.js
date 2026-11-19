@@ -33,7 +33,7 @@ const fixture = JSON.parse(fs.readFileSync(path.join(ROOT, 'test', 'fixtures', '
 const NOW = 1793500000000;
 const GEN = SR._internals.GENERATION_ID;
 const RECORD = 'workspaces/.station.json';
-const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-station-record-'));
+const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-station-record-'));
 let seq = 0;
 
 function realParent(p) { try { return fs.realpathSync.native(p); } catch (_) { return p; } }
@@ -303,12 +303,12 @@ for (const c of fixture.cases) {
 {
   const k = freshCase('found-torn');
   fs.writeFileSync(path.join(k.ws, 'agent.save.json'), '{}');
-  fs.writeFileSync(path.join(k.ws, '.station.json'), '{"schema":"starnet.st');
+  fs.writeFileSync(path.join(k.ws, '.station.json'), '{"schema":"vultron.st');
   const v = SR.read(deps(k.ws));
   v.found({ by: 'cli-bootstrap' });
   A.eq([v.state, v.persisted], ['active', false], 'found() over torn bytes stays in memory');
   A.ok(/unreadable/.test(String(v.writeError)), 'and says why: ' + v.writeError);
-  A.eq(fs.readFileSync(path.join(k.ws, '.station.json'), 'utf8'), '{"schema":"starnet.st', 'only the owner\'s ensure() sets torn bytes aside');
+  A.eq(fs.readFileSync(path.join(k.ws, '.station.json'), 'utf8'), '{"schema":"vultron.st', 'only the owner\'s ensure() sets torn bytes aside');
   const boot = SR.ensure(deps(k.ws));
   A.eq([boot.state, boot.persisted], ['active', true], 'the next boot sets them aside and records the station (P1: its save)');
   A.ok(fs.existsSync(path.join(k.ws, '.station.json.corrupt-1')), 'the torn bytes are kept as .station.json.corrupt-1');
@@ -446,7 +446,7 @@ A.eq([Lineage._internals, Lineage.FRESH_MARKER], [undefined, undefined], 'worksp
 {
   const contract = fs.readFileSync(path.join(ROOT, 'test', 'native-process-ownership', 'tests', 'station_contract.rs'), 'utf8');
   A.ok(contract.includes('include_str!("../../fixtures/station-record-cases.json")'), 'the native contract test reads this same fixture');
-  A.ok(contract.includes('use starnet_process_ownership_rules::fresh_start::{quarantine_and_prepare, set_aside_for_erase};'), 'and drives fresh_start.rs through its public API');
+  A.ok(contract.includes('use vultron_process_ownership_rules::fresh_start::{quarantine_and_prepare, set_aside_for_erase};'), 'and drives fresh_start.rs through its public API');
   const crate = fs.readFileSync(path.join(ROOT, 'test', 'native-process-ownership', 'src', 'lib.rs'), 'utf8');
   A.ok(/#\[path = "\.\.\/\.\.\/\.\.\/src-tauri\/src\/fresh_start\.rs"\]\s*pub mod fresh_start;/.test(crate), 'the rules crate compiles the shell\'s own fresh_start.rs');
   const gate = fs.readFileSync(path.join(ROOT, '.github', 'workflows', 'fast-gate.yml'), 'utf8');

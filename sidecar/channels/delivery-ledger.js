@@ -121,7 +121,7 @@ const DEFAULTS = Object.freeze({
 // the line a reply that could not go out at once carries when it finally lands (rides its first unsent part when it fits)
 const DELAYED_HEADER = '⌛ delayed reply — the channel was unreachable when this was first sent:';
 // what a chat is told, once per spell, when a message it sent was not kept (receive: OVERFLOW)
-const OVERFLOW_NOTICE = (n) => '⚠ Not every message you sent here while StarNet could not deliver this chat\'s replies was kept: it holds '
+const OVERFLOW_NOTICE = (n) => '⚠ Not every message you sent here while Vultron could not deliver this chat\'s replies was kept: it holds '
   + n + ' waiting messages per chat, and the ones after that were dropped. Send again what still needs doing once the replies above have arrived.';
 
 const chatKeyOf = (channel, chatId) => String(channel) + '|' + String(chatId);

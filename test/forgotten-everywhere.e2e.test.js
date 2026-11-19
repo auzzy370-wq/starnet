@@ -75,16 +75,16 @@ function startUpstream() {
 }
 function hermeticEnv(base) {
   const env = {};
-  for (const k of Object.keys(process.env)) if (/^(OPENROUTER|ANTHROPIC|OPENAI|GEMINI|GOOGLE_API|XAI|GROQ|MISTRAL|DEEPSEEK|TOGETHER|FIREWORKS|PERPLEXITY|CEREBRAS|KIMI|ELEVENLABS|STARNET_|SKYNET_)/i.test(k)) env[k] = '';
+  for (const k of Object.keys(process.env)) if (/^(OPENROUTER|ANTHROPIC|OPENAI|GEMINI|GOOGLE_API|XAI|GROQ|MISTRAL|DEEPSEEK|TOGETHER|FIREWORKS|PERPLEXITY|CEREBRAS|KIMI|ELEVENLABS|VULTRON_|SKYNET_)/i.test(k)) env[k] = '';
   // the aux passes are ON (reflection, study; no AUX_BUDGET=0 off-switch) - the point of this file
-  return Object.assign(env, { SKYNET_FULL_ACCESS: '1', STARNET_FULL_ACCESS: '1', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0',
-    SKYNET_THREAD_MINE: '0', STARNET_LIVE_PRICES: '0', STARNET_CREDITS_URL: '', SKYNET_CREDITS_URL: '',
+  return Object.assign(env, { SKYNET_FULL_ACCESS: '1', VULTRON_FULL_ACCESS: '1', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0',
+    SKYNET_THREAD_MINE: '0', VULTRON_LIVE_PRICES: '0', VULTRON_CREDITS_URL: '', SKYNET_CREDITS_URL: '',
     SKYNET_OPENROUTER_BASE: base, SKYNET_OPENROUTER_KEY: 'fe-fixture', SKYNET_DEFAULT_MODEL: 'test/model' });
 }
 
 (async () => {
   const up = await startUpstream();
-  const fixture = SidecarFixture.create({ prefix: 'starnet-forgotten-everywhere-', timeoutMs: 40000, env: hermeticEnv(up.base) });
+  const fixture = SidecarFixture.create({ prefix: 'vultron-forgotten-everywhere-', timeoutMs: 40000, env: hermeticEnv(up.base) });
   const json = (method, route, body) => fixture.json(method, route, body);
   const ws = file => path.join(fixture.workspace, file);
   const readJson = file => { try { return JSON.parse(fs.readFileSync(ws(file), 'utf8')); } catch (_) { return null; } };
@@ -102,7 +102,7 @@ function hermeticEnv(base) {
     A.eq(end && end.payload && end.payload.reason, 'done', phase + ': the run finishes (' + JSON.stringify(events.slice(-2)).slice(0, 300) + ')');
     return { runId: start && start.payload && start.payload.runId, events };
   }
-  const fileStatus = async ref => (await fixture.request('/api/file?agent=agent&path=' + encodeURIComponent(ref.path), { headers: { 'X-StarNet-Token': fixture.token } })).status;
+  const fileStatus = async ref => (await fixture.request('/api/file?agent=agent&path=' + encodeURIComponent(ref.path), { headers: { 'X-Vultron-Token': fixture.token } })).status;
   const listedRuns = async () => ((await json('GET', '/api/runs?agent=*&limit=300')).body.runs || []);
   let revision = 0;
   const save = async extra => {

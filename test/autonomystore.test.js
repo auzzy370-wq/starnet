@@ -5,7 +5,7 @@ const {AutonomyStore: S} = require('../frontend/app/autonomystore.js');
 global.Autonomy = require('../frontend/app/autonomy.js');
 const mem = {};
 global.localStorage = {getItem:k=>mem[k]||null,setItem:(k,v)=>{mem[k]=v;},removeItem:k=>{delete mem[k];}};
-const key='starnet.autonomy.v1';
+const key='vultron.autonomy.v1';
 let server=Autonomy.fresh(), fail=false, malformed=false, hold=null;
 const calls=[];
 global.fetch=async(url,opts)=>{

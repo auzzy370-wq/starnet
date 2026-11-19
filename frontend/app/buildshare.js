@@ -13,9 +13,9 @@
      BuildShare.readBuild(text, model, nextId)             -> { ok, error?, doc, name, stats, dropped } */
 'use strict';
 const BuildShare = (() => {
-  const FORMAT = 'starnet.build';
+  const FORMAT = 'vultron.build';
   const VERSION = 1;
-  const EXT = '.starnet-build.json';
+  const EXT = '.vultron-build.json';
   const MAX_BYTES = 2 * 1024 * 1024;
   // generous over the largest real station (MAX_SPAN 240 already bounds the footprint) — these only stop a hostile file
   // from making the importer walk millions of entries before replaceLayout ever sees it
@@ -112,7 +112,7 @@ const BuildShare = (() => {
     const meta = isObj(src.meta) ? src.meta : {};
     const nonCorridor = outOrder.find(id => rooms[id].kind !== 'corridor') || outOrder[0];
     const doc = {
-      schema: 'starnet.station', version: 2, _nid: n,
+      schema: 'vultron.station', version: 2, _nid: n,
       meta: {
         name: cleanName(meta.name, 40) || 'SHARED BUILD', createdAt: 0, tier: 0,
         spawnRoomId: roomIds[meta.spawnRoomId] || nonCorridor, trunkRoomId: roomIds[meta.trunkRoomId] || roomIds[meta.spawnRoomId] || nonCorridor
@@ -143,7 +143,7 @@ const BuildShare = (() => {
     TOO_LARGE: 'That file is too large to be a station build.',
     NOT_JSON: 'That file is not a station build (it is not readable JSON).',
     NOT_BUILD: 'That file is not a station build.',
-    NEWER: 'That build was made by a newer StarNet. Update the app to open it.',
+    NEWER: 'That build was made by a newer Vultron. Update the app to open it.',
     NO_LAYOUT: 'That build has no layout in it.',
     NO_ROOMS: 'That build has no rooms that can be built.',
     TOO_BIG: 'That build is larger than a station can be.'
@@ -162,7 +162,7 @@ const BuildShare = (() => {
       if (!(Number.isInteger(file.version) && file.version >= 1)) return fail('NOT_BUILD');
       if (file.version > VERSION) return fail('NEWER');
       src = file.station;
-    } else if (file.schema === 'starnet.station') src = file;
+    } else if (file.schema === 'vultron.station') src = file;
     else return fail('NOT_BUILD');
     const r = cleanDoc(src, model, nextId);
     if (r.error) return fail(r.error);

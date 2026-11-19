@@ -116,7 +116,7 @@ function makeSkillDocumentFetcher(deps) {
             try {
               const init = {
                 method: 'GET', redirect: 'manual', signal: ctrl.signal,
-                headers: { accept: 'text/markdown,text/plain;q=0.9,*/*;q=0.1', 'user-agent': 'StarNet-Skill-Exchange/1' }
+                headers: { accept: 'text/markdown,text/plain;q=0.9,*/*;q=0.1', 'user-agent': 'Vultron-Skill-Exchange/1' }
               };
               if (dispatcher) init.dispatcher = dispatcher;
               response = await fetchImpl(dest.href, init);

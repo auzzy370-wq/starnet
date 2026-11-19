@@ -94,11 +94,11 @@ const CODEX = { 'x-codex-primary-used-percent': '1.0', 'x-codex-primary-window-m
     { type: 'result', subtype: 'success', is_error: false, result: 'ok', stop_reason: 'end_turn', total_cost_usd: 0, usage: { input_tokens: 1, output_tokens: 1 } }];
   const fakeFs = { statSync() { return { isFile: () => true }; }, writeFileSync() {}, unlinkSync() {} };
   const seen = [];
-  const cp = makeClaudeCliProvider({ spawn: fakeSpawn(run), fs: fakeFs, bin: 'claude.exe', env: { PATH: '', STARNET_CLAUDE_CLI_PERSIST: '0' }, platform: 'linux', onRateLimit: i => seen.push(i) });
+  const cp = makeClaudeCliProvider({ spawn: fakeSpawn(run), fs: fakeFs, bin: 'claude.exe', env: { PATH: '', VULTRON_CLAUDE_CLI_PERSIST: '0' }, platform: 'linux', onRateLimit: i => seen.push(i) });
   const out = []; for await (const e of cp.stream({ model: 'sonnet', messages: [{ role: 'user', content: 'x' }] })) out.push(e);
   A.ok(seen.length === 1 && seen[0].unifiedWindows.five_hour.utilization === 0.12, 'the Claude Code provider hands the run\'s rate_limit_event to onRateLimit');
   A.ok(out.some(e => e.type === 'text' && e.delta === 'ok'), '...and the run streams as usual');
-  const cp2 = makeClaudeCliProvider({ spawn: fakeSpawn(run), fs: fakeFs, bin: 'claude.exe', env: { PATH: '', STARNET_CLAUDE_CLI_PERSIST: '0' }, platform: 'linux', onRateLimit: () => { throw new Error('reader broke'); } });
+  const cp2 = makeClaudeCliProvider({ spawn: fakeSpawn(run), fs: fakeFs, bin: 'claude.exe', env: { PATH: '', VULTRON_CLAUDE_CLI_PERSIST: '0' }, platform: 'linux', onRateLimit: () => { throw new Error('reader broke'); } });
   const out2 = []; for await (const e of cp2.stream({ model: 'sonnet', messages: [{ role: 'user', content: 'x' }] })) out2.push(e);
   A.ok(out2.some(e => e.type === 'text' && e.delta === 'ok'), 'a reader that throws never breaks the run');
 

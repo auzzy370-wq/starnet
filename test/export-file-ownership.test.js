@@ -13,7 +13,7 @@ if (process.env.EXPORT_FILE_CONTROL) {
   const m = new Module(filename, module); m.filename = filename; m.paths = Module._nodeModulePaths(path.dirname(filename));
   m._compile(fs.readFileSync(process.env.EXPORT_FILE_CONTROL, 'utf8'), filename); writer = m.exports;
 }
-const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-export-owned-'));
+const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-export-owned-'));
 const error = code => Object.assign(new Error('allocated export fault'), { code });
 const bytes = p => fs.existsSync(p) ? fs.readFileSync(p, 'utf8') : null;
 function dir(name) { const p = path.join(tmp, name); fs.mkdirSync(p); return p; }
@@ -85,7 +85,7 @@ try {
   }
 } finally {
   const owned = path.resolve(tmp), parent = path.resolve(os.tmpdir()) + path.sep;
-  if (!owned.startsWith(parent) || !path.basename(owned).startsWith('starnet-export-owned-')) throw new Error('refusing cleanup outside allocated fixture');
+  if (!owned.startsWith(parent) || !path.basename(owned).startsWith('vultron-export-owned-')) throw new Error('refusing cleanup outside allocated fixture');
   fs.rmSync(owned, { recursive: true, force: true });
 }
 A.report('export-file-ownership');

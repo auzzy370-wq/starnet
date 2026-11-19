@@ -31,7 +31,7 @@ const SENTINEL = 'Wallaby-Seven';
 const WORKER = { agentId: 'worker-1', system: 'WORKER_MARK you are a worker.', name: 'WORKER', model: 'test/model', provider: 'openrouter', approvalMode: 'ask' };
 
 (async () => {
-  const rig = await station('forget-quotes-core-', { crew: [WORKER], env: { SKYNET_CRON_TICK_MS: '1000', STARNET_CRON_TICK_MS: '1000', SKYNET_CRON_ENABLED: '', STARNET_CRON_ENABLED: '' } });
+  const rig = await station('forget-quotes-core-', { crew: [WORKER], env: { SKYNET_CRON_TICK_MS: '1000', VULTRON_CRON_TICK_MS: '1000', SKYNET_CRON_ENABLED: '', VULTRON_CRON_ENABLED: '' } });
   const { up } = rig;
   const failed = [];
   const leg = async (name, fn) => { if (process.env.FQ_ONLY && !process.env.FQ_ONLY.split(',').includes(name)) return; if (process.env.FQ_TRACE) console.log('[leg] ' + name); try { await fn(); } catch (e) { failed.push(name); console.error('LEG ' + name + ' THREW', e && e.stack || e); A.ok(false, 'leg ' + name + ' ran to its end (' + ((e && e.message) || e) + ')'); } };

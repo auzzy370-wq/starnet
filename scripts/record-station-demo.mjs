@@ -29,18 +29,18 @@ const OUT = join(REPO, 'website', 'assets', 'station');
 const CHAPTERS_JS = join(REPO, 'website', 'station-chapters.js');
 const VIEW = { w: 1300, h: 1066 };
 const CROP = { x: 208, y: 182, w: 890, h: 702 };     // the room inside the 1300x1066 camera (station-demo.js shows this window)
-const CHROMES = [process.env.STARNET_REC_CHROME,
+const CHROMES = [process.env.VULTRON_REC_CHROME,
   'C:/Users/andro/AppData/Local/ms-playwright/chromium-1248/chrome-win64/chrome.exe',
   'C:/Users/andro/AppData/Local/ms-playwright/chromium-1228/chrome-win64/chrome.exe',
   'C:/Program Files/Google/Chrome/Application/chrome.exe'].filter(Boolean);
 
 if (!existsSync(join(STAGED, 'app', 'embed.htm'))) { console.error('website-deploy/app/embed.htm missing — run node scripts/stage-website-deploy.mjs first'); process.exit(1); }
 const chrome = CHROMES.find(existsSync);
-if (!chrome) { console.error('no Chrome found (set STARNET_REC_CHROME)'); process.exit(1); }
+if (!chrome) { console.error('no Chrome found (set VULTRON_REC_CHROME)'); process.exit(1); }
 if (spawnSync('ffmpeg', ['-version']).status !== 0) { console.error('ffmpeg not on PATH'); process.exit(1); }
 
 const chaptersSrc = readFileSync(CHAPTERS_JS, 'utf8');
-const C = (() => { const g = {}; new Function('window', chaptersSrc)(g); return g.StarnetChapters; })();
+const C = (() => { const g = {}; new Function('window', chaptersSrc)(g); return g.VultronChapters; })();
 const want = process.argv.slice(2).length ? process.argv.slice(2) : C.ORDER;
 for (const k of want) if (!C.CH[k]) { console.error('unknown chapter ' + k); process.exit(1); }
 mkdirSync(OUT, { recursive: true });
@@ -56,7 +56,7 @@ const srv = http.createServer((req, res) => {
 await new Promise((r) => srv.listen(0, '127.0.0.1', r));
 // the CDP port comes from the OS (test/helpers/ports.js), not 9600 + random: a random pick can be reserved or taken
 const port = srv.address().port, cdpPort = await allocatePort();
-const prof = join(tmpdir(), 'starnet-rec-' + Date.now());
+const prof = join(tmpdir(), 'vultron-rec-' + Date.now());
 const proc = spawn(chrome, ['--headless=new', '--use-angle=d3d11', '--ignore-gpu-blocklist', '--enable-gpu-rasterization', '--hide-scrollbars', '--mute-audio',
   `--remote-debugging-port=${cdpPort}`, `--window-size=${VIEW.w},${VIEW.h}`, `--user-data-dir=${prof}`, 'about:blank'], { stdio: 'ignore' });
 
@@ -78,7 +78,7 @@ try {
     // a fresh boot per chapter: no crate, run or bubble from the previous chapter leaks into this clip
     await cdp.send('Page.navigate', { url: `http://127.0.0.1:${port}/app/embed.htm?rec=${key}` });
     let up = false;
-    for (let i = 0; i < 80 && !up; i++) { await sleep(400); try { up = await evaluate(cdp, '!!(window.StarnetDemoBridge && StarnetDemoBridge.crew() >= 4)'); } catch (_) {} }
+    for (let i = 0; i < 80 && !up; i++) { await sleep(400); try { up = await evaluate(cdp, '!!(window.VultronDemoBridge && VultronDemoBridge.crew() >= 4)'); } catch (_) {} }
     if (!up) throw new Error('station never came up for ' + key);
     await sleep(3500);                                   // crew skins load lazily; let every body wear its real sprite
     const gpu = await evaluate(cdp, 'World.renderPace().drawCostMs');
@@ -90,14 +90,14 @@ try {
       const parts = []; rec.ondataavailable = (e) => { if (e.data && e.data.size) parts.push(e.data); };
       const done = new Promise((r) => { rec.onstop = r; });
       rec.start(500);
-      const stop = StarnetChapters.perform(${JSON.stringify(key)}, (n, p) => StarnetDemoBridge.emit(n, p));
+      const stop = VultronChapters.perform(${JSON.stringify(key)}, (n, p) => VultronDemoBridge.emit(n, p));
       await new Promise((r) => setTimeout(r, ${durMs}));
       rec.stop(); await done; stop();
       const buf = new Uint8Array(await new Blob(parts, { type: 'video/webm' }).arrayBuffer());
       let s = ''; for (let i = 0; i < buf.length; i += 0x8000) s += String.fromCharCode.apply(null, buf.subarray(i, i + 0x8000));
       return btoa(s);
     })()`, durMs + 60000);
-    const raw = join(tmpdir(), `starnet-rec-${key}.webm`);
+    const raw = join(tmpdir(), `vultron-rec-${key}.webm`);
     writeFileSync(raw, Buffer.from(b64, 'base64'));
     const mp4 = join(OUT, key + '.mp4'), jpg = join(OUT, key + '.jpg');
     const crop = `crop=${CROP.w}:${CROP.h}:${CROP.x}:${CROP.y}`;

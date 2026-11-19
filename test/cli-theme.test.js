@@ -5,7 +5,7 @@
      2. red is the default and puts back exactly what tui.js ships (its hand-picked xterm-256 codes too)
      3. a preset retints the accent everywhere the terminal paints it: tui PALETTE/BG, the Sixel logo ramp, the camera feed
         (palette, rim, wall trim) — and status keeps its meaning (warn = the app's own, green done, cyan on green)
-     4. the pick: STARNET_THEME beats the saved cli.json beats red; a save keeps cli.json's other keys; an env with no
+     4. the pick: VULTRON_THEME beats the saved cli.json beats red; a save keeps cli.json's other keys; an env with no
         APPDATA / HOME has no file (never the process's own home), so a test env never reads or writes a real profile
      5. the rendered screen paints in the theme: the wordmark and the prompt's ▸ in the accent's 24-bit SGR */
 const fs = require('fs');
@@ -56,14 +56,14 @@ A.eq(JSON.stringify([tui.PALETTE, tui.BG, sixel.RAMP, camfeed.PALETTE]), shipped
 A.eq(theme.apply('nope', T), 'red', 'an unknown name is red');
 
 /* 4. the pick */
-const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-theme-'));
+const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-theme-'));
 const file = path.join(dir, 'sub', 'cli.json');
 A.eq(theme.load({}, file), 'red', 'nothing saved: red');
 fs.mkdirSync(path.dirname(file), { recursive: true });
 fs.writeFileSync(file, JSON.stringify({ other: 1, theme: 'blue' }));
 A.eq(theme.load({}, file), 'blue', 'the saved pick');
-A.eq(theme.load({ STARNET_THEME: 'Amber ' }, file), 'amber', 'STARNET_THEME beats it');
-A.eq(theme.load({ STARNET_THEME: 'neon' }, file), 'blue', 'an unknown STARNET_THEME is ignored');
+A.eq(theme.load({ VULTRON_THEME: 'Amber ' }, file), 'amber', 'VULTRON_THEME beats it');
+A.eq(theme.load({ VULTRON_THEME: 'neon' }, file), 'blue', 'an unknown VULTRON_THEME is ignored');
 theme.save('purple', {}, file);
 A.eq(JSON.parse(fs.readFileSync(file, 'utf8')), { other: 1, theme: 'purple' }, 'a save keeps the other keys');
 fs.writeFileSync(file, '{broken');

@@ -78,24 +78,24 @@ const UNATTENDED_FILES = [['the night shift', 'autonomy.ledger.jsonl'], ['the qu
   const baseEnv = Object.assign({}, process.env, {
     LOCALAPPDATA: appData, APPDATA: appData, XDG_DATA_HOME: appData,
     HOME: sandbox, USERPROFILE: sandbox,
-    SKYNET_WORKSPACES: ws, STARNET_WORKSPACES: ws, SKYNET_LIVE_PRICES: '0', STARNET_LIVE_PRICES: '0',
-    SKYNET_OPENROUTER_KEY: '', STARNET_OPENROUTER_KEY: '', OPENROUTER_API_KEY: '', OPENAI_API_KEY: '', SKYNET_OPENAI_API_KEY: '', STARNET_OPENAI_API_KEY: '',
+    SKYNET_WORKSPACES: ws, VULTRON_WORKSPACES: ws, SKYNET_LIVE_PRICES: '0', VULTRON_LIVE_PRICES: '0',
+    SKYNET_OPENROUTER_KEY: '', VULTRON_OPENROUTER_KEY: '', OPENROUTER_API_KEY: '', OPENAI_API_KEY: '', SKYNET_OPENAI_API_KEY: '', VULTRON_OPENAI_API_KEY: '',
     // hermetic: no live provider catalog, cloud, credits or Edge voice traffic from a gate
-    SKYNET_OPENROUTER_BASE: 'http://127.0.0.1:1', STARNET_OPENROUTER_BASE: 'http://127.0.0.1:1',
-    STARNET_CLOUD_URL: 'http://127.0.0.1:1', STARNET_CREDITS_URL: 'http://127.0.0.1:1', STARNET_EDGE_TTS: '0', SKYNET_EDGE_TTS: '0', SKYNET_EDGE_TTS_PROBE: '0',
-    STARNET_DESKTOP_SHELL: '0', STARNET_DEV: '0', SKYNET_DEV: '0',
+    SKYNET_OPENROUTER_BASE: 'http://127.0.0.1:1', VULTRON_OPENROUTER_BASE: 'http://127.0.0.1:1',
+    VULTRON_CLOUD_URL: 'http://127.0.0.1:1', VULTRON_CREDITS_URL: 'http://127.0.0.1:1', VULTRON_EDGE_TTS: '0', SKYNET_EDGE_TTS: '0', SKYNET_EDGE_TTS_PROBE: '0',
+    VULTRON_DESKTOP_SHELL: '0', VULTRON_DEV: '0', SKYNET_DEV: '0',
     // EVERY SCHEDULER ARMED: cron and the night shift on 1 s ticks, the night shift's away threshold at 1 ms
-    SKYNET_CRON_ENABLED: '1', STARNET_CRON_ENABLED: '1', SKYNET_CRON_TICK_MS: '1000', STARNET_CRON_TICK_MS: '1000',
-    SKYNET_NIGHTSHIFT_ENABLED: '1', STARNET_NIGHTSHIFT_ENABLED: '1', SKYNET_NIGHTSHIFT_TICK_MS: '1000', STARNET_NIGHTSHIFT_TICK_MS: '1000',
-    SKYNET_NIGHTSHIFT_AWAY_MS: '1', STARNET_NIGHTSHIFT_AWAY_MS: '1', SKYNET_NIGHTSHIFT_BEAT_MS: '1000', STARNET_NIGHTSHIFT_BEAT_MS: '1000',
-    SKYNET_LOOP_TICK_MS: '5000', STARNET_LOOP_TICK_MS: '5000'
+    SKYNET_CRON_ENABLED: '1', VULTRON_CRON_ENABLED: '1', SKYNET_CRON_TICK_MS: '1000', VULTRON_CRON_TICK_MS: '1000',
+    SKYNET_NIGHTSHIFT_ENABLED: '1', VULTRON_NIGHTSHIFT_ENABLED: '1', SKYNET_NIGHTSHIFT_TICK_MS: '1000', VULTRON_NIGHTSHIFT_TICK_MS: '1000',
+    SKYNET_NIGHTSHIFT_AWAY_MS: '1', VULTRON_NIGHTSHIFT_AWAY_MS: '1', SKYNET_NIGHTSHIFT_BEAT_MS: '1000', VULTRON_NIGHTSHIFT_BEAT_MS: '1000',
+    SKYNET_LOOP_TICK_MS: '5000', VULTRON_LOOP_TICK_MS: '5000'
   });
   // the quest refresh and environment discovery stay ON (their defaults): their boot looks are station-less writers under test
-  for (const k of ['SKYNET_QUEST_REFRESH', 'STARNET_QUEST_REFRESH', 'SKYNET_ENV_DISCOVERY', 'STARNET_ENV_DISCOVERY']) delete baseEnv[k];
+  for (const k of ['SKYNET_QUEST_REFRESH', 'VULTRON_QUEST_REFRESH', 'SKYNET_ENV_DISCOVERY', 'VULTRON_ENV_DISCOVERY']) delete baseEnv[k];
   function boot(port, attemptsLeft) {
     return new Promise((resolve, reject) => {
       const child = spawn(process.execPath, [INDEX], {
-        env: Object.assign({}, baseEnv, { SKYNET_PORT: String(port), STARNET_PORT: String(port) }),
+        env: Object.assign({}, baseEnv, { SKYNET_PORT: String(port), VULTRON_PORT: String(port) }),
         stdio: ['ignore', 'pipe', 'pipe']
       });
       let out = '', settled = false;
@@ -138,7 +138,7 @@ const UNATTENDED_FILES = [['the night shift', 'autonomy.ledger.jsonl'], ['the qu
     const apiToken = await bootToken(B, B);
     const j = async (m, p, body) => {
       const headers = { 'Content-Type': 'application/json', Origin: B };
-      if (apiToken) headers['X-StarNet-Token'] = apiToken;
+      if (apiToken) headers['X-Vultron-Token'] = apiToken;
       const r = await fetch(B + p, { method: m, headers, body: body ? JSON.stringify(body) : undefined });
       const t = await r.text(); let v; try { v = JSON.parse(t); } catch (_) { v = t; }
       return { status: r.status, body: v };
@@ -205,7 +205,7 @@ const UNATTENDED_FILES = [['the night shift', 'autonomy.ledger.jsonl'], ['the qu
     completeness('the no-client session with every scheduler armed');
 
     // ---- UPDATE ROW: the Update Center's prepare before onboarding, the page holding no station-save journal ----
-    const prepared = await s.j('POST', '/api/update/prepare', { targetVersion: '9.9.9', browserStore: { 'starnet.byok.model': 'test/model' } });
+    const prepared = await s.j('POST', '/api/update/prepare', { targetVersion: '9.9.9', browserStore: { 'vultron.byok.model': 'test/model' } });
     A.eq(prepared.status, 200, 'a pre-onboarding update prepare -> 200');
     const receipt = prepared.body && prepared.body.receipt;
     A.ok(prepared.body && prepared.body.ok === true && !!receipt, 'the installer still gets its receipt (' + JSON.stringify(prepared.body) + ')');
@@ -281,7 +281,7 @@ const UNATTENDED_FILES = [['the night shift', 'autonomy.ledger.jsonl'], ['the qu
     const waking = await s.j('POST', '/api/roster', crew('CENSUS', wakeStamp));
     A.eq([waking.body && waking.body.held, fs.existsSync(rosterFile)], [true, false], 'WAKE\'s crew push is held until the founding (' + JSON.stringify(waking.body) + ')');
     const at = Date.now();
-    const saved = await s.j('POST', '/api/save', { schema: 'starnet.save', version: 6, updatedAt: at, _saveRevision: 0, _saveDirty: true, _saveClient: 'census-window',
+    const saved = await s.j('POST', '/api/save', { schema: 'vultron.save', version: 6, updatedAt: at, _saveRevision: 0, _saveDirty: true, _saveClient: 'census-window',
       agent: { id: 'agent', name: 'CENSUS', createdAt: at }, agents: [], workstreams: [{ id: 'general', history: [] }], activeId: 'general', generalId: 'general' });
     A.ok(saved.body && saved.body.ok === true, 'the station file\'s first accepted write lands (' + JSON.stringify(saved.body) + ')');
     const founded = await s.j('GET', '/api/lineage');

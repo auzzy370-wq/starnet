@@ -1,25 +1,25 @@
 <div align="center">
 
-<img src=".github/media/starnet-logo-glow.png" alt="StarNet" width="560">
+<img src=".github/media/vultron-logo-glow.png" alt="Vultron" width="560">
 
 **A living pixel-art station where real AI agents do real work.**
 
-[![Download](https://img.shields.io/github/v/release/androoAGI/starnet-releases?label=download&color=f5a623)](https://github.com/androoAGI/starnet-releases/releases/latest)
+[![Download](https://img.shields.io/github/v/release/YOUR-GITHUB-USER/vultron-releases?label=download&color=f5a623)](https://github.com/YOUR-GITHUB-USER/vultron-releases/releases/latest)
 [![Platforms](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-4a90d9)](INSTALL.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-2ea44f)](LICENSE)
 [![Local-first](https://img.shields.io/badge/local--first-your%20machine%2C%20your%20data-8250df)](PRIVACY.md)
 
-[Download](https://github.com/androoAGI/starnet-releases/releases/latest) ·
+[Download](https://github.com/YOUR-GITHUB-USER/vultron-releases/releases/latest) ·
 [Install guide](INSTALL.md) ·
 [Run from source](#run-from-source) ·
 [Docs](docs/INDEX.md) ·
 [Contributing](CONTRIBUTING.md)
 
-<img src=".github/media/station-iso.png" alt="The StarNet station — rooms, crew, and workstations rendered from live harness state" width="540">
+<img src=".github/media/station-iso.png" alt="The Vultron station — rooms, crew, and workstations rendered from live harness state" width="540">
 
 </div>
 
-StarNet is a local-first desktop harness where you create AI agents, organize them into a
+Vultron is a local-first desktop harness where you create AI agents, organize them into a
 pixel-art space station, and watch them perform real work with real models and tools. The
 station is not decoration — it is a projection of live runtime state, and the product contract
 is literal: **A room is a capability-scoped team**, **a hallway is** an authorized handoff
@@ -54,19 +54,19 @@ simulation.
 - Multiple agents run concurrently with separate workspaces and bounded permissions.
 - The visual station projects the same runtime state the harness can prove.
 
-StarNet does not simulate revenue, completed work, model activity, or spend. Its core product
+Vultron does not simulate revenue, completed work, model activity, or spend. Its core product
 law is that **the interface must never assert state the harness cannot prove.**
 
 ## Download
 
 Desktop builds are published on the
-[StarNet releases page](https://github.com/androoAGI/starnet-releases/releases/latest).
+[Vultron releases page](https://github.com/YOUR-GITHUB-USER/vultron-releases/releases/latest).
 
 | Platform | Asset |
 | --- | --- |
-| **Windows** (10/11, 64-bit) | `StarNet_<version>_x64-setup.exe` |
-| **macOS — Apple Silicon** (M1 or later) | `StarNet_<version>_aarch64.dmg` |
-| **macOS — Intel** | `StarNet_<version>_x64.dmg` |
+| **Windows** (10/11, 64-bit) | `Vultron_<version>_x64-setup.exe` |
+| **macOS — Apple Silicon** (M1 or later) | `Vultron_<version>_aarch64.dmg` |
+| **macOS — Intel** | `Vultron_<version>_x64.dmg` |
 
 > **Apple Silicon note:** use the native `aarch64` DMG. Avoid the `x64` DMG on Apple Silicon:
 > it runs under Rosetta 2 rather than using the native architecture.
@@ -90,21 +90,21 @@ Requirements: Node.js 18+ (Node.js 22 matches CI), Git. Rust and the
 The sidecar uses Node core modules only, so it runs without installing anything:
 
 ```bash
-git clone https://github.com/androoAGI/starnet.git
-cd starnet
+git clone https://github.com/YOUR-GITHUB-USER/vultron.git
+cd vultron
 node sidecar/index.js
 ```
 
 Open <http://localhost:8787>, then connect a provider —
 **bring your own OpenRouter API key (BYOK)** or use a supported OAuth sign-in. Provider requests leave your machine when you run an agent;
-station state, transcripts, memory, and ledgers stay in the local StarNet workspace unless you
+station state, transcripts, memory, and ledgers stay in the local Vultron workspace unless you
 explicitly use a network tool or connector. See [PRIVACY.md](PRIVACY.md) for the full data map.
 
 ### Run free with a local model
 
 No key, no account, no bill: install [Ollama](https://ollama.com), pull a model
 (`ollama pull qwen3:8b`), and pick **OLLAMA** as the provider — on the first-run brain screen, or
-later in **SETTINGS → PROVIDERS**. StarNet talks to Ollama on `127.0.0.1:11434` and only reports
+later in **SETTINGS → PROVIDERS**. Vultron talks to Ollama on `127.0.0.1:11434` and only reports
 it ready once it can list your local models. Pick a model that supports tools (`ollama show <model>`
 lists them): agents act through tool calls. Honest caveat: local models are smaller than the
 cloud ones, so expect slower and rougher work on long tasks, and a task needs a large context
@@ -120,35 +120,35 @@ npm run desktop:build   # build installers locally
 
 ## Terminal mode
 
-The desktop app ships a `starnet` command beside it. Run it with no arguments and it opens a live
+The desktop app ships a `vultron` command beside it. Run it with no arguments and it opens a live
 dashboard on the station the app is running: the crew down the left (a spinner on whoever is working),
 the chosen agent's conversation beside it, and every approval as a card you answer with `y` or `n`
 (`v` shows the full request first). It reads the same state the app does, so it never shows work the
 station cannot prove.
 
-StarNet doesn't have to be open. With it closed, `starnet` starts it in the background: the same station
+Vultron doesn't have to be open. With it closed, `vultron` starts it in the background: the same station
 with your keys (they stay in the app's keychain), and no window opens; the tray icon shows it's running.
-When the last `starnet` session ends it closes again, unless routines are armed or StarNet is set to stay
-in the tray (the same as closing its window). Opening StarNet while it runs shows that same station; on
-macOS, open it from its menu-bar icon (Open StarNet), since a Dock click doesn't bring that window back yet.
+When the last `vultron` session ends it closes again, unless routines are armed or Vultron is set to stay
+in the tray (the same as closing its window). Opening Vultron while it runs shows that same station; on
+macOS, open it from its menu-bar icon (Open Vultron), since a Dock click doesn't bring that window back yet.
 
 | Platform | The command |
 | --- | --- |
-| **Windows** | `%LOCALAPPDATA%\StarNet\bin\starnet.cmd` |
-| **macOS** | `/Applications/StarNet.app/Contents/Resources/bin/starnet` |
+| **Windows** | `%LOCALAPPDATA%\Vultron\bin\vultron.cmd` |
+| **macOS** | `/Applications/Vultron.app/Contents/Resources/bin/vultron` |
 
-So you can just type `starnet` in a new terminal: the Windows installer puts that folder on your user
-`PATH` (the uninstaller takes it off), and on macOS StarNet links the command into `~/.local/bin` the
+So you can just type `vultron` in a new terminal: the Windows installer puts that folder on your user
+`PATH` (the uninstaller takes it off), and on macOS Vultron links the command into `~/.local/bin` the
 first time it starts, adding that folder to `~/.zprofile` if no shell profile has it yet
-(`STARNET_NO_CLI_LINK=1` turns that off). Other commands: `starnet ls` (every agent
-and its open asks), `starnet approve` / `starnet deny`, `starnet watch` (the live event stream, one line
-each), `starnet flow` (workflows) and `starnet -p "<task>"` (one run, answer on stdout).
-`starnet --help` lists them all. From a checkout, use `node bin/starnet.js`.
+(`VULTRON_NO_CLI_LINK=1` turns that off). Other commands: `vultron ls` (every agent
+and its open asks), `vultron approve` / `vultron deny`, `vultron watch` (the live event stream, one line
+each), `vultron flow` (workflows) and `vultron -p "<task>"` (one run, answer on stdout).
+`vultron --help` lists them all. From a checkout, use `node bin/vultron.js`.
 
 ## Coming from OpenClaw or Hermes?
 
-StarNet can import an existing agent: point it at your on-disk OpenClaw or Hermes home and it
-mints a StarNet agent from the persona, instructions, memory, and model it finds. API keys
+Vultron can import an existing agent: point it at your on-disk OpenClaw or Hermes home and it
+mints a Vultron agent from the persona, instructions, memory, and model it finds. API keys
 never transfer — you re-enter those in CONNECT › ABILITIES › CONNECTED › API KEYS.
 
 ## Architecture
@@ -191,14 +191,14 @@ reporting instructions.
 
 ## License
 
-StarNet is open source under the [MIT License](LICENSE). Third-party components remain
+Vultron is open source under the [MIT License](LICENSE). Third-party components remain
 under their original licenses — see [NOTICE.md](NOTICE.md).
 
-**The MIT License covers the code only.** The **StarNet** name, the logo, the station artwork
+**The MIT License covers the code only.** The **Vultron** name, the logo, the station artwork
 and sprites, and the rest of the project's brand identity are owned by Andrew Sims and are
 **not** licensed with it — no trademark or other brand rights are granted, expressly or by
 implication.
 
 MIT means you may fork, modify, and redistribute the code, including commercially. What you
-may not do is ship it as StarNet: forks and derivatives must use their own name, logo, and
+may not do is ship it as Vultron: forks and derivatives must use their own name, logo, and
 artwork, and must not present themselves as this project or as endorsed by it.

@@ -9,7 +9,7 @@
    key in the environment too, a cleared key pool came back from it, and a bare OS export of the same provider
    (ANTHROPIC_API_KEY set for another tool) outranked the Settings key because the env layer reads the bare name first.
 
-   THE FIX. Under the shell's marker (STARNET_DESKTOP_SHELL=1) index.js adopts each pair the shell wrote into the credential
+   THE FIX. Under the shell's marker (VULTRON_DESKTOP_SHELL=1) index.js adopts each pair the shell wrote into the credential
    store's keychain layer and deletes both spellings from process.env before anything else loads (credential-store.js
    adoptSpawnCredentials), so the store is the key's only holder and the push changes it everywhere. A user's own export
    (one spelling, two values, a bare name) stays in the env layer; without the marker nothing is adopted.
@@ -140,15 +140,15 @@ function recorder() {
   return new Promise(r => server.listen(0, '127.0.0.1', () => r({ server, seen, hold, base: 'http://127.0.0.1:' + server.address().port })));
 }
 
-// what set_sidecar_branded_env writes: the SKYNET_ name and its STARNET_ spelling, one value
-const pair = (name, value) => ({ ['SKYNET_' + name]: value, ['STARNET_' + name]: value });
+// what set_sidecar_branded_env writes: the SKYNET_ name and its VULTRON_ spelling, one value
+const pair = (name, value) => ({ ['SKYNET_' + name]: value, ['VULTRON_' + name]: value });
 // nothing the test runner exports may stand in for a key or an endpoint
 const AMBIENT = ['ANTHROPIC_API_KEY', 'OPENROUTER_KEY', 'OPENROUTER_API_KEY', 'CUSTOM_OPENAI_KEY', 'OPENAI_COMPATIBLE_KEY', 'MISTRAL_API_KEY', 'OPENAI_API_KEY',
   'GEMINI_API_KEY', 'GROQ_API_KEY', 'ANTHROPIC_BASE_URL', 'OPENROUTER_BASE', 'MISTRAL_BASE_URL', 'CUSTOM_OPENAI_BASE_URL', 'OPENAI_COMPATIBLE_BASE_URL',
   'KEY_POOL_ANTHROPIC', 'KEY_POOL_OPENROUTER', 'KEY_POOL_CUSTOM', 'DESKTOP_SHELL', 'IPC_TOKEN', 'API_KEY', 'V1_KEY', 'DEFAULT_MODEL'];
 function blank() {
   const env = {};
-  for (const n of AMBIENT) { env[n] = ''; env['STARNET_' + n] = ''; env['SKYNET_' + n] = ''; }
+  for (const n of AMBIENT) { env[n] = ''; env['VULTRON_' + n] = ''; env['SKYNET_' + n] = ''; }
   return env;
 }
 
@@ -157,18 +157,18 @@ function station(label, up, env) {
   const probeFile = path.join(probeDir, 'env.json');
   const prior = String(process.env.NODE_OPTIONS || '').trim();
   const fx = SidecarFixture.create({ prefix: 'cs-remove-rotate-' + label + '-', timeoutMs: 45000, env: Object.assign(blank(), {
-    STARNET_FULL_ACCESS: '1', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0', SKYNET_THREAD_MINE: '0', STARNET_CREDITS_URL: '', SKYNET_CREDITS_URL: '',
-    STARNET_CRON_TICK_MS: '400', SKYNET_CRON_TICK_MS: '400',
-    STARNET_TELEGRAM_API_BASE: 'http://127.0.0.1:9', SKYNET_TELEGRAM_API_BASE: 'http://127.0.0.1:9',
-    ANTHROPIC_BASE_URL: up.base + '/v1', STARNET_OPENROUTER_BASE: up.base + '/api/v1', MISTRAL_BASE_URL: up.base + '/v1',
+    VULTRON_FULL_ACCESS: '1', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0', SKYNET_THREAD_MINE: '0', VULTRON_CREDITS_URL: '', SKYNET_CREDITS_URL: '',
+    VULTRON_CRON_TICK_MS: '400', SKYNET_CRON_TICK_MS: '400',
+    VULTRON_TELEGRAM_API_BASE: 'http://127.0.0.1:9', SKYNET_TELEGRAM_API_BASE: 'http://127.0.0.1:9',
+    ANTHROPIC_BASE_URL: up.base + '/v1', VULTRON_OPENROUTER_BASE: up.base + '/api/v1', MISTRAL_BASE_URL: up.base + '/v1',
     NODE_OPTIONS: (prior ? prior + ' ' : '') + '--require=' + PROBE,
-    STARNET_TEST_ENV_PROBE_OUT: probeFile, STARNET_TEST_ENV_PROBE_SHA256: Object.values(K).concat(K.pool.split(',')).map(sha).join(',')
+    VULTRON_TEST_ENV_PROBE_OUT: probeFile, VULTRON_TEST_ENV_PROBE_SHA256: Object.values(K).concat(K.pool.split(',')).map(sha).join(',')
   }, env) });
   // the scheduler is armed before boot, so a routine due in a second really fires
   fs.writeFileSync(path.join(fx.workspace, 'cron.armed.json'), JSON.stringify({ version: 1, armed: true }));
   const api = {
     fx, up, probeDir,
-    push: body => fx.request('/api/key', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-StarNet-Token': IPC }, body: JSON.stringify(body) })
+    push: body => fx.request('/api/key', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Vultron-Token': IPC }, body: JSON.stringify(body) })
       .then(async r => ({ status: r.status, body: await r.json().catch(() => null) })),
     providers: async () => { const r = await fx.json('GET', '/api/providers'); const m = {}; for (const p of (r.body.providers || [])) m[p.id] = p; return m; },
     engineKey: body => fx.json('POST', '/api/providers/engine-key', body),
@@ -235,9 +235,9 @@ async function waitFor(pred, label) {
     /* ================= 1. desktop: the shell's keys, removed and rotated ================= */
     {
       const s = station('desktop', up, Object.assign({
-        STARNET_DESKTOP_SHELL: '1', ...pair('IPC_TOKEN', IPC), STARNET_API_KEY: V1,
+        VULTRON_DESKTOP_SHELL: '1', ...pair('IPC_TOKEN', IPC), VULTRON_API_KEY: V1,
         ...pair('ANTHROPIC_API_KEY', K.ant), ...pair('OPENROUTER_KEY', K.or), ...pair('CUSTOM_OPENAI_KEY', K.cu), ...pair('KEY_POOL_ANTHROPIC', K.pool),
-        STARNET_MISTRAL_API_KEY: K.mis    // the user's own export, in one spelling: never the shell's
+        VULTRON_MISTRAL_API_KEY: K.mis    // the user's own export, in one spelling: never the shell's
       }));
       stations.push(s);
       await s.fx.start();
@@ -306,24 +306,24 @@ async function waitFor(pred, label) {
 
       // ---- the user's own single-spelling export: the env layer's, named, and it survives a REMOVE ----
       prov = await s.providers();
-      A.eq([prov.mistral.credentialSource, prov.mistral.envName], ['environment', 'STARNET_MISTRAL_API_KEY'], 'desktop: a single-spelling export is read from the environment, and named');
+      A.eq([prov.mistral.credentialSource, prov.mistral.envName], ['environment', 'VULTRON_MISTRAL_API_KEY'], 'desktop: a single-spelling export is read from the environment, and named');
       A.eq([prov.custom.credentialSource, prov.anthropic.configured], ['none', false], 'desktop: /api/providers still says what the REMOVEs left');
-      A.eq(s.holders(K.mis), ['STARNET_MISTRAL_API_KEY'], 'desktop: the export stays where the user put it');
+      A.eq(s.holders(K.mis), ['VULTRON_MISTRAL_API_KEY'], 'desktop: the export stays where the user put it');
       const removedMis = await s.push({ provider: 'mistral', key: '', baseUrl: '' });
       A.eq([removedMis.body && removedMis.body.configured, removedMis.body && removedMis.body.credentialSource, removedMis.body && removedMis.body.envName],
-        [true, 'environment', 'STARNET_MISTRAL_API_KEY'], 'desktop: its REMOVE answers that the environment still serves, and names the variable');
+        [true, 'environment', 'VULTRON_MISTRAL_API_KEY'], 'desktop: its REMOVE answers that the environment still serves, and names the variable');
       A.eq([(await s.runNow(s.routines.mis)).status, lastKeyFor(up, 'ROUTINE-MIS')], [200, K.mis], 'desktop: ...and it does');
-      A.ok(/\[credentials\] the MISTRAL key was removed from this station's keychain, but the environment variable STARNET_MISTRAL_API_KEY still holds one/.test(s.fx.output()),
+      A.ok(/\[credentials\] the MISTRAL key was removed from this station's keychain, but the environment variable VULTRON_MISTRAL_API_KEY still holds one/.test(s.fx.output()),
         'desktop: the sidecar log names the variable once');
       A.ok(/credentials: the desktop app's keychain keys for [a-z, ]*anthropic[a-z, ]* and key pools for anthropic are held in memory/.test(s.fx.output()), 'desktop: the boot log says what was adopted (provider ids only)');
       A.ok(!Object.values(K).some(k => s.fx.output().includes(k)), 'desktop: the sidecar log carries no key');
-      const left = ((s.env() || {}).branded || []).filter(n => /^(?:STARNET|SKYNET)_(?:ANTHROPIC_API_KEY|OPENROUTER_KEY|CUSTOM_OPENAI_KEY|KEY_POOL_ANTHROPIC)$/.test(n));
+      const left = ((s.env() || {}).branded || []).filter(n => /^(?:VULTRON|SKYNET)_(?:ANTHROPIC_API_KEY|OPENROUTER_KEY|CUSTOM_OPENAI_KEY|KEY_POOL_ANTHROPIC)$/.test(n));
       A.eq(left, [], 'desktop: none of the names the shell wrote is left in the environment (both spellings of each)');
     }
 
     /* ================= 2. desktop + a bare OS export of the same provider (D1, decision 4) ================= */
     {
-      const s = station('d1', up, { STARNET_DESKTOP_SHELL: '1', ...pair('IPC_TOKEN', IPC), ...pair('ANTHROPIC_API_KEY', K.kc), ANTHROPIC_API_KEY: K.os });
+      const s = station('d1', up, { VULTRON_DESKTOP_SHELL: '1', ...pair('IPC_TOKEN', IPC), ...pair('ANTHROPIC_API_KEY', K.kc), ANTHROPIC_API_KEY: K.os });
       stations.push(s);
       await s.fx.start();
       await s.setup({ ant: 'anthropic' });
@@ -348,9 +348,9 @@ async function waitFor(pred, label) {
       stations.push(s);
       await s.fx.start();
       await s.setup({ ant: 'anthropic', orr: 'openrouter' });
-      A.eq(s.holders(K.h), ['SKYNET_ANTHROPIC_API_KEY', 'STARNET_ANTHROPIC_API_KEY'], 'headless: a branded pair without the marker is never adopted or deleted');
+      A.eq(s.holders(K.h), ['SKYNET_ANTHROPIC_API_KEY', 'VULTRON_ANTHROPIC_API_KEY'], 'headless: a branded pair without the marker is never adopted or deleted');
       let prov = await s.providers();
-      A.eq([prov.anthropic.configured, prov.anthropic.credentialSource, prov.anthropic.envName], [true, 'environment', 'STARNET_ANTHROPIC_API_KEY'], 'headless: it is the env layer\'s, named');
+      A.eq([prov.anthropic.configured, prov.anthropic.credentialSource, prov.anthropic.envName], [true, 'environment', 'VULTRON_ANTHROPIC_API_KEY'], 'headless: it is the env layer\'s, named');
       A.eq([(await s.runNow(s.routines.ant)).status, lastKeyFor(up, 'ROUTINE-ANT')], [200, K.h], 'headless: the routine runs on it');
       // the page copy, saved then REMOVED in the browser
       const saved = await s.engineKey({ provider: 'openrouter', key: K.pg, keyPool: [], baseUrl: '' });
@@ -368,7 +368,7 @@ async function waitFor(pred, label) {
       A.eq(pageAnt.body && [pageAnt.body.keySource, pageAnt.body.credentialSource], ['environment', 'environment'], 'headless: the env key outranks a page copy');
       const pageAntGone = await s.engineKey({ provider: 'anthropic', key: '', keyPool: [], baseUrl: '' });
       A.eq(pageAntGone.body && [pageAntGone.body.keySource, pageAntGone.body.credentialSource, pageAntGone.body.envName, pageAntGone.body.unattendedReady],
-        ['environment', 'environment', 'STARNET_ANTHROPIC_API_KEY', true], 'headless: the branded env key survives the page REMOVE, and keySource stays environment');
+        ['environment', 'environment', 'VULTRON_ANTHROPIC_API_KEY', true], 'headless: the branded env key survives the page REMOVE, and keySource stays environment');
       A.eq([(await s.runNow(s.routines.ant)).status, lastKeyFor(up, 'ROUTINE-ANT')], [200, K.h], 'headless: ...and keeps serving');
       A.eq((await s.push({ provider: 'anthropic', key: '' })).status, 403, 'headless: /api/key takes no push without the shell\'s token');
       A.eq(s.holders(K.h).length, 2, 'headless: the env key is still where the operator put it');
@@ -437,7 +437,7 @@ async function waitFor(pred, label) {
     }
     {
       // b, c. desktop: the shell's REMOVE and rotation reach a run that is going
-      const s = station('inflight-desktop', up, { STARNET_DESKTOP_SHELL: '1', ...pair('IPC_TOKEN', IPC), ...pair('CUSTOM_OPENAI_KEY', K.ifKc), ...pair('OPENROUTER_KEY', K.ifOr) });
+      const s = station('inflight-desktop', up, { VULTRON_DESKTOP_SHELL: '1', ...pair('IPC_TOKEN', IPC), ...pair('CUSTOM_OPENAI_KEY', K.ifKc), ...pair('OPENROUTER_KEY', K.ifOr) });
       stations.push(s);
       await s.fx.start();
       A.eq((await s.push({ provider: 'custom', baseUrl: up.base + '/v1' })).status, 200, 'in flight, desktop: the CUSTOM endpoint is handed over');
@@ -461,7 +461,7 @@ async function waitFor(pred, label) {
     {
       // e. desktop: a turn queued behind another on the same conversation. handleRun resolved the keychain key when the turn was
       // posted, before the REMOVE; the turn reaches its run only after the one ahead of it ends (runOnce's one-turn-at-a-time queue)
-      const s = station('inflight-queued', up, { STARNET_DESKTOP_SHELL: '1', ...pair('IPC_TOKEN', IPC) });
+      const s = station('inflight-queued', up, { VULTRON_DESKTOP_SHELL: '1', ...pair('IPC_TOKEN', IPC) });
       stations.push(s);
       // Review r2: keep a channel version of this same key by preventing its conversion record from landing. That version
       // must not reclassify a queued station run as a bot-owned run after REMOVE. Disabled, tokenless fixture: no bot traffic.

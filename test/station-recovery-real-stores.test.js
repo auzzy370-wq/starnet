@@ -15,7 +15,7 @@ const { makeOverseer } = require('../sidecar/overseer.js');
 const { makeSubagentManager } = require('../sidecar/subagents.js');
 
 const T0 = Date.parse('2026-01-05T09:00:00Z');
-const root = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-recovery-real-'));
+const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-recovery-real-'));
 const ws = path.join(root, 'source');
 const target = path.join(root, 'target');
 const writeJson = (dir, rel, value) => fs.writeFileSync(path.join(dir, rel), JSON.stringify(value));

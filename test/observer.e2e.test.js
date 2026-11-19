@@ -19,7 +19,7 @@ const fs = require('fs');
 const path = require('path');
 const { SidecarFixture } = require('./helpers/sidecar-fixture.js');
 const apitickets = require('../sidecar/apitickets.js');
-// the bus as a StarNet PAGE joins it: a single-use SSE ticket, no header (ApiTicket.sseUrl) — a header-token listener is a
+// the bus as a Vultron PAGE joins it: a single-use SSE ticket, no header (ApiTicket.sseUrl) — a header-token listener is a
 // node client (the MCP bridge), never counted as an open app (review 10-24)
 const pageFeed = fixture => '/api/channels/events?ticket=' + encodeURIComponent(apitickets.mint(fixture.token, 'sse', apitickets.SCOPE_SSE, { now: Date.now() }));
 
@@ -90,7 +90,7 @@ function run(fixture, body, onEvent) {
   return new Promise((resolve) => {
     const payload = Buffer.from(JSON.stringify(body));
     const events = [];
-    const req = http.request({ host: HOST, port: fixture.port, path: '/api/run', method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': payload.length, 'X-StarNet-Token': fixture.token, Origin: fixture.baseUrl } }, res => {
+    const req = http.request({ host: HOST, port: fixture.port, path: '/api/run', method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': payload.length, 'X-Vultron-Token': fixture.token, Origin: fixture.baseUrl } }, res => {
       res.setEncoding('utf8');
       let buf = '';
       res.on('data', d => {
@@ -123,9 +123,9 @@ async function until(fn, ms, label) {
     { when: 'write the notes file', tool: { name: 'fs.write', args: { path: 'observe-notes.md', content: 'approved from the terminal' } } }
   ], seenSystems);
   const providerEnv = {
-    SKYNET_OPENROUTER_BASE: mock.base, STARNET_OPENROUTER_BASE: mock.base,
-    SKYNET_OPENROUTER_KEY: 'sk-or-v1-observe-fake', STARNET_OPENROUTER_KEY: 'sk-or-v1-observe-fake',
-    SKYNET_DEFAULT_MODEL: 'test/model', STARNET_DEFAULT_MODEL: 'test/model'
+    SKYNET_OPENROUTER_BASE: mock.base, VULTRON_OPENROUTER_BASE: mock.base,
+    SKYNET_OPENROUTER_KEY: 'sk-or-v1-observe-fake', VULTRON_OPENROUTER_KEY: 'sk-or-v1-observe-fake',
+    SKYNET_DEFAULT_MODEL: 'test/model', VULTRON_DEFAULT_MODEL: 'test/model'
   };
   const fixture = SidecarFixture.create({ prefix: 'sk-observe-', env: providerEnv });
   await fixture.start();
@@ -141,7 +141,7 @@ async function until(fn, ms, label) {
       anon.close();
     }
 
-    w = watch(fixture, { 'X-StarNet-Token': fixture.token });
+    w = watch(fixture, { 'X-Vultron-Token': fixture.token });
     await until(() => w.events.ready === true, 8000, 'the feed ready frame');
 
     /* ---- 1 + 2. another client's run, its approval, answered from the terminal ------------------ */
@@ -219,7 +219,7 @@ async function until(fn, ms, label) {
     /* ---- 6. /model from the terminal: POST /api/agent/model ---------------------------------------------------- */
     {
       const rosterOf = async id => ((await fixture.json('GET', '/api/runtime/agent')).body.agents || []).find(a => a.agentId === id) || {};
-      // no StarNet page connected: the roster takes it (a headless station is its own source of truth)
+      // no Vultron page connected: the roster takes it (a headless station is its own source of truth)
       const r1 = await fixture.json('POST', '/api/agent/model', { agentId: 'rook', model: 'test/other-model', provider: 'openrouter' });
       A.eq([r1.status, r1.body && r1.body.via], [200, 'roster'], 'headless: the roster takes the new model');
       A.eq((await rosterOf('rook')).model, 'test/other-model', 'and the station reads it back');
@@ -229,7 +229,7 @@ async function until(fn, ms, label) {
       A.eq((await fixture.json('POST', '/api/agent/model', { agentId: 'rook', model: 'claude-x', provider: 'anthropic' })).status, 409, 'a provider with no key or sign-in is refused (its next run would fail)');
       A.eq((await fixture.json('POST', '/api/agent/model', { agentId: 'rook', model: '', provider: 'openrouter' })).status, 400, 'no model named, nothing changes');
       A.eq((await rosterOf('rook')).model, 'test/other-model', 'the refused calls changed nothing');
-      // a StarNet page connected: the PAGE applies it (it owns the crew; a roster-only write would be undone by its next push)
+      // a Vultron page connected: the PAGE applies it (it owns the crew; a roster-only write would be undone by its next push)
       const asked = [];
       const page = watch(fixture, {}, pageFeed(fixture));
       const answering = setInterval(() => {
@@ -265,7 +265,7 @@ async function until(fn, ms, label) {
       await run(fixture, Object.assign({}, base, { agentId: 'rook', rosterSystem: true, client: 'terminal', messages: [{ role: 'user', content: 'hi' }] }));
       A.ok(seenSystems.some(s => s.indexOf('ROOK-BLUNT-PERSONA') >= 0), 'and the agent\'s next run speaks with it');
       A.eq((await fixture.json('POST', '/api/agent/personality', { agentId: 'rook', personality: 'Not A Persona!' })).status, 400, 'a malformed personality id is refused');
-      // a StarNet page connected: the page applies both (its own controls save and recompose)
+      // a Vultron page connected: the page applies both (its own controls save and recompose)
       const asked = [];
       const page = watch(fixture, {}, pageFeed(fixture));
       const answering = setInterval(() => {

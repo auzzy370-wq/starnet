@@ -527,7 +527,7 @@ function firstDiff(got, want) {
   A.ok(events('membership-drop').some(p => p.reason === 'redelivery-gave-up') && md.length && md[md.length - 1].tombstones.some(t => t.runId === 'run-3' && t.reason === 'redelivery-gave-up')
     && !md[md.length - 1].deliveries.some(d => d.chat === 'telegram|-100500'),
     'membership-drop: the removed chat\'s backlog is given up, said once per reply, and its in-flight reply gets one send and is given up');
-  A.ok(sends('crash-replay-0-tools').some(e => /^↻ StarNet restarted/.test(e.text)), 'crash-replay-0-tools: the second go is said');
+  A.ok(sends('crash-replay-0-tools').some(e => /^↻ Vultron restarted/.test(e.text)), 'crash-replay-0-tools: the second go is said');
   A.ok(sends('crash-replay-n-tools').some(e => /NOT run again/.test(e.text)), 'crash-replay-n-tools: an attempt that began tool steps is not run again');
   A.eq(sends('held-reply-restart').map(e => e.text), ['The finished answer.'], 'held-reply-restart: the held answer is sent once, nothing runs');
   const bp = sends('backpressure-same-process').map(e => e.text);

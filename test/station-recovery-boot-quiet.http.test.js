@@ -4,7 +4,7 @@
    dormant loop, folder and webhook triggers, an http connector, a Signal bot (config only, no token), a queued overseer
    report, workers owed a report, one still running, an interrupted run that can continue safely, and two rated runs
    waiting for a skill review (one inside the 72 h window, one outside it). Every endpoint those actors would reach is a
-   local stub in this process: the model provider, the connector, the Signal REST endpoint and the StarNet cloud.
+   local stub in this process: the model provider, the connector, the Signal REST endpoint and the Vultron cloud.
 
    1. CONTROL: the same station booted as it is (no restore) does reach the stub. Without this, silence proves nothing.
    2. RESTORE: the bundle restored and booted reaches the stub with none of those actors until a person acts.
@@ -34,8 +34,8 @@ const { makeVerdictReview } = require('../sidecar/verdictreview.js');
 
 const sleep = ms => new Promise(res => setTimeout(res, ms));
 const HOUR = 60 * 60 * 1000;
-const home = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-boot-quiet-home-'));
-const inbox = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-boot-quiet-inbox-'));
+const home = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-boot-quiet-home-'));
+const inbox = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-boot-quiet-inbox-'));
 
 // ---- the stub: every request is recorded with the actor it came from
 const hits = [];
@@ -81,13 +81,13 @@ const tally = p => hits.filter(h => h.phase === p).reduce((o, h) => { o[h.kind] 
   const base = 'http://127.0.0.1:' + stub.address().port;
   const env = {
     SKYNET_OPENROUTER_BASE: base + '/api/v1', SKYNET_OPENROUTER_KEY: 'sk-or-v1-local-proof',
-    SKYNET_DEFAULT_MODEL: 'test/model', STARNET_DEFAULT_MODEL: 'test/model', STARNET_AUX_MODEL: 'test/aux-model',
-    STARNET_CLOUD_URL: base + '/cloud', LOOP_TICK_MS: '5000', TRIGGER_POLL_MS: '500',
+    SKYNET_DEFAULT_MODEL: 'test/model', VULTRON_DEFAULT_MODEL: 'test/model', VULTRON_AUX_MODEL: 'test/aux-model',
+    VULTRON_CLOUD_URL: base + '/cloud', LOOP_TICK_MS: '5000', TRIGGER_POLL_MS: '500',
     USERPROFILE: home, HOME: home
   };
   const started = Date.now();
-  const source = SidecarFixture.create({ prefix: 'starnet-boot-quiet-source-', env, timeoutMs: 30000 });
-  const target = SidecarFixture.create({ prefix: 'starnet-boot-quiet-target-', env, timeoutMs: 30000 });
+  const source = SidecarFixture.create({ prefix: 'vultron-boot-quiet-source-', env, timeoutMs: 30000 });
+  const target = SidecarFixture.create({ prefix: 'vultron-boot-quiet-target-', env, timeoutMs: 30000 });
   let restored = null;
   const ws = source.workspace;
   const at = rel => path.join(ws, rel);
@@ -199,7 +199,7 @@ const tally = p => hits.filter(h => h.phase === p).reduce((o, h) => { o[h.kind] 
     const restoredRoot = target.workspace;
     const receipt = Recovery.restore({ bundle, targetRoot: restoredRoot, browserSink: {}, allowIncomplete: true, nonce: 'boot-quiet' });
     A.eq(receipt.ok, true, 'the bundle restores');
-    restored = SidecarFixture.create({ prefix: 'starnet-boot-quiet-boot-', env, timeoutMs: 30000 });
+    restored = SidecarFixture.create({ prefix: 'vultron-boot-quiet-boot-', env, timeoutMs: 30000 });
     fs.rmSync(restored.workspace, { recursive: true, force: true });
     restored.workspace = restoredRoot;
     phase = 'restored';

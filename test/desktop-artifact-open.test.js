@@ -14,21 +14,21 @@ const chat = fs.readFileSync(path.join(__dirname, '../frontend/app/chat.js'), 'u
 const rust = fs.readFileSync(path.join(__dirname, '../src-tauri/src/main.rs'), 'utf8');
 const decisions = fs.readFileSync(path.join(__dirname, '../docs/DECISIONS.md'), 'utf8');
 
-A.ok(/core\.invoke\('starnet_open_artifact', \{ path: String\(title \|\| ''\), agentId: agentId \|\| 'agent' \}\)/.test(chat),
+A.ok(/core\.invoke\('vultron_open_artifact', \{ path: String\(title \|\| ''\), agentId: agentId \|\| 'agent' \}\)/.test(chat),
   'desktop filename click sends artifact identity + owner to the native host');
 // (a text file opens that ticket on the station's reading view: readableUrl only appends &view=doc to the minted URL)
 A.ok(/core\.invoke\('open_external_url', \{ url: readableUrl\(fileUrl\(title, agentId\), title\) \}\)/.test(chat),
   'the jailed browser preview remains the desktop fallback (a freshly minted file ticket, never a stale href or the master token)');
-A.ok(/core\.invoke\('starnet_reveal_path', \{ path: String\(relPath \|\| ''\), agentId: agentId \|\| 'agent' \}\)/.test(chat),
+A.ok(/core\.invoke\('vultron_reveal_path', \{ path: String\(relPath \|\| ''\), agentId: agentId \|\| 'agent' \}\)/.test(chat),
   'folder click reveals the artifact path itself, not the default workspace root');
 A.ok(/function absoluteArtifactPath[\s\S]{0,700}workspaceDir\(agentId\)/.test(chat),
   'relative deliverables resolve against the authoritative agent workspace for clipboard use');
 A.ok(/copyText\(abs\)/.test(chat) && /copy path/.test(chat),
   'copy-path is explicit and copies the resolved absolute path');
 
-A.ok(/fn starnet_open_artifact[\s\S]{0,500}resolve_artifact_path/.test(rust),
+A.ok(/fn vultron_open_artifact[\s\S]{0,500}resolve_artifact_path/.test(rust),
   'native open always passes through the artifact resolver');
-A.ok(/fn starnet_reveal_path[\s\S]{0,500}resolve_artifact_path/.test(rust),
+A.ok(/fn vultron_reveal_path[\s\S]{0,500}resolve_artifact_path/.test(rust),
   'native reveal always passes through the same artifact resolver');
 A.ok(/std::fs::canonicalize\(&candidate\)/.test(rust) && /path_is_within\(&canonical, &root\)/.test(rust),
   'the host canonicalizes symlinks and proves root containment');
@@ -38,7 +38,7 @@ A.ok(/safe_native_artifact_extension[\s\S]{0,900}"md"/.test(rust),
   'Markdown is allowed through the OS default association');
 A.ok(!/safe_native_artifact_extension[\s\S]{0,900}"exe"/.test(rust),
   'executable files are not allowlisted for native opening');
-A.ok(/starnet_open_artifact,\s*starnet_reveal_path,/.test(rust),
+A.ok(/vultron_open_artifact,\s*vultron_reveal_path,/.test(rust),
   'both constrained commands are registered with Tauri');
 
 // Host-gesture gate (docs/MISTAKES.md: a renderer IPC call is not a human gesture). Every
@@ -46,9 +46,9 @@ A.ok(/starnet_open_artifact,\s*starnet_reveal_path,/.test(rust),
 // answer is one-shot and never cached, and a Cancel is an answer the frontend respects.
 A.ok(/fn confirm_host_launch[\s\S]{0,900}blocking_show/.test(rust),
   'the host gesture is a blocking native dialog answered at the host boundary');
-A.ok(/fn starnet_open_artifact[\s\S]{0,1500}confirm_host_launch/.test(rust),
+A.ok(/fn vultron_open_artifact[\s\S]{0,1500}confirm_host_launch/.test(rust),
   'native open spawns nothing without a host-confirmed gesture');
-A.ok(/fn starnet_reveal_path[\s\S]{0,1500}confirm_host_launch/.test(rust),
+A.ok(/fn vultron_reveal_path[\s\S]{0,1500}confirm_host_launch/.test(rust),
   'native reveal spawns nothing without a host-confirmed gesture');
 A.ok(/HOST_GESTURE_DECLINED/.test(rust) && /declined at the host confirmation/.test(rust),
   'a declined gesture returns the marker error the frontend keys off');

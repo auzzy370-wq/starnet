@@ -61,7 +61,7 @@ for (const [text, host, why] of [
   ['check the urls listed in readme.md', null, '"urls" listed in a file is not web evidence'],
   // real sites: still one exact host
   ['check example.com', 'example.com', 'a bare .com'],
-  ['open starnetos.com', 'starnetos.com', 'the product site'],
+  ['open vultron.vercel.app', 'vultron.vercel.app', 'the product site'],
   ['review github.io pages', 'github.io', 'a bare .io'],
   ['check itch.io site', 'itch.io', 'a bare .io named as a site'],
   ['read the docs at docs.python.org', 'docs.python.org', 'a three-label docs host'],
@@ -76,19 +76,19 @@ for (const [text, host, why] of [
   ['check about.me', 'about.me', 'a bare .me with no workspace file']
 ]) A.eq((DomainTask.classify(text) || {}).host || null, host, 'file names are not hosts: ' + why + ' (' + JSON.stringify(text) + ')');
 A.eq(DomainTask.classify("Hand this to COPY: summarize example.com. I'll check back later."), null, '"check back later" is not an inspect verb');
-/* ONE EXACT HOST, NO BUDGET (starnet-releases#5). A brief that names one host is one exact host to the run's host policy
+/* ONE EXACT HOST, NO BUDGET (vultron-releases#5). A brief that names one host is one exact host to the run's host policy
    whether it reads or works, and the classifier carries no worker budget at all: only a lead's bounded:true bounds a
    worker (orchestration.js boundOf; the class on every surface: test/domain-task.metamorphic.test.js). Every row:
    [text, why]. */
 for (const [text, why] of [
-  ['Review the deployment script for starnet-demo.io, write a unit test for it, and run it.', "the reporter's brief"],
-  ['Review the deployment script for starnet-demo.io, write a unit test that covers it, then run the test and report the result.', 'review + write a test + run it'],
+  ['Review the deployment script for vultron-demo.io, write a unit test for it, and run it.', "the reporter's brief"],
+  ['Review the deployment script for vultron-demo.io, write a unit test that covers it, then run the test and report the result.', 'review + write a test + run it'],
   ['Inspect the nginx config for example.com and fix the redirect.', 'inspect + fix'],
   ['Check example.com and save the summary into notes.md', 'check + save'],
   ['Check example.com and build a landing page like it.', 'check + build'],
   ['Review the auth flow for example.com and implement the missing token refresh.', 'review + implement'],
   ['Can you check example.com and fix the broken header?', '"and fix" in a question'],
-  ['- review the starnet-demo.io deploy config\n- run the smoke tests', 'a bulleted run step'],
+  ['- review the vultron-demo.io deploy config\n- run the smoke tests', 'a bulleted run step'],
   ["Read example.com's pricing page and write a summary into notes.md", 'a summary written into a file'],
   // F10 (review of 0.14.1): the file a summary goes into, in every form a Commander or a lead names it
   ['Read the API docs at docs.example.com and write a short summary into C:\\Users\\me\\proj\\notes.md', 'a Windows drive-letter path'],
@@ -134,12 +134,12 @@ for (const [text, why] of [
    4. MORE CODE EXTENSIONS: .cu .nc .cl .la .bb are files without web evidence; .pt is mixed (Portugal / PyTorch). */
 for (const [text, host, why] of [
   // 1. delegation keeps team.dispatch for the lead
-  ['Hand this to COPY to do in the background: check starnetos.com and write a two-line summary into a file named site-notes.md. I will look later.', null, 'a background hand-off to COPY'],
+  ['Hand this to COPY to do in the background: check vultron.vercel.app and write a two-line summary into a file named site-notes.md. I will look later.', null, 'a background hand-off to COPY'],
   ['Ask COPY to check example.com and save the summary into notes.md', null, '"ask <crew> to" delegates'],
-  ['Have NOVA review starnetos.com and put her notes in review.md', null, '"have <crew> review" delegates'],
+  ['Have NOVA review vultron.vercel.app and put her notes in review.md', null, '"have <crew> review" delegates'],
   ['Delegate to COPY: open example.com and write findings to report.md', null, '"delegate" delegates'],
   ['Hand this to COPY: check example.com and summarize it', null, '"hand this to <crew>" delegates'],
-  ['Give it to NOVA: open starnetos.com', null, '"give it to <crew>" delegates'],
+  ['Give it to NOVA: open vultron.vercel.app', null, '"give it to <crew>" delegates'],
   ['check example.com in the background', null, '"in the background" is a hand-off'],
   ['read the links in notes.md and check example.com', null, 'the links in a file are hosts nobody named'],
   ['check example.com and the pages it links to', null, 'pages it links to are hosts nobody named'],
@@ -330,7 +330,7 @@ A.ok(/const directDomainTask = isTask && !o\.toolsOptional \? DomainTask\.classi
 {
   const orchSrc = (sidecarSourceFiles().find(f => f.rel === 'sidecar/tools/builtin/orchestration.js') || { text: '' }).text;
   A.ok(!!orchSrc && !/\bfileProbe\b/.test(hostSrc) && !/\.classify\(/.test(orchSrc),
-    'the dispatcher holds no classifier and no file probe: a worker\'s budget is its lead\'s bounded:true, never its brief (starnet-releases#5)');
+    'the dispatcher holds no classifier and no file probe: a worker\'s budget is its lead\'s bounded:true, never its brief (vultron-releases#5)');
 }
 A.ok(/Number\(o\.maxToolCalls\)/.test(hostSrc), 'run host enforces delegated task-specific tool budgets');
 

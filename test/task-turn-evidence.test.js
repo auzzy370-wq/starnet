@@ -165,7 +165,7 @@ const brief = { id: 'current-brief', source: 'interactive', status: 'ready', age
     let rev = 0, upd = 0;
     // the desk's debounced persist, through the real POST /api/save handler
     const persist = async (createdAt, revision) => {
-      const doc = { schema: 'starnet.save', agent: { id: 'agent', createdAt: createdAt }, agents: [], workstreams: big, updatedAt: ++upd, _saveRevision: revision == null ? rev : revision };
+      const doc = { schema: 'vultron.save', agent: { id: 'agent', createdAt: createdAt }, agents: [], workstreams: big, updatedAt: ++upd, _saveRevision: revision == null ? rev : revision };
       let code = 0, text = '';
       await api.handleSaveWrite({ body: JSON.stringify(doc) }, { writeHead: (c) => { code = c; }, end: (b) => { text = b; } });
       const out = JSON.parse(text);

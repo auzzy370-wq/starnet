@@ -7,7 +7,7 @@
      • migratePlaintext: bare mode = untouched; desktop mode imports the plaintext token AND strips it; an
        already-migrated channel (keychain has it) is stripped but NOT re-imported; a tokenless config is a no-op. A provider key is
        the channel reconciliation's (section K), which runs first.
-     • the sidecar host resolves tokens from runtime/env and strips before writing under STARNET_DESKTOP_SHELL,
+     • the sidecar host resolves tokens from runtime/env and strips before writing under VULTRON_DESKTOP_SHELL,
        and exposes a token-gated /api/channels/token push that never echoes the token.
      • the Rust shell injects SKYNET_<ID>_TOKEN from the keychain, migrates plaintext, and gates the command. */
 'use strict';
@@ -546,8 +546,8 @@ const root = path.resolve(__dirname, '..');
     const foreign = channelStation({ dir: seed({ secrets: { telegram: bot({ key: HELD, baseUrl: FOREIGN }) } }), page });
     A.eq([json(foreign.files.secrets).telegram.credential, holders(foreign, FOREIGN)], [{ ref: 'station' }, []], '1b: the page copy\'s key beside an endpoint it was not saved with: the endpoint goes too');
     A.eq(pair(foreign.hub('telegram')), [HELD, 'http://127.0.0.1:9/page/v1', true], '1b: ...and the bot runs the page copy at the page\'s own endpoint');
-    const signin = channelStation({ dir: seed({ secrets: { telegram: bot({ provider: 'starnet', key: OWN, baseUrl: FOREIGN }) } }) });
-    A.eq([json(signin.files.secrets).telegram.credential, holders(signin, OWN), holders(signin, FOREIGN)], [{ ref: 'station' }, [], []], '1: StarNet\'s linked account takes no channel credential: a stale key and endpoint on its record simply go');
+    const signin = channelStation({ dir: seed({ secrets: { telegram: bot({ provider: 'vultron', key: OWN, baseUrl: FOREIGN }) } }) });
+    A.eq([json(signin.files.secrets).telegram.credential, holders(signin, OWN), holders(signin, FOREIGN)], [{ ref: 'station' }, [], []], '1: Vultron\'s linked account takes no channel credential: a stale key and endpoint on its record simply go');
   }
 
   // ---- half-migrated: a crash between the entry and the record leaves the key in both, and the main file's is the newest ----
@@ -581,7 +581,7 @@ const root = path.resolve(__dirname, '..');
     A.eq(pair(stays.hub('telegram')), [OWN, DEFAULT, true], '2: an own key the station does not hold stays, beside a station key');
     // review r1: a key a layer holds only as a BACKUP in its pool is not the station's key. The bot keeps the key it was given and
     // runs on it, never on the station's primary (another account), as the connect gate judges it (stationHeld). Red at 86ff765db.
-    for (const [where, extra] of [['the environment\'s KEY_POOL', { env: { OPENROUTER_API_KEY: HELD, STARNET_KEY_POOL_OPENROUTER: OWN } }],
+    for (const [where, extra] of [['the environment\'s KEY_POOL', { env: { OPENROUTER_API_KEY: HELD, VULTRON_KEY_POOL_OPENROUTER: OWN } }],
       ['the page copy\'s backups', { page: { openrouter: { key: HELD, keyPool: [OWN], rev: 'r1' } } }]]) {
       const pooled = channelStation(Object.assign({ dir: seed({ secrets: { telegram: bot({ credential: ref }) }, channel: envelope({ telegram: entry('b1', { key: OWN }) }) }) }, extra));
       A.eq([json(pooled.files.secrets).telegram.credential, pooled.hub('telegram').key, holders(pooled, OWN)], [ref, OWN, ['channel', 'channelBak']],

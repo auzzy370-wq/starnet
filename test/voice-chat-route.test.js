@@ -122,7 +122,7 @@ const fits = { credentialOk: true, contextLimit: 200000, efforts: null };
   A.ok(apply.length > 0 && apply.length < 9000, 'applyVoiceTurnRoute sliced (' + apply.length + ' chars)');
   A.ok(/attachments\.expandForRun\(/.test(apply) && /est\.estimateMessages\(sized\)/.test(apply), 'the route estimate expands the attachments before it counts them');
   const os = require('os'), fsp = require('fs/promises'), crypto = require('crypto');
-  const WS = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-voice-size-'));
+  const WS = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-voice-size-'));
   try {
     const jail = require('../sidecar/tools/builtin/fs.js').makeFsTools({ fsp, pathMod: path, root: WS })._internals;
     const attachments = require('../sidecar/attachments.js')({ fsp, path, crypto, workspaces: WS, resolveInside: (a, r) => jail.resolveInside(a, r) });

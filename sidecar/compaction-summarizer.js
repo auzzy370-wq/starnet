@@ -5,7 +5,7 @@
    rest of the run's memory was silently discarded. The loop's contract was fine; the INPUT was truncated.
 
    CHUNKED FOLD. The slice is rendered to text (see PIXELS ARE NOT TEXT below), partitioned into chunks of `chunkChars`
-   (default 48000, env STARNET_COMPACT_CHUNK_CHARS), never splitting an assistant tool_call from its tool
+   (default 48000, env VULTRON_COMPACT_CHUNK_CHARS), never splitting an assistant tool_call from its tool
    results; chunk 1 is folded against the caller's prevSummary and chunk N against the running summary from
    N-1 (the existing H5.2 MERGE prompt) — SEQUENTIALLY, never in parallel, so each call sees the summary so
    far. Spend (usd/tokens/unpricedUsage) is summed. Beyond `maxChunks` (default 12) the remainder is folded as
@@ -161,8 +161,8 @@ function partition(messages, chunkChars) { return partitionDetailed(messages, ch
          chunkChars, maxChunks */
 function makeSummarizer(deps) {
   deps = deps || {};
-  const chunkChars = deps.chunkChars || envInt('STARNET_COMPACT_CHUNK_CHARS', DEFAULT_CHUNK_CHARS);
-  const maxChunks = deps.maxChunks || envInt('STARNET_COMPACT_MAX_CHUNKS', DEFAULT_MAX_CHUNKS);
+  const chunkChars = deps.chunkChars || envInt('VULTRON_COMPACT_CHUNK_CHARS', DEFAULT_CHUNK_CHARS);
+  const maxChunks = deps.maxChunks || envInt('VULTRON_COMPACT_MAX_CHUNKS', DEFAULT_MAX_CHUNKS);
   const signal = deps.signal || { aborted: false };
   const emit = typeof deps.emit === 'function' ? deps.emit : () => {};
   const summaryPrompt = deps.summaryPrompt || (() => 'Summarize.');
@@ -206,7 +206,7 @@ function makeSummarizer(deps) {
       ] };
       const effort = auxEffortFor(sProvider, useModel);
       if (effort) req.reasoningEffort = effort;
-      if (deps.runId) req.runId = deps.runId;   // run attribution (starnet proxy header; other providers ignore it)
+      if (deps.runId) req.runId = deps.runId;   // run attribution (vultron proxy header; other providers ignore it)
       if (beforeAttempt && !(await beforeAttempt({ request: req, provider: sProvider, cost: sCost }))) throw admissionStop;
       const noteGeneration = generationReceipt.begin();
       let out = '', usage = null, finish = null, truncated = false, sawUsageOrOutput = false, done = false, perCall = true;

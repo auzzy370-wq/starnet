@@ -38,7 +38,7 @@ const server=http.createServer((req,res)=>{
 (async()=>{
  await new Promise(r=>server.listen(0,'127.0.0.1',r));
  const base='http://127.0.0.1:'+server.address().port+'/v1';
- const fixture=SidecarFixture.create({prefix:'memory-harness-audit-',timeoutMs:30000,env:{SKYNET_OPENROUTER_BASE:base,STARNET_OPENROUTER_BASE:base,SKYNET_OPENROUTER_KEY:'audit-fake',STARNET_OPENROUTER_KEY:'audit-fake',SKYNET_FULL_ACCESS:'1',STARNET_FULL_ACCESS:'1',SKYNET_SKILL_REVIEW_EVERY:'1',SKYNET_SKILL_CURATOR:'0',SKYNET_SCOUT:'0',SKYNET_QUEST_REFRESH:'0',SKYNET_CRON_ENABLED:'0',STARNET_CRON_ENABLED:'0',STARNET_DEBUG_CHANNELS:'1'}});
+ const fixture=SidecarFixture.create({prefix:'memory-harness-audit-',timeoutMs:30000,env:{SKYNET_OPENROUTER_BASE:base,VULTRON_OPENROUTER_BASE:base,SKYNET_OPENROUTER_KEY:'audit-fake',VULTRON_OPENROUTER_KEY:'audit-fake',SKYNET_FULL_ACCESS:'1',VULTRON_FULL_ACCESS:'1',SKYNET_SKILL_REVIEW_EVERY:'1',SKYNET_SKILL_CURATOR:'0',SKYNET_SCOUT:'0',SKYNET_QUEST_REFRESH:'0',SKYNET_CRON_ENABLED:'0',VULTRON_CRON_ENABLED:'0',VULTRON_DEBUG_CHANNELS:'1'}});
  const result=[];
  async function run(p,streamId,agentId='agent',override={}){
   phase=p; const before=requests.length;

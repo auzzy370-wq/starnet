@@ -26,7 +26,7 @@ const roster = new Map(Object.entries({
 const warned = [];
 const deps = {
   agentRoster: roster, RunWire, codexTokens: { access_token: 't' },
-  normalizeProviderId: p => (['openrouter', 'codex', 'anthropic', 'starnet'].indexOf(String(p || '').toLowerCase()) >= 0 ? String(p).toLowerCase() : ''),
+  normalizeProviderId: p => (['openrouter', 'codex', 'anthropic', 'vultron'].indexOf(String(p || '').toLowerCase()) >= 0 ? String(p).toLowerCase() : ''),
   registryProviderUsesCodex: p => p === 'codex', CODEX_DEFAULT_MODEL: 'gpt-codex-default',
   providerRuntimeKey: (id) => (id === 'openrouter' ? 'sk-or' : ''), ENV: () => '',
   cronWirePairNoted: new Set(), CRON_WIRE_NOTES_KEPT: 5, console: { warn: (m) => warned.push(String(m)) }
@@ -87,12 +87,12 @@ A.eq(ranBefore['j-prov'], ['codex', 'gpt-5.5'], '...which the run-time rule alre
 // THE STATION SWITCHES PROVIDER: a bare-model routine follows it, exactly as before the lane
 {
   const saved = roster.get('agent');
-  roster.set('agent', Object.assign({}, saved, { provider: 'starnet' }));
+  roster.set('agent', Object.assign({}, saved, { provider: 'vultron' }));
   try {
     const reloaded = api.pairCronJobWires(r.jobs);   // the next load after the switch
     A.eq(reloaded.changed, 0, 'the switch rewrites no routine');
     const w = api.cronWireFor(reloaded.jobs.find(j => j.id === 'j-model'));
-    A.eq([w.provider, w.model, w.source, w.providerSource], ['starnet', 'routine/model', 'routine', 'station'],
+    A.eq([w.provider, w.model, w.source, w.providerSource], ['vultron', 'routine/model', 'routine', 'station'],
       'after the station switches provider, the bare-model routine runs its model on the NEW provider');
   } finally { roster.set('agent', saved); }
 }
@@ -140,7 +140,7 @@ A.eq(api.routineWireRow(jobs[4]), null, 'a script-only routine shows no pair: it
 {
   const before = warned.length;
   const stampNote = { at: '2026-10-28T19:00:00.000Z', was: { provider: null, model: 'anthropic/claude-sonnet-4.5' }, now: { provider: 'openrouter', model: 'anthropic/claude-sonnet-4.5' },
-    reason: 'model without a provider: paired with openrouter, the provider it ran on (the environment default (STARNET_DEFAULT_MODEL))' };
+    reason: 'model without a provider: paired with openrouter, the provider it ran on (the environment default (VULTRON_DEFAULT_MODEL))' };
   const stamped = { id: 'j-stamped', name: 'digest', agentId: 'scout', model: 'anthropic/claude-sonnet-4.5', provider: 'openrouter', wireMigration: stampNote };
   const repinned = { id: 'j-repinned', name: 'edited after the stamp', agentId: 'scout', model: 'anthropic/claude-sonnet-4.5', provider: 'anthropic', wireMigration: stampNote };
   const remodelled = { id: 'j-remodelled', name: 'new model after the stamp', agentId: 'scout', model: 'x/other', provider: 'openrouter', wireMigration: stampNote };
@@ -155,8 +155,8 @@ A.eq(api.routineWireRow(jobs[4]), null, 'a script-only routine shows no pair: it
   const w = api.cronWireFor(s);
   A.eq([w.provider, w.model, w.providerSource], ['codex', 'anthropic/claude-sonnet-4.5', 'station'], 'the un-stamped routine runs its model on the station provider');
   const saved = roster.get('agent');
-  roster.set('agent', Object.assign({}, saved, { provider: 'starnet' }));
-  try { A.eq(api.cronWireFor(s).provider, 'starnet', '...and follows a station provider switch again'); } finally { roster.set('agent', saved); }
+  roster.set('agent', Object.assign({}, saved, { provider: 'vultron' }));
+  try { A.eq(api.cronWireFor(s).provider, 'vultron', '...and follows a station provider switch again'); } finally { roster.set('agent', saved); }
   A.eq(api.pairCronJobWires(out.jobs).changed, 0, 'a second load changes nothing (idempotent)');
   A.ok(warned.length === before + 1 && /routine j-stamped \(digest\) held a stamped pair/.test(warned[before]), 'the un-stamp is logged once: ' + warned.slice(before).join(' / '));
 }

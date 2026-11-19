@@ -1,5 +1,5 @@
 {
-  "name": "starnet-harness",
+  "name": "vultron-harness",
   "version": "0.15.0",
   "private": true,
   "description": "A local-first, gamified desktop harness for building and running real AI-agent teams.",
@@ -7,11 +7,11 @@
   "author": "Andrew Sims",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/androoAGI/starnet.git"
+    "url": "git+https://github.com/YOUR-GITHUB-USER/vultron.git"
   },
-  "homepage": "https://github.com/androoAGI/starnet#readme",
+  "homepage": "https://github.com/YOUR-GITHUB-USER/vultron#readme",
   "bugs": {
-    "url": "https://github.com/androoAGI/starnet/issues"
+    "url": "https://github.com/YOUR-GITHUB-USER/vultron/issues"
   },
   "keywords": [
     "ai-agents",
@@ -23,7 +23,7 @@
     "node": ">=18"
   },
   "bin": {
-    "starnet": "bin/starnet.js"
+    "vultron": "bin/vultron.js"
   },
   "scripts": {
     "test:http": "node scripts/timeout.mjs --label test:http --timeout=3600000 -- npm run test:http:raw",

@@ -1,15 +1,15 @@
 /* Pure transcript visibility and output shapes. Raw IO and durable proofs belong to transcriptstore. */
 'use strict';
 const Kinds = require('../frontend/app/turnkinds.js');
-const ROW_IDS = Symbol('starnet.transcript.row-ids');
+const ROW_IDS = Symbol('vultron.transcript.row-ids');
 // One message's place in the canonical rows, set by the HOST at assembly (summary-cover.js) and read when a fold must say which
 // rows it summarized. Non-enumerable and symbol-keyed: it never reaches a wire, a JSON copy or a spread, and an elided copy
 // inherits it through the loop's carryMarkers.
-const ROW_TAG = Symbol('starnet.transcript.row-tag');
+const ROW_TAG = Symbol('vultron.transcript.row-tag');
 // non-enumerable side channel on a display result: { keys: [[streamId, rowId]...], runIds: [...] } of the rows the quote rule hid.
 // A REGISTERED symbol (Symbol.for): index.js's transcriptProjection reads it by the registry key, so that function needs no TurnView in scope
 // (test/transcript-perf-paths evaluates it on its own with a fixed dependency list).
-const FORGOTTEN = Symbol.for('starnet.transcript.forgotten');
+const FORGOTTEN = Symbol.for('vultron.transcript.forgotten');
 const FORGOTTEN_KEYS_MAX = 2000, FORGOTTEN_RUNS_MAX = 200;
 const hasId = row => row && Number.isSafeInteger(row.rowId) && row.rowId > 0;
 const text = row => typeof row.content === 'string' ? row.content : '';

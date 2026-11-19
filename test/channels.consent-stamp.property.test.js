@@ -2,7 +2,7 @@
 /* test/channels.consent-stamp.property.test.js — A CONSENT ASK EDITS ITS KEYBOARD EXACTLY ONCE, whoever settles it
    (channel-delivery-ledger S6; bugs 64563ad9 and 9e60dd9f).
 
-   A permission ask can end at a tap, at the fail-closed timer, on STARNET REMOTE, at E-STOP, at a newer message or a plain
+   A permission ask can end at a tap, at the fail-closed timer, on VULTRON REMOTE, at E-STOP, at a newer message or a plain
    stop, or with the process dying under it. However it ended, the four buttons must not stay live-looking: the message is
    rewritten once, with no keyboard, naming what the broker did. At trunk that stamp was one fire-and-forget edit, marked
    done before its answer was known: a 429 on it left the buttons live for good, and a crash with the ask open left them
@@ -10,7 +10,7 @@
 
    THE STATION IS THE PRODUCTION ONE (test/helpers/channel-station-sim.js): startTelegram's own makeChannelHub and
    makeTelegramAdapter calls, lifted out of index.js, over the real store and ledger, the real prompt registry, the
-   channelAskConsent slice over the real makeConsentWait, STARNET REMOTE's real approvals index, the real killAll, and a fake
+   channelAskConsent slice over the real makeConsentWait, VULTRON REMOTE's real approvals index, the real killAll, and a fake
    Bot API that answers an edit the way Telegram does ('message is not modified' for a stamp the message already carries).
 
    THE MATRIX. Every settle path × both landing orders (the keyboard's answer back before the settle, or still on its way) ×
@@ -35,7 +35,7 @@ const { killAll } = require('../sidecar/halt.js');
 const DM = Sim.CHATS.tgDm;
 const BOT = Sim.CHATS.botDm;
 const DENIED = '▸ ❌ DENIED — the action did not run';
-const RESTARTED = '▸ StarNet restarted — not answered; the action did not run';
+const RESTARTED = '▸ Vultron restarted — not answered; the action did not run';
 
 let seed = 100;
 const lastLine = (t) => String(t).split('\n').pop();
@@ -95,7 +95,7 @@ const PATHS = {
   tap: { decision: 'once', line: '▸ ✅ Allow once', settle: (w, kb) => { w.tap(kb, 0); } },
   timeout: { decision: 'timeout', line: '▸ ⌛ no answer in time — DENIED, the action did not run', settle: (w) => w.advance(121000) },
   remote: {
-    decision: 'once', line: '▸ already answered in StarNet — ALLOWED (once)',
+    decision: 'once', line: '▸ already answered in Vultron — ALLOWED (once)',
     settle: (w) => {
       const open = w.approvals.list().filter(r => r.surface === 'channel').pop();
       A.ok(!!open && w.approvals.answer(open.runId, open.promptId, 'once').ok === true, 'fixture: a paired phone answers the ask');

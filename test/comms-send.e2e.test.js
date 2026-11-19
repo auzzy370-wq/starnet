@@ -212,7 +212,7 @@ const toolCalls = (events) => events.filter(e => e.name === 'agent.tool_call').m
   let sse = null;
   try {
     const token = await bootToken(B, B);
-    const headers = { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: B };
+    const headers = { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: B };
 
     /* ---- 1. CONTAINMENT: before any human has messaged the station, there is nothing to reach ---------- */
     {

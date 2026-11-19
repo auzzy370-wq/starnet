@@ -12,17 +12,17 @@
 # always created as a DRAFT (--draft) — a draft does not move releases/latest, so a human must
 # still click Publish in the GitHub UI. That human step is the real 4-platform checkpoint.
 #
-# StarNet release build — machine-independent signed cut.
+# Vultron release build — machine-independent signed cut.
 #
 # Why this exists: local release builds depend on the dev machine's Smart App Control
 # state (SAC enforce blocks freshly compiled proc-macro DLLs — see docs/LAUNCH_CHECKLIST.md).
 # This workflow produces the same signed installer + updater artifacts on a clean runner.
 #
 # Required repo secrets (Settings → Secrets and variables → Actions):
-#   TAURI_SIGNING_PRIVATE_KEY          — contents of ~/.tauri/starnet-updater.key (the whole file)
+#   TAURI_SIGNING_PRIVATE_KEY          — contents of ~/.tauri/vultron-updater.key (the whole file)
 #   TAURI_SIGNING_PRIVATE_KEY_PASSWORD — empty string (the key is encrypted with an empty password)
 #   RELEASES_TOKEN                     — fine-grained PAT with Contents:write on
-#                                        androoAGI/starnet-releases
+#                                        YOUR-GITHUB-USER/vultron-releases
 #                                        (only needed for the publish step; build works without it)
 #
 # Trigger: manually (Run workflow), with the version read from src-tauri/tauri.conf.json.
@@ -32,7 +32,7 @@ on:
   workflow_dispatch:
     inputs:
       publish:
-        description: "Publish to starnet-releases (true) or just build artifacts (false)"
+        description: "Publish to vultron-releases (true) or just build artifacts (false)"
         required: true
         default: "false"
       confirm_emergency:
@@ -74,10 +74,10 @@ jobs:
       - name: Upload build artifacts (always)
         uses: actions/upload-artifact@v4
         with:
-          name: starnet-v${{ steps.ver.outputs.version }}
+          name: vultron-v${{ steps.ver.outputs.version }}
           path: |
-            release/StarNet_${{ steps.ver.outputs.version }}_x64-setup.exe
-            release/StarNet_${{ steps.ver.outputs.version }}_x64-setup.exe.sig
+            release/Vultron_${{ steps.ver.outputs.version }}_x64-setup.exe
+            release/Vultron_${{ steps.ver.outputs.version }}_x64-setup.exe.sig
             release/latest.json
           if-no-files-found: error
 
@@ -101,7 +101,7 @@ jobs:
           }
           Write-Host "Emergency confirmation accepted — will create a DRAFT release (never auto-published)."
 
-      - name: Publish to starnet-releases (DRAFT)
+      - name: Publish to vultron-releases (DRAFT)
         if: ${{ github.event.inputs.publish == 'true' && github.event.inputs.confirm_emergency == 'I-UNDERSTAND-THIS-BYPASSES-THE-TRAIN' }}
         shell: pwsh
         env:
@@ -109,12 +109,12 @@ jobs:
         run: |
           $v = "${{ steps.ver.outputs.version }}"
           gh release create "v$v" `
-            --repo androoAGI/starnet-releases `
-            --title "StarNet $v" `
+            --repo YOUR-GITHUB-USER/vultron-releases `
+            --title "Vultron $v" `
             --notes-file RELEASE_NOTES.md `
             --draft `
-            "release/StarNet_${v}_x64-setup.exe" `
-            "release/StarNet_${v}_x64-setup.exe.sig" `
+            "release/Vultron_${v}_x64-setup.exe" `
+            "release/Vultron_${v}_x64-setup.exe.sig" `
             "release/latest.json"
 
       - name: Verify manifest (draft — not live yet)

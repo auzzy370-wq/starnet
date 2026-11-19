@@ -8,14 +8,14 @@
    Recovery Mode, a torn marker refused every first save, and whether an ERASE kept its authority depended on which reader
    looked and which door had written the marker. This module holds the record, the ONE marker parser and the frozen
    fallback rule, and every reader asks it: the onboarding gate (workspace-lineage), automatic recovery
-   (workspace-recovery), the save store's reset seed rule, the terminal (bin/starnet.js), every unattended writer (the
+   (workspace-recovery), the save store's reset seed rule, the terminal (bin/vultron.js), every unattended writer (the
    night shift, discovery and the quest refresh stand down while !station(); test/stationless-boot-census.http.test.js
    is their completeness ratchet), the roster's one write path (held in RAM while !station(), so nothing but a founding ever
    writes hard proof) and update preparation (no recovery point only while !holdsStationData()).
    test/station-record-readers.test.js keeps it that way: no other file may name the lifecycle files, the fallback, or
    probe a save or roster file for existence.
 
-   THE RECORD (schema 'starnet.station', version 1)
+   THE RECORD (schema 'vultron.station', version 1)
      root               canonical WORKSPACES: realpath(parent) + basename. A record that names another root was copied.
      state              'none' | 'active' | 'erased'
      generationId       'g-<base36 ms>-<8 hex>' while active, else null
@@ -76,7 +76,7 @@ const { writeFileDurable } = require('./durable-write.js');
 const persist = require('./persist/index.js');
 const { note: failopenNote } = require('./failopen.js');
 
-const SCHEMA = 'starnet.station';
+const SCHEMA = 'vultron.station';
 const VERSION = 1;
 const RECORD_FILE = '.station.json';
 // START FRESH / ERASE marker: the Commander chose a clean generation over prior evidence. Written by the native door
@@ -111,7 +111,7 @@ const MAX_DERIVED_FROM = 8;
 // even on a station that was never created — so a fresh install that was merely opened and closed once
 // carried "prior station evidence" and stranded on the recovery gate forever (2026-08-25). A file the
 // sidecar can write WITHOUT a Commander having created a station must never count as a prior station.
-const INFRA = /^(?:\.starnet-workspace-owner\.json|\.schema-version\.json(?:\.bak)?|\.migrated|\.migration-receipt\.json|cron\.lock|proc-ledger\.json|liveprices\.cache\.json|(?:cron\.halt|loops\.halt|nightshift\.state)\.json(?:\.bak)?)$/i;
+const INFRA = /^(?:\.vultron-workspace-owner\.json|\.schema-version\.json(?:\.bak)?|\.migrated|\.migration-receipt\.json|cron\.lock|proc-ledger\.json|liveprices\.cache\.json|(?:cron\.halt|loops\.halt|nightshift\.state)\.json(?:\.bak)?)$/i;
 // Quest-refresh bookkeeping is never evidence either (#123, 2026-10-17): the QUEST REFRESH boot look stamped its
 // cadence + a 'skipped' note into _station.questrefresh.json (+ .bak) ~3 s after every boot, station or not, and the
 // `_station.*` evidence family below read that as a prior station — open once, close once, Recovery Mode forever.
@@ -121,7 +121,7 @@ const STATION_BOOKKEEPING = /^_station\.questrefresh\.json(?:\.bak)?$/i;
 // Positive evidence only. The former "anything not on the infrastructure denylist" rule made every newly
 // introduced cache/receipt a fake prior station. This covers the harness-owned durable authorities without
 // treating an arbitrary future `*.cache.json` as proof that a Commander already created a station.
-const STATE_EVIDENCE = new RegExp(String.raw`^(?:agent\.save\.json(?:\.bak|${persist.names.QUARANTINE_N_SOURCE})?|agent\.roster\.json(?:\.bak)?|(?:transcript|ledger|runs|growth-ratings|skills|skillprefs|autonomy\.ledger|deliverables\.library)\.jsonl|(?:budget|fallback|station\.widgets|memory\.config|study\.state|projects|personalization|recommendations|task-briefs|threads|execution-settings|terminal-sessions|subagents|routing\.plan|toolsets|usercommands)\.json(?:\.bak)?|(?:skills-allowed|skill-registries|skill-exchange-metrics|permissions\.(?:allow|bypass)|hooks(?:-allowed)?|plugins-allowed|cron\.(?:jobs|armed)|loops|nightshift\.(?:drafts|learn|acts)|nightfocus\.state|scout\.(?:interests|state))\.json(?:\.bak)?|_(?:station|commander)\.[a-z0-9._-]+\.json(?:\.bak)?|[a-z0-9_-]+\.(?:notebook|todo|declined|minted|pending|workshop|deliverables)\.json(?:\.bak)?|.*\.starnet-(?:backup|recovery)\.json)$`, 'i');
+const STATE_EVIDENCE = new RegExp(String.raw`^(?:agent\.save\.json(?:\.bak|${persist.names.QUARANTINE_N_SOURCE})?|agent\.roster\.json(?:\.bak)?|(?:transcript|ledger|runs|growth-ratings|skills|skillprefs|autonomy\.ledger|deliverables\.library)\.jsonl|(?:budget|fallback|station\.widgets|memory\.config|study\.state|projects|personalization|recommendations|task-briefs|threads|execution-settings|terminal-sessions|subagents|routing\.plan|toolsets|usercommands)\.json(?:\.bak)?|(?:skills-allowed|skill-registries|skill-exchange-metrics|permissions\.(?:allow|bypass)|hooks(?:-allowed)?|plugins-allowed|cron\.(?:jobs|armed)|loops|nightshift\.(?:drafts|learn|acts)|nightfocus\.state|scout\.(?:interests|state))\.json(?:\.bak)?|_(?:station|commander)\.[a-z0-9._-]+\.json(?:\.bak)?|[a-z0-9_-]+\.(?:notebook|todo|declined|minted|pending|workshop|deliverables)\.json(?:\.bak)?|.*\.vultron-(?:backup|recovery)\.json)$`, 'i');
 
 function meaningfulEntries(fs, path, root) {
   try {
@@ -507,7 +507,7 @@ function makeView(ctx, init) {
       if (disk.status === 'torn') {
         s.problem = 'torn';
         s.record = activate(ctx, s.record, by);
-        s.writeError = 'the station record on disk is unreadable; the next StarNet boot sets it aside and records this station';
+        s.writeError = 'the station record on disk is unreadable; the next Vultron boot sets it aside and records this station';
         return view;
       }
       if (disk.status === 'ok' && disk.record.state === 'active' && sameRoot(disk.record.root, ctx.root, p, ctx.platform)) {

@@ -31,7 +31,7 @@ function cleanup() { for (const r of roots.splice(0)) fs.rmSync(r, { recursive: 
 const conflictFiles = root => fs.readdirSync(root).filter(n => /^agent\.save-conflict-.*\.json$/.test(n));
 const turn = (role, content) => ({ role, content });
 const stationDoc = over => Object.assign({
-  schema: 'starnet.save', version: 6, updatedAt: 1000, _saveRevision: 0, _saveDirty: false,
+  schema: 'vultron.save', version: 6, updatedAt: 1000, _saveRevision: 0, _saveDirty: false,
   agent: { id: 'agent', name: 'NOVA', createdAt: 5000 }, agents: [], generalId: 'general', activeId: 'general', deletedIds: [],
   workstreams: [{ id: 'general', title: null, history: [turn('user', 'hi')] }]
 }, over || {});
@@ -95,7 +95,7 @@ function page(host, cache, extra) {
   const context = Object.assign({ console, module: { exports: {} }, require: () => require('../frontend/app/cloudsavecore.js'), setTimeout, clearTimeout, AbortController,
     location: { reload() { reloads.push(1); } },
     localStorage: { getItem: k => (cache.has(k) ? cache.get(k) : null), setItem: (k, v) => cache.set(k, v), removeItem: k => cache.delete(k) },
-    Save: { CURRENT: 7, load: () => JSON.parse(cache.get('starnet.save') || 'null') },   // the real Save.CURRENT (save v7: history by reference)
+    Save: { CURRENT: 7, load: () => JSON.parse(cache.get('vultron.save') || 'null') },   // the real Save.CURRENT (save v7: history by reference)
     fetch: (url, opts) => host.fetch(url, opts) }, extra || {});
   vm.runInNewContext(cloudsaveSrc, context);
   const cs = context.module.exports; cs._reloads = reloads;

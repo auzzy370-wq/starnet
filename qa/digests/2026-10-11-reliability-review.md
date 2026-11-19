@@ -4,7 +4,7 @@ Reviewed baseline: `ddd4cbcfa` (integration trunk). Isolated continuation: `agen
 
 ## Assessment
 
-The strongest explanation is **inconsistent behavior at integration boundaries, amplified by large prompts and repeated changes to shared code**. This is not evidence that StarNet is uniformly worse than Hermes, or that more features will cure the problem. The existing harness has useful safeguards; some audit recommendations would duplicate them. Fixes already merged since the audit must be verified before they are rebuilt.
+The strongest explanation is **inconsistent behavior at integration boundaries, amplified by large prompts and repeated changes to shared code**. This is not evidence that Vultron is uniformly worse than Hermes, or that more features will cure the problem. The existing harness has useful safeguards; some audit recommendations would duplicate them. Fixes already merged since the audit must be verified before they are rebuilt.
 
 The first independently reproduced repair from this handoff prevents `fs.patch` from silently replacing a guessed block interior. The production tool returned success for a nested function edit that produced invalid JavaScript. It now refuses that hunk before any file write. Exact edits and existing edge-whitespace matching still work; the matched region retains its line-ending convention.
 
@@ -46,7 +46,7 @@ These priorities are an engineering ordering for the handoff, not a measured pop
 
 The recovered probes point to useful design differences: a durable conversation source with tool pairs, persistent compaction, stable cached prefixes, a smaller default tool surface with discovery, and enforceable code/release constraints. Those are specific engineering patterns to evaluate, not proof that Hermes is globally more reliable.
 
-The recovered Hermes payloads differ by configuration and probe (19 tools in one live scripted capture versus 38–39 in another comparison). StarNet's request shape also varies with floor, entry point, task classification, and learned state. A single universal “2x” or “5x” overhead number is unsupported. The live Hermes comparison used upstream snapshot `74f77ab9b0`; it was not rerun here. Greeting behavior actually favored StarNet's tool-free chat diet. StarNet also already has host-enforced side-effect replay safeguards and read-back file receipts. Raw issue counts are not comparable defect rates without user/exposure denominators.
+The recovered Hermes payloads differ by configuration and probe (19 tools in one live scripted capture versus 38–39 in another comparison). Vultron's request shape also varies with floor, entry point, task classification, and learned state. A single universal “2x” or “5x” overhead number is unsupported. The live Hermes comparison used upstream snapshot `74f77ab9b0`; it was not rerun here. Greeting behavior actually favored Vultron's tool-free chat diet. Vultron also already has host-enforced side-effect replay safeguards and read-back file receipts. Raw issue counts are not comparable defect rates without user/exposure denominators.
 
 The useful next benchmark reuses the existing eval tools: pin both revisions, model, effort, tool posture, and representative tasks; capture request bytes, actual cache read/write usage, main versus aux calls, model turns, first-token time, verified-artifact time, and output correctness. Repeat cells rather than attributing n=1 total latency to process spawn. Do not copy an external contributor's branch into trunk as part of this handoff.
 

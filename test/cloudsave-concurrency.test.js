@@ -4,13 +4,13 @@ const { makeSaveStore } = require('../sidecar/savestore.js');
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'cloudsave-cas-'));
 const store = makeSaveStore({ fs, pathMod: path, root, clock: { now: () => Date.now() } });
 const source = fs.readFileSync(path.join(__dirname, '../frontend/app/cloudsave.js'), 'utf8');
-const base = { schema: 'starnet.save', version: 6, updatedAt: 1, agent: { id: 'agent' }, workstreams: [] };
+const base = { schema: 'vultron.save', version: 6, updatedAt: 1, agent: { id: 'agent' }, workstreams: [] };
 store.save('agent', base, { compareRevision: true });
 function client({ beforePost = async () => {}, onReload = () => {}, cache = new Map() } = {}) {
   const context = { console, module: { exports: {} }, require: () => require('../frontend/app/cloudsavecore.js'), setTimeout, clearTimeout, AbortController,
     location: { reload: onReload },
     localStorage: { getItem: k => cache.get(k) || null, setItem: (k,v) => cache.set(k,v), removeItem: k => cache.delete(k) },
-    Save: { CURRENT: 6, load: () => JSON.parse(cache.get('starnet.save') || 'null') },
+    Save: { CURRENT: 6, load: () => JSON.parse(cache.get('vultron.save') || 'null') },
     // POST /api/save/adopt (a reopening window's unprovable save merged at boot) is the sidecar's own route, covered by
     // save-adopt-merge.test.js; this store-level mock refuses it, so a reconcile here takes the old preserve-as-conflict path.
     // Likewise a merging window's save (POST /api/save with _saveMerge, sidecar/save-merge.js: save-merge.test.js and
@@ -64,27 +64,27 @@ function client({ beforePost = async () => {}, onReload = () => {}, cache = new 
     function persistOwn(id, updatedAt) {
       const doc = structuredClone(initial); doc.updatedAt = updatedAt; doc._saveDirty = true;
       doc._saveRevision = own.revision(); doc.workstreams.push({ id });
-      cache.set('starnet.save', JSON.stringify(doc)); own.push(doc);
+      cache.set('vultron.save', JSON.stringify(doc)); own.push(doc);
     }
     persistOwn('first-queued', 10001); const writing = own.flush({ force: true });
     persistOwn('newest-queued', 10002); const queued = own.flush({ force: true });
     await writing; assert.equal(await queued, true);
-    const landed = JSON.parse(cache.get('starnet.save'));
+    const landed = JSON.parse(cache.get('vultron.save'));
     assert.equal(landed._saveRevision, store.load('agent')._saveRevision, 'browser cache records the final queued write revision');
     assert.equal(landed._saveDirty, false, 'only the acknowledged newest document becomes clean');
     const resumedOwn = client({ cache }); await resumedOwn.reconcile(landed);
     landed.updatedAt = 10003; landed._saveDirty = true; landed._saveRevision = resumedOwn.revision();
-    cache.set('starnet.save', JSON.stringify(landed)); resumedOwn.push(landed);
+    cache.set('vultron.save', JSON.stringify(landed)); resumedOwn.push(landed);
     assert.equal(await resumedOwn.flush({ force: true }), true, 'ordinary write after restart has no false conflict');
     assert.equal(resumedOwn.health().conflict, null);
     let releaseAck;
     const changedCache = new Map(), changed = client({ cache: changedCache, beforePost: () => new Promise(resolve => { releaseAck = resolve; }) });
     const sending = await changed.reconcile(null); sending.updatedAt = 10004; sending._saveDirty = true;
-    changedCache.set('starnet.save', JSON.stringify(sending)); changed.push(sending);
+    changedCache.set('vultron.save', JSON.stringify(sending)); changed.push(sending);
     const saving = changed.flush({ force: true });
     const unsent = structuredClone(sending); unsent.updatedAt = 10005; unsent.workstreams.push({ id: 'not-yet-queued' });
-    changedCache.set('starnet.save', JSON.stringify(unsent)); releaseAck(); await saving;
-    const untouched = JSON.parse(changedCache.get('starnet.save'));
+    changedCache.set('vultron.save', JSON.stringify(unsent)); releaseAck(); await saving;
+    const untouched = JSON.parse(changedCache.get('vultron.save'));
     assert.equal(untouched._saveDirty, true, 'ACK cannot mark a different newer browser document clean');
     assert.equal(untouched._saveRevision, unsent._saveRevision, 'ACK cannot rebase an unsubmitted edit');
     // Closing can deliver a beacon without receiving its ACK. A new page has a new client ID,
@@ -95,7 +95,7 @@ function client({ beforePost = async () => {}, onReload = () => {}, cache = new 
     beforeBeacon.workstreams.push({ id: 'saved-on-exit' });
     const lostAckCache = structuredClone(beforeBeacon);
     beaconOwner.push(beforeBeacon); assert.equal(await beaconOwner.flush({ force: true }), true);
-    beaconCache.set('starnet.save', JSON.stringify(lostAckCache));
+    beaconCache.set('vultron.save', JSON.stringify(lostAckCache));
     const afterReload = client({ cache: beaconCache });
     const recovered = await afterReload.reconcile(lostAckCache);
     assert.equal(recovered._saveDirty, false, 'durable matching payload acknowledges a lost unload ACK');

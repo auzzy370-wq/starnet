@@ -11,7 +11,7 @@
      R4 flaky      — a quarantined step that fails once IN ITS NAMED CASE is retried and reported in its own
                      section, and the gate stays green; one that fails twice turns the gate red; a failure outside
                      the named case, or a crash with no FAIL line, is never retried.
-     R5 env        — ambient variables (provider keys, NODE_OPTIONS, STARNET_/SKYNET_ overrides, GIT_DIR) never
+     R5 env        — ambient variables (provider keys, NODE_OPTIONS, VULTRON_/SKYNET_ overrides, GIT_DIR) never
                      reach a step; PATH and the CI Chrome knob do; the hermetic profile beats the real APPDATA.
      R6 summary    — per-step timing lines, and a green run ends on the exact line release-preflight accepts.
      R7 shards     — K/N shards cover every step exactly once, in declared order.
@@ -45,7 +45,7 @@ function alive(pid) {
   A.eq(http[0], 'test/provider-recovery.e2e.test.js', 'provider production-composition proof is part of the HTTP manifest');
   A.ok(http.includes('test/sidecar.http.test.js') && http.includes('test/openai-compat.e2e.test.js'), 'HTTP manifest retains route coverage');
 
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-runner-test-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-runner-test-'));
   const lit = p => JSON.stringify(p);
   const step = (name, body) => { const p = path.join(dir, name); fs.writeFileSync(p, "'use strict';\n" + body + '\n'); return p; };
   const list = (name, steps) => { const p = path.join(dir, name); fs.writeFileSync(p, '# fixture\n' + steps.join('\n') + '\n'); return p; };
@@ -150,23 +150,23 @@ function alive(pid) {
     const realAppData = path.join(dir, 'REAL-APPDATA');
     const parentEnv = Object.assign({}, process.env, {
       OPENROUTER_API_KEY: 'sk-or-planted', ANTHROPIC_API_KEY: 'sk-ant-planted', NODE_OPTIONS: '--require=planted',
-      STARNET_WORKSPACES: 'C:/real/station', SKYNET_WORKSPACES: 'C:/real/station', GIT_DIR: 'C:/elsewhere/.git',
+      VULTRON_WORKSPACES: 'C:/real/station', SKYNET_WORKSPACES: 'C:/real/station', GIT_DIR: 'C:/elsewhere/.git',
       APPDATA: realAppData, LOCALAPPDATA: realAppData, XDG_DATA_HOME: realAppData, SKYNET_CHROME: '/usr/local/bin/ci-chrome', CI: 'true'
     });
     const r5 = await run({ listFile: list('r5.list', [envStep]), parentEnv });
     A.eq(r5.code, 0, 'R5: the env probe step ran');
     const seen = JSON.parse(fs.readFileSync(envOut, 'utf8'));
     const keys = Object.keys(seen).map(k => k.toUpperCase());
-    for (const k of ['OPENROUTER_API_KEY', 'ANTHROPIC_API_KEY', 'NODE_OPTIONS', 'STARNET_WORKSPACES', 'SKYNET_WORKSPACES', 'GIT_DIR']) {
+    for (const k of ['OPENROUTER_API_KEY', 'ANTHROPIC_API_KEY', 'NODE_OPTIONS', 'VULTRON_WORKSPACES', 'SKYNET_WORKSPACES', 'GIT_DIR']) {
       A.ok(!keys.includes(k), 'R5: the ambient ' + k + ' never reaches a step');
     }
     A.ok(keys.includes('PATH'), 'R5: PATH reaches the step');
     A.eq(seen.SKYNET_CHROME, '/usr/local/bin/ci-chrome', 'R5: the CI Chrome wrapper reaches the step');
     A.eq(seen.CI, 'true', 'R5: CI reaches the step');
     for (const k of ['APPDATA', 'LOCALAPPDATA', 'XDG_DATA_HOME']) {
-      A.ok(seen[k] && seen[k] !== realAppData && /starnet-gate-profile-/.test(seen[k]), 'R5: ' + k + ' is the hermetic profile, never the real one');
+      A.ok(seen[k] && seen[k] !== realAppData && /vultron-gate-profile-/.test(seen[k]), 'R5: ' + k + ' is the hermetic profile, never the real one');
     }
-    if (process.platform !== 'win32') A.ok(/starnet-gate-profile-/.test(seen.HOME || ''), 'R5: HOME is the hermetic profile on POSIX');
+    if (process.platform !== 'win32') A.ok(/vultron-gate-profile-/.test(seen.HOME || ''), 'R5: HOME is the hermetic profile on POSIX');
     // every step's sidecar is quiet: the boot-time floor probe (a live request to Microsoft 15 s after listen) is off
     A.eq(seen.SKYNET_EDGE_TTS_PROBE, '0', 'R5: the boot-time voice floor probe is switched off for every step');
     const env = runner.buildStepEnv({ Path: 'C:/bin', ComSpec: 'cmd.exe', SystemRoot: 'C:/Windows', HOME: 'C:/Users/x', APPDATA: 'C:/real', SKYNET_EDGE_TTS_PROBE: '1' }, 'C:/profile', 'win32');

@@ -69,7 +69,7 @@ const path = require('node:path');
   await new Promise(r => mock.server.listen(0, '127.0.0.1', r));
   const mockBase = 'http://127.0.0.1:' + mock.server.address().port + '/api/v1';
 
-  const root = mkdtempSync(path.join(tmpdir(), 'starnet-comms-owner-e2e-'));
+  const root = mkdtempSync(path.join(tmpdir(), 'vultron-comms-owner-e2e-'));
   const iso = {};
   for (const [k, d] of [['APPDATA', 'appdata'], ['LOCALAPPDATA', 'localappdata'], ['USERPROFILE', 'home'], ['HOME', 'home'], ['HERMES_HOME', 'hermes'], ['XDG_DATA_HOME', 'xdg']]) { iso[k] = path.join(root, 'iso', d); mkdirSync(iso[k], { recursive: true }); }
   const workspace = path.join(root, 'workspace'), profile = path.join(root, 'profile');
@@ -77,16 +77,16 @@ const path = require('node:path');
   const base = 'http://127.0.0.1:' + appPort;
   const SHOTS = process.env.COMMS_OWNER_SHOTS || '';
   materializeSeedWorkspace(workspace, 'test/model');
-  const sidecar = bootSeededSidecar({ port: appPort, scratchDir: workspace, model: 'test/model', key: 'sk-or-v1-fake', env: Object.assign({ SKYNET_OPENROUTER_BASE: mockBase, STARNET_PORT: String(appPort) }, iso) });
+  const sidecar = bootSeededSidecar({ port: appPort, scratchDir: workspace, model: 'test/model', key: 'sk-or-v1-fake', env: Object.assign({ SKYNET_OPENROUTER_BASE: mockBase, VULTRON_PORT: String(appPort) }, iso) });
   const chrome = spawn(chromePath, ['--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check', '--no-proxy-server', '--hide-scrollbars', '--mute-audio',
     '--remote-debugging-port=' + cdpPort, '--window-size=1440,900', '--user-data-dir=' + profile, 'about:blank'], { stdio: 'ignore' });
 
   const DRAFT = 'Sort my inbox into three piles';
   // Andrew's real view + a station that already has a pending first task (what a v0.14.0 Commander carried into the update)
   const SEED = `(() => { try { if (sessionStorage.getItem('co-seeded')) return; sessionStorage.setItem('co-seeded', '1');
-    localStorage.setItem('starnet.pitch.v1', JSON.stringify({ v: 1, pitched: false, handoffPending: true, handoffDraft: ${JSON.stringify(DRAFT)} }));
-    localStorage.setItem('starnet.station.v1', JSON.stringify({ v: 1, settings: { theme: 'custom', themeHue: 216, themeSat: 100, themeGlow: 20, panelBright: -100, flicker: false, textScale: 90, sessionRow: 'inbox' } }));
-    localStorage.setItem('starnet.crewrail.w', '400'); localStorage.setItem('starnet.chatw', '767');
+    localStorage.setItem('vultron.pitch.v1', JSON.stringify({ v: 1, pitched: false, handoffPending: true, handoffDraft: ${JSON.stringify(DRAFT)} }));
+    localStorage.setItem('vultron.station.v1', JSON.stringify({ v: 1, settings: { theme: 'custom', themeHue: 216, themeSat: 100, themeGlow: 20, panelBright: -100, flicker: false, textScale: 90, sessionRow: 'inbox' } }));
+    localStorage.setItem('vultron.crewrail.w', '400'); localStorage.setItem('vultron.chatw', '767');
   } catch (e) {} })();`;
   // is the message box on screen, does a click at its centre land on it, and does it take focus?
   const BOX = `(() => { const i = document.getElementById('chat-input'); if (!i) return { exists: false };

@@ -58,7 +58,7 @@ function station(o) {
     billing: require('../sidecar/billing-class.js').makeBilling({ profileOf: Reg.getProviderProfile }),   // the route's payer (billing-class.js)
     providerUsesCodex: p => Reg.providerUsesCodex(Reg.normalizeProviderId(p, 'openrouter')), providerUsesDeviceOAuth: p => Reg.providerUsesDeviceOAuth(Reg.normalizeProviderId(p, 'openrouter')),
     providerRequiresKey: Reg.providerRequiresKey, providerRequiresBaseUrl: Reg.providerRequiresBaseUrl,
-    ENV: k => env['STARNET_' + k], envFirst: names => { for (const n of names || []) if (env[n]) return env[n]; return ''; },
+    ENV: k => env['VULTRON_' + k], envFirst: names => { for (const n of names || []) if (env[n]) return env[n]; return ''; },
     codexTokens: null, CODEX_DEFAULT_MODEL: 'gpt-5.5', CRON_DEFAULT_MODEL: 'cron-default',
     oauthProviders: { kimi: { tokens: { access_token: 'synthetic-kimi-bearer' } } }, accountLive: () => true, anyExtraAccountLive: () => false,
     orderedAccountChain: () => [{ id: '' }], oauthPrimaryStatus: id => c.oauthProviders[id] || {},

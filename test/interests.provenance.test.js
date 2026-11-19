@@ -31,7 +31,7 @@ const ForgetRegistry = require('../sidecar/forget-registry.js');
 const { wireForgetRegistry } = require('../sidecar/forget-wiring.js');
 
 (async () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-interests-prov-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-interests-prov-'));
   try {
     const T = 100000;
     let ledgerClock = 200000;

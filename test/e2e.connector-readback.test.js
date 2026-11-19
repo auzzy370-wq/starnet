@@ -110,7 +110,7 @@ function startMockOpenRouter() {
 function boot(port, env, attemptsLeft) {
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, [INDEX], {
-      env: Object.assign({}, process.env, env, { SKYNET_PORT: String(port), STARNET_PORT: String(port) }),
+      env: Object.assign({}, process.env, env, { SKYNET_PORT: String(port), VULTRON_PORT: String(port) }),
       stdio: ['ignore', 'pipe', 'pipe']
     });
     let out = '', settled = false;
@@ -154,10 +154,10 @@ async function readNdjson(res) {
   const llm = await startMockOpenRouter();
   const ws = fs.mkdtempSync(path.join(os.tmpdir(), 'sk-readback-e2e-'));
   const env = {
-    SKYNET_WORKSPACES: ws, STARNET_WORKSPACES: ws,
-    SKYNET_OPENROUTER_BASE: llm.base, STARNET_OPENROUTER_BASE: llm.base,
-    SKYNET_OPENROUTER_KEY: 'sk-or-v1-rb-fake', STARNET_OPENROUTER_KEY: 'sk-or-v1-rb-fake',
-    SKYNET_DEFAULT_MODEL: 'test/model', STARNET_DEFAULT_MODEL: 'test/model'
+    SKYNET_WORKSPACES: ws, VULTRON_WORKSPACES: ws,
+    SKYNET_OPENROUTER_BASE: llm.base, VULTRON_OPENROUTER_BASE: llm.base,
+    SKYNET_OPENROUTER_KEY: 'sk-or-v1-rb-fake', VULTRON_OPENROUTER_KEY: 'sk-or-v1-rb-fake',
+    SKYNET_DEFAULT_MODEL: 'test/model', VULTRON_DEFAULT_MODEL: 'test/model'
   };
   const booted = await boot(await allocatePort(), env, 20);
   const child = booted.child;
@@ -165,8 +165,8 @@ async function readNdjson(res) {
   const reads = () => mcp.calls.filter(c => c.msg && c.msg.method === 'tools/call' && c.msg.params && c.msg.params.name === 'search_messages');
   try {
     const token = await bootToken(B, B);
-    const headers = { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: B };
-    const get = (u) => fetch(B + u, { headers: { 'X-StarNet-Token': token, Origin: B } }).then(r => r.json());
+    const headers = { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: B };
+    const get = (u) => fetch(B + u, { headers: { 'X-Vultron-Token': token, Origin: B } }).then(r => r.json());
     const upsert = await fetch(B + '/api/connectors', { method: 'POST', headers, body: JSON.stringify({ id: 'demo', label: 'Demo MCP', transport: 'http', url: mcp.url, token: 'mcp-secret-token' }) });
     A.eq((await upsert.json()).toolCount, 2, 'both connector tools discovered');
 
@@ -183,7 +183,7 @@ async function readNdjson(res) {
     };
 
     // ---- 1. MATCH: the model sends once and says done; the HOST reads back and the run is completed_verified ----
-    const matchContract = { schemaVersion: 'starnet.task-postconditions.v1', authority: 'commander', requirements: [
+    const matchContract = { schemaVersion: 'vultron.task-postconditions.v1', authority: 'commander', requirements: [
       { id: 'sop-1', type: 'connector_readback', connector: 'demo', tool: 'search_messages', args: { q: 'Invoice #42' }, contains: 'Invoice #42 is ready' }
     ] };
     const readsBefore = reads().length;
@@ -199,7 +199,7 @@ async function readNdjson(res) {
     A.eq(ce && ce.contract.requirements[0].connector + '/' + ce.contract.requirements[0].tool, 'demo/search_messages', 'the durable contract names what was read back');
 
     // ---- 2. MISMATCH: same workflow, a contract the world does not satisfy -> nudge fires, verdict incomplete ----
-    const missContract = { schemaVersion: 'starnet.task-postconditions.v1', authority: 'commander', requirements: [
+    const missContract = { schemaVersion: 'vultron.task-postconditions.v1', authority: 'commander', requirements: [
       { id: 'sop-1', type: 'connector_readback', connector: 'demo', tool: 'search_messages', args: { q: 'Invoice #42' }, contains: 'PAID IN FULL' }
     ] };
     const llmBefore = llm.requests.length;
@@ -214,7 +214,7 @@ async function readNdjson(res) {
 
     // ---- 3. SAFETY: a contract naming the WRITE tool as its check is refused, never executed ----
     const sentBefore = mcp.sent.length;
-    const badContract = { schemaVersion: 'starnet.task-postconditions.v1', authority: 'commander', requirements: [
+    const badContract = { schemaVersion: 'vultron.task-postconditions.v1', authority: 'commander', requirements: [
       { id: 'sop-1', type: 'connector_readback', connector: 'demo', tool: 'send_message', args: { to: 'victim@example.com', body: 'oops' }, contains: 'sent' }
     ] };
     const b = await routine('Readback bad tool', badContract);

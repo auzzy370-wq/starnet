@@ -1,6 +1,6 @@
 // dev/save-unclean-exit-repro.mjs — ONE window, a station that stops saving after the app is closed mid-work.
 //
-// Support reports 10-15 … 10-25 (#121, #153, starnet-releases#4, Bonbony Gilo, Jordan Gust): "the station goes back to
+// Support reports 10-15 … 10-25 (#121, #153, vultron-releases#4, Bonbony Gilo, Jordan Gust): "the station goes back to
 // an older save", "Another window saved newer station changes" with one window open, conflict files piling up while the
 // station file stops moving. This boots the real app in one browser profile and walks the ordinary sequence:
 //
@@ -37,7 +37,7 @@ const fileSave = () => JSON.parse(fs.readFileSync(path.join(fixture.workspace, '
 const fileTitles = () => (fileSave().doc.workstreams || []).map(w => w.title);
 const has = (title) => fileTitles().includes(title);
 const probe = () => evalJS(cdp, `(() => { const h = CloudSave.health(); let cached = null;
-  try { const c = JSON.parse(localStorage.getItem('starnet.save') || 'null'); cached = c && { rev: c._saveRevision, dirty: c._saveDirty, titles: (c.workstreams || []).map(w => w.title).filter(t => /^S\\d/.test(t)) }; } catch (_) {}
+  try { const c = JSON.parse(localStorage.getItem('vultron.save') || 'null'); cached = c && { rev: c._saveRevision, dirty: c._saveDirty, titles: (c.workstreams || []).map(w => w.title).filter(t => /^S\\d/.test(t)) }; } catch (_) {}
   return { windowRevision: CloudSave.revision(), conflict: h.conflict ? { revision: h.conflict.revision } : null,
     banner: !!document.getElementById('save-conflict-notice'), failures: h.consecutiveFailures,
     windowTitles: (Workstreams.serialize().workstreams || []).map(w => w.title).filter(t => /^S\\d/.test(t)), cached }; })()`);
@@ -77,12 +77,12 @@ try {
   await evalJS(cdp, `(() => { Workstreams.create('S2 saved in the window'); App.persist(); return true; })()`);
   await sleep(ACK_DELAY + 250);
   console.log('before death  ', JSON.stringify(await probe()), '|', fileLine());
-  const raced = await evalJS(cdp, `JSON.parse(localStorage.getItem('starnet.save'))._saveRevision`) < fileSave().doc._saveRevision;
+  const raced = await evalJS(cdp, `JSON.parse(localStorage.getItem('vultron.save'))._saveRevision`) < fileSave().doc._saveRevision;
   if (!raced) { console.log('RESULT: the race did not happen this run (the cache is not behind the station file) — rerun'); process.exitCode = 2; }
 
   // --legacy-cache: a cache written by 0.14.0 or earlier, which never named the window that wrote it
   if (process.argv.includes('--legacy-cache')) {
-    await evalJS(cdp, `(() => { const c = JSON.parse(localStorage.getItem('starnet.save')); delete c._saveClient; localStorage.setItem('starnet.save', JSON.stringify(c)); return true; })()`);
+    await evalJS(cdp, `(() => { const c = JSON.parse(localStorage.getItem('vultron.save')); delete c._saveClient; localStorage.setItem('vultron.save', JSON.stringify(c)); return true; })()`);
     console.log('legacy cache   the cached save no longer names its window');
   }
   // 2. the window dies before S2's debounced send (no pagehide, no beacon)

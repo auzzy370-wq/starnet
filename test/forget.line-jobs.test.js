@@ -39,7 +39,7 @@ async function held(env, rig) {
 
 // the registry over a real ledger with ONE delete of `streamId`, and the line-jobs entry over the host's own mutator
 function registryFor(env, streamId, runs) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-forget-linejobs-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-forget-linejobs-'));
   let clock = Date.now() + 1000;
   const ledger = SessionTombstones.makeSessionTombstones({ fs, path, file: path.join(dir, 'session-tombstones.json'), now: () => clock });
   ledger.observe([], []);

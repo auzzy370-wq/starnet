@@ -38,7 +38,7 @@ fn main() -> Result<(), String> {
         .parent()
         .ok_or("Missing repository root")?;
     let key = credentials::connector_encryption_key()?;
-    let node = std::env::var_os("STARNET_REVIEW_NODE").unwrap_or_else(|| "node".into());
+    let node = std::env::var_os("VULTRON_REVIEW_NODE").unwrap_or_else(|| "node".into());
     // Dedicated, kept review workspace: the recording demonstrates restart continuity, and it never
     // shares state with the general dev seed. dev/ is gitignored scratch, never bundled.
     let workspace = root.join("dev/.google-review-workspace");
@@ -66,19 +66,19 @@ fn main() -> Result<(), String> {
         .arg("--keep")
         // Only the review launcher's own preload rides NODE_OPTIONS; anything inherited is dropped.
         .env("NODE_OPTIONS", format!("--require={preload}"))
-        .env("STARNET_GOOGLE_REVIEW", "1")
-        .env("STARNET_CONNECTOR_ENCRYPTION_KEY", key)
-        .env("STARNET_DESKTOP_SHELL", "1")
-        .env("STARNET_GOOGLE_DESKTOP_CLIENT_JSON", client)
+        .env("VULTRON_GOOGLE_REVIEW", "1")
+        .env("VULTRON_CONNECTOR_ENCRYPTION_KEY", key)
+        .env("VULTRON_DESKTOP_SHELL", "1")
+        .env("VULTRON_GOOGLE_DESKTOP_CLIENT_JSON", client)
         .env("SKYNET_WORKSPACES", &workspace)
-        .env("STARNET_WORKSPACES", &workspace)
+        .env("VULTRON_WORKSPACES", &workspace)
         .env("SKYNET_PORT", port.to_string())
-        .env("STARNET_PORT", port.to_string());
+        .env("VULTRON_PORT", port.to_string());
     if !with_model {
         cmd.env("SKYNET_OPENROUTER_KEY", "")
-            .env("STARNET_OPENROUTER_KEY", "")
+            .env("VULTRON_OPENROUTER_KEY", "")
             .env("SKYNET_DEFAULT_MODEL", "replay")
-            .env("STARNET_DEFAULT_MODEL", "replay");
+            .env("VULTRON_DEFAULT_MODEL", "replay");
     }
     let status = cmd
         .status()

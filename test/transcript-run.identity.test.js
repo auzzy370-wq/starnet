@@ -21,7 +21,7 @@ let TurnKinds = null;
 try { TurnKinds = require('../frontend/app/turnkinds.js'); } catch (e) { A.ok(false, 'frontend/app/turnkinds.js loads: ' + (e && e.message)); }
 const tag = (m, kind, extra) => (TurnKinds ? TurnKinds.tag(m, kind, extra) : m);
 
-const BASE = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-run-identity-'));
+const BASE = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-run-identity-'));
 let dirs = 0;
 const T = 'tTURNabcdef0123456789xyz';
 const T0 = 'tSTALEturn0000000000000';

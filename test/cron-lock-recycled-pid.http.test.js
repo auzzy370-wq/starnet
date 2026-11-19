@@ -28,7 +28,7 @@ function bootSidecar(port, workspaces, attempts) {
   return new Promise((resolve, reject) => {
     const appSandbox = path.join(workspaces, '_appdata');
     const env = Object.assign({}, process.env);
-    for (const k of Object.keys(env)) if (/^(STARNET_|SKYNET_|HERMES_|OPENROUTER_)/i.test(k)) delete env[k];
+    for (const k of Object.keys(env)) if (/^(VULTRON_|SKYNET_|HERMES_|OPENROUTER_)/i.test(k)) delete env[k];
     Object.assign(env, {
       SKYNET_PORT: String(port), SKYNET_WORKSPACES: workspaces, SKYNET_DEV: '1', SKYNET_QUEST_REFRESH: '0',
       SKYNET_CRON_ENABLED: '1', SKYNET_CRON_TICK_MS: '500',
@@ -79,7 +79,7 @@ function bootSidecar(port, workspaces, attempts) {
     const token = await bootToken(B, B);
     let health = null;
     for (let i = 0; i < 40; i++) {
-      health = (await (await fetch(B + '/api/cron', { headers: { 'X-StarNet-Token': token } })).json()).health;
+      health = (await (await fetch(B + '/api/cron', { headers: { 'X-Vultron-Token': token } })).json()).health;
       if (health && health.lastSuccessAt != null) break;
       await sleep(250);
     }

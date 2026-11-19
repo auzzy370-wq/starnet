@@ -112,13 +112,13 @@ async function startModel() {
   const telegram = await startTelegram();
   const model = await startModel();
   const sidecar = SidecarFixture.create({
-    prefix: 'starnet-routine-parts-',
+    prefix: 'vultron-routine-parts-',
     env: {
-      SKYNET_TELEGRAM_API_BASE: telegram.base, STARNET_TELEGRAM_API_BASE: telegram.base,
-      SKYNET_OPENROUTER_BASE: model.base, STARNET_OPENROUTER_BASE: model.base,
-      SKYNET_OPENROUTER_KEY: 'sk-or-v1-routine-parts-fake', STARNET_OPENROUTER_KEY: 'sk-or-v1-routine-parts-fake',
-      SKYNET_DEFAULT_MODEL: 'test/model', SKYNET_AUX_BUDGET: '0', SKYNET_CRON_TICK_MS: '5000', STARNET_CRON_TICK_MS: '5000',
-      SKYNET_FULL_ACCESS: '', STARNET_FULL_ACCESS: ''
+      SKYNET_TELEGRAM_API_BASE: telegram.base, VULTRON_TELEGRAM_API_BASE: telegram.base,
+      SKYNET_OPENROUTER_BASE: model.base, VULTRON_OPENROUTER_BASE: model.base,
+      SKYNET_OPENROUTER_KEY: 'sk-or-v1-routine-parts-fake', VULTRON_OPENROUTER_KEY: 'sk-or-v1-routine-parts-fake',
+      SKYNET_DEFAULT_MODEL: 'test/model', SKYNET_AUX_BUDGET: '0', SKYNET_CRON_TICK_MS: '5000', VULTRON_CRON_TICK_MS: '5000',
+      SKYNET_FULL_ACCESS: '', VULTRON_FULL_ACCESS: ''
     }
   });
   const sends = () => telegram.calls.filter(c => c.method === 'sendMessage' && String(c.fields.chat_id) === String(CHAT));

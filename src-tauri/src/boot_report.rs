@@ -2,7 +2,7 @@
 //!
 //! frontend/app/bootguard.js (the page's first script) accounts for every station script of the page: it RAN, FAILED
 //! TO LOAD, or THREW WHILE LOADING (gh#136: a SyntaxError dropped app/workflowline.js, the boot check said "passed",
-//! and nothing outside the page knew). Once per page load it sends `starnet_boot_report` the counts, the station paths
+//! and nothing outside the page knew). Once per page load it sends `vultron_boot_report` the counts, the station paths
 //! that did not run, their error type names and lines, the critical modules missing and whether the engine is below
 //! the floor. This module sanitizes that and formats ONE line for startup.log, which support and the installed
 //! acceptance read:

@@ -154,7 +154,7 @@ const roster = new Map([['researcher', { system: 'R', name: 'MIRA' }], ['writer'
   // the sidecar's own explanation rides the row's hover tip: the refusal sentence, a run's error, the liveness check's
   // receipt — read off the ledger, clipped, never invented. A timeout's result is its PARTIAL WORK, never a reason.
   // (/api/overseer projects `failure` only for a refused or failed worker: these pin the page's half; the route's is below.)
-  const capRefused = { status: 'error', reason: 'refused', failure: 'subagent could not start — the concurrency cap (STARNET_MAX_CONCURRENT_AGENTS) is full or a sign-in is needed. Try fewer at once.' };
+  const capRefused = { status: 'error', reason: 'refused', failure: 'subagent could not start — the concurrency cap (VULTRON_MAX_CONCURRENT_AGENTS) is full or a sign-in is needed. Try fewer at once.' };
   A.eq(D.tipOf(capRefused), capRefused.failure, 'a refused worker\'s tip is the sidecar\'s own refusal sentence');
   A.eq(D.tipOf({ status: 'error', reason: 'error', failure: 'worker run failed: provider returned 401' }), 'worker run failed: provider returned 401', 'a failed run\'s tip is its error');
   A.eq(D.tipOf({ status: 'error', reason: 'timeout', failure: 'Half the pricing table\n\n[STOPPED — this worker used up its 300s slice]' }), '', 'a timed-out worker\'s partial work is never shown as its reason');

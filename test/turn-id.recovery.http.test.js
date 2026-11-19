@@ -39,10 +39,10 @@ const mock = http.createServer((req, res) => {
   mock.listen(0, '127.0.0.1'); await once(mock, 'listening');
   const orBase = 'http://127.0.0.1:' + mock.address().port + '/api/v1';
   const fx = SidecarFixture.create({ prefix: 'turn-id-recovery-', timeoutMs: 30000, env: {
-    SKYNET_OPENROUTER_BASE: orBase, STARNET_OPENROUTER_BASE: orBase,
-    SKYNET_OPENROUTER_KEY: 'sk-or-v1-turn-recovery-fixture', STARNET_OPENROUTER_KEY: 'sk-or-v1-turn-recovery-fixture',
-    SKYNET_DEFAULT_MODEL: 'test/model', STARNET_DEFAULT_MODEL: 'test/model',
-    SKYNET_CRON_ENABLED: '0', STARNET_CRON_ENABLED: '0', SKYNET_EDGE_TTS: '0', SKYNET_REFLECT: '0', SKYNET_SKILL_REVIEW: '0', SKYNET_AUX_BUDGET: '0'
+    SKYNET_OPENROUTER_BASE: orBase, VULTRON_OPENROUTER_BASE: orBase,
+    SKYNET_OPENROUTER_KEY: 'sk-or-v1-turn-recovery-fixture', VULTRON_OPENROUTER_KEY: 'sk-or-v1-turn-recovery-fixture',
+    SKYNET_DEFAULT_MODEL: 'test/model', VULTRON_DEFAULT_MODEL: 'test/model',
+    SKYNET_CRON_ENABLED: '0', VULTRON_CRON_ENABLED: '0', SKYNET_EDGE_TTS: '0', SKYNET_REFLECT: '0', SKYNET_SKILL_REVIEW: '0', SKYNET_AUX_BUDGET: '0'
   } });
   const S = 'turn-recovery', SRC = 'src-run-0001';
   const T1 = TurnKinds.mintTurnId(() => 0.11), T2 = TurnKinds.mintTurnId(() => 0.77);

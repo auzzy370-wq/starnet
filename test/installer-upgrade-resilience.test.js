@@ -11,10 +11,10 @@ const hooks = fs.readFileSync(path.join(ROOT, 'src-tauri', 'installer', 'hooks.n
 const workflow = fs.readFileSync(path.join(ROOT, '.github', 'workflows', 'release-train.yml'), 'utf8');
 const proof = fs.readFileSync(path.join(ROOT, 'scripts', 'ci', 'windows-published-upgrade-proof.ps1'), 'utf8');
 
-const guiInit = hooks.indexOf('Function StarNetManualUpgradeInit');
+const guiInit = hooks.indexOf('Function VultronManualUpgradeInit');
 const preinstall = hooks.indexOf('!macro NSIS_HOOK_PREINSTALL');
 A.ok(guiInit >= 0 && guiInit < preinstall, 'manual-upgrade detection runs before Tauri reaches the install section');
-A.ok(hooks.includes('!define MUI_CUSTOMFUNCTION_GUIINIT StarNetManualUpgradeInit'), 'manual upgrade composes with Tauri Modern UI GUI initialization');
+A.ok(hooks.includes('!define MUI_CUSTOMFUNCTION_GUIINIT VultronManualUpgradeInit'), 'manual upgrade composes with Tauri Modern UI GUI initialization');
 A.ok(hooks.includes('GetDLLVersion "$EXEPATH"'), 'manual upgrade reads the candidate executable version instead of duplicating a release pin');
 A.ok(hooks.includes('${VersionCompare} "$R3" "$R9" $R2'), 'manual upgrade uses the preloaded NSIS version comparison against installed truth');
 A.ok((hooks.match(/ReadRegStr \$R1 HK(?:CU|LM).*"InstallLocation"/g) || []).length === 2,
@@ -24,7 +24,7 @@ A.ok(hooks.includes('StrCpy $R1 $R1 -1 1') && hooks.includes('StrCpy $INSTDIR $R
 A.ok(hooks.includes('StrCpy $CMDLINE "$CMDLINE /UPDATE /P /R"'), 'strict manual upgrades become passive in-place updates with relaunch');
 A.ok(hooks.includes('Call .onInit'), 'Tauri reparses the augmented update command before rendering pages');
 A.ok(hooks.includes('!macro NSIS_HOOK_PREUNINSTALL'), 'new uninstallers own active-process cleanup');
-A.ok((hooks.match(/!insertmacro STARNET_STOP_INSTALL_PROCESSES/g) || []).length === 2,
+A.ok((hooks.match(/!insertmacro VULTRON_STOP_INSTALL_PROCESSES/g) || []).length === 2,
   'install and uninstall share one exact process-cleanup implementation');
 
 const shellKill = hooks.indexOf('Get-Process -Name skynet-desktop');
@@ -74,7 +74,7 @@ const futureUninstall = proof.indexOf('$futureUninstall = Start-Process');
 A.ok(upgradeFinished > 0 && integrityCall > upgradeFinished && futureUninstall > integrityCall,
   'each upgraded candidate install is verified after its relaunch and before its own uninstaller runs');
 A.ok(proof.includes('installIntegrity = $integrity'), 'each scenario receipt carries the installed-integrity result');
-A.ok(proof.includes("Start-Process -FilePath $App -ArgumentList ('--starnet-verify-install --out \"{0}\"' -f $receiptPath)"),
+A.ok(proof.includes("Start-Process -FilePath $App -ArgumentList ('--vultron-verify-install --out \"{0}\"' -f $receiptPath)"),
   'the candidate exe runs its own headless verify through Start-Process (& would not wait for a GUI-subsystem exe)');
 A.ok(/try \{\s*\[IO\.File\]::WriteAllBytes\(\$modulePath, \(New-Object byte\[\] 0\)\)\s*\$zeroed = Invoke-InstallVerify 'zeroed-verify'\s*\} finally \{\s*\[IO\.File\]::WriteAllBytes\(\$modulePath, \$original\)/.test(proof),
   'the zeroed module\'s bytes are restored whatever the verify does');

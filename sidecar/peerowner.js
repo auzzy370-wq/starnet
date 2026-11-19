@@ -1,6 +1,6 @@
 /* sidecar/peerowner.js — WHO is on the other end of a loopback connection? (2026-10-10 security pass)
 
-   Why this exists. The served page (`GET /`) carries the per-launch master token so the browser UI, the `starnet`
+   Why this exists. The served page (`GET /`) carries the per-launch master token so the browser UI, the `vultron`
    CLI and the ACP/MCP bridges can authenticate. Loopback TCP has NO per-user access control: any process on the
    machine — including one running under a DIFFERENT OS account (a second Windows user, a sandbox account, another
    login on a shared Linux box) — could connect, read the page and act as the owner. The Host pin and Origin list
@@ -15,7 +15,7 @@
      darwin : `lsof -F pufn` on the client port; lsof run as a non-root user cannot see another user's sockets, so a
               foreign client yields no row.
    FAIL CLOSED: anything we cannot prove (lookup error, timeout, connection not found, unknown platform) withholds
-   the token — the page still loads, it just cannot drive the station. STARNET_TRUST_LOCAL_PEERS=1 is the owner's
+   the token — the page still loads, it just cannot drive the station. VULTRON_TRUST_LOCAL_PEERS=1 is the owner's
    explicit escape hatch for an environment where the lookup cannot work (set in the owner's own process env —
    nothing a local stranger can reach).
 

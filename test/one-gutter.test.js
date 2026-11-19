@@ -6,7 +6,7 @@
    the tabs' height and stands on the line, its drawn + centred; the counter-zoomed head and CREW title follow the
    gutter at every TEXT SIZE. In the windows one 10px gutter holds the title, the head keys, the tab strip, a side
    menu's search / capsule / sections and the content of the single-column windows that wear the strip; controls side
-   by side share one height; the StarNet card's LINK STATION key keeps its own padding. */
+   by side share one height; the Vultron card's LINK STATION key keeps its own padding. */
 const A = require('./_assert.js');
 const fs = require('fs');
 const path = require('path');
@@ -108,8 +108,8 @@ A.eq([decl(rule(glass, W + '.term.dossier .con-toptab'), 'padding-top'), decl(ru
   'the dossier\'s tabs take its search field\'s height (10px over and under a 24px line)');
 
 /* ---- 5. LINK STATION keeps its own padding ---- */
-A.ok(!/\[data-provider="starnet"\] :is\(\.prov-addkey,\s*\.prov-stat\) \{[^}]*padding-left:\s*0/.test(settings) && /\[data-provider="starnet"\] \.prov-addkey \{ margin-left:0; \}/.test(settings),
-  'the StarNet card drops the 42px indent but not the key\'s padding (↗ LINK STATION sat against its left edge)');
+A.ok(!/\[data-provider="vultron"\] :is\(\.prov-addkey,\s*\.prov-stat\) \{[^}]*padding-left:\s*0/.test(settings) && /\[data-provider="vultron"\] \.prov-addkey \{ margin-left:0; \}/.test(settings),
+  'the Vultron card drops the 42px indent but not the key\'s padding (↗ LINK STATION sat against its left edge)');
 
 /* ---- 6. the SESSIONS / PROJECTS switch (Andrew 10-23: "i saw a UI glitch in sessions and projects") ---- */
 A.ok(/#screen-game #left \.ws-head :is\(#ws-new, #ws-addproject\)\[hidden\] \{ display: none !important; \}/.test(glass),

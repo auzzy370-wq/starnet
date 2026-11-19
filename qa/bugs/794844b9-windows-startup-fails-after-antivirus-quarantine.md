@@ -10,7 +10,7 @@ lane: installed-integrity-and-engine-floor-1103
 fix:
 origin: customer
 report: support-antivirus-quarantine-intake
-affected: Windows 11, reported StarNet 0.12.4; affected installed bytes and recovery unverified
+affected: Windows 11, reported Vultron 0.12.4; affected installed bytes and recovery unverified
 family: packaged-backend-integrity
 installer: unverified
 recovery: unconfirmed

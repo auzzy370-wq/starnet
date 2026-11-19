@@ -41,11 +41,11 @@ async function until(check, label, ms = 30000) {
   await new Promise(resolve => server.listen(0, HOST, resolve));
   const base = 'http://' + HOST + ':' + server.address().port;
   fixture = SidecarFixture.create({ prefix: 'routine-publication-http-', env: {
-    STARNET_TELEGRAM_API_BASE: base, SKYNET_TELEGRAM_API_BASE: base,
-    STARNET_OPENROUTER_BASE: base + '/api/v1', SKYNET_OPENROUTER_BASE: base + '/api/v1',
-    STARNET_OPENROUTER_KEY: 'sk-or-v1-publication-fixture', SKYNET_OPENROUTER_KEY: 'sk-or-v1-publication-fixture',
-    STARNET_DEFAULT_MODEL: 'test/model', SKYNET_DEFAULT_MODEL: 'test/model',
-    STARNET_CRON_TICK_MS: '1500', SKYNET_CRON_TICK_MS: '1500', SKYNET_AUX_BUDGET: '0',
+    VULTRON_TELEGRAM_API_BASE: base, SKYNET_TELEGRAM_API_BASE: base,
+    VULTRON_OPENROUTER_BASE: base + '/api/v1', SKYNET_OPENROUTER_BASE: base + '/api/v1',
+    VULTRON_OPENROUTER_KEY: 'sk-or-v1-publication-fixture', SKYNET_OPENROUTER_KEY: 'sk-or-v1-publication-fixture',
+    VULTRON_DEFAULT_MODEL: 'test/model', SKYNET_DEFAULT_MODEL: 'test/model',
+    VULTRON_CRON_TICK_MS: '1500', SKYNET_CRON_TICK_MS: '1500', SKYNET_AUX_BUDGET: '0',
     SKYNET_QUEST_REFRESH_MS: '0', SKYNET_SCOUT: '0', SKYNET_THREAD_MINE: '0', SKYNET_REFLECT: '0',
     NODE_OPTIONS: '--require ' + JSON.stringify(path.join(__dirname, 'fixtures', 'routine-publication-fault.cjs'))
   } });
@@ -97,7 +97,7 @@ async function until(check, label, ms = 30000) {
     const receiptBytes = fs.readFileSync(cronFile, 'utf8');
     fs.unlinkSync(arm);
     A.eq(fs.readFileSync(cronFile, 'utf8'), receiptBytes, 'fault removal never rewrites the durable retry receipt');
-    await fixture.start({ STARNET_TEST_PUBLICATION_CLOCK_MS: '61000' });
+    await fixture.start({ VULTRON_TEST_PUBLICATION_CLOCK_MS: '61000' });
     const delivered = await until(() => {
       const job = savedJob(); return job.lastDeliveryOk === true && job.finalization?.historyReleased === true && !ledger().deliveries.some(record => record.id === recordId) && job;
     }, 'restart publishes, persists cron proof and releases exact record');
@@ -112,7 +112,7 @@ async function until(check, label, ms = 30000) {
     const displayed = await fixture.json('GET', '/api/transcript?stream=' + STREAM + '&limit=200');
     A.eq(displayed.status, 200, 'actual transcript route serves the recovered publication');
     A.ok(displayed.body.turns.some(row => row.rowId === rows[0].rowId && row.content.includes(ANSWER)), 'the canonical delivery is visible to the actual client reader');
-    await fixture.stop(); await fixture.start({ STARNET_TEST_PUBLICATION_CLOCK_MS: '61000' });
+    await fixture.stop(); await fixture.start({ VULTRON_TEST_PUBLICATION_CLOCK_MS: '61000' });
     await until(async () => (await fixture.json('GET', '/api/cron')).body.health.lastSuccessAt, 'next restarted scheduler pass');
     A.eq(diskRows().filter(row => row.streamId === STREAM && row.kind === 'delivery').map(row => row.rowId), [rows[0].rowId], 'another restart preserves one exact delivery identity');
     A.eq([sends.length, requests.length], [1, paidCalls], 'another restart performs neither duplicate transport nor paid work');

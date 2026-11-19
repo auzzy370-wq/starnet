@@ -6,7 +6,7 @@
 
    WHAT MOVED. sidecar/credential-store.js holds every API-key provider's key, key pool and endpoint by layer: the desktop
    shell's push (runtimeKeys, runtimeKeyPools, runtimeBaseUrls), the legacy OpenRouter alias, the operator's environment,
-   the page copy (engine-credential.js, injected) and StarNet's linked account. Trunk's resolution came with it unchanged:
+   the page copy (engine-credential.js, injected) and Vultron's linked account. Trunk's resolution came with it unchanged:
    providerRuntimeKey, providerOperatorKey, providerRuntimeKeyPool, providerFallbackKeyPool, pageCopyRidesWith,
    providerRuntimeBaseUrl, the kept desktop endpoints (#137: keptEndpointProvider, desktopEndpointsHeld, the boot load,
    saveDesktopEndpoints, providerEndpointNotHandedOver), the shell's push (setProviderRuntimeConfig), engine-key presence
@@ -21,7 +21,7 @@
       (test/helpers/credential-store-sandbox.js). Nothing in it was written by hand. Six tables, 1271 stations: every
       combination of the three station layers (key, endpoint, backup keys each) for a keyed cloud provider, CUSTOM and a
       keyless local one; OpenRouter's alias and its two bare names under a push, a removal and the page copy; which
-      spelling of each env name is read first; StarNet's linked account and the sign-ins beside junk in every layer; the
+      spelling of each env name is read first; Vultron's linked account and the sign-ins beside junk in every layer; the
       desktop's kept endpoints over every shape of saved file; and what the shell's push accepts. A seventh, the shell
       table (208 stations, step S2), was captured the same way at a3af8dafd and holds this lane's rows (section 6). A row records the key,
       the endpoint AND the backup keys of each run shape (resolved as runOnceCore resolves the pair it is handed),
@@ -44,7 +44,7 @@
           refused; what moved is the sentence, which said no URL is saved (D4, S7, section 8).
 
    6. THE DESKTOP SHELL (step S2, golden delta D1). The shell table holds the shell's spawn shapes under its marker
-      (STARNET_DESKTOP_SHELL=1): each key and key pool in both spellings with one value, beside a user's own exports, then
+      (VULTRON_DESKTOP_SHELL=1): each key and key pool in both spellings with one value, beside a user's own exports, then
       the shell's REMOVE, rotation or cleared pool. index.js now adopts those pairs into the keychain layer at its top and
       deletes them from the environment (adoptSpawnCredentials). Trunk ignores the marker, and the same stations WITHOUT it
       resolve exactly as trunk did (the capture on a3af8dafd checked every row), so the rows the marker changes are the
@@ -127,7 +127,7 @@ A.eq(field('layers', 'custom K:- E:k P:ku', 'pres'), 'station/k0u/ready', 'D3: .
 A.eq(field('layers', 'custom K:- E:k P:u', 'st'), 'en@-[]', 'D4 (P3c): a keyless page URL replaces no key: the env key stays the choice, with no endpoint');
 A.eq(field('layers', 'custom K:- E:- P:ku', 'st'), 'pg@pg[]', 'P3a: the page pair alone runs whole');
 A.eq(field('layers', 'custom K:- E:- P:u', 'st'), '-@pg[]', 'a keyless page URL still serves a keyless station');
-A.eq(field('names', 'anthropic R5 shell STARNET_+SKYNET_=kc ANTHROPIC_API_KEY=os', 'st'), 'os@def[]', 'no marker (a headless both-spellings export): the bare name is read first, as at trunk');
+A.eq(field('names', 'anthropic R5 shell VULTRON_+SKYNET_=kc ANTHROPIC_API_KEY=os', 'st'), 'os@def[]', 'no marker (a headless both-spellings export): the bare name is read first, as at trunk');
 A.eq(field('names', 'anthropic shell spawn only, then the shell pushes REMOVE', 'st'), 'kc@def[]', 'no marker: a push REMOVE leaves an operator\'s env key serving, as at trunk (headless env keys are never deleted)');
 A.eq(field('openrouter', 'openrouter env:shell push:remove page:-', 'st'), 'br@def[]', 'no marker: ...OpenRouter\'s too, read back through the env');
 A.eq(field('openrouter', 'openrouter env:shell push:remove page:-', 'alias'), '-', '...while the alias itself is cleared');
@@ -139,9 +139,9 @@ A.eq(field('shell', 'anthropic pair push:remove', 'pres'), 'none/-0-/no', '...an
 A.eq(field('shell', 'openrouter pair push:remove', 'st'), '-@def[]', 'doneMeans-1: ...OpenRouter\'s too');
 A.eq(field('shell', 'anthropic pair push:rotate', 'held'), 'kc2', 'a rotation leaves the old key held nowhere');
 A.eq(field('shell', 'anthropic pair+pool push:pool cleared', 'st'), 'kc@def[]', 'a pool the shell cleared stays cleared (its spawn copy came back at trunk)');
-A.eq(field('shell', 'anthropic single STARNET_ push:remove', 'st'), 'br@def[]', 'one spelling is the user\'s own export: it stays in the env layer and survives a REMOVE');
+A.eq(field('shell', 'anthropic single VULTRON_ push:remove', 'st'), 'br@def[]', 'one spelling is the user\'s own export: it stays in the env layer and survives a REMOVE');
 A.eq(field('shell', 'anthropic split push:remove', 'st'), 'br@def[]', 'two values are the user\'s own exports too');
-A.eq(field('openrouter', 'openrouter env:STARNET push:- page:-', 'pres'), 'environment/-0-/ready', 'a headless STARNET_OPENROUTER_KEY seeds the keychain layer at boot, and presence calls it the environment');
+A.eq(field('openrouter', 'openrouter env:VULTRON push:- page:-', 'pres'), 'environment/-0-/ready', 'a headless VULTRON_OPENROUTER_KEY seeds the keychain layer at boot, and presence calls it the environment');
 A.eq(field('layers', 'anthropic K:- E:- P:kup', 'pg+u'), 'pg@ex[]', 'F4: the page key sent in THIS request rides the endpoint sent beside it');
 A.eq(field('layers', 'anthropic K:- E:- P:kup', 'pg+u.rec'), 'pg@pg[pg.p]', '...a record handing the same key back keeps the endpoint it was saved with');
 
@@ -328,7 +328,7 @@ A.ok(d3.some(x => x.startsWith('layers / anthropic K:- E:- P:kup:') && /pg\+u=pg
   }
   A.eq(wrong, [], 'each D4 row records trunk\'s sentence (the capture read it from trunk\'s own engineCredentialError) and the sentence now');
   const P3C = (D4.rows || {})['layers / custom K:- E:k P:u'] || {};
-  A.ok(/^no CUSTOM base URL is saved on this station/.test(P3C.trunk || '') && /^CUSTOM_OPENAI_KEY is set in the environment that starts StarNet, but no CUSTOM base URL goes with it: the URL saved under SETTINGS → AI & MODELS was saved without a key/.test(P3C.now || ''),
+  A.ok(/^no CUSTOM base URL is saved on this station/.test(P3C.trunk || '') && /^CUSTOM_OPENAI_KEY is set in the environment that starts Vultron, but no CUSTOM base URL goes with it: the URL saved under SETTINGS → AI & MODELS was saved without a key/.test(P3C.now || ''),
     'D4 (P3c): the sentence that said no URL is saved now names the env key, and the URL it was saved without: ' + P3C.now);
   const state2 = (D4.rows || {})['layers / custom K:- E:k P:-'] || {};
   A.ok(/set CUSTOM_OPENAI_BASE_URL, or save the key next to the URL under SETTINGS → AI & MODELS$/.test(state2.now || ''), 'D4: an env key with no URL anywhere names both exits: ' + state2.now);

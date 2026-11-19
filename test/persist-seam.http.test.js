@@ -36,7 +36,7 @@ const same = (file, expected) => { const got = bytesOf(file); return !!got && go
 const listing = dir => fs.readdirSync(dir).filter(n => /^(?:agent\.save\.json|station\.widgets\.json|_commander\.dossier\.json)/.test(n)).sort().join(' ');
 
 (async () => {
-  const fixture = SidecarFixture.create({ entry: path.join(__dirname, 'helpers', 'save-read-fault-host.cjs'), prefix: 'starnet-persist-seam-' });
+  const fixture = SidecarFixture.create({ entry: path.join(__dirname, 'helpers', 'save-read-fault-host.cjs'), prefix: 'vultron-persist-seam-' });
   const ws = fixture.workspace;
   const control = path.join(ws, 'save-read-fault.json');
   const save = path.join(ws, 'agent.save.json');
@@ -77,7 +77,7 @@ const listing = dir => fs.readdirSync(dir).filter(n => /^(?:agent\.save\.json|st
 
     // S1: the first station save of this process sweeps the dead writer's temp
     A.ok(isDead(dead), 'S1: the planted pid ' + dead + ' is dead before the save');
-    const saved = await fixture.json('POST', '/api/save', { schema: 'starnet.save', version: 5, updatedAt: 100, agent: { id: 'agent', name: 'Seam' } });
+    const saved = await fixture.json('POST', '/api/save', { schema: 'vultron.save', version: 5, updatedAt: 100, agent: { id: 'agent', name: 'Seam' } });
     A.eq(saved.status === 200 && saved.body && saved.body.ok, true, 'S1: POST /api/save writes the station: ' + saved.text.slice(0, 200));
     A.ok(fs.existsSync(save), 'S1: agent.save.json is on disk');
     A.ok(isDead(dead), 'S1: the planted pid ' + dead + ' is still dead after the save (not reused), so the sweep below proves something');

@@ -36,9 +36,9 @@ assert.ok(saved.props.some(p => p.label), 'fixture: the preset labelled its Inbo
 // 1 + 2: export
 const out = B.exportBuild(saved, M, { name: "Andrew's\nStudio" });
 assert.ok(!out.error, 'export succeeds');
-assert.match(out.filename, /^andrew-s-studio\.starnet-build\.json$/);
+assert.match(out.filename, /^andrew-s-studio\.vultron-build\.json$/);
 const file = JSON.parse(out.text);
-assert.equal(file.format, 'starnet.build'); assert.equal(file.version, 1); assert.equal(file.name, "Andrew's Studio", 'one-line name');
+assert.equal(file.format, 'vultron.build'); assert.equal(file.version, 1); assert.equal(file.name, "Andrew's Studio", 'one-line name');
 const flat = JSON.stringify(file);
 for (const k of WORK) assert.ok(!flat.includes('"' + k + '"'), 'export never carries ' + k);
 assert.ok(!flat.includes('secret-client') && !flat.includes('gmail-personal'), 'no private value survives');
@@ -99,7 +99,7 @@ assert.equal(B.readBuild(JSON.stringify(Object.assign({}, file, { station: { roo
 assert.equal(B.readBuild(' '.repeat(B.MAX_BYTES + 1), M, 1).error, 'TOO_LARGE');
 const many = JSON.parse(out.text); many.station.props = Array.from({ length: B.LIMITS.props + 1 }, (_, i) => ({ t: 'plant', x: i, y: 0, w: 1, h: 1 }));
 assert.equal(B.readBuild(JSON.stringify(many), M, 1).error, 'TOO_BIG');
-for (const code of ['NOT_JSON', 'NOT_BUILD', 'NEWER', 'TOO_LARGE']) assert.ok(B.readBuild(code === 'NOT_JSON' ? '{' : code === 'NOT_BUILD' ? '{}' : code === 'NEWER' ? JSON.stringify({ format: 'starnet.build', version: 2 }) : ' '.repeat(B.MAX_BYTES + 1), M, 1).message, code + ' has a sentence');
+for (const code of ['NOT_JSON', 'NOT_BUILD', 'NEWER', 'TOO_LARGE']) assert.ok(B.readBuild(code === 'NOT_JSON' ? '{' : code === 'NOT_BUILD' ? '{}' : code === 'NEWER' ? JSON.stringify({ format: 'vultron.build', version: 2 }) : ' '.repeat(B.MAX_BYTES + 1), M, 1).message, code + ' has a sentence');
 // a build that is too far apart for one station reads, but the floor refuses it and stays as it was
 const far = JSON.parse(out.text); const r0 = far.station.rooms[far.station.order[0]]; r0.rects = [{ x1: 3000, y1: 3000, x2: 3017, y2: 3010 }];
 const farRead = B.readBuild(JSON.stringify(far), M, 900);

@@ -41,16 +41,16 @@ async function bootOnce(sandbox, label, extra) {
   const workspace = path.join(dir, 'workspaces');
   fs.mkdirSync(downloads, { recursive: true });
   fs.mkdirSync(workspace, { recursive: true });
-  const planted = path.join(downloads, 'starnet-recovery-20261101-120000.starnet-recovery.json.tmp-999999-abcdef0123456789');
+  const planted = path.join(downloads, 'vultron-recovery-20261101-120000.vultron-recovery.json.tmp-999999-abcdef0123456789');
   fs.writeFileSync(planted, 'plaintext');
   const port = await freePort();
   const env = Object.assign({}, process.env, {
     APPDATA: profile, LOCALAPPDATA: profile, XDG_DATA_HOME: profile, USERPROFILE: profile, HOME: profile,
     SKYNET_WORKSPACES: workspace, SKYNET_PORT: String(port), SKYNET_API_TOKEN: 'recovery-temp-sweep-token-32-bytes-long',
     SKYNET_LIVE_PRICES: '0', SKYNET_QUEST_REFRESH: '0', SKYNET_CRON: '0', SKYNET_EDGE_TTS_PROBE: '0',
-    SKYNET_OPENROUTER_KEY: '', STARNET_OPENROUTER_KEY: ''
+    SKYNET_OPENROUTER_KEY: '', VULTRON_OPENROUTER_KEY: ''
   }, extra);
-  for (const k of ['SKYNET_DEV', 'STARNET_DEV', 'SKYNET_SWEEP_BACKUP_TEMPS', 'STARNET_SWEEP_BACKUP_TEMPS']) delete env[k];
+  for (const k of ['SKYNET_DEV', 'VULTRON_DEV', 'SKYNET_SWEEP_BACKUP_TEMPS', 'VULTRON_SWEEP_BACKUP_TEMPS']) delete env[k];
   const child = spawn(process.execPath, [INDEX], { env, stdio: ['ignore', 'pipe', 'pipe'] });
   let output = '';
   child.stdout.on('data', d => { output += d.toString(); });
@@ -75,27 +75,27 @@ async function childInherits(sandbox) {
   const workspace = path.join(dir, 'workspaces');
   fs.mkdirSync(downloads, { recursive: true });
   fs.mkdirSync(workspace, { recursive: true });
-  const planted = path.join(downloads, 'starnet-recovery-20261101-120000.starnet-recovery.json.tmp-999999-abcdef0123456789');
+  const planted = path.join(downloads, 'vultron-recovery-20261101-120000.vultron-recovery.json.tmp-999999-abcdef0123456789');
   fs.writeFileSync(planted, 'plaintext');
   const record = path.join(dir, 'record.json');
   const preload = path.join(dir, 'preload.js');
   fs.writeFileSync(preload, `
     const cp = require('child_process'), fs = require('fs');
-    const atStart = [process.env.STARNET_SWEEP_BACKUP_TEMPS, process.env.SKYNET_SWEEP_BACKUP_TEMPS];
+    const atStart = [process.env.VULTRON_SWEEP_BACKUP_TEMPS, process.env.SKYNET_SWEEP_BACKUP_TEMPS];
     setImmediate(() => {
-      const r = cp.spawnSync(process.execPath, ['-e', 'process.stdout.write(JSON.stringify([process.env.STARNET_SWEEP_BACKUP_TEMPS || null, process.env.SKYNET_SWEEP_BACKUP_TEMPS || null]))'], { encoding: 'utf8' });
+      const r = cp.spawnSync(process.execPath, ['-e', 'process.stdout.write(JSON.stringify([process.env.VULTRON_SWEEP_BACKUP_TEMPS || null, process.env.SKYNET_SWEEP_BACKUP_TEMPS || null]))'], { encoding: 'utf8' });
       fs.writeFileSync(${JSON.stringify(record)}, JSON.stringify({ atStart, child: JSON.parse(r.stdout) }));
     });
   `);
   const port = await freePort();
   const env = Object.assign({}, process.env, {
     APPDATA: profile, LOCALAPPDATA: profile, XDG_DATA_HOME: profile, USERPROFILE: profile, HOME: profile,
-    STARNET_SWEEP_BACKUP_TEMPS: '1', SKYNET_SWEEP_BACKUP_TEMPS: '1',
+    VULTRON_SWEEP_BACKUP_TEMPS: '1', SKYNET_SWEEP_BACKUP_TEMPS: '1',
     SKYNET_WORKSPACES: workspace, SKYNET_PORT: String(port), SKYNET_API_TOKEN: 'recovery-temp-sweep-token-32-bytes-long',
     SKYNET_LIVE_PRICES: '0', SKYNET_QUEST_REFRESH: '0', SKYNET_CRON: '0', SKYNET_EDGE_TTS_PROBE: '0',
-    SKYNET_OPENROUTER_KEY: '', STARNET_OPENROUTER_KEY: ''
+    SKYNET_OPENROUTER_KEY: '', VULTRON_OPENROUTER_KEY: ''
   });
-  delete env.SKYNET_DEV; delete env.STARNET_DEV;
+  delete env.SKYNET_DEV; delete env.VULTRON_DEV;
   const child = spawn(process.execPath, ['-r', preload, INDEX], { env, stdio: ['ignore', 'pipe', 'pipe'] });
   let output = '';
   child.stdout.on('data', d => { output += d.toString(); });
@@ -113,10 +113,10 @@ async function childInherits(sandbox) {
 }
 
 (async () => {
-  const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-temp-sweep-'));
+  const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-temp-sweep-'));
   try {
     await bootOnce(sandbox, 'plain', {});
-    await bootOnce(sandbox, 'desktop-marker', { STARNET_DESKTOP_SHELL: '1', STARNET_CONNECTOR_ENCRYPTION_KEY: 'ab'.repeat(32) });
+    await bootOnce(sandbox, 'desktop-marker', { VULTRON_DESKTOP_SHELL: '1', VULTRON_CONNECTOR_ENCRYPTION_KEY: 'ab'.repeat(32) });
     await childInherits(sandbox);
   } finally {
     fs.rmSync(sandbox, { recursive: true, force: true });

@@ -30,7 +30,7 @@ const clockAt = start => { let t = start; return { now: () => t, set: v => { t =
 function memIo() { const lines = []; return { lines, readAll() { return lines.slice(); }, append(e) { lines.push(e); } }; }
 
 function world(label, makeIo) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-proofread-' + label + '-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-proofread-' + label + '-'));
   const clock = clockAt(100);
   const ledger = makeSessionTombstones({ fs, path, file: path.join(dir, 'tomb.json'), now: clock.now });
   ledger.observe([]);   // the boot read of a station with no earlier deletes

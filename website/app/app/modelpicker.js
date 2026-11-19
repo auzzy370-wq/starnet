@@ -1,4 +1,4 @@
-/* STARNET shared model picker — a per-TARGET model/effort chooser for the recruitment bay (a NEW agent's
+/* VULTRON shared model picker — a per-TARGET model/effort chooser for the recruitment bay (a NEW agent's
    model) and the agent dossier (an EXISTING agent's model). Unlike the COMMS ModelDock (a global singleton
    bound to the FOCUSED agent's live transport), this writes nothing on its own: it renders a grouped native
    <select>, fills it from ModelDock.catalog() (same fallbacks/gating), and hands the picked {model,provider,
@@ -41,7 +41,7 @@ const ModelPicker = (() => {
     const M = md(); if (!M) return 'MODELS';
     const p = norm(item.provider);
     if (p === 'openrouter') return 'OPENROUTER · ' + M.labels.orGroup(item);
-    if (p === 'starnet' && M.starnetDry && M.starnetDry()) return M.labels.provider(p) + ' · NO CREDITS';   // same reported-balance truth as the dock
+    if (p === 'vultron' && M.vultronDry && M.vultronDry()) return M.labels.provider(p) + ' · NO CREDITS';   // same reported-balance truth as the dock
     return M.labels.provider(p);
   }
   function optValue(item) { return norm(item.provider) + SEP + String(item.id || ''); }

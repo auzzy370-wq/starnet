@@ -10,7 +10,7 @@ lane: release-0135-prep
 fix:
 origin: customer
 report: support-2026-10-08-saved-station-save-net
-affected: Reported StarNet 0.13.1 Windows, build e0a36dcd3; exact installer artifact unverified
+affected: Reported Vultron 0.13.1 Windows, build e0a36dcd3; exact installer artifact unverified
 family: saved-station-load
 installer: unverified
 recovery: unconfirmed

@@ -22,11 +22,11 @@ A.eq(fs.existsSync(path.join(staged, 'maps.html')), COMMUNITY_LIVE,
   COMMUNITY_LIVE ? 'launched community maps page ships' : 'held community maps page is absent from the deploy artifact');
 const stagedMarket = fs.readFileSync(path.join(staged, 'market.html'), 'utf8');
 A.eq(/<!--held:/.test(stagedMarket), false, 'no held block survives staging');
-A.eq(/account\.starnetos\.com\/account\/skills/.test(stagedMarket), COMMUNITY_LIVE, 'the skill-submit flow ships exactly when sharing is live');
+A.eq(/account\.vultronos\.com\/account\/skills/.test(stagedMarket), COMMUNITY_LIVE, 'the skill-submit flow ships exactly when sharing is live');
 if (!COMMUNITY_LIVE) {
   for (const page of ['index.html', 'market.html', '404.html', 'docs/help.html', 'docs/index.html', 'legal/privacy.html'])
     A.eq(/maps\.html/.test(fs.readFileSync(path.join(staged, page), 'utf8')), false, 'held maps page is never linked from staged ' + page);
-  A.ok(/Not yet\. Today the market carries skills StarNet wrote/.test(stagedMarket), 'held market keeps its pre-launch publish answer');
+  A.ok(/Not yet\. Today the market carries skills Vultron wrote/.test(stagedMarket), 'held market keeps its pre-launch publish answer');
 }
 
 A.eq(fs.existsSync(path.join(staged, 'app', 'assets', 'sprites', '_assembly')), false, 'sprite assembly sources are absent from deploy artifact');
@@ -53,11 +53,11 @@ A.eq(pkg.scripts['website:stage'], 'node scripts/stage-website-deploy.mjs', 'sta
 const home = fs.readFileSync(path.join(root, 'website', 'index.html'), 'utf8');
 const pricingTags = home.match(/<[^>]+data-pricing-link[^>]*>/g) || [];
 A.ok(pricingTags.length > 0 && pricingTags.every(tag => /\shidden(?:\s|>)/.test(tag)), 'held-back pricing is hidden in raw HTML before JavaScript runs');
-A.ok(/rel="canonical" href="https:\/\/starnetos\.com\/"/.test(home), 'homepage publishes its canonical URL');
+A.ok(/rel="canonical" href="https:\/\/vultronos\.com\/"/.test(home), 'homepage publishes its canonical URL');
 A.ok(/og-card\.png\?v=\d+/.test(home), 'social card URL is cache-busted for share crawlers');
 A.ok(!/v0\.8\.5/.test(home), 'raw homepage no longer falls back to the obsolete 0.8.5 train');
 A.ok(/current source build/.test(home) && /Current stable version/.test(home), 'preview and stable release train are labeled separately');
-A.ok(/github\.com\/androoAGI\/starnet\/issues/.test(home), 'community support points at a real public destination');
+A.ok(/github\.com\/YOUR-GITHUB-USER\/vultron\/issues/.test(home), 'community support points at a real public destination');
 A.eq(/data-social|discord\.gg|x\.com\/yourhandle/.test(home), false, 'homepage carries no dormant or invented social links');
 const site = fs.readFileSync(path.join(root, 'website', 'site.js'), 'utf8');
 A.ok(/el\.hidden = !PRICING_LIVE/.test(site), 'the release flag explicitly reveals or hides every pricing fragment');

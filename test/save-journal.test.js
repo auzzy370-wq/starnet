@@ -1,6 +1,6 @@
 /* test/save-journal.test.js — each window's browser copy is its own crash journal (wave-1 save-latch-kill; qa/bugs 27bae3d6).
 
-   Two tabs of one browser share localStorage. The whole save used to live under the one key 'starnet.save', so a tab
+   Two tabs of one browser share localStorage. The whole save used to live under the one key 'vultron.save', so a tab
    reloaded while another ran booted THAT tab's stale snapshot as its own work, and any tab's persist overwrote a crashed
    tab's unsent save. Now (frontend/app/save.js key()/useKey(), cloudsave.js openJournal()):
      a. save.js reads and writes the key it is given, and only a journal key;
@@ -9,7 +9,7 @@
      c. a DEAD window's other journal is merged into the station (POST /api/save/adopt) before this page boots, and removed —
         but never when it changed since it was read (a busy tab that answered late), and a clean one only once the station
         file has been read;
-     d. a backup carries THIS window's save under 'starnet.save' and no other window's journal; an import lands in this
+     d. a backup carries THIS window's save under 'vultron.save' and no other window's journal; an import lands in this
         window's journal, never over another window's.
    Real cloudsave.js + save.js + backup.js in vms; the station is the real handlers + savestore (test/_save-restore-kit.js). */
 'use strict';
@@ -60,11 +60,11 @@ const turn = K.turn;
     // ---- a. save.js ----
     {
       const b = browser(); const p = page(b, { fetch: async () => { throw new Error('offline'); } });
-      A.eq(p.Save.key(), 'starnet.save', 'a: before a journal is opened, the legacy key, as before');
-      A.eq(p.Save.useKey('starnet.save.w.abc_1-2'), 'starnet.save.w.abc_1-2', 'a: a window journal key is taken');
-      A.eq(p.Save.useKey('starnet.settings'), 'starnet.save.w.abc_1-2', 'a: anything else is not a journal key: ignored');
+      A.eq(p.Save.key(), 'vultron.save', 'a: before a journal is opened, the legacy key, as before');
+      A.eq(p.Save.useKey('vultron.save.w.abc_1-2'), 'vultron.save.w.abc_1-2', 'a: a window journal key is taken');
+      A.eq(p.Save.useKey('vultron.settings'), 'vultron.save.w.abc_1-2', 'a: anything else is not a journal key: ignored');
       p.Save.write({ agent: { id: 'agent', name: 'NOVA' } });
-      A.ok(b.cache.has('starnet.save.w.abc_1-2') && !b.cache.has('starnet.save'), 'a: Save.write writes this window\'s journal only');
+      A.ok(b.cache.has('vultron.save.w.abc_1-2') && !b.cache.has('vultron.save'), 'a: Save.write writes this window\'s journal only');
       A.eq(p.Save.load() && p.Save.load().agent.name, 'NOVA', 'a: Save.load reads it back');
     }
 
@@ -74,18 +74,18 @@ const turn = K.turn;
       host.saveStore.save('agent', station(), { compareRevision: true });
       const b = browser();
       const first = page(b, host);
-      A.eq(await first.cs.openJournal(), 'starnet.save', 'b: the first window of a browser takes the legacy key');
+      A.eq(await first.cs.openJournal(), 'vultron.save', 'b: the first window of a browser takes the legacy key');
       first.Save.write(Object.assign(station(), { _saveDirty: false }));
       const second = page(b, host);
       const k2 = await second.cs.openJournal();
-      A.ok(k2 !== 'starnet.save' && /^starnet\.save\.w\./.test(k2), 'b: a second tab, while the first is live, takes a journal of its own (' + k2 + ')');
+      A.ok(k2 !== 'vultron.save' && /^vultron\.save\.w\./.test(k2), 'b: a second tab, while the first is live, takes a journal of its own (' + k2 + ')');
       second.Save.write(Object.assign(station(), { _saveDirty: true, workstreams: [{ id: 'general', title: null, history: [turn('user', 'second tab work')] }] }));
       // the second tab reloads: its page dies (stops answering) and a new page of the same tab (same sessionStorage) boots
       second.channel().close();
       const again = page(b, host, { session: second.session });
       A.eq(await again.cs.openJournal(), k2, 'b: a reloaded tab continues ITS OWN journal');
       A.ok(again.Save.load() && JSON.stringify(again.Save.load()).includes('second tab work'), 'b: and reads its own save from it');
-      A.eq(first.cs.journalKey(), 'starnet.save', 'b: the live first tab kept its journal throughout');
+      A.eq(first.cs.journalKey(), 'vultron.save', 'b: the live first tab kept its journal throughout');
     }
     {
       // a booting tab that did not hear a BUSY running tab answer in time picks that tab's journal: the running tab keeps it
@@ -100,10 +100,10 @@ const turn = K.turn;
       const booting = page(b, host, { id: 'aa-booting' });
       const opening = booting.cs.openJournal();
       setTimeout(() => { ch.open = true; }, 100);   // it hears again before the booting tab's claim
-      A.eq(await opening, 'starnet.save', 'b: (the booting tab, hearing nothing, took the running tab’s journal)');
+      A.eq(await opening, 'vultron.save', 'b: (the booting tab, hearing nothing, took the running tab’s journal)');
       for (let i = 0; i < 6; i++) await settle();
-      A.eq(running.cs.journalKey(), 'starnet.save', 'b: the running tab keeps its journal (it picked first)');
-      A.ok(/^starnet\.save\.w\.aa-booting$/.test(booting.cs.journalKey()), 'b: the booting tab moved to a journal of its own, despite its lower id (' + booting.cs.journalKey() + ')');
+      A.eq(running.cs.journalKey(), 'vultron.save', 'b: the running tab keeps its journal (it picked first)');
+      A.ok(/^vultron\.save\.w\.aa-booting$/.test(booting.cs.journalKey()), 'b: the booting tab moved to a journal of its own, despite its lower id (' + booting.cs.journalKey() + ')');
     }
 
     // ---- c. another dead window's journal: merged into the station, then removed (unless it changed) ----
@@ -113,49 +113,49 @@ const turn = K.turn;
       const rev = host.saveStore.load('agent')._saveRevision;
       const b = browser();
       // two windows died: one left unsent work, one a clean copy
-      b.cache.set('starnet.save.w.deadA', JSON.stringify(station({ _saveDirty: true, _saveRevision: rev, _saveClient: 'deadA', updatedAt: Date.now() + 5,
+      b.cache.set('vultron.save.w.deadA', JSON.stringify(station({ _saveDirty: true, _saveRevision: rev, _saveClient: 'deadA', updatedAt: Date.now() + 5,
         workstreams: [{ id: 'general', title: null, history: [turn('user', 'hi')] }, { id: 'unsent', title: 'U', history: [turn('user', 'dead window A typed this')] }] })));
-      b.cache.set('starnet.save.w.deadB', JSON.stringify(station({ _saveDirty: false, _saveRevision: rev, _saveClient: 'deadB', updatedAt: Date.now() + 10 })));
+      b.cache.set('vultron.save.w.deadB', JSON.stringify(station({ _saveDirty: false, _saveRevision: rev, _saveClient: 'deadB', updatedAt: Date.now() + 10 })));
       const p = page(b, host);
       const k = await p.cs.openJournal();
-      A.eq(k, 'starnet.save.w.deadB', 'c: the page continues the newest dead journal');
+      A.eq(k, 'vultron.save.w.deadB', 'c: the page continues the newest dead journal');
       A.ok(host.saveStore.load('agent').workstreams.some(w => w.id === 'unsent'), 'c: the other dead window\'s unsent work was merged into the station before boot');
-      A.ok(!b.cache.has('starnet.save.w.deadA'), 'c: and its journal removed');
+      A.ok(!b.cache.has('vultron.save.w.deadA'), 'c: and its journal removed');
       await p.cs.reconcile(p.Save.load());
-      A.ok(b.cache.has('starnet.save.w.deadB'), 'c: the continued journal stays (it is this page\'s now)');
+      A.ok(b.cache.has('vultron.save.w.deadB'), 'c: the continued journal stays (it is this page\'s now)');
     }
     {
       const root = K.workspace(); const host = K.sidecar(root);
       host.saveStore.save('agent', station(), { compareRevision: true });
       const rev = host.saveStore.load('agent')._saveRevision;
       const b = browser();
-      b.cache.set('starnet.save.w.busy', JSON.stringify(station({ _saveDirty: true, _saveRevision: rev, _saveClient: 'busy', updatedAt: Date.now() + 1,
+      b.cache.set('vultron.save.w.busy', JSON.stringify(station({ _saveDirty: true, _saveRevision: rev, _saveClient: 'busy', updatedAt: Date.now() + 1,
         workstreams: [{ id: 'general', title: null, history: [turn('user', 'hi')] }, { id: 'b1', title: 'B', history: [turn('user', 'busy one')] }] })));
-      b.cache.set('starnet.save.w.mine', JSON.stringify(station({ _saveDirty: false, _saveRevision: rev, updatedAt: Date.now() + 9 })));
+      b.cache.set('vultron.save.w.mine', JSON.stringify(station({ _saveDirty: false, _saveRevision: rev, updatedAt: Date.now() + 9 })));
       // the "dead" window was only busy: it writes again while the merge of what it held is on its way
       const slow = { fetch: async (u, init) => {
-        if (String(u) === '/api/save/adopt') b.cache.set('starnet.save.w.busy', JSON.stringify(station({ _saveDirty: true, _saveRevision: rev, _saveClient: 'busy', updatedAt: Date.now() + 2,
+        if (String(u) === '/api/save/adopt') b.cache.set('vultron.save.w.busy', JSON.stringify(station({ _saveDirty: true, _saveRevision: rev, _saveClient: 'busy', updatedAt: Date.now() + 2,
           workstreams: [{ id: 'general', title: null, history: [turn('user', 'hi')] }, { id: 'b1', title: 'B', history: [turn('user', 'busy one'), turn('user', 'busy two, after the read')] }] })));
         return host.fetch(u, init);
       } };
       const p = page(b, slow);
       await p.cs.openJournal();
-      A.ok(b.cache.has('starnet.save.w.busy') && b.cache.get('starnet.save.w.busy').includes('busy two, after the read'), 'c: a journal that changed since it was read is never removed');
+      A.ok(b.cache.has('vultron.save.w.busy') && b.cache.get('vultron.save.w.busy').includes('busy two, after the read'), 'c: a journal that changed since it was read is never removed');
     }
     {
       // a clean dead journal is removed only once the station file has been read
       const root = K.workspace(); const host = K.sidecar(root);
       host.saveStore.save('agent', station(), { compareRevision: true });
       const b = browser();
-      b.cache.set('starnet.save.w.old', JSON.stringify(station({ _saveDirty: false, updatedAt: 1 })));
-      b.cache.set('starnet.save.w.new', JSON.stringify(station({ _saveDirty: false, updatedAt: 2 })));
+      b.cache.set('vultron.save.w.old', JSON.stringify(station({ _saveDirty: false, updatedAt: 1 })));
+      b.cache.set('vultron.save.w.new', JSON.stringify(station({ _saveDirty: false, updatedAt: 2 })));
       const off = page(b, { fetch: async () => { throw new Error('offline'); } });
       await off.cs.openJournal(); await off.cs.reconcile(off.Save.load());
-      A.ok(b.cache.has('starnet.save.w.old'), 'c: the station could not be read: a clean dead journal is kept');
+      A.ok(b.cache.has('vultron.save.w.old'), 'c: the station could not be read: a clean dead journal is kept');
       const on = page(b, host);
       await on.cs.openJournal(); await on.cs.reconcile(on.Save.load());
       // `off` is still live (it answers for w.new), so `on` continued w.old or took its own; the other clean one is gone once read
-      const left = Array.from(b.cache.keys()).filter(k => k === 'starnet.save' || k.startsWith('starnet.save.w.'));   // the journals: a migration's recovery copy (and its stamp) is not one
+      const left = Array.from(b.cache.keys()).filter(k => k === 'vultron.save' || k.startsWith('vultron.save.w.'));   // the journals: a migration's recovery copy (and its stamp) is not one
       A.ok(left.length <= 2 && left.includes(on.cs.journalKey()) && left.includes(off.cs.journalKey()), 'c: once the station is read, only the live pages\' journals remain (' + left + ')');
     }
 
@@ -165,17 +165,17 @@ const turn = K.turn;
       // be merged with the OLDER one as the base). It is kept for a later boot; this page's own (newest) save seeds the file.
       const root = K.workspace(); const host = K.sidecar(root);
       const b = browser();
-      b.cache.set('starnet.save.w.older', JSON.stringify(station({ _saveDirty: true, _saveRevision: 0, _saveClient: 'older', updatedAt: Date.now() + 1,
+      b.cache.set('vultron.save.w.older', JSON.stringify(station({ _saveDirty: true, _saveRevision: 0, _saveClient: 'older', updatedAt: Date.now() + 1,
         agent: { id: 'agent', name: 'OLDER', createdAt: 5000 }, workstreams: [{ id: 'general', title: null, history: [turn('user', 'hi')] }, { id: 'o1', title: 'O', history: [turn('user', 'older window')] }] })));
-      b.cache.set('starnet.save.w.newest', JSON.stringify(station({ _saveDirty: true, _saveRevision: 0, _saveClient: 'newest', updatedAt: Date.now() + 9,
+      b.cache.set('vultron.save.w.newest', JSON.stringify(station({ _saveDirty: true, _saveRevision: 0, _saveClient: 'newest', updatedAt: Date.now() + 9,
         agent: { id: 'agent', name: 'NEWEST', createdAt: 5000 }, workstreams: [{ id: 'general', title: null, history: [turn('user', 'hi')] }, { id: 'n1', title: 'N', history: [turn('user', 'newest window')] }] })));
       const posts = [];
       const watch = { fetch: (u, init) => { if (init && init.method === 'POST') posts.push(String(u) + ':' + JSON.parse(init.body)._saveClient); return host.fetch(u, init); } };
       const p = page(b, watch);
       const k = await p.cs.openJournal();
-      A.eq(k, 'starnet.save.w.newest', 'c: absent station: the page continues the newest dead journal');
+      A.eq(k, 'vultron.save.w.newest', 'c: absent station: the page continues the newest dead journal');
       A.ok(!posts.some(x => x === '/api/save:older'), 'c: the older journal is never posted as a plain save over an absent station (' + posts + ')');
-      A.ok(b.cache.has('starnet.save.w.older'), 'c: it is kept for a later boot');
+      A.ok(b.cache.has('vultron.save.w.older'), 'c: it is kept for a later boot');
       await p.cs.reconcile(p.Save.load());
       await p.cs.flush({ force: true });
       A.eq(host.saveStore.load('agent') && host.saveStore.load('agent').agent.name, 'NEWEST', 'c: the station file is seeded by the newest window\'s save, never the older one');
@@ -186,24 +186,24 @@ const turn = K.turn;
       const b = browser();
       const host = { fetch: async () => { throw new Error('offline'); } };
       const p = page(b, host);
-      p.Save.useKey('starnet.save.w.mine');
-      b.cache.set('starnet.save.w.mine', JSON.stringify(station({ agent: { id: 'agent', name: 'MINE', createdAt: 5000 } })));
-      b.cache.set('starnet.save.w.other', JSON.stringify(station({ agent: { id: 'agent', name: 'OTHER', createdAt: 5000 } })));
-      b.cache.set('starnet.save', JSON.stringify(station({ agent: { id: 'agent', name: 'LEGACY-OTHER', createdAt: 5000 } })));
-      b.cache.set('starnet.theme', 'dark');
-      b.cache.set('starnet.save.w.mine.merge', '{"v":1}');   // a journal's merge description (cloudsave writeSide)
+      p.Save.useKey('vultron.save.w.mine');
+      b.cache.set('vultron.save.w.mine', JSON.stringify(station({ agent: { id: 'agent', name: 'MINE', createdAt: 5000 } })));
+      b.cache.set('vultron.save.w.other', JSON.stringify(station({ agent: { id: 'agent', name: 'OTHER', createdAt: 5000 } })));
+      b.cache.set('vultron.save', JSON.stringify(station({ agent: { id: 'agent', name: 'LEGACY-OTHER', createdAt: 5000 } })));
+      b.cache.set('vultron.theme', 'dark');
+      b.cache.set('vultron.save.w.mine.merge', '{"v":1}');   // a journal's merge description (cloudsave writeSide)
       p.ctx.module = { exports: {} };
       vm.runInContext(backupSrc + '\n;globalThis.Backup = Backup;', p.ctx);
       const store = p.ctx.Backup.collectStore();
-      A.eq(JSON.parse(store['starnet.save']).agent.name, 'MINE', 'd: the backup carries THIS window\'s save as the station');
-      A.ok(!Object.keys(store).some(k => /^starnet\.save\.w\./.test(k)), 'd: and no window\'s journal key');
-      A.eq(store['starnet.theme'], 'dark', 'd: other records ride along as before');
+      A.eq(JSON.parse(store['vultron.save']).agent.name, 'MINE', 'd: the backup carries THIS window\'s save as the station');
+      A.ok(!Object.keys(store).some(k => /^vultron\.save\.w\./.test(k)), 'd: and no window\'s journal key');
+      A.eq(store['vultron.theme'], 'dark', 'd: other records ride along as before');
       A.ok(!Object.keys(store).some(k => /merge$/.test(k)), 'd: and no journal merge description (review 10-27: it is this window’s own unsent-save bookkeeping)');
-      const r = p.ctx.Backup.applyBundle({ schema: 'starnet.backup', version: 1, store: { 'starnet.save': JSON.stringify(station({ agent: { id: 'agent', name: 'IMPORTED', createdAt: 5000 } })), 'starnet.save.w.other': 'x', 'starnet.theme': 'light' } });
+      const r = p.ctx.Backup.applyBundle({ schema: 'vultron.backup', version: 1, store: { 'vultron.save': JSON.stringify(station({ agent: { id: 'agent', name: 'IMPORTED', createdAt: 5000 } })), 'vultron.save.w.other': 'x', 'vultron.theme': 'light' } });
       A.ok(r && r.ok === true, 'd: the import applies (' + JSON.stringify(r) + ')');
-      A.eq(JSON.parse(b.cache.get('starnet.save.w.mine')).agent.name, 'IMPORTED', 'd: the imported station lands in THIS window\'s journal');
-      A.eq(JSON.parse(b.cache.get('starnet.save.w.other')).agent.name, 'OTHER', 'd: never over another window\'s journal');
-      A.eq(JSON.parse(b.cache.get('starnet.save')).agent.name, 'LEGACY-OTHER', 'd: nor over the legacy key another window writes');
+      A.eq(JSON.parse(b.cache.get('vultron.save.w.mine')).agent.name, 'IMPORTED', 'd: the imported station lands in THIS window\'s journal');
+      A.eq(JSON.parse(b.cache.get('vultron.save.w.other')).agent.name, 'OTHER', 'd: never over another window\'s journal');
+      A.eq(JSON.parse(b.cache.get('vultron.save')).agent.name, 'LEGACY-OTHER', 'd: nor over the legacy key another window writes');
     }
   } catch (e) { A.ok(false, 'threw: ' + (e && e.stack || e)); }
   finally { K.cleanup(); }

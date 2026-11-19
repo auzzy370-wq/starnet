@@ -21,7 +21,7 @@ function put(root, rel, text) {
   fs.writeFileSync(p, text);
 }
 
-const root = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-source-scan-'));
+const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-source-scan-'));
 try {
   put(root, 'second.mjs', "import puppeteer from 'puppeteer-core';\nawait puppeteer.launch({ headless: false });\n");
   put(root, 'chain.cmd', '@node second.mjs\n');

@@ -1,4 +1,4 @@
-/* ============ StarNet homepage — 2026-09-22 glow-up (+ 2026-10-14 crew console) ============
+/* ============ Vultron homepage — 2026-09-22 glow-up (+ 2026-10-14 crew console) ============
    Loaded ONLY by index.html, after styles.css (which docs + pricing share), so every rule
    here is homepage-scoped by construction. Motion rules carried from the polish pass:
    entrances are opacity/transform only, loops are transform/opacity loops, and
@@ -269,7 +269,7 @@
   .mq-track{ transform:none; }
 }
 
-/* ---------- one StarNet voice (2026-10-14, Andrew: "that ugly basic font doesn't suit") ----------
+/* ---------- one Vultron voice (2026-10-14, Andrew: "that ugly basic font doesn't suit") ----------
    Every reading surface on the homepage speaks VT323 — the station's own face — instead of the
    system sans the later patch rules spread in. VT323 sets ~25% smaller than a sans at the same px,
    so each size is lifted to keep the line lengths and legibility the sans had. */

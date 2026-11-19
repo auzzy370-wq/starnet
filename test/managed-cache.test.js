@@ -1,4 +1,4 @@
-/* node test/managed-cache.test.js — STARNET MANAGED CACHES A CLAUDE PICK (token-burn audit 2026-10-17).
+/* node test/managed-cache.test.js — VULTRON MANAGED CACHES A CLAUDE PICK (token-burn audit 2026-10-17).
 
    The managed (credits) profile rides the openai-compatible adapter, which never sent cache_control, while the cloud proxy
    forwards the body to OpenRouter untouched — so every managed Claude call re-billed the whole prompt as fresh input on the
@@ -27,12 +27,12 @@ async function drive(providerId, model, extra) {
 const marks = body => JSON.stringify(body.messages).split('"cache_control"').length - 1;
 
 (async () => {
-  const claude = await drive('starnet', 'anthropic/claude-sonnet-4.6');
+  const claude = await drive('vultron', 'anthropic/claude-sonnet-4.6');
   A.ok(claude && marks(claude) >= 2, 'a managed Claude pick carries cache breakpoints (system prefix + conversation tail): ' + (claude ? marks(claude) : 'no body'));
   const sys = claude.messages[0];
   A.ok(Array.isArray(sys.content) && sys.content[0].cache_control && sys.content[0].text.indexOf('You are the overseer.') === 0, 'the stable system prefix is its own cached block');
 
-  const gpt = await drive('starnet', 'openai/gpt-5.5');
+  const gpt = await drive('vultron', 'openai/gpt-5.5');
   A.eq(marks(gpt), 0, 'a managed non-Claude pick is unchanged (no cache_control on the wire)');
   A.eq(typeof gpt.messages[0].content, 'string', '...its system message stays a plain string');
 

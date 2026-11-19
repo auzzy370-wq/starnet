@@ -1,6 +1,6 @@
 /* node test/save-quota-writethrough.test.js — #121: station edits silently reverted after a reload.
 
-   The whole save lives under ONE browser-storage key ('starnet.save'). Past the browser's per-site cap (WebView2 /
+   The whole save lives under ONE browser-storage key ('vultron.save'). Past the browser's per-site cap (WebView2 /
    WebKit, ~5 MB; weeks of session history get there) Save.write throws and returns null. persist() only queued the
    station file when that write succeeded, so BOTH copies froze at the first failure: the refit stayed visible, the
    cache and agent.save.json kept the old station, and every restart reverted it.
@@ -96,7 +96,7 @@ const end = app.indexOf('  /* ---------- connect screen', start);
 A.ok(start > 0 && end > start, 'the shipped persist/watch block is found in app.js');
 const tick = () => new Promise(r => setTimeout(r, 0));
 const floorOf = (doc, room) => doc && doc.station && doc.station.rooms && doc.station.rooms[room] && doc.station.rooms[room].floorStyle;
-const cachedFloor = (ls, room) => floorOf(JSON.parse(ls.getItem('starnet.save') || 'null'), room);
+const cachedFloor = (ls, room) => floorOf(JSON.parse(ls.getItem('vultron.save') || 'null'), room);
 
 function livePage(localStorage, fetch, station, ws) {
   const notices = [];
@@ -141,7 +141,7 @@ async function scenario(label, opts) {
   const used = Array.from(ls._map).reduce((n, [k, v]) => n + k.length + v.length, 0);
   limitRef.limit = used + 4000;                                          // the origin is now near its quota
   if (opts.dirtyCache) {                                                  // the macOS report: the cached save carries _saveDirty:true
-    const d = JSON.parse(ls.getItem('starnet.save')); d._saveDirty = true; ls._map.set('starnet.save', JSON.stringify(d));
+    const d = JSON.parse(ls.getItem('vultron.save')); d._saveDirty = true; ls._map.set('vultron.save', JSON.stringify(d));
   }
   // weeks of history push the save past the quota, then the refit lands
   ws.slice = { workstreams: [{ id: 'general', history: [{ role: 'user', content: 'x'.repeat(20000) }] }], activeId: 'general', generalId: 'general' };
@@ -161,7 +161,7 @@ async function scenario(label, opts) {
   await vm.runInContext('CloudSave.flush({ force: true })', page.c);
   const durable = store.load('agent');
   A.eq(floorOf(durable, room), 'verdant', label + ' A1: the station file receives the live refit despite the cache failure');
-  A.eq(ls.getItem('starnet.save'), null, label + ' A1b: once the station file confirms it, the superseded cache entry is removed');
+  A.eq(ls.getItem('vultron.save'), null, label + ' A1b: once the station file confirms it, the superseded cache entry is removed');
   const late = reentrySave(page.c);
   A.ok(late.memory === true && floorOf(late.doc, room) === 'verdant', label + ' G2: after the cache entry is removed, re-entry still resumes the station (never creation)');
 
@@ -227,7 +227,7 @@ async function truthfulStatus() {
   A.ok(h.cacheFailed === true && h.cacheFailedConfirmed === true, 'T4: health records the station file confirmation');
   light = saveLight(page.c);
   A.ok(light.cls === 'stale' && /saving to the station file only/.test(light.title) && /confirmed in the station file/.test(light.title), 'T4: once confirmed the light says: browser cache full, saving to the station file only (got ' + light.title + ')');
-  A.eq(ls.getItem('starnet.save'), null, 'T4: the superseded cache entry is removed only after that confirmation');
+  A.eq(ls.getItem('vultron.save'), null, 'T4: the superseded cache entry is removed only after that confirmation');
 
   const reload = await reloadPage(ls, fetch);
   light = saveLight(reload.c);
@@ -278,7 +278,7 @@ async function bootFromStationFile() {
   const page = livePage(ls, fetch, station, ws);
   station.setFloor(room, 'amber'); await tick();
   await vm.runInContext('CloudSave.flush({ force: true })', page.c);
-  const staleRaw = ls.getItem('starnet.save');
+  const staleRaw = ls.getItem('vultron.save');
   A.eq(JSON.parse(staleRaw)._saveDirty, false, 'B precondition: the cached amber save is clean (acknowledged)');
   const newer = JSON.parse(staleRaw);
   newer.station.rooms[room].floorStyle = 'verdant';
@@ -288,7 +288,7 @@ async function bootFromStationFile() {
   limitRef.limit = Array.from(ls._map).reduce((n, [k, v]) => n + k.length + v.length, 0) + 4000;   // the cache cannot take it
   const reload = await reloadPage(ls, fetch);
   A.eq(floorOf(reload.doc, room), 'verdant', 'B1: a station file the cache cannot hold is resumed from memory, not the stale clean cache');
-  A.eq(ls.getItem('starnet.save'), null, 'B2: the superseded clean cache entry is dropped so the next boot cannot resume it');
+  A.eq(ls.getItem('vultron.save'), null, 'B2: the superseded clean cache entry is dropped so the next boot cannot resume it');
   A.eq(reload.revision, Number(store.load('agent')._saveRevision), 'B3: the in-memory resume carries the station file revision');
 
   // a station-file resume is never replaced by a brand-new creation
@@ -327,7 +327,7 @@ async function queuedAcknowledgement() {
   await vm.runInContext('CloudSave.flush({ force: true })', page.c);
   limitRef.limit = Array.from(ls._map).reduce((n, [k, v]) => n + k.length + v.length, 0) + 4000;
   station.setFloor(room, 'teal'); await tick();                          // fits in the cache, superseded before its flush
-  A.ok(cachedFloor(ls, room) === 'teal' && JSON.parse(ls.getItem('starnet.save'))._saveDirty === true, 'Q precondition: the cache holds a dirty teal edit');
+  A.ok(cachedFloor(ls, room) === 'teal' && JSON.parse(ls.getItem('vultron.save'))._saveDirty === true, 'Q precondition: the cache holds a dirty teal edit');
   ws.slice = { workstreams: [{ id: 'general', history: [{ role: 'user', content: 'x'.repeat(20000) }] }], activeId: 'general', generalId: 'general' };
   station.setFloor(room, 'verdant'); await tick();                       // the cache write fails
   let release;
@@ -338,7 +338,7 @@ async function queuedAcknowledgement() {
   gate.hold = null; release();
   A.eq(await inFlight, true, 'Q precondition: the station file confirms verdant');
   A.eq(floorOf(store.load('agent'), room), 'verdant', 'Q precondition: the station file holds verdant');
-  A.eq(ls.getItem('starnet.save'), null, 'Q1: the confirmation removes the superseded cache entry even with a newer autosave queued');
+  A.eq(ls.getItem('vultron.save'), null, 'Q1: the confirmation removes the superseded cache entry even with a newer autosave queued');
   A.eq(floorOf(reentrySave(page.c).doc, room), 'cobalt', 'Q1: re-entry resumes the queued newest station from memory');
 
   // the page dies before the queued cobalt save is flushed
@@ -376,7 +376,7 @@ async function queuedAcknowledgement() {
   const flight3 = vm.runInContext('CloudSave.flush({ force: true })', page3.c);
   ws3.slice = { workstreams: [{ id: 'general', history: [{ role: 'user', content: 'hello' }] }], activeId: 'general', generalId: 'general' };
   station3.setFloor(room3, 'crimson'); await tick();                      // the history shrank: this save fits the cache
-  A.ok(cachedFloor(ls3, room3) === 'crimson' && JSON.parse(ls3.getItem('starnet.save')).updatedAt === stamp && store3.load('agent').updatedAt === stamp,
+  A.ok(cachedFloor(ls3, room3) === 'crimson' && JSON.parse(ls3.getItem('vultron.save')).updatedAt === stamp && store3.load('agent').updatedAt === stamp,
     'Q3 precondition: the queued crimson save is in the cache with the same stamp as the verdant save in transit');
   gate3.hold = null; release3();
   A.eq(await flight3, true, 'Q3 precondition: the station file confirms verdant');
@@ -393,7 +393,7 @@ async function exported(c) {
   loadBackup(c);
   const bundle = await vm.runInContext('Backup.build()', c);
   let save = null;
-  try { save = JSON.parse(bundle.store['starnet.save'] || 'null'); } catch (_) { save = null; }
+  try { save = JSON.parse(bundle.store['vultron.save'] || 'null'); } catch (_) { save = null; }
   return { bundle, save, verdict: vm.runInContext('Backup.validate', c)(bundle) };
 }
 const exportSays = (e, room) => (e.verdict || 'valid') + ', floor ' + floorOf(e.save, room) + ', name ' + e.bundle.agentName;
@@ -411,7 +411,7 @@ async function exportCarriesTheStation() {
   const room = station.spawnRoomId();
   const ws = { slice: { workstreams: [{ id: 'general', history: [{ role: 'user', content: 'hello' }] }], activeId: 'general', generalId: 'general' } };
   const page = livePage(ls, fetch, station, ws);
-  ls.setItem('starnet.theme', 'green');
+  ls.setItem('vultron.theme', 'green');
   station.setFloor(room, 'amber'); await tick();
   await vm.runInContext('CloudSave.flush({ force: true })', page.c);
   limitRef.limit = Array.from(ls._map).reduce((n, [k, v]) => n + k.length + v.length, 0) + 4000;
@@ -423,11 +423,11 @@ async function exportCarriesTheStation() {
   let e = await exported(page.c);
   A.ok(e.verdict === null && floorOf(e.save, room) === 'verdant' && e.bundle.agentName === 'NOVA', 'E1: before the station file confirms, the export carries the live verdant station, not the stale cache (got ' + exportSays(e, room) + ')');
   A.ok(!!e.save && !Object.prototype.hasOwnProperty.call(e.save, '_saveClient'), 'E1: the exported save carries no window transport id');
-  A.eq(e.bundle.store['starnet.theme'], 'green', 'E1: other settings still ride along');
+  A.eq(e.bundle.store['vultron.theme'], 'green', 'E1: other settings still ride along');
 
   gate.down = false;
   await vm.runInContext('CloudSave.flush({ force: true })', page.c);
-  A.eq(ls.getItem('starnet.save'), null, 'E precondition: the confirmed save removed the cache entry');
+  A.eq(ls.getItem('vultron.save'), null, 'E precondition: the confirmed save removed the cache entry');
   e = await exported(page.c);
   A.ok(e.verdict === null && floorOf(e.save, room) === 'verdant' && e.bundle.agentName === 'NOVA', 'E2: after the cache entry is removed, the export still carries the station (got ' + exportSays(e, room) + ')');
 
@@ -440,7 +440,7 @@ async function exportCarriesTheStation() {
     document: { createElement: () => ({ click() {} }), body: { appendChild() {}, removeChild() {} } }
   });
   const r = await vm.runInContext('Backup.exportAll()', reload.c);
-  A.ok(r.ok && /^starnet-nova-/.test(r.file), 'E3: the requested download is named for the agent (got ' + r.file + ')');
+  A.ok(r.ok && /^vultron-nova-/.test(r.file), 'E3: the requested download is named for the agent (got ' + r.file + ')');
 
   // the file restores the station on a browser with room for it
   const roomy = quotaStorage({ limit: 0 });
@@ -455,7 +455,7 @@ async function exportCarriesTheStation() {
   const page5 = livePage(ls5, makeFetch(makeStore()), station5, { slice: { workstreams: [], activeId: null, generalId: null } });
   station5.setFloor(station5.spawnRoomId(), 'teal'); await tick();
   e = await exported(page5.c);
-  A.ok(e.verdict === null && e.bundle.store['starnet.save'] === ls5.getItem('starnet.save'), 'E5 control: a healthy cache is exported exactly as stored');
+  A.ok(e.verdict === null && e.bundle.store['vultron.save'] === ls5.getItem('vultron.save'), 'E5 control: a healthy cache is exported exactly as stored');
 }
 
 (async () => {

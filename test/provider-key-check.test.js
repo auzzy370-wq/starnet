@@ -91,7 +91,7 @@ A.ok(sidecar.includes("return refuseAtGate(req, res, 'forbidden token');"), 'a s
   const note = noter();
   note({ method: 'GET', url: '/api/state', headers: { host: '127.0.0.1:8787', origin: 'http://127.0.0.1:8787' } }, 'forbidden token');
   A.ok(lines[0] && !/before a sidecar restart/.test(lines[0]) && /no station key/.test(lines[0]), 'a key-less request is not called a stale page: ' + lines[0]);
-  note({ method: 'GET', url: '/api/state', headers: { host: '127.0.0.1:8787', origin: 'http://127.0.0.1:8787', 'x-starnet-token': 'old-launch-key' } }, 'forbidden token');
+  note({ method: 'GET', url: '/api/state', headers: { host: '127.0.0.1:8787', origin: 'http://127.0.0.1:8787', 'x-vultron-token': 'old-launch-key' } }, 'forbidden token');
   A.ok(lines[1] && /before a sidecar restart; reload it/.test(lines[1]), 'a wrong key is still a page from before a restart: ' + lines[1]);
   // the header-less shapes (the COMMS EventSource, the unload save beacon) carry their key as a ?ticket=: a stale
   // ticket is a stale page, not a page the station kept its key from

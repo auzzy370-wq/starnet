@@ -1,4 +1,4 @@
-/* node test/workspace-owner.test.js — process-wide ownership for StarNet's single-writer stores. */
+/* node test/workspace-owner.test.js — process-wide ownership for Vultron's single-writer stores. */
 'use strict';
 const fs = require('node:fs');
 const os = require('node:os');
@@ -6,8 +6,8 @@ const path = require('node:path');
 const A = require('./_assert.js');
 const { makeWorkspaceOwner } = require('../sidecar/workspace-owner.js');
 
-const root = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-owner-'));
-const lockfile = path.join(root, '.starnet-workspace-owner.json');
+const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-owner-'));
+const lockfile = path.join(root, '.vultron-workspace-owner.json');
 try {
   const first = makeWorkspaceOwner({ fs, path, pid: 41001, now: () => 100, nonce: () => 'first', pidAlive: p => p === 41001 });
   const a = first.acquire(root);
@@ -140,7 +140,7 @@ try {
      injected here (the real ones are exercised against real processes below). */
   const REUSE_ROOT = path.join(root, 'reuse');
   fs.mkdirSync(REUSE_ROOT, { recursive: true });
-  const reuseLock = path.join(REUSE_ROOT, '.starnet-workspace-owner.json');
+  const reuseLock = path.join(REUSE_ROOT, '.vultron-workspace-owner.json');
   const STAMP = 1792053050470;   // the soak holder's stamp (08:30:50Z)
   const NODE_EXE = 'C:\\Users\\andro\\AppData\\Local\\hermes\\node\\node.exe';
   const CMD_EXE = 'C:\\Windows\\system32\\cmd.exe';
@@ -362,12 +362,12 @@ try {
   const missingPs = makeProcessIdentity({ platform: 'win32', env: {}, spawnSync: () => ({ error: Object.assign(new Error('spawn ENOENT'), { code: 'ENOENT' }) }) });
   A.eq(missingPs.probe(43136), { ok: false, reason: 'ENOENT' }, 'a missing PowerShell is unknown');
   const macCalls = [];
-  const fakeMac = makeProcessIdentity({ platform: 'darwin', env: { PATH: '/usr/bin', STARNET_API_TOKEN: 'secret-token-value' },
+  const fakeMac = makeProcessIdentity({ platform: 'darwin', env: { PATH: '/usr/bin', VULTRON_API_TOKEN: 'secret-token-value' },
     spawnSync: (file, args, opts) => { macCalls.push({ file, args, opts }); return { status: 0, stdout: 'Wed Oct 15 09:01:52 2026 /bin/zsh\n', stderr: '' }; } });
   A.eq(fakeMac.probe(43136), { ok: true, startedAt: Date.UTC(2026, 9, 15, 9, 1, 52), executable: '/bin/zsh' }, 'darwin probe returns the creation time');
   A.ok(macCalls[0] && macCalls[0].file === '/bin/ps' && macCalls[0].args.join(' ') === '-o lstart= -o comm= -p 43136', 'darwin probe runs ps for exactly that PID');
   A.ok(macCalls[0] && macCalls[0].opts.env.TZ === 'UTC' && macCalls[0].opts.env.LC_ALL === 'C', 'darwin probe pins TZ=UTC and the C locale');
-  A.ok(macCalls[0] && !('STARNET_API_TOKEN' in macCalls[0].opts.env), 'darwin probe does not hand station secrets to ps');
+  A.ok(macCalls[0] && !('VULTRON_API_TOKEN' in macCalls[0].opts.env), 'darwin probe does not hand station secrets to ps');
   const procFiles = { '/proc/43136/stat': '43136 (bash) S ' + Array.from({ length: 18 }, () => '0').join(' ') + ' 912345 1',
     '/proc/self/stat': '777 (node) R ' + Array.from({ length: 18 }, () => '0').join(' ') + ' 777001 1' };
   const fakeLinux = makeProcessIdentity({ platform: 'linux',

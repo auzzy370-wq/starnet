@@ -32,7 +32,7 @@ const HOST = '127.0.0.1';
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const REPORT = 'report · v2.md', IMAGE = 'a · b.png', AUDIO = 'clip.mp3', VIDEO = 'clip.mp4', DRIFT = 'drift/x.md';
 const BYTES = { [REPORT]: '# Report v2\nbytes-of-the-report · exact', [IMAGE]: 'PNG-a-b-bytes', [AUDIO]: 'MP3-bytes', [VIDEO]: 'MP4-bytes', [DRIFT]: 'inside-the-jail' };
-const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-file-rows-'));
+const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-file-rows-'));
 const ABSOLUTE = path.join(scratch, 'outside', 'absolute-note.md');   // a legal write the tools may make, but not a path a row may publish
 const WORKER_FILE = 'worker-note.md', WORKER_BYTES = 'the worker wrote this', PROJECT_FILE = 'src/project-note.md', PROJECT_BYTES = 'inside the project';
 
@@ -100,10 +100,10 @@ const fileRowsOf = body => rowsOf(body).filter(row => row.kind === 'deliverable'
   const project = fs.realpathSync(path.join(scratch, 'project'));
   const outside = path.join(scratch, 'outside');
   fs.mkdirSync(outside, { recursive: true });
-  const fixture = SidecarFixture.create({ prefix: 'starnet-file-rows-', timeoutMs: 40000, env: {
-    SKYNET_OPENROUTER_BASE: base, STARNET_OPENROUTER_BASE: base, SKYNET_OPENROUTER_KEY: 'sk-or-v1-file-rows-fixture', STARNET_OPENROUTER_KEY: 'sk-or-v1-file-rows-fixture',
-    SKYNET_DEFAULT_MODEL: 'test/model', STARNET_DEFAULT_MODEL: 'test/model', SKYNET_CRON_TICK_MS: '5000', STARNET_CRON_TICK_MS: '5000',
-    SKYNET_FULL_ACCESS: '1', STARNET_FULL_ACCESS: '1', SKYNET_AUX_BUDGET: '0', SKYNET_REFLECT: '0', SKYNET_SKILL_REVIEW: '0', SKYNET_EDGE_TTS: '0', SKYNET_QUEST_REFRESH_MS: '0', SKYNET_SCOUT: '0', SKYNET_THREAD_MINE: '0',
+  const fixture = SidecarFixture.create({ prefix: 'vultron-file-rows-', timeoutMs: 40000, env: {
+    SKYNET_OPENROUTER_BASE: base, VULTRON_OPENROUTER_BASE: base, SKYNET_OPENROUTER_KEY: 'sk-or-v1-file-rows-fixture', VULTRON_OPENROUTER_KEY: 'sk-or-v1-file-rows-fixture',
+    SKYNET_DEFAULT_MODEL: 'test/model', VULTRON_DEFAULT_MODEL: 'test/model', SKYNET_CRON_TICK_MS: '5000', VULTRON_CRON_TICK_MS: '5000',
+    SKYNET_FULL_ACCESS: '1', VULTRON_FULL_ACCESS: '1', SKYNET_AUX_BUDGET: '0', SKYNET_REFLECT: '0', SKYNET_SKILL_REVIEW: '0', SKYNET_EDGE_TTS: '0', SKYNET_QUEST_REFRESH_MS: '0', SKYNET_SCOUT: '0', SKYNET_THREAD_MINE: '0',
     NODE_OPTIONS: '--require ' + JSON.stringify(path.join(__dirname, 'fixtures', 'deliverable-rows-fault.cjs'))   // inert until the arm file exists (leg 7)
   } });
   const grants = path.join(fixture.workspace, 'permissions.allow.json');

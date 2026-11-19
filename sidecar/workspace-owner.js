@@ -1,6 +1,6 @@
 /* sidecar/workspace-owner.js — fail-closed, process-wide ownership for one WORKSPACES root.
 
-   StarNet's durable stores are intentionally single-writer. Atomic individual-file writes prevent torn
+   Vultron's durable stores are intentionally single-writer. Atomic individual-file writes prevent torn
    files, but they cannot prevent two sidecars from loading the same snapshot and then overwriting each
    other's later changes. This owner claim makes the existing "one sidecar per WORKSPACES" invariant real.
 
@@ -130,7 +130,7 @@ function makeWorkspaceOwner(deps) {
     // kill(0) once more. Only ESRCH answers false and a live holder never answers ESRCH, so this is the same proof as the first look.
     return !!lastIdentity && lastIdentity.verdict === 'unknown' && !pidAlive(holder.pid);
   }
-  const filename = String(d.filename || '.starnet-workspace-owner.json');
+  const filename = String(d.filename || '.vultron-workspace-owner.json');
   if (!fs || typeof fs.openSync !== 'function' || typeof fs.renameSync !== 'function') {
     throw new Error('workspace-owner: an injected fs with openSync/renameSync is required');
   }

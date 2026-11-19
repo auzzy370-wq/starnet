@@ -174,7 +174,7 @@
 
   // Symbol-keyed and non-enumerable: JSON.stringify, Object.keys and object spread never see it, so a tag rides the
   // message object through the loop without reaching the wire or the disk (the transcript's PERSISTED marker idiom).
-  const KIND_TAG = Symbol('starnet.turn.kind');
+  const KIND_TAG = Symbol('vultron.turn.kind');
   function tag(msg, kind, extra) {
     if (!msg || typeof msg !== 'object' || !isKind(kind)) return msg;
     if (!Object.isExtensible(msg) && !Object.prototype.hasOwnProperty.call(msg, KIND_TAG)) return msg;

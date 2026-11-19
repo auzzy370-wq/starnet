@@ -41,7 +41,7 @@ const { makeReplayedTaint } = require('../sidecar/taint-replay.js');
 const FeedbackMemory = require('../sidecar/feedbackmemory.js');
 const { reviseRecord } = require('../sidecar/tools/builtin/notebook.js');
 
-function temp(name) { return fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-tomb-' + name + '-')); }
+function temp(name) { return fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-tomb-' + name + '-')); }
 function remove(dir) { fs.rmSync(dir, { recursive: true, force: true }); }
 const clockAt = start => { let t = start; return { now: () => t, set: v => { t = v; } }; };
 

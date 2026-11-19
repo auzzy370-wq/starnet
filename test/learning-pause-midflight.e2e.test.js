@@ -107,7 +107,7 @@ const setLearning = async (fixture, enabled) => (await fixture.json('POST', '/ap
 (async () => {
   const mock = await startMock();
   const fixture = SidecarFixture.create({
-    prefix: 'starnet-learning-pause-', timeoutMs: 30000,
+    prefix: 'vultron-learning-pause-', timeoutMs: 30000,
     env: { SKYNET_OPENROUTER_BASE: mock.base, SKYNET_THREAD_MINE: '0', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0', SKYNET_SCOUT: '0' }
   });
   const ws = fixture.workspace;

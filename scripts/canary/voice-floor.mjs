@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
- * voice-floor.mjs — the LIVE canary for StarNet's free voice floor (Microsoft's Edge read-aloud endpoint).
+ * voice-floor.mjs — the LIVE canary for Vultron's free voice floor (Microsoft's Edge read-aloud endpoint).
  *
  * WHY. A station with no OpenRouter, Gemini or OpenAI key speaks only through the keyless Edge floor. On 2026-10-26
  * Microsoft began refusing the v1 Sec-MS-GEC token with HTTP 403, and every keyless station went silent — found by a
@@ -78,24 +78,24 @@ export function judgeTts({ status, headers, body }) {
 }
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const canaryText = () => 'StarNet voice floor canary, check ' + Date.now() + '.';   // unique: never a cache hit
+const canaryText = () => 'Vultron voice floor canary, check ' + Date.now() + '.';   // unique: never a cache hit
 
 async function bootToken(base) {
   const r = await fetch(base + '/', { headers: { Origin: base } });
-  const m = /window\.__STARNET_API_TOKEN__=("(?:\\.|[^"])*")/.exec(await r.text());
+  const m = /window\.__VULTRON_API_TOKEN__=("(?:\\.|[^"])*")/.exec(await r.text());
   try { return m ? String(JSON.parse(m[1]) || '') : ''; } catch (_) { return ''; }
 }
 
 async function checkUrl(base) {
   const token = await bootToken(base);
   const headers = { 'Content-Type': 'application/json', Origin: base };
-  if (token) headers['X-StarNet-Token'] = token;
+  if (token) headers['X-Vultron-Token'] = token;
   const r = await fetch(base + '/api/tts', { method: 'POST', headers, body: JSON.stringify({ text: canaryText() }), signal: AbortSignal.timeout(45000) });
   const body = Buffer.from(await r.arrayBuffer());
   const verdict = judgeTts({ status: r.status, headers: r.headers, body });
   // the status route names the leg's last outcome (absent on a sidecar older than it: reported, not required)
   try {
-    const s = await fetch(base + '/api/tts/status', { headers: token ? { 'X-StarNet-Token': token, Origin: base } : { Origin: base }, signal: AbortSignal.timeout(10000) });
+    const s = await fetch(base + '/api/tts/status', { headers: token ? { 'X-Vultron-Token': token, Origin: base } : { Origin: base }, signal: AbortSignal.timeout(10000) });
     if (s.ok) {
       const st = await s.json();
       verdict.status_edge = st && st.legs && st.legs.edge ? st.legs.edge : null;
@@ -120,7 +120,7 @@ async function checkModule(file) {
 // The keyless, hermetic boot (allowlisted env, fresh profile and workspace, no boot probe of its own) is
 // keyless-sidecar.mjs, shared with the WebKit floor job.
 function checkSidecar(entry, port) {
-  return withKeylessSidecar(entry, port, base => checkUrl(base), { profilePrefix: 'starnet-voice-canary-' });
+  return withKeylessSidecar(entry, port, base => checkUrl(base), { profilePrefix: 'vultron-voice-canary-' });
 }
 
 async function main() {

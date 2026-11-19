@@ -363,13 +363,13 @@ async function collect(provider, req) { const out = []; for await (const e of pr
     A.eq(turnAnchors, [0, 2, 5], 'split system + the user turn + the previous reply; the run-context and recall notes are not stamped');
     A.eq(turn.map(m => m.role), ['system', 'user', 'assistant', 'user', 'user', 'user'], 'the notes ride the user side for Claude');
     A.eq((JSON.stringify(turn).match(/cache_control/g) || []).length, 4, 'four markers: two system, two tail');
-    process.env.STARNET_STABLE_PREFIX = '0';
+    process.env.VULTRON_STABLE_PREFIX = '0';
     const legacy = applyCacheControl(provider.preserveClaudeContinuations([
       { role: 'system', content: prefix + 'tail' }, { role: 'user', content: 'q1' }, { role: 'assistant', content: 'a1' },
       { role: 'system', content: provider.runContextNote('x') }, { role: 'user', content: 'q2' }
     ], 'anthropic/claude-sonnet-4.6'), 'anthropic/claude-sonnet-4.6', prefix);
-    delete process.env.STARNET_STABLE_PREFIX;
-    A.eq(legacy.map((m, i) => Array.isArray(m.content) && m.content.some(p => p && p.cache_control) ? i : -1).filter(i => i >= 0), [0, 3, 4], 'kill switch STARNET_STABLE_PREFIX=0: the old per-message stamping');
+    delete process.env.VULTRON_STABLE_PREFIX;
+    A.eq(legacy.map((m, i) => Array.isArray(m.content) && m.content.some(p => p && p.cache_control) ? i : -1).filter(i => i >= 0), [0, 3, 4], 'kill switch VULTRON_STABLE_PREFIX=0: the old per-message stamping');
   }
 
   // L2. caching is actually WIRED into the request body for Anthropic models (and absent for others)

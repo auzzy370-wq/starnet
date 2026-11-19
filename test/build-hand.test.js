@@ -1,4 +1,4 @@
-/* test/build-hand.test.js — THE HAND (2026-10-10, Andrew: "fully polish and integrate this into starnet" — his build-mode prototype).
+/* test/build-hand.test.js — THE HAND (2026-10-10, Andrew: "fully polish and integrate this into vultron" — his build-mode prototype).
    Building a line is DRAGGING: drag a machine and the belt follows the pointer (connect / re-route / merge into a belt / empty
    floor → pick what goes there), drag a belt's middle and it branches, a junction held over a belt goes ON it, right-click
    removes, R flips the corner, Alt shows every setting, and every undo says UNDID · <WHAT> where it happened.

@@ -116,7 +116,7 @@ function summarizeCapabilities(resolved, opts) {
 
   let note = '\n<capabilities_ground_truth>\n' +
     (unrestrictedHost
-      ? 'FULL POWER is active: the Commander authorized the whole local computer. StarNet policy must not refuse a host task; only report real unavailable OS, hardware, credential, account, or service prerequisites. '
+      ? 'FULL POWER is active: the Commander authorized the whole local computer. Vultron policy must not refuse a host task; only report real unavailable OS, hardware, credential, account, or service prerequisites. '
       : 'These are your REAL powers this run, decided by the objects placed on your station floor and host-granted station roles -- not aspirational. ') +
     'This block is AUTHORITATIVE: if anything earlier in your instructions implies you always have web or file access, ignore it -- what follows is what you ACTUALLY have right now:\n' +
     (toolless && havePhrases.length
@@ -168,7 +168,7 @@ function summarizeCapabilities(resolved, opts) {
       // the next run (the floor decides each run's grants)
       note += 'If the Commander asks for something you lack, do NOT claim, promise, or pretend to do it. Say plainly you can\'t yet, ' +
         // the terminal CLI has no station floor on screen: name the object, placed in the desktop app (never "I'll place it")
-        (opts.viewer === 'terminal' ? 'and name the object to place in the StarNet desktop app to grant it: '
+        (opts.viewer === 'terminal' ? 'and name the object to place in the Vultron desktop app to grant it: '
           : capIds.has('orchestrator') ? 'and offer to place it yourself (station builder add; they approve; works from their next message): ' : 'and name the object to place to grant it: ') +
         lackCore.map((c) => c.have + ' -> place ' + c.object).concat(roomExtra.map((c) => extraHave(c, noImageRoute) + ' -> place ' + c.object)).join('; ') + '. ' +
         // only what is true of FLOOR gear: files + terminal come from a hire's execution profile and connectors are
@@ -190,7 +190,7 @@ function summarizeCapabilities(resolved, opts) {
           : '') +
         'Do NOT claim, promise, or pretend to do what you lack. Do everything you genuinely can, then state plainly what is left for ' + delegatedBy + '.\n';
     } else if (ownerTrusted) {
-      note += 'This is an authenticated owner Telegram session: it has the same non-physical authority as the StarNet desktop app. ' +
+      note += 'This is an authenticated owner Telegram session: it has the same non-physical authority as the Vultron desktop app. ' +
         'Do NOT claim, promise, or pretend to do what is genuinely absent; state the actual missing setup or tool plainly.\n';
     } else {
       // GRANT-AWARE (2026-07-25): a routine can now be granted the terminal and/or its Commander's MCP

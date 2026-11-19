@@ -1,4 +1,4 @@
-/* STARNET — windows/outbox.js : the OUTBOX — FINISHED WORK window (extracted verbatim from stationui.js).
+/* VULTRON — windows/outbox.js : the OUTBOX — FINISHED WORK window (extracted verbatim from stationui.js).
    Loads AFTER stationui.js (see index.html) and registers itself via StationUI.registerWindow;
    the only stationui internals it touches are the enumerated StationUI.h helper surface
    (esc/sfx/fmtRel/notify/openTerm, the WS/persistWS workstream seam, and the live present view). */
@@ -103,7 +103,7 @@
        pushing the library thousands of pixels down with no way to fold them. Now the heading folds the whole section (the
        choice is remembered), only the first FEW rows show until SHOW ALL, and CLEAR ALL collects every crate in one go —
        nothing is deleted (files stay in the library below, each run in its session); only the "waiting for your verdict" reminder goes. */
-    const FOLD_KEY = 'starnet.dlv.review.open', FEW = 3;
+    const FOLD_KEY = 'vultron.dlv.review.open', FEW = 3;
     let sectionOpen = true; try { sectionOpen = localStorage.getItem(FOLD_KEY) !== '0'; } catch (_) {}
     let showAll = false;
     const tog = body.querySelector('.dlv-review-tog'), more = body.querySelector('.ob-showall'), clearAll = body.querySelector('.ob-clearall');

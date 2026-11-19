@@ -14,20 +14,20 @@
 //!     (KILL_ON_JOB_CLOSE) and with every stop of the sidecar (`end_leftovers`). The station's own windows — a window
 //!     shown by a DIRECT child of the sidecar, i.e. the station browser (browser.js spawns it) — are the station's too.
 //!   - an app the station opened ON PURPOSE for the person (desktop.open, a Resolve launch, a full-power shell command that
-//!     opens a window: sidecar/breakaway.js routes them through `--starnet-breakaway`): created with
+//!     opens a window: sidecar/breakaway.js routes them through `--vultron-breakaway`): created with
 //!     CREATE_BREAKAWAY_FROM_JOB, so it is never in the job and survives everything, as an app the person opened would.
 //!   - a station program that opens something FOR the person (`claude auth login` starts the person's browser when it
 //!     is not running): launched TETHERED — outside the job, yet ended with its launcher (a cancel, a stop, a hard
 //!     kill); what it opened is in no job at all and lives on.
 //!   - anything else in the job that shows a window on the person's screen when the sidecar is stopped (an app opened some
-//!     other way, e.g. `code .` in a StarNet terminal): SPARED by `end_leftovers` WITH ITS WHOLE PROCESS TREE (a
+//!     other way, e.g. `code .` in a Vultron terminal): SPARED by `end_leftovers` WITH ITS WHOLE PROCESS TREE (a
 //!     multi-process app's renderers, GPU and extension hosts own no window of their own), and the job's kill-on-close is
 //!     released so that tree survives the job's close. "Shows a window" means a visible, uncloaked, non-tool top-level
 //!     window bigger than a helper's (or minimized). A crash of the shell itself cannot make that judgement: those die
 //!     with it (stated, not fixed — only a breakaway launch survives a crash).
 //!   - the update installer, folder / link openers and every other process the SHELL starts: never in the job (only the
 //!     sidecar is assigned), so a quit or an update never touches them.
-//!   - the `starnet` terminal: never the station's child, never in the job.
+//!   - the `vultron` terminal: never the station's child, never in the job.
 //! Assignment happens right after the sidecar is created; the sidecar starts no child of its own in that window (Node
 //! takes far longer than one call to boot), so the whole tree is inside. A shell already running inside a job that
 //! forbids nesting or breakaway still works: assignment then fails open (logged) and the reaper / parent watch remain.
@@ -440,7 +440,7 @@ pub fn visible_window_pids() -> std::collections::HashSet<u32> {
 
 // ---- the breakaway launcher -------------------------------------------------------------------------------------
 //
-// `skynet-desktop.exe --starnet-breakaway <hex JSON>` — how the sidecar opens an app FOR the person so that it is never
+// `skynet-desktop.exe --vultron-breakaway <hex JSON>` — how the sidecar opens an app FOR the person so that it is never
 // the station's (sidecar/breakaway.js builds the call). The spec is { file, args, verbatim, hide }: exactly what Node's
 // spawn would have run (`verbatim` = windowsVerbatimArguments, e.g. a `cmd /d /s /c "…"` shell line; `hide` =
 // windowsHide). This process is itself in the station's job; it starts `file` with CREATE_BREAKAWAY_FROM_JOB, so that
@@ -455,7 +455,7 @@ pub fn visible_window_pids() -> std::collections::HashSet<u32> {
 // close and lets its children break away SILENTLY. Ending the launcher (a cancelled sign-in's taskkill, the station's
 // job closing on a hard kill) ends the program; what the program opened is in no job at all and lives on.
 
-pub const BREAKAWAY_FLAG: &str = "--starnet-breakaway";
+pub const BREAKAWAY_FLAG: &str = "--vultron-breakaway";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BreakawaySpec {
@@ -505,7 +505,7 @@ pub fn breakaway_main() -> Option<i32> {
 }
 
 /// The dispatch, on any argv: None unless the FIRST argument is exactly the flag — every other launch (a person
-/// opening StarNet, `--background`, an updater relaunch) goes on to start the app as always.
+/// opening Vultron, `--background`, an updater relaunch) goes on to start the app as always.
 pub fn breakaway_main_from(
     argv: impl IntoIterator<Item = std::ffi::OsString>,
     run: &dyn Fn(&BreakawaySpec) -> i32,
@@ -518,7 +518,7 @@ pub fn breakaway_main_from(
     Some(match spec {
         Some(spec) => run(&spec),
         None => {
-            eprintln!("starnet-breakaway: unreadable launch spec");
+            eprintln!("vultron-breakaway: unreadable launch spec");
             2
         }
     })
@@ -556,7 +556,7 @@ fn tether(child: &std::process::Child, file: &str) -> Option<ProcessJob> {
     match job.and_then(|job| job.assign(child).map(|()| job)) {
         Ok(job) => Some(job),
         Err(error) => {
-            eprintln!("starnet-breakaway: {file} runs untethered ({error})");
+            eprintln!("vultron-breakaway: {file} runs untethered ({error})");
             None
         }
     }
@@ -576,13 +576,13 @@ pub fn run_breakaway(spec: &BreakawaySpec) -> i32 {
             match child.wait() {
                 Ok(status) => status.code().unwrap_or(1),
                 Err(error) => {
-                    eprintln!("starnet-breakaway: {error}");
+                    eprintln!("vultron-breakaway: {error}");
                     1
                 }
             }
         }
         Err(error) => {
-            eprintln!("starnet-breakaway: could not start {}: {error}", spec.file);
+            eprintln!("vultron-breakaway: could not start {}: {error}", spec.file);
             // the code Node reports for a program that could not be found
             if error.kind() == std::io::ErrorKind::NotFound {
                 127
@@ -599,7 +599,7 @@ pub fn run_breakaway(spec: &BreakawaySpec) -> i32 {
     match std::process::Command::new(&spec.file).args(&spec.args).status() {
         Ok(status) => status.code().unwrap_or(1),
         Err(error) => {
-            eprintln!("starnet-breakaway: could not start {}: {error}", spec.file);
+            eprintln!("vultron-breakaway: could not start {}: {error}", spec.file);
             1
         }
     }
@@ -646,7 +646,7 @@ mod tests {
         assert_eq!(breakaway_main_from(os(&["skynet-desktop.exe", BREAKAWAY_FLAG, "zz"]), &run), Some(2), "an unreadable spec exits 2, never starts the app");
         assert_eq!(breakaway_main_from(os(&["skynet-desktop.exe", BREAKAWAY_FLAG]), &run), Some(2), "no spec exits 2 too");
         assert_eq!(ran.get(), 1, "only the readable spec ran anything");
-        for argv in [&["skynet-desktop.exe"][..], &["skynet-desktop.exe", "--background", "--terminal-pid", "42"], &["skynet-desktop.exe", "x", BREAKAWAY_FLAG, &spec], &["skynet-desktop.exe", "--starnet-breakaway2", &spec]] {
+        for argv in [&["skynet-desktop.exe"][..], &["skynet-desktop.exe", "--background", "--terminal-pid", "42"], &["skynet-desktop.exe", "x", BREAKAWAY_FLAG, &spec], &["skynet-desktop.exe", "--vultron-breakaway2", &spec]] {
             assert_eq!(breakaway_main_from(os(argv), &run), None, "{argv:?} starts the app as always");
         }
         assert_eq!(ran.get(), 1);
@@ -904,7 +904,7 @@ mod tests {
             eprintln!("node.exe not on PATH — nothing to prove here, skipping");
             return;
         };
-        let dir = std::env::temp_dir().join(format!("starnet-tree-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("vultron-tree-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         // app.js <out>: one windowless helper child, then writes {pid, helper} and idles
         std::fs::write(
@@ -986,7 +986,7 @@ console.log(JSON.stringify({cmd:cmd.pid,server:sv.pid}));setInterval(function(){
             eprintln!("this test process sits in a job that forbids breakaway (cargo test does that): run the test binary directly to prove the tether");
             return;
         }
-        let dir = std::env::temp_dir().join(format!("starnet-tether-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("vultron-tether-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let (prog_out, opened_out) = (dir.join("prog.pid"), dir.join("opened.pid"));
         let script = format!(
@@ -998,7 +998,7 @@ console.log(JSON.stringify({cmd:cmd.pid,server:sv.pid}));setInterval(function(){
         let job = ProcessJob::for_station().unwrap();
         let mut launcher = std::process::Command::new(std::env::current_exe().unwrap())
             .args(["--exact", "process_job::tests::breakaway_launcher_child", "--nocapture", "--test-threads=1"])
-            .env("STARNET_TEST_BREAKAWAY_SPEC", hex(&spec))
+            .env("VULTRON_TEST_BREAKAWAY_SPEC", hex(&spec))
             .stdout(std::process::Stdio::null())
             .spawn()
             .unwrap();
@@ -1023,7 +1023,7 @@ console.log(JSON.stringify({cmd:cmd.pid,server:sv.pid}));setInterval(function(){
     #[cfg(windows)]
     #[test]
     fn breakaway_launcher_child() {
-        let Ok(spec) = std::env::var("STARNET_TEST_BREAKAWAY_SPEC") else {
+        let Ok(spec) = std::env::var("VULTRON_TEST_BREAKAWAY_SPEC") else {
             return;
         };
         // wait until the parent test has put this process in its job
@@ -1042,7 +1042,7 @@ console.log(JSON.stringify({cmd:cmd.pid,server:sv.pid}));setInterval(function(){
             eprintln!("node.exe not on PATH — nothing to prove here, skipping");
             return;
         };
-        let dir = std::env::temp_dir().join(format!("starnet-breakaway-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("vultron-breakaway-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let can_break_away = breakaway_possible_here();
         if !can_break_away {
@@ -1064,7 +1064,7 @@ console.log(JSON.stringify({cmd:cmd.pid,server:sv.pid}));setInterval(function(){
             };
             let mut launcher = std::process::Command::new(std::env::current_exe().unwrap())
                 .args(["--exact", "process_job::tests::breakaway_launcher_child", "--nocapture", "--test-threads=1"])
-                .env("STARNET_TEST_BREAKAWAY_SPEC", hex(&spec))
+                .env("VULTRON_TEST_BREAKAWAY_SPEC", hex(&spec))
                 .stdout(std::process::Stdio::null())
                 .spawn()
                 .unwrap();

@@ -1,4 +1,4 @@
-/* STARNET — navdock.js : the grouped bottom-bar navigation.
+/* VULTRON — navdock.js : the grouped bottom-bar navigation.
    The 13 station panels were a flat, undifferentiated row of cryptic glyphs. They're now
    regrouped (in index.html) into 4 labelled docks — CREW / WORK / BUILD / SYSTEM — each a
    .bb-grp trigger that opens a .bb-menu popover of its items. The item buttons keep their
@@ -36,7 +36,7 @@
     const edge = 8;
     let zoom = 1;
     try { zoom = (typeof U === 'object' && U && typeof U.elZoom === 'function') ? Number(U.elZoom(menu)) || 1 : 1; } catch (_) {}
-    // vw is resolved before StarNet's uiZoom transform; cap the menu in the visual frame too.
+    // vw is resolved before Vultron's uiZoom transform; cap the menu in the visual frame too.
     const cssWidth = Math.max(0, window.innerWidth - edge * 2) / zoom;
     menu.style.width = cssWidth + 'px';
     menu.style.maxWidth = cssWidth + 'px';
@@ -93,7 +93,7 @@
      The interaction model changed (flat buttons -> dock popovers), so a brand-new station
      gets one dismissible hint pointing at the docks. Shown on first game-screen view, then
      retired permanently the moment the Commander opens any dock or taps ✕. */
-  const COACH_KEY = 'starnet.navcoach.seen';
+  const COACH_KEY = 'vultron.navcoach.seen';
   const coach = document.getElementById('nav-coach');
   let coachTimer = 0;
   // RETIRING IS NOT HIDING (live walk 10-14: the tip came back after a reload 40 minutes into heavy use). The 15 s fade
@@ -113,23 +113,23 @@
   let coachShown = false;
   // NOT OVER THE ARRIVAL (org P31, 2026-10-14): #screen-game goes active while the awakening still owns the room
   // (World.beginAwakening), so the coach waited for nothing and talked over the first meeting. It now waits for
-  // World.releaseAwakening, which fires 'starnet:awakening-released'; a returning Commander (no awakening) is unchanged.
+  // World.releaseAwakening, which fires 'vultron:awakening-released'; a returning Commander (no awakening) is unchanged.
   const awakeningHeld = () => typeof World !== 'undefined' && typeof World.awakeningHeld === 'function' && World.awakeningHeld();
   // NOT OVER A COVERED COMMS (org P31 review fix): closeOut releases the awakening while the Dialogue panel — mounted
   // over #chat-panel — still runs the first-task hand-off and the tour, so "Talk to your agent up in COMMS" would point
   // at a COMMS the panel hides. The coach also holds while a Dialogue is open; Dialogue.close fires
-  // 'starnet:dialogue-closed' and the coach asks again then.
+  // 'vultron:dialogue-closed' and the coach asks again then.
   const dialogueOpen = () => typeof Dialogue !== 'undefined' && typeof Dialogue.isOpen === 'function' && Dialogue.isOpen();
   // NOT INSIDE THE TOUR (org P31 wire): the optional tour closes the Dialogue mid-way (TRY A SMALL FILE EXAMPLE reveals
   // COMMS), and that close is not the end of onboarding — two hints would compete for the first click. The coach holds
   // while Tutorial.isCoaching() (the same check dockglow/build stand down on); Tutorial.finishUp fires
-  // 'starnet:tutorial-ended' once the tour is over and the coach asks again then.
+  // 'vultron:tutorial-ended' once the tour is over and the coach asks again then.
   const tourCoaching = () => typeof Tutorial !== 'undefined' && typeof Tutorial.isCoaching === 'function' && !!Tutorial.isCoaching();
   function showCoachOnce() {
     if (!coach || !coach.hidden || coachShown) return;
     if (awakeningHeld()) return;   // the arrival is still on screen — the release event asks again
     if (dialogueOpen()) return;    // COMMS is covered by the conversation panel — the close event asks again
-    if (tourCoaching()) return;    // the optional tour still owns the first click — 'starnet:tutorial-ended' asks again
+    if (tourCoaching()) return;    // the optional tour still owns the first click — 'vultron:tutorial-ended' asks again
     try { if (localStorage.getItem(COACH_KEY)) return; } catch (_) {}
     coachShown = true;
     coach.hidden = false;
@@ -143,9 +143,9 @@
       if (game.classList.contains('active')) showCoachOnce();
       new MutationObserver(() => { if (game.classList.contains('active')) showCoachOnce(); })
         .observe(game, { attributes: true, attributeFilter: ['class'] });
-      document.addEventListener('starnet:awakening-released', () => { if (game.classList.contains('active')) showCoachOnce(); });
-      document.addEventListener('starnet:dialogue-closed', () => { if (game.classList.contains('active')) showCoachOnce(); });
-      document.addEventListener('starnet:tutorial-ended', () => { if (game.classList.contains('active')) showCoachOnce(); });
+      document.addEventListener('vultron:awakening-released', () => { if (game.classList.contains('active')) showCoachOnce(); });
+      document.addEventListener('vultron:dialogue-closed', () => { if (game.classList.contains('active')) showCoachOnce(); });
+      document.addEventListener('vultron:tutorial-ended', () => { if (game.classList.contains('active')) showCoachOnce(); });
     }
   }
 
@@ -237,7 +237,7 @@
       if (sysBadge) {
         if (sysBadge.textContent !== n) sysBadge.textContent = n;
         if (sysBadge.hidden === !!n) sysBadge.hidden = !n;
-        const label = notifs ? 'unread notifications' : (update ? 'a StarNet update is ready' : 'unread notifications');
+        const label = notifs ? 'unread notifications' : (update ? 'a Vultron update is ready' : 'unread notifications');
         if (sysBadge.getAttribute('aria-label') !== label) sysBadge.setAttribute('aria-label', label);
       }
     }

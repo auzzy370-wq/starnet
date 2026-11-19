@@ -13,7 +13,7 @@
    Codex A3-LIFE-01: an input is emptied only while it still holds the very File objects whose paths were proven,
    compared in the same page-side call that empties it; the R6 swap below proves, in real Chrome, that a selection's
    File objects keep their identity, so its input is still emptied. Test hygiene: the copies are staged in a base of
-   this fixture's own scratch, never the user's real %LOCALAPPDATA%\StarNet or TEMP. */
+   this fixture's own scratch, never the user's real %LOCALAPPDATA%\Vultron or TEMP. */
 'use strict';
 const A = require('./_assert.js');
 const fs = require('node:fs');
@@ -27,7 +27,7 @@ const { defaultStagingRoot } = require('../sidecar/egress-files.js');
 (async () => {
   const found = T.findChrome();
   if (!found) { console.log('browser-upload.e2e: SKIPPED — no Chromium installed'); return; }
-  const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-upload-live-'));
+  const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-upload-live-'));
   const project = path.join(scratch, 'project'), workspace = path.join(scratch, 'workspaces'), stagingBase = path.join(scratch, 'staging');
   fs.mkdirSync(project); fs.mkdirSync(path.join(workspace, 'agent'), { recursive: true }); fs.mkdirSync(stagingBase);
   fs.writeFileSync(path.join(project, 'photo.txt'), 'PROJECT PHOTO BYTES');
@@ -84,7 +84,7 @@ const { defaultStagingRoot } = require('../sidecar/egress-files.js');
     return { base: project, abs };
   };
   // TEST HYGIENE (polish review round 1): this fixture stages in-process, so its staging base is a folder of its own
-  // scratch (the reader's injected base), never the user's real %LOCALAPPDATA%\StarNet or TEMP
+  // scratch (the reader's injected base), never the user's real %LOCALAPPDATA%\Vultron or TEMP
   const egress = require('../sidecar/egress-files.js').makeEgressReader({ fsp, pathMod: path, workspaces: workspace, guard: approved, tmpdir: stagingBase });
   const browser = makeBrowserTools({ driver, fsp, pathMod: path, root: workspace, egress });
   const tool = browser.tools.find(t => t.name === 'browser.upload');
@@ -103,7 +103,7 @@ const { defaultStagingRoot } = require('../sidecar/egress-files.js');
     A.eq(await driver.testEval('selections.length'), 0, route + ' never sets an unrelated/refused file input');
   };
   /* A KILLED CHROMIUM CAN TAKE MINUTES TO LET GO ON A BUSY WINDOWS BOX, and this step went red with every assertion held.
-     Measured 2026-11-01 with the CPU at 80-100%: a bare Chromium, no StarNet code, took 21.0, 38.3, 24.4, 22.0 and 2.6 s
+     Measured 2026-11-01 with the CPU at 80-100%: a bare Chromium, no Vultron code, took 21.0, 38.3, 24.4, 22.0 and 2.6 s
      from taskkill to exit. In this step the killed processes sat at one thread and no handles for up to 71 s, the exit
      took up to 65 s, and red runs took 52-214 s against 16-32 s green. The teardown meets that twice:
      - driver.close() waits 8 s (production's bound, pinned in browser-close-cleanup), then rejects and keeps ownership, so
@@ -214,7 +214,7 @@ const { defaultStagingRoot } = require('../sidecar/egress-files.js');
     const reply = makeBrowserTools({ session: browser.session, fsp, pathMod: path, root: workspace, egress });
     ref = await open('/form', /CHOOSE FILE/);
     const p1 = await reply.tools.find(t => t.name === 'browser.upload').run({ ref, paths: ['photo.txt'] }, ctx);
-    A.ok(/StarNet keeps that copy while this page stays open/.test(p1.content) && /The input holds the requested file now\./.test(p1.content), 'P1 (real Chrome): the receipt says the copy lives while its page does: ' + p1.content.slice(0, 160));
+    A.ok(/Vultron keeps that copy while this page stays open/.test(p1.content) && /The input holds the requested file now\./.test(p1.content), 'P1 (real Chrome): the receipt says the copy lives while its page does: ' + p1.content.slice(0, 160));
     const held = browser.session.uploadStage.copies();
     const pageDoc = held.length ? held[held.length - 1].doc : null;
     A.ok(!!(pageDoc && pageDoc.loader), 'P1 (real Chrome): the CDP driver names the page the file went into');
@@ -252,7 +252,7 @@ const { defaultStagingRoot } = require('../sidecar/egress-files.js');
     // the station staging root this fixture's uploads made in its own staging base (inside scratch, which a failed
     // cleanup keeps): it holds only real folders and files (no test here plants a link in it), so it goes on every exit
     const stagingRoot = defaultStagingRoot(path, workspace, stagingBase);
-    if (/starnet-upload-staging-[0-9a-f]{16}$/.test(stagingRoot)) { try { fs.rmSync(stagingRoot, { recursive: true, force: true }); } catch (e) { console.log('[cleanup] ' + e.message); } }
+    if (/vultron-upload-staging-[0-9a-f]{16}$/.test(stagingRoot)) { try { fs.rmSync(stagingRoot, { recursive: true, force: true }); } catch (e) { console.log('[cleanup] ' + e.message); } }
     if (closeError) throw closeError;
     /* driver.close() resolves once the browser process it spawned has exited. On Windows the whole tree was killed
        (taskkill /T), but a helper can still hold the profile's files after that (EBUSY on its leveldb log, its model store
@@ -268,7 +268,7 @@ const { defaultStagingRoot } = require('../sidecar/egress-files.js');
        logged. A profile still being written to after that fails this test with that error. fsp.rm's own maxRetries is
        not used: Node applies it again at every folder level, so its waits multiply with depth (scratch, chrome and
        Default each multiply them). */
-    if (path.dirname(scratch) === path.resolve(os.tmpdir()) && path.basename(scratch).startsWith('starnet-upload-live-')) {
+    if (path.dirname(scratch) === path.resolve(os.tmpdir()) && path.basename(scratch).startsWith('vultron-upload-live-')) {
       if (process.platform === 'win32') {
         const from = Date.now();
         let held = null;

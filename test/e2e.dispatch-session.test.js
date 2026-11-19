@@ -116,7 +116,7 @@ function attachStationPage(B, token, sessions, options) {
                   ? { ok: true, result: { session: 'research' } }
                   : { ok: false, error: 'unknown station verb: ' + p.verb };
             await fetch(B + '/api/station/ack', {
-              method: 'POST', headers: { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: B },
+              method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: B },
               body: JSON.stringify(Object.assign({ id: p.id }, out))
             }).catch(() => {});
           }
@@ -131,7 +131,7 @@ function attachStationPage(B, token, sessions, options) {
 async function drive(B, token, prompt) {
   const res = await fetch(B + '/api/run', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: B },
+    headers: { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: B },
     body: JSON.stringify({ key: 'sk-or-v1-fake', model: 'test/model', agentId: 'agent', isTask: true, messages: [{ role: 'user', content: prompt }] })
   });
   A.eq(res.status, 200, 'POST /api/run streams (200)');
@@ -156,10 +156,10 @@ async function run(label, dispatchArgs, sessions, body, options) {
   options = options || {};
   const mock = await startMockOpenRouter(dispatchArgs, options);
   const fixture = SidecarFixture.create({ prefix: 'sk-dispatch-', env: {
-    SKYNET_OPENROUTER_BASE: mock.base, STARNET_OPENROUTER_BASE: mock.base,
-    SKYNET_OPENROUTER_KEY: 'sk-or-v1-local-proof', STARNET_OPENROUTER_KEY: 'sk-or-v1-local-proof',
-    SKYNET_DEFAULT_MODEL: 'test/model', STARNET_DEFAULT_MODEL: 'test/model',
-    SKYNET_FULL_ACCESS: '1', STARNET_FULL_ACCESS: '1',
+    SKYNET_OPENROUTER_BASE: mock.base, VULTRON_OPENROUTER_BASE: mock.base,
+    SKYNET_OPENROUTER_KEY: 'sk-or-v1-local-proof', VULTRON_OPENROUTER_KEY: 'sk-or-v1-local-proof',
+    SKYNET_DEFAULT_MODEL: 'test/model', VULTRON_DEFAULT_MODEL: 'test/model',
+    SKYNET_FULL_ACCESS: '1', VULTRON_FULL_ACCESS: '1',
     // the quest refresh looks 3 s after each boot and can ask the model, which this test's counts would read as dispatch work
     SKYNET_QUEST_REFRESH: '0'
   } });
@@ -169,7 +169,7 @@ async function run(label, dispatchArgs, sessions, body, options) {
     if (options.configureFixture) options.configureFixture(fixture);
     await fixture.start();
     const B = fixture.baseUrl, token = fixture.token;
-    const H = { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: B };
+    const H = { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: B };
     // the crew the lead can address — pushed exactly as the browser's pushRoster() does
     const roster = await fetch(B + '/api/roster', { method: 'POST', headers: H, body: JSON.stringify({ agents: [
       { agentId: 'agent', system: 'LEAD', name: 'OVERSEER', model: 'test/model' },

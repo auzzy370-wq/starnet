@@ -31,7 +31,7 @@
        with usageMissing (spendUnknown only when nothing was booked), and a run that threw before any call stays a known $0;
        a stopped run's row and its end say cancelled;
      - afterwards the run table is empty.
-   GOLDEN refusals (a second boot, STARNET_MAX_CONCURRENT_AGENTS=1): concurrency_limit (a run of another agent held at the
+   GOLDEN refusals (a second boot, VULTRON_MAX_CONCURRENT_AGENTS=1): concurrency_limit (a run of another agent held at the
    provider) and model_no_tools (a model the catalog lists without tools) reach COMMS byte for byte as the base triple. */
 'use strict';
 const A = require('./_assert.js');
@@ -142,16 +142,16 @@ function boot(model, extraEnv, lanPort) {
   return SidecarFixture.create({ prefix: 'sk-run-lifecycle-', entry: path.join(__dirname, 'helpers', 'run-fault-host.cjs'),
     portAllocator: () => { const p = firstPort; firstPort = 0; return p ? Promise.resolve(p) : allocatePort(); },
     env: Object.assign({
-      SKYNET_OPENROUTER_BASE: model.base, STARNET_OPENROUTER_BASE: model.base,
-      SKYNET_OPENROUTER_KEY: 'sk-or-v1-run-lifecycle-fake', STARNET_OPENROUTER_KEY: 'sk-or-v1-run-lifecycle-fake',
-      SKYNET_DEFAULT_MODEL: 'test/model', STARNET_DEFAULT_MODEL: 'test/model',
-      SKYNET_V1_MODEL: 'test/model', STARNET_V1_MODEL: 'test/model',
-      SKYNET_API_KEY: V1KEY, STARNET_API_KEY: V1KEY,
+      SKYNET_OPENROUTER_BASE: model.base, VULTRON_OPENROUTER_BASE: model.base,
+      SKYNET_OPENROUTER_KEY: 'sk-or-v1-run-lifecycle-fake', VULTRON_OPENROUTER_KEY: 'sk-or-v1-run-lifecycle-fake',
+      SKYNET_DEFAULT_MODEL: 'test/model', VULTRON_DEFAULT_MODEL: 'test/model',
+      SKYNET_V1_MODEL: 'test/model', VULTRON_V1_MODEL: 'test/model',
+      SKYNET_API_KEY: V1KEY, VULTRON_API_KEY: V1KEY,
       SKYNET_DEV: '1',                                     // the dev channel hub (POST /api/dev/inbound): the production makeChannelHub
-      SKYNET_CRON_TICK_MS: '250', STARNET_CRON_TICK_MS: '250',
+      SKYNET_CRON_TICK_MS: '250', VULTRON_CRON_TICK_MS: '250',
       SKYNET_LOOP_TICK_MS: '5000',                         // the loop tick's floor
       SKYNET_FULL_ACCESS: '1'
-    }, lanPort ? { STARNET_REMOTE_PORT: String(lanPort), STARNET_REMOTE_LAN: '1', STARNET_REMOTE_RELAY: 'off' } : {}, extraEnv || {}) });
+    }, lanPort ? { VULTRON_REMOTE_PORT: String(lanPort), VULTRON_REMOTE_LAN: '1', VULTRON_REMOTE_RELAY: 'off' } : {}, extraEnv || {}) });
 }
 const ROSTER = [
   { agentId: 'agent', name: 'Overseer', model: 'test/model', provider: 'openrouter', system: 'You coordinate work.' },
@@ -239,10 +239,10 @@ function rowsOnDisk(fx, runId) {
         finally { await fx.json('POST', '/api/cron/arm', { enabled: false }); await fx.json('POST', '/api/cron/remove', { id: job.id }); }
         return { own: null };
       },
-      v1sync: async mark => { await (await v1('/v1/chat/completions', { model: 'starnet-agent', messages: [{ role: 'user', content: mark + ' answer' }] })).text(); return { own: null }; },
-      v1stream: async mark => { await (await v1('/v1/chat/completions', { model: 'starnet-agent', stream: true, messages: [{ role: 'user', content: mark + ' answer' }] })).text(); return { own: null }; },
+      v1sync: async mark => { await (await v1('/v1/chat/completions', { model: 'vultron-agent', messages: [{ role: 'user', content: mark + ' answer' }] })).text(); return { own: null }; },
+      v1stream: async mark => { await (await v1('/v1/chat/completions', { model: 'vultron-agent', stream: true, messages: [{ role: 'user', content: mark + ' answer' }] })).text(); return { own: null }; },
       v1runs: async mark => {
-        const j = await (await v1('/v1/runs', { model: 'starnet-agent', input: mark + ' answer' })).json();
+        const j = await (await v1('/v1/runs', { model: 'vultron-agent', input: mark + ' answer' })).json();
         await until(async () => { const s = await (await fetch(B + '/v1/runs/' + j.run_id, { headers: { Authorization: 'Bearer ' + V1KEY } })).json(); return !/^(queued|running|stopping)$/.test(String(s.status)); }, 20000, 'the /v1/runs run to settle');
         return { own: null };
       },
@@ -363,7 +363,7 @@ function rowsOnDisk(fx, runId) {
   const wanted = String(process.env.RL_FAULTS || '').split(',').filter(Boolean);
   if (!process.env.RL_ONLY && (!wanted.length || wanted.includes('pf'))) {
     const [faultLan] = await allocatePorts(1);
-    const px = boot(model, { STARNET_UNCAUGHT_KEEP_SERVING: '1', SKYNET_UNCAUGHT_KEEP_SERVING: '1' }, faultLan);
+    const px = boot(model, { VULTRON_UNCAUGHT_KEEP_SERVING: '1', SKYNET_UNCAUGHT_KEEP_SERVING: '1' }, faultLan);
     let pfloor = null, pphone = null;
     try {
       await px.start();
@@ -387,11 +387,11 @@ function rowsOnDisk(fx, runId) {
       await job('RF scheduled', marks.scheduled + ' fire on time', 'mira', { schedule: 'in 1s' });
       await px.json('POST', '/api/cron/arm', { enabled: true });
       const settle = [
-        P.v1('/v1/chat/completions', { model: 'starnet-agent', messages: [{ role: 'user', content: marks.v1sync + ' answer' }] }).then(r => r.text()),
-        P.v1('/v1/chat/completions', { model: 'starnet-agent', stream: true, messages: [{ role: 'user', content: marks.v1stream + ' answer' }] }).then(r => r.text()),
+        P.v1('/v1/chat/completions', { model: 'vultron-agent', messages: [{ role: 'user', content: marks.v1sync + ' answer' }] }).then(r => r.text()),
+        P.v1('/v1/chat/completions', { model: 'vultron-agent', stream: true, messages: [{ role: 'user', content: marks.v1stream + ' answer' }] }).then(r => r.text()),
         px.json('POST', '/api/dev/inbound', { text: marks.hub + ' answer this', chatId: 'rfhub' })
       ].map(p => p.catch(e => 'ERR ' + e.message));
-      await P.v1('/v1/runs', { model: 'starnet-agent', input: marks.v1runs + ' answer' });
+      await P.v1('/v1/runs', { model: 'vultron-agent', input: marks.v1runs + ' answer' });
       await P.groups({ op: 'send', id: pgroup.id, key: 'rf-group', text: marks.group + ' answer the group', resume: true });
       await px.json('POST', '/api/loops', { name: 'RF loop', objective: marks.loop + ' keep iterating', model: 'test/model', provider: 'openrouter' });
       await pphone.call('send', { agentId: 'forge', text: marks.phone + ' answer from the phone' });
@@ -444,7 +444,7 @@ function rowsOnDisk(fx, runId) {
   }
 
   /* ---- GOLDEN refusals, byte for byte the base triples, on a station that admits one agent at a time ---- */
-  const gx = boot(model, { STARNET_MAX_CONCURRENT_AGENTS: '1', SKYNET_MAX_CONCURRENT_AGENTS: '1' });
+  const gx = boot(model, { VULTRON_MAX_CONCURRENT_AGENTS: '1', SKYNET_MAX_CONCURRENT_AGENTS: '1' });
   try {
     await gx.start();
     A.eq((await gx.json('POST', '/api/roster', { updatedAt: Date.now(), agents: ROSTER })).status, 200, 'golden: the crew roster is saved');
@@ -465,7 +465,7 @@ function rowsOnDisk(fx, runId) {
     const rid = ((refused.find(e => e.name === 'agent.run.start') || {}).payload || {}).runId;
     A.ok(rid, 'golden concurrency_limit: the refused run started on its stream');
     A.eq(JSON.stringify(triple(refused, rid)), JSON.stringify(base(rid, 'mira', 'test/model', { agentId: 'mira', runId: rid, transient: true,
-      message: 'Too many agents are working at once (limit 1). Wait for one to finish, or raise STARNET_MAX_CONCURRENT_AGENTS.', failureCode: 'concurrency_limit' }, 'rl-gold-refused')),
+      message: 'Too many agents are working at once (limit 1). Wait for one to finish, or raise VULTRON_MAX_CONCURRENT_AGENTS.', failureCode: 'concurrency_limit' }, 'rl-gold-refused')),
       'golden concurrency_limit: the refusal reaches COMMS byte for byte as the base triple');
     model.release();
     await within(first, 30000, 'the held run to finish');

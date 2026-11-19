@@ -34,11 +34,11 @@
        own key, and /api/providers/probe and /validate pass the provenance too; run-wire.request-key.test.js runs each caller.
        A lock below pins every caller and the exact counts.
      · F6 (i): a desktop run naming an endpoint the station has not been handed yet (its only answer is the provider default)
-       is refused for a retry, never run on that default. A sign-in's and StarNet's endpoint is never handed over, so never
+       is refused for a retry, never run on that default. A sign-in's and Vultron's endpoint is never handed over, so never
        theirs (keptEndpointProvider). A FAILED hand-over is tried again only at the next come-back (a station silence, a
        restart): the retry alone starts none (open: review r8 minor 6). F5 (keptEndpoints names the provider only) and F6 (i) on a real
        desktop sidecar: desktop-endpoint-handover.e2e.test.js; F6 (ii) endpointPersisted:false: set-key-body.test.js; the
-       shell's refusal of a starnet key: provider-aliases-parity.test.js.
+       shell's refusal of a vultron key: provider-aliases-parity.test.js.
    TODO — handed to the wave-3 credential-store lane (found here, they predate this lane), now closed:
      1. RESOLVED (S8, decision 3): on the desktop, a channel's OWN provider key (a connect or bots/connect body key the station
         does not hold) lived in memory only, and after a restart the bot quietly ran on whatever the station resolved, or stopped.
@@ -293,11 +293,11 @@ function station(opts) {
     A.ok(from > 0 && to > from && to - from < 8000, 'fixture: the boot auto-start block is sliced');
     const block = SRC.slice(from, to);
     const handed = [];
-    const ENVV = { STARNET_OPENROUTER_KEY: 'sk-or-ENV-OPERATOR', STARNET_DEFAULT_MODEL: 'openai/gpt-5' };
+    const ENVV = { VULTRON_OPENROUTER_KEY: 'sk-or-ENV-OPERATOR', VULTRON_DEFAULT_MODEL: 'openai/gpt-5' };
     const run = new Function('channelCredential', 'channelToken', 'ENV', 'providerHasStoredCredential', 'providerRuntimeKey', 'providerRuntimeBaseUrl', 'channelFollowsReady',
       'startTelegram', 'startDiscord', 'startGenericChannel', 'startTelegramBot', 'telegramBotRecords', 'channelTokenRuntime', 'GENERIC_CHANNEL_IDS', 'console', block);
     const s0 = station({ runtimeKeys: { openrouter: 'sk-or-ENV-OPERATOR' } });   // the boot admission reads the station's own resolution
-    run(s0.view, () => '', k => ENVV['STARNET_' + k], () => false, () => '', () => '', s0.channelFollowsReady,
+    run(s0.view, () => '', k => ENVV['VULTRON_' + k], () => false, () => '', () => '', s0.channelFollowsReady,
       (tok, model, cfg) => handed.push(['telegram', cfg]), (tok, model, cfg) => handed.push(['discord', cfg]), (id, tok, model, cfg) => handed.push([id, cfg]),
       () => {}, () => ({}), { telegram: 'tg-env', discord: 'dc-env', slack: 'xoxb-env xapp-env', matrix: 'mx-env' }, ['slack', 'matrix', 'signal'], { log() {}, warn() {} });
     A.eq(handed.map(h => h[0]), ['telegram', 'discord', 'slack'], 'fixture: the env-provided bots auto-start');
@@ -546,7 +546,7 @@ function station(opts) {
     A.eq(runFallbacks([{ provider: 'antrhopic', model: 'm' }], []).runNotices, ['a fallback was skipped: provider "antrhopic" is not a provider this station knows'], 'one unknown fallback is still said by name');
   }
 
-  // ================================ review r7 m8: StarNet is not the CUSTOM-only refusal ================================
+  // ================================ review r7 m8: Vultron is not the CUSTOM-only refusal ================================
   {
     const run = sidecarTopLevelFunction('handleRun');
     const from = run.indexOf('  const key = providerRuntimeKey(runProvider, bodyCredential');
@@ -559,23 +559,23 @@ function station(opts) {
         'providerCredentialError', 'providerRuntimeKey', 'providerRuntimeBaseUrl', 'providerEndpointNotHandedOver', lines + "\nreturn { key, baseUrl, notices: typeof runNotices === 'undefined' ? [] : runNotices };")(
         res, body, runProvider, true, 'some/model', p => p, Reg.getProviderProfile, Reg.providerRequiresBaseUrl,
         (p, k, b) => !!String(b || '').trim() && (Reg.getProviderProfile(p).keyRequired === false || !!String(k || '').trim()),
-        p => p === 'starnet' ? 'link this station to a StarNet account (SETTINGS -> AI & MODELS -> STARNET MANAGED) to run on credits' : 'configure the base URL',
+        p => p === 'vultron' ? 'link this station to a Vultron account (SETTINGS -> AI & MODELS -> VULTRON MANAGED) to run on credits' : 'configure the base URL',
         s.providerRuntimeKey, s.providerRuntimeBaseUrl, s.providerEndpointNotHandedOver);
       return { status, text, out: out === 'ended' ? null : out };
     };
-    // the page's stray starnet baseUrl slot on an UNLINKED station: the refusal is the link one, not "re-save the base URL"
-    const unlinked = handle(station({}), 'starnet', { provider: 'starnet', baseUrl: 'http://stray-slot.invalid' });
-    A.eq(unlinked.status, 400, 'an unlinked StarNet run is refused');
-    A.ok(!/endpoint for its saved key/.test(unlinked.text) && /link this station to a StarNet account/.test(unlinked.text), '...with the link door, not the CUSTOM-only sentence: ' + unlinked.text);
-    // a LINKED station: the stray slot is not "an endpoint this run named" (StarNet's endpoint is the linked account's)
-    const linked = handle(station({ credits: { url: 'https://cloud.starnet.invalid', apiKey: 'dev-token' } }), 'starnet', { provider: 'starnet', baseUrl: 'http://stray-slot.invalid' });
-    A.eq([linked.status, linked.out && linked.out.baseUrl, linked.out && linked.out.notices.length], [200, 'https://cloud.starnet.invalid/v1', 0], 'a linked StarNet run carries no endpoint notice: ' + JSON.stringify(linked.out));
-    // review r8 F6 (keptEndpointProvider): the same two on the DESKTOP. The window never hands StarNet's endpoint over (it is
+    // the page's stray vultron baseUrl slot on an UNLINKED station: the refusal is the link one, not "re-save the base URL"
+    const unlinked = handle(station({}), 'vultron', { provider: 'vultron', baseUrl: 'http://stray-slot.invalid' });
+    A.eq(unlinked.status, 400, 'an unlinked Vultron run is refused');
+    A.ok(!/endpoint for its saved key/.test(unlinked.text) && /link this station to a Vultron account/.test(unlinked.text), '...with the link door, not the CUSTOM-only sentence: ' + unlinked.text);
+    // a LINKED station: the stray slot is not "an endpoint this run named" (Vultron's endpoint is the linked account's)
+    const linked = handle(station({ credits: { url: 'https://cloud.vultron.invalid', apiKey: 'dev-token' } }), 'vultron', { provider: 'vultron', baseUrl: 'http://stray-slot.invalid' });
+    A.eq([linked.status, linked.out && linked.out.baseUrl, linked.out && linked.out.notices.length], [200, 'https://cloud.vultron.invalid/v1', 0], 'a linked Vultron run carries no endpoint notice: ' + JSON.stringify(linked.out));
+    // review r8 F6 (keptEndpointProvider): the same two on the DESKTOP. The window never hands Vultron's endpoint over (it is
     // the linked account's), so the not-handed-over refusal is never theirs: no 503 retry for either
-    const dUnlinked = handle(station({ desktop: true }), 'starnet', { provider: 'starnet', baseUrl: 'http://stray-slot.invalid' });
-    A.ok(dUnlinked.status === 400 && /link this station to a StarNet account/.test(dUnlinked.text), 'desktop: an unlinked StarNet run gets the link door, not a retry: ' + JSON.stringify([dUnlinked.status, dUnlinked.text]));
-    const dLinked = handle(station({ desktop: true, credits: { url: 'https://cloud.starnet.invalid', apiKey: 'dev-token' } }), 'starnet', { provider: 'starnet', baseUrl: 'http://stray-slot.invalid' });
-    A.eq([dLinked.status, dLinked.out && dLinked.out.baseUrl, dLinked.out && dLinked.out.notices.length], [200, 'https://cloud.starnet.invalid/v1', 0], 'desktop: a linked StarNet run with a stray slot runs, no notice, no retry: ' + JSON.stringify(dLinked.out || dLinked.text));
+    const dUnlinked = handle(station({ desktop: true }), 'vultron', { provider: 'vultron', baseUrl: 'http://stray-slot.invalid' });
+    A.ok(dUnlinked.status === 400 && /link this station to a Vultron account/.test(dUnlinked.text), 'desktop: an unlinked Vultron run gets the link door, not a retry: ' + JSON.stringify([dUnlinked.status, dUnlinked.text]));
+    const dLinked = handle(station({ desktop: true, credits: { url: 'https://cloud.vultron.invalid', apiKey: 'dev-token' } }), 'vultron', { provider: 'vultron', baseUrl: 'http://stray-slot.invalid' });
+    A.eq([dLinked.status, dLinked.out && dLinked.out.baseUrl, dLinked.out && dLinked.out.notices.length], [200, 'https://cloud.vultron.invalid/v1', 0], 'desktop: a linked Vultron run with a stray slot runs, no notice, no retry: ' + JSON.stringify(dLinked.out || dLinked.text));
   }
 
   // ================================ review r7 m9: a bots/connect rebind keeps the bot's own pair ===========================

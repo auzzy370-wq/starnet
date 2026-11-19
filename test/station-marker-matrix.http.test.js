@@ -27,17 +27,17 @@ const { SidecarFixture } = require('./helpers/sidecar-fixture.js');
 
 const T_RESET = Date.UTC(2026, 9, 1, 12, 0, 0);   // every reset below happened at this time, well before the boot
 const ENV = {
-  STARNET_DEV: '0', SKYNET_DEV: '0', SKYNET_QUEST_REFRESH: '0', STARNET_QUEST_REFRESH: '0',
-  STARNET_CRON_ENABLED: '0', SKYNET_CRON_ENABLED: '0', STARNET_LOOP_ENABLED: '0', SKYNET_LOOP_ENABLED: '0',
-  SKYNET_LIVE_PRICES: '0', STARNET_LIVE_PRICES: '0', STARNET_EDGE_TTS: '0', SKYNET_EDGE_TTS: '0',
-  STARNET_CLOUD_URL: 'http://127.0.0.1:1', STARNET_CREDITS_URL: 'http://127.0.0.1:1', STARNET_DESKTOP_SHELL: '0',
-  SKYNET_OPENROUTER_BASE: 'http://127.0.0.1:1', STARNET_OPENROUTER_BASE: 'http://127.0.0.1:1',
-  OPENROUTER_API_KEY: '', SKYNET_OPENROUTER_KEY: '', STARNET_OPENROUTER_KEY: '', OPENAI_API_KEY: '', SKYNET_OPENAI_API_KEY: '', STARNET_OPENAI_API_KEY: ''
+  VULTRON_DEV: '0', SKYNET_DEV: '0', SKYNET_QUEST_REFRESH: '0', VULTRON_QUEST_REFRESH: '0',
+  VULTRON_CRON_ENABLED: '0', SKYNET_CRON_ENABLED: '0', VULTRON_LOOP_ENABLED: '0', SKYNET_LOOP_ENABLED: '0',
+  SKYNET_LIVE_PRICES: '0', VULTRON_LIVE_PRICES: '0', VULTRON_EDGE_TTS: '0', SKYNET_EDGE_TTS: '0',
+  VULTRON_CLOUD_URL: 'http://127.0.0.1:1', VULTRON_CREDITS_URL: 'http://127.0.0.1:1', VULTRON_DESKTOP_SHELL: '0',
+  SKYNET_OPENROUTER_BASE: 'http://127.0.0.1:1', VULTRON_OPENROUTER_BASE: 'http://127.0.0.1:1',
+  OPENROUTER_API_KEY: '', SKYNET_OPENROUTER_KEY: '', VULTRON_OPENROUTER_KEY: '', OPENAI_API_KEY: '', SKYNET_OPENAI_API_KEY: '', VULTRON_OPENAI_API_KEY: ''
 };
 
 function write(file, body) { fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, typeof body === 'string' ? body : JSON.stringify(body, null, 2)); }
 function doc(name, createdAt, rev, updatedAt, client) {
-  return { schema: 'starnet.save', version: 6, updatedAt, _saveRevision: rev, _saveDirty: true, _saveClient: client,
+  return { schema: 'vultron.save', version: 6, updatedAt, _saveRevision: rev, _saveDirty: true, _saveClient: client,
     agent: { id: 'agent', name, createdAt }, agents: [], workstreams: [{ id: 'general', history: [] }], activeId: 'general', generalId: 'general' };
 }
 const SHAPES = [
@@ -61,7 +61,7 @@ const SHAPES = [
 (async () => {
   for (const shape of SHAPES) {
     const n = shape.name;
-    const fixture = SidecarFixture.create({ prefix: 'starnet-seed-matrix-', timeoutMs: 30000, env: ENV });
+    const fixture = SidecarFixture.create({ prefix: 'vultron-seed-matrix-', timeoutMs: 30000, env: ENV });
     const fixtureRoot = fixture.workspace;
     fixture.workspace = path.join(fixtureRoot, 'workspaces');   // its own parent: no other test's update-snapshots beside it
     fs.mkdirSync(fixture.workspace);
@@ -126,7 +126,7 @@ const SHAPES = [
       }
     } finally {
       await fixture.dispose();
-      if (path.dirname(fixtureRoot) !== path.resolve(os.tmpdir()) || !path.basename(fixtureRoot).startsWith('starnet-seed-matrix-')) throw new Error('unsafe fixture root cleanup');
+      if (path.dirname(fixtureRoot) !== path.resolve(os.tmpdir()) || !path.basename(fixtureRoot).startsWith('vultron-seed-matrix-')) throw new Error('unsafe fixture root cleanup');
       fs.rmSync(fixtureRoot, { recursive: true, force: true });
     }
   }

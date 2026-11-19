@@ -431,7 +431,7 @@ try {
   // the same model when an output ceiling is known (128k) but still no window: a call bills its prompt + at most that
   const COLD_CEILING = [{ id: 'replay/model', context_length: 0, max_completion_tokens: 128000, pricing: { prompt: '0.000005', completion: '0.00003' }, supportsTools: true }];
   // review of 32fc352e4 — THE MANAGED DEFAULT: a 200k-window $3 / $15 model with a 64k output ceiling (Sonnet-class) on
-  // the StarNet relay's default PER RUN $2. Reserved by its window (~$3 a call) every clone's call took its turn
+  // the Vultron relay's default PER RUN $2. Reserved by its window (~$3 a call) every clone's call took its turn
   const SONNET = [{ id: 'replay/model', context_length: 200000, max_completion_tokens: 64000, pricing: { prompt: '0.000003', completion: '0.000015' }, supportsTools: true }];
   // a catalog that prices nothing (its row names no pricing): the call is billed only by usage.cost, so every pre-call
   // price is $0 — the "no price at all" path (counted as calls)
@@ -927,7 +927,7 @@ try {
   }
   // A MODEL ITS CATALOG PRICES AT A KNOWN $0 (an OpenRouter :free row) IS PRICED, NOT UNPRICED (lane context-cost-1023).
   // Counted as a call, it held every other member's call under any finite pool cap (a saved PER RUN, a line hop
-  // ceiling, a StarNet-managed run's reserve): a free team ran one call at a time with nothing on screen saying why.
+  // ceiling, a Vultron-managed run's reserve): a free team ran one call at a time with nothing on screen saying why.
   {
     const { priced } = await priceOfFirstCall(KNOWN_FREE);
     A.ok(priced > 0 && priced < 1e-6, 'a known-$0 model reads a token price above $0 (reserved as a call about $0), not "no price": ' + priced);

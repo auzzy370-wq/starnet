@@ -19,7 +19,7 @@ The last gate before publishing (`npm run t5:public-distribution`) reported T5.2
 
 ## Repro
 
-1. Make a fixture installer `StarNet_<ver>_x64-setup.exe` and sign DIFFERENT bytes with a test minisign key (`test/minisign-test-signer.js`).
+1. Make a fixture installer `Vultron_<ver>_x64-setup.exe` and sign DIFFERENT bytes with a test minisign key (`test/minisign-test-signer.js`).
 2. Write that signature to `<installer>.sig` and into `latest.json` `platforms.windows-x86_64.signature` (text-identical).
 3. Give T5 green, installer-bound T0-T4 statuses and a good distribution proof; run `node scripts/t5-public-distribution.mjs --distribution-evidence <proof>`.
 
@@ -35,4 +35,4 @@ _Found by the `sweep/release` lane, 2026-10-20._
 
 ## Verdict
 
-T5.2 now runs the installed updater's own check (`verifySignature` from `scripts/minisign-verify.mjs`) over the installer bytes against the pubkey baked in `src-tauri/tauri.conf.json`; `STARNET_T5_PUBKEY` is a test-only override and the step records which key it trusted. Fix: `d2960405c`.
+T5.2 now runs the installed updater's own check (`verifySignature` from `scripts/minisign-verify.mjs`) over the installer bytes against the pubkey baked in `src-tauri/tauri.conf.json`; `VULTRON_T5_PUBKEY` is a test-only override and the step records which key it trusted. Fix: `d2960405c`.

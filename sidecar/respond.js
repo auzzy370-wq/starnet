@@ -7,7 +7,7 @@
    (Mass-migrating all of index.js at once is deliberately avoided — many parallel branches merge
    into that file, and a 95-site sweep would conflict with all of them.)
 
-   ONE FAILURE SHAPE ON THE WIRE: every answer >= 400 names itself in X-StarNet-Code, a code from CODES.
+   ONE FAILURE SHAPE ON THE WIRE: every answer >= 400 names itself in X-Vultron-Code, a code from CODES.
    fail() is the canonical failure path (json() stays for success); stampFailureCodes() runs first in the
    main request handler, so a failure no change has brought in yet still carries its status default. A
    reader decides from the code, never from a bare status or a word ("forbidden" is not "the station
@@ -15,7 +15,7 @@
 
      json(res, code, obj)                 — application/json + no-store; no-op once headersSent
      fail(res, status, code, message, extra)
-                                          — {...extra, ok:false, code, error: message} with X-StarNet-Code set to
+                                          — {...extra, ok:false, code, error: message} with X-Vultron-Code set to
                                             the same code (+ no-store); a code outside CODES is written as the
                                             status default; true when it answered, false (no-op) once headersSent
      stampFailureCodes(res)               — wraps res.writeHead once: a status >= 400 with no code yet gets
@@ -48,13 +48,13 @@ const AGENT_ID_RE = /^[A-Za-z0-9_-]{1,40}$/;
 
 function isAgentId(s) { return typeof s === 'string' && AGENT_ID_RE.test(s); }
 
-/* THE ONE TABLE: every code the station writes in X-StarNet-Code (and in a fail() body), with the status it rides.
+/* THE ONE TABLE: every code the station writes in X-Vultron-Code (and in a fail() body), with the status it rides.
    The names deliberately differ from the run's failureCode and provider-reason vocabulary (providers/errorClass.js:
    auth, rate_limit, server_error, timeout, model_not_found...), so no station refusal reads as a provider's. */
 const CODES = Object.freeze({
   // the token gate (index.js refuseAtGate); its bodies stay the legacy text an older page's recovery reads
   token_stale: 403,         // a key or a ticket rode and was wrong: a page from before a restart (reload it)
-  token_missing: 403,       // no key and no ticket rode: a page the station withheld its key from, or not a StarNet page
+  token_missing: 403,       // no key and no ticket rode: a page the station withheld its key from, or not a Vultron page
   forbidden_origin: 403,    // a browser page from an origin that is not this station's
   forbidden_host: 403,      // a Host that is not loopback (the DNS-rebinding floor)
   // routes
@@ -82,7 +82,7 @@ const STATUS_DEFAULTS = Object.freeze({
   400: 'bad_request', 403: 'forbidden', 404: 'not_found', 405: 'method_not_allowed', 409: 'conflict', 413: 'too_large',
   423: 'frozen', 429: 'rate_limited', 500: 'station_error', 502: 'upstream_error', 503: 'unavailable', 504: 'upstream_timeout'
 });
-const CODE_HEADER = 'X-StarNet-Code';
+const CODE_HEADER = 'X-Vultron-Code';
 
 function failureCodeFor(status) {
   const s = Number(status) | 0;
@@ -115,7 +115,7 @@ function refuseBadAgentId(res, id) {
   return true;   // refused even when the head already went out: a malformed id never reaches a store or the jail
 }
 
-const STAMPED = Symbol('starnet.failureCodes');
+const STAMPED = Symbol('vultron.failureCodes');
 function stampFailureCodes(res) {
   if (!res || res[STAMPED] || typeof res.writeHead !== 'function') return res;
   const writeHead = res.writeHead;

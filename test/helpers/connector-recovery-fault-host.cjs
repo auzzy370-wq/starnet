@@ -1,8 +1,8 @@
 'use strict';
 // Hermetic credential fault seam. Never run against a real profile or credential store.
 const fs = require('node:fs'), path = require('node:path'), os = require('node:os');
-const root = path.resolve(process.env.STARNET_WORKSPACES || '');
-if (path.dirname(root) !== path.resolve(os.tmpdir()) || !path.basename(root).startsWith('starnet-credential-recovery-')) throw Error('Requires isolated credential-recovery fixture');
+const root = path.resolve(process.env.VULTRON_WORKSPACES || '');
+if (path.dirname(root) !== path.resolve(os.tmpdir()) || !path.basename(root).startsWith('vultron-credential-recovery-')) throw Error('Requires isolated credential-recovery fixture');
 const control = path.join(root, 'credential-fault.json'), state = path.join(root, 'connectors/state.json');
 const read = fs.readFileSync.bind(fs), open = fs.openSync.bind(fs);
 function mode() { try { return JSON.parse(read(control, 'utf8')).mode; } catch (_) { return ''; } }

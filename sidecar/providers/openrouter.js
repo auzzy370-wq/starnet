@@ -173,8 +173,8 @@
        those notes spent the two tail anchors on bytes no later request repeats, so the PREVIOUS assistant reply — the
        last thing the next message's request shares — was never written, and history was never read back. Only the last
        message of a consecutive user run is stamped; the next anchor slides back to that reply. */
-    // KILL SWITCH: STARNET_STABLE_PREFIX=0 (the run-context switch, index.js) restores per-message stamping.
-    const oneAnchorPerTurn = String((typeof process !== 'undefined' && process.env && (process.env.STARNET_STABLE_PREFIX != null ? process.env.STARNET_STABLE_PREFIX : process.env.SKYNET_STABLE_PREFIX)) || '').trim() !== '0';
+    // KILL SWITCH: VULTRON_STABLE_PREFIX=0 (the run-context switch, index.js) restores per-message stamping.
+    const oneAnchorPerTurn = String((typeof process !== 'undefined' && process.env && (process.env.VULTRON_STABLE_PREFIX != null ? process.env.VULTRON_STABLE_PREFIX : process.env.SKYNET_STABLE_PREFIX)) || '').trim() !== '0';
     let stamped = 0;
     for (let i = out.length - 1; i > idx && stamped < 4 - systemAnchors; i--) {
       const m = out[i];
@@ -327,7 +327,7 @@
       const allowed = reasoningEffortsForModel(req.model, meta, learnedFor(req.model));
       const effort = clampReasoningEffortForModel(req.model, req.reasoningEffort || reasoningEffort, meta, learnedFor(req.model));
       // ONE pre-send normalization (provider.js prepareWireMessages) — for this wire, exactly repairToolPairs.
-      // Strict upstreams behind OpenRouter must never see StarNet's own bookkeeping keys on a message (ts, streamId,
+      // Strict upstreams behind OpenRouter must never see Vultron's own bookkeeping keys on a message (ts, streamId,
       // agentId, sourceRunId, error, stopped, attachments) — only Chat Completions message keys leave, projected
       // BEFORE applyCacheControl so its cache_control anchors are stamped inside the content parts of clean copies.
       // A model the catalog (or its own earlier refusal) calls text-only gets each image as a short note instead: OpenRouter
@@ -511,7 +511,7 @@
         try {
           res = await doFetch(baseUrl + '/chat/completions', {
             method: 'POST',
-            headers: { 'Authorization': 'Bearer ' + (key || ''), 'Content-Type': 'application/json', 'HTTP-Referer': referer, 'X-Title': 'STARNET' },
+            headers: { 'Authorization': 'Bearer ' + (key || ''), 'Content-Type': 'application/json', 'HTTP-Referer': referer, 'X-Title': 'VULTRON' },
             body: JSON.stringify(body),
             signal: guard.signal   // caller-cancel + a disarmable connect-timeout ceiling on the POST itself
           });

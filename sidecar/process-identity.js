@@ -209,7 +209,7 @@ function judgeReuse(stamp, seen) {
 }
 
 /* predatesBoot(stampMs, bootedAtMs) — a claim stamped before this computer last started cannot belong to a running
-   process. The ONE boot rule: workspace-owner.js judges every claim with it, bin/starnet.js judges the desktop's claim
+   process. The ONE boot rule: workspace-owner.js judges every claim with it, bin/vultron.js judges the desktop's claim
    with it, and src-tauri process_identity.rs predates_boot holds the same rule (test/fixtures/process-identity-cases.json
    "predatesBoot" pins both). BOOT_SLACK_MS absorbs skew between the boot clock (Date.now() - os.uptime()) and a stamp,
    so a holder that stamped seconds after boot is never misread as pre-boot. An unknown boot time (0) proves nothing. */

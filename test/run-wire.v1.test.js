@@ -4,11 +4,11 @@
    Through the production HTTP adapter (sidecar/openai-compat.js makeOpenAiCompat) wired with the seams index.js really
    hands it (resolveWire, hasCredential, credentialError, lifted out of its makeOpenAiCompat call) over the real v1WireFor /
    runWireFor and the real provider registry normaliser:
-     - a STARNET_V1_PROVIDER this station does not know ('olama', 'antrhopic', 'open-router') is REFUSED: 503
+     - a VULTRON_V1_PROVIDER this station does not know ('olama', 'antrhopic', 'open-router') is REFUSED: 503
        model_not_configured, no run. It used to normalise to '' and borrow the Overseer's provider, so a typo sent generic
        /v1 to that cloud provider with its credential, and nothing was logged;
-     - STARNET_V1_PROVIDER set without STARNET_V1_MODEL names no model: it is said once in the log, never silently;
-     - a resolved provider the station holds no credential for (STARNET_V1_PROVIDER=anthropic, no Anthropic key) answers
+     - VULTRON_V1_PROVIDER set without VULTRON_V1_MODEL names no model: it is said once in the log, never silently;
+     - a resolved provider the station holds no credential for (VULTRON_V1_PROVIDER=anthropic, no Anthropic key) answers
        503 provider_not_configured before any run starts — the prompt used to go out unauthenticated;
      - a session-header request that selects a roster agent runs as 'api-<session>' (not on the roster), so the run now
        carries that agent's effort as its own: runOnceCore's resolution used to give it the Overseer's;
@@ -55,28 +55,28 @@ const readBody = async req => { let s = ''; for await (const c of req) s += c; r
   agentRoster.set('agent', { name: 'NOVA', model: 'gpt-5.5', provider: 'codex', reasoningEffort: 'xhigh' });
   agentRoster.set('scout', { name: 'SCOUT', model: '', provider: '', reasoningEffort: 'high' });   // unpinned, its own class effort
 
-  // ---- 1. v1WireFor: an unknown STARNET_V1_PROVIDER is refused, a known one (or none) runs ----
+  // ---- 1. v1WireFor: an unknown VULTRON_V1_PROVIDER is refused, a known one (or none) runs ----
   for (const typo of ['olama', 'antrhopic', 'open-router']) {
     ENVV = { V1_MODEL: 'some-model', V1_PROVIDER: typo };
     const w = host.v1WireFor('api-x', false);
-    A.eq([w.ok, w.provider, w.model], [false, '', ''], 'STARNET_V1_PROVIDER ' + JSON.stringify(typo) + ' is refused, never re-homed on the Overseer\'s provider');
-    A.ok(new RegExp('STARNET_V1_PROVIDER "' + typo + '" is not a provider this station knows').test(w.error || ''), '...and the refusal names it: ' + w.error);
+    A.eq([w.ok, w.provider, w.model], [false, '', ''], 'VULTRON_V1_PROVIDER ' + JSON.stringify(typo) + ' is refused, never re-homed on the Overseer\'s provider');
+    A.ok(new RegExp('VULTRON_V1_PROVIDER "' + typo + '" is not a provider this station knows').test(w.error || ''), '...and the refusal names it: ' + w.error);
   }
   for (const [given, want] of [['', 'openrouter'], ['claude', 'anthropic'], ['OpenAI ', 'openai']]) {
     ENVV = { V1_MODEL: 'some-model', V1_PROVIDER: given };
     const w = host.v1WireFor('api-x', false);
-    A.eq([w.ok, w.provider, w.model, w.source], [true, want, 'some-model', 'env'], 'STARNET_V1_PROVIDER ' + JSON.stringify(given) + ' runs on ' + want);
+    A.eq([w.ok, w.provider, w.model, w.source], [true, want, 'some-model', 'env'], 'VULTRON_V1_PROVIDER ' + JSON.stringify(given) + ' runs on ' + want);
   }
   ENVV = { V1_MODEL: 'some-model', V1_PROVIDER: 'olama' };
-  A.eq([host.v1WireFor('scout', true).ok, host.v1WireFor('scout', true).model], [true, 'gpt-5.5'], 'a selected roster agent never reads STARNET_V1_*: it runs its own pair');
+  A.eq([host.v1WireFor('scout', true).ok, host.v1WireFor('scout', true).model], [true, 'gpt-5.5'], 'a selected roster agent never reads VULTRON_V1_*: it runs its own pair');
 
   // ---- 2. a provider with no model is said once, never silently ----
   ENVV = { V1_PROVIDER: 'anthropic' };
   const w2 = host.v1WireFor('api-x', false);
   host.v1WireFor('api-y', false);
-  A.eq([w2.ok, w2.provider, w2.model], [true, 'codex', 'gpt-5.5'], 'STARNET_V1_PROVIDER alone names no model: the station default runs');
+  A.eq([w2.ok, w2.provider, w2.model], [true, 'codex', 'gpt-5.5'], 'VULTRON_V1_PROVIDER alone names no model: the station default runs');
   A.eq(warns.length, 1, 'it is logged once: ' + warns.join(' / '));
-  A.ok(/STARNET_V1_PROVIDER is set \("anthropic"\) without STARNET_V1_MODEL/.test(warns[0] || ''), '...naming the variable it ignores: ' + warns[0]);
+  A.ok(/VULTRON_V1_PROVIDER is set \("anthropic"\) without VULTRON_V1_MODEL/.test(warns[0] || ''), '...naming the variable it ignores: ' + warns[0]);
 
   // ---- 3. the production adapter answers a wire it cannot run before any run ----
   const ran = [];
@@ -98,14 +98,14 @@ const readBody = async req => { let s = ''; for await (const c of req) s += c; r
     let json = null; try { json = JSON.parse(text); } catch (_) { json = null; }
     return { status: r.status, json, text };
   };
-  const chat = (extra, headers) => post('/v1/chat/completions', Object.assign({ model: 'starnet-agent', stream: false, messages: [{ role: 'user', content: 'hi' }] }, extra || {}), headers);
+  const chat = (extra, headers) => post('/v1/chat/completions', Object.assign({ model: 'vultron-agent', stream: false, messages: [{ role: 'user', content: 'hi' }] }, extra || {}), headers);
   try {
     A.ok(typeof seam('hasCredential') === 'function', 'index.js hands /v1 the credential check');
     ENVV = { V1_MODEL: 'llama3', V1_PROVIDER: 'olama' };
     for (const [label, call] of [['sync', () => chat()], ['streamed', () => chat({ stream: true })], ['/v1/runs', () => post('/v1/runs', { input: 'hi' })],
       ['keyed', () => chat({}, { 'Idempotency-Key': 'k-1' })]]) {
       const r = await call();
-      A.eq([r.status, r.json && r.json.error && r.json.error.code], [503, 'model_not_configured'], 'a ' + label + ' request on an unknown STARNET_V1_PROVIDER is answered 503 model_not_configured');
+      A.eq([r.status, r.json && r.json.error && r.json.error.code], [503, 'model_not_configured'], 'a ' + label + ' request on an unknown VULTRON_V1_PROVIDER is answered 503 model_not_configured');
       A.ok(/"olama"/.test((r.json && r.json.error && r.json.error.message) || ''), '...with the refusal: ' + r.text.slice(0, 200));
     }
     A.eq([ran.length, reserved], [0, 0], 'no run started and no request was reserved');
@@ -124,7 +124,7 @@ const readBody = async req => { let s = ''; for await (const c of req) s += c; r
 
     // ---- 4. a session-header request that selects a roster agent runs that agent's effort ----
     ENVV = {}; ran.length = 0;
-    const s = await chat({ model: 'scout' }, { 'X-StarNet-Session-Id': 'sess1' });
+    const s = await chat({ model: 'scout' }, { 'X-Vultron-Session-Id': 'sess1' });
     const run = ran[0] || {};
     A.eq([s.status, run.agentId, run.provider, run.model, run.reasoningEffort], [200, 'api-sess1', 'codex', 'gpt-5.5', 'high'],
       "the session run carries scout's own effort (high), not the Overseer's (xhigh)");
@@ -138,9 +138,9 @@ const readBody = async req => { let s = ''; for await (const c of req) s += c; r
     A.eq([ran[0] && ran[0].agentId, ran[0] && host.runWireOfRun(ran[0]).reasoningEffort], ['scout', 'high'], 'a /v1/runs request with no session runs as scout, at the same effort');
   } finally { server.closeAllConnections(); await new Promise(r => server.close(r)); }
 
-  // ---- 5. POST /api/run (COMMS, `starnet run`, ACP) refuses a provider this station does not know (review round 4) ----
+  // ---- 5. POST /api/run (COMMS, `vultron run`, ACP) refuses a provider this station does not know (review round 4) ----
   // handleRun's own source, run until it refuses or passes the provider check. Its normalizeProvider falls back to
-  // openrouter, so `starnet run --provider olama --model llama3` ran openrouter/llama3 on the station's own key before
+  // openrouter, so `vultron run --provider olama --model llama3` ran openrouter/llama3 on the station's own key before
   // runOnceCore could refuse it (r4-unknown-provider.js). Past the check, a stub `require` stops it with a marker.
   {
     const PAST = 'past the provider check';

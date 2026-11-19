@@ -23,7 +23,7 @@ const sha1 = s => crypto.createHash('sha1').update(s).digest('hex');
 const roots = [];
 
 async function service(overrides) {
-  const workspaces = await fsp.mkdtemp(path.join(os.tmpdir(), 'starnet-voicecache-'));
+  const workspaces = await fsp.mkdtemp(path.join(os.tmpdir(), 'vultron-voicecache-'));
   roots.push(workspaces);
   return {
     dir: path.join(workspaces, 'voice-cache'),

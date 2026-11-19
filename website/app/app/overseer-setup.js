@@ -14,9 +14,9 @@ window.OverseerSetup = (() => {
   };
   function reflectProvider(provider) {
     const title = el('ov-connection-title');
-    if (title) title.textContent = provider === 'starnet' ? 'Your StarNet account' : (providers[provider]?.[0] || 'Provider');
+    if (title) title.textContent = provider === 'vultron' ? 'Your Vultron account' : (providers[provider]?.[0] || 'Provider');
     const help = el('ov-connection-help');
-    if (help) help.textContent = provider === 'starnet' ? 'Confirm your account in the browser, then choose a model.'
+    if (help) help.textContent = provider === 'vultron' ? 'Confirm your account in the browser, then choose a model.'
       : provider === 'ollama' ? 'Choose a model installed on this computer.'
       : provider === 'claude-cli' ? 'Sign in with your Claude subscription, then choose a model.'
       : provider === 'custom' ? 'Enter your endpoint, then choose or enter a model ID.'
@@ -25,8 +25,8 @@ window.OverseerSetup = (() => {
       : 'Add your provider’s API key, then choose a model.';
     const logo = el('ov-connection-logo');
     if (logo) {
-      logo.classList.toggle('ov-starnet-logo', provider === 'starnet');
-      logo.style.setProperty('--provider-icon', 'url("' + new URL('assets/brand/' + (provider === 'starnet' ? 'starnet-wordmark.svg' : 'providers/' + (provider === 'codex' ? 'openai' : provider) + '.svg'), document.baseURI).href + '")');
+      logo.classList.toggle('ov-vultron-logo', provider === 'vultron');
+      logo.style.setProperty('--provider-icon', 'url("' + new URL('assets/brand/' + (provider === 'vultron' ? 'vultron-wordmark.svg' : 'providers/' + (provider === 'codex' ? 'openai' : provider) + '.svg'), document.baseURI).href + '")');
     }
   }
   function beginConnection() {
@@ -43,7 +43,7 @@ window.OverseerSetup = (() => {
   function reflectModel(item, provider) {
     currentModel = { ...item, provider };
     if (el('ov-model-dialog')?.open) return;
-    // an id with no display name of its own (typed, or a bare catalog row) shows verbatim — humanized it read as StarNet
+    // an id with no display name of its own (typed, or a bare catalog row) shows verbatim — humanized it read as Vultron
     // stripping the dashes from the id it would send (#126)
     el('ov-model-name').textContent = !item.id ? 'Choose a model' : (!item.name || item.name === item.id) ? item.id : ModelDock.labels.model(item);
     el('ov-model-detail').textContent = item.id ? 'Change model or browse the catalog' : 'Browse the model catalog';

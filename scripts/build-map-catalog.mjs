@@ -3,11 +3,11 @@
 
    Sources (written by scripts/pull-map-submissions.mjs, committed):
      maps-catalog/maps/<slug>/map.json                    { slug, version, title, description, credit, license, stats, submission }
-     maps-catalog/maps/<slug>/build.starnet-build.json    the layout, re-cleaned by the app's own BuildShare when pulled
+     maps-catalog/maps/<slug>/build.vultron-build.json    the layout, re-cleaned by the app's own BuildShare when pulled
      maps-catalog/maps/<slug>/still.png                   the picture the reviewer approved
-   Output (served by starnetos.com, Cloudflare Pages):
-     website/.well-known/starnet-maps.json      the index (sidecar/maps/maps-format.js)
-     website/.well-known/starnet-maps.json.sig  an Ed25519 signature over it, byte for byte (the Skill Market's keys)
+   Output (served by vultron.vercel.app, Cloudflare Pages):
+     website/.well-known/vultron-maps.json      the index (sidecar/maps/maps-format.js)
+     website/.well-known/vultron-maps.json.sig  an Ed25519 signature over it, byte for byte (the Skill Market's keys)
      website/maps/<slug>/<version>/<files>      one immutable folder per published version
 
    Every build is read AGAIN through frontend/app/buildshare.js: a source the importer's cleaner would refuse, or
@@ -19,9 +19,9 @@
    refuses, no signing key for a changed index) is found first, and then either all files are written or none.
 
    SIGNING: a build that changes the index bumps its serial and re-signs with the private key
-   (STARNET_SKILL_MARKET_KEY, else ~/.starnet-keys/skill-market.key), and only ever with a key the APP trusts — a
+   (VULTRON_SKILL_MARKET_KEY, else ~/.vultron-keys/skill-market.key), and only ever with a key the APP trusts — a
    gallery signed with anything else is one every shipped station refuses. Tests add their own key with
-   STARNET_MAPS_TEST_KEYS (never set it for a real build). --check needs only the public keys.
+   VULTRON_MAPS_TEST_KEYS (never set it for a real build). --check needs only the public keys.
 
    node scripts/build-map-catalog.mjs          write (and sign) the gallery
    node scripts/build-map-catalog.mjs --check  exit 1 if website/ does not match the sources or the signature does not verify */
@@ -36,12 +36,12 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const fmt = require(join(ROOT, 'sidecar/maps/maps-format.js'));
 const signing = require(join(ROOT, 'sidecar/skills/market-signing.js'));
 
-const SRC = process.env.STARNET_MAPS_SRC || join(ROOT, 'maps-catalog', 'maps');
-const OUT = process.env.STARNET_MAPS_OUT || join(ROOT, 'website');
-const INDEX = join(OUT, '.well-known', 'starnet-maps.json');
-const SIGNING_KEY = process.env.STARNET_SKILL_MARKET_KEY || join(homedir(), '.starnet-keys', 'skill-market.key');
-// the keys every shipped station trusts — and, for tests only, an extra key named by STARNET_MAPS_TEST_KEYS
-const KEYS = signing.TRUSTED_KEYS.concat(signing.keysFromEnv(process.env.STARNET_MAPS_TEST_KEYS));
+const SRC = process.env.VULTRON_MAPS_SRC || join(ROOT, 'maps-catalog', 'maps');
+const OUT = process.env.VULTRON_MAPS_OUT || join(ROOT, 'website');
+const INDEX = join(OUT, '.well-known', 'vultron-maps.json');
+const SIGNING_KEY = process.env.VULTRON_SKILL_MARKET_KEY || join(homedir(), '.vultron-keys', 'skill-market.key');
+// the keys every shipped station trusts — and, for tests only, an extra key named by VULTRON_MAPS_TEST_KEYS
+const KEYS = signing.TRUSTED_KEYS.concat(signing.keysFromEnv(process.env.VULTRON_MAPS_TEST_KEYS));
 
 /* the app's own cleaner, loaded the way test/build-share.test.js loads it */
 export function loadCleaner() {
@@ -106,7 +106,7 @@ function main() {
     writes.push({ path: join(OUT, ...b.entry.still.path.split('/')), bytes: b.still, immutable: true, label: b.entry.still.path });
   }
   const indexBytes = Buffer.from(JSON.stringify(result.index, null, 2) + '\n', 'utf8');
-  writes.push({ path: INDEX, bytes: indexBytes, immutable: false, label: '.well-known/starnet-maps.json' });
+  writes.push({ path: INDEX, bytes: indexBytes, immutable: false, label: '.well-known/vultron-maps.json' });
   const pending = [];
   for (const w of writes) {
     const exists = existsSync(w.path);
@@ -120,8 +120,8 @@ function main() {
   try { sigOk = existsSync(sigPath) && !!signing.verify(indexBytes, readFileSync(sigPath, 'utf8'), KEYS); } catch (_) { sigOk = false; }
   let sigBytes = null;
   if (!sigOk) {
-    if (check) problems.push('.well-known/starnet-maps.json.sig ' + (existsSync(sigPath) ? 'does not verify over the published bytes' : 'is missing'));
-    else if (!existsSync(SIGNING_KEY)) problems.push('the gallery changed, so it must be re-signed, and there is no signing key at ' + SIGNING_KEY + ' (set STARNET_SKILL_MARKET_KEY to its path)');
+    if (check) problems.push('.well-known/vultron-maps.json.sig ' + (existsSync(sigPath) ? 'does not verify over the published bytes' : 'is missing'));
+    else if (!existsSync(SIGNING_KEY)) problems.push('the gallery changed, so it must be re-signed, and there is no signing key at ' + SIGNING_KEY + ' (set VULTRON_SKILL_MARKET_KEY to its path)');
     else {
       try { sigBytes = signing.sign(indexBytes, readFileSync(SIGNING_KEY, 'utf8'), KEYS); }
       catch (e) { problems.push('could not sign the gallery: ' + (e && e.message || e)); }

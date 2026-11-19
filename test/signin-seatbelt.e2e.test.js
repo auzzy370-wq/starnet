@@ -5,12 +5,12 @@
 
    The real sidecar, a stored ChatGPT sign-in and a stored Grok sign-in (WORKSPACES/codex|grok/tokens.json), and the
    Codex, Grok and OpenRouter endpoints pushed to one local fake through the desktop's token-gated runtime push (the
-   subscription-stacking-oauth.e2e pattern: fakes at the transport edge only). STARNET_MAX_SUBSCRIPTION_TOKENS=60000.
+   subscription-stacking-oauth.e2e pattern: fakes at the transport edge only). VULTRON_MAX_SUBSCRIPTION_TOKENS=60000.
    Every model turn of the task calls a tool and books 40,000 tokens; the fake keeps calling tools for 4 turns, then answers.
      - ChatGPT (Codex): the run ends 'budget' before its 3rd call (2 calls: 80,000 >= 60,000); agent.run.end carries
        subscriptionCapTokens 60000, and the stop text it leaves — the sentence channels and routines print
        (stop-reason.js) and the COMMS stop line (chat.js budgetStopLine) — names SIGN-IN TOKEN CEILING, and the server's
-       names STARNET_MAX_SUBSCRIPTION_TOKENS too. Its ledger row is a subscription row.
+       names VULTRON_MAX_SUBSCRIPTION_TOKENS too. Its ledger row is a subscription row.
      - Grok OAuth: the same.
      - An OpenRouter key with the same usage is not stopped by it: it runs to its answer, and its row is metered.
    RED at base: the Codex and Grok runs keep calling the fake until it stops sending tool calls, and no stop names a knob. */
@@ -80,11 +80,11 @@ function startFake() {
 
 (async () => {
   const fake = await startFake();
-  const env = { STARNET_IPC_TOKEN: IPC, STARNET_FULL_ACCESS: '1', STARNET_MAX_SUBSCRIPTION_TOKENS: '60000',
-    STARNET_QUEST_REFRESH: '0', STARNET_SKILL_REVIEW: '0', STARNET_SKILL_CURATOR: '0', STARNET_SCOUT: '0', STARNET_THREAD_MINE: '0',
-    STARNET_CREDITS_URL: '', STARNET_CLOUD_URL: '', STARNET_DEFAULT_MODEL: '', SKYNET_DEFAULT_MODEL: '' };
+  const env = { VULTRON_IPC_TOKEN: IPC, VULTRON_FULL_ACCESS: '1', VULTRON_MAX_SUBSCRIPTION_TOKENS: '60000',
+    VULTRON_QUEST_REFRESH: '0', VULTRON_SKILL_REVIEW: '0', VULTRON_SKILL_CURATOR: '0', VULTRON_SCOUT: '0', VULTRON_THREAD_MINE: '0',
+    VULTRON_CREDITS_URL: '', VULTRON_CLOUD_URL: '', VULTRON_DEFAULT_MODEL: '', SKYNET_DEFAULT_MODEL: '' };
   // ambient keys never reach a run here: the only key is the one pushed below
-  for (const name of ['OPENROUTER_KEY', 'OPENROUTER_API_KEY', 'OPENAI_API_KEY', 'XAI_API_KEY', 'CREDITS_API_KEY']) { env[name] = ''; env['STARNET_' + name] = ''; env['SKYNET_' + name] = ''; }
+  for (const name of ['OPENROUTER_KEY', 'OPENROUTER_API_KEY', 'OPENAI_API_KEY', 'XAI_API_KEY', 'CREDITS_API_KEY']) { env[name] = ''; env['VULTRON_' + name] = ''; env['SKYNET_' + name] = ''; }
   const fixture = SidecarFixture.create({ prefix: 'signin-seatbelt-', timeoutMs: 30000, env });
   try {
     for (const r of RUNS) {
@@ -98,7 +98,7 @@ function startFake() {
     await fixture.start();
     // the desktop's runtime push: a sign-in keeps its stored token, only its endpoint moves to the fake; OpenRouter gets a key
     for (const r of RUNS) {
-      const res = await fixture.request('/api/key', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-StarNet-Token': IPC },
+      const res = await fixture.request('/api/key', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Vultron-Token': IPC },
         body: JSON.stringify({ provider: r.provider, key: r.provider === 'openrouter' ? 'or-fixture-key' : '', baseUrl: fake.base + '/' + r.provider }) });
       A.eq(res.status, 200, r.provider + ': the fake endpoint is pushed to the station');
     }
@@ -127,7 +127,7 @@ function startFake() {
       A.eq([end.reason, calls.length], ['budget', 2], r.provider + ': the run stops at the seatbelt before its 3rd call (40,000 tokens a call, a 60,000 ceiling)');
       A.eq([end.budgetScope, end.subscriptionCapTokens, end.subscriptionModel, end.subscriptionTokens], ['run', 60000, r.model, 80000], r.provider + ': agent.run.end names the ceiling, the model and how far it went');
       const server = stopSentence(end.reason, end);
-      A.ok(/SIGN-IN TOKEN CEILING/.test(server) && /STARNET_MAX_SUBSCRIPTION_TOKENS/.test(server) && /60,000-token/.test(server) && !/SPENDING LIMITS/.test(server), r.provider + ': the stop channels and routines print names the knob: ' + server);
+      A.ok(/SIGN-IN TOKEN CEILING/.test(server) && /VULTRON_MAX_SUBSCRIPTION_TOKENS/.test(server) && /60,000-token/.test(server) && !/SPENDING LIMITS/.test(server), r.provider + ': the stop channels and routines print names the knob: ' + server);
       const comms = budgetStopLine(end.budgetScope, end.budgetCapUsd, end.budgetCapIsBalance, null, { model: end.subscriptionModel, capTokens: end.subscriptionCapTokens }, end.budgetProjected);
       A.ok(/SIGN-IN TOKEN CEILING in SETTINGS › APP & BACKUP › Runtime limits/.test(comms) && /60,000-token/.test(comms), r.provider + ': the COMMS stop line names it too: ' + comms);
       A.eq(row && [row.billingClass, row.unmetered, row.usd], ['subscription', true, 0], r.provider + ': its ledger row is a $0 subscription row');

@@ -11,7 +11,7 @@
  *
  * THE MATRIX (see CASES):
  *   idle-close     default prefs: WM_CLOSE → shell exe GONE, no orphan <install>\node.exe, relaunch
- *                  → visible "StarNet" window + /api/health up. Branch proof: startup.log says
+ *                  → visible "Vultron" window + /api/health up. Branch proof: startup.log says
  *                  `close-request: close_to_tray=false` and never `staying resident`.
  *   close-to-tray  lifecycle.json {closeToTray:true} (the shell's own versioned record, written
  *                  while the app is NOT running because it is read once at startup) → launch →
@@ -25,10 +25,10 @@
  *                  → its sidecar must be gone with it, BEFORE any relaunch (Windows: the station's
  *                  kill-on-close job; macOS: the sidecar's own parent watch) → relaunch → exactly ONE
  *                  shell and ONE station sidecar, healthy. The #31 shape: orphans piling up per launch.
- *   cli-app-closed the app has run here and is closed → the INSTALLED `starnet` (bin/starnet.cmd /
- *                  bin/starnet on the bundled node) runs a task → it starts the app in the background
- *                  (startup.log: "started by starnet (--background, terminal pid N)") instead of
- *                  refusing, exactly one station runs while it works, no StarNet window appears, and
+ *   cli-app-closed the app has run here and is closed → the INSTALLED `vultron` (bin/vultron.cmd /
+ *                  bin/vultron on the bundled node) runs a task → it starts the app in the background
+ *                  (startup.log: "started by vultron (--background, terminal pid N)") instead of
+ *                  refusing, exactly one station runs while it works, no Vultron window appears, and
  *                  once the terminal is gone the app quits on its own (nothing armed). The run itself
  *                  may fail on a keyless CI install; the case judges the lifecycle, not the answer.
  *
@@ -62,10 +62,10 @@ import { pathToFileURL } from 'node:url';
 
 /* ─────────────────────────────── PURE CORE ─────────────────────────────── */
 
-export const RECEIPT_SCHEMA = 'starnet.packaged-lifecycle-receipt.v1';
+export const RECEIPT_SCHEMA = 'vultron.packaged-lifecycle-receipt.v1';
 export const SHELL_EXE = 'skynet-desktop.exe';
 export const SIDECAR_EXE = 'node.exe';
-export const WINDOW_TITLE = 'StarNet';
+export const WINDOW_TITLE = 'Vultron';
 export const APP_IDENTIFIER = 'ai.skynet.harness';
 export const PREFS_FILE = 'lifecycle.json';
 export const PREFS_VERSION = 1;
@@ -83,7 +83,7 @@ export const WAITS = Object.freeze({
   windowMs: 120_000,      // first visible window after launch
   healthMs: 120_000,      // sidecar /api/health after launch
   goneMs: 45_000,         // shell + sidecar exit after WM_CLOSE (idle) / after a hard kill / after the CLI left
-  cliMs: 180_000,         // the installed `starnet` run, start of the app included
+  cliMs: 180_000,         // the installed `vultron` run, start of the app included
   settleMs: 12_000,       // how long a resident shell must survive after WM_CLOSE (tray)
   revealMs: 30_000,       // window visible again after the single-instance second launch
   pollMs: 500,
@@ -118,7 +118,7 @@ export function classifyProcesses(procs, installDir, names) {
   return out;
 }
 
-/** The station sidecars among the bundled-node processes: the ones a running shell started. (The installed `starnet`
+/** The station sidecars among the bundled-node processes: the ones a running shell started. (The installed `vultron`
  *  runs on the same bundled node, so "a node.exe under the install dir" alone over-counts while a CLI runs.) */
 export function stationSidecars(snap) {
   const shells = new Set(((snap && snap.shell) || []).map((p) => p.pid));
@@ -143,37 +143,37 @@ export function judgeKillRelaunch({ killedPid, afterKill, relaunch }) {
   return { pass: reasons.length === 0, reasons };
 }
 
-/** CLI-APP-CLOSED verdict. `cli` = { code, stdout, stderr } of the installed `starnet`; `started` = startup.log said the
+/** CLI-APP-CLOSED verdict. `cli` = { code, stdout, stderr } of the installed `vultron`; `started` = startup.log said the
  *  CLI started it in the background; `maxShells` / `maxStations` = the most seen at once while the CLI ran; `windowSeen` =
- *  a visible StarNet window appeared (null = unknown on this platform); `after` = snapshot once the CLI had exited;
- *  `stationSaved` = the app's workspace holds a station (agent.save.json or agent.roster.json — bin/starnet.js hasStation,
+ *  a visible Vultron window appeared (null = unknown on this platform); `after` = snapshot once the CLI had exited;
+ *  `stationSaved` = the app's workspace holds a station (agent.save.json or agent.roster.json — bin/vultron.js hasStation,
  *  the CLI's own condition for starting the app rather than booting a station itself; undefined = not checked).
  *  The case judges the LIFECYCLE, not the answer: a keyless runner's run may end "no model to run" (exit 3, the CLI's
  *  EXIT.STATION code for "nothing runnable configured" too) — that is no lifecycle failure; any other exit 3 is. */
 export function judgeCliAppClosed({ appRan, stationSaved, cli, started, maxShells, maxStations, windowSeen, after }) {
   const reasons = [];
   if (!appRan) reasons.push('precondition: the app has never run here (no startup.log) — this case proves the app-closed path');
-  if (stationSaved === false) reasons.push("precondition: the app's workspace holds no station (no agent.save.json / agent.roster.json — bin/starnet.js hasStation), so starnet would boot its own station instead of starting the app");
-  if (!cli) reasons.push('the installed starnet did not run');
+  if (stationSaved === false) reasons.push("precondition: the app's workspace holds no station (no agent.save.json / agent.roster.json — bin/vultron.js hasStation), so vultron would boot its own station instead of starting the app");
+  if (!cli) reasons.push('the installed vultron did not run');
   else {
     const err = String(cli.stderr || '');
-    // the refusals (0.14.0's "open the StarNet app first", "run `starnet` to start it", "app was not found"), never the
-    // notice of a start ("StarNet isn't running — starting it in the background")
-    if (/isn't running — (?!starting it)|open the StarNet app first|app was not found/i.test(err)) reasons.push(`the installed starnet refused with the app closed: ${err.trim().split(/\r?\n/).slice(-1)[0]}`);
-    if (cli.code === 3 && !/no model to run/.test(err)) reasons.push('the installed starnet exited 3 (no station)');
+    // the refusals (0.14.0's "open the Vultron app first", "run `vultron` to start it", "app was not found"), never the
+    // notice of a start ("Vultron isn't running — starting it in the background")
+    if (/isn't running — (?!starting it)|open the Vultron app first|app was not found/i.test(err)) reasons.push(`the installed vultron refused with the app closed: ${err.trim().split(/\r?\n/).slice(-1)[0]}`);
+    if (cli.code === 3 && !/no model to run/.test(err)) reasons.push('the installed vultron exited 3 (no station)');
   }
-  if (!started) reasons.push('startup.log never said the app was started by starnet (--background) — the CLI did not start it');
-  if (maxShells > 1) reasons.push(`${maxShells} StarNet shells ran at once`);
-  if (maxStations !== 1) reasons.push(`expected exactly 1 station sidecar while starnet ran, saw at most ${maxStations}`);
-  if (windowSeen === true) reasons.push('a visible StarNet window appeared — a terminal launch must stay parked');
-  if (!after) reasons.push('no snapshot after starnet exited');
-  else if (after.shell.length || after.sidecar.length) reasons.push(`StarNet did not quit once its last terminal session ended: shell ${after.shell.map((p) => p.pid).join(',') || '-'} sidecar ${after.sidecar.map((p) => p.pid).join(',') || '-'}`);
+  if (!started) reasons.push('startup.log never said the app was started by vultron (--background) — the CLI did not start it');
+  if (maxShells > 1) reasons.push(`${maxShells} Vultron shells ran at once`);
+  if (maxStations !== 1) reasons.push(`expected exactly 1 station sidecar while vultron ran, saw at most ${maxStations}`);
+  if (windowSeen === true) reasons.push('a visible Vultron window appeared — a terminal launch must stay parked');
+  if (!after) reasons.push('no snapshot after vultron exited');
+  else if (after.shell.length || after.sidecar.length) reasons.push(`Vultron did not quit once its last terminal session ended: shell ${after.shell.map((p) => p.pid).join(',') || '-'} sidecar ${after.sidecar.map((p) => p.pid).join(',') || '-'}`);
   return { pass: reasons.length === 0, reasons };
 }
 
-/** Visible top-level windows titled exactly "StarNet" that belong to one of the shell pids.
- *  Title equality is deliberate: WebView2 spawns no top-level "StarNet" windows of its own. */
-export function starnetWindows(windows, shellPids) {
+/** Visible top-level windows titled exactly "Vultron" that belong to one of the shell pids.
+ *  Title equality is deliberate: WebView2 spawns no top-level "Vultron" windows of its own. */
+export function vultronWindows(windows, shellPids) {
   const pids = new Set((shellPids || []).map(Number));
   return (Array.isArray(windows) ? windows : []).filter((w) =>
     w && w.visible === true && String(w.title || '').trim() === WINDOW_TITLE && pids.has(Number(w.pid)));
@@ -225,7 +225,7 @@ export function judgeIdleClose({ after, relaunch, log }) {
   if (!relaunch) reasons.push('no relaunch snapshot');
   else {
     if (relaunch.shell.length !== 1) reasons.push(`expected exactly 1 shell after relaunch, saw ${relaunch.shell.length}`);
-    if (!relaunch.windows.length) reasons.push('no visible "StarNet" window after relaunch');
+    if (!relaunch.windows.length) reasons.push('no visible "Vultron" window after relaunch');
     if (relaunch.health !== true) reasons.push('sidecar /api/health not up after relaunch');
   }
   return { pass: reasons.length === 0, reasons, branch };
@@ -240,7 +240,7 @@ export function judgeTrayClose({ launchedPid, resident, revealed, log }) {
     if (resident.shell.length !== 1) reasons.push(`expected the shell to STAY (1 pid), saw ${resident.shell.length}`);
     else if (launchedPid != null && resident.shell[0].pid !== Number(launchedPid)) reasons.push(`resident shell pid ${resident.shell[0].pid} is not the launched pid ${launchedPid}`);
     if (!resident.sidecar.length) reasons.push('sidecar node.exe was killed although the shell stayed resident');
-    if (resident.windows.length) reasons.push('a visible "StarNet" window remained after close-to-tray (should be hidden)');
+    if (resident.windows.length) reasons.push('a visible "Vultron" window remained after close-to-tray (should be hidden)');
     if (resident.health !== true) reasons.push('sidecar /api/health not up while resident');
   }
   const branch = closeBranch(log && log.closeLines);
@@ -249,7 +249,7 @@ export function judgeTrayClose({ launchedPid, resident, revealed, log }) {
   else {
     if (revealed.shell.length !== 1) reasons.push(`expected exactly 1 shell after the second launch (single-instance), saw ${revealed.shell.length}`);
     else if (launchedPid != null && revealed.shell[0].pid !== Number(launchedPid)) reasons.push(`the surviving shell pid ${revealed.shell[0].pid} is not the original ${launchedPid} — the resident was replaced, not revealed`);
-    if (!revealed.windows.length) reasons.push('second launch did NOT reveal a visible "StarNet" window — windowless resident (the 0.10.x escape)');
+    if (!revealed.windows.length) reasons.push('second launch did NOT reveal a visible "Vultron" window — windowless resident (the 0.10.x escape)');
   }
   return { pass: reasons.length === 0, reasons, branch };
 }
@@ -322,7 +322,7 @@ export async function pollUntil(fn, { timeoutMs, intervalMs, sleep, now }) {
 
 async function snapshot(drivers, installDir, port) {
   const procs = classifyProcesses(await drivers.listProcesses(), installDir, drivers.names);
-  const windows = starnetWindows(await drivers.listWindows(), procs.shell.map((p) => p.pid));
+  const windows = vultronWindows(await drivers.listWindows(), procs.shell.map((p) => p.pid));
   let health = null;
   if (port) { try { health = await drivers.health(port); } catch { health = false; } }
   return { shell: procs.shell, sidecar: procs.sidecar, windows, health, port: port || null };
@@ -345,7 +345,7 @@ async function waitForBoot(drivers, installDir, logMark, waits) {
 
 async function closeMain(drivers, installDir) {
   const s = await snapshot(drivers, installDir, null);
-  if (!s.windows.length) throw new Error('cannot WM_CLOSE: no visible "StarNet" window');
+  if (!s.windows.length) throw new Error('cannot WM_CLOSE: no visible "Vultron" window');
   await drivers.closeWindow(s.windows[0].hwnd);
   return s.windows[0];
 }
@@ -408,7 +408,7 @@ export async function runCaseKillRelaunch(drivers, ctx) {
 
 /** Precondition: the app is closed and HAS run here (its startup.log exists) with a station in its workspace — the LAW's
  *  "a profile where the app HAS run". A fresh runner whose earlier cases never saved a station gets a minimal one seeded
- *  (only when the workspace holds none; recorded in `observed.seededStation`). Runs the installed `starnet` once, on the
+ *  (only when the workspace holds none; recorded in `observed.seededStation`). Runs the installed `vultron` once, on the
  *  default record (written where the driver can; recorded in `prefs`): the shell's terminal-done decides as a window close
  *  does, so "the app quits once the terminal is gone" is the closeToTray=false answer — under closeToTray=true, staying
  *  resident is the right one. */
@@ -416,7 +416,7 @@ export async function runCaseCliAppClosed(drivers, ctx) {
   const { installDir, waits } = ctx;
   const t0 = drivers.now();
   const pre = await snapshot(drivers, installDir, null);
-  if (pre.shell.length) return { name: 'cli-app-closed', result: 'FAIL', reasons: [`precondition: StarNet already running (pids ${pre.shell.map((p) => p.pid).join(',')})`] };
+  if (pre.shell.length) return { name: 'cli-app-closed', result: 'FAIL', reasons: [`precondition: Vultron already running (pids ${pre.shell.map((p) => p.pid).join(',')})`] };
   const text = await drivers.readStartupLog();
   const appRan = !!String(text || '').trim();
   let stationSaved = typeof drivers.stationSaved === 'function' ? !!(await drivers.stationSaved()) : undefined;
@@ -441,8 +441,8 @@ export async function runCaseCliAppClosed(drivers, ctx) {
     await drivers.sleep(waits.pollMs);
   }
   if (!finished) { try { await drivers.stopCli(run); } catch { /* best effort */ } }
-  const cli = finished || { code: null, stdout: '', stderr: 'starnet did not finish within ' + waits.cliMs + ' ms' };
-  const started = /started by starnet \(--background, terminal pid \d+\)/.test(String(await drivers.readStartupLog()).split(/\r?\n/).slice(mark).join('\n'));
+  const cli = finished || { code: null, stdout: '', stderr: 'vultron did not finish within ' + waits.cliMs + ' ms' };
+  const started = /started by vultron \(--background, terminal pid \d+\)/.test(String(await drivers.readStartupLog()).split(/\r?\n/).slice(mark).join('\n'));
   const after = await pollUntil(async () => {
     const s = await snapshot(drivers, installDir, null);
     return { ok: s.shell.length === 0 && s.sidecar.length === 0, value: s };
@@ -603,7 +603,7 @@ async function cleanupIdle(drivers, ctx) {
 function ps(script) {
   // Write the script to a temp .ps1 and run it with -File: stdin `-Command -` silently drops
   // here-strings (the Add-Type block), and -EncodedCommand has a length ceiling.
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-g1-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-g1-'));
   const file = path.join(dir, 'step.ps1');
   fs.writeFileSync(file, '$ErrorActionPreference = "Stop"\n' + script + '\n', 'utf8');
   try {
@@ -618,10 +618,10 @@ function ps(script) {
 }
 
 const USER32 = `
-if (-not ('StarNetG1.Win32' -as [type])) {
+if (-not ('VultronG1.Win32' -as [type])) {
 Add-Type -TypeDefinition @"
 using System; using System.Text; using System.Runtime.InteropServices; using System.Collections.Generic;
-namespace StarNetG1 {
+namespace VultronG1 {
   public static class Win32 {
     public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
     [DllImport("user32.dll")] public static extern bool EnumWindows(EnumWindowsProc cb, IntPtr lParam);
@@ -654,11 +654,11 @@ export function makeWindowsDrivers({ appDataDir, installDir }) {
       return out.split(/\r?\n/).filter(Boolean).map((l) => { const [pid, name, ppid, p] = l.split('\t'); return { pid: Number(pid), name, ppid: Number(ppid), path: p || null }; });
     },
     listWindows() {
-      const out = ps(`${USER32}\n[StarNetG1.Win32]::List() | ForEach-Object { $_ }`);
+      const out = ps(`${USER32}\n[VultronG1.Win32]::List() | ForEach-Object { $_ }`);
       return out.split(/\r?\n/).filter(Boolean).map((l) => { const [hwnd, pid, vis, ...t] = l.split('\t'); return { hwnd: Number(hwnd), pid: Number(pid), visible: vis === '1', title: t.join('\t') }; });
     },
     closeWindow(hwnd) {
-      const out = ps(`${USER32}\n[StarNetG1.Win32]::Close(${Number(hwnd)})`);
+      const out = ps(`${USER32}\n[VultronG1.Win32]::Close(${Number(hwnd)})`);
       if (!/True/i.test(out)) throw new Error(`PostMessage(WM_CLOSE) to hwnd ${hwnd} returned ${out}`);
     },
     launch(exe) {
@@ -683,7 +683,7 @@ export function makeWindowsDrivers({ appDataDir, installDir }) {
     },
     exeVersion(exe) { return ps(`(Get-Item '${exe.replace(/'/g, "''")}').VersionInfo.ProductVersion`); },
     async fetchJson(url) {
-      const r = await fetch(url, { redirect: 'follow', headers: { 'user-agent': 'starnet-g1-packaged-lifecycle' } });
+      const r = await fetch(url, { redirect: 'follow', headers: { 'user-agent': 'vultron-g1-packaged-lifecycle' } });
       if (!r.ok) throw new Error(`HTTP ${r.status} for ${url}`);
       return r.json();
     },
@@ -698,9 +698,9 @@ export function makeWindowsDrivers({ appDataDir, installDir }) {
 }
 
 
-/* The files whose presence makes a workspace a station for the CLI (bin/starnet.js hasStation). */
+/* The files whose presence makes a workspace a station for the CLI (bin/vultron.js hasStation). */
 const STATION_FILES = ['agent.save.json', 'agent.roster.json'];
-/** A minimal one-agent station (what bin/starnet.js bootstrapWorkspace writes), only where none exists — never over one. */
+/** A minimal one-agent station (what bin/vultron.js bootstrapWorkspace writes), only where none exists — never over one. */
 function seedMinimalStation(ws) {
   if (STATION_FILES.some((f) => fs.existsSync(path.join(ws, f)))) return;
   fs.mkdirSync(ws, { recursive: true });
@@ -718,13 +718,13 @@ export function childEnvWithoutCredentials(env) {
   return out;
 }
 
-/** Run the INSTALLED `starnet` the way a shell does: bin\starnet.cmd (Windows) / bin/starnet (macOS), which runs
- *  bin/starnet.js on the bundled node, the app found beside it. Returns { child, done: Promise<{code,stdout,stderr}> }. */
+/** Run the INSTALLED `vultron` the way a shell does: bin\vultron.cmd (Windows) / bin/vultron (macOS), which runs
+ *  bin/vultron.js on the bundled node, the app found beside it. Returns { child, done: Promise<{code,stdout,stderr}> }. */
 function startInstalledCli(installDir, args, platform) {
   const quote = (a) => /[\s"]/.test(a) ? '"' + String(a).replace(/"/g, '\\"') + '"' : String(a);
   const child = platform === 'win32'
-    ? spawn('cmd.exe', ['/d', '/s', '/c', '"' + ['"' + path.join(installDir, 'bin', 'starnet.cmd') + '"'].concat(args.map(quote)).join(' ') + '"'], { windowsVerbatimArguments: true, stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true, env: childEnvWithoutCredentials(process.env) })
-    : spawn(path.join(installDir, '..', 'Resources', 'bin', 'starnet'), args, { stdio: ['ignore', 'pipe', 'pipe'], env: childEnvWithoutCredentials(process.env) });
+    ? spawn('cmd.exe', ['/d', '/s', '/c', '"' + ['"' + path.join(installDir, 'bin', 'vultron.cmd') + '"'].concat(args.map(quote)).join(' ') + '"'], { windowsVerbatimArguments: true, stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true, env: childEnvWithoutCredentials(process.env) })
+    : spawn(path.join(installDir, '..', 'Resources', 'bin', 'vultron'), args, { stdio: ['ignore', 'pipe', 'pipe'], env: childEnvWithoutCredentials(process.env) });
   let stdout = '', stderr = '';
   child.stdout.on('data', (d) => { stdout += d; });
   child.stderr.on('data', (d) => { stderr += d; });
@@ -736,7 +736,7 @@ function startInstalledCli(installDir, args, platform) {
 }
 
 /* ─────────────────────────── macOS DRIVERS (ambient, CI) ───────────────────────────
- * The installed app is <bundle>/Contents/MacOS/{skynet-desktop|StarNet} with the bundled node beside it; its data is
+ * The installed app is <bundle>/Contents/MacOS/{skynet-desktop|Vultron} with the bundled node beside it; its data is
  * ~/Library/Application Support/ai.skynet.harness. No window list (a CI mac grants no Accessibility), so only the
  * process-level cases run (MAC_CASES). Not run on the Windows dev box this was written on: CI is its proof. */
 export function makeMacDrivers({ appDataDir, installDir, exeName }) {
@@ -795,11 +795,11 @@ async function main() {
   const a = parseArgs(process.argv.slice(2));
   const mac = process.platform === 'darwin';
   if (process.platform !== 'win32' && !mac) { console.error('packaged-lifecycle: Windows or macOS only'); process.exit(2); }
-  const exe = a.exe || process.env.STARNET_G1_EXE;
+  const exe = a.exe || process.env.VULTRON_G1_EXE;
   if (!exe || !fs.existsSync(exe)) { console.error('packaged-lifecycle: --exe=<path to the installed shell executable> is required'); process.exit(2); }
   const installDir = a['install-dir'] || path.dirname(exe);
   const appDataDir = a['app-data'] || (mac ? path.join(os.homedir(), 'Library', 'Application Support', APP_IDENTIFIER) : path.join(process.env.APPDATA || '', APP_IDENTIFIER));
-  const tag = a.tag || process.env.STARNET_G1_TAG || '';
+  const tag = a.tag || process.env.VULTRON_G1_TAG || '';
   const expectedVersion = a['expect-version'] || (tag ? tag.replace(/^v/i, '') : '');
   const out = a.out || 'packaged-lifecycle-receipt.json';
   const cases = a.cases ? String(a.cases).split(',').map((s) => s.trim()).filter(Boolean) : (mac ? MAC_CASES : CASES).slice();
@@ -813,7 +813,7 @@ async function main() {
     tagFeedUrl: a['tag-feed-url'] || '',
     // the tag's own latest.json, already downloaded next to the installer (drafts are not public)
     tagFeed: a['tag-feed-path'] ? JSON.parse(fs.readFileSync(String(a['tag-feed-path']), 'utf8')) : null,
-    publicFeedUrl: a['public-feed-url'] || 'https://github.com/androoAGI/starnet-releases/releases/latest/download/latest.json',
+    publicFeedUrl: a['public-feed-url'] || 'https://github.com/YOUR-GITHUB-USER/vultron-releases/releases/latest/download/latest.json',
     feedMustMatch: a['feed-must-match'] === true || a['feed-must-match'] === 'true',
     meta: { exe, installDir, appDataDir, tag, runId: process.env.GITHUB_RUN_ID || null, host: process.env.COMPUTERNAME || null, image: process.env.ImageOS ? `${process.env.ImageOS} ${process.env.ImageVersion || ''}`.trim() : null },
     log: (m) => console.log(m),

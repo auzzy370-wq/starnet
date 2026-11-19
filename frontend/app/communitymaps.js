@@ -2,7 +2,7 @@
    things, and owns all of the layout around them (build.js):
 
    SHARE: the station's LAYOUT (BuildShare.exportBuild: no crew, step instructions, folders, connections or made
-   props) and a picture of it go to the linked StarNet account for a person to review. The picture is the station
+   props) and a picture of it go to the linked Vultron account for a person to review. The picture is the station
    itself (World.renderStill, layout only: no crew and none of this station's live work on the belts or desks) when
    that is exactly what the build carries; when it is not — made props the build leaves behind, or no station picture
    to be had right now — it is the floor plan drawn from the cleaned build, so the gallery never shows anything an

@@ -3,7 +3,7 @@ const A = require('./_assert.js');
 const fs = require('node:fs'), path = require('node:path'), os = require('node:os'), crypto = require('node:crypto');
 const { execFile, execFileSync } = require('node:child_process');
 const { makeCheckpointStore } = require('../sidecar/checkpoint-store.js');
-const root = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-checkpoint-maintenance-'));
+const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-checkpoint-maintenance-'));
 let active = 0, peak = 0, calls = [], failMaintenance = false, failAdd = false;
 function runGit(args, opts) {
   calls.push(args); active++; peak = Math.max(peak, active);

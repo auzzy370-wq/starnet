@@ -3,7 +3,7 @@
 
    The family: the station decided which provider and which model a run goes out on separately at each entry point, so
    one agent ran one tuple in COMMS and another from Run Now, a routine tick, a Telegram DM, a team.dispatch worker, /v1,
-   ACP, `starnet run`, the terminal dashboard or RUN A SAMPLE, and the Live Doctor probed a third. Each past fix patched one
+   ACP, `vultron run`, the terminal dashboard or RUN A SAMPLE, and the Live Doctor probed a third. Each past fix patched one
    copy (bugs 0e3d3914, a496d1c7, c978e7b7; gh#24). This test is the family's invariant: for one fake station it runs each
    entry point's REAL decision code (sliced from sidecar/index.js, or the real module: cron driver, channel hub,
    orchestration, openai-compat, the CLI core, the terminal's station model, the page's focusWire), composed with the
@@ -31,11 +31,11 @@ const RunWire = fs.existsSync(RUN_WIRE) ? require(RUN_WIRE) : null;   // absent 
 // A: a ChatGPT-signed-in station whose Overseer runs codex / gpt-5.5 at effort high, with an OpenRouter key too. `scout`
 //    is unpinned with a STALE stamped provider (an older page stamped every unpinned row); `crew` is unpinned with its own
 //    class effort (low); `pin` holds a bare model (no provider); `smith` is pinned to a whole OpenRouter pair.
-// B: a headless ChatGPT-only station: no OpenRouter key, no model anywhere, STARNET_DEFAULT_MODEL unset.
-// C: a headless ChatGPT-only station that never received a roster, with STARNET_DEFAULT_MODEL set (an OpenRouter id it
+// B: a headless ChatGPT-only station: no OpenRouter key, no model anywhere, VULTRON_DEFAULT_MODEL unset.
+// C: a headless ChatGPT-only station that never received a roster, with VULTRON_DEFAULT_MODEL set (an OpenRouter id it
 //    cannot run: the environment rule is ChatGPT's own default model).
 // THE ORACLE: [provider, model, source, effort] per agent — 'default' is the provider's default effort (nothing names one).
-const KNOWN = ['openrouter', 'codex', 'anthropic', 'starnet', 'ollama', 'custom', 'gemini'];
+const KNOWN = ['openrouter', 'codex', 'anthropic', 'vultron', 'ollama', 'custom', 'gemini'];
 const SCENARIOS = {
   A: {
     roster: {
@@ -63,7 +63,7 @@ const SCENARIOS = {
     want: { agent: ['codex', 'gpt-codex-default', 'env', 'default'] }
   }
 };
-// station A with STARNET_V1_MODEL set: /v1's generic target runs it (on openrouter); a selected roster agent keeps its pair
+// station A with VULTRON_V1_MODEL set: /v1's generic target runs it (on openrouter); a selected roster agent keeps its pair
 SCENARIOS.AV1 = Object.assign({}, SCENARIOS.A, { env: Object.assign({}, SCENARIOS.A.env, { V1_MODEL: 'v1/model' }) });
 // /v1's GENERIC target runs as an ephemeral agent that is not on the roster: it follows the station default (or the env)
 const V1_GENERIC = {
@@ -370,10 +370,10 @@ function expect(entry, sc, agentId, got, opts) {
         req.on('error', resolve); req.end(body);
       });
       try {
-        await post('starnet-agent');   // the generic model: the station default — or STARNET_V1_MODEL when it is set (AV1)
+        await post('vultron-agent');   // the generic model: the station default — or VULTRON_V1_MODEL when it is set (AV1)
         expect('/v1', sc, 'generic', runs[0] ? reach(host, runs[0]) : null, { source: true, want: V1_GENERIC[sc] });
         if (sc !== 'B') {
-          await post('scout');         // a roster agent selected by id: that agent's own pair, whatever STARNET_V1_MODEL says
+          await post('scout');         // a roster agent selected by id: that agent's own pair, whatever VULTRON_V1_MODEL says
           expect('/v1', sc, 'scout', runs[1] ? reach(host, runs[1]) : null, { source: true });
         }
       } finally { server.closeAllConnections(); await new Promise(r => server.close(r)); }
@@ -394,7 +394,7 @@ function expect(entry, sc, agentId, got, opts) {
     }
   }
 
-  // ================================================ 8. `starnet run` ====================================================
+  // ================================================ 8. `vultron run` ====================================================
   {
     const core = require('../bin/lib/cli-core.js');
     for (const sc of ['A', 'B']) {
@@ -403,7 +403,7 @@ function expect(entry, sc, agentId, got, opts) {
       for (const id of Object.keys(SCENARIOS[sc].want)) {
         const sel = core.pickAgent(rt, { agent: id });
         const run = sel.ok ? reach(host, core.buildRunBody(sel, 'hi', {})) : null;
-        expect('starnet run', sc, id, run);
+        expect('vultron run', sc, id, run);
       }
     }
   }
@@ -433,7 +433,7 @@ function expect(entry, sc, agentId, got, opts) {
   }
 
   // ================================================ 10. the terminal dashboard ==========================================
-  // `starnet` (bin/lib/dashboard.js) keeps each agent in the station model (bin/lib/station-model.js setRoster, fed GET
+  // `vultron` (bin/lib/dashboard.js) keeps each agent in the station model (bin/lib/station-model.js setRoster, fed GET
   // /api/runtime/agent) and sends that agent's model/provider/effort on its runs; it refuses an agent with no model. An
   // unpinned agent follows the station default, so it has one.
   {
@@ -448,7 +448,7 @@ function expect(entry, sc, agentId, got, opts) {
       for (const id of Object.keys(SCENARIOS[sc].want)) {
         const a = m.state.agents.get(id);
         const run = (a && a.model) ? reach(host, { agentId: id, model: a.model, provider: a.provider || undefined, reasoningEffort: a.reasoningEffort || undefined }) : null;
-        expect('starnet dashboard', sc, id, run);
+        expect('vultron dashboard', sc, id, run);
       }
     }
   }
@@ -544,7 +544,7 @@ function expect(entry, sc, agentId, got, opts) {
     A.ok(bad.length === 0, entry + ' runs every agent on its one pair and effort, and names it: ' + (bad.map(r => r.why).join(' | ') || 'ok'));
   }
   console.log('[run-wire invariant] per entry point:\n  ' + lines.join('\n  '));
-  A.eq([...ledger.keys()], ['COMMS', 'Run Now', 'scheduled tick', 'Telegram owner DM', 'team.dispatch worker', '/v1', 'ACP', 'starnet run', 'Live Doctor', 'starnet dashboard', 'RUN A SAMPLE'],
+  A.eq([...ledger.keys()], ['COMMS', 'Run Now', 'scheduled tick', 'Telegram owner DM', 'team.dispatch worker', '/v1', 'ACP', 'vultron run', 'Live Doctor', 'vultron dashboard', 'RUN A SAMPLE'],
     'every entry point the lane names was exercised');
   A.report('run-wire.invariant: one pair and one effort per agent on every entry point');
 })().catch(e => { A.ok(false, 'run-wire.invariant threw: ' + ((e && e.stack) || e)); A.report('run-wire.invariant'); });

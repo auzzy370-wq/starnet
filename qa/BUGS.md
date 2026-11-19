@@ -37,7 +37,7 @@ User/owner reports: **123** · source fixed: **103** · installer verified: **6*
 | [Funded working station still displays a zero-credit warning](bugs/72af29f4-funded-station-false-zero-warning.md) | recovery-truth | fixed | unverified | unconfirmed |
 | [Gemini rejects the turn after a tool call loses its signature](bugs/0d63e5d1-gemini-loses-tool-signature.md) | tool-history | fixed | unverified | unconfirmed |
 | [Learned context and concurrent housekeeping waste provider tokens](bugs/e25cb44c-learned-context-and-concurrent-housekeeping-wast.md) | token-efficiency | fixed | unverified | unconfirmed |
-| [Linked StarNet credits cannot authorize image generation](bugs/a9374d2c-linked-starnet-credits-cannot-authorize-image-ge.md) | managed-media | fixed | unverified | unconfirmed |
+| [Linked Vultron credits cannot authorize image generation](bugs/a9374d2c-linked-vultron-credits-cannot-authorize-image-ge.md) | managed-media | fixed | unverified | unconfirmed |
 | [Linked account warning confuses provider quota with disconnection](bugs/6c54d22e-linked-state-confused-with-quota.md) | recovery-truth | fixed | unverified | unconfirmed |
 | [Local model small talk carries excessive context and produces prolonged replies](bugs/a76b93c4-local-model-small-talk-overload.md) | local-model-conversation-latency | fixed | unverified | unconfirmed |
 | [Managed chat can use a stale request endpoint](bugs/3195ab5a-managed-chat-can-use-a-stale-request-endpoint.md) | managed-routing | fixed | unverified | unconfirmed |
@@ -185,7 +185,7 @@ User/owner reports: **123** · source fixed: **103** · installer verified: **6*
 | P1 | fixed | channels | [A lost-race consent tap stamps "▸ ✅ Allow once" onto the message before resolveConsent is asked, so a DENIED request keeps a permanent "approved" record](bugs/64563ad9-a-lost-race-consent-tap-stamps-allow-once-onto-t.md) | sweep/channels | 96fe108d |
 | P1 | fixed | channels | [A routine's reply longer than Telegram's 4096 characters is sent as one message, refused 'message is too long' on every retry, and never reaches the chat](bugs/3a9d5e4a-a-routine-s-reply-longer-than-telegram-s-4096-ch.md) | sweep/channels | 9af08a5a0 |
 | P1 | fixed | channels | [A sidecar crash mid-run replays the whole Telegram message as a second identical user turn, so side effects run twice and the reply undercounts them](bugs/e5ecd6b8-a-sidecar-crash-mid-run-replays-the-whole-telegr.md) | sweep/channels | 254ebe0e0 |
-| P1 | fixed | channels | [A Telegram consent ask allowed from STARNET REMOTE is stamped 'expired — DENIED' by a late tap on the still-live keyboard](bugs/9e60dd9f-a-telegram-consent-ask-allowed-from-starnet-remo.md) | sweep/channels | 0fcbbd42d |
+| P1 | fixed | channels | [A Telegram consent ask allowed from VULTRON REMOTE is stamped 'expired — DENIED' by a late tap on the still-live keyboard](bugs/9e60dd9f-a-telegram-consent-ask-allowed-from-vultron-remo.md) | sweep/channels | 0fcbbd42d |
 | P1 | fixed | channels | [An accepted channel correction is lost when history loading crosses a restart](bugs/f708cc4b-an-accepted-channel-correction-is-lost-when-hist.md) | turn-identity-1103 | 8f6cb7928 |
 | P1 | fixed | channels | [A channel record pins a stale provider key on disk](bugs/31cadf39-channel-record-pins-a-stale-provider-key-on-disk.md) | agent/credential-store-1031 | ffbb95fae 6f87a3894 e1d54e4be 0c9c1583f 772dcea9c c1b761297 f4353cfb5 |
 | P1 | fixed | channels | [Channel requests can restart stale work after awaited history or steering](bugs/ce3ebf30-channel-requests-can-restart-stale-work-after-aw.md) | turn-identity-1103 | 8f6cb7928 |
@@ -207,7 +207,7 @@ User/owner reports: **123** · source fixed: **103** · installer verified: **6*
 | P1 | fixed | onboarding | [Google account connection asks customers for developer credentials](bugs/e5d4b743-google-account-connection-asks-customers-for-dev.md) | agent/google-account-signin | cb8385c56 |
 | P1 | fixed | onboarding | [Mac paid onboarding becomes unreachable after reload and relink](bugs/eaaa3ec8-mac-onboarding-unreachable-after-link.md) | reliability-followup | c364e991d8d9c0c4d446c9978b8d31c33fcbe09d |
 | P1 | fixed | onboarding | [Older Mac WebKit cannot initialize Chat and widget polling](bugs/5308fc67-older-mac-webkit-cannot-initialize-chat-and-widg.md) | mac-boot-compat-0918 | 14c6a69a8 |
-| P1 | fixed | onboarding | [starnet boots the station ERASE EVERYTHING set aside in the install folder](bugs/661cbfea-starnet-boots-the-station-erase-everything-set-a.md) | agent/station-lifecycle-record-1031 | 7c30dd9e3 |
+| P1 | fixed | onboarding | [vultron boots the station ERASE EVERYTHING set aside in the install folder](bugs/661cbfea-vultron-boots-the-station-erase-everything-set-a.md) | agent/station-lifecycle-record-1031 | 7c30dd9e3 |
 | P1 | fixed | onboarding | [Stored OpenAI API key silently outranks a live ChatGPT sign-in at Wake](bugs/f46a1875-stored-openai-api-key-silently-outranks-a-live-c.md) | agent/codex-wins-wake | f7e050e6f |
 | P1 | fixed | onboarding | [The gate's START FRESH leaves the old station live](bugs/8792cdaf-the-gate-s-start-fresh-leaves-the-old-station-li.md) | agent/station-lifecycle-record-1031 | 65944dc92 |
 | P1 | fixed | onboarding | [Unlink failures silently hide account recovery controls](bugs/99a1517b-unlink-failures-silently-hide-account-recovery-c.md) | credits-unlink-recovery | 02332ee85 |
@@ -234,7 +234,7 @@ User/owner reports: **123** · source fixed: **103** · installer verified: **6*
 | P1 | fixed | providers | [A keyed voice leg, web_search's rung and Live Voice send a key to an endpoint it was not saved with](bugs/88f0b2ce-keyed-voice-leg-sends-key-to-unsaved-endpoint.md) | agent/credential-store-1031 | eadd2da4b |
 | P1 | fixed | providers | [Late model catalog response overwrites a newer provider selection](bugs/1600dcf0-late-model-catalog-reverts-new-provider-choice.md) | audit-0112-0910 | 59b5f2462 |
 | P1 | fixed | providers | [Learned context and concurrent housekeeping waste provider tokens](bugs/e25cb44c-learned-context-and-concurrent-housekeeping-wast.md) | agent/token-efficiency-1103 | 2dedb2b8a |
-| P1 | fixed | providers | [Linked StarNet credits cannot authorize image generation](bugs/a9374d2c-linked-starnet-credits-cannot-authorize-image-ge.md) | managed-image-repair-0909 | 05fbfbd28 |
+| P1 | fixed | providers | [Linked Vultron credits cannot authorize image generation](bugs/a9374d2c-linked-vultron-credits-cannot-authorize-image-ge.md) | managed-image-repair-0909 | 05fbfbd28 |
 | P1 | fixed | providers | [Linked account warning confuses provider quota with disconnection](bugs/6c54d22e-linked-state-confused-with-quota.md) | reliability-followup | 756ebec88 |
 | P1 | fixed | providers | [Local model small talk carries excessive context and produces prolonged replies](bugs/a76b93c4-local-model-small-talk-overload.md) | release-0120-prep-0915 | 5acf4640f |
 | P1 | fixed | providers | [Managed chat can use a stale request endpoint](bugs/3195ab5a-managed-chat-can-use-a-stale-request-endpoint.md) | managed-endpoint-0909 | 177a9384e |
@@ -382,7 +382,7 @@ User/owner reports: **123** · source fixed: **103** · installer verified: **6*
 | P2 | open | providers | [Model catalog lookups resolve a bare model id against another provider's catalog](bugs/f6744691-model-catalog-lookups-resolve-a-bare-model-id-ag.md) | sweep/providers | — |
 | P2 | open | providers | [Ollama run times out with no chat POST observed by reporter](bugs/5274c7b7-ollama-chat-request-not-observed.md) | release-0120-prep-0915 | — |
 | P2 | open | providers | [Reported macOS web fetch TLS decode and socket failures](bugs/1d3ac09a-reported-macos-web-fetch-tls-decode-and-socket-f.md) | release-0135-prep | — |
-| P2 | open | release | [All 30 superseded StarNet releases (v0.6.4 to v0.13.3) remain publicly downloadable from the releases repo](bugs/1a69136d-all-30-superseded-starnet-releases-v0-6-4-to-v0.md) | sweep/release | — |
+| P2 | open | release | [All 30 superseded Vultron releases (v0.6.4 to v0.13.3) remain publicly downloadable from the releases repo](bugs/1a69136d-all-30-superseded-vultron-releases-v0-6-4-to-v0.md) | sweep/release | — |
 | P2 | open | release | [cli-app-launch e2e keeps running for minutes after a failed assertion instead of exiting](bugs/1619dab8-cli-app-launch-e2e-keeps-running-for-minutes-aft.md) | gate-seams | — |
 | P2 | open | release | [Intel Mac DMG signature fails on a hash-matched download](bugs/776f2cee-intel-mac-dmg-signature-fails-on-a-hash-matched.md) | installed-integrity-and-engine-floor-1103 | — |
 | P2 | open | release | [Mac installer reports application unsupported on the computer](bugs/ff3fb4cb-mac-unsupported-installation-uncorrelated.md) | release-0120-prep-0915 | — |
@@ -403,7 +403,7 @@ User/owner reports: **123** · source fixed: **103** · installer verified: **6*
 | P2 | fixed | autonomy | [A force-killed holder's cron.lock with a recycled PID mutes the scheduler for up to 8 minutes](bugs/1186e4e7-a-force-killed-holder-s-cron-lock-with-a-recycle.md) | sweep/autonomy | 283face2e |
 | P2 | fixed | autonomy | [A one-shot routine whose time already passed is stored and fires on the next tick](bugs/94e4036f-a-one-shot-routine-whose-time-already-passed-is.md) | sweep/autonomy | 17e0d3965 |
 | P2 | fixed | autonomy | [Cancelled edit starts a replacement language server](bugs/37059128-cancelled-edit-starts-a-replacement-language-ser.md) | reliability-audit | 547dd03d7 |
-| P2 | fixed | autonomy | [Commander-reported plan step shown as StarNet recorded](bugs/024e4e15-commander-reported-plan-step-shown-as-starnet-re.md) | sweep/autonomy | e0b979995 |
+| P2 | fixed | autonomy | [Commander-reported plan step shown as Vultron recorded](bugs/024e4e15-commander-reported-plan-step-shown-as-vultron-re.md) | sweep/autonomy | e0b979995 |
 | P2 | fixed | autonomy | [Deliverable naming instruction conflicts with explicit stop limits](bugs/5a35bcfe-deliverable-note-overrides-stop.md) | report-0110-0908 | 72a8a3043c263cd53ed353daed2042e256c8e236 |
 | P2 | fixed | autonomy | [Line failure sentences lose the configured agent name](bugs/5b5da1f6-line-failure-sentences-lose-the-configured-agent.md) | agent/batch3-runtime-fixtures-1103 | fb33da958e1b8998a661e793d8a5f0a0aa44129a |
 | P2 | fixed | autonomy | [Loop pause and resume discard refused control responses](bugs/32fd08b2-loop-pause-and-resume-discard-refused-control-re.md) | agent/seam-audit-0912-b | b5c5cba75 |

@@ -11,7 +11,7 @@ const port = Number(process.env.WIDGET_PROOF_PORT || 9190);
 let fixturePort = 0;   // the fixture server's own port, from listen(0) below: port + 1 was a guess at a free neighbour
 const MODEL = 'replay/widget-studio-fixture';
 let amount = 1240, fail = false, reads = 0, child, providerCalls = 0;
-const workspace = process.env.WIDGET_PROOF_WORKSPACE || mkdtempSync(join(tmpdir(), 'starnet-widget-proof-'));
+const workspace = process.env.WIDGET_PROOF_WORKSPACE || mkdtempSync(join(tmpdir(), 'vultron-widget-proof-'));
 if (process.env.WIDGET_PROOF_WORKSPACE) { if (!existsSync(join(workspace, 'station', 'agent.save.json'))) throw new Error('Missing proof workspace'); }
 else materializeSeedWorkspace(join(workspace, 'station'), MODEL);
 const json = (res, body, status = 200) => { res.writeHead(status, { 'Content-Type':'application/json' }); res.end(JSON.stringify(body)); };
@@ -81,8 +81,8 @@ const server = http.createServer(async (req, res) => {
   return json(res,{},404);
 });
 function boot() { child = bootSeededSidecar({port,model:MODEL,key:'local-widget-fixture-not-a-credential',scratchDir:join(workspace,'station'),env:{
-  SKYNET_OPENROUTER_BASE:'http://127.0.0.1:'+fixturePort+'/api/v1',STARNET_OPENROUTER_BASE:'http://127.0.0.1:'+fixturePort+'/api/v1',
-  STARNET_OPENROUTER_KEY:'local-widget-fixture-not-a-credential',SKYNET_API_TOKEN:'widget-proof-local-token',STARNET_API_TOKEN:'widget-proof-local-token',SKYNET_QUEST_REFRESH:'0',SKYNET_SCOUT:'0'
+  SKYNET_OPENROUTER_BASE:'http://127.0.0.1:'+fixturePort+'/api/v1',VULTRON_OPENROUTER_BASE:'http://127.0.0.1:'+fixturePort+'/api/v1',
+  VULTRON_OPENROUTER_KEY:'local-widget-fixture-not-a-credential',SKYNET_API_TOKEN:'widget-proof-local-token',VULTRON_API_TOKEN:'widget-proof-local-token',SKYNET_QUEST_REFRESH:'0',SKYNET_SCOUT:'0'
 }}); }
 await new Promise((resolve,reject)=>server.listen(0,'127.0.0.1',resolve).once('error',reject));
 fixturePort = server.address().port;
@@ -90,7 +90,7 @@ try { const r = await fetch('http://127.0.0.1:'+port,{signal:AbortSignal.timeout
 catch(e) { if(e.message==='Proof app port occupied') throw e; }
 boot();
 if (!await waitUp('http://127.0.0.1:'+port)) throw new Error('Proof sidecar did not start');
-const connected = await fetch('http://127.0.0.1:'+port+'/api/connectors',{method:'POST',headers:{'Content-Type':'application/json','X-StarNet-Token':'widget-proof-local-token'},body:JSON.stringify({id:'widget_demo',label:'Demo Revenue · test fixture',transport:'http',url:'http://127.0.0.1:'+fixturePort+'/mcp',enabled:true})}).then(r=>r.json());
+const connected = await fetch('http://127.0.0.1:'+port+'/api/connectors',{method:'POST',headers:{'Content-Type':'application/json','X-Vultron-Token':'widget-proof-local-token'},body:JSON.stringify({id:'widget_demo',label:'Demo Revenue · test fixture',transport:'http',url:'http://127.0.0.1:'+fixturePort+'/mcp',enabled:true})}).then(r=>r.json());
 console.log(JSON.stringify({app:'http://127.0.0.1:'+port,control:'http://127.0.0.1:'+fixturePort+'/control',workspace,pid:child.pid,connected:connected.status?.state}));
 function stop(){child?.kill();server.close();}
 process.on('SIGINT',stop); process.on('SIGTERM',stop);

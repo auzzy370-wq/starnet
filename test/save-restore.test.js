@@ -9,7 +9,7 @@ const { makeSaveStore } = require('../sidecar/savestore.js');
 const turn = (role, content) => ({ role, content });
 const ws = (id, history, extra) => Object.assign({ id, title: 'S ' + id, agentId: 'agent', lane: 'active', kind: 'chat', history, runIds: [] }, extra || {});
 const station = {
-  schema: 'starnet.save', version: 6, agent: { id: 'agent', name: 'NOVA' }, station: { floor: 'station floor' }, generalId: 'g-station',
+  schema: 'vultron.save', version: 6, agent: { id: 'agent', name: 'NOVA' }, station: { floor: 'station floor' }, generalId: 'g-station',
   deletedIds: ['gone'], _saveRevision: 46,
   workstreams: [
     ws('g-station', [turn('user', 'hi')], { title: null }),
@@ -21,7 +21,7 @@ const station = {
   ]
 };
 const windowSave = {
-  schema: 'starnet.save', version: 6, agent: { id: 'agent', name: 'RENAMED IN WINDOW' }, station: { floor: 'window floor' }, generalId: 'g-window',
+  schema: 'vultron.save', version: 6, agent: { id: 'agent', name: 'RENAMED IN WINDOW' }, station: { floor: 'window floor' }, generalId: 'g-window',
   deletedIds: ['station-only'], _saveRevision: 45,
   workstreams: [
     ws('g-window', [turn('user', 'hi'), turn('assistant', 'more general')], { title: null }),

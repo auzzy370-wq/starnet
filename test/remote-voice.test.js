@@ -1,4 +1,4 @@
-/* node test/remote-voice.test.js — StarNet Remote voice: a paired device (the AIPI-Lite companion) speaks to the
+/* node test/remote-voice.test.js — Vultron Remote voice: a paired device (the AIPI-Lite companion) speaks to the
    station and hears it answer, through the gateway's hear / speak / speech verbs.
    The Ogg container the station builds from the device's raw Opus frames is decoded by the REAL decoder the
    STT chain uses (media-service oggOpusToMono16kFloat32), so a malformed page, CRC or granule fails here. */
@@ -376,7 +376,7 @@ function parsePages(buf) {
     const { makeMediaService } = require('../sidecar/media-service.js');
     const os = require('os');
     const path = require('path');
-    const ws = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-remote-typed-'));
+    const ws = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-remote-typed-'));
     let keyThrows = false;
     const media = makeMediaService({
       workspaces: ws, fs, fsp: fs.promises,

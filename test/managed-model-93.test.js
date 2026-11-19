@@ -1,13 +1,13 @@
-/* node test/managed-model-93.test.js — GitHub #93: a LINKED StarNet Managed station read "GPT-5.5 — Not Available",
-   "no model selected", STARNET MANAGED greyed in the per-agent picker, and CHOOSE MODEL flashed shut. Three chained
+/* node test/managed-model-93.test.js — GitHub #93: a LINKED Vultron Managed station read "GPT-5.5 — Not Available",
+   "no model selected", VULTRON MANAGED greyed in the per-agent picker, and CHOOSE MODEL flashed shut. Three chained
    bugs, each locked here by executing the REAL frontend code:
      1. a bare 'gpt-5.5' (the default a managed setup saved, borrowed from the openrouter list) is mapped to the ONE
         catalog row '<vendor>/gpt-5.5' and the reconcile PERSISTS the replacement — never cleared, never guessed when
-        two vendors serve the same tail; STARNET has its own catalog-shaped default.
+        two vendors serve the same tail; VULTRON has its own catalog-shaped default.
      2. the dock's outside-click closer ignores the click that finishes the very press which opened it (the COMMS
         chip opens on pointerdown and removes its own row, so that click lands detached or on whatever is underneath).
-     3. a desktop boot rebuilding the configured map from the keychain keeps the sidecar's starnet answer.
-   Plus: the per-agent catalog fans out to 'starnet' when linked, and drops it when not. */
+     3. a desktop boot rebuilding the configured map from the keychain keeps the sidecar's vultron answer.
+   Plus: the per-agent catalog fans out to 'vultron' when linked, and drops it when not. */
 'use strict';
 const A = require('./_assert.js');
 const fs = require('fs');
@@ -35,7 +35,7 @@ function fakeEl(id) {
 // Load modeldock.js against a stub document whose listeners are captured, so the real handlers can be driven.
 function loadDock(opts) {
   opts = opts || {};
-  let provider = opts.provider || 'starnet', model = opts.model || '', revision = 0;
+  let provider = opts.provider || 'vultron', model = opts.model || '', revision = 0;
   const applied = [];
   const docListeners = [];
   const els = { 'model-dock': fakeEl('model-dock'), 'model-dock-toggle': fakeEl('model-dock-toggle') };
@@ -55,10 +55,10 @@ function loadDock(opts) {
     getProv: () => provider, setProv: v => { revision++; provider = v; },
     getModel: () => model, setModel: v => { revision++; model = v; },
     getReasoningEffort: () => 'medium', setReasoningEffort() {}, normalizeReasoningEffort: v => String(v || 'medium'),
-    configured: p => (opts.linked !== false && p === 'starnet') || (p === 'claude-cli' && !!opts.claudeCatalog),
+    configured: p => (opts.linked !== false && p === 'vultron') || (p === 'claude-cli' && !!opts.claudeCatalog),
     getKey: () => '', getBaseUrl: () => '', listModels: async () => [],
     apiFetch: async url => {
-      if (url === '/api/models/starnet') return new Response(JSON.stringify({ provider: 'starnet', models: opts.catalog || [] }), { status: 200 });
+      if (url === '/api/models/vultron') return new Response(JSON.stringify({ provider: 'vultron', models: opts.catalog || [] }), { status: 200 });
       if (url === '/api/models/claude-cli' && opts.claudeCatalog) return new Response(JSON.stringify({ provider: 'claude-cli', models: opts.claudeCatalog }), { status: 200 });
       if (url === '/api/credits?history=0') return opts.credits ? new Response(JSON.stringify(opts.credits), { status: 200 }) : new Response('{}', { status: 500 });
       return new Response(JSON.stringify({ models: [], error: 'not configured', connected: false }), { status: 200 });
@@ -88,13 +88,13 @@ module.exports = (async () => {
     const t = loadDock();
     try {
       const eqv = t.dock._internals.catalogEquivalent;
-      A.eq(eqv('gpt-5.5', 'starnet', [{ id: 'openai/gpt-5.5' }]), 'openai/gpt-5.5', 'bare gpt-5.5 maps to the single managed row openai/gpt-5.5');
+      A.eq(eqv('gpt-5.5', 'vultron', [{ id: 'openai/gpt-5.5' }]), 'openai/gpt-5.5', 'bare gpt-5.5 maps to the single managed row openai/gpt-5.5');
       A.eq(eqv('gpt-5.5', 'openrouter', [{ id: 'openai/gpt-5.5' }, { id: 'openai/gpt-5.5-mini' }]), 'openai/gpt-5.5', 'openrouter maps the same way; a longer tail is not a match');
-      A.eq(eqv('gpt-5.5', 'starnet', [{ id: 'openai/gpt-5.5' }, { id: 'azure/gpt-5.5' }]), '', 'two vendors serving the same tail is ambiguous: no remap');
-      A.eq(eqv('gpt-5.5', 'starnet', [{ id: 'openai/gpt-5.5:free' }, { id: 'x/y/gpt-5.5' }]), '', 'a variant suffix or a nested path is never a match');
-      A.eq(eqv('claude-sonnet-5', 'starnet', [{ id: 'anthropic/claude-sonnet-5' }, { id: 'other/claude-sonnet-5' }]), 'anthropic/claude-sonnet-5', 'the anthropic/ equivalent still wins first');
+      A.eq(eqv('gpt-5.5', 'vultron', [{ id: 'openai/gpt-5.5' }, { id: 'azure/gpt-5.5' }]), '', 'two vendors serving the same tail is ambiguous: no remap');
+      A.eq(eqv('gpt-5.5', 'vultron', [{ id: 'openai/gpt-5.5:free' }, { id: 'x/y/gpt-5.5' }]), '', 'a variant suffix or a nested path is never a match');
+      A.eq(eqv('claude-sonnet-5', 'vultron', [{ id: 'anthropic/claude-sonnet-5' }, { id: 'other/claude-sonnet-5' }]), 'anthropic/claude-sonnet-5', 'the anthropic/ equivalent still wins first');
       A.eq(eqv('gpt-5.5', 'openai', [{ id: 'openai/gpt-5.5' }]), '', 'a direct provider never gains a routed prefix');
-      A.eq(eqv('gpt-5.5', 'starnet', [{ id: 'openai/gpt-5.4' }]), '', 'never invents a slug the catalog lacks');
+      A.eq(eqv('gpt-5.5', 'vultron', [{ id: 'openai/gpt-5.4' }]), '', 'never invents a slug the catalog lacks');
     } finally { t.restore(); }
   }
   {
@@ -110,17 +110,17 @@ module.exports = (async () => {
     } finally { t.restore(); }
   }
   {
-    // STARNET's own default is catalog-shaped (no more borrowing openrouter's bare 'gpt-5.5')
+    // VULTRON's own default is catalog-shaped (no more borrowing openrouter's bare 'gpt-5.5')
     const app = read('frontend', 'app', 'app.js');
     const fallback = (app.match(/const FALLBACK_MODELS = Object\.freeze\(\{[\s\S]*?\n  \}\);/) || [''])[0];
     const picks = (app.match(/const MODEL_PICKS = Object\.freeze\(\{[\s\S]*?\n  \}\);/) || [''])[0];
-    const sf = (fallback.match(/\n    starnet: \[([^\]]*)\]/) || [, ''])[1];
-    const sp = (picks.match(/\n    starnet: \[[\s\S]*?\n    \],/) || [''])[0];
+    const sf = (fallback.match(/\n    vultron: \[([^\]]*)\]/) || [, ''])[1];
+    const sp = (picks.match(/\n    vultron: \[[\s\S]*?\n    \],/) || [''])[0];
     const fIds = (sf.match(/'([^']+)'/g) || []).map(s => s.slice(1, -1));
     const pIds = (sp.match(/id: '([^']+)'/g) || []).map(s => s.slice(5, -1));
-    A.ok(fIds.length > 0 && pIds.length > 0, 'STARNET has its own FALLBACK_MODELS + MODEL_PICKS entries');
-    A.ok(fIds.concat(pIds).every(id => /^[a-z0-9-]+\/[^/]+$/.test(id)), 'every STARNET default is a vendor/model id: ' + fIds.concat(pIds).join(', '));
-    A.eq(pIds[0], fIds[0], 'the first pick (the genesis default) matches defaultModelFor(starnet)');
+    A.ok(fIds.length > 0 && pIds.length > 0, 'VULTRON has its own FALLBACK_MODELS + MODEL_PICKS entries');
+    A.ok(fIds.concat(pIds).every(id => /^[a-z0-9-]+\/[^/]+$/.test(id)), 'every VULTRON default is a vendor/model id: ' + fIds.concat(pIds).join(', '));
+    A.eq(pIds[0], fIds[0], 'the first pick (the genesis default) matches defaultModelFor(vultron)');
   }
 
   /* ---------- 2. the opening press's click does not close the dock ---------- */
@@ -146,28 +146,28 @@ module.exports = (async () => {
     } finally { t.restore(); }
   }
 
-  /* ---------- 4. the per-agent catalog includes starnet when linked, drops it when not ---------- */
+  /* ---------- 4. the per-agent catalog includes vultron when linked, drops it when not ---------- */
   for (const linked of [true, false]) {
     const t = loadDock({ provider: 'openrouter', model: 'anthropic/claude-sonnet-4.6', linked, catalog: [{ id: 'openai/gpt-5.5', supported_parameters: ['tools'] }] });
     try {
       const rows = await t.dock.catalog({ force: true });
-      const managed = rows.filter(m => m.provider === 'starnet');
-      if (linked) A.ok(managed.some(m => m.id === 'openai/gpt-5.5'), 'a linked station offers STARNET MANAGED rows in the per-agent picker even when the focused agent runs elsewhere');
-      else A.eq(managed.length, 0, 'an unlinked station shows no STARNET MANAGED rows (providerEnabled gates it)');
+      const managed = rows.filter(m => m.provider === 'vultron');
+      if (linked) A.ok(managed.some(m => m.id === 'openai/gpt-5.5'), 'a linked station offers VULTRON MANAGED rows in the per-agent picker even when the focused agent runs elsewhere');
+      else A.eq(managed.length, 0, 'an unlinked station shows no VULTRON MANAGED rows (providerEnabled gates it)');
     } finally { t.restore(); }
   }
 
-  /* ---------- 5. an empty wallet sinks STARNET below the user's own sign-ins (2026-10-21 user reports) ---------- */
+  /* ---------- 5. an empty wallet sinks VULTRON below the user's own sign-ins (2026-10-21 user reports) ---------- */
   {
     const options = { linked: true, catalog: [{ id: 'openai/gpt-5.5' }] };
     const t = loadDock(options);
     try {
-      A.ok((await t.dock.catalog({ force: true })).some(m => m.provider === 'starnet'), 'fixture warms an eligible provider catalog');
+      A.ok((await t.dock.catalog({ force: true })).some(m => m.provider === 'vultron'), 'fixture warms an eligible provider catalog');
       options.linked = false;   // the common readiness row changed; no model/selection revision changed
-      A.ok(!(await t.dock.catalog()).some(m => m.provider === 'starnet'), 'normal reopen drops an ineligible provider even with a warm catalog');
+      A.ok(!(await t.dock.catalog()).some(m => m.provider === 'vultron'), 'normal reopen drops an ineligible provider even with a warm catalog');
     } finally { t.restore(); }
   }
-  /* ---------- 5. an empty wallet sinks STARNET below the user's own sign-ins (2026-10-21 user reports) ---------- */
+  /* ---------- 5. an empty wallet sinks VULTRON below the user's own sign-ins (2026-10-21 user reports) ---------- */
   // A linked $0 station listed managed "Claude Opus" right above CLAUDE CODE's, so a mis-pick ran on managed credit.
   for (const [credits, dry, label] of [
     [{ configured: true, balanceUsd: -0.14 }, true, 'a negative balance'],
@@ -184,16 +184,16 @@ module.exports = (async () => {
     try {
       const rows = await t.dock.catalog({ force: true });
       const order = rows.map(m => m.provider).filter((p, i, a) => a.indexOf(p) === i);
-      A.ok(order.includes('starnet') && order.includes('claude-cli'), label + ': both catalogs are listed');
-      A.eq(t.dock.starnetDry(), dry, label + ': starnetDry reads the reported balance only');
-      if (dry) A.eq(order[order.length - 1], 'starnet', label + ': STARNET sinks below every other provider');
-      else A.eq(order[0], 'starnet', label + ': STARNET keeps its place (an unknown balance never buries a funded account)');
+      A.ok(order.includes('vultron') && order.includes('claude-cli'), label + ': both catalogs are listed');
+      A.eq(t.dock.vultronDry(), dry, label + ': vultronDry reads the reported balance only');
+      if (dry) A.eq(order[order.length - 1], 'vultron', label + ': VULTRON sinks below every other provider');
+      else A.eq(order[0], 'vultron', label + ': VULTRON keeps its place (an unknown balance never buries a funded account)');
     } finally { t.restore(); }
   }
   {
     const dock = read('frontend', 'app', 'modeldock.js');
-    A.ok(/starnetDry\(\)\) \{\s*\n\s*const dry = document\.createElement\('i'\);[\s\S]{0,120}' · NO CREDITS'/.test(dock), 'the dock labels a dry STARNET group NO CREDITS');
-    A.ok(/p === 'starnet' && M\.starnetDry && M\.starnetDry\(\)\) return M\.labels\.provider\(p\) \+ ' · NO CREDITS'/.test(read('frontend', 'app', 'modelpicker.js')), 'the per-agent picker labels it the same way');
+    A.ok(/vultronDry\(\)\) \{\s*\n\s*const dry = document\.createElement\('i'\);[\s\S]{0,120}' · NO CREDITS'/.test(dock), 'the dock labels a dry VULTRON group NO CREDITS');
+    A.ok(/p === 'vultron' && M\.vultronDry && M\.vultronDry\(\)\) return M\.labels\.provider\(p\) \+ ' · NO CREDITS'/.test(read('frontend', 'app', 'modelpicker.js')), 'the per-agent picker labels it the same way');
   }
 
   /* Desktop keychain callbacks cannot erase the sidecar's managed readiness row. */
@@ -206,13 +206,13 @@ module.exports = (async () => {
       let refreshed = 0;
       const ctx = { SK: { providers: { registry: require('../sidecar/providers/registry.js') } },
         readinessCache: cache, DESKTOP: true, _alternateCountByProvider: {}, bootNotices() {}, ensureApiToken: async () => 't',
-        pushDesktopEndpoints: async () => [], getProv: () => 'starnet',
-        refreshProviderReadiness: async () => { refreshed++; cache.accept([{ id: 'starnet', unattendedReady: true, configured: true,
+        pushDesktopEndpoints: async () => [], getProv: () => 'vultron',
+        refreshProviderReadiness: async () => { refreshed++; cache.accept([{ id: 'vultron', unattendedReady: true, configured: true,
           credential: { present: true, status: 'unverified' }, endpoint: { configured: true }, lastVerified: null }], cache.ticket()); },
-        invoke: async () => { if (!keychain) throw new Error('keychain unavailable'); return [{ provider: 'starnet', configured: false, alternateCount: 0 }]; } };
+        invoke: async () => { if (!keychain) throw new Error('keychain unavailable'); return [{ provider: 'vultron', configured: false, alternateCount: 0 }]; } };
       const H = vm.runInNewContext(funcs + '\n({init, configured})', ctx);
       await H.init();
-      A.ok(refreshed > 0 && H.configured('starnet'), 'sidecar managed readiness survives keychain false/unavailable');
+      A.ok(refreshed > 0 && H.configured('vultron'), 'sidecar managed readiness survives keychain false/unavailable');
     }
   }
 

@@ -36,7 +36,7 @@ const History = require('../sidecar/transcript-history.js');
 const { sidecarTopLevelFunction } = require('./helpers/source.js');
 const { quotesForgotten: journalQuotesForgotten } = require('../sidecar/run-journal.js');
 
-const temp = name => fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-forget-' + name + '-'));
+const temp = name => fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-forget-' + name + '-'));
 const remove = dir => fs.rmSync(dir, { recursive: true, force: true });
 const noise = (tag, e) => { throw new Error(tag + ': ' + (e && e.message)); };
 

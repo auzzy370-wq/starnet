@@ -35,9 +35,9 @@ function* walk(dir) {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);
     if (entry.isDirectory()) {
-      // Frozen comparator/source checkouts are inputs, not shareable StarNet evidence. Their own
+      // Frozen comparator/source checkouts are inputs, not shareable Vultron evidence. Their own
       // upstream fixtures may intentionally contain key-shaped examples; scan the receipts around
-      // them, but do not recursively lint a nested Git worktree or clone as if StarNet authored it.
+      // them, but do not recursively lint a nested Git worktree or clone as if Vultron authored it.
       if (existsSync(join(full, '.git'))) continue;
       if (isScratchDir(entry.name, dir)) continue;
       yield* walk(full);

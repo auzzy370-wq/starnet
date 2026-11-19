@@ -17,10 +17,10 @@ async function waitFor(fn, label) {
   while (!fn()) { if (Date.now() > deadline) throw new Error('timed out: ' + label); await delay(20); }
 }
 async function scenario(mode) {
-  const env = { STARNET_DEFAULT_MODEL: '', SKYNET_DEFAULT_MODEL: '', STARNET_CRON_ENABLED: '0', SKYNET_CRON_ENABLED: '0',
-    STARNET_CLAUDE_CLI_PERSIST: '0', SKYNET_AUX_BUDGET: '0', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0', SKYNET_QUEST_REFRESH: '0' };
+  const env = { VULTRON_DEFAULT_MODEL: '', SKYNET_DEFAULT_MODEL: '', VULTRON_CRON_ENABLED: '0', SKYNET_CRON_ENABLED: '0',
+    VULTRON_CLAUDE_CLI_PERSIST: '0', SKYNET_AUX_BUDGET: '0', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0', SKYNET_QUEST_REFRESH: '0' };
   for (const profile of Reg.listProviderProfiles({ public: false })) for (const name of [...(profile.keyEnv || []), ...(profile.baseUrlEnv || [])]) {
-    env[name] = ''; env['STARNET_' + name] = ''; env['SKYNET_' + name] = '';
+    env[name] = ''; env['VULTRON_' + name] = ''; env['SKYNET_' + name] = '';
   }
   const fx = SidecarFixture.create({ prefix: 'cli-admission-' + mode + '-', env });
   const bin = path.join(fx.workspace, 'fixture-bin'), home = path.join(fx.workspace, 'home');
@@ -48,7 +48,7 @@ async function scenario(mode) {
   `);
   const shim = path.join(bin, 'claude.cmd'); fs.writeFileSync(shim, '@echo off\r\n');
   fx.env.HOME = home; fx.env.USERPROFILE = home;
-  fx.env.STARNET_CLAUDE_BIN = mode === 'missing' ? path.join(home, 'not-installed.exe') : shim;
+  fx.env.VULTRON_CLAUDE_BIN = mode === 'missing' ? path.join(home, 'not-installed.exe') : shim;
   const preload = path.join(fx.workspace, 'network-and-control.cjs');
   fs.writeFileSync(preload, `
     const fs = require('fs'), Module = require('module');

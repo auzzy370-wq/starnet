@@ -1,6 +1,6 @@
 {
-  "schema": "starnet.engine-floor/1",
-  "note": "The ONE web-engine floor StarNet promises. On macOS the app window is the system WebKit, which updates only with Safari / macOS. Every mirror reads or equals this file: tauri.conf.json bundle.macOS.minimumSystemVersion (= macos), frontend/app/bootguard.js FLOOR and its floor probes (= the api features whose since is the floor), test/webkit-floor-syntax.test.js (syntax and api features newer than the floor), and the WebKit floor shim (scripts/qa/webkit-floor-boot.mjs deletes every api feature newer than the floor). stage-frontend-dist.mjs refuses to stage a drifted mirror; test/engine-floor.test.js holds them equal. Moving the floor is a decision for Andrew: change it here, then the mirrors the staging refusal names.",
+  "schema": "vultron.engine-floor/1",
+  "note": "The ONE web-engine floor Vultron promises. On macOS the app window is the system WebKit, which updates only with Safari / macOS. Every mirror reads or equals this file: tauri.conf.json bundle.macOS.minimumSystemVersion (= macos), frontend/app/bootguard.js FLOOR and its floor probes (= the api features whose since is the floor), test/webkit-floor-syntax.test.js (syntax and api features newer than the floor), and the WebKit floor shim (scripts/qa/webkit-floor-boot.mjs deletes every api feature newer than the floor). stage-frontend-dist.mjs refuses to stage a drifted mirror; test/engine-floor.test.js holds them equal. Moving the floor is a decision for Andrew: change it here, then the mirrors the staging refusal names.",
   "safari": "15.4",
   "macos": "11.0",
   "macosWithFloor": "12.3",

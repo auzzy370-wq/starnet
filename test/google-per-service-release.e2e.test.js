@@ -8,10 +8,10 @@ const path = require('node:path');
 const { SidecarFixture } = require('./helpers/sidecar-fixture.js');
 
 (async () => {
-  const fixture = SidecarFixture.create({ prefix: 'starnet-google-per-service-', timeoutMs: 30000, env: {
-    STARNET_GOOGLE_DESKTOP_CLIENT_JSON: JSON.stringify({ installed: { client_id: '123456-starnettest.apps.googleusercontent.com' } }),
-    STARNET_DEFAULT_MODEL: 'replay', STARNET_OPENROUTER_KEY: '',
-    STARNET_CONNECTOR_ENCRYPTION_KEY: '29'.repeat(32),
+  const fixture = SidecarFixture.create({ prefix: 'vultron-google-per-service-', timeoutMs: 30000, env: {
+    VULTRON_GOOGLE_DESKTOP_CLIENT_JSON: JSON.stringify({ installed: { client_id: '123456-vultrontest.apps.googleusercontent.com' } }),
+    VULTRON_DEFAULT_MODEL: 'replay', VULTRON_OPENROUTER_KEY: '',
+    VULTRON_CONNECTOR_ENCRYPTION_KEY: '29'.repeat(32),
     NODE_OPTIONS: '--require=' + path.join(__dirname, 'fixtures/google-calendar-release.cjs').replace(/\\/g, '/')
   } });
   try {

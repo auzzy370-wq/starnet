@@ -28,13 +28,13 @@ async function exercise(invoke) {
   assert.equal(desktop.prevented, 1, 'desktop suppresses the unsupported webview popup');
   assert.equal(desktop.calls.length, 1);
   assert.equal(desktop.calls[0][0], 'open_external_url');
-  assert.equal(desktop.calls[0][1].url, 'https://www.starnetos.com/pricing');
+  assert.equal(desktop.calls[0][1].url, 'https://www.vultron.vercel.app/pricing');
   assert.equal(desktop.notices.length, 0);
   const failure = await exercise(() => Promise.reject(new Error('browser unavailable')));
   assert.equal(failure.notices.length, 1, 'failed desktop launch is visible');
-  assert.match(failure.notices[0][0], /www\.starnetos\.com\/pricing/);
+  assert.match(failure.notices[0][0], /www\.vultronos\.com\/pricing/);
   assert.equal(failure.notices[0][1], 'warn');
   const html = fs.readFileSync(path.join(__dirname, '../frontend/index.html'), 'utf8');
-  assert.match(html, /id="model-dock-subscription" href="https:\/\/www\.starnetos\.com\/pricing" target="_blank" rel="noopener noreferrer"/);
+  assert.match(html, /id="model-dock-subscription" href="https:\/\/www\.vultronos\.com\/pricing" target="_blank" rel="noopener noreferrer"/);
   console.log('model-subscription: browser navigation, desktop bridge and failure feedback passed');
 })().catch(e => { console.error(e); process.exitCode = 1; });

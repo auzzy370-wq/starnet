@@ -11,7 +11,7 @@ const fs = require('fs');
 const path = require('path');
 const http = require('http');
 const { SidecarFixture } = require('./helpers/sidecar-fixture.js');
-const ENV = { STARNET_REMOTE_RELAY: 'off', SKYNET_REMOTE_RELAY: 'off' };
+const ENV = { VULTRON_REMOTE_RELAY: 'off', SKYNET_REMOTE_RELAY: 'off' };
 
 (async () => {
   const fixture = SidecarFixture.create({ prefix: 'sk-cli-usage-', env: ENV });

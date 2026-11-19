@@ -24,7 +24,7 @@ class TurnFixture {
   constructor(root, clock, options) {
     this.root = root; this.now = clock; this.serial = 0; this.records = new Map(); this.live = new Set(); this.calls = []; this.titles = [];
     this.deleted = new Map();   // the deleted-session ledger the store and the projection read (streamId -> ms), as sessionTombstones answers them in index.js
-    this.dual = Dual.make({ now: clock, hash, env: key => key === 'STARNET_TURNID_WINDOW' ? options && options.window : undefined });
+    this.dual = Dual.make({ now: clock, hash, env: key => key === 'VULTRON_TURNID_WINDOW' ? options && options.window : undefined });
     fs.mkdirSync(path.join(root, 'agent'), { recursive: true });
     this.attachments = require('../../sidecar/attachments.js')({ fsp: fs.promises, path, crypto, workspaces: root,
       resolveInside: (agentId, rel) => { const base = path.join(root, agentId), abs = path.resolve(base, rel); if (!abs.startsWith(base + path.sep)) throw Error('outside fixture agent'); return { base, abs }; } });
@@ -56,7 +56,7 @@ class TurnFixture {
   project(streamId, rows) {
     // index.js transcriptProjection: what the quote and tombstone rules hid from this read is the page's affirmative drop proof (TurnMerge R2/R4)
     return this.dual.project(streamId, rows, { liveRunIds: this.live, isCollided: id => this.io.isCollided(id), forgottenAt: this.deleted.get(streamId) || 0,
-      forgotten: rows && rows[Symbol.for('starnet.transcript.forgotten')] || undefined });
+      forgotten: rows && rows[Symbol.for('vultron.transcript.forgotten')] || undefined });
   }
   // the Commander deletes a session: the ledger stamps it, and every reader (the store's rules, the projection) answers as if it were gone
   deleteSession(streamId) { const at = this.now(); this.deleted.set(String(streamId), at); return at; }
@@ -131,7 +131,7 @@ class TurnFixture {
     const asked = [];
     const delivery = makeRoutineDelivery({ channelStore: {}, channelOutbound: { provide() {} }, channelReach: () => ({ ok: false }), channelRegistry: { get: () => null },
       redact, runStore: { list: () => [] }, egressReader: {}, transcriptStore: this.store, writeDelivery: fields => TurnDelivery.write(this.store, fields),
-      stationBridge: { request: async (_verb, args) => { asked.push(JSON.parse(JSON.stringify(args))); return station ? station(args) : { ok: false, error: 'no station page answered — open StarNet to run station commands', unattended: true }; } },
+      stationBridge: { request: async (_verb, args) => { asked.push(JSON.parse(JSON.stringify(args))); return station ? station(args) : { ok: false, error: 'no station page answered — open Vultron to run station commands', unattended: true }; } },
       now: this.now });
     const job = { id: 'job-property', name: 'Property routine', agentId: 'agent', deliver: 'local', attachToSession: true, prompt: 'routine prompt',
       origin: { sessionId: streamId, streamId, sessionTitle: 'Property session' } };

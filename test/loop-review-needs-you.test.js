@@ -17,7 +17,7 @@ const cut = (from, to) => {
   A.ok(a > 0 && b > a, 'fixture: found ' + JSON.stringify(from.trim().slice(0, 40)));
   return src.slice(a, b);
 };
-const watcher = cut("  const SEEN_KEY = 'starnet.loops.seen.v1';", '  // first sweep after boot settles');
+const watcher = cut("  const SEEN_KEY = 'vultron.loops.seen.v1';", '  // first sweep after boot settles');
 const windowRefresh = cut('    let refreshGeneration = 0;', '    // ---------- row + verdict actions');
 
 (async () => {

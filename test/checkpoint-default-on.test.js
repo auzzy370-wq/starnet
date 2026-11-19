@@ -1,6 +1,6 @@
 'use strict';
 const { readSidecarSource, sidecarSourceFiles, sidecarFunctionSource, functionSourceIn, locateSidecarFunction } = require('./helpers/source');
-/* Lane C5 — the checkpoint rollback net is ON by default. STARNET_CHECKPOINTS=0 / SKYNET_CHECKPOINTS=0 opts
+/* Lane C5 — the checkpoint rollback net is ON by default. VULTRON_CHECKPOINTS=0 / SKYNET_CHECKPOINTS=0 opts
    out; fail-open semantics are untouched. The env parser is lifted VERBATIM out of sidecar/index.js so this
    asserts the shipped function, and the dispatch hook is checked structurally for fs.write coverage. */
 const A = require('./_assert.js');
@@ -20,7 +20,7 @@ A.eq(enabled('0'), false, '0 → opt out');
 A.eq(enabled('false'), false, 'false → opt out');
 A.eq(enabled('off'), false, 'off → opt out');
 A.eq(enabled('NO'), false, 'NO → opt out (case-insensitive)');
-A.ok(/const CHECKPOINTS_ENABLED = checkpointsEnabledFromEnv\(ENV\('CHECKPOINTS'\)\);/.test(src), 'the flag is computed from STARNET_/SKYNET_CHECKPOINTS through ENV()');
+A.ok(/const CHECKPOINTS_ENABLED = checkpointsEnabledFromEnv\(ENV\('CHECKPOINTS'\)\);/.test(src), 'the flag is computed from VULTRON_/SKYNET_CHECKPOINTS through ENV()');
 
 // fs.write rides the PRECISE path: ctx.checkpointMutation(base,'fs mutation',{resolvedRoot:true}) with no `always`,
 // so that snapshot happens iff CHECKPOINTS_ENABLED — now true with no env var set. The call moved with the
@@ -45,7 +45,7 @@ A.ok(/const genericCheckpoint = environmentCheckpoints && mutatesWorkspace\(c\.n
 (async () => {
   const { makeFsTools } = require('../sidecar/tools/builtin/fs.js');
   const failopen = require('../sidecar/failopen.js');
-  const ROOT = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-checkpoint-default-')));
+  const ROOT = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-checkpoint-default-')));
   try {
     const T = makeFsTools({ fsp: require('fs/promises'), pathMod: path, root: ROOT });
     const asked = [];

@@ -229,56 +229,56 @@
   - Branch agent/skynet-truth-auditor is fully merged into feat/harness-backend and its working tree is clean. Propose-only removal command: gen-trees\remove-agent-tree.ps1 skynet-truth-auditor -DeleteBranch
   - evidence: `qa/digests/janitor-2026-07-01.md`
   - id: `81bead5e-1782948400620` · fingerprint: `81bead5e`
-- **Removable worktree: starnet-backend-audit (branch merged + clean)**
-  - Branch agent/starnet-backend-audit is fully merged into feat/harness-backend and its working tree is clean. Propose-only removal command: gen-trees\remove-agent-tree.ps1 starnet-backend-audit -DeleteBranch
+- **Removable worktree: vultron-backend-audit (branch merged + clean)**
+  - Branch agent/vultron-backend-audit is fully merged into feat/harness-backend and its working tree is clean. Propose-only removal command: gen-trees\remove-agent-tree.ps1 vultron-backend-audit -DeleteBranch
   - evidence: `qa/digests/janitor-2026-07-01.md`
   - id: `3def80bb-1782948400621` · fingerprint: `3def80bb`
-- **Removable worktree: starnet-gap-analysis (branch merged + clean)**
-  - Branch agent/starnet-gap-analysis is fully merged into feat/harness-backend and its working tree is clean. Propose-only removal command: gen-trees\remove-agent-tree.ps1 starnet-gap-analysis -DeleteBranch
+- **Removable worktree: vultron-gap-analysis (branch merged + clean)**
+  - Branch agent/vultron-gap-analysis is fully merged into feat/harness-backend and its working tree is clean. Propose-only removal command: gen-trees\remove-agent-tree.ps1 vultron-gap-analysis -DeleteBranch
   - evidence: `qa/digests/janitor-2026-07-01.md`
   - id: `5721fc62-1782948400621` · fingerprint: `5721fc62`
-- **Removable worktree: starnet-fullscreen (branch merged + clean)**
-  - Branch agent/starnet-fullscreen is fully merged into feat/harness-backend and its working tree is clean. Propose-only removal command: gen-trees\remove-agent-tree.ps1 starnet-fullscreen -DeleteBranch
+- **Removable worktree: vultron-fullscreen (branch merged + clean)**
+  - Branch agent/vultron-fullscreen is fully merged into feat/harness-backend and its working tree is clean. Propose-only removal command: gen-trees\remove-agent-tree.ps1 vultron-fullscreen -DeleteBranch
   - evidence: `qa/digests/janitor-2026-07-01.md`
   - id: `a87610fa-1782948400621` · fingerprint: `a87610fa`
-- **Removable worktree: starnet-hardening-3-4 (branch merged + clean)**
-  - Branch agent/starnet-hardening-3-4 is fully merged into feat/harness-backend and its working tree is clean. Propose-only removal command: gen-trees\remove-agent-tree.ps1 starnet-hardening-3-4 -DeleteBranch
+- **Removable worktree: vultron-hardening-3-4 (branch merged + clean)**
+  - Branch agent/vultron-hardening-3-4 is fully merged into feat/harness-backend and its working tree is clean. Propose-only removal command: gen-trees\remove-agent-tree.ps1 vultron-hardening-3-4 -DeleteBranch
   - evidence: `qa/digests/janitor-2026-07-01.md`
   - id: `02b07ca2-1782948400622` · fingerprint: `02b07ca2`
-- **Removable worktree: starnet-hermes-audit (branch merged + clean)**
-  - Branch agent/starnet-hermes-audit is fully merged into feat/harness-backend and its working tree is clean. Propose-only removal command: gen-trees\remove-agent-tree.ps1 starnet-hermes-audit -DeleteBranch
+- **Removable worktree: vultron-hermes-audit (branch merged + clean)**
+  - Branch agent/vultron-hermes-audit is fully merged into feat/harness-backend and its working tree is clean. Propose-only removal command: gen-trees\remove-agent-tree.ps1 vultron-hermes-audit -DeleteBranch
   - evidence: `qa/digests/janitor-2026-07-01.md`
   - id: `48421db3-1782948400622` · fingerprint: `48421db3`
-- **Removable worktree: starnet-hardening-integration (branch merged + clean)**
-  - Branch agent/starnet-hardening-integration is fully merged into feat/harness-backend and its working tree is clean. Propose-only removal command: gen-trees\remove-agent-tree.ps1 starnet-hardening-integration -DeleteBranch
+- **Removable worktree: vultron-hardening-integration (branch merged + clean)**
+  - Branch agent/vultron-hardening-integration is fully merged into feat/harness-backend and its working tree is clean. Propose-only removal command: gen-trees\remove-agent-tree.ps1 vultron-hardening-integration -DeleteBranch
   - evidence: `qa/digests/janitor-2026-07-01.md`
   - id: `90b74b7c-1782948400622` · fingerprint: `90b74b7c`
-- **Removable worktree: starnet-keep-awake (branch merged + clean)**
-  - Branch agent/starnet-keep-awake is fully merged into feat/harness-backend and its working tree is clean. Propose-only removal command: gen-trees\remove-agent-tree.ps1 starnet-keep-awake -DeleteBranch
+- **Removable worktree: vultron-keep-awake (branch merged + clean)**
+  - Branch agent/vultron-keep-awake is fully merged into feat/harness-backend and its working tree is clean. Propose-only removal command: gen-trees\remove-agent-tree.ps1 vultron-keep-awake -DeleteBranch
   - evidence: `qa/digests/janitor-2026-07-01.md`
   - id: `972eb4ac-1782948400623` · fingerprint: `972eb4ac`
-- **Removable worktree: starnet-latency-audit (branch merged + clean)**
-  - Branch agent/starnet-latency-audit is fully merged into feat/harness-backend and its working tree is clean. Propose-only removal command: gen-trees\remove-agent-tree.ps1 starnet-latency-audit -DeleteBranch
+- **Removable worktree: vultron-latency-audit (branch merged + clean)**
+  - Branch agent/vultron-latency-audit is fully merged into feat/harness-backend and its working tree is clean. Propose-only removal command: gen-trees\remove-agent-tree.ps1 vultron-latency-audit -DeleteBranch
   - evidence: `qa/digests/janitor-2026-07-01.md`
   - id: `c48e8b35-1782948400623` · fingerprint: `c48e8b35`
-- **Removable worktree: starnet-loop-control (branch merged + clean)**
-  - Branch agent/starnet-loop-control is fully merged into feat/harness-backend and its working tree is clean. Propose-only removal command: gen-trees\remove-agent-tree.ps1 starnet-loop-control -DeleteBranch
+- **Removable worktree: vultron-loop-control (branch merged + clean)**
+  - Branch agent/vultron-loop-control is fully merged into feat/harness-backend and its working tree is clean. Propose-only removal command: gen-trees\remove-agent-tree.ps1 vultron-loop-control -DeleteBranch
   - evidence: `qa/digests/janitor-2026-07-01.md`
   - id: `57c333d1-1782948400624` · fingerprint: `57c333d1`
-- **Removable worktree: starnet-path-intake (branch merged + clean)**
-  - Branch agent/starnet-path-intake is fully merged into feat/harness-backend and its working tree is clean. Propose-only removal command: gen-trees\remove-agent-tree.ps1 starnet-path-intake -DeleteBranch
+- **Removable worktree: vultron-path-intake (branch merged + clean)**
+  - Branch agent/vultron-path-intake is fully merged into feat/harness-backend and its working tree is clean. Propose-only removal command: gen-trees\remove-agent-tree.ps1 vultron-path-intake -DeleteBranch
   - evidence: `qa/digests/janitor-2026-07-01.md`
   - id: `14374183-1782948400625` · fingerprint: `14374183`
-- **Removable worktree: starnet-rebrand (branch merged + clean)**
-  - Branch agent/starnet-rebrand is fully merged into feat/harness-backend and its working tree is clean. Propose-only removal command: gen-trees\remove-agent-tree.ps1 starnet-rebrand -DeleteBranch
+- **Removable worktree: vultron-rebrand (branch merged + clean)**
+  - Branch agent/vultron-rebrand is fully merged into feat/harness-backend and its working tree is clean. Propose-only removal command: gen-trees\remove-agent-tree.ps1 vultron-rebrand -DeleteBranch
   - evidence: `qa/digests/janitor-2026-07-01.md`
   - id: `7dd7f0f7-1782948400625` · fingerprint: `7dd7f0f7`
-- **Removable worktree: starnet-oauth-persist (branch merged + clean)**
-  - Branch agent/starnet-oauth-persist is fully merged into feat/harness-backend and its working tree is clean. Propose-only removal command: gen-trees\remove-agent-tree.ps1 starnet-oauth-persist -DeleteBranch
+- **Removable worktree: vultron-oauth-persist (branch merged + clean)**
+  - Branch agent/vultron-oauth-persist is fully merged into feat/harness-backend and its working tree is clean. Propose-only removal command: gen-trees\remove-agent-tree.ps1 vultron-oauth-persist -DeleteBranch
   - evidence: `qa/digests/janitor-2026-07-01.md`
   - id: `92264093-1782948400625` · fingerprint: `92264093`
-- **Removable worktree: starnet-weakness-scan (branch merged + clean)**
-  - Branch agent/starnet-weakness-scan is fully merged into feat/harness-backend and its working tree is clean. Propose-only removal command: gen-trees\remove-agent-tree.ps1 starnet-weakness-scan -DeleteBranch
+- **Removable worktree: vultron-weakness-scan (branch merged + clean)**
+  - Branch agent/vultron-weakness-scan is fully merged into feat/harness-backend and its working tree is clean. Propose-only removal command: gen-trees\remove-agent-tree.ps1 vultron-weakness-scan -DeleteBranch
   - evidence: `qa/digests/janitor-2026-07-01.md`
   - id: `40d536a6-1782948400626` · fingerprint: `40d536a6`
 - **Removable worktree: summon-fixes (branch merged + clean)**
@@ -421,8 +421,8 @@
   - A non-plan doc references a path that does not exist. qa/digests/janitor-2026-07-01.md cites `test/iteration-budget.test.js`, which is absent from the working tree.
   - evidence: `qa/digests/janitor-2026-07-01.md`
   - id: `8da0c041-1782948400642` · fingerprint: `8da0c041`
-- **Dead doc reference: qa/digests/janitor-2026-07-01.md cites missing test/starnet-release-manifest.test.js**
-  - A non-plan doc references a path that does not exist. qa/digests/janitor-2026-07-01.md cites `test/starnet-release-manifest.test.js`, which is absent from the working tree.
+- **Dead doc reference: qa/digests/janitor-2026-07-01.md cites missing test/vultron-release-manifest.test.js**
+  - A non-plan doc references a path that does not exist. qa/digests/janitor-2026-07-01.md cites `test/vultron-release-manifest.test.js`, which is absent from the working tree.
   - evidence: `qa/digests/janitor-2026-07-01.md`
   - id: `aa9de2e5-1782948400642` · fingerprint: `aa9de2e5`
 - **Dead doc reference: qa/digests/janitor-2026-07-01.md cites missing test/world.headless.ts**

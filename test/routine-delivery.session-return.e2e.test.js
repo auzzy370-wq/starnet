@@ -34,7 +34,7 @@ const { makeSegmentedTranscriptIo } = require('../sidecar/transcript-history.js'
 const HOST = '127.0.0.1';
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const REPLY = 'Routine result: three things moved overnight.';
-const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-session-return-'));
+const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-session-return-'));
 
 /* ---- the model: every call answers REPLY, and every call is counted ---- */
 function startModel(requests) {
@@ -89,9 +89,9 @@ const deliveriesOf = body => rowsOf(body).filter(r => r.kind === 'delivery');
   const requests = [];
   const model = await startModel(requests);
   const base = 'http://' + HOST + ':' + model.address().port + '/api/v1';
-  const fixture = SidecarFixture.create({ prefix: 'starnet-session-return-', timeoutMs: 40000, env: {
-    SKYNET_OPENROUTER_BASE: base, STARNET_OPENROUTER_BASE: base, SKYNET_OPENROUTER_KEY: 'sk-or-v1-session-return-fixture', STARNET_OPENROUTER_KEY: 'sk-or-v1-session-return-fixture',
-    SKYNET_DEFAULT_MODEL: 'test/model', STARNET_DEFAULT_MODEL: 'test/model', SKYNET_CRON_TICK_MS: '1000', STARNET_CRON_TICK_MS: '1000',
+  const fixture = SidecarFixture.create({ prefix: 'vultron-session-return-', timeoutMs: 40000, env: {
+    SKYNET_OPENROUTER_BASE: base, VULTRON_OPENROUTER_BASE: base, SKYNET_OPENROUTER_KEY: 'sk-or-v1-session-return-fixture', VULTRON_OPENROUTER_KEY: 'sk-or-v1-session-return-fixture',
+    SKYNET_DEFAULT_MODEL: 'test/model', VULTRON_DEFAULT_MODEL: 'test/model', SKYNET_CRON_TICK_MS: '1000', VULTRON_CRON_TICK_MS: '1000',
     SKYNET_AUX_BUDGET: '0', SKYNET_REFLECT: '0', SKYNET_SKILL_REVIEW: '0', SKYNET_EDGE_TTS: '0', SKYNET_QUEST_REFRESH_MS: '0', SKYNET_SCOUT: '0', SKYNET_THREAD_MINE: '0',
     NODE_OPTIONS: '--require ' + JSON.stringify(path.join(__dirname, 'fixtures', 'delivery-rows-fault.cjs'))   // inert until the arm file exists (leg 4)
   } });
@@ -213,7 +213,7 @@ const deliveriesOf = body => rowsOf(body).filter(r => r.kind === 'delivery');
   /* 6. the retry */
   {
     let { io, store } = open(dir);
-    let owner = build(store, [{ ok: false, error: 'no station page answered — open StarNet to run station commands', unattended: true }]);
+    let owner = build(store, [{ ok: false, error: 'no station page answered — open Vultron to run station commands', unattended: true }]);
     const first = await owner.deliver(job, result);
     A.eq([first.ok, owner.asked.length, deliveries(store).length], [false, 1, 1], '6. page away: the delivery fails and the row is already there');
     const row = deliveries(store)[0] || { content: '' };

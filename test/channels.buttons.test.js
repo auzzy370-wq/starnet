@@ -500,7 +500,7 @@ async function run() {
   }
 
   // ---- 5E3. an ask ALLOWED on another surface is never stamped "expired — DENIED" by a late Telegram tap ----
-  // Live-caught 2026-10-20 (sweep/channels): STARNET REMOTE answers a channel prompt through the same finisher, so
+  // Live-caught 2026-10-20 (sweep/channels): VULTRON REMOTE answers a channel prompt through the same finisher, so
   // the action ran — then a tap on the still-live Telegram keyboard lost the race and the permanent record, the
   // toast and a follow-up message all said the request had expired and been denied. The host remembers how each
   // settled prompt actually ended (consentOutcome); the late tap reports THAT.
@@ -525,7 +525,7 @@ async function run() {
     });
     const running = hub.onInbound(dm('write it'));
     await waitFor(() => !!promptSeen && !!lastKeyboard(sends));
-    A.ok(host.resolve(promptSeen.runId, promptSeen.promptId, 'once'), 'fixture: another surface (STARNET REMOTE) allows the ask through the same finisher');
+    A.ok(host.resolve(promptSeen.runId, promptSeen.promptId, 'once'), 'fixture: another surface (VULTRON REMOTE) allows the ask through the same finisher');
     await running;
     A.eq(decision, 'once', 'the run really got the allow');
     const kb = lastKeyboard(sends);
@@ -539,7 +539,7 @@ async function run() {
   }
 
   // ---- 5H. (quick win 24) THE SETTLE STAMPS THE KEYBOARD, whoever settled it ----
-  // The permission message used to be stamped only by a TAP. An ask answered on STARNET REMOTE, expired by the fail-closed
+  // The permission message used to be stamped only by a TAP. An ask answered on VULTRON REMOTE, expired by the fail-closed
   // timer, or ended by a superseding message kept four live-looking buttons under it until someone tapped one (bug 9e60dd9f's
   // "not fixed here"). The hub now .then()s the broker's own decision and edits the message ONCE with it, stripping the
   // buttons; a tap only acknowledges.
@@ -561,7 +561,7 @@ async function run() {
     const running = hub.onInbound(dm('write it'));
     await waitFor(() => !!promptSeen && !!lastKeyboard(sends));
     await waitFor(() => sends.length >= 1);
-    A.ok(host.resolve(promptSeen.runId, promptSeen.promptId, 'once'), 'fixture: STARNET REMOTE allows the ask through the same finisher');
+    A.ok(host.resolve(promptSeen.runId, promptSeen.promptId, 'once'), 'fixture: VULTRON REMOTE allows the ask through the same finisher');
     await running;
     for (let i = 0; i < 20; i++) await new Promise(r => setTimeout(r, 0));
     A.eq(edits.length, 1, 'the permission message is stamped once the ask settles — no tap needed');

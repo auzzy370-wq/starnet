@@ -17,7 +17,7 @@ if (process.env.TURN_RETRACT_PHONE_CONTROL) {
     const host = Host.makeRemoteHost({ now: () => 10, newId: () => 'phone-admission-' + (++sequence), broadcast: event => events.push(event),
       roster: () => [{ agentId: 'agent' }], liveRuns: () => [], credentials: () => ({ ok: true, model: 'fixture', provider: 'custom' }),
       transcript: Object.assign({}, store, { view: (...args) => { if (bad && mode === 'canonical') throw new Error('canonical history unvouched'); return store.view(...args); } }),
-      turnDual: mode === 'legacy-cache' ? Dual.make({ now: () => 10, hash: value => value, env: key => key === 'STARNET_TURNID_REPLAY' ? 'legacy' : undefined }) : undefined,
+      turnDual: mode === 'legacy-cache' ? Dual.make({ now: () => 10, hash: value => value, env: key => key === 'VULTRON_TURNID_REPLAY' ? 'legacy' : undefined }) : undefined,
       deskSessions: () => [{ id: 's', history: bad ? [{ rowId: 999999, streamId: 's', role: 'user', content: 'UNPROVEN_CACHE' }] : [] }],
       runOnce: async o => { calls++; entered(); await gate; o.emit('agent.run.end', { runId: o.runId, reason: 'done', outcome: 'succeeded' }); }
     });

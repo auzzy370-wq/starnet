@@ -1,4 +1,4 @@
-// station.show — the agent opens a StarNet window for the Commander (2026-10-04, "so it can basically use itself").
+// station.show — the agent opens a Vultron window for the Commander (2026-10-04, "so it can basically use itself").
 // The REAL tool (sidecar/tools/builtin/station-show.js) through the REAL page verb (frontend/app/stationcommands.js
 // station.show) over a recorded StationUI, plus drift checks that every place names a window/section that exists.
 'use strict';
@@ -171,11 +171,11 @@ function boot(opts) {
   ok(/^REFUSED: the Commander is not looking at this conversation/.test(r.content) && !env.calls.length && env.bus.count('agent.run.start') === 0, 'a run that never confirms is refused, nothing opened, no listener left');
   ok(Date.now() - t0 < 5000, 'and the wait is bounded inside the bridge deadline (' + (Date.now() - t0) + 'ms)');
   r = await boot({ noPage: true }).run({ place: 'settings' });
-  ok(/^REFUSED: this run has no StarNet page attached/.test(r.content), 'no page attached: an honest refusal');
+  ok(/^REFUSED: this run has no Vultron page attached/.test(r.content), 'no page attached: an honest refusal');
   r = await boot({ refuse: 'apps' }).run({ place: 'apps' });
   ok(/^REFUSED: APPS did not open .*no app exists yet/.test(r.content), 'a window that did not open is never reported open');
   r = await boot().run({ place: 'the moon' });
-  ok(/^REFUSED: there is no StarNet place/.test(r.content), 'an unknown place refuses');
+  ok(/^REFUSED: there is no Vultron place/.test(r.content), 'an unknown place refuses');
 
   console.log('station-show: OK (' + n + ' assertions)');
 })().catch(e => { console.error(e); process.exit(1); });

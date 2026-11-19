@@ -1,6 +1,6 @@
-/* sidecar/providers/endpoint-facts.js — what StarNet knows about ONE endpoint (a base URL), in one cached object.
+/* sidecar/providers/endpoint-facts.js — what Vultron knows about ONE endpoint (a base URL), in one cached object.
 
-   Two facts, both read from things StarNet already has — never a new probe:
+   Two facts, both read from things Vultron already has — never a new probe:
      · scope: where the host is, from its name alone (errorClass.hostScope): 'loopback' (this computer), 'private' (this
        network: an RFC 1918 / link-local / CGNAT / ULA address, a .local / .lan name, a bare name), 'public', '' (no host).
        `local` = loopback or private. A public name that resolves to a LAN address still reads public: only what the

@@ -22,7 +22,7 @@ const { note, swallow } = require('../failopen.js');
 
 const nodeCrypto = require('crypto');
 
-const LABEL = 'starnet-relay/1';
+const LABEL = 'vultron-relay/1';
 const PING_MS = 30000;
 const PONG_WAIT_MS = 20000;
 /* A connection attempt that never opens (the machine changed or lost its network mid-dial) used to leave the link

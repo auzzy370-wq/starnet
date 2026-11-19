@@ -9,10 +9,10 @@ const keyHex = '17'.repeat(32);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 (async () => {
-  const fixture = SidecarFixture.create({ prefix: 'starnet-google-signin-', timeoutMs: 30000, env: {
-    STARNET_GOOGLE_DESKTOP_CLIENT_JSON: JSON.stringify({ installed: { client_id: '123456-starnettest.apps.googleusercontent.com' } }),
-    STARNET_DEFAULT_MODEL: 'replay', STARNET_OPENROUTER_KEY: '',
-    STARNET_CONNECTOR_ENCRYPTION_KEY: keyHex,
+  const fixture = SidecarFixture.create({ prefix: 'vultron-google-signin-', timeoutMs: 30000, env: {
+    VULTRON_GOOGLE_DESKTOP_CLIENT_JSON: JSON.stringify({ installed: { client_id: '123456-vultrontest.apps.googleusercontent.com' } }),
+    VULTRON_DEFAULT_MODEL: 'replay', VULTRON_OPENROUTER_KEY: '',
+    VULTRON_CONNECTOR_ENCRYPTION_KEY: keyHex,
     NODE_OPTIONS: '--require=' + path.join(__dirname, 'fixtures/google-signin-preload.cjs').replace(/\\/g, '/')
   } });
   const file = name => path.join(fixture.workspace, name);
@@ -23,7 +23,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     assert.equal(result.status, 200);
     const auth = new URL(result.body.url);
     assert.equal(auth.origin, 'https://accounts.google.com');
-    assert.equal(auth.searchParams.get('client_id'), '123456-starnettest.apps.googleusercontent.com');
+    assert.equal(auth.searchParams.get('client_id'), '123456-vultrontest.apps.googleusercontent.com');
     assert.equal(auth.searchParams.get('code_challenge_method'), 'S256');
     if (id === 'google-docs' || id === 'google-sheets') {
       const scopes = new Set(auth.searchParams.get('scope').split(' '));
@@ -44,7 +44,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     await fixture.start();
     const cards = (await fixture.json('GET', '/api/connectors/catalog')).body.connectors.filter(c => c.googleApi && c.id !== 'google-files');
     assert.equal(cards.length, 6); assert.ok(cards.every(c => c.signInAvailable));
-    assert.ok(!JSON.stringify(cards).includes('123456-starnettest'));
+    assert.ok(!JSON.stringify(cards).includes('123456-vultrontest'));
     const first = await start();
     assert.match(await callback(first, 'gmail:good'), /Gmail connected/);
     assert.match(await callback(first, 'gmail:good'), /expired/);
@@ -89,7 +89,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     assert.ok(!JSON.stringify(rows).includes('GOOGLE_ACCESS_TEST') && !JSON.stringify(rows).includes('GOOGLE_REFRESHED_TEST'));
     for (const f of [statePath, statePath + '.bak']) assert.ok(!fs.readFileSync(f, 'utf8').includes('GOOGLE_'), 'credentials encrypted in both disk copies');
     const protectedBefore = fs.readFileSync(statePath, 'utf8');
-    await fixture.restart({ STARNET_CONNECTOR_ENCRYPTION_KEY: '' });
+    await fixture.restart({ VULTRON_CONNECTOR_ENCRYPTION_KEY: '' });
     const locked = (await fixture.json('GET', '/api/connectors')).body;
     assert.match(locked.credentialStorage.error, /locked/);
     assert.equal((await fixture.json('POST', '/api/connectors/oauth/start', { id: 'gmail' })).status, 503);

@@ -2,17 +2,17 @@
 /* node test/cli-agent-routes.e2e.test.js — the terminal's /yolo, /personality and /model routes (POST /api/agent/approval,
    /api/agent/personality, /api/agent/model) against a REAL sidecar (hermetic SidecarFixture: temp workspace + profile, no
    provider, zero spend). Locks the re-cut reviews' approval-safety findings (review 10-24):
-     0. only a StarNet PAGE counts as an open app: the page's EventSource signs in with an SSE ?ticket=, while a Node
+     0. only a Vultron PAGE counts as an open app: the page's EventSource signs in with an SSE ?ticket=, while a Node
         client on the same feed (the MCP bridge, sidecar/mcp/serve.js, sends the header token) is not a page — with only
         that attached, the routes take the no-page path at once (they used to wait 6 s and answer "a page is open");
-     A. a StarNet page that is connected but never answers (its save takes longer than the bridge's 6 s) gets NO second
+     A. a Vultron page that is connected but never answers (its save takes longer than the bridge's 6 s) gets NO second
         write from a snapshot taken before the wait: the route answers 409 "the app did not confirm", the page's newer
         roster stands, and an agent the page deleted in that window is not brought back with full access. The reply says
         what the station's roster holds NOW (the page applies a change before it proves its save, so an unconfirmed
         /yolo may already be in force) — never "nothing was changed";
      B. /yolo off with no page open writes "ask" into the app's save too (the field the page hydrates and pushes back
         when it opens), so FULL ACCESS does not silently return; when the save cannot take it (damaged, missing, a newer
-        StarNet's) the roster still asks first and the reply says the save did not take it — never refused while /yolo
+        Vultron's) the roster still asks first and the reply says the save did not take it — never refused while /yolo
         on would be allowed; /yolo on stays roster-only. Part of test:http. */
 const A = require('./_assert.js');
 const http = require('http');
@@ -27,7 +27,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 // (a single-use SSE ticket, no header: ApiTicket.sseUrl); a node client sends the header token (the MCP bridge's shape)
 function listen(fixture, onCommand, asPage) {
   const p = asPage ? '/api/channels/events?ticket=' + encodeURIComponent(apitickets.mint(fixture.token, 'sse', apitickets.SCOPE_SSE, { now: Date.now() })) : '/api/channels/events';
-  const headers = Object.assign({ Accept: 'text/event-stream', Origin: fixture.baseUrl }, asPage ? {} : { 'X-StarNet-Token': fixture.token });
+  const headers = Object.assign({ Accept: 'text/event-stream', Origin: fixture.baseUrl }, asPage ? {} : { 'X-Vultron-Token': fixture.token });
   let status = 0;
   const req = http.request({ host: '127.0.0.1', port: fixture.port, path: p, method: 'GET', headers }, res => {
     status = res.statusCode;
@@ -47,9 +47,9 @@ function listen(fixture, onCommand, asPage) {
 }
 const page = (fixture, onCommand) => listen(fixture, onCommand, true);
 const row = (id, system, profile, extra) => Object.assign({ agentId: id, system, name: id.toUpperCase(), model: 'test/model', provider: 'openrouter', role: '', approvalMode: 'ask', executionProfile: profile, skills: [], reasoningEffort: null, track: '' }, extra || {});
-const ENV = { STARNET_REMOTE_RELAY: 'off', SKYNET_REMOTE_RELAY: 'off',
+const ENV = { VULTRON_REMOTE_RELAY: 'off', SKYNET_REMOTE_RELAY: 'off',
   // a key so /model's provider check passes (no request is ever made: the base is a closed port)
-  SKYNET_OPENROUTER_KEY: 'sk-or-v1-routes-fake', STARNET_OPENROUTER_KEY: 'sk-or-v1-routes-fake', SKYNET_OPENROUTER_BASE: 'http://127.0.0.1:9/api/v1', STARNET_OPENROUTER_BASE: 'http://127.0.0.1:9/api/v1' };
+  SKYNET_OPENROUTER_KEY: 'sk-or-v1-routes-fake', VULTRON_OPENROUTER_KEY: 'sk-or-v1-routes-fake', SKYNET_OPENROUTER_BASE: 'http://127.0.0.1:9/api/v1', VULTRON_OPENROUTER_BASE: 'http://127.0.0.1:9/api/v1' };
 
 (async () => {
   const fixture = SidecarFixture.create({ prefix: 'sk-cli-agent-routes-', env: ENV });
@@ -143,7 +143,7 @@ const ENV = { STARNET_REMOTE_RELAY: 'off', SKYNET_REMOTE_RELAY: 'off',
       const cur = await fixture.json('GET', '/api/save?agent=agent');
       const rev = Number(cur.body && cur.body.save && cur.body.save._saveRevision) || 0;
       const t0 = Date.now();
-      const saved = await fixture.json('POST', '/api/save', { schema: 'starnet.save', version: 6, _saveRevision: rev, updatedAt: t0, agent: { id: 'agent', name: 'HERO', createdAt: 1, approvalMode: 'ask' },
+      const saved = await fixture.json('POST', '/api/save', { schema: 'vultron.save', version: 6, _saveRevision: rev, updatedAt: t0, agent: { id: 'agent', name: 'HERO', createdAt: 1, approvalMode: 'ask' },
         agents: [{ id: 'rook', name: 'ROOK', approvalMode: 'full', executionProfile: 'station-gear' }] });
       A.ok(saved.body && saved.body.ok === true, 'the app\'s save landed: ' + JSON.stringify(saved.body));
       const off = await fixture.json('POST', '/api/agent/approval', { agentId: 'rook', mode: 'ask' });
@@ -183,7 +183,7 @@ const ENV = { STARNET_REMOTE_RELAY: 'off', SKYNET_REMOTE_RELAY: 'off',
     await fixture.dispose();
   }
 
-  /* ---- D. a workspace a newer StarNet wrote: /yolo off is never refused where /yolo on is allowed ----------------------- */
+  /* ---- D. a workspace a newer Vultron wrote: /yolo off is never refused where /yolo on is allowed ----------------------- */
   const degraded = SidecarFixture.create({ prefix: 'sk-cli-agent-routes-degraded-', env: ENV });
   try {
     fs.writeFileSync(path.join(degraded.workspace, '.schema-version.json'), JSON.stringify({ version: 1, schemaVersion: 99, stampedAt: Date.now() }));
@@ -194,7 +194,7 @@ const ENV = { STARNET_REMOTE_RELAY: 'off', SKYNET_REMOTE_RELAY: 'off',
     A.eq([on.status, (await runtime('rook')).approvalMode], [200, 'full'], 'degraded: /yolo on lands on the roster');
     const off = await degraded.json('POST', '/api/agent/approval', { agentId: 'rook', mode: 'ask' });
     A.eq([off.status, off.body && off.body.save, (await runtime('rook')).approvalMode], [200, 'not-saved', 'ask'], 'degraded: /yolo off lands too (it was refused while /yolo on went through), and says the save did not take it — ' + JSON.stringify(off.body));
-    A.ok(/newer StarNet/.test(String(off.body && off.body.saveError)), 'with the reason');
+    A.ok(/newer Vultron/.test(String(off.body && off.body.saveError)), 'with the reason');
   } catch (e) {
     A.ok(false, 'cli-agent-routes degraded e2e threw: ' + ((e && e.stack) || e));
   } finally {

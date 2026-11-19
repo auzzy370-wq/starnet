@@ -21,7 +21,7 @@ const { questBlock } = require('../sidecar/questinject.js');
 const { makeQuestTools } = require('../sidecar/tools/builtin/quests.js');
 const failopen = require('../sidecar/failopen.js');
 
-const root = realFs.mkdtempSync(path.join(os.tmpdir(), 'starnet-journey-cache-'));
+const root = realFs.mkdtempSync(path.join(os.tmpdir(), 'vultron-journey-cache-'));
 const QFILE = '_station.quests.json', JFILE = '_station.journey.json';
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const cleanup = () => { try { realFs.rmSync(root, { recursive: true, force: true }); } catch (e) { console.warn('[journey-read-cache] temp cleanup failed:', e && e.message); } };

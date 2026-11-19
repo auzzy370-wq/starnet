@@ -31,7 +31,7 @@ function bootSidecar(port, workspaces, attempts) {
   return new Promise((resolve, reject) => {
     const appSandbox = path.join(workspaces, '_appdata');
     const env = Object.assign({}, process.env);
-    for (const k of Object.keys(env)) if (/^(STARNET_|SKYNET_|HERMES_)/i.test(k)) delete env[k];
+    for (const k of Object.keys(env)) if (/^(VULTRON_|SKYNET_|HERMES_)/i.test(k)) delete env[k];
     Object.assign(env, {
       SKYNET_PORT: String(port), SKYNET_WORKSPACES: workspaces, SKYNET_DEV: '1', SKYNET_QUEST_REFRESH: '0',
       SKYNET_CLOUD_URL: '', SKYNET_CREDITS_URL: '', SKYNET_EDGE_TTS: '0', SKYNET_LIVE_PRICES: '0',
@@ -88,7 +88,7 @@ function seed(ws) {
   seed(ws);
   let child = null, port = 0, token = '';
   const B = () => 'http://' + HOST + ':' + port;
-  const get = async route => (await fetch(B() + route, { headers: { 'X-StarNet-Token': token } })).json();
+  const get = async route => (await fetch(B() + route, { headers: { 'X-Vultron-Token': token } })).json();
   async function until(fn, ms, label) {
     const end = Date.now() + ms;
     for (;;) { const v = await fn(); if (v) return v; if (Date.now() > end) throw new Error('timed out waiting for ' + label); await sleep(150); }

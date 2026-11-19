@@ -18,7 +18,7 @@ const { spawn } = require('node:child_process');
 const { once } = require('node:events');
 const { bootToken } = require('./_httpToken.js');
 const root = path.resolve(__dirname, '..');
-const workspace = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-keys-save-'));
+const workspace = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-keys-save-'));
 const PASTE = '9c2f41d7a8e04b6f93a1c5d27e8b0f4a6d3c19e2';
 const PASTE_TEMPLATE = '3a9f0c7e2b5d8a1f4c6e9b0d2a7f5c3e8b1d4f6a';   // a key in text the Commander did not type (F9)
 const PASTE_ROTATED = 'c7e0a3f6b9d2e5a8c1f4b7d0e3a6c9f2b5d8e1a4';   // the new key that replaces PASTE (R11)
@@ -51,9 +51,9 @@ async function boot() {
   const socket = http.createServer(); socket.listen(0, '127.0.0.1'); await once(socket, 'listening'); const port = socket.address().port; await new Promise(r => socket.close(r));
   base = 'http://127.0.0.1:' + port;
   const orBase = 'http://127.0.0.1:' + mock.address().port + '/api/v1';
-  child = spawn(process.execPath, ['sidecar/index.js'], { cwd: root, env: { ...process.env, SKYNET_WORKSPACES: workspace, SKYNET_PORT: String(port), SKYNET_OPENROUTER_BASE: orBase, STARNET_OPENROUTER_BASE: orBase, SKYNET_OPENROUTER_KEY: 'sk-or-v1-keyssave-fixture', SKYNET_FULL_ACCESS: '1', SKYNET_EDGE_TTS: '0', SKYNET_REFLECT: '0', SKYNET_SKILL_REVIEW: '0', SKYNET_AUX_BUDGET: '0' }, stdio: ['ignore', 'pipe', 'pipe'] });
+  child = spawn(process.execPath, ['sidecar/index.js'], { cwd: root, env: { ...process.env, SKYNET_WORKSPACES: workspace, SKYNET_PORT: String(port), SKYNET_OPENROUTER_BASE: orBase, VULTRON_OPENROUTER_BASE: orBase, SKYNET_OPENROUTER_KEY: 'sk-or-v1-keyssave-fixture', SKYNET_FULL_ACCESS: '1', SKYNET_EDGE_TTS: '0', SKYNET_REFLECT: '0', SKYNET_SKILL_REVIEW: '0', SKYNET_AUX_BUDGET: '0' }, stdio: ['ignore', 'pipe', 'pipe'] });
   await new Promise((resolve, reject) => { let out = ''; const timer = setTimeout(() => reject(new Error('boot timeout: ' + out.slice(-1200))), 30000); const read = d => { out += d; if (out.includes('Open in your browser:')) { clearTimeout(timer); resolve(); } }; child.stdout.on('data', read); child.stderr.on('data', read); child.once('exit', c => { clearTimeout(timer); reject(new Error('boot exit ' + c + out.slice(-1200))); }); });
-  headers = { 'Content-Type': 'application/json', 'X-StarNet-Token': await bootToken(base, base), Origin: base };
+  headers = { 'Content-Type': 'application/json', 'X-Vultron-Token': await bootToken(base, base), Origin: base };
 }
 async function stop() { if (child && child.exitCode === null) { const exit = once(child, 'exit'); child.kill(); await exit; } }
 async function api(url, body) { const r = await fetch(base + url, { headers, method: body === undefined ? 'GET' : 'POST', body: body === undefined ? undefined : JSON.stringify(body) }); const text = await r.text(); let j = null; try { j = JSON.parse(text); } catch (_) {} return { status: r.status, body: j, text }; }

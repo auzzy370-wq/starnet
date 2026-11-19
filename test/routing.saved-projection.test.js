@@ -37,7 +37,7 @@ let now = 1, store = makeSaveStore({ fs, pathMod: path, root, clock: { now: () =
 const read = makeSavedFloorProjection({ agentId: 'agent', stamp: () => store.stamp('agent'), loadPrimaryState: () => store.loadPrimaryState('agent') });
 const write = station => {
   const previous = store.loadPrimaryState('agent');
-  const result = store.save('agent', { schema: 'starnet.save', version: Save.CURRENT, updatedAt: now++, agent: { id: 'agent' },
+  const result = store.save('agent', { schema: 'vultron.save', version: Save.CURRENT, updatedAt: now++, agent: { id: 'agent' },
     _saveRevision: previous.status === 'ok' ? previous.wrapper.revision : 0, _saveClient: 'router-fixture', _saveDirty: true, station }, { compareRevision: true });
   if (!result.ok) throw new Error('fixture actual save failed');
 };

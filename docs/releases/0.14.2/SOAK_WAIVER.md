@@ -5,7 +5,7 @@
 > **The candidate grew after his approval** (the 10-30 lane merges in §1). The waiver's terms did not change; the release session discloses the growth to him in the cut report.
 > Precedents: [0.12.0](../0.12.0/SOAK_WAIVER.md) (2026-09-16) and [0.11.2](../0.11.2/SOAK_WAIVER.md) (2026-09-11).
 
-On 2026-10-29, Andrew directed the 0.14.2 update with: "I want to just make sure everything merged up until this point will be included… make sure my other sessions can continuously keep working on the starnet reliability cleanup… smoothest update possible with everything we have done up until now that is merged and good to go, and lets start to fully prepare for everything you mentioned." (elisions as recorded by the release session). He approved this plan, the vendor-probe spend and these waiver terms with: "I trust your recommendation".
+On 2026-10-29, Andrew directed the 0.14.2 update with: "I want to just make sure everything merged up until this point will be included… make sure my other sessions can continuously keep working on the vultron reliability cleanup… smoothest update possible with everything we have done up until now that is merged and good to go, and lets start to fully prepare for everything you mentioned." (elisions as recorded by the release session). He approved this plan, the vendor-probe spend and these waiver terms with: "I trust your recommendation".
 
 ## 1. Decision
 
@@ -46,13 +46,13 @@ This is a release-specific owner decision. No later version inherits it, and it 
   - the macOS lifecycle job (kill-relaunch, cli-app-closed). It is the only macOS runtime evidence, since there is no Mac hardware test.
 - **The 0.14.1 → 0.14.2 upgrade.**
   - **Before Publish, the upgrade proof is the installer over v0.14.1:** the pre-tag T0 baseline continuity above, plus W-B5 on Windows. In W-B5 the TIP installer runs over 0.14.1 with a terminal, an MCP server and the station browser running. Saves, skills and skill approvals must carry over, and after reinstalling 0.14.1 its routines run and its skill approvals still hold.
-  - **The UPDATE CENTER path is not proven before Publish, and cannot be.** v0.14.1's updater reads only `releases/latest` on starnet-releases, which never serves a draft.
+  - **The UPDATE CENTER path is not proven before Publish, and cannot be.** v0.14.1's updater reads only `releases/latest` on vultron-releases, which never serves a draft.
   - **It is proven only right after Publish:** by the public canary (cut plan 8.2: v0.14.1 updates itself to v0.14.2 through UPDATE CENTER and keeps its state) and by Andrew updating his own 0.14.1 through UPDATE CENTER within minutes of Publish.
-  - **Rollback (cut plan 8.2b, with Andrew's go):** if either fails, v0.14.2 is marked pre-release on starnet-releases. `releases/latest` then falls back to v0.14.1, and 0.14.1 clients stop being offered the update.
+  - **Rollback (cut plan 8.2b, with Andrew's go):** if either fails, v0.14.2 is marked pre-release on vultron-releases. `releases/latest` then falls back to v0.14.1, and 0.14.1 clients stop being offered the update.
 - **The real-vendor probe** (`qa:model`). It ran on 10-29 on 7210e0ae1 for about $0.07, within the $3 cap Andrew approved ("I trust your recommendation"). Receipt: `b4/B4-RECEIPT.md`.
   - **PASS 8/8:** OpenRouter gpt-4o-mini, kimi-k2, mistral-small-3.2 and qwen3-coder; Ollama native and OpenAI-compatible, both qwen3:8b.
   - **Gemini 2.5 Flash and DeepSeek v3.1 via OpenRouter fail identically on v0.14.1:** pre-existing, not this release, and never claimed in the notes.
-  - **Not probed:** StarNet credits (needs his linked station), OpenAI direct (needs his key; it shares the adapter and the `chat` projection with the passing custom probe), and the Grok and Kimi sign-ins (subscription-only, Andrew-attended, optional).
+  - **Not probed:** Vultron credits (needs his linked station), OpenAI direct (needs his key; it shares the adapter and the `chat` projection with the passing custom probe), and the Grok and Kimi sign-ins (subscription-only, Andrew-attended, optional).
 - **The live keyless voice canary** on TIP, and again inside the release train. Pre-bump: floor-canaries run 40976596131 is green on 7210e0ae1.
 
 ## 3. What this waiver does NOT remove

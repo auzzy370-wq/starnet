@@ -1,4 +1,4 @@
-/* STARNET — friendlyerror.js : turn a raw failure into something a beginner can act on.
+/* VULTRON — friendlyerror.js : turn a raw failure into something a beginner can act on.
    Pure + testable (UMD: a `Friendly` global in the browser, module.exports under node).
 
    The COMMS panel used to surface raw plumbing on a failed turn — "sidecar HTTP 500", an OpenRouter
@@ -30,7 +30,7 @@
    to classifyApiError() to derive the reason, then translate that reason into a beginner-facing message —
    so the truth table stays single-sourced. In the browser the sidecar module isn't loaded, so we fall back
    to a lightweight pattern-match over the SAME kind vocabulary on the UI-level error strings Harness throws
-   ('sidecar HTTP <status>', 'cannot reach the STARNET sidecar…', a forwarded 'no <cap> — …'). */
+   ('sidecar HTTP <status>', 'cannot reach the VULTRON sidecar…', a forwarded 'no <cap> — …'). */
 'use strict';
 (function (root, factory) {
   const api = factory();
@@ -74,19 +74,19 @@
   const KINDS = {
     // ONLY for a fault PROVEN local: the raw carries "sidecar http 5xx" (our own service answered 500). A
     // provider's 5xx/overloaded must never land here — a message naming a component owes proof it is at fault,
-    // and blaming the local service for an Anthropic/OpenRouter overload had users reporting "StarNet's servers
+    // and blaming the local service for an Anthropic/OpenRouter overload had users reporting "Vultron's servers
     // are down" during every industry load spike (2026-07-30, the report wave behind this split).
-    server_error:  { retryable: true,  action: null,       msg: 'The local StarNet service hit an error — give it a moment and try again.' },
+    server_error:  { retryable: true,  action: null,       msg: 'The local Vultron service hit an error — give it a moment and try again.' },
     // The PROVIDER's servers answered with an error/overload (5xx, "overloaded", "temporarily unavailable").
-    // StarNet is healthy and says so; retry is the primary door because provider load spikes pass.
-    provider_server_error: { retryable: true, action: null, msg: "The AI provider's servers are having trouble right now (overloaded or erroring) — StarNet itself is fine. Wait a moment and try again; if it keeps failing, switch model or provider in COMMS." },
-    network:       { retryable: true,  action: null,       msg: "Can't reach StarNet's local service — if the app closed, restart it; if it restarted, reload this window, then try again." },
+    // Vultron is healthy and says so; retry is the primary door because provider load spikes pass.
+    provider_server_error: { retryable: true, action: null, msg: "The AI provider's servers are having trouble right now (overloaded or erroring) — Vultron itself is fine. Wait a moment and try again; if it keeps failing, switch model or provider in COMMS." },
+    network:       { retryable: true,  action: null,       msg: "Can't reach Vultron's local service — if the app closed, restart it; if it restarted, reload this window, then try again." },
     rate_limit:    { retryable: true,  action: null,       msg: 'The model provider is busy (too many requests) — wait a few seconds and try again.' },
     // The sidecar is fine; its call OUT to the model provider failed (see isUpstreamFetchFailure). Say that, and
-    // say StarNet is healthy — the failure mode this replaces had users restarting and reinstalling for days over
+    // say Vultron is healthy — the failure mode this replaces had users restarting and reinstalling for days over
     // a message that named the wrong component. `action: null` on purpose: a provider blip is usually transient,
     // so RETRY must stay the primary chip rather than a SETTINGS door that fixes nothing.
-    provider_unreachable: { retryable: true, action: null, msg: "StarNet is running fine, but it couldn't reach the AI provider — that's usually your internet connection, a VPN or proxy, or the provider having a moment. Try again; if it keeps failing, switch provider or model in SETTINGS." },
+    provider_unreachable: { retryable: true, action: null, msg: "Vultron is running fine, but it couldn't reach the AI provider — that's usually your internet connection, a VPN or proxy, or the provider having a moment. Try again; if it keeps failing, switch provider or model in SETTINGS." },
     /* A SPENT ALLOWANCE is not a busy moment. A ChatGPT-subscription weekly quota resets in DAYS, so offering
        "wait a few seconds and try again" made every retry doomed and told the user nothing they could act on.
        The copy names the meter that was actually spent — the ChatGPT subscription, NOT API billing — and the
@@ -96,8 +96,8 @@
     // auth: the pure message is context-blind (classify time can't know if ChatGPT is already connected). It names the
     // one honest next step; the action BUTTON (actionButton) tailors the door — "add a key" vs "sign in with ChatGPT".
     auth:          { retryable: false, action: 'settings', msg: 'No model is connected yet — add a provider key (or sign in with ChatGPT) to let it run.' },
-    claude_cli_checking: { retryable: true, action: null, msg: 'StarNet is checking your local Claude Code sign-in. Try again once the check finishes.' },
-    claude_cli_status_unavailable: { retryable: true, action: null, msg: 'StarNet could not check your local Claude Code sign-in. Try again in a moment.' },
+    claude_cli_checking: { retryable: true, action: null, msg: 'Vultron is checking your local Claude Code sign-in. Try again once the check finishes.' },
+    claude_cli_status_unavailable: { retryable: true, action: null, msg: 'Vultron could not check your local Claude Code sign-in. Try again in a moment.' },
     claude_cli_missing: { retryable: false, action: 'settings', msg: 'Claude Code is not installed. Open its card in AI & MODELS to set it up.' },
     claude_cli_signed_out: { retryable: false, action: 'settings', msg: 'Claude Code is not signed in. Open its card in AI & MODELS to sign in.' },
     // a provider is connected but no MODEL is picked: the fix is the model dock, not a key or a sign-in
@@ -107,21 +107,21 @@
     // point the user at the xAI (API KEY) provider instead of a doomed reconnect. Door is the PROVIDERS key field.
     grok_oauth_unavailable: { retryable: false, action: 'settings', msg: "Grok sign-in isn't available on this account yet — xAI hasn't opened the Grok sign-in for it. Add an xAI provider key instead (paste it under SETTINGS → AI & MODELS and pick the XAI provider)." },
     billing:       { retryable: false, action: 'settings', msg: "Your provider account is out of credit — top it up, then try again." },
-    // managed StarNet credits ran out (only reachable when a managed-credit backend is wired). Point at the STORE
+    // managed Vultron credits ran out (only reachable when a managed-credit backend is wired). Point at the STORE
     // to top up; a BYOK station never hits this kind (it gets `billing`/`auth` instead).
     // copy names the SAME door the button opens (PROVIDERS) — "the STORE" was a surface that doesn't exist as a button.
-    managed_credit:{ retryable: false, action: 'store',    msg: "You're out of StarNet credits — top up under SETTINGS → AI & MODELS, or connect your own provider key." },
+    managed_credit:{ retryable: false, action: 'store',    msg: "You're out of Vultron credits — top up under SETTINGS → AI & MODELS, or connect your own provider key." },
     // The balance check FAILED (the account service was slow, erroring or unreachable) — the balance is unknown, NOT
     // $0. Reading this as managed_credit told a customer holding $79.24 to top up (2026-10-06). Retry is the door.
-    managed_credit_unavailable: { retryable: true, action: null, msg: "StarNet couldn't check your credit balance just now — your credits are safe and nothing was charged. Try again in a moment." },
-    // The service reported $0 because THIS station's running StarNet runs hold the balance (each reserves up to its PER
+    managed_credit_unavailable: { retryable: true, action: null, msg: "Vultron couldn't check your credit balance just now — your credits are safe and nothing was charged. Try again in a moment." },
+    // The service reported $0 because THIS station's running Vultron runs hold the balance (each reserves up to its PER
     // RUN limit and refunds what it doesn't spend; budgetcaps.managedRefusalMessage). Waiting is the first fix (retry),
     // then lowering PER RUN so runs can share the balance (the SPENDING LIMITS door); topping up stays the last
     // door — a small wallet's hold may come back as cents. Audit B11.
-    managed_credit_held: { retryable: true, action: 'budget', msg: "Your StarNet balance is held by StarNet runs that are still working — nothing is lost: each run reserves up to its PER RUN limit and refunds what it doesn't spend. Wait for them to finish, lower PER RUN in SETTINGS › SPENDING LIMITS, or top up under SETTINGS → AI & MODELS." },
+    managed_credit_held: { retryable: true, action: 'budget', msg: "Your Vultron balance is held by Vultron runs that are still working — nothing is lost: each run reserves up to its PER RUN limit and refunds what it doesn't spend. Wait for them to finish, lower PER RUN in SETTINGS › SPENDING LIMITS, or top up under SETTINGS → AI & MODELS." },
     // The account service ANSWERED and refused this station's token (unlinked on the account page, or linked to a
-    // different account). Topping up fixes nothing; relinking does — same PROVIDERS door as the STARNET card.
-    managed_credit_link: { retryable: false, action: 'store', msg: "Your StarNet account didn't accept this station's link (it was unlinked, or it belongs to another account) — your credits are safe. Relink it under SETTINGS → AI & MODELS → STARNET MANAGED." },
+    // different account). Topping up fixes nothing; relinking does — same PROVIDERS door as the VULTRON card.
+    managed_credit_link: { retryable: false, action: 'store', msg: "Your Vultron account didn't accept this station's link (it was unlinked, or it belongs to another account) — your credits are safe. Relink it under SETTINGS → AI & MODELS → VULTRON MANAGED." },
     // capdenied copy is REBUILT per-error in friendlyError() to name the exact power + gear; this is the fallback
     // when the capability can't be parsed. The door is BUILD MODE (place the gear), NOT the SKILLS list.
     capdenied:     { retryable: false, action: 'refit',    msg: "This task needed a tool this agent doesn't have on station yet — open BUILD MODE to place the gear it's missing." },
@@ -129,16 +129,16 @@
     user_abort:    { retryable: false, action: null,       msg: 'Stopped.' },
     context_overflow: { retryable: false, action: null,    msg: 'This conversation got too long for the model — start a fresh chat or shorten it.' },
     model_not_found:  { retryable: false, action: 'settings', msg: "That model isn't available — pick a different one from the model dock in COMMS." },
-    /* The StarNet credit relay refused this call's price: its ESTIMATE for the prompt ALONE is over its per-call ceiling
-       ($10 by default at starnet-cloud b5582dd, and configurable there — sidecar/providers/errorClass.js
+    /* The Vultron credit relay refused this call's price: its ESTIMATE for the prompt ALONE is over its per-call ceiling
+       ($10 by default at vultron-cloud b5582dd, and configurable there — sidecar/providers/errorClass.js
        call_too_expensive), and a resend is refused the same way. The relay says the call "could cost more", so the copy
        says "could", never that it does. The copy is REBUILT per error in friendlyError() to quote the ceiling the relay
        named; this is the fallback.
        NO "nothing was charged" (0.14.2 review): the station knows only that the relay refused THIS call. A run's later
        call can be the refused one after its earlier calls were billed (sidecar/loop.js books each turn's usage), and the
-       relay's own code (starnet-cloud src/app.js, outside this repo) may auto-reload a zero balance before it prices the
+       relay's own code (vultron-cloud src/app.js, outside this repo) may auto-reload a zero balance before it prices the
        call. The relay refusing the call is all the copy says. */
-    call_too_expensive: { retryable: false, action: 'settings', msg: "This conversation could now cost more per message than StarNet allows for one call on this model, so StarNet refused the call. Start a fresh chat, or pick a cheaper model from the model dock in COMMS." },
+    call_too_expensive: { retryable: false, action: 'settings', msg: "This conversation could now cost more per message than Vultron allows for one call on this model, so Vultron refused the call. Start a fresh chat, or pick a cheaper model from the model dock in COMMS." },
     content_policy_blocked: { retryable: false, action: null, msg: 'The model declined that request on safety grounds — try rephrasing it.' },
     // JUKEBOX is placed (the Spotify tools ARE granted) but Spotify's OAuth session isn't connected yet — the
     // real second half of the unlock chain. The door is TOOLSETS (its JUKEBOX row carries ▶ CONNECT SPOTIFY —
@@ -150,57 +150,57 @@
     // the user got "Something went wrong" in a loop while the real answer was one sentence away).
     agent_busy:    { retryable: true,  action: null,       msg: 'That agent is still busy with a previous run — wait for it to finish, or open its conversation and stop the active run.' },
     // the SIDECAR's own token gate said no (a 403 with "forbidden token/origin/host"): after a sidecar
-    // crash+respawn the page still holds the OLD X-StarNet-Token, so EVERY action 403s. Retrying is doomed and
+    // crash+respawn the page still holds the OLD X-Vultron-Token, so EVERY action 403s. Retrying is doomed and
     // "add a key" is the wrong door — the page needs the fresh boot token, which only a reload fetches.
     stale_session: { retryable: false, action: 'reload',   msg: 'The station restarted — reload this page to reconnect.' },
     // (a page the station KEPT its key from gets the same 403 but is no restart — see withheldNotice() below)
-    /* THE STATION'S OWN ANSWERS (truthful acks, 2026-11-03): a refusal the station named in X-StarNet-Code (STATION_CODE_TO_KIND
+    /* THE STATION'S OWN ANSWERS (truthful acks, 2026-11-03): a refusal the station named in X-Vultron-Code (STATION_CODE_TO_KIND
        below). station_refused: a route turned this request down — its own sentence leads (stationSaid), and no retry, key or
        model door rides with it (a resend is refused the same way; the key and the model were never the question). wrong_address:
        the gate refused this page's ADDRESS (forbidden_origin / forbidden_host) — the same hints the key check gives, no door. */
     station_refused: { retryable: false, action: null,     msg: 'The station refused this request.' },
-    wrong_address: { retryable: false, action: null,       msg: 'This page’s address doesn’t match the station — open StarNet at the exact address you forward to it.' },
-    /* StarNet's OWN spend ledger can't say what was spent (sidecar/loop.js stopForSpend, failureCode
+    wrong_address: { retryable: false, action: null,       msg: 'This page’s address doesn’t match the station — open Vultron at the exact address you forward to it.' },
+    /* Vultron's OWN spend ledger can't say what was spent (sidecar/loop.js stopForSpend, failureCode
        spend_history_unavailable): a limit the Commander chose can't be checked, so the run was stopped. NOT a provider
        out of credit (never `billing`), and never the generic "Something went wrong — try again": a retry hits the same
        refusal until the cause is fixed. The copy is REBUILT per cause in friendlyError() (spendUnknownMessage); this is
        the fallback. The door is SETTINGS › SPENDING LIMITS, where the cause and its fix are listed. */
-    spend_unknown: { retryable: false, action: 'budget',   msg: "Your spending limits can't be checked because StarNet's spend history is unknown, so this run was stopped — open SETTINGS › SPENDING LIMITS to fix it." },
+    spend_unknown: { retryable: false, action: 'budget',   msg: "Your spending limits can't be checked because Vultron's spend history is unknown, so this run was stopped — open SETTINGS › SPENDING LIMITS to fix it." },
     /* HARNESS STOPS (2026-10-11 — "they start a task and then stop repeatedly with no explanation"). The loop's own
        stop messages (loop guard, loop breaker, unkept promises, output-limit cuts, hooks, checkpoints) fell through to
        `unknown` and led with "Something went wrong on that turn". Each now leads with what happened + what to do;
        the per-message copy is built by explainStop() below — these msgs are the fallback/metadata only. */
-    loop_stuck:         { retryable: true,  action: null, msg: 'The agent got stuck repeating one step, so StarNet stopped the run. Say what to try differently, then ask again.' },
-    unknown_tools:      { retryable: true,  action: null, msg: 'The model kept calling tools that don’t exist, so StarNet stopped the run. Try again, or switch to a stronger model.' },
-    tool_keeps_failing: { retryable: true,  action: null, msg: 'A tool kept failing, so StarNet stopped this unattended run. Check its error, fix the cause, then run it again.' },
-    no_progress:        { retryable: true,  action: null, msg: 'A tool kept returning the same result, so StarNet stopped this unattended run as stuck.' },
+    loop_stuck:         { retryable: true,  action: null, msg: 'The agent got stuck repeating one step, so Vultron stopped the run. Say what to try differently, then ask again.' },
+    unknown_tools:      { retryable: true,  action: null, msg: 'The model kept calling tools that don’t exist, so Vultron stopped the run. Try again, or switch to a stronger model.' },
+    tool_keeps_failing: { retryable: true,  action: null, msg: 'A tool kept failing, so Vultron stopped this unattended run. Check its error, fix the cause, then run it again.' },
+    no_progress:        { retryable: true,  action: null, msg: 'A tool kept returning the same result, so Vultron stopped this unattended run as stuck.' },
     incomplete_work:    { retryable: true,  action: null, msg: 'The agent stopped before finishing: it kept saying what it would do next without doing it. Say "continue" to push it on.' },
     memory_unverified:  { retryable: true,  action: null, msg: 'The agent said it saved something to memory, but nothing was written — ask it again to save it.' },
     output_limit:       { retryable: false, action: null, msg: 'The reply hit the model’s output limit while writing a large tool call, so nothing from it was saved. Ask for it in smaller parts.' },
-    checkpoint_failed:  { retryable: true,  action: null, msg: 'StarNet couldn’t save this run’s progress to disk, so it stopped. Check free disk space, then try again.' },
+    checkpoint_failed:  { retryable: true,  action: null, msg: 'Vultron couldn’t save this run’s progress to disk, so it stopped. Check free disk space, then try again.' },
     hook_blocked:       { retryable: false, action: null, msg: 'One of your hooks blocked this run. Change or turn off that hook to let it run.' },
     /* GH#111: the OLLAMA card points at a server that is not Ollama (LM Studio answers Ollama's chat with a 200 "no such
        route"). A resend reaches the same server, so no retry; the door is the CUSTOM card that speaks to it. The headline is
        the adapter's own sentence (it names the server); this msg is only the fallback. */
     endpoint_mismatch:  { retryable: false, action: 'settings', msg: 'The OLLAMA card points at a server that is not Ollama. Add that server under SETTINGS → AI & MODELS → CUSTOM with its /v1 URL instead.' },
-    local_model_memory: { retryable: false, action: 'settings', msg: 'The local model ran out of memory. Close other local models or memory-heavy apps, or choose a smaller model from the model picker in COMMS before trying again. If the station is still blank or disconnected, restart StarNet after freeing memory.' },
-    /* A LOCAL MODEL SERVER STAYED SILENT through StarNet's whole wait (errorClass local_timeout: LM Studio, vLLM, llama.cpp on
+    local_model_memory: { retryable: false, action: 'settings', msg: 'The local model ran out of memory. Close other local models or memory-heavy apps, or choose a smaller model from the model picker in COMMS before trying again. If the station is still blank or disconnected, restart Vultron after freeing memory.' },
+    /* A LOCAL MODEL SERVER STAYED SILENT through Vultron's whole wait (errorClass local_timeout: LM Studio, vLLM, llama.cpp on
        this computer or network, or Ollama with the model loaded). The station ended the turn rather than start the same prompt
        over on a server that may still be working on it, so no ↻ Try again; the door is the model dock (a smaller model). The
        headline is the station's own sentence (it names the server, the phase and the wait); this msg is only the fallback.
        It read "That took too long and timed out — try again" with the code, and "start a fresh chat" (context_overflow)
        without it (local-runtime-profile review M2, 2026-11-03). */
-    local_timeout:      { retryable: false, action: 'settings', msg: 'The model server on this computer or network sent nothing back within StarNet’s wait, so StarNet ended this turn instead of sending the same prompt again. Check the server’s own log, or pick a smaller model in the COMMS model dock.' },
+    local_timeout:      { retryable: false, action: 'settings', msg: 'The model server on this computer or network sent nothing back within Vultron’s wait, so Vultron ended this turn instead of sending the same prompt again. Check the server’s own log, or pick a smaller model in the COMMS model dock.' },
     /* The model's CHAT TEMPLATE refused the conversation's shape (errorClass template_refusal, #102): the adapter already resent
        it once with no system message, so a resend is refused the same way — no ↻ Try again. Another model has another template,
        so the door is the model dock. The headline is the station's own sentence (it names the model, the host and the template's
        words: templateMessage); this msg is only the fallback. It read "Something went wrong — try again" (typed-outcomes, 2026-10-29). */
-    template_refusal:   { retryable: false, action: 'settings', msg: "This model's chat template refused the conversation StarNet sent (it rejects a system message, or the order of the turns), so sending it again is refused the same way. Pick another model in the COMMS model dock, or update the model on its server." },
+    template_refusal:   { retryable: false, action: 'settings', msg: "This model's chat template refused the conversation Vultron sent (it rejects a system message, or the order of the turns), so sending it again is refused the same way. Pick another model in the COMMS model dock, or update the model on its server." },
     /* NOTHING ANSWERED at the provider's address (errorClass unreachable, bug 8873fd77): the connection was refused or the name did
-       not resolve, after one retry. StarNet itself is fine and the fix is starting that server or correcting its address, so the
+       not resolve, after one retry. Vultron itself is fine and the fix is starting that server or correcting its address, so the
        door is AI & MODELS and a retry stays (once it is started). The headline keeps the station's own note (which host, what to
        check: unreachableMessage); this msg is only the fallback. It read "try again" or blamed the internet (typed-outcomes). */
-    unreachable:        { retryable: true,  action: 'settings', msg: "StarNet is running, but nothing answered at the AI provider's address — start the server that should answer there (Ollama, LM Studio …), or correct its address in SETTINGS → AI & MODELS, then send again." },
+    unreachable:        { retryable: true,  action: 'settings', msg: "Vultron is running, but nothing answered at the AI provider's address — start the server that should answer there (Ollama, LM Studio …), or correct its address in SETTINGS → AI & MODELS, then send again." },
     // a TLS certificate this machine does not trust (errorClass tls_certificate): waiting never fixes it; the station's sentence names the fix
     /* THE STATION'S OWN REFUSALS (typed outcomes, the unpark): a run the station would not START — a routine whose pre-check script
        failed, a required routine skill that is gone, too many agents at once, a model that cannot run the task, an image route with no
@@ -214,7 +214,7 @@
     model_unsuitable:   { retryable: false, action: 'settings', msg: "This model can't run tasks here (it can't call tools, or it only makes images) — pick a different one from the model dock in COMMS." },
     image_blocked:      { retryable: false, action: null, msg: 'The image task could not start: it needs a STUDIO, MEDIA STUDIO turned on and a media connection. Nothing was marked done.' },
     image_not_produced: { retryable: true,  action: null, msg: 'The image task ended without producing an image, so nothing was marked done. Check the STUDIO route, then try again.' },
-    tls_certificate:    { retryable: false, action: 'settings', msg: "This computer doesn't trust the AI provider's security certificate (a corporate proxy or an antivirus HTTPS scan can cause this), so StarNet could not connect. Point NODE_EXTRA_CA_CERTS at that proxy's root certificate and restart StarNet, or use another provider." },
+    tls_certificate:    { retryable: false, action: 'settings', msg: "This computer doesn't trust the AI provider's security certificate (a corporate proxy or an antivirus HTTPS scan can cause this), so Vultron could not connect. Point NODE_EXTRA_CA_CERTS at that proxy's root certificate and restart Vultron, or use another provider." },
     unknown:      { retryable: true,  action: null,       msg: 'Something went wrong on that turn — try again.' }
   };
 
@@ -234,7 +234,7 @@
      Harness.chat hands it over as errorCode; friendlyError(err, status, { code }) reads the kind HERE instead of re-reading
      the error's words, so the page says what the station decided (a ChatGPT 429 the classifier called a rate limit is a rate
      limit, never a spent plan). A code not in this table (run_failure, format_error, unknown…) names nothing specific: the
-     error's words decide, as before. StarNet's own UI-level messages (a sign-in, a busy agent, a stale page) are read first. */
+     error's words decide, as before. Vultron's own UI-level messages (a sign-in, a busy agent, a stale page) are read first. */
   const CODE_TO_KIND = Object.assign({}, REASON_TO_KIND, {
     format_error: null, unknown: null, output_cap: null, local_error: null, local_timeout: 'local_timeout', provider_stalled: 'timeout',
     spend_history_unavailable: 'spend_unknown', capability_denied: 'capdenied', output_limit_tool_cut: 'output_limit',
@@ -249,7 +249,7 @@
     managed_credit: 'managed_credit', managed_credit_held: 'managed_credit_held', managed_credit_link: 'managed_credit_link',
     managed_credit_unavailable: 'managed_credit_unavailable'
   });
-  /* THE STATION'S OWN REFUSAL CODES (truthful acks, 2026-11-03): every failure the station answers names itself in X-StarNet-Code
+  /* THE STATION'S OWN REFUSAL CODES (truthful acks, 2026-11-03): every failure the station answers names itself in X-Vultron-Code
      (sidecar/respond.js CODES — one row here per code there), and Harness.chat's pre-stream throw carries it as err.stationCode.
      It is read BEFORE the words: a 403 is a stale page only when the gate says token_stale (token_missing is a page the station
      kept its key from), a 404 is never "that model isn't available", and no station code reads as a provider's key, billing or
@@ -295,13 +295,13 @@
      registry label ("connect a OPENROUTER API key", "configure the CUSTOM base URL"), or the provider's own
      console host in the body. An "openai-compatible http …" error with no host names nobody, so it returns null
      and the copy stays provider-neutral. Ids are the AI & MODELS card ids (.prov-card[data-provider]). */
-  const PROVIDER_IDS = ['starnet', 'openrouter', 'codex', 'grok', 'kimi', 'openai', 'anthropic', 'gemini', 'xai', 'groq',
+  const PROVIDER_IDS = ['vultron', 'openrouter', 'codex', 'grok', 'kimi', 'openai', 'anthropic', 'gemini', 'xai', 'groq',
     'mistral', 'deepseek', 'together', 'fireworks', 'perplexity', 'cerebras', 'ollama', 'custom'];
-  const PROVIDER_WORDS = { codex: 'CHATGPT', grok: 'GROK', kimi: 'KIMI', starnet: 'STARNET' };
+  const PROVIDER_WORDS = { codex: 'CHATGPT', grok: 'GROK', kimi: 'KIMI', vultron: 'VULTRON' };
   function providerWord(id) { return PROVIDER_WORDS[id] || String(id || '').toUpperCase(); }
   // a provider's name inside a SENTENCE (org P03): the brand's own case, like the sibling rows' 'No ChatGPT sign-in yet'.
   // Key labels keep providerWord's capitals; an id with no prose name keeps the provider-neutral copy.
-  const PROVIDER_PROSE = { openrouter: 'OpenRouter', codex: 'ChatGPT', grok: 'Grok', kimi: 'Kimi', starnet: 'StarNet', openai: 'OpenAI',
+  const PROVIDER_PROSE = { openrouter: 'OpenRouter', codex: 'ChatGPT', grok: 'Grok', kimi: 'Kimi', vultron: 'Vultron', openai: 'OpenAI',
     anthropic: 'Anthropic', gemini: 'Gemini', xai: 'xAI', groq: 'Groq', mistral: 'Mistral', deepseek: 'DeepSeek', together: 'Together AI',
     fireworks: 'Fireworks', perplexity: 'Perplexity', cerebras: 'Cerebras' };
   /* A SIGN-IN SUBSCRIPTION HAS NO WALLET (org P03, final round). The keyless sign-ins — ChatGPT (codex), Grok on SuperGrok /
@@ -383,7 +383,7 @@
     const room = nm ? metersShowRoom(raw) : null;
     if (room) {
       return nm + ' refused this request as over a usage limit, but the usage meters on that same answer read ' + room.join(' and ')
-        + " used, so those windows are not what stopped it. StarNet can't tell which limit did; it may be one specific to this model. Pick a different model from the model dock in COMMS, or switch provider under SETTINGS → AI & MODELS.";
+        + " used, so those windows are not what stopped it. Vultron can't tell which limit did; it may be one specific to this model. Pick a different model from the model dock in COMMS, or switch provider under SETTINGS → AI & MODELS.";
     }
     const when = quotaResetIn(raw);
     const said = when ? (nm || 'The provider') + ' says it resets in ' + when + '. ' : '';
@@ -410,16 +410,16 @@
 
   /* MIRROR of sidecar/stop-reason.js STOP_EXPLAINERS — the browser never loads sidecar modules, so the harness's own
      stop messages are explained here in the SAME words (test/stop-reason.test.js locks the two copies together).
-     Matched BEFORE any provider classification: these are StarNet's own decisions, not API failures. */
+     Matched BEFORE any provider classification: these are Vultron's own decisions, not API failures. */
   const STOP_EXPLAINERS = [
     { kind: 'loop_stuck', re: /loop guard: (.+?) failed (\d+) times with identical arguments/i,
-      text: m => 'The agent got stuck repeating one step: ' + m[1] + ' failed ' + m[2] + ' times in a row with the same input, so StarNet stopped the run. Say what to try differently, or fix what that step needs, then ask again.' },
+      text: m => 'The agent got stuck repeating one step: ' + m[1] + ' failed ' + m[2] + ' times in a row with the same input, so Vultron stopped the run. Say what to try differently, or fix what that step needs, then ask again.' },
     { kind: 'unknown_tools', re: /loop breaker: the model called tools that do not exist \(([^)]*)\)/i,
-      text: m => 'The model kept calling tools that don’t exist (' + m[1] + '), so StarNet stopped the run. Try again, or switch to a stronger model.' },
+      text: m => 'The model kept calling tools that don’t exist (' + m[1] + '), so Vultron stopped the run. Try again, or switch to a stronger model.' },
     { kind: 'tool_keeps_failing', re: /loop breaker: (.+?) failed (\d+) times in a row/i,
-      text: m => m[1] + ' kept failing (' + m[2] + ' times in a row, with different inputs), so StarNet stopped this unattended run. Check its error, fix the cause, then run it again.' },
+      text: m => m[1] + ' kept failing (' + m[2] + ' times in a row, with different inputs), so Vultron stopped this unattended run. Check its error, fix the cause, then run it again.' },
     { kind: 'no_progress', re: /loop breaker: (.+?) returned the identical result (\d+) turns in a row/i,
-      text: m => m[1] + ' kept returning the same result (' + m[2] + ' turns in a row), so StarNet stopped this unattended run as stuck. Check what it was waiting for, then run it again.' },
+      text: m => m[1] + ' kept returning the same result (' + m[2] + ' turns in a row), so Vultron stopped this unattended run as stuck. Check what it was waiting for, then run it again.' },
     { kind: 'incomplete_work', re: /Work is incomplete: the model kept announcing/i,
       text: () => 'The agent stopped before finishing: it kept saying what it would do next without actually doing it. Say "continue" to push it on, or switch to a stronger model.' },
     { kind: 'memory_unverified', re: /memory update is unverified|promise to remember above is unverified/i,
@@ -427,11 +427,11 @@
     { kind: 'output_limit', re: /hit the model's output limit while writing a large (\S+) call/i,
       text: m => 'The reply hit the model’s output limit while writing a large ' + m[1] + ' call, so it never ran and nothing from it was saved. Ask for it in smaller parts (for example "write it section by section"), or switch to a model with a larger output limit.' },
     { kind: 'checkpoint_failed', re: /run checkpoint failed/i,
-      text: () => 'StarNet couldn’t save this run’s progress to disk, so it stopped rather than risk losing work. Check free disk space, then try again.' },
+      text: () => 'Vultron couldn’t save this run’s progress to disk, so it stopped rather than risk losing work. Check free disk space, then try again.' },
     { kind: 'hook_blocked', re: /blocked by your hook(?: `([^`]*)`)?: ?(.*)$/i,
       text: m => 'Your hook' + (m[1] ? ' `' + m[1] + '`' : '') + ' blocked this run' + (m[2] ? ': ' + m[2].replace(/\.\s*$/, '') : '') + '. Change or turn off that hook to let it run.' },
     { kind: 'context_overflow', re: /context still too large after compacting/i,
-      text: () => 'This conversation got too long for the model, even after StarNet compacted it. Start a fresh conversation, or switch to a model with a larger context window.' }
+      text: () => 'This conversation got too long for the model, even after Vultron compacted it. Start a fresh conversation, or switch to a model with a larger context window.' }
   ];
   function explainStop(message) {
     const s = String(message == null ? '' : message);
@@ -460,8 +460,8 @@
     }
     if (r === 'refusal') return 'the model declined that request — try rephrasing it';
     if (r === 'cancelled') {
-      if (o.cancelSource === 'estop_by_run') return 'stopped — this run paused all automation (what Pause Automation in the StarNet tray menu does); RESUME AUTOMATION (top bar) is yours alone';
-      return 'stopped from outside this chat — a STOP elsewhere (desk screen, HUD, phone, or Pause Automation in the StarNet tray menu) ended it before it finished';
+      if (o.cancelSource === 'estop_by_run') return 'stopped — this run paused all automation (what Pause Automation in the Vultron tray menu does); RESUME AUTOMATION (top bar) is yours alone';
+      return 'stopped from outside this chat — a STOP elsewhere (desk screen, HUD, phone, or Pause Automation in the Vultron tray menu) ended it before it finished';
     }
     // a FAILED run says it failed, never the stop's word (review 9.2: every failed run read "⏹ it stopped on an error…" and toasted "run failed: it
     // stopped on an error…"; only a run someone stopped is "stopped")
@@ -477,7 +477,7 @@
      Harness's own withheld notice and offer NO door: the notice itself says whether a reload can help (it re-runs the
      check, so only for a transient reason) and names the owner's hatch. The kind stays stale_session (its
      post-mortem already reads "the message is the fix"). '' = this page holds its key (or no Harness: node/tests). */
-  const TOKEN_WITHHELD_MSG = 'StarNet could not confirm this browser runs as your own user account, so it won’t take commands from this page. Open StarNet from the desktop app, or if this is your own browser, restart StarNet with STARNET_TRUST_LOCAL_PEERS=1.';
+  const TOKEN_WITHHELD_MSG = 'Vultron could not confirm this browser runs as your own user account, so it won’t take commands from this page. Open Vultron from the desktop app, or if this is your own browser, restart Vultron with VULTRON_TRUST_LOCAL_PEERS=1.';
   function withheldNotice() {
     if (typeof Harness === 'undefined' || !Harness || typeof Harness.tokenWithheld !== 'function' || !Harness.tokenWithheld()) return '';
     return (typeof Harness.tokenWithheldNotice === 'function' && Harness.tokenWithheldNotice()) || TOKEN_WITHHELD_MSG;
@@ -493,7 +493,7 @@
   // or ECONNRESET. They all mean ONE thing: the response stream died before it finished.
   //
   // ⚠ WHAT THEY DO **NOT** TELL YOU IS *WHERE* IT DIED (2026-07-29). This predicate used to be documented as
-  // "COMMS lost its local sidecar transport" and the copy asserted "Can't reach StarNet's local service —
+  // "COMMS lost its local sidecar transport" and the copy asserted "Can't reach Vultron's local service —
   // restart the app". That is an UNPROVEN claim, and it is wrong in at least two common cases:
   //   • the MODEL PROVIDER's stream drops mid-answer (undici surfaces exactly `terminated` /
   //     `other side closed` / `premature close` / ECONNRESET) — the sidecar is perfectly healthy;
@@ -507,13 +507,13 @@
   }
   /* DID THIS PAGE'S OWN CONNECTION TO THE SIDECAR DROP? (night N2, 2026-10-15.) Answered by PROVENANCE, never by words:
      Harness.chat marks the errors its own transport raised — the fetch() rejection, the body read rejection, the body
-     ending before the lead's completion — with `starnetTransport` (see harness.js transportLoss). Words cannot answer
+     ending before the lead's completion — with `vultronTransport` (see harness.js transportLoss). Words cannot answer
      it: Chromium/WebView2 rejects a body read on a dead sidecar with a bare "network error" the word list above never
      knew, and the same words can arrive IN-BAND, composed and streamed by a perfectly live sidecar. A string can never
      carry the mark, so no provider text can claim it. Only a marked error is a transport loss the reconnect watch may
      act on (verdict.transport); isTransportLoss above still shapes the COPY of an unmarked text, nothing more. */
   function isTransportThrow(err) {
-    return !!err && typeof err === 'object' && typeof err.starnetTransport === 'string' && err.starnetTransport !== '';
+    return !!err && typeof err === 'object' && typeof err.vultronTransport === 'string' && err.vultronTransport !== '';
   }
   /* IS THIS THE SIDECAR'S *OUTBOUND* CALL FAILING? (2026-07-29 — from a real user's diagnostics report.)
      The word order is the tell, and it is decisive. A BROWSER fetch rejection says "Failed to fetch" (Chromium),
@@ -524,7 +524,7 @@
 
      This existed as a real user report: diagnostics showed a healthy local engine (uptime, workspace present, the
      report itself was served by it) with five `fetch failed` entries — the sidecar could not reach chatgpt.com /
-     api.openai.com — and the app told them "Can't reach StarNet's local service, restart it". They lost a day.
+     api.openai.com — and the app told them "Can't reach Vultron's local service, restart it". They lost a day.
 
      WHY THE BUG SURVIVED: sidecar/providers/errorClass.js:168 ALREADY classifies undici transport codes
      correctly, but friendlyerror only `require`s it in node/tests — in the browser classifyApiError is null, so
@@ -540,12 +540,12 @@
   // up. `engineAlive` comes from a token-free GET /api/health probe (Harness.pingEngine) — true/false are
   // measured; null/undefined means nobody probed, so we must not name a culprit at all.
   //   false → the engine really is unreachable: today's copy, now EARNED.
-  //   true  → the engine answered, so "restart StarNet" is actively bad advice; name the stream instead.
+  //   true  → the engine answered, so "restart Vultron" is actively bad advice; name the stream instead.
   //   null  → unproven. Say only what happened, prescribe the cheap step, and do NOT blame a component.
   function transportMessage(engineAlive) {
     if (engineAlive === false) return KINDS.network.msg;
     if (engineAlive === true) {
-      return "The reply stream stopped before it finished — StarNet's local service answered a health check, so "
+      return "The reply stream stopped before it finished — Vultron's local service answered a health check, so "
         + 'the app itself is running; this was the connection carrying the reply. Try again.';
     }
     return 'The connection dropped before the reply finished — try again. If it keeps happening, use "copy '
@@ -624,14 +624,14 @@
      openai-compatible adapter, or OpenRouter's "Provider returned error") is that provider refusing this request — the
      router accepted our key (a rejected key is a 401 naming nobody). xai-403-1023. */
   const UPSTREAM_NAMED_RE = /provider returned error|[\[;] ?provider [^\];]+\]/;
-  // the StarNet credit relay's per-call price ceiling (sidecar/providers/errorClass.js — keep the two in step)
-  const CALL_TOO_EXPENSIVE_RE = /could cost more than the \$\d+(?:\.\d+)? starnet allows for one call|\bcall_too_expensive\b/;
+  // the Vultron credit relay's per-call price ceiling (sidecar/providers/errorClass.js — keep the two in step)
+  const CALL_TOO_EXPENSIVE_RE = /could cost more than the \$\d+(?:\.\d+)? vultron allows for one call|\bcall_too_expensive\b/;
   // quote the ceiling the relay named (it is configurable there), never a number of our own; claim nothing about what
   // the run cost (KINDS.call_too_expensive says why)
   function callTooExpensiveMessage(raw) {
-    const m = /more than the (\$\d+(?:\.\d+)?) starnet allows/i.exec(String(raw || ''));
+    const m = /more than the (\$\d+(?:\.\d+)?) vultron allows/i.exec(String(raw || ''));
     if (!m) return KINDS.call_too_expensive.msg;
-    return 'This conversation could now cost more per message than the ' + m[1] + ' StarNet allows for one call on this model, so StarNet refused the call. Start a fresh chat, or pick a cheaper model from the model dock in COMMS.';
+    return 'This conversation could now cost more per message than the ' + m[1] + ' Vultron allows for one call on this model, so Vultron refused the call. Start a fresh chat, or pick a cheaper model from the model dock in COMMS.';
   }
   // the upstream's name as the adapter's own allowlisted fact carries it — a plain brand name or nothing
   function upstreamName(raw) {
@@ -649,7 +649,7 @@
      names grok MODELS too, and sending that user to "add an xAI key" is a door onto the room they are already in. */
   const GROK_OAUTH_VOICE_RE = /grok \(xai\) http|grok[ _-]?oauth|grok sign-?in|xai[ _]oauth/;
   const GROK_ALLOWLIST_RE = /allowlist|not allowed|not enabled|not available|unavailable|access forbidden|\bforbidden\b|\b403\b/;
-  /* StarNet's OWN spend-ledger refusal (sidecar/loop.js stopForSpend → failureCode spend_history_unavailable; every
+  /* Vultron's OWN spend-ledger refusal (sidecar/loop.js stopForSpend → failureCode spend_history_unavailable; every
      cause's sentence says "the spending limits you set can't be checked"), the failure code itself, and the older
      "spend history is unavailable" wording. Local by construction — never a provider's billing. */
   const SPEND_UNKNOWN_RE = /spending limits you set can['’]t be checked|spend[_ ]history[_ ](?:is[_ ])?unavailable/;
@@ -663,13 +663,13 @@
     if (/interrupted before its spend was recorded|earlier call has no settled charge/.test(low)) {
       return "Your spending limits can't be checked — an earlier call has an unsettled charge, so this run was stopped." + (oneClick || ' Settle that run in SETTINGS › SPENDING LIMITS.');
     }
-    if (oneClick && /could not be read/.test(low)) return "Your spending limits can't be checked — StarNet couldn't read its spend history, so this run was stopped." + oneClick;
+    if (oneClick && /could not be read/.test(low)) return "Your spending limits can't be checked — Vultron couldn't read its spend history, so this run was stopped." + oneClick;
     // A damaged line stays uncertain until explicitly settled, even when a recovery estimate is available.
     if (/line (?:of|in) the spend record is damaged/.test(low)) {
-      return "Your spending limits can't be checked — a line of StarNet's spend record is damaged, so what it recorded is unknown and this run was stopped." + (oneClick || ' Settle it in SETTINGS › SPENDING LIMITS.');
+      return "Your spending limits can't be checked — a line of Vultron's spend record is damaged, so what it recorded is unknown and this run was stopped." + (oneClick || ' Settle it in SETTINGS › SPENDING LIMITS.');
     }
     if (/could not be saved to disk/.test(low)) {
-      return "Your spending limits can't be checked — StarNet couldn't save its spend history to disk, so this run was stopped. Restart StarNet to recover it; SETTINGS › SPENDING LIMITS shows the details.";
+      return "Your spending limits can't be checked — Vultron couldn't save its spend history to disk, so this run was stopped. Restart Vultron to recover it; SETTINGS › SPENDING LIMITS shows the details.";
     }
     return KINDS.spend_unknown.msg;
   }
@@ -677,7 +677,7 @@
   /* The station's OWN sentences (sidecar/providers/errorClass.js templateRefusalText / unreachableNote / the TLS line): an error
      that carries no code still reads as what it is. stationSentence() lifts the sentence for the headline — the provider's raw
      text rides last in brackets and stays in raw. '' = the shape is not the station's (the KINDS fallback leads). */
-  const TEMPLATE_SENTENCE_RE = /the chat template of .{0,240}? refused the conversation starnet sent/;
+  const TEMPLATE_SENTENCE_RE = /the chat template of .{0,240}? refused the conversation vultron sent/;
   const UNREACHABLE_NOTE_RE = /nothing is listening at .{1,160}? on this computer|the connection to .{1,160}? was refused —|the name .{1,160}? (?:did not resolve|could not be looked up)/;
   // a silent local /v1 server's turn end (sidecar/providers/openai-compatible.js localSilenceError): "… (connect phase), so this turn ended."
   const LOCAL_TIMEOUT_RE = /^the model server at \S+ on this (?:computer|network) .{1,240}? \((?:connect|first byte|between chunks) phase\), so this turn ended\./;
@@ -690,12 +690,12 @@
       // the /v1 sentence is whole; the native Ollama one rides after the timeout words ("… — Ollama on this computer had …")
       if (LOCAL_TIMEOUT_RE.test(s.toLowerCase())) return s;
       m = / — (ollama (?:on this computer|at \S+) had [\s\S]+)$/i.exec(s);
-      return m ? up(m[1]).replace(/\s*$/, '') + ' StarNet ended this turn without sending the prompt again.' : '';
+      return m ? up(m[1]).replace(/\s*$/, '') + ' Vultron ended this turn without sending the prompt again.' : '';
     }
     if (kind === 'template_refusal') m = /\bthe chat template of [\s\S]+$/i.exec(s);
     else if (kind === 'unreachable') {
       m = /(?:nothing is listening at |the connection to \S+ was refused|the name \S+ (?:did not resolve|could not be looked up)|the name of the provider's server)[\s\S]*$/i.exec(s);
-      return m ? 'StarNet is running, but ' + m[0].replace(/[.\s]*$/, '') + '.' : '';
+      return m ? 'Vultron is running, but ' + m[0].replace(/[.\s]*$/, '') + '.' : '';
     } else if (kind === 'tls_certificate') m = /\btls certificate verification failed[\s\S]*$/i.exec(s);
     return m ? up(m[0]) : '';
   }
@@ -734,7 +734,7 @@
     // MUST precede isTransportLoss: that predicate also matches `fetch failed`, and whichever runs first owns the
     // verdict. Upstream is the more specific (and provable) reading, so it wins.
     if (isUpstreamFetchFailure(low)) return 'provider_unreachable';
-    // the sidecar is unreachable (fetch threw — Harness throws "cannot reach the STARNET sidecar…")
+    // the sidecar is unreachable (fetch threw — Harness throws "cannot reach the VULTRON sidecar…")
     if (isTransportLoss(low)) return 'network';
     // content / policy beats a status
     if (/content[ _]?policy|moderation|flagged|safety|content_filter/.test(low)) return 'content_policy_blocked';
@@ -745,7 +745,7 @@
     // a model this ChatGPT account may not run (errorClass.js ACCOUNT_MODEL_REFUSED_RE): a resend is refused again
     if (ACCOUNT_MODEL_RE.test(low) && s !== 401 && !(s === 429 || s === 408 || (s >= 500 && s < 600))) return 'model_not_found';
     if (s) {
-      // OUR OWN sidecar's token gate (crash+respawn → stale X-StarNet-Token): a "sidecar HTTP 403" throw or a
+      // OUR OWN sidecar's token gate (crash+respawn → stale X-Vultron-Token): a "sidecar HTTP 403" throw or a
       // "forbidden token/origin/host" body means reload for the fresh boot token — never the provider-key door.
       // …but a PROVIDER's own "Forbidden" (its adapter label names it) is the provider's refusal, never this page's token
       if (s === 403 && (/sidecar http/.test(low) || (/\bforbidden\b/.test(low) && !PROVIDER_HTTP_RE.test(low)))) return 'stale_session';
@@ -776,7 +776,7 @@
         if (/\b(anthropic|openai|openrouter|google|gemini|grok|xai|kimi|codex|deepseek|mistral|groq|ollama)\b/.test(low)) return 'provider_server_error';
         return /sidecar http/.test(low) ? 'server_error' : 'provider_server_error';
       }
-      // the StarNet relay's per-call price ceiling (mirrors errorClass.js CALL_TOO_EXPENSIVE_RE — keep the two in step)
+      // the Vultron relay's per-call price ceiling (mirrors errorClass.js CALL_TOO_EXPENSIVE_RE — keep the two in step)
       if (s === 400 && CALL_TOO_EXPENSIVE_RE.test(low)) return 'call_too_expensive';
       if (s === 400 && REJECTED_KEY_RE.test(low)) return 'auth';
       // Anthropic's empty wallet is a 400 ("Your credit balance is too low … purchase credits"), not a bad request:
@@ -826,7 +826,7 @@
       const k = KINDS.endpoint_mismatch;
       return { userMessage: raw.replace(/\s*\[[\s\S]*$/, '') || k.msg, kind: 'endpoint_mismatch', retryable: k.retryable, action: k.action, provider: 'custom', raw };
     }
-    // a StarNet-authored stop (loop guard, unkept promise, output-limit cut, hook…) leads with what happened and what
+    // a Vultron-authored stop (loop guard, unkept promise, output-limit cut, hook…) leads with what happened and what
     // to do — before the user-abort test, whose /abort/ would otherwise claim a hook reason that mentions the word
     const harnessStop = (err && err.name === 'AbortError') ? null : explainStop(raw);
     if (harnessStop) {
@@ -855,7 +855,7 @@
     // and matching that as managed_credit told funded customers to top up whenever a balance check failed.
     if (/managed credits? (?:are |is )?unavailable/.test(raw.toLowerCase())) {
       kind = /refused this station'?s link|relink/.test(raw.toLowerCase()) ? 'managed_credit_link' : 'managed_credit_unavailable';
-    } else if (/managed credits? (?:are |is )?held|balance is held by \d+ running starnet run/.test(raw.toLowerCase())) {
+    } else if (/managed credits? (?:are |is )?held|balance is held by \d+ running vultron run/.test(raw.toLowerCase())) {
       kind = 'managed_credit_held';   // the balance sits in this station's own running runs' holds — never "out of credit"
     } else if (/managed credit|add credits in the store|out of managed credit/.test(raw.toLowerCase())) {
       kind = 'managed_credit';
@@ -899,13 +899,13 @@
       // the per-agent run mutex — UI-level, and the sidecar message already names the holder + doors.
       kind = 'agent_busy';
     } else if (!station && (/sidecar http 403\b/.test(raw.toLowerCase()) || (status === 403 && /\bforbidden\b/.test(raw.toLowerCase())))) {
-      // OUR OWN sidecar's token gate said no (stale X-StarNet-Token after a crash+respawn) — UI-level, caught
+      // OUR OWN sidecar's token gate said no (stale X-Vultron-Token after a crash+respawn) — UI-level, caught
       // BEFORE delegating: the sidecar API classifier would read a bare 403 as provider `auth` and the error row
       // would offer "🔑 Add a key", the wrong door (EL-11 FIX 2). The only fix is the fresh boot token → reload.
       // Only for a station that names no refusal: one that does said which 403 this was (the gate's code is read above).
       kind = 'stale_session';
     } else if (SPEND_UNKNOWN_RE.test(raw.toLowerCase())) {
-      // StarNet's own spend ledger refused the run (UI-level: the provider classifier would call it `unknown` and
+      // Vultron's own spend ledger refused the run (UI-level: the provider classifier would call it `unknown` and
       // offer a doomed RETRY) — caught before delegating so both paths open SPENDING LIMITS.
       kind = 'spend_unknown';
     } else if (stationRefusal) {
@@ -975,7 +975,7 @@
       return { userMessage: userMessage, kind: kind, retryable: k.retryable, action: k.action, stationCode: station, raw: raw };
     }
     if (kind === 'wrong_address') {
-      return { userMessage: station === 'forbidden_host' ? 'StarNet answers only on localhost / 127.0.0.1 — reach it through a port forward, not a hostname.' : k.msg,
+      return { userMessage: station === 'forbidden_host' ? 'Vultron answers only on localhost / 127.0.0.1 — reach it through a port forward, not a hostname.' : k.msg,
         kind: kind, retryable: k.retryable, action: k.action, stationCode: station, raw: raw };
     }
     // capdenied: name the exact power + gear parsed from the raw message, and route to BUILD MODE (the true unlock —
@@ -1014,8 +1014,8 @@
       const low = raw.toLowerCase();
       const named = raw.match(/connect an? (.+?) api key\b/i);   // the sidecar guard: providerCredentialError()
       let userMessage = k.msg;
-      if (/link this station to a starnet account/.test(low)) {
-        userMessage = "This station isn't linked to StarNet credits yet — link it under SETTINGS → AI & MODELS → STARNET MANAGED, or connect your own provider key.";
+      if (/link this station to a vultron account/.test(low)) {
+        userMessage = "This station isn't linked to Vultron credits yet — link it under SETTINGS → AI & MODELS → VULTRON MANAGED, or connect your own provider key.";
       } else if (named) {
         userMessage = 'No ' + named[1].trim().replace(/\s+api$/i, '') + ' API key is connected yet — add it under SETTINGS → AI & MODELS, or pick a model from a provider you have already connected.';
       } else if (/configure the (.+?) base url/i.test(raw)) {
@@ -1033,9 +1033,9 @@
       }
       return { userMessage: userMessage, kind: kind, retryable: k.retryable, action: k.action, provider: providerFromRaw(raw), raw: raw };
     }
-    /* an UPSTREAM provider's 403 (xai-403-1023): the router (StarNet Cloud or OpenRouter) passed the request on, so the
+    /* an UPSTREAM provider's 403 (xai-403-1023): the router (Vultron Cloud or OpenRouter) passed the request on, so the
        account and credits checks were met, and the provider behind it refused this request (xAI's safety check answers
-       this way; the managed proxy keeps no reason). Say exactly that, never "your key" (a StarNet-credits user has
+       this way; the managed proxy keeps no reason). Say exactly that, never "your key" (a Vultron-credits user has
        none) — the model dock door stays (another model may answer); a region refusal keeps the model-unavailable copy. */
     if (kind === 'model_not_found') {
       const low = raw.toLowerCase();
@@ -1103,7 +1103,7 @@
     return { userMessage: k.msg, kind: kind, retryable: k.retryable, action: k.action, raw: raw };
   }
 
-  /* ---- Why a STARNET account-link start failed, from facts only (link-down 2026-10-07). Every failure used to read
+  /* ---- Why a VULTRON account-link start failed, from facts only (link-down 2026-10-07). Every failure used to read
      "could not reach the link service", which blamed the cloud for a dead LOCAL engine and gave support nothing.
      `info` is what the caller saw: { local:true } when the station's own POST never answered (a network failure or
      Harness.api's deadline), else { status, j, why } from the sidecar — j.reason is its stable classification of the
@@ -1112,15 +1112,15 @@
      period (callers add their own). */
   function linkStartFailure(info) {
     const i = info || {}, j = i.j || {};
-    if (i.local) return 'StarNet\'s engine on this computer isn\'t answering, so the link could not start — restart StarNet, then try again';
-    if (i.status === 503 && j.degraded) return 'StarNet\'s engine on this computer stopped after an error, so the link could not start — restart StarNet, then try again';
-    if (i.status === 404 && j.error === 'linking_unavailable') return 'account linking isn\'t available in this build of StarNet';
+    if (i.local) return 'Vultron\'s engine on this computer isn\'t answering, so the link could not start — restart Vultron, then try again';
+    if (i.status === 503 && j.degraded) return 'Vultron\'s engine on this computer stopped after an error, so the link could not start — restart Vultron, then try again';
+    if (i.status === 404 && j.error === 'linking_unavailable') return 'account linking isn\'t available in this build of Vultron';
     const detail = j.detail ? ' (' + String(j.detail) + ')' : '';
-    if (j.reason === 'tls') return 'security software on this computer (an antivirus HTTPS scan or a proxy) is blocking StarNet\'s secure connection to the StarNet account service' + detail + ' — allow StarNet, then try again';
-    if (j.reason === 'timeout') return 'the StarNet account service did not answer in time — check a VPN or firewall, then try again';
-    if (j.reason === 'dns' || j.reason === 'unreachable') return 'StarNet could not reach the StarNet account service from this computer' + detail + ' — check a VPN or firewall, then try again';
-    if (j.reason === 'cloud_5xx') return 'the StarNet account service is having trouble right now — try again in a minute';
-    if (/^cloud_\d+$/.test(String(j.reason || ''))) return 'the StarNet account service turned the link request down (http ' + String(j.reason).slice(6) + ') — try again';
+    if (j.reason === 'tls') return 'security software on this computer (an antivirus HTTPS scan or a proxy) is blocking Vultron\'s secure connection to the Vultron account service' + detail + ' — allow Vultron, then try again';
+    if (j.reason === 'timeout') return 'the Vultron account service did not answer in time — check a VPN or firewall, then try again';
+    if (j.reason === 'dns' || j.reason === 'unreachable') return 'Vultron could not reach the Vultron account service from this computer' + detail + ' — check a VPN or firewall, then try again';
+    if (j.reason === 'cloud_5xx') return 'the Vultron account service is having trouble right now — try again in a minute';
+    if (/^cloud_\d+$/.test(String(j.reason || ''))) return 'the Vultron account service turned the link request down (http ' + String(j.reason).slice(6) + ') — try again';
     if (i.why) return 'the link could not start: ' + String(i.why);
     return 'could not reach the link service — try again';
   }
@@ -1264,8 +1264,8 @@
         return { label: '↻ RELOAD & RECONNECT', run: () => { try { if (typeof location !== 'undefined' && location.reload) location.reload(); } catch (_) {} } };
       case 'store':
         // this door opens the PROVIDERS section (there is no "store") — name it truthfully with a CRT glyph.
-        // managed credits: the STARNET MANAGED card (balance, LINK STATION) is the lever
-        return { label: '▸ OPEN AI & MODELS', run: () => openSettings('providers', 'starnet') };
+        // managed credits: the VULTRON MANAGED card (balance, LINK STATION) is the lever
+        return { label: '▸ OPEN AI & MODELS', run: () => openSettings('providers', 'vultron') };
       case 'budget':
         // spend_unknown: SETTINGS › SPENDING LIMITS lists the interrupted runs to settle (or says restart) — the
         // only surface that clears the refusal. No retry chip rides with it: a retry hits the same refusal.

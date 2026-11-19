@@ -37,12 +37,12 @@ const server = http.createServer((req, res) => {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const base = 'http://127.0.0.1:' + server.address().port;
   const f = SidecarFixture.create({ prefix: 'compaction-accounting-', env: {
-    STARNET_IPC_TOKEN: IPC, STARNET_DEFAULT_MODEL: MODEL, STARNET_OPENROUTER_BASE: base,
-    STARNET_OPENROUTER_KEY: 'fixture', STARNET_AUX_MODEL: MODEL, STARNET_BUDGET_PER_DAY: '0',
-    STARNET_LIVE_PRICES: '0', STARNET_CONTEXT_LIMIT_OVERRIDE: '1000', STARNET_COMPACT_MICRO: '0',
-    STARNET_COMPACT_CHUNK_CHARS: '1800', STARNET_COMPACT_MAX_CHUNKS: '8',
-    STARNET_REFLECTION: '0', STARNET_STUDY: '0', STARNET_FAILURE_REVIEW: '0', STARNET_QUEST_REFRESH: '0',
-    STARNET_THREAD_MINE: '0', STARNET_SKILL_REVIEW: '0', STARNET_SKILL_CURATOR: '0', STARNET_SCOUT: '0', STARNET_CRON_ENABLED: '0'
+    VULTRON_IPC_TOKEN: IPC, VULTRON_DEFAULT_MODEL: MODEL, VULTRON_OPENROUTER_BASE: base,
+    VULTRON_OPENROUTER_KEY: 'fixture', VULTRON_AUX_MODEL: MODEL, VULTRON_BUDGET_PER_DAY: '0',
+    VULTRON_LIVE_PRICES: '0', VULTRON_CONTEXT_LIMIT_OVERRIDE: '1000', VULTRON_COMPACT_MICRO: '0',
+    VULTRON_COMPACT_CHUNK_CHARS: '1800', VULTRON_COMPACT_MAX_CHUNKS: '8',
+    VULTRON_REFLECTION: '0', VULTRON_STUDY: '0', VULTRON_FAILURE_REVIEW: '0', VULTRON_QUEST_REFRESH: '0',
+    VULTRON_THREAD_MINE: '0', VULTRON_SKILL_REVIEW: '0', VULTRON_SKILL_CURATOR: '0', VULTRON_SCOUT: '0', VULTRON_CRON_ENABLED: '0'
   } });
   const ledgerFile = path.join(f.workspace, 'ledger.jsonl');
   const rows = () => fs.readFileSync(ledgerFile, 'utf8').trim().split('\n').filter(Boolean).map(JSON.parse);
@@ -53,11 +53,11 @@ const server = http.createServer((req, res) => {
   try {
     await f.start();
     const now = Date.now();
-    const saved = await f.json('POST', '/api/save', { schema: 'starnet.save', version: 6, updatedAt: now,
+    const saved = await f.json('POST', '/api/save', { schema: 'vultron.save', version: 6, updatedAt: now,
       _saveRevision: 0, _saveDirty: true, _saveClient: 'compaction-accounting-test', agent: { id: 'agent', name: 'NOVA', createdAt: now },
       agents: [], workstreams: [{ id: 'general', history: [] }], activeId: 'general', generalId: 'general' });
     assert.equal(saved.status, 200); assert.equal(saved.body.ok, true);
-    assert.equal((await f.request('/api/key', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-StarNet-Token': IPC },
+    assert.equal((await f.request('/api/key', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Vultron-Token': IPC },
       body: JSON.stringify({ provider: 'openrouter', key: 'fixture', baseUrl: base }) })).status, 200);
     assert.equal((await f.json('POST', '/api/roster', { updatedAt: now,
       agents: [{ agentId: 'agent', name: 'NOVA', provider: 'openrouter', model: MODEL }] })).status, 200);

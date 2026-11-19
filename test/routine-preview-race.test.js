@@ -24,7 +24,7 @@ const response=next=>answer(200,{ok:true,next});
  reply=Promise.resolve(answer(200,{ok:true}));await type('every 40m');assert.match(preview.textContent,/Could not check/);
  // a refusal is the station's answer: its own reason, or the gate's sentence, never 'unrecognized schedule'
  reply=Promise.resolve(answer(400,{ok:false,error:'bad schedule: every 0m'}));await type('every 0m');assert.match(preview.innerHTML,/bad schedule: every 0m/);
- reply=Promise.resolve(answer(403,'forbidden token',{'X-StarNet-Code':'token_stale'}));await type('every 45m');assert.match(preview.innerHTML,/station restarted/);assert.doesNotMatch(preview.innerHTML,/unrecognized/);
+ reply=Promise.resolve(answer(403,'forbidden token',{'X-Vultron-Code':'token_stale'}));await type('every 45m');assert.match(preview.innerHTML,/station restarted/);assert.doesNotMatch(preview.innerHTML,/unrecognized/);
  reply=new Promise(r=>release=r);const cleared=type('every 50m');type('');release(response(['2030-01-01T00:50:00Z']));await cleared;assert.equal(preview.textContent,'');
  reply=Promise.resolve(response(['2030-01-01T01:00:00Z']));await type('every 60m');assert.match(preview.innerHTML,/01:00/);
  assert.equal(timers.size,0,'all timeout timers are released');

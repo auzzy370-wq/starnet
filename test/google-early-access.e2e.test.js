@@ -9,10 +9,10 @@ const path = require('node:path');
 const { SidecarFixture } = require('./helpers/sidecar-fixture.js');
 
 (async () => {
-  const fixture = SidecarFixture.create({ prefix: 'starnet-google-early-', timeoutMs: 30000, env: {
-    STARNET_GOOGLE_DESKTOP_CLIENT_JSON: JSON.stringify({ installed: { client_id: '123456-starnettest.apps.googleusercontent.com' } }),
-    STARNET_DEFAULT_MODEL: 'replay', STARNET_OPENROUTER_KEY: '',
-    STARNET_CONNECTOR_ENCRYPTION_KEY: '3a'.repeat(32),
+  const fixture = SidecarFixture.create({ prefix: 'vultron-google-early-', timeoutMs: 30000, env: {
+    VULTRON_GOOGLE_DESKTOP_CLIENT_JSON: JSON.stringify({ installed: { client_id: '123456-vultrontest.apps.googleusercontent.com' } }),
+    VULTRON_DEFAULT_MODEL: 'replay', VULTRON_OPENROUTER_KEY: '',
+    VULTRON_CONNECTOR_ENCRYPTION_KEY: '3a'.repeat(32),
     NODE_OPTIONS: '--require=' + path.join(__dirname, 'fixtures/google-early-access.cjs').replace(/\\/g, '/')
   } });
   try {
@@ -29,14 +29,14 @@ const { SidecarFixture } = require('./helpers/sidecar-fixture.js');
         assert.equal(c.signInAvailable, false, c.id + ' offers no sign-in');
         assert.equal(c.useInstead, useId, c.id + ' points at the connection to try instead');
         assert.ok(all.some(x => x.id === useId), useId + ' is in the catalog');
-        assert.equal(c.signInMessage, 'Google blocks StarNet’s ' + name + ' sign-in until StarNet passes Google’s review. Meanwhile you can try ' + useName + ' instead.', c.id + ': one honest line, never that the alternative works');
+        assert.equal(c.signInMessage, 'Google blocks Vultron’s ' + name + ' sign-in until Vultron passes Google’s review. Meanwhile you can try ' + useName + ' instead.', c.id + ': one honest line, never that the alternative works');
         assert.ok(!c.earlyAccess && !/Advanced|Sign in with Google/.test(c.blurb), c.id + ' never promises a way through Google: ' + c.blurb);
         continue;
       }
       assert.ok(!c.signInHeld, c.id + ' (sensitive) is not held');
       assert.equal(c.signInAvailable, true, c.id + ' can sign in');
       assert.equal(c.earlyAccess, true, c.id + ' is flagged early access');
-      assert.match(c.blurb, /^Early access — Google has not finished verifying StarNet yet\. When Google says the app isn’t verified, choose Advanced, then Go to StarNet\. /, c.id + ' says so on the card, with the way through');
+      assert.match(c.blurb, /^Early access — Google has not finished verifying Vultron yet\. When Google says the app isn’t verified, choose Advanced, then Go to Vultron\. /, c.id + ' says so on the card, with the way through');
     }
     const files = all.find(c => c.id === 'google-files');
     assert.ok(files && !files.earlyAccess && !/^Early access/.test(files.blurb), 'Selected Google files is a verified surface, not early access');

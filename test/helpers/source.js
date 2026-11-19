@@ -28,7 +28,7 @@
    readSidecarIndex() is the exact file, for a test that deliberately pins index.js's own structure (its
    'use strict', its module scope). Use it only for that, and say why at the call site.
 
-   AUDIT MODES (for reviewing a codemod, never for a gate): STARNET_SOURCE_AUDIT=index-only makes
+   AUDIT MODES (for reviewing a codemod, never for a gate): VULTRON_SOURCE_AUDIT=index-only makes
    readSidecarSource() return index.js alone (the old behaviour); =without-index returns every OTHER file; =empty
    returns ''. A test that still passes with index.js removed has assertions other files satisfy — review those.
    The gate runner's environment allowlist drops the variable, so a gate step always sees the full source. */
@@ -85,7 +85,7 @@ function join(files) {
     two hop runners, wherever they live" counts everything except sidecar/channels/hub.js, whose own copy of the
     runner the test checks on its own. A path that is not a sidecar file throws, so a typo cannot silently count all. */
 function readSidecarSource(options) {
-  const mode = process.env.STARNET_SOURCE_AUDIT || '';
+  const mode = process.env.VULTRON_SOURCE_AUDIT || '';
   const except = (options && options.except ? options.except.slice() : []).sort();
   const files = sidecarSourceFiles();
   for (const rel of except) if (!files.some(f => f.rel === rel)) throw new Error('readSidecarSource: except names no sidecar file: ' + rel);

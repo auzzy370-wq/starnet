@@ -52,9 +52,9 @@ let Egress = null;
 try { Egress = require('../sidecar/egress-files.js'); } catch (e) { console.log('[pre-fix tree] no sidecar/egress-files.js: ' + e.message); }
 
 const isWin = process.platform === 'win32';
-const BASE = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-path-coherence-')));
+const BASE = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-path-coherence-')));
 // TEST HYGIENE (polish review round 1): browser.upload stages in-process here, so the per-user staging base is a folder
-// of BASE (outside the workspaces and the project), never the user's real %LOCALAPPDATA%\StarNet or TEMP
+// of BASE (outside the workspaces and the project), never the user's real %LOCALAPPDATA%\Vultron or TEMP
 const PER_USER = require('./helpers/staging-base.js').hermeticStagingBase(BASE);
 const WS = path.join(BASE, 'workspaces');
 const PROJECT = path.join(BASE, 'project');

@@ -9,7 +9,7 @@
    in size, and swept at boot without ever entering a link.
    Review round 5 (scratchpad rr5r-stage-race.js): the staged copy lived in the agent's OWN jail, so a same-run process
    could find and swap it (hard link / junction) between staging and Chrome's read. The copy now lives in a station-owned
-   root OUTSIDE every jail (egress-files.js defaultStagingRoot: <per-user base>/starnet-upload-staging-<id>/<agent>/<rand>),
+   root OUTSIDE every jail (egress-files.js defaultStagingRoot: <per-user base>/vultron-upload-staging-<id>/<agent>/<rand>),
    is locked owner-only, and is re-verified around the hand-off.
    Review round 6 BLOCKER (scratchpad rr6-chrome-submit.js, real Chrome): the browser reads the file at FORM SUBMIT, a
    later action, so a swap after browser.upload returned was sent. Every staged copy stays registered with its sha256,
@@ -39,7 +39,7 @@
    the SAME agent while its page lives (the egress decision was made and proven at staging, and it is re-proved before
    every action); another agent taking the station browser drops every copy, and withholds the notes not for it.
    TEST HYGIENE (polish review round 1): this test stages in-process, so its per-user staging base is pointed inside
-   its own scratch (test/helpers/staging-base.js), never the user's real %LOCALAPPDATA%\StarNet or TEMP. */
+   its own scratch (test/helpers/staging-base.js), never the user's real %LOCALAPPDATA%\Vultron or TEMP. */
 'use strict';
 const A = require('./_assert.js');
 const fs = require('node:fs'), fsp = require('node:fs/promises'), path = require('node:path'), os = require('node:os');
@@ -52,7 +52,7 @@ const { selectFiles } = require('../sidecar/tools/builtin/browser-upload.js');
 const { hermeticStagingBase } = require('./helpers/staging-base.js');
 const rejects = async (p, re, message) => { try { await p; A.ok(false, message + ': did not refuse'); } catch (e) { A.ok(re.test(e.message), message + ': ' + e.message); } };
 (async () => {
-  const scratch = fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-upload-unit-')));
+  const scratch = fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-upload-unit-')));
   const scratchTmp = path.resolve(os.tmpdir());
   const perUser = hermeticStagingBase(scratch);   // the per-user staging base, inside scratch (never the user's real one)
   let stagingRootForCleanup = null;   // the station staging root lives in the per-user staging base, OUTSIDE the jail
@@ -373,7 +373,7 @@ const rejects = async (p, re, message) => { try { await p; A.ok(false, message +
         A.ok(/^File selected for upload: the input was handed a checked copy of it\./.test(x.receipt.content) && /re-checks it before each later browser action/.test(x.receipt.content) && !/selection verified/i.test(x.receipt.content),
           'R6 (4): the receipt says the file was selected and is re-checked, never that it is verified: ' + x.receipt.content.slice(0, 90));
         // P1: a driver that cannot name the page keeps the copy only until the reply ends, and the receipt says exactly that
-        A.ok(/cannot name the page, so StarNet keeps that copy only until this reply ends/.test(x.receipt.content) && /submit the form in this reply, or select the file again later/.test(x.receipt.content),
+        A.ok(/cannot name the page, so Vultron keeps that copy only until this reply ends/.test(x.receipt.content) && /submit the form in this reply, or select the file again later/.test(x.receipt.content),
           'P1: with no page identity the receipt says the copy lasts until this reply ends: ' + x.receipt.content.slice(0, 260));
         const c = await attempt(x.tool('browser.click').run({ ref: x.send }, { agentId: 'r6' }));
         A.ok(!c.error && x.d.st.submits === 1 && sentBytes(x.d).length === 1 && sentBytes(x.d)[0] === OWN6, 'R6 control: a normal upload then click sends the original bytes (' + (c.error ? c.error.message : sentBytes(x.d).map(b => b.length + ' B').join(',')) + ')');
@@ -471,7 +471,7 @@ const rejects = async (p, re, message) => { try { await p; A.ok(false, message +
         A.ok(fs.existsSync(copy), 'P1 W-R7 (b): the staged copy outlives the reply while its page lives (was: deleted at the reply end)');
         d.personSubmit();
         A.eq(sentBytes(d), [OWN6], 'P1 W-R7 (b): the person\'s later Submit sends the selected bytes (was: ERR_FILE_NOT_FOUND, nothing sent)');
-        A.ok(/StarNet keeps that copy while this page stays open, at most 30 min, so the form can still be submitted after this reply/.test(receipt.content)
+        A.ok(/Vultron keeps that copy while this page stays open, at most 30 min, so the form can still be submitted after this reply/.test(receipt.content)
           && /When the page navigates away, its tab or the browser closes, another agent takes this browser, or 30 min pass, the copy is dropped and an input still holding it is emptied/.test(receipt.content)
           && /The input holds the requested file now\./.test(receipt.content) && !/still holds/.test(receipt.content),
           'P1: the receipt states the copy\'s real lifecycle: ' + receipt.content.slice(0, 420));
@@ -539,7 +539,7 @@ const rejects = async (p, re, message) => { try { await p; A.ok(false, message +
          the copy died with the browser at the reply end. The station view is the real one here. ---- */
       {
         const LATER = /submitted after this reply|by you later, or by the person/;
-        const OWN_LIFE = /This run browses in its own browser, which closes when this reply ends: StarNet keeps that copy until then \(at most 30 min\) and re-checks it before each later browser action, so submit the form in this reply; after it, that page and its file are gone\./;
+        const OWN_LIFE = /This run browses in its own browser, which closes when this reply ends: Vultron keeps that copy until then \(at most 30 min\) and re-checks it before each later browser action, so submit the form in this reply; after it, that page and its file are gone\./;
         const settle = async p => { for (let i = 0; i < 100 && fs.existsSync(path.dirname(p)); i++) await new Promise(r => setTimeout(r, 10)); };
         // a run's OWN browser, its driver naming the page (the CDP driver does)
         const x = await selected({ doc: true });
@@ -605,7 +605,7 @@ const rejects = async (p, re, message) => { try { await p; A.ok(false, message +
           return { view, tb, tool: n => tb.tools.find(t => t.name === n), ctx: { agentId }, end };
         };
         const selectIn = async r => { const [choose] = (await r.view.snapshot()).map(n => n.ref); await r.tool('browser.upload').run({ ref: choose, paths: ['own.bin'] }, r.ctx); return dS.st.handed[0]; };
-        const SAID = /\[StarNet, staged uploads\]/;
+        const SAID = /\[Vultron, staged uploads\]/;
         // agent A selects in the station and A's run ends: the copy is kept; its TTL runs out while nobody acts
         const a1 = runOf('r6', 'ra-1');
         const copy1 = await selectIn(a1);
@@ -730,7 +730,7 @@ const rejects = async (p, re, message) => { try { await p; A.ok(false, message +
         x.d.personSubmit();
         A.eq(sentBytes(x.d), [], 'P1 cleared input: a later Submit sends nothing, and the page showed no file it could not send');
         const next = await x.tool('browser.press').run({ key: 'Tab' }, { agentId: 'r6' });
-        A.ok(/\[StarNet, staged uploads\] The staged upload copy of "own\.bin" was kept 1 min \(the limit\) and dropped, and the file input holding it was emptied/.test(next.content),
+        A.ok(/\[Vultron, staged uploads\] The staged upload copy of "own\.bin" was kept 1 min \(the limit\) and dropped, and the file input holding it was emptied/.test(next.content),
           'P1 TTL: it is said on the next agent browser action: ' + next.content);
         // the sweep's quick identity check: a copy swapped for a hard link while nobody acts is dropped before the person submits
         const y = await selected({ doc: true, deps: { uploadKeepMs: KEEP, uploadSetTimeout: fakeSet, uploadClearTimeout: fakeClear } });
@@ -833,16 +833,16 @@ const rejects = async (p, re, message) => { try { await p; A.ok(false, message +
       fs.writeFileSync(path.join(root, 'r7', 'cover.pdf'), 'COVER');
       const prose = c => c.replace(/\[BEGIN EXTERNAL WEB CONTENT[\s\S]*?\[END EXTERNAL WEB CONTENT\]/g, '');
       // every sentence that says the input holds/keeps/retains the files. The cleared variant's "no longer retains" is not
-      // one, and neither is "StarNet keeps that copy": that is the copy's lifetime, pinned word for word below
-      const holds = c => prose(c).split(/(?<=\.)\s+/).filter(s => /\binput\b/i.test(s) && /\b(holds|keeps|retains|still has)\b/i.test(s.replace(/\bStarNet keeps\b/g, '')) && !/\b(no longer|cleared)\b/i.test(s));
+      // one, and neither is "Vultron keeps that copy": that is the copy's lifetime, pinned word for word below
+      const holds = c => prose(c).split(/(?<=\.)\s+/).filter(s => /\binput\b/i.test(s) && /\b(holds|keeps|retains|still has)\b/i.test(s.replace(/\bVultron keeps\b/g, '')) && !/\b(no longer|cleared)\b/i.test(s));
       const stagedNow = () => (fs.existsSync(path.join(stagingRoot, 'r7')) ? fs.readdirSync(path.join(stagingRoot, 'r7')) : []);
       const LIFETIMES = [
         { label: 'no page identity', namesPage: false, outlivesRun: false,
-          life: /This browser cannot name the page, so StarNet keeps that copy only until this reply ends \(an input still holding it is then emptied\) and re-checks it before each later browser action: submit the form in this reply, or select the file again later\. / },
+          life: /This browser cannot name the page, so Vultron keeps that copy only until this reply ends \(an input still holding it is then emptied\) and re-checks it before each later browser action: submit the form in this reply, or select the file again later\. / },
         { label: 'a run\'s own browser', namesPage: true, outlivesRun: false,
-          life: /This run browses in its own browser, which closes when this reply ends: StarNet keeps that copy until then \(at most 30 min\) and re-checks it before each later browser action, so submit the form in this reply; after it, that page and its file are gone\. If the page navigates away or its tab closes first, the copy is dropped and an input still holding it is emptied\. / },
+          life: /This run browses in its own browser, which closes when this reply ends: Vultron keeps that copy until then \(at most 30 min\) and re-checks it before each later browser action, so submit the form in this reply; after it, that page and its file are gone\. If the page navigates away or its tab closes first, the copy is dropped and an input still holding it is emptied\. / },
         { label: 'a browser that outlives the run', namesPage: true, outlivesRun: true,
-          life: /StarNet keeps that copy while this page stays open, at most 30 min, so the form can still be submitted after this reply \(by you later, or by the person\), and re-checks it before each later browser action\. When the page navigates away, its tab or the browser closes, another agent takes this browser, or 30 min pass, the copy is dropped and an input still holding it is emptied\. / }
+          life: /Vultron keeps that copy while this page stays open, at most 30 min, so the form can still be submitted after this reply \(by you later, or by the person\), and re-checks it before each later browser action\. When the page navigates away, its tab or the browser closes, another agent takes this browser, or 30 min pass, the copy is dropped and an input still holding it is emptied\. / }
       ];
       for (const { label, namesPage, outlivesRun, life } of LIFETIMES) {
         let keep = true;
@@ -980,8 +980,8 @@ const rejects = async (p, re, message) => { try { await p; A.ok(false, message +
     A.eq(closed && closed.code, 'REF_TAB_CLOSED', 'tab loss during readback propagates unchanged');
   } finally {
     perUser.restore();
-    if (path.dirname(scratch) === scratchTmp && path.basename(scratch).startsWith('starnet-upload-unit-')) fs.rmSync(scratch, { recursive: true, force: true });
-    if (stagingRootForCleanup && /starnet-upload-staging-[0-9a-f]{16}$/.test(stagingRootForCleanup)) { try { fs.rmSync(stagingRootForCleanup, { recursive: true, force: true }); } catch (e) { console.log('[cleanup] ' + e.message); } }
+    if (path.dirname(scratch) === scratchTmp && path.basename(scratch).startsWith('vultron-upload-unit-')) fs.rmSync(scratch, { recursive: true, force: true });
+    if (stagingRootForCleanup && /vultron-upload-staging-[0-9a-f]{16}$/.test(stagingRootForCleanup)) { try { fs.rmSync(stagingRootForCleanup, { recursive: true, force: true }); } catch (e) { console.log('[cleanup] ' + e.message); } }
   }
   A.report('browser-upload');
 })().catch(e => { console.error(e.stack || e); process.exitCode = 1; });

@@ -26,7 +26,7 @@ const Channels = require('../frontend/app/channels.js');
 
 // a browser's localStorage that outlives a "page": a reload is a NEW rig (fresh memory) on the SAME storage
 function memStorage() { const m = new Map(); return { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => { m.set(k, String(v)); }, removeItem: k => { m.delete(k); }, _m: m }; }
-const onDisk = (storage, ws) => { const raw = storage.getItem('starnet.sentNow.v1'); return raw ? (JSON.parse(raw)[ws] || []) : []; };
+const onDisk = (storage, ws) => { const raw = storage.getItem('vultron.sentNow.v1'); return raw ? (JSON.parse(raw)[ws] || []) : []; };
 
 function stopRig(opts) {
   Channels.reset();
@@ -496,7 +496,7 @@ function stopRig(opts) {
       const storage = memStorage();
       const old = [];
       for (let i = 0; i < 16; i++) old.push({ id: 'snold' + i, runId: 'run-0', text: 'old note ' + i, wire: 'old note ' + i, at: Date.now() - 60000 + i });
-      storage.setItem('starnet.sentNow.v1', JSON.stringify({ ws1: old }));
+      storage.setItem('vultron.sentNow.v1', JSON.stringify({ ws1: old }));
       const one = pageOne(storage, 'use the blue folder');
       const disk = onDisk(storage, 'ws1');
       A.eq(disk.length, 16, 'the list stays at its cap');
@@ -514,7 +514,7 @@ function stopRig(opts) {
       // (n) a VERY OLD line the station still cannot decide is given back with the honest line, never kept waiting forever
       const storage = memStorage();
       const dayAgo = Date.now() - 25 * 3600 * 1000;
-      storage.setItem('starnet.sentNow.v1', JSON.stringify({ ws1: [{ id: 'snstale', runId: 'run-0', text: 'an old note', wire: 'an old note', at: dayAgo }, { id: 'snfresh', runId: 'run-0', text: 'a new note', wire: 'a new note', at: Date.now() }] }));
+      storage.setItem('vultron.sentNow.v1', JSON.stringify({ ws1: [{ id: 'snstale', runId: 'run-0', text: 'an old note', wire: 'an old note', at: dayAgo }, { id: 'snfresh', runId: 'run-0', text: 'a new note', wire: 'a new note', at: Date.now() }] }));
       const timers = [];
       const two = pageTwo(storage, () => Promise.reject(new Error('offline')), null, { setTimeout: fn => { timers.push(fn); } });
       await two.r.ctx.__reconcile(two.ws);
@@ -523,7 +523,7 @@ function stopRig(opts) {
       A.eq([onDisk(storage, 'ws1').map(e => e.id), timers.length], [['snfresh'], 1], 'the fresh one keeps waiting (asked again later)');
       // an old line the station CAN decide is decided by the station
       const storage2 = memStorage();
-      storage2.setItem('starnet.sentNow.v1', JSON.stringify({ ws1: [{ id: 'snstale', runId: 'run-1', text: 'an old note', wire: 'an old note', at: dayAgo }] }));
+      storage2.setItem('vultron.sentNow.v1', JSON.stringify({ ws1: [{ id: 'snstale', runId: 'run-1', text: 'an old note', wire: 'an old note', at: dayAgo }] }));
       const three = pageTwo(storage2, say(storage2, () => ({ snstale: 'applied' })));
       await three.r.ctx.__reconcile(three.ws);
       A.eq([three.r.ctx.input.value, three.ws.history.filter(m => m && m.steerEcho).length], ['', 1], 'a day-old line the station says was read is shown as read');

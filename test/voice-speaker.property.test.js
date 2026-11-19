@@ -10,7 +10,7 @@
    the legacy hands-free loop on and off, Esc (the page's own keydown handlers), DISCONNECT (the voice lines of chat.js
    abort(), run from its source), Voice.init, a reply whose sentence cannot be played (it raises the speech note), and a
    reload (a fresh window over the same storage). After every op, against a model {lastExplicit, leases}:
-     (1) the saved 'starnet.voice.speak' is the last explicit choice ('1'/'0'; absent is off)
+     (1) the saved 'vultron.voice.speak' is the last explicit choice ('1'/'0'; absent is off)
      (2) Voice.isOn() is that choice, or a session holding the speaker (after a reload: the choice alone)
      (3) a muted speaker never shows the speech note or an ON tooltip
      (4) every write of the key is made by voice-state.js, and no other frontend/app file names the key
@@ -28,7 +28,7 @@ const { chatReply, liveWindow } = require('./helpers/voice-rig.js');
 
 const ROOT = path.join(__dirname, '..');
 const read = rel => fs.readFileSync(path.join(ROOT, rel), 'utf8');
-const KEY = 'starnet.voice.speak';
+const KEY = 'vultron.voice.speak';
 // one turn of the event loop (microtasks, then any timer due): a sleep would cost a whole timer tick on Windows
 const turn = () => new Promise(r => setImmediate(r));
 async function until(pred, ms) { for (const end = Date.now() + ms; !pred() && Date.now() < end;) await turn(); return pred(); }

@@ -13,7 +13,7 @@ const path = require('path');
 const os = require('os');
 const { makeFsTools } = require('../sidecar/tools/builtin/fs.js');
 
-const ROOT = path.join(os.tmpdir(), 'starnet-fs-search-budget-' + process.pid);
+const ROOT = path.join(os.tmpdir(), 'vultron-fs-search-budget-' + process.pid);
 const WS = path.join(ROOT, 'ag');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 

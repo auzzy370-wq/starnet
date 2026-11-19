@@ -15,7 +15,7 @@ origin: audit
 
 ## Symptom
 
-In a Telegram group where the owner turned /mention off (answer every message), a command explicitly addressed to a different bot — "/new@otherbot" — wiped THIS bot's chat history ("Cleared 2 messages — this chat starts fresh"), and "/stop@otherbot" would stop this bot's run. With two StarNet bots in one room (station bot + an agent-bound bot), both obey a command meant for one.
+In a Telegram group where the owner turned /mention off (answer every message), a command explicitly addressed to a different bot — "/new@otherbot" — wiped THIS bot's chat history ("Cleared 2 messages — this chat starts fresh"), and "/stop@otherbot" would stop this bot's run. With two Vultron bots in one room (station bot + an agent-bound bot), both obey a command meant for one.
 
 ## Repro
 

@@ -7,7 +7,7 @@
    are exported as a `configured: true` marker ONLY — the raw secret is never read into the envelope. On import
    those markers surface a "re-enter your key" state; the import never fabricates a secret it doesn't have.
 
-   FORMAT: a schema-versioned envelope { starnetExport: 1, exportedAt, app, sections: {...} }. `starnetExport`
+   FORMAT: a schema-versioned envelope { vultronExport: 1, exportedAt, app, sections: {...} }. `vultronExport`
    is the migration pivot: a future importer can branch on it. Every section is OPTIONAL — a partial export (or a
    partial import selecting only some sections) round-trips cleanly. Unknown sections are ignored on import (never
    a hard failure), so a newer export can still be read by an older build (forward-tolerant).
@@ -200,9 +200,9 @@ function redactConnector(c) {
     if (want('notifyPrefs') && isObj(s.notifyPrefs)) sections.notifyPrefs = s.notifyPrefs;
 
     return {
-      starnetExport: SCHEMA,
+      vultronExport: SCHEMA,
       exportedAt: (typeof o.now === 'number') ? o.now : null,
-      app: clampStr(o.app || 'StarNet', 40),
+      app: clampStr(o.app || 'Vultron', 40),
       sections
     };
   }
@@ -213,10 +213,10 @@ function redactConnector(c) {
      of "re-enter your key" prompts the UI must surface. ---- */
   function parseImport(env) {
     if (!isObj(env)) return { ok: false, error: 'not a JSON object' };
-    const schema = env.starnetExport;
-    if (typeof schema !== 'number' || schema < 1) return { ok: false, error: 'missing or invalid "starnetExport" version marker' };
+    const schema = env.vultronExport;
+    if (typeof schema !== 'number' || schema < 1) return { ok: false, error: 'missing or invalid "vultronExport" version marker' };
     const notes = [];
-    if (schema > SCHEMA) notes.push('file is from a newer StarNet (schema ' + schema + '); importing what this build understands');
+    if (schema > SCHEMA) notes.push('file is from a newer Vultron (schema ' + schema + '); importing what this build understands');
     const inSec = isObj(env.sections) ? env.sections : {};
     const out = {};
     const secretsNeeded = [];

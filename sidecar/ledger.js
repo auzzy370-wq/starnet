@@ -52,7 +52,7 @@
      (budget.js counts it in every limit that can contain it):
        damaged      a record line that could not be read: the charge it still records ('recorded': the host reads a complete
                     "usd" field off the line), else 'assumed': the largest single charge this ledger records, and never less
-                    than UNKNOWN_CHARGE_USD (STARNET_UNKNOWN_CHARGE_USD, default $2). An assumption can undercount: the row
+                    than UNKNOWN_CHARGE_USD (VULTRON_UNKNOWN_CHARGE_USD, default $2). An assumption can undercount: the row
                     says it is one, and the line stays settleable.
        interrupted  a run that stopped before it booked: the per-run limit it started with ('limit'; its last call can run
                     past it). With none it has NO bound, and only such an item can still refuse a limit that covers it.
@@ -226,7 +226,7 @@
        (insights.js honors it) while /api/budget's spentToday + lifetime and the budget governor's day and
        global pools counted the full figure — and that phantom spend then BLOCKED a later real BYOK run with
        reason 'budget' and a CAP HIT note naming money nobody spent. The contract was already written down
-       in docs/STARNET_REF_REPLACEMENT_LOOPS.md: exclude unmetered rows from metered USD aggregates while
+       in docs/VULTRON_REF_REPLACEMENT_LOOPS.md: exclude unmetered rows from metered USD aggregates while
        still counting runs and tokens. count()/all() are deliberately untouched — the run HAPPENED. A row that names its
        payer (billingClass) is read by that payer's POLICY row; makeEntry keeps its unmetered flag in step with it. */
     function metered(r) { return (r && knownClass(r.billingClass)) ? BillingClass.POLICY[r.billingClass].ledgerMetered : !(r && r.unmetered); }

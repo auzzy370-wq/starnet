@@ -1,6 +1,6 @@
-/* bin/lib/folder.js — the folder `starnet` was started in, as the station's trust sees it.
+/* bin/lib/folder.js — the folder `vultron` was started in, as the station's trust sees it.
 
-   A terminal session works where the person typed `starnet`: that folder's project (the nearest git root above it,
+   A terminal session works where the person typed `vultron`: that folder's project (the nearest git root above it,
    else the folder itself, the same root the station's own path trust proposes) is the working folder of every
    message sent from it — once the station TRUSTS that project. Trust is the station's, never the CLI's: a project
    is trusted when GET /api/projects lists it blessed, and the person grants it with the same doorway the app's
@@ -12,7 +12,7 @@
      trusted  the station's own string for the trusted project root that holds it ('' when none does) — sent as the
               run's projectRoot, so it matches the grant exactly
      skip     why this folder is never offered for trust unasked: 'home' (your home folder), 'root' (a drive or
-              filesystem root), 'system' (the OS's own folders), 'station' (inside StarNet's own workspaces) — a shell
+              filesystem root), 'system' (the OS's own folders), 'station' (inside Vultron's own workspaces) — a shell
               opens in these, and trusting one would hand the crew far more than a project. '' for a real project.
    Nothing here writes or grants anything. Pure apart from the fs reads it is handed. */
 'use strict';

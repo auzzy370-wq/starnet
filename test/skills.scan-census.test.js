@@ -2,7 +2,7 @@
    accounted for (skills-canonical-bytes lane 2026-10-28; bugs 56c6f962 and 97743dff, gh#145).
 
    A. THE FIELD CENSUS. Every key of a stored skill record is classified: PROMPT (it reaches a model, so the guard must
-      scan it), HOST (set by StarNet, never model or third-party text), or STORE (it must reach no prompt at all). A
+      scan it), HOST (set by Vultron, never model or third-party text), or STORE (it must reach no prompt at all). A
       record carrying a unique needle in every field is pushed through every surface that hands skill text to a model:
       the run's skill index, a preloaded skill, skill.view, skill.list, the background review prompt, the curator prompt
       and the evaluation runner's system prompt. The test fails when
@@ -143,7 +143,7 @@ const leaked = (t) => [KEY, GHP, HELD, 'hunter2hunter2'].filter(x => String(t).i
     A.ok(out.index.indexOf(needle('summary')) >= 0 && out.view.indexOf(needle('body')) >= 0 && out.evaluation.indexOf(needle('body')) >= 0, 'A: precondition, every surface was reached');
     const needlesOf = (k) => k === 'files' ? [needle('filepath'), needle('filecontent')] : (NUMERIC[k] != null ? [String(NUMERIC[k])] : [needle(k)]);
     const reach = (k) => needlesOf(k).some(x => all.indexOf(x) >= 0);
-    for (const k of STORE) A.ok(!reach(k), 'A: STORE field ' + k + ' reaches no prompt' + (reach(k) ? ' (it does: scan it and move it to PROMPT, or to HOST when StarNet sets it)' : ''));
+    for (const k of STORE) A.ok(!reach(k), 'A: STORE field ' + k + ' reaches no prompt' + (reach(k) ? ' (it does: scan it and move it to PROMPT, or to HOST when Vultron sets it)' : ''));
     const reached = PROMPT.concat(STORE).filter(reach);
     A.eq(reached.filter(k => PROMPT.indexOf(k) < 0), [], 'A: every field that reaches a prompt is a PROMPT field');
     for (const k of ['name', 'summary', 'category', 'body', 'setup', 'platforms', 'files']) A.ok(reach(k), 'A: ' + k + ' really reaches a prompt (the census is not vacuous)');

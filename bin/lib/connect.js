@@ -4,7 +4,7 @@
 
    What each row says is what the station can prove: a key saved, a sign-in held, a link with its balance, Claude Code
    installed and signed in, Ollama answering. How each one connects is the app's own way:
-     credits      link the station to a StarNet account (the awakening's link-code flow)
+     credits      link the station to a Vultron account (the awakening's link-code flow)
      device       a device-code sign-in (ChatGPT, Grok, Kimi)
      claude       Claude Code's own sign-in
      local        Ollama on this computer (nothing to save: it answers or it does not)
@@ -13,7 +13,7 @@
 'use strict';
 
 const PROVIDERS = [
-  { id: 'starnet', name: 'STARNET MANAGED', endpoint: 'managed inference · credits', blurb: 'no API key — runs on your balance' },
+  { id: 'vultron', name: 'VULTRON MANAGED', endpoint: 'managed inference · credits', blurb: 'no API key — runs on your balance' },
   { id: 'openrouter', name: 'OPENROUTER', endpoint: 'openrouter.ai/api/v1', blurb: 'one key · 300+ models' },
   { id: 'codex', name: 'CHATGPT (CODEX)', endpoint: 'OAuth · ChatGPT subscription', blurb: 'sign-in, no API key' },
   { id: 'grok', name: 'GROK (XAI)', endpoint: 'OAuth · SuperGrok / X Premium+', blurb: 'sign-in, no API key' },
@@ -34,7 +34,7 @@ const PROVIDERS = [
   { id: 'custom', name: 'CUSTOM', endpoint: 'any /v1 base URL', blurb: 'bring your endpoint' }
 ];
 const GROUPS = [
-  { id: 'credits', label: 'STARNET CREDITS', note: 'link this station once, nothing to paste', short: 'CREDITS', ids: ['starnet'] },
+  { id: 'credits', label: 'VULTRON CREDITS', note: 'link this station once, nothing to paste', short: 'CREDITS', ids: ['vultron'] },
   { id: 'subscription', label: 'A SUBSCRIPTION YOU HAVE', note: 'sign in, no API key', short: 'SUBSCRIPTION', ids: ['codex', 'grok', 'kimi', 'claude-cli'] },
   { id: 'key', label: 'AN API KEY', note: 'paste a key from the service’s website', short: 'API KEY' },
   { id: 'own', label: 'YOUR OWN MODELS', note: 'on this computer, or a server you run', short: 'YOUR OWN', ids: ['ollama', 'custom'] }
@@ -47,7 +47,7 @@ const ordered = () => GROUPS.reduce((out, g) => out.concat(PROVIDERS.filter(p =>
 // what a card says under its name (the app's providerNeed): the subscription for a sign-in, else the blurb
 const need = p => /^OAuth · /.test(p.endpoint) ? p.endpoint.slice('OAuth · '.length) : p.blurb;
 function flowOf(id) {
-  if (id === 'starnet') return 'credits';
+  if (id === 'vultron') return 'credits';
   if (DEVICE[id]) return 'device';
   if (id === 'claude-cli') return 'claude';
   if (id === 'ollama') return 'local';
@@ -63,7 +63,7 @@ function brainOf(id) {
 function find(word) {
   const w = String(word || '').trim().toLowerCase();
   if (!w) return null;
-  const alias = { chatgpt: 'codex', claude: 'claude-cli', 'claude code': 'claude-cli', credits: 'starnet', starnet: 'starnet', moonshot: 'kimi', google: 'gemini' };
+  const alias = { chatgpt: 'codex', claude: 'claude-cli', 'claude code': 'claude-cli', credits: 'vultron', vultron: 'vultron', moonshot: 'kimi', google: 'gemini' };
   const id = alias[w] || w;
   return PROVIDERS.find(p => p.id === id) || PROVIDERS.find(p => p.name.toLowerCase() === w)
     || PROVIDERS.find(p => p.name.toLowerCase().split(/[\s(]+/)[0] === w) || null;
@@ -106,7 +106,7 @@ function normEndpoint(raw) {
 }
 
 /* Save a key (and a CUSTOM endpoint) where the station keeps it. st: station-io ({ post }). -> { ok, store, error }.
-   The station hands it to the app's page (keychain / browser); a station with no page and no keychain (one `starnet`
+   The station hands it to the app's page (keychain / browser); a station with no page and no keychain (one `vultron`
    started on its own) proves it here, then keeps its copy (/api/providers/engine-key — what its runs read). */
 async function saveKey(st, provider, key, baseUrl) {
   const body = { provider, key: key || '' };
@@ -114,7 +114,7 @@ async function saveKey(st, provider, key, baseUrl) {
   const r = await st.post('/api/providers/connect', body, 60000);
   const j = (r && r.json) || {};
   if (r && r.status === 200 && j.ok) return { ok: true, store: j.store, verified: j.verified !== false };
-  if (r && r.status === 404) return { ok: false, error: 'this station is older than /connect — update StarNet, or add the key in the app (SETTINGS › AI & MODELS)' };
+  if (r && r.status === 404) return { ok: false, error: 'this station is older than /connect — update Vultron, or add the key in the app (SETTINGS › AI & MODELS)' };
   if (!(r && r.status === 409 && j.code === 'no-page')) return { ok: false, error: j.error || (r && r.error) || 'HTTP ' + (r && r.status) };
   if (key) {
     const v = await st.post('/api/providers/validate', body, 45000);

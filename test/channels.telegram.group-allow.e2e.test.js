@@ -123,7 +123,7 @@ function startMockTelegram() {
 
 function boot(port, env, attemptsLeft) {
   return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, [INDEX], { env: Object.assign({}, process.env, env, { SKYNET_PORT: String(port), STARNET_PORT: String(port) }), stdio: ['ignore', 'pipe', 'pipe'] });
+    const child = spawn(process.execPath, [INDEX], { env: Object.assign({}, process.env, env, { SKYNET_PORT: String(port), VULTRON_PORT: String(port) }), stdio: ['ignore', 'pipe', 'pipe'] });
     let out = '', settled = false;
     const onData = d => {
       out += d.toString();
@@ -174,14 +174,14 @@ function filesUnder(dir) {
   const home = path.join(ws, 'home');
   fs.mkdirSync(home, { recursive: true });
   const env = {
-    SKYNET_WORKSPACES: ws, STARNET_WORKSPACES: ws,
+    SKYNET_WORKSPACES: ws, VULTRON_WORKSPACES: ws,
     // never let a test sidecar see (or recover into) the real user profile
     HOME: home, USERPROFILE: home, APPDATA: path.join(home, 'AppData', 'Roaming'), LOCALAPPDATA: path.join(home, 'AppData', 'Local'), HERMES_HOME: path.join(home, '.hermes'),
-    SKYNET_OPENROUTER_BASE: llm.base, STARNET_OPENROUTER_BASE: llm.base,
-    SKYNET_OPENROUTER_KEY: 'sk-or-v1-group-fake', STARNET_OPENROUTER_KEY: 'sk-or-v1-group-fake',
-    SKYNET_DEFAULT_MODEL: 'test/model', STARNET_DEFAULT_MODEL: 'test/model',
-    SKYNET_TELEGRAM_TOKEN: 'TESTTOKEN', STARNET_TELEGRAM_TOKEN: 'TESTTOKEN',
-    SKYNET_TELEGRAM_API_BASE: tg.base, STARNET_TELEGRAM_API_BASE: tg.base
+    SKYNET_OPENROUTER_BASE: llm.base, VULTRON_OPENROUTER_BASE: llm.base,
+    SKYNET_OPENROUTER_KEY: 'sk-or-v1-group-fake', VULTRON_OPENROUTER_KEY: 'sk-or-v1-group-fake',
+    SKYNET_DEFAULT_MODEL: 'test/model', VULTRON_DEFAULT_MODEL: 'test/model',
+    SKYNET_TELEGRAM_TOKEN: 'TESTTOKEN', VULTRON_TELEGRAM_TOKEN: 'TESTTOKEN',
+    SKYNET_TELEGRAM_API_BASE: tg.base, VULTRON_TELEGRAM_API_BASE: tg.base
   };
   const sentTo = (chatId, from) => tg.sends.slice(from || 0).filter(s => String(s.chat_id) === String(chatId));
   const polling = (from) => waitUntil(() => tg.calls.slice(from).some(c => c.method === 'getUpdates' && c.body && c.body.offset !== -1), 8000, 'telegram poll loop');
@@ -207,7 +207,7 @@ function filesUnder(dir) {
     await polling(0);
 
     // ---- 1. the owner pairs in a DM -------------------------------------------------------------------
-    const pair = await (await fetch(B + '/api/channels/telegram/owner/pair', { method: 'POST', headers: { 'X-StarNet-Token': token, Origin: B, 'Content-Type': 'application/json' }, body: '{}' })).json();
+    const pair = await (await fetch(B + '/api/channels/telegram/owner/pair', { method: 'POST', headers: { 'X-Vultron-Token': token, Origin: B, 'Content-Type': 'application/json' }, body: '{}' })).json();
     A.ok(pair && /^[-A-Z0-9]{11}$/.test(String(pair.code || '')), 'local owner pairing issued a one-time code');
     tg.dm(OWNER, '/pair ' + pair.code);
     await waitUntil(() => sentTo(OWNER).some(s => /Owner paired/i.test(String(s.text || ''))), 8000, 'owner-pair acknowledgement');

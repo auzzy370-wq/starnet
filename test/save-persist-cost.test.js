@@ -107,7 +107,7 @@ try {
       JSON.stringify = function (v) { const out = realStringify.apply(JSON, arguments); if (typeof out === 'string' && out.length > 100000) c2.bigStringify++; return out; };
       let T2 = 1000;
       const store2 = makeSaveStore({ fs: cfs2, pathMod: path, root: root2, clock: { now: () => ++T2 } });
-      const envelope2 = (version, rev, tag) => ({ schema: 'starnet.save', version, updatedAt: 100 + rev, _saveRevision: rev, _saveClient: 'tab1', agent: { id: 'agent', name: tag }, workstreams });
+      const envelope2 = (version, rev, tag) => ({ schema: 'vultron.save', version, updatedAt: 100 + rev, _saveRevision: rev, _saveClient: 'tab1', agent: { id: 'agent', name: tag }, workstreams });
       let r2 = store2.save('agent', envelope2(6, 0, 'v6-0'), { compareRevision: true });
       let rev2 = r2.revision;
       for (let i = 1; i <= 2; i++) { c2.reads = 0; c2.fsyncs = 0; c2.bigStringify = 0; r2 = store2.save('agent', envelope2(6, rev2, 'v6-' + i), { compareRevision: true }); rev2 = r2.revision; }
@@ -151,7 +151,7 @@ try {
       const packedSessions = Array.from({ length: 120 }, (_, i) => ({ id: 'p' + i, title: 'session ' + i + ' ' + 'z'.repeat(1000),
         history: HR.pack(rowsOf(i), { streamId: 'p' + i, seal: k => { const id = Number(k.split(':')[1]); return rowsOf(i).find(r => r.rowId === id) || null; } }) }));
       A.ok(packedSessions.every(w => w.history.length === 1 && typeof w.history[0].$ref === 'string'), '(fixture) every history is one reference');
-      const envelope3 = (rev, tag) => ({ schema: 'starnet.save', version: 7, updatedAt: 100 + rev, _saveRevision: rev, _saveClient: 'tab1', agent: { id: 'agent', name: tag }, workstreams: packedSessions });
+      const envelope3 = (rev, tag) => ({ schema: 'vultron.save', version: 7, updatedAt: 100 + rev, _saveRevision: rev, _saveClient: 'tab1', agent: { id: 'agent', name: tag }, workstreams: packedSessions });
       let r3 = store3.save('agent', envelope3(0, 'p0'), { compareRevision: true });
       let rev3 = r3.revision;
       for (let i = 1; i <= 4; i++) {

@@ -50,14 +50,14 @@ for (const [scope, cap, want] of [
   A.eq(opened, ['settings/budget'], 'and opens SETTINGS on the SPENDING LIMITS (budget) section');
 }
 
-// ---- a StarNet run whose ceiling was the BALANCE (admission clamped PER RUN to the wallet) ----
+// ---- a Vultron run whose ceiling was the BALANCE (admission clamped PER RUN to the wallet) ----
 // Raising PER RUN does nothing there — the run spent what the wallet held. The sidecar marks that stop with the
 // additive agent.run.end field budgetCapIsBalance; every surface then names the balance and the top-up door.
 {
   const line = budgetStopLine('run', 79.24, true);
-  A.eq(line, 'used the $79.24 left on your StarNet balance — add credits under SETTINGS → AI & MODELS to keep going', 'a balance stop names the balance and the top-up door');
+  A.eq(line, 'used the $79.24 left on your Vultron balance — add credits under SETTINGS → AI & MODELS to keep going', 'a balance stop names the balance and the top-up door');
   A.ok(!/per-run spend cap|raise/.test(line), 'and never tells the user to raise a cap that cannot help');
-  A.eq(budgetStopLine('run', 0.001, true), 'used what was left on your StarNet balance — add credits under SETTINGS → AI & MODELS to keep going', 'a sub-cent balance reads without a fake $0.00');
+  A.eq(budgetStopLine('run', 0.001, true), 'used what was left on your Vultron balance — add credits under SETTINGS → AI & MODELS to keep going', 'a sub-cent balance reads without a fake $0.00');
   A.ok(/^hit the \$5 per-run spend cap — raise it in /.test(budgetStopLine('run', 5, false)), 'a stop at a cap the user chose still names that cap');
   A.ok(/^hit the \$25 daily spend cap/.test(budgetStopLine('day', 25, true)), 'the flag only speaks for a per-RUN stop');
   // the door is the top-up door friendlyerror's managed_credit already opens (one door source), not SPENDING LIMITS
@@ -89,20 +89,20 @@ for (const [scope, cap, want] of [
 {
   A.eq(budgetStopLine('run', 0.5, false, null, null, true), 'stopped before it would pass the $0.50 per-run spend cap — raise it in SETTINGS › SPENDING LIMITS', 'COMMS: a projected stop names the cap it stopped short of');
   A.ok(!/\bhit\b/.test(budgetStopLine('run', 0.5, false, null, null, true)), 'COMMS: a projected stop never says hit');
-  A.eq(budgetStopLine('run', 3, true, null, null, true), 'stopped before it would spend more than the $3 left on your StarNet balance — add credits under SETTINGS → AI & MODELS to keep going', 'COMMS: a projected stop at the balance names the balance');
+  A.eq(budgetStopLine('run', 3, true, null, null, true), 'stopped before it would spend more than the $3 left on your Vultron balance — add credits under SETTINGS → AI & MODELS to keep going', 'COMMS: a projected stop at the balance names the balance');
   A.ok(/^hit the \$0\.50 per-run spend cap/.test(budgetStopLine('run', 0.5, false, null, null, false)), 'COMMS: a real hit still says hit');
   // the latch from the lead's agent.run.end, and the background notify line
   const harness = read('frontend/app/harness.js');
   A.ok(/budgetProjected = payload\.budgetProjected === true;/.test(harness), 'Harness.chat latches the lead end\'s budgetProjected');
-  A.ok(/budgetProjected === true \? \(budgetCapIsBalance === true \? 'stopped before it would spend the rest of your StarNet balance' : 'stopped before it would pass a spending limit'\)/.test(chat), 'a background session\'s notify says "stopped before", not "hit", for a projected stop');
+  A.ok(/budgetProjected === true \? \(budgetCapIsBalance === true \? 'stopped before it would spend the rest of your Vultron balance' : 'stopped before it would pass a spending limit'\)/.test(chat), 'a background session\'s notify says "stopped before", not "hit", for a projected stop');
   const { endNote } = require('../sidecar/channels/hub.js');
   A.eq(endNote('budget', { budgetScope: 'run', budgetCapUsd: 0.5, budgetProjected: true }), '\n\n(stopped before it would pass the $0.50 per-run spend cap — raise it in the app under SETTINGS › SPENDING LIMITS.)', 'channels: a projected stop names the cap it stopped short of');
-  A.ok(/stopped before it would spend more than the \$3 left on your StarNet balance/.test(endNote('budget', { budgetScope: 'run', budgetCapUsd: 3, budgetCapIsBalance: true, budgetProjected: true })), 'channels: a projected stop at the balance names the balance');
+  A.ok(/stopped before it would spend more than the \$3 left on your Vultron balance/.test(endNote('budget', { budgetScope: 'run', budgetCapUsd: 3, budgetCapIsBalance: true, budgetProjected: true })), 'channels: a projected stop at the balance names the balance');
   const hubSrc = read('sidecar/channels/hub.js');
   A.ok(/state\.budgetProjected = p\.budgetProjected === true;/.test(hubSrc) && /budgetNote\(st\.budgetScope, st\.budgetCapUsd, !!st\.budgetCapIsBalance, st\.budgetProjected === true\)/.test(hubSrc), 'channels: the run end\'s budgetProjected is latched and reaches the note');
   const acp = require('../sidecar/acp/core.js')._internals;
   A.ok(/stopped before it would pass its per-run spend cap/.test(acp.endNote('budget', false, true)), 'ACP: a projected stop says it stopped before its cap');
-  A.ok(/StarNet balance/.test(acp.endNote('budget', true, true)) && !/used what was left/.test(acp.endNote('budget', true, true)), 'ACP: a projected balance stop never says the balance was used up');
+  A.ok(/Vultron balance/.test(acp.endNote('budget', true, true)) && !/used what was left/.test(acp.endNote('budget', true, true)), 'ACP: a projected balance stop never says the balance was used up');
 }
 
 // ---- the UNPRICED-model TOKEN ceiling is not a $ cap (2026-10-11) ----
@@ -122,13 +122,13 @@ for (const [scope, cap, want] of [
   // the SIGN-IN token ceiling (2026-10-12; every sign-in plan since spend-governor S1): a ChatGPT, Grok or Kimi plan or a
   // Claude subscription books $0 per call, so its run is bounded in tokens — and every stop names that knob by its name
   const sub = budgetStopLine('run', null, false, null, { model: 'claude-opus-5-5', capTokens: 2000000 });
-  A.ok(/2,000,000-token per-run ceiling StarNet puts on a sign-in plan \(claude-opus-5-5\)/.test(sub) && /raise SIGN-IN TOKEN CEILING in SETTINGS › APP & BACKUP › Runtime limits \(0 = no ceiling\)/.test(sub) && !/SPENDING LIMITS/.test(sub), 'COMMS names the sign-in ceiling and its real lever: ' + sub);
+  A.ok(/2,000,000-token per-run ceiling Vultron puts on a sign-in plan \(claude-opus-5-5\)/.test(sub) && /raise SIGN-IN TOKEN CEILING in SETTINGS › APP & BACKUP › Runtime limits \(0 = no ceiling\)/.test(sub) && !/SPENDING LIMITS/.test(sub), 'COMMS names the sign-in ceiling and its real lever: ' + sub);
   A.ok(/subscriptionModel = payload\.subscriptionModel/.test(harness) && /else if \(endReason === 'budget' && !subscription\) offerBudgetDoor/.test(chat), 'the sign-in stop rides to COMMS and never offers the $ door');
   A.ok(/subscription \? stopLine : budgetProjected/.test(chat) && !/Claude subscription ceiling/.test(chat), 'a background session\'s notify reuses that one stop line, not a copy of its own');
   const subNote = endNote('budget', { budgetScope: 'run', subscriptionModel: 'gpt-5.5', subscriptionCapTokens: 2000000 });
-  A.ok(/2,000,000-token per-run ceiling StarNet puts on a sign-in plan \(gpt-5\.5\)/.test(subNote) && /SIGN-IN TOKEN CEILING/.test(subNote) && /STARNET_MAX_SUBSCRIPTION_TOKENS/.test(subNote) && !/SPENDING LIMITS/.test(subNote), 'channels name the sign-in ceiling and both its knobs: ' + subNote);
-  A.ok(/STARNET_MAX_SUBSCRIPTION_TOKENS/.test(stopSentence('budget', { subscriptionModel: 'grok-4', subscriptionCapTokens: 2000000, unattended: true })) && /run it again/.test(stopSentence('budget', { subscriptionModel: 'grok-4', subscriptionCapTokens: 2000000, unattended: true })), 'a routine\'s sentence names the variable and never says continue');
-  A.ok(/STARNET_MAX_UNPRICED_TOKENS/.test(stopSentence('budget', { unpricedModel: 'x/mystery', unpricedCapTokens: 2000000 })), 'and the server-side sentence names the real knob');
+  A.ok(/2,000,000-token per-run ceiling Vultron puts on a sign-in plan \(gpt-5\.5\)/.test(subNote) && /SIGN-IN TOKEN CEILING/.test(subNote) && /VULTRON_MAX_SUBSCRIPTION_TOKENS/.test(subNote) && !/SPENDING LIMITS/.test(subNote), 'channels name the sign-in ceiling and both its knobs: ' + subNote);
+  A.ok(/VULTRON_MAX_SUBSCRIPTION_TOKENS/.test(stopSentence('budget', { subscriptionModel: 'grok-4', subscriptionCapTokens: 2000000, unattended: true })) && /run it again/.test(stopSentence('budget', { subscriptionModel: 'grok-4', subscriptionCapTokens: 2000000, unattended: true })), 'a routine\'s sentence names the variable and never says continue');
+  A.ok(/VULTRON_MAX_UNPRICED_TOKENS/.test(stopSentence('budget', { unpricedModel: 'x/mystery', unpricedCapTokens: 2000000 })), 'and the server-side sentence names the real knob');
   // the sidecar owns the fact: admission's clamp sets it, the lead's own per-run stop at that ceiling carries it
   const idx = readSidecarSource();
   A.ok(/const chosenCapUsd = \(runCapUsd > 0 && isFinite\(runCapUsd\)\) \? runCapUsd : 0;[^\n]*\n    runCapUsd = budgetCaps\.managedRunCapUsd\([^\n]*\);\n(?:    \/\/[^\n]*\n)*    runCapIsBalance = budgetCaps\.managedCapIsBalance\(chosenCapUsd, runCapUsd, avail\);/.test(idx),
@@ -154,7 +154,7 @@ for (const [scope, cap, want] of [
   const bal = SlagLog.diagnose('budget', { atBalance: true, cacheFrac: 0.05 });
   const line = SlagLog.line(bal);
   A.eq(bal.reason, 'budget', 'a balance stop is still a budget post-mortem (the maintenance quest keys on the reason)');
-  A.ok(/StarNet balance/.test(line) && /add credits under SETTINGS → AI & MODELS/i.test(line) && !/raise/i.test(line), 'a balance stop toast names the balance and the top-up door: ' + line);
+  A.ok(/Vultron balance/.test(line) && /add credits under SETTINGS → AI & MODELS/i.test(line) && !/raise/i.test(line), 'a balance stop toast names the balance and the top-up door: ' + line);
   A.ok(/^hit the budget cap — Raise the budget/.test(SlagLog.line(SlagLog.diagnose('budget', { atBalance: false }))), 'a stop at a chosen cap keeps its own post-mortem');
   A.ok(/cold cache/.test(SlagLog.diagnose('budget', { cacheFrac: 0.05 }).title), 'and the cold-cache lesson is unchanged for a cap stop');
   const world = read('frontend/app/world.js');
@@ -171,7 +171,7 @@ for (const [scope, cap, want] of [
 {
   const { endNote } = require('../sidecar/channels/hub.js');
   const bal = endNote('budget', { budgetScope: 'run', budgetCapUsd: 10, budgetCapIsBalance: true });
-  A.eq(bal, '\n\n(used the $10 left on your StarNet balance — add credits in the app under SETTINGS → AI & MODELS.)', 'a channel balance stop names the balance and the top-up door');
+  A.eq(bal, '\n\n(used the $10 left on your Vultron balance — add credits in the app under SETTINGS → AI & MODELS.)', 'a channel balance stop names the balance and the top-up door');
   const run = endNote('budget', { budgetScope: 'run', budgetCapUsd: 5 });
   A.ok(/hit the \$5 per-run spend cap — raise it in the app under SETTINGS › SPENDING LIMITS\.\)$/.test(run), 'a channel per-run stop says raise it, under SPENDING LIMITS: ' + run);
   const day = endNote('budget', { budgetScope: 'day', budgetCapUsd: 25 });
@@ -184,7 +184,7 @@ for (const [scope, cap, want] of [
   const note = endNote('budget');
   A.ok(/SETTINGS › SPENDING LIMITS/.test(note) && !/MISSION CONTROL/.test(note), 'an ACP budget stop names SPENDING LIMITS: ' + note);
   const bal = endNote('budget', true);
-  A.ok(/StarNet balance/.test(bal) && /SETTINGS → AI & MODELS/.test(bal) && !/raise/.test(bal), 'an ACP balance stop names the balance and the top-up door: ' + bal);
+  A.ok(/Vultron balance/.test(bal) && /SETTINGS → AI & MODELS/.test(bal) && !/raise/.test(bal), 'an ACP balance stop names the balance and the top-up door: ' + bal);
 }
 // ACP: only the lead's own end decides (a delegated worker's run.end rides the same stream)
 async function acpLeadOnly() {
@@ -202,9 +202,9 @@ async function acpLeadOnly() {
     return sent.map(p => (p && p.update && p.update.content && p.update.content.text) || '').join('');
   };
   const lead = await turn([['agent.run.start', { runId: 'lead' }], ['agent.run.end', { runId: 'lead', reason: 'budget', budgetScope: 'run', budgetCapUsd: 3, budgetCapIsBalance: true }]]);
-  A.ok(/StarNet balance/.test(lead), 'the lead\'s balance stop reaches the editor: ' + JSON.stringify(lead.slice(-160)));
+  A.ok(/Vultron balance/.test(lead), 'the lead\'s balance stop reaches the editor: ' + JSON.stringify(lead.slice(-160)));
   const worker = await turn([['agent.run.start', { runId: 'lead' }], ['agent.run.start', { runId: 'w1' }], ['agent.run.end', { runId: 'w1', reason: 'budget', budgetScope: 'run', budgetCapIsBalance: true }], ['agent.run.end', { runId: 'lead', reason: 'budget', budgetScope: 'run', budgetCapUsd: 3 }]]);
-  A.ok(/SPENDING LIMITS/.test(worker) && !/StarNet balance/.test(worker), 'a worker\'s balance stop never speaks for the lead: ' + JSON.stringify(worker.slice(-160)));
+  A.ok(/SPENDING LIMITS/.test(worker) && !/Vultron balance/.test(worker), 'a worker\'s balance stop never speaks for the lead: ' + JSON.stringify(worker.slice(-160)));
   // a PROJECTED lead stop (agent.run.end budgetProjected) reaches the editor as "stopped before", never "hit"
   const projected = await turn([['agent.run.start', { runId: 'lead' }], ['agent.run.end', { runId: 'lead', reason: 'budget', budgetScope: 'run', budgetCapUsd: 3, budgetProjected: true }]]);
   A.ok(/stopped before it would pass its per-run spend cap/.test(projected) && !/hit a spend cap/.test(projected), 'the lead\'s projected stop reaches the editor as "stopped before": ' + JSON.stringify(projected.slice(-160)));

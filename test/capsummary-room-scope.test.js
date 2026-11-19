@@ -110,7 +110,7 @@ const BEFORE_I = '\n<capabilities_ground_truth>\nThese are your REAL powers this
     A.ok(Sprites.CATALOG.some(e => e.label === n.label && M.capForProp(e.id) === typeOf[n.power]), n.label + ' is a palette prop that grants ' + n.power);
     A.ok(homeLabels.indexOf(n.label) >= 0, 'a ' + n.label + ' really stands in HOME');
   }
-  A.ok(note.indexOf('NOTEBOOK') < 0 && /SERVER CART[^\n]*MEMORY/.test(require('../sidecar/manual.js').starnetManual()), 'no NOTEBOOK: the note and the manual name memory\'s gear alike');
+  A.ok(note.indexOf('NOTEBOOK') < 0 && /SERVER CART[^\n]*MEMORY/.test(require('../sidecar/manual.js').vultronManual()), 'no NOTEBOOK: the note and the manual name memory\'s gear alike');
   A.ok(note.indexOf('read and write files') < note.indexOf('You do NOT have') && !/place an INTEL CAB|place a WORKBENCH/.test(note), 'files + terminal come from the execution profile: never nagged');
   // REVIEW FIX (10-21): RESEARCH holds NO gear, yet this agent CAN read/write files and run shell (its trusted-project
   // profile), so "your tools come only from that room" was false: the note claims only what is true of floor gear
@@ -361,7 +361,7 @@ const BEFORE_I = '\n<capabilities_ground_truth>\nThese are your REAL powers this
   A.eq(askedU, 0, '...and the scope is never computed');
 }
 
-/* 10. NO IMAGE ROUTE (review fix 10-21): without a ChatGPT sign-in, an OpenAI/OpenRouter key or a StarNet account a
+/* 10. NO IMAGE ROUTE (review fix 10-21): without a ChatGPT sign-in, an OpenAI/OpenRouter key or a Vultron account a
        placed STUDIO grants image_analyze only (image_generate is certainly unavailable and leaves the note), so the room
        advice offers the STUDIO for analysis, never generation; with a route it still offers generation. */
 {

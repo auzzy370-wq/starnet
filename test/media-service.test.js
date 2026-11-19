@@ -21,7 +21,7 @@ const roots = [];
 
 // overrides.keys, .baseUrls, .page: what the station's credential store holds (the keychain layer, the page copy)
 async function make(overrides) {
-  const workspaces = await fsp.mkdtemp(path.join(os.tmpdir(), 'starnet-media-'));
+  const workspaces = await fsp.mkdtemp(path.join(os.tmpdir(), 'vultron-media-'));
   roots.push(workspaces);
   const { keys, baseUrls, page, ...rest } = overrides || {};
   const opts = Object.assign({
@@ -99,7 +99,7 @@ async function invokeTts(overrides, body) {
   // Multipart construction preserves the audio byte-for-byte and names the Whisper model/file parts.
   const audio = Buffer.from([0, 1, 2, 255, 13, 10]);
   const multipart = sttMultipartBody(audio, 'clip.webm', 'audio/webm', { model: 'whisper-test' }, n => Buffer.alloc(n, 7));
-  assert.match(multipart.contentType, /^multipart\/form-data; boundary=----StarNetSTT/);
+  assert.match(multipart.contentType, /^multipart\/form-data; boundary=----VultronSTT/);
   assert.ok(multipart.body.includes(Buffer.from('name="model"')));
   assert.ok(multipart.body.includes(Buffer.from('whisper-test')));
   assert.ok(multipart.body.includes(Buffer.from('name="file"; filename="clip.webm"')));
@@ -258,7 +258,7 @@ async function invokeTts(overrides, body) {
     assert.deepEqual(dialed.splice(0), [['https://proxy.invalid/api/v1/chat/completions', 'Bearer page-or-key']], '...to the endpoint it resolves to');
   }
 
-  // STARNET_/SKYNET_GROQ_BASE and _OPENAI_BASE: an operator's own transcription endpoint stays ahead of the provider's, for STT
+  // VULTRON_/SKYNET_GROQ_BASE and _OPENAI_BASE: an operator's own transcription endpoint stays ahead of the provider's, for STT
   // alone. Dropped, a deployment's speech would silently leave for the public host.
   {
     const dialed = [];

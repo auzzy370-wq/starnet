@@ -1,4 +1,4 @@
-# StarNet v0.6.8
+# Vultron v0.6.8
 
 The station gets places to be, and your phone gets real control of it.
 
@@ -134,7 +134,7 @@ The agent's browser stopped being a page-loader with a screenshot button.
 
 ## Nothing can hang the station, and nothing can talk it into things
 
-An adversarial sweep went looking for ways to freeze StarNet or steer an agent using nothing but
+An adversarial sweep went looking for ways to freeze Vultron or steer an agent using nothing but
 content it was asked to read. Everything below was a real hole, and every one of them is now
 pinned by a regression test.
 
@@ -259,10 +259,10 @@ Your overseer is the likeliest place to find something you wrote for a specialis
 ## Notes
 
 - Windows installers are code-signed (CN=Andrew Sims), continuing from v0.6.5.
-- **Windows: update from inside StarNet.** It installs over your existing copy — your crew,
+- **Windows: update from inside Vultron.** It installs over your existing copy — your crew,
   sessions, keys and station stay exactly where they are.
 - **macOS: download the installer manually this one time.** In-app updating has never actually
   worked on macOS — the feed advertised builds that weren't published, so INSTALL UPDATE failed.
   This release publishes them, so from v0.6.8 onward the Mac updater works like the Windows one.
-- **StarNet stays MIT-licensed**, and the code is genuinely free to use commercially. The
+- **Vultron stays MIT-licensed**, and the code is genuinely free to use commercially. The
   *name, logo and artwork* are not part of that grant — a fork is welcome, under its own name.

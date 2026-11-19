@@ -3,7 +3,7 @@
    The awakening in the terminal must be the app's awakening, not a copy that drifts: its interview prompts and parsers
    (wakemind.js), the Commander dossier (dossier.js), the autonomy presets (autonomy.js), the starter room and the station
    presets (worldmodel.js, stationtemplates.js), the save envelope (save.js) … are loaded from the app's frontend folder,
-   which ships beside bin/ in the dev tree and in the installed app alike (…/StarNet/bin + …/StarNet/frontend/app).
+   which ships beside bin/ in the dev tree and in the installed app alike (…/Vultron/bin + …/Vultron/frontend/app).
 
    Two of them are browser-only scripts: personas.js (a page global) runs in a sandbox, and the system-prompt composer —
    app.js's own composeSystemPrompt and the clauses it folds in — is lifted out of app.js by name and run against the

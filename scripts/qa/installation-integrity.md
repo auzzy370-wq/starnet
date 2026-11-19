@@ -1,27 +1,27 @@
 # Read-only installation integrity diagnosis
 
-Use a trusted Node runtime to run installation-integrity.cjs when StarNet cannot start. This utility complements installed-smoke.mjs and installed-customer-regressions.cjs: those exercise running installed code; this one reads selected files without loading them. It does not fix or establish the cause of support incident 85f602c4. A reported empty shell.js remains a report until bytes are collected.
+Use a trusted Node runtime to run installation-integrity.cjs when Vultron cannot start. This utility complements installed-smoke.mjs and installed-customer-regressions.cjs: those exercise running installed code; this one reads selected files without loading them. It does not fix or establish the cause of support incident 85f602c4. A reported empty shell.js remains a report until bytes are collected.
 
 Example in PowerShell (explicit operator-selected directories):
 
 ~~~powershell
-node scripts/qa/installation-integrity.cjs --installation 'C:\Chosen\StarNet' --reference 'C:\Chosen\ExtractedSameInstaller'
+node scripts/qa/installation-integrity.cjs --installation 'C:\Chosen\Vultron' --reference 'C:\Chosen\ExtractedSameInstaller'
 ~~~
 
 To include the shipped Cargo/NSIS desktop binary, add explicit selections (these replace defaults):
 
 ~~~powershell
-node scripts/qa/installation-integrity.cjs --installation 'C:\Chosen\StarNet' --reference 'C:\Chosen\ExtractedSameInstaller' --file skynet-desktop.exe --file node.exe --file sidecar/tools/builtin/shell.js
+node scripts/qa/installation-integrity.cjs --installation 'C:\Chosen\Vultron' --reference 'C:\Chosen\ExtractedSameInstaller' --file skynet-desktop.exe --file node.exe --file sidecar/tools/builtin/shell.js
 ~~~
 
 For a native payload use --file skynet-desktop with the directory containing that binary. Neither executable is launched.
 
 The reference must be a separate directory containing the actual extracted installer payload, with the same relative layout. Do not point it at a Git checkout: checkout newline conversion and packaging transformations can change bytes. The utility does not download, extract, run, or authenticate the reference package. Record its origin/version separately. Matching files prove byte equality to that reference, not that the reference is correct or that the application works.
 
-Default selection: node.exe, sidecar/index.js, sidecar/loop.js, and sidecar/tools/builtin/shell.js. Repeated --file options replace the default selection. Only node, node.exe, skynet-desktop.exe, native skynet-desktop, StarNet.exe and sidecar JS/CJS/MJS paths are permitted; traversal, arbitrary profile/config paths, directories and symbolic links/junctions are refused. No directory tree or user profile is enumerated. For a non-Windows payload, explicitly select its runtime name and sidecar files.
+Default selection: node.exe, sidecar/index.js, sidecar/loop.js, and sidecar/tools/builtin/shell.js. Repeated --file options replace the default selection. Only node, node.exe, skynet-desktop.exe, native skynet-desktop, Vultron.exe and sidecar JS/CJS/MJS paths are permitted; traversal, arbitrary profile/config paths, directories and symbolic links/junctions are refused. No directory tree or user profile is enumerated. For a non-Windows payload, explicitly select its runtime name and sidecar files.
 
 ~~~powershell
-node scripts/qa/installation-integrity.cjs --installation 'C:\Chosen\StarNet' --file sidecar/tools/builtin/shell.js --installer 'C:\Chosen\StarNet-setup.exe' --signature
+node scripts/qa/installation-integrity.cjs --installation 'C:\Chosen\Vultron' --file sidecar/tools/builtin/shell.js --installer 'C:\Chosen\Vultron-setup.exe' --signature
 ~~~
 
 --installer reads only that explicitly supplied file for size and SHA-256. --signature additionally queries Windows Get-AuthenticodeSignature through the system PowerShell with a literal environment-supplied path; it never launches the installer. This opt-in uses the OS signature verifier, whose certificate/trust behavior follows machine policy; it is not promised to be network-isolated. On other platforms signature metadata remains unverified. Missing installers, unsigned installers and signature-query failures remain distinct. A valid signature result alone is not a full provenance or safety verdict. Without --signature no signature command runs; without --installer no installer is searched for.

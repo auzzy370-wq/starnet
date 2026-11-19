@@ -1,4 +1,4 @@
-/* bin/lib/station-commands.js — the plain, scriptable `starnet` commands: ls · approve · deny · watch · flow.
+/* bin/lib/station-commands.js — the plain, scriptable `vultron` commands: ls · approve · deny · watch · flow.
 
    Same station truth as the dashboard (station-model.js), printed as plain lines for pipes, scripts and CI: no
    escape codes, stable columns, and --json where a script wants objects. The formatters are pure and exported for
@@ -71,7 +71,7 @@ async function answerCommand(opts, station, io) {
   let want = null;
   if (opts.args[0]) {
     want = model.findAgent(opts.args[0]);
-    if (!want) { io.err('starnet: no agent named ' + JSON.stringify(opts.args[0]) + ' — roster: ' + model.state.order.join(', ') + '\n'); return core.EXIT.STATION; }
+    if (!want) { io.err('vultron: no agent named ' + JSON.stringify(opts.args[0]) + ' — roster: ' + model.state.order.join(', ') + '\n'); return core.EXIT.STATION; }
   }
   const open = model.state.prompts.filter(q => !q.question && (!want || q.agentId === want.id));
   if (!open.length) {
@@ -90,7 +90,7 @@ async function answerCommand(opts, station, io) {
     return core.EXIT.OK;
   }
   if (r.ok && r.json && r.json.gone) { io.err('that ask is no longer waiting (answered elsewhere, expired, or its run ended)\n'); return core.EXIT.NOTHING; }
-  io.err('starnet: the station did not take the answer (' + (r.error || 'HTTP ' + r.status) + ')\n');
+  io.err('vultron: the station did not take the answer (' + (r.error || 'HTTP ' + r.status) + ')\n');
   return core.EXIT.RUN_FAILED;
 }
 
@@ -121,13 +121,13 @@ function makeWatchFormatter(names) {
       case 'permission.prompt': {
         let what = toolName(p.tool) + (p.argsSummary ? ' ' + oneLine(clean(askGlance(toolName(p.tool), p.argsSummary)), 140) : '');
         if (p.tool === 'brief.ask') { try { what = 'question: ' + JSON.parse(p.argsSummary).question; } catch (_) {} }
-        out.push(head + '▲ needs you · ' + what + (p.tool === 'brief.ask' ? '' : '   (starnet approve ' + nameOf(p.workerAgentId || p.agentId).toLowerCase() + ')'));
+        out.push(head + '▲ needs you · ' + what + (p.tool === 'brief.ask' ? '' : '   (vultron approve ' + nameOf(p.workerAgentId || p.agentId).toLowerCase() + ')'));
         break;
       }
       case 'permission.response': out.push(head + (p.decision === 'deny' ? '✗ denied' : '✓ allowed ' + p.decision) + (p.via ? ' (' + p.via + ')' : '') + (p.expired ? ' (no answer in time)' : '')); break;
       case 'agent.run.error': out.push(head + '! ' + clean(p.message)); break;
       // the end's OUTCOME-aware reason (typed-outcomes): 'done' only for a run that SUCCEEDED — a cut reply prints cut_short, a 'done' its own error outranked prints error
-      // review r8: an end that did not succeed also says its outcome in words, its failureCode included (RunOutcome.line, the `starnet -p`
+      // review r8: an end that did not succeed also says its outcome in words, its failureCode included (RunOutcome.line, the `vultron -p`
       // receipt's "■ error · failed (rate_limit)") — it printed the bare word alone ("■ error", "■ budget")
       case 'agent.run.end': { flush(p.runId); const oc = RunOutcome.ofEnd(p, null); out.push(head + '■ ' + RunOutcome.reasonOf(p) + (oc.ok ? '' : ' · ' + RunOutcome.line(oc)) + (p.usd ? ' · $' + Number(p.usd).toFixed(4) : '')); break; }
       default: break;
@@ -149,10 +149,10 @@ function watchCommand(opts, station, io) {
     let failures = 0;
     const connect = () => {
       if (stopped) return;
-      const headers = { Accept: 'text/event-stream', Origin: client.base, 'x-starnet-token': client.token() };
+      const headers = { Accept: 'text/event-stream', Origin: client.base, 'x-vultron-token': client.token() };
       if (cursor) headers['Last-Event-ID'] = cursor;
       req = http.request({ host: client.host, port: client.port, method: 'GET', path: '/api/observe', headers }, res => {
-        if (res.statusCode === 404) { io.err('starnet: this station has no live feed (it predates GET /api/observe) — update the app\n'); res.resume(); return finish(core.EXIT.STATION); }
+        if (res.statusCode === 404) { io.err('vultron: this station has no live feed (it predates GET /api/observe) — update the app\n'); res.resume(); return finish(core.EXIT.STATION); }
         if (res.statusCode !== 200) { res.resume(); return retry(); }
         failures = 0;
         res.setEncoding('utf8');
@@ -185,7 +185,7 @@ function watchCommand(opts, station, io) {
     };
     const retry = () => {
       if (stopped) return;
-      if (++failures > 15) { io.err('starnet: lost the station\n'); return finish(core.EXIT.STATION); }
+      if (++failures > 15) { io.err('vultron: lost the station\n'); return finish(core.EXIT.STATION); }
       if (failures === 1 && !opts.json) io.err('· feed dropped, reconnecting…\n');
       setTimeout(connect, 2000);
     };
@@ -197,13 +197,13 @@ function watchCommand(opts, station, io) {
 async function flowCommand(opts, station, io) {
   const client = station.client;
   const [s, j] = await Promise.all([client.request('GET', '/api/routing/lines/stats'), client.request('GET', '/api/line-jobs?limit=40')]);
-  if (!(s.ok && s.status === 200)) { io.err('starnet: could not read the workflows (' + (s.error || 'HTTP ' + s.status) + ')\n'); return core.EXIT.STATION; }
+  if (!(s.ok && s.status === 200)) { io.err('vultron: could not read the workflows (' + (s.error || 'HTTP ' + s.status) + ')\n'); return core.EXIT.STATION; }
   const model = makeStation();
   model.applyLines(s.json || {}, (j.ok && j.json && j.json.jobs) || []);
   const now = Date.now();
   if (opts.args[0] === 'run') {
     const line = model.findLine(opts.args[1]);
-    if (!line) { io.err('starnet: no workflow named ' + JSON.stringify(opts.args[1]) + ' — ' + ([...model.state.lines.values()].map(l => l.name || l.lineId).join(', ') || 'none on this station') + '\n'); return core.EXIT.STATION; }
+    if (!line) { io.err('vultron: no workflow named ' + JSON.stringify(opts.args[1]) + ' — ' + ([...model.state.lines.values()].map(l => l.name || l.lineId).join(', ') || 'none on this station') + '\n'); return core.EXIT.STATION; }
     const text = opts.args.slice(2).join(' ');
     if (!opts.json) io.err('▸ sending one job down ' + (line.name || line.lineId) + ' — waiting for it to deliver (ctrl+c stops waiting)\n');
     const r = await client.request('POST', '/api/routing/sample', { text, line: line.lineId }, { timeoutMs: 60 * 60 * 1000 });
@@ -212,8 +212,8 @@ async function flowCommand(opts, station, io) {
     if (opts.json) io.out(JSON.stringify(Object.assign({ ok, status: r.status || 0 }, r.json && typeof r.json === 'object' ? r.json : { error: r.error || r.text })) + '\n');
     else if (ok) io.out((line.name || line.lineId) + ' delivered' + (r.json.totalUsd ? ' · $' + Number(r.json.totalUsd).toFixed(4) : '') + (r.json.jobId ? ' · job ' + r.json.jobId : '') + '\n');
     else if (stopped) io.err('■ ' + (line.name || line.lineId) + ' was stopped: ' + String(r.json.error || 'you stopped this job before it reached the OUTBOX').replace(/^stopped\s*[—-]\s*/i, '') + '\n');
-    else io.err('starnet: ' + (line.name || line.lineId) + ' did not deliver: ' + ((r.json && (r.json.error || r.json.reason)) || r.error || r.text || 'HTTP ' + r.status) + '\n');
-    // review r8: a job the Commander STOPPED (the route's stopped:true) exits as a stop (4, as `starnet -p` does for one), never "1 run failed"
+    else io.err('vultron: ' + (line.name || line.lineId) + ' did not deliver: ' + ((r.json && (r.json.error || r.json.reason)) || r.error || r.text || 'HTTP ' + r.status) + '\n');
+    // review r8: a job the Commander STOPPED (the route's stopped:true) exits as a stop (4, as `vultron -p` does for one), never "1 run failed"
     return ok ? core.EXIT.OK : stopped ? core.EXIT.CANCELLED : core.EXIT.RUN_FAILED;
   }
   const flows = model.flows(now);

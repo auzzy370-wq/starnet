@@ -23,8 +23,8 @@ export function keylessEnv(parent, profile, port) {
   for (const [k, v] of Object.entries(parent || {})) if (v != null && PASS_ENV.has(k.toUpperCase())) env[k] = String(v);
   Object.assign(env, {
     APPDATA: profile, LOCALAPPDATA: profile, XDG_DATA_HOME: profile,
-    STARNET_PORT: String(port), SKYNET_PORT: String(port),
-    STARNET_WORKSPACES: join(profile, 'workspaces'), SKYNET_WORKSPACES: join(profile, 'workspaces'),
+    VULTRON_PORT: String(port), SKYNET_PORT: String(port),
+    VULTRON_WORKSPACES: join(profile, 'workspaces'), SKYNET_WORKSPACES: join(profile, 'workspaces'),
     SKYNET_EDGE_TTS_PROBE: '0'
   });
   if (process.platform !== 'win32') env.HOME = profile;
@@ -34,7 +34,7 @@ export function keylessEnv(parent, profile, port) {
 /* Spawn `entry` keyless on `port`, wait up to healthMs for /api/health (at once if the entry exits), then hand
    use(base, { output }) the running station; kill it and remove the profile afterwards. A sidecar that never comes up
    answers { ok: false, why, tail } with its own last output. */
-export async function withKeylessSidecar(entry, port, use, { profilePrefix = 'starnet-keyless-', healthMs = 90000 } = {}) {
+export async function withKeylessSidecar(entry, port, use, { profilePrefix = 'vultron-keyless-', healthMs = 90000 } = {}) {
   const profile = mkdtempSync(join(tmpdir(), profilePrefix));
   const base = 'http://127.0.0.1:' + port;
   let output = '';

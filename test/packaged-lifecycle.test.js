@@ -2,7 +2,7 @@
    Locks the G1 packaged-lifecycle gate's classification + verdict logic (scripts/qa/packaged-lifecycle.mjs)
    with fakes — no PowerShell, no user32, no installed app, virtual clock. Proves:
      - process classification uses the shell's full-path rule (foreign node.exe never counts)
-     - window detection = visible + exact "StarNet" title + shell-owned (the `-siw` single-instance
+     - window detection = visible + exact "Vultron" title + shell-owned (the `-siw` single-instance
        window and hidden windows never count)
      - startup.log parsing takes the LAST spawn record after a marker and names the close branch
      - idle-close verdict fails on a lingering shell, an orphan sidecar, the wrong branch, or a
@@ -14,8 +14,8 @@
        zombie shell whose idle close leaves the process alive.
      - kill-relaunch (#31): a hard-killed shell must take its sidecar with it BEFORE any relaunch, and a relaunch
        must run exactly one shell and one sidecar; a world whose sidecar survives its shell FAILS.
-     - cli-app-closed: the installed `starnet` with the app closed starts it in the background, one station runs,
-       no window shows, the app quits after; a CLI that refuses, a second station, a window, or a StarNet left
+     - cli-app-closed: the installed `vultron` with the app closed starts it in the background, one station runs,
+       no window shows, the app quits after; a CLI that refuses, a second station, a window, or a Vultron left
        running after the terminal is gone each FAIL.
      - one profile, no inherited prefs: close-to-tray runs on closeToTray=true and puts the default record back however
        it ends (pass, fail, early return, throw); idle-close and cli-app-closed each write the default before they
@@ -29,7 +29,7 @@ const A = require('./_assert.js');
 
 (async () => {
   const M = await import('../scripts/qa/packaged-lifecycle.mjs');
-  const INSTALL = 'C:\\Users\\runneradmin\\AppData\\Local\\StarNet';
+  const INSTALL = 'C:\\Users\\runneradmin\\AppData\\Local\\Vultron';
   const EXE = INSTALL + '\\skynet-desktop.exe';
   const NODE = INSTALL + '\\node.exe';
 
@@ -49,17 +49,17 @@ const A = require('./_assert.js');
     A.eq(M.classifyProcesses([{ pid: 7, name: 'node.exe', path: null }], INSTALL).sidecar.length, 0, 'node.exe without a path never counts as sidecar');
   }
 
-  // ---- starnetWindows
+  // ---- vultronWindows
   {
     const wins = [
-      { hwnd: 1, pid: 100, visible: true, title: 'StarNet' },
-      { hwnd: 2, pid: 100, visible: false, title: 'StarNet' },
+      { hwnd: 1, pid: 100, visible: true, title: 'Vultron' },
+      { hwnd: 2, pid: 100, visible: false, title: 'Vultron' },
       { hwnd: 3, pid: 100, visible: true, title: 'ai.skynet.harness-siw' },
-      { hwnd: 4, pid: 999, visible: true, title: 'StarNet' },
-      { hwnd: 5, pid: 100, visible: true, title: ' StarNet ' },
+      { hwnd: 4, pid: 999, visible: true, title: 'Vultron' },
+      { hwnd: 5, pid: 100, visible: true, title: ' Vultron ' },
     ];
-    A.eq(M.starnetWindows(wins, [100]).map((w) => w.hwnd), [1, 5], 'visible + exact title + shell-owned only');
-    A.eq(M.starnetWindows(wins, []).length, 0, 'no shell pids → no windows');
+    A.eq(M.vultronWindows(wins, [100]).map((w) => w.hwnd), [1, 5], 'visible + exact title + shell-owned only');
+    A.eq(M.vultronWindows(wins, []).length, 0, 'no shell pids → no windows');
   }
 
   // ---- parseStartupLog / closeBranch
@@ -88,7 +88,7 @@ const A = require('./_assert.js');
   const snap = (o) => Object.assign({ shell: [], sidecar: [], windows: [], health: null }, o);
   const shell = (pid) => ({ pid, path: EXE, ppid: 1 });
   const side = (pid) => ({ pid, path: NODE, ppid: 100 });
-  const win = (pid) => ({ hwnd: 9, pid, visible: true, title: 'StarNet' });
+  const win = (pid) => ({ hwnd: 9, pid, visible: true, title: 'Vultron' });
   const idleLog = { closeLines: ['close-request: close_to_tray=false'] };
   const trayLog = { closeLines: ['close-request: close_to_tray=true', 'close-request: staying resident (close-to-tray preference)'] };
 
@@ -105,7 +105,7 @@ const A = require('./_assert.js');
     const wrongBranch = M.judgeIdleClose({ after: snap(), relaunch: snap({ shell: [shell(200)], windows: [win(200)], health: true }), log: trayLog });
     A.ok(!wrongBranch.pass && wrongBranch.reasons.some((r) => /branch was "tray-preference"/.test(r)), 'idle case that took the tray branch FAILS (the 08-19 wrong-branch lesson)');
     const noWin = M.judgeIdleClose({ after: snap(), relaunch: snap({ shell: [shell(200)], windows: [], health: true }), log: idleLog });
-    A.ok(!noWin.pass && noWin.reasons.some((r) => /no visible "StarNet" window after relaunch/.test(r)), 'relaunch without a window FAILS');
+    A.ok(!noWin.pass && noWin.reasons.some((r) => /no visible "Vultron" window after relaunch/.test(r)), 'relaunch without a window FAILS');
     const noHealth = M.judgeIdleClose({ after: snap(), relaunch: snap({ shell: [shell(200)], windows: [win(200)], health: false }), log: idleLog });
     A.ok(!noHealth.pass && noHealth.reasons.some((r) => /health/.test(r)), 'relaunch without health FAILS');
     A.eq(M.judgeIdleClose({ after: null, relaunch: null, log: null }).pass, false, 'missing snapshots FAIL loudly');
@@ -133,7 +133,7 @@ const A = require('./_assert.js');
 
   // ---- judgeUpdater
   {
-    const feed = { version: '0.10.7', platforms: { 'windows-x86_64': { url: 'https://x/StarNet_0.10.7_x64-setup.exe', signature: 'sig' } } };
+    const feed = { version: '0.10.7', platforms: { 'windows-x86_64': { url: 'https://x/Vultron_0.10.7_x64-setup.exe', signature: 'sig' } } };
     A.eq(M.judgeUpdater({ expectedVersion: '0.10.7', exeVersion: '0.10.7.0', tagFeed: feed, publicFeed: feed, feedMustMatch: true }).pass, true, 'updater passes when exe, tag feed, and public feed agree (trailing .0 tolerated)');
     A.eq(M.judgeUpdater({ expectedVersion: 'v0.10.7', exeVersion: '0.10.7', tagFeed: feed, publicFeed: { version: '0.10.6', platforms: feed.platforms }, feedMustMatch: false }).pass, true, 'public feed may lag when the tag is a draft (feedMustMatch=false)');
     const lag = M.judgeUpdater({ expectedVersion: '0.10.7', exeVersion: '0.10.7', tagFeed: feed, publicFeed: { version: '0.10.6' }, feedMustMatch: true });
@@ -174,22 +174,22 @@ const A = require('./_assert.js');
     A.ok(!two.pass && two.reasons.some((r) => /exactly 1 sidecar after relaunch, saw 2/.test(r)), 'two sidecars after a relaunch FAIL');
     const station = M.stationSidecars({ shell: [{ pid: 100 }], sidecar: [{ pid: 101, ppid: 100 }, { pid: 300, ppid: 77 }] });
     A.eq(station.map((p) => p.pid), [101], 'a station sidecar is one a running shell started (the installed CLI runs on the same node)');
-    const cliOk = { appRan: true, stationSaved: true, cli: { code: 3, stdout: '', stderr: '· StarNet isn\'t running — starting it in the background\nstarnet: no model to run: agent \"agent\" has none configured — pass --model <slug> (or set STARNET_DEFAULT_MODEL for a spawned station)' }, started: true, maxShells: 1, maxStations: 1, windowSeen: false, after: snap() };
-    A.eq(M.judgeCliAppClosed(cliOk).pass, true, 'the notice that starnet is STARTING the app is not a refusal — ' + M.judgeCliAppClosed(cliOk).reasons.join('|'));
-    const cliGood = Object.assign({}, cliOk, { cli: { code: 3, stdout: '', stderr: '· starting StarNet\nstarnet: no model to run: agent \"agent\" has none configured — pass --model <slug> (or set STARNET_DEFAULT_MODEL for a spawned station)' } });
+    const cliOk = { appRan: true, stationSaved: true, cli: { code: 3, stdout: '', stderr: '· Vultron isn\'t running — starting it in the background\nvultron: no model to run: agent \"agent\" has none configured — pass --model <slug> (or set VULTRON_DEFAULT_MODEL for a spawned station)' }, started: true, maxShells: 1, maxStations: 1, windowSeen: false, after: snap() };
+    A.eq(M.judgeCliAppClosed(cliOk).pass, true, 'the notice that vultron is STARTING the app is not a refusal — ' + M.judgeCliAppClosed(cliOk).reasons.join('|'));
+    const cliGood = Object.assign({}, cliOk, { cli: { code: 3, stdout: '', stderr: '· starting Vultron\nvultron: no model to run: agent \"agent\" has none configured — pass --model <slug> (or set VULTRON_DEFAULT_MODEL for a spawned station)' } });
     // a keyless runner's run ends "no model to run" (exit 3 = EXIT.STATION, which also means "nothing runnable"): the case
     // judges the lifecycle, so that is a pass — and any OTHER exit 3 is not
-    const owned = M.judgeCliAppClosed(Object.assign({}, cliGood, { cli: { code: 3, stdout: '', stderr: 'starnet: the desktop app owns the default workspace (pid 42) but its port could not be discovered' } }));
+    const owned = M.judgeCliAppClosed(Object.assign({}, cliGood, { cli: { code: 3, stdout: '', stderr: 'vultron: the desktop app owns the default workspace (pid 42) but its port could not be discovered' } }));
     A.ok(!owned.pass && owned.reasons.some((r) => /exited 3 \(no station\)/.test(r)), 'an exit 3 that is a station refusal FAILS');
     const noStation = M.judgeCliAppClosed(Object.assign({}, cliGood, { stationSaved: false }));
     A.ok(!noStation.pass && noStation.reasons.some((r) => /workspace holds no station.*hasStation/.test(r)), 'a profile with no saved station is not the app-closed path (the CLI would boot its own)');
     const env = M.childEnvWithoutCredentials({ PATH: 'p', GH_TOKEN: 'x', GITHUB_TOKEN: 'y', gh_token: 'z', RELEASES_TOKEN: 'r', HOME: 'h' });
     A.eq(env, { PATH: 'p', HOME: 'h' }, 'the installed CLI and app start without the runner\'s release credentials');
     A.eq(M.judgeCliAppClosed(cliGood).pass, true, 'cli-app-closed passes: started in the background, one station, no window, quit after — ' + M.judgeCliAppClosed(cliGood).reasons.join('|'));
-    const refused = M.judgeCliAppClosed(Object.assign({}, cliGood, { cli: { code: 3, stdout: '', stderr: 'starnet: StarNet isn\'t running — open the StarNet app first (it holds your keys)' }, started: false, maxShells: 0, maxStations: 0 }));
+    const refused = M.judgeCliAppClosed(Object.assign({}, cliGood, { cli: { code: 3, stdout: '', stderr: 'vultron: Vultron isn\'t running — open the Vultron app first (it holds your keys)' }, started: false, maxShells: 0, maxStations: 0 }));
     A.ok(!refused.pass && refused.reasons.some((r) => /refused with the app closed/.test(r)) && refused.reasons.some((r) => /did not start it/.test(r)), 'the 0.14.0 refusal FAILS');
     const lingering = M.judgeCliAppClosed(Object.assign({}, cliGood, { after: snap({ shell: [shell(200)], sidecar: [side(201)] }) }));
-    A.ok(!lingering.pass && lingering.reasons.some((r) => /did not quit once its last terminal session ended/.test(r)), 'a StarNet left running after the terminal is gone FAILS');
+    A.ok(!lingering.pass && lingering.reasons.some((r) => /did not quit once its last terminal session ended/.test(r)), 'a Vultron left running after the terminal is gone FAILS');
     const windowed = M.judgeCliAppClosed(Object.assign({}, cliGood, { windowSeen: true }));
     A.ok(!windowed.pass && windowed.reasons.some((r) => /must stay parked/.test(r)), 'a window shown for a terminal launch FAILS');
     A.eq(M.judgeCliAppClosed(Object.assign({}, cliGood, { windowSeen: null })).pass, true, 'a platform that cannot see windows does not fail on them');
@@ -222,8 +222,8 @@ const A = require('./_assert.js');
       startedOn[pid] = prefs.closeToTray;
       starts.push({ how: background ? 'background' : 'first', closeToTray: prefs.closeToTray });
       procs.push({ pid, name: 'skynet-desktop.exe', path: EXE, ppid: 1 });
-      if (background) log += `startup: started by starnet (--background, terminal pid ${terminalPid})\n`;
-      windows.push({ hwnd: pid * 10, pid, visible: !background, title: 'StarNet' });
+      if (background) log += `startup: started by vultron (--background, terminal pid ${terminalPid})\n`;
+      windows.push({ hwnd: pid * 10, pid, visible: !background, title: 'Vultron' });
       windows.push({ hwnd: pid * 10 + 1, pid, visible: true, title: 'ai.skynet.harness-siw' });
       const sp = nextPid++;
       procs.push({ pid: sp, name: 'node.exe', path: NODE, ppid: pid });
@@ -271,7 +271,7 @@ const A = require('./_assert.js');
         let resolve; const done = new Promise((r) => { resolve = r; });
         if (cliRefuses) {
           for (let i = procs.length - 1; i >= 0; i--) if (procs[i].pid === cliPid) procs.splice(i, 1);
-          resolve({ code: 3, stdout: '', stderr: 'starnet: StarNet isn\'t running — open the StarNet app first (it holds your keys)' });
+          resolve({ code: 3, stdout: '', stderr: 'vultron: Vultron isn\'t running — open the Vultron app first (it holds your keys)' });
           return { done };
         }
         const appPid = spawnApp(true, cliPid);
@@ -281,13 +281,13 @@ const A = require('./_assert.js');
           ended = true;
           for (let i = procs.length - 1; i >= 0; i--) if (procs[i].pid === cliPid) procs.splice(i, 1);
           const tray = startedOn[appPid] === true;
-          log += `terminal-done: every starnet session it ran for has ended; deciding as a window close\nclose-request: close_to_tray=${tray}\n`;
+          log += `terminal-done: every vultron session it ran for has ended; deciding as a window close\nclose-request: close_to_tray=${tray}\n`;
           if (tray) log += 'close-request: staying resident (close-to-tray preference)\n';
           else if (!cliLingers) {
             for (let i = procs.length - 1; i >= 0; i--) if (procs[i].pid === appPid || procs[i].ppid === appPid) procs.splice(i, 1);
             for (let i = windows.length - 1; i >= 0; i--) if (windows[i].pid === appPid) windows.splice(i, 1);
           }
-          resolve({ code: 3, stdout: '', stderr: '· starting StarNet in the background\nstarnet: no model to run: agent \"agent\" has none configured — pass --model <slug> (or set STARNET_DEFAULT_MODEL for a spawned station)' });
+          resolve({ code: 3, stdout: '', stderr: '· starting Vultron in the background\nvultron: no model to run: agent \"agent\" has none configured — pass --model <slug> (or set VULTRON_DEFAULT_MODEL for a spawned station)' });
         });
         return { done };
       },
@@ -382,7 +382,7 @@ const A = require('./_assert.js');
   {
     const { drivers } = fakeWorld({ cliLingers: true });
     const receipt = await M.runMatrix(drivers, ctx({ cases: ['idle-close', 'cli-app-closed'] }));
-    A.eq(receipt.cases[1].result, 'FAIL', 'a StarNet that keeps running after its terminal left FAILS cli-app-closed');
+    A.eq(receipt.cases[1].result, 'FAIL', 'a Vultron that keeps running after its terminal left FAILS cli-app-closed');
   }
   {
     const { drivers, state } = fakeWorld({ noStation: true });
@@ -402,14 +402,14 @@ const A = require('./_assert.js');
   }
   {
     A.eq(M.MAC_CASES.slice(), ['kill-relaunch', 'cli-app-closed'], 'macOS runs the process-level cases only');
-    const mac = M.makeMacDrivers({ appDataDir: '/Users/r/Library/Application Support/ai.skynet.harness', installDir: '/Applications/StarNet.app/Contents/MacOS', exeName: 'StarNet' });
-    A.eq(mac.names, { shell: ['starnet'], sidecar: ['node'] }, 'the mac process names (no .exe)');
+    const mac = M.makeMacDrivers({ appDataDir: '/Users/r/Library/Application Support/ai.skynet.harness', installDir: '/Applications/Vultron.app/Contents/MacOS', exeName: 'Vultron' });
+    A.eq(mac.names, { shell: ['vultron'], sidecar: ['node'] }, 'the mac process names (no .exe)');
     A.eq(mac.canSeeWindows, false, 'and it says it cannot see windows');
     const c = M.classifyProcesses([
-      { pid: 1, name: 'StarNet', path: '/Applications/StarNet.app/Contents/MacOS/StarNet', ppid: 1 },
-      { pid: 2, name: 'node', path: '/Applications/StarNet.app/Contents/MacOS/node', ppid: 1 },
+      { pid: 1, name: 'Vultron', path: '/Applications/Vultron.app/Contents/MacOS/Vultron', ppid: 1 },
+      { pid: 2, name: 'node', path: '/Applications/Vultron.app/Contents/MacOS/node', ppid: 1 },
       { pid: 3, name: 'node', path: '/usr/local/bin/node', ppid: 1 },
-    ], '/Applications/StarNet.app/Contents/MacOS', mac.names);
+    ], '/Applications/Vultron.app/Contents/MacOS', mac.names);
     A.eq([c.shell.map((p) => p.pid), c.sidecar.map((p) => p.pid), c.foreign.map((p) => p.pid)], [[1], [2], [3]], 'mac classification by the bundle path');
     // it cannot write the lifecycle record and says so; cli-app-closed still runs there, on the fresh runner's own record
     A.eq(mac.canWritePrefs, false, 'the mac driver says it cannot write the lifecycle record');
@@ -469,7 +469,7 @@ const A = require('./_assert.js');
     const macRun = yml.split('Run the process-level lifecycle cases')[1].split('- name:')[0];
     A.ok(!/GH_TOKEN/.test(winRun) && !/GH_TOKEN/.test(macRun), 'the steps that run the installed app carry no token');
     A.ok(/kill-relaunch/.test(yml.slice(0, yml.indexOf('lifecycle-macos:'))), 'the Windows job runs kill-relaunch too');
-    A.ok(/androoAGI\/starnet-releases/.test(yml), 'pulls the installer from the releases repo');
+    A.ok(/YOUR-GITHUB-USER\/vultron-releases/.test(yml), 'pulls the installer from the releases repo');
     A.ok(/gh release download \$env:TAG .*--pattern '\*-setup\.exe'/.test(yml), 'downloads the tag installer');
     A.ok(/-ArgumentList '\/S'/.test(yml), 'silent install');
     A.ok(/scripts\/qa\/packaged-lifecycle\.mjs/.test(yml), 'the workflow calls the reusable runner (no inline case logic)');

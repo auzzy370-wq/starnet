@@ -1,4 +1,4 @@
-/* node test/growth-stale-save-recovery.test.js — starnet-releases#4 "Blocker 2": a stale rating watermark refused every
+/* node test/growth-stale-save-recovery.test.js — vultron-releases#4 "Blocker 2": a stale rating watermark refused every
    save, forever.
 
    The sidecar refuses a save whose stationStats.ratingSyncAt trails its rating ledger ({ ok:false, growthStale:true }):
@@ -105,7 +105,7 @@ const settle = async () => { for (let i = 0; i < 20; i++) await new Promise(r =>
   };
   const CloudSave = require('../frontend/app/cloudsave.js');
   let stamp = 0;
-  const doc = ratingSyncAt => ({ schema: 'starnet.save', version: 3, updatedAt: ++stamp, agent: { id: 'agent', name: 'NOVA', createdAt: 1 }, stationStats: { ratingSyncAt, xp: ratingSyncAt } });
+  const doc = ratingSyncAt => ({ schema: 'vultron.save', version: 3, updatedAt: ++stamp, agent: { id: 'agent', name: 'NOVA', createdAt: 1 }, stationStats: { ratingSyncAt, xp: ratingSyncAt } });
   // XpStore's catch-up: on success it advances the watermark and persists (App.persist -> CloudSave.push), as the real one does.
   let catchUps = 0, catchUpWorks = true;
   global.XpStore = { catchUpRatings: async () => {

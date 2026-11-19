@@ -1,7 +1,7 @@
 /* node test/batch-models.test.js — fix lane batch-models-1023: a batch-only model id (OpenRouter's '<id>:batch')
    is never offered for chat, and an id an older build saved runs on its base model.
 
-   THE DEFECT (StarNet Cloud proxy log 2026-10-23, three runs 45 minutes apart): a station sent
+   THE DEFECT (Vultron Cloud proxy log 2026-10-23, three runs 45 minutes apart): a station sent
    'anthropic/claude-haiku-4.5:batch' to the managed proxy and got 404 "… cannot be used with the chat/completions
    endpoint (adapter AnthropicBatchAdapter)". OpenRouter's /models lists 75 such rows beside their base rows at half
    the price, the managed /v1/models passes them through, and nothing in the app filtered them, so every picker, the
@@ -47,12 +47,12 @@ module.exports = (async () => {
     A.eq(typeof provider.isBatchOnlyModel, 'function', 'provider.js exports isBatchOnlyModel');
     A.eq(typeof provider.chatModelId, 'function', 'provider.js exports chatModelId');
     A.ok(provider.isBatchOnlyModel('openrouter', 'anthropic/claude-haiku-4.5:batch'), 'an OpenRouter :batch row is batch-only');
-    A.ok(provider.isBatchOnlyModel('starnet', 'anthropic/claude-haiku-4.5:batch'), 'a managed (StarNet) :batch row is batch-only');
+    A.ok(provider.isBatchOnlyModel('vultron', 'anthropic/claude-haiku-4.5:batch'), 'a managed (Vultron) :batch row is batch-only');
     A.ok(!provider.isBatchOnlyModel('openrouter', 'anthropic/claude-haiku-4.5'), 'the base row is a chat model');
     A.ok(!provider.isBatchOnlyModel('openrouter', 'meta-llama/llama-5-8b:free'), 'a :free variant still runs on chat/completions');
     A.ok(!provider.isBatchOnlyModel('ollama', 'mymodel:batch'), 'an Ollama tag that happens to read :batch is a local model, untouched');
     A.ok(!provider.isBatchOnlyModel('custom', 'x/y:batch'), 'a custom endpoint keeps its own ids');
-    A.eq(provider.chatModelId('starnet', 'anthropic/claude-haiku-4.5:batch'), 'anthropic/claude-haiku-4.5', 'a saved managed :batch id runs on its base model');
+    A.eq(provider.chatModelId('vultron', 'anthropic/claude-haiku-4.5:batch'), 'anthropic/claude-haiku-4.5', 'a saved managed :batch id runs on its base model');
     A.eq(provider.chatModelId('openrouter', 'openai/gpt-6-sol:batch'), 'openai/gpt-6-sol', 'a saved OpenRouter :batch id runs on its base model');
     A.eq(provider.chatModelId('openrouter', 'openai/gpt-6-sol'), 'openai/gpt-6-sol', 'a chat id passes through unchanged');
     A.eq(provider.chatModelId('ollama', 'mymodel:batch'), 'mymodel:batch', 'another provider\'s id passes through unchanged');
@@ -94,8 +94,8 @@ module.exports = (async () => {
       selectProvider: () => ({ listModels: async () => CATALOG.map(m => Object.assign({}, m)).concat([{ id: 'mymodel:batch' }]) }),
       ImageTask: require('../sidecar/image-task.js')
     }));
-    const managed = await listed('starnet');
-    A.ok(!ids(managed).some(id => /:batch$/.test(id)), 'GET /api/models/starnet offers no :batch row: ' + ids(managed).join(', '));
+    const managed = await listed('vultron');
+    A.ok(!ids(managed).some(id => /:batch$/.test(id)), 'GET /api/models/vultron offers no :batch row: ' + ids(managed).join(', '));
     A.ok(ids(managed).indexOf('anthropic/claude-haiku-4.5') >= 0 && ids(managed).indexOf('meta-llama/llama-5-8b:free') >= 0, 'base rows and :free variants stay offered');
     const routed = await listed('openrouter');
     A.ok(!ids(routed).some(id => /\/.*:batch$/.test(id)), 'GET /api/models/openrouter offers no :batch row (the pickers and the CLI read this route)');
@@ -143,9 +143,9 @@ module.exports = (async () => {
     let r = chain('anthropic', {}, ['anthropic/claude-haiku-4.5:batch'], []);
     A.eq(JSON.stringify(r.savedProviderFallbacks), JSON.stringify([{ provider: 'openrouter', model: 'anthropic/claude-haiku-4.5' }]),
       'a non-OpenRouter station\'s SAVED chain (OpenRouter routes) runs its :batch id on the base model');
-    r = chain('starnet', {}, ['openai/gpt-6-sol:batch', 'openai/gpt-6-sol'], []);
+    r = chain('vultron', {}, ['openai/gpt-6-sol:batch', 'openai/gpt-6-sol'], []);
     A.eq(JSON.stringify(r.fallbackModels), JSON.stringify(['openai/gpt-6-sol', 'openai/gpt-6-sol']), 'a managed station\'s saved chain maps too');
-    r = chain('starnet', { fallbackModels: ['anthropic/claude-haiku-4.5:batch'] }, null, []);
+    r = chain('vultron', { fallbackModels: ['anthropic/claude-haiku-4.5:batch'] }, null, []);
     A.eq(JSON.stringify(r.fallbackModels), JSON.stringify(['anthropic/claude-haiku-4.5']), 'a per-run chain on a managed run maps by the run\'s provider');
     r = chain('ollama', { fallbackModels: ['mymodel:batch'] }, null, []);
     A.eq(JSON.stringify(r.fallbackModels), JSON.stringify(['mymodel:batch']), 'a per-run chain on a local provider keeps its own tags');
@@ -158,7 +158,7 @@ module.exports = (async () => {
     A.ok(pfStart > core && pfEnd > pfStart && pfEnd - pfStart < 400, 'the provider-fallback loop still resolves each entry\'s model in one place');
     const pf = (fb, providerId) => vm.runInNewContext(index.slice(pfStart, pfEnd) + '\n({ fbProviderId, fbModel });',
       Object.assign({}, helpers, { fb, providerId, normalizeProvider: p => String(p || '').toLowerCase() }));
-    A.eq(pf({ provider: 'starnet', model: 'anthropic/claude-haiku-4.5:batch' }, 'openrouter').fbModel, 'anthropic/claude-haiku-4.5', 'a provider fallback\'s :batch id runs on its base model');
+    A.eq(pf({ provider: 'vultron', model: 'anthropic/claude-haiku-4.5:batch' }, 'openrouter').fbModel, 'anthropic/claude-haiku-4.5', 'a provider fallback\'s :batch id runs on its base model');
     A.eq(pf({ provider: 'ollama', model: 'mymodel:batch' }, 'openrouter').fbModel, 'mymodel:batch', 'a local provider fallback keeps its tag');
   }
 
@@ -183,7 +183,7 @@ module.exports = (async () => {
       'async function probeChannelRunConfig(config, timeoutMs) {', 'function devHubSecrets() {', 'function sampleRunConfigFor(agentId) {',
       'function providerForRunConfig(c, reasoningEffort) {', 'async function stationOneShot(prompt, tag, failLead) {']
       .map(m => sliceTop(index, m, m.replace(/\(.*$/, ''))).join('\n')
-      + '\n' + sidecarFunctionSource('ENV');   // devHubSecrets reads its default model through the real ENV() (STARNET_ first)
+      + '\n' + sidecarFunctionSource('ENV');   // devHubSecrets reads its default model through the real ENV() (VULTRON_ first)
     const sb = Object.assign({}, helpers, {
       agentRoster: roster, process: { env }, AbortController, setTimeout, clearTimeout, crypto: require('crypto'),
       RunWire: require('../sidecar/run-wire.js'), normalizeProviderId: p => String(p || '').toLowerCase(),
@@ -202,7 +202,7 @@ module.exports = (async () => {
     sb.governor = sb.BillingClass.makeGovernor({ budget: { check: () => null }, auxTokenGate: () => ({ blocked: false }), classOfProvider: id => sb.billing.classOf(id) });
     vm.runInNewContext(region + '\nthis.api = { channelRunConfigFor, probeChannelRunConfig, sampleRunConfigFor, stationOneShot };', sb);
     const api = sb.api;
-    roster.set('agent', { provider: 'starnet', model: 'anthropic/claude-haiku-4.5:batch', name: 'Overseer' });
+    roster.set('agent', { provider: 'vultron', model: 'anthropic/claude-haiku-4.5:batch', name: 'Overseer' });
     roster.set('cypher', { provider: 'openrouter', model: 'openai/gpt-6-sol:batch', name: 'Cypher' });
     roster.set('scout', { provider: 'openrouter', model: '', name: 'Scout' });   // unpinned: follows the station default
     roster.set('local', { provider: 'ollama', model: 'mymodel:batch', name: 'Local' });
@@ -237,7 +237,7 @@ module.exports = (async () => {
     A.ok(s > ld && e > s && e - s < 600, 'LIVE DOCTOR resolves its selected model in one place');
     const doctor = rec => vm.runInNewContext(index.slice(s, e) + '\n({ providerId, model });',
       Object.assign({}, helpers, { agentId: 'agent', runWireFor: () => rec, normalizeProvider: p => String(p || '').toLowerCase() }));
-    A.eq(doctor({ provider: 'starnet', model: 'anthropic/claude-haiku-4.5:batch' }).model, 'anthropic/claude-haiku-4.5', 'LIVE DOCTOR probes the base model a real run uses, never reports the :batch id as failing');
+    A.eq(doctor({ provider: 'vultron', model: 'anthropic/claude-haiku-4.5:batch' }).model, 'anthropic/claude-haiku-4.5', 'LIVE DOCTOR probes the base model a real run uses, never reports the :batch id as failing');
     A.eq(doctor({ provider: 'ollama', model: 'mymodel:batch' }).model, 'mymodel:batch', 'LIVE DOCTOR keeps a local tag');
     const body = index.slice(ld, ld + 4000);
     A.ok(/provider\.stream\(\{ model, messages: \[\{ role: 'user', content: 'Reply exactly OK\.' \}\]/.test(body), 'the doctor\'s probe streams that same resolved model');
@@ -245,7 +245,7 @@ module.exports = (async () => {
     // the voice route resolves its main pair through the SAME runWireOfRun runOnceCore reads (run-wire-resolver lane)
     const region = ['function runWireEnv() {', 'function runWireFor(agentId, explicit, fallbacks) {', 'function runWireOfRun(o) {', 'async function applyVoiceTurnRoute(o) {']
       .map(m => sliceTop(index, m, m.replace(/\(.*$/, ''))).join('\n');
-    const voiceRoster = new Map([['agent', { provider: 'starnet', model: 'anthropic/claude-haiku-4.5:batch' }]]);
+    const voiceRoster = new Map([['agent', { provider: 'vultron', model: 'anthropic/claude-haiku-4.5:batch' }]]);
     const voice = (setting) => vm.runInNewContext(region + '\napplyVoiceTurnRoute({ agentId: "agent", messages: [] });', Object.assign({}, helpers, {
       RunWire: require('../sidecar/run-wire.js'), normalizeProviderId: p => String(p || '').toLowerCase(),
       registryProviderUsesCodex: () => false, codexTokens: null, ENV: () => '',
@@ -260,14 +260,14 @@ module.exports = (async () => {
     const swapped = await voice({ provider: 'openrouter', model: 'openai/gpt-6-sol' });
     A.eq(swapped.fallbackProviders && swapped.fallbackProviders[0] && swapped.fallbackProviders[0].model, 'anthropic/claude-haiku-4.5',
       'a voice turn\'s agent-route fallback names the base model, not the :batch id that would 404');
-    const same = await voice({ provider: 'starnet', model: 'anthropic/claude-haiku-4.5' });
+    const same = await voice({ provider: 'vultron', model: 'anthropic/claude-haiku-4.5' });
     A.ok(!same.voiceRoute.used && same.voiceRoute.model === 'anthropic/claude-haiku-4.5', 'a voice model equal to the agent\'s base model stays on the agent route: ' + JSON.stringify(same.voiceRoute));
   }
 
   /* ---------- 4. the model dock (modeldock.js, executed) ---------- */
   const dockPath = path.join(root, 'frontend', 'app', 'modeldock.js');
   function loadDock(opts) {
-    let prov = opts.provider || 'starnet', model = opts.model || '', revision = 0;
+    let prov = opts.provider || 'vultron', model = opts.model || '', revision = 0;
     const el = id => ({ id, hidden: true, textContent: '', innerHTML: '', style: {}, dataset: {}, isConnected: true,
       classList: { add() {}, remove() {}, toggle() {}, contains: () => false }, setAttribute() {}, getAttribute: () => null,
       removeAttribute() {}, addEventListener() {}, appendChild() {}, querySelector: () => null, querySelectorAll: () => [], focus() {}, contains: () => false });
@@ -295,14 +295,14 @@ module.exports = (async () => {
     const t = loadDock({ catalog: CATALOG });
     try {
       const keep = t.dock._internals.isAgentModel;
-      A.ok(!keep({ id: 'anthropic/claude-haiku-4.5:batch', provider: 'starnet' }), 'the dock never offers a managed :batch row');
+      A.ok(!keep({ id: 'anthropic/claude-haiku-4.5:batch', provider: 'vultron' }), 'the dock never offers a managed :batch row');
       A.ok(!keep({ id: 'openai/gpt-6-sol:batch', provider: 'openrouter' }), 'the dock never offers an OpenRouter :batch row');
-      A.ok(keep({ id: 'anthropic/claude-haiku-4.5', provider: 'starnet' }) && keep({ id: 'meta-llama/llama-5-8b:free', provider: 'openrouter' }), 'base rows and :free variants stay offered');
+      A.ok(keep({ id: 'anthropic/claude-haiku-4.5', provider: 'vultron' }) && keep({ id: 'meta-llama/llama-5-8b:free', provider: 'openrouter' }), 'base rows and :free variants stay offered');
       A.ok(keep({ id: 'mymodel:batch', provider: 'ollama' }), 'a local model tagged :batch stays offered');
       const eqv = t.dock._internals.catalogEquivalent;
-      const offered = CATALOG.filter(m => keep(Object.assign({ provider: 'starnet' }, m)));
-      A.eq(eqv('anthropic/claude-haiku-4.5:batch', 'starnet', offered), 'anthropic/claude-haiku-4.5', 'a saved :batch id maps to its base row when the catalog lists it');
-      A.eq(eqv('anthropic/claude-haiku-9:batch', 'starnet', offered), '', 'never a base the catalog lacks');
+      const offered = CATALOG.filter(m => keep(Object.assign({ provider: 'vultron' }, m)));
+      A.eq(eqv('anthropic/claude-haiku-4.5:batch', 'vultron', offered), 'anthropic/claude-haiku-4.5', 'a saved :batch id maps to its base row when the catalog lists it');
+      A.eq(eqv('anthropic/claude-haiku-9:batch', 'vultron', offered), '', 'never a base the catalog lacks');
       A.eq(eqv('mymodel:batch', 'ollama', [{ id: 'mymodel' }]), '', 'a local tag is never rewritten');
     } finally { t.restore(); }
   }
@@ -344,7 +344,7 @@ module.exports = (async () => {
       }
     };
     const api = vm.runInNewContext(region + '\n({ listModels });', sandbox);
-    A.ok(!ids(await api.listModels('starnet')).some(id => /:batch$/.test(id)), 'Harness.listModels(starnet) offers no :batch row');
+    A.ok(!ids(await api.listModels('vultron')).some(id => /:batch$/.test(id)), 'Harness.listModels(vultron) offers no :batch row');
     direct = true;
     const raw = ids(await api.listModels('openrouter'));
     A.ok(raw.length > 0 && !raw.some(id => /:batch$/.test(id)), 'the direct OpenRouter fallback (sidecar unreachable) offers no :batch row either: ' + raw.join(', '));

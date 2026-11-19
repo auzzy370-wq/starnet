@@ -83,7 +83,7 @@ function page(host, cache) {
   const context = { console, module: { exports: {} }, require: () => require('../frontend/app/cloudsavecore.js'), setTimeout, clearTimeout, AbortController,
     location: { reload() {} },
     localStorage: { getItem: k => (cache.has(k) ? cache.get(k) : null), setItem: (k, v) => cache.set(k, v), removeItem: k => cache.delete(k) },
-    Save: { CURRENT: 6, load: () => JSON.parse(cache.get('starnet.save') || 'null') },
+    Save: { CURRENT: 6, load: () => JSON.parse(cache.get('vultron.save') || 'null') },
     fetch: (url, opts) => host.fetch(url, opts) };
   vm.runInNewContext(cloudsaveSrc, context);
   return context.module.exports;
@@ -104,7 +104,7 @@ function saveLight(cloudSave) {
   };
 }
 const browserCopy = (over) => Object.assign({
-  schema: 'starnet.save', version: 6, updatedAt: 9000, _saveRevision: 23, _saveDirty: true, _saveClient: 'page-before-the-wipe',
+  schema: 'vultron.save', version: 6, updatedAt: 9000, _saveRevision: 23, _saveDirty: true, _saveClient: 'page-before-the-wipe',
   agent: { id: 'agent', name: 'NOVA', createdAt: 5000 }, agents: [],
   workstreams: [{ id: 'general', history: [{ role: 'user', content: 'the work from before the wipe' }] }], activeId: 'general', generalId: 'general'
 }, over || {});
@@ -115,9 +115,9 @@ const browserCopy = (over) => Object.assign({
     {
       const root = workspace();
       const host = sidecar(root);
-      const cache = new Map([['starnet.save', JSON.stringify(browserCopy())]]);
+      const cache = new Map([['vultron.save', JSON.stringify(browserCopy())]]);
       const p = page(host, cache);
-      const resumed = await p.reconcile(JSON.parse(cache.get('starnet.save')));
+      const resumed = await p.reconcile(JSON.parse(cache.get('vultron.save')));
       A.eq(resumed && resumed.agent && resumed.agent.name, 'NOVA', '1: boot resumes the station from the browser copy');
       A.eq(p.pullOutcome(), 'empty', '1: the station file proved empty (GET /api/save -> save:null)');
       const seedClock = Date.now();
@@ -131,7 +131,7 @@ const browserCopy = (over) => Object.assign({
       const seededAt = durable && durable._saveRevision;
       A.ok(Number.isInteger(seededAt) && seededAt > 23 && seededAt >= seedClock, '1: at a revision no window of the lost file can hold: above the copy\'s 23 and at the clock (' + seededAt + ')');
       A.ok(h.seeded && h.seeded.revision === seededAt, '1: health records that this window\'s copy seeded the station file (' + JSON.stringify(h.seeded) + ')');
-      const cached = JSON.parse(cache.get('starnet.save'));
+      const cached = JSON.parse(cache.get('vultron.save'));
       A.eq([cached._saveRevision, cached._saveDirty], [seededAt, false], '1: the browser cache is marked clean at the seeded revision');
 
       const light = saveLight(p).render();
@@ -142,12 +142,12 @@ const browserCopy = (over) => Object.assign({
 
       const next = structuredClone(cached); next.updatedAt = 9100; next._saveDirty = true;
       next.workstreams[0].history.push({ role: 'assistant', content: 'after the re-seed' });
-      cache.set('starnet.save', JSON.stringify(next)); p.push(next);
+      cache.set('vultron.save', JSON.stringify(next)); p.push(next);
       A.eq(await p.flush({ force: true }), true, '1: the next autosave lands');
       A.eq((host.saveStore.load('agent') || {})._saveRevision, seededAt + 1, '1: at the next revision, with no false conflict');
 
       const reloaded = page(host, cache);
-      const back = await reloaded.reconcile(JSON.parse(cache.get('starnet.save')));
+      const back = await reloaded.reconcile(JSON.parse(cache.get('vultron.save')));
       A.eq(reloaded.pullOutcome(), 'save', '1: a reload finds the station in the station file');
       A.eq([back && back.agent && back.agent.name, reloaded.revision(), reloaded.health().conflict], ['NOVA', seededAt + 1, null], '1: and resumes it at its revision with no conflict');
       A.eq(saveLight(reloaded).render().notices.length, 0, '1: a later page that seeded nothing says nothing');
@@ -161,9 +161,9 @@ const browserCopy = (over) => Object.assign({
       const solRevision = host.saveStore.save('agent', sol, { compareRevision: true }).revision;
       A.ok(Number.isInteger(solRevision) && solRevision > 23, '2: the station file holds SOL (a first save on an empty file takes the clock revision: ' + solRevision + ')');
       const before = fs.readFileSync(path.join(root, 'agent.save.json'));
-      const cache = new Map([['starnet.save', JSON.stringify(browserCopy())]]);
+      const cache = new Map([['vultron.save', JSON.stringify(browserCopy())]]);
       const p = page(host, cache);
-      await p.reconcile(JSON.parse(cache.get('starnet.save')));
+      await p.reconcile(JSON.parse(cache.get('vultron.save')));
       A.eq(await p.flush({ force: true }), false, '2: a stale copy (revision 23) is refused');
       const c = p.health().conflict;
       A.ok(c && c.conflict === true && c.revision === solRevision && !c.reset && !c.seeded && !c.reseeded && !c.ownSeed, '2: as an ordinary conflict against the station\'s revision (' + JSON.stringify(c) + ')');
@@ -185,9 +185,9 @@ const browserCopy = (over) => Object.assign({
       fs.unlinkSync(main);   // the main is gone; its last-known-good .bak still holds SOL
       const bak = fs.readFileSync(main + '.bak');
       const fresh = sidecar(root);
-      const cache = new Map([['starnet.save', JSON.stringify(browserCopy())]]);
+      const cache = new Map([['vultron.save', JSON.stringify(browserCopy())]]);
       const p = page(fresh, cache);
-      await p.reconcile(JSON.parse(cache.get('starnet.save')));
+      await p.reconcile(JSON.parse(cache.get('vultron.save')));
       A.eq(p.pullOutcome(), 'save', '3: a station file with only its .bak is NOT empty (the pull recovers SOL)');
       A.eq(await p.flush({ force: true }), false, '3: the stale copy cannot replace the recoverable station');
       A.ok(fs.readFileSync(main + '.bak').equals(bak), '3: the .bak is byte-for-byte unchanged');
@@ -213,9 +213,9 @@ const browserCopy = (over) => Object.assign({
       const root = workspace();
       fs.writeFileSync(path.join(root, '.fresh-start.json'), JSON.stringify({ version: 1, erased: true, at: '7000', acknowledgedRoots: [], quarantine: null, moved: [] }, null, 2));
       const host = sidecar(root);
-      const cache = new Map([['starnet.save', JSON.stringify(browserCopy())]]);
+      const cache = new Map([['vultron.save', JSON.stringify(browserCopy())]]);
       const p = page(host, cache);
-      await p.reconcile(JSON.parse(cache.get('starnet.save')));
+      await p.reconcile(JSON.parse(cache.get('vultron.save')));
       A.eq(p.pullOutcome(), 'empty', '4: the erased generation\'s station file is empty');
       A.eq(await p.flush({ force: true }), false, '4: a station founded BEFORE the erase is not written back into it');
       const c = p.health().conflict;
@@ -230,7 +230,7 @@ const browserCopy = (over) => Object.assign({
       A.eq(light.notices.length, 0, '4: and no re-seed notice');
 
       // a station founded AFTER the erase (its own station file lost later) still re-seeds
-      const after = page(host, new Map([['starnet.save', JSON.stringify(browserCopy({ agent: { id: 'agent', name: 'VEGA', createdAt: 8000 } }))]]));
+      const after = page(host, new Map([['vultron.save', JSON.stringify(browserCopy({ agent: { id: 'agent', name: 'VEGA', createdAt: 8000 } }))]]));
       await after.reconcile(browserCopy({ agent: { id: 'agent', name: 'VEGA', createdAt: 8000 } }));
       A.eq(await after.flush({ force: true }), true, '4: a station founded after the erase re-seeds the empty station file');
       A.eq(((host.saveStore.load('agent') || {}).agent || {}).name, 'VEGA', '4: as the station file\'s first revision');
@@ -271,13 +271,13 @@ const browserCopy = (over) => Object.assign({
       const root = workspace();
       const host = sidecar(root, null, { noMerge: true });
       // window A holds the newest copy (last ACK 23); window B is a stale window of the same station, frozen at revision 5
-      const cacheA = new Map([['starnet.save', JSON.stringify(browserCopy({ _saveClient: 'window-a' }))]]);
+      const cacheA = new Map([['vultron.save', JSON.stringify(browserCopy({ _saveClient: 'window-a' }))]]);
       const staleCopy = () => browserCopy({ _saveRevision: 5, updatedAt: 9500, _saveClient: 'window-b',
         workstreams: [{ id: 'general', history: [{ role: 'user', content: 'the stale window\'s old world' }] }] });
-      const cacheB = new Map([['starnet.save', JSON.stringify(staleCopy())]]);
+      const cacheB = new Map([['vultron.save', JSON.stringify(staleCopy())]]);
       const a = page(host, cacheA), b = page(host, cacheB);
-      await a.reconcile(JSON.parse(cacheA.get('starnet.save')));
-      await b.reconcile(JSON.parse(cacheB.get('starnet.save')));
+      await a.reconcile(JSON.parse(cacheA.get('vultron.save')));
+      await b.reconcile(JSON.parse(cacheB.get('vultron.save')));
       A.eq([a.pullOutcome(), b.pullOutcome(), a.revision(), b.revision()], ['empty', 'empty', 23, 5], '6: both windows booted over the empty station file with their own revisions');
       A.eq(await a.flush({ force: true }), true, '6: window A\'s copy seeds the station file');
       const seededAt = a.revision();
@@ -287,17 +287,17 @@ const browserCopy = (over) => Object.assign({
         '6: as a conflict that says the station file was re-seeded from another copy (' + JSON.stringify(cb) + ')');
       A.eq(b.revision(), 5, '6: window B keeps its frozen revision (every later autosave is stamped 5)');
       // window A keeps working: four autosaves, so a revision line restarted at 1 would now hold exactly B's 5
-      let work = JSON.parse(cacheA.get('starnet.save'));
+      let work = JSON.parse(cacheA.get('vultron.save'));
       for (let i = 0; i < 4; i++) {
         work = structuredClone(work); work.updatedAt = 9100 + i; work._saveDirty = true;
         work.workstreams[0].history.push({ role: 'assistant', content: 'window A work ' + i });
-        cacheA.set('starnet.save', JSON.stringify(work)); a.push(work);
+        cacheA.set('vultron.save', JSON.stringify(work)); a.push(work);
         A.eq(await a.flush({ force: true }), true, '6: window A autosave ' + i + ' lands');
       }
       A.eq(a.revision(), seededAt + 4, '6: the station file moved four revisions past the seed (to ' + a.revision() + ')');
       const beforeB = fs.readFileSync(path.join(root, 'agent.save.json'));
       // window B autosaves again, still at revision 5
-      const staleNext = staleCopy(); staleNext.updatedAt = 9600; cacheB.set('starnet.save', JSON.stringify(staleNext)); b.push(staleNext);
+      const staleNext = staleCopy(); staleNext.updatedAt = 9600; cacheB.set('vultron.save', JSON.stringify(staleNext)); b.push(staleNext);
       A.eq(await b.flush({ force: true }), false, '6: window B\'s next autosave is STILL refused (it used to match revision 5 and replace the station)');
       A.ok(fs.readFileSync(path.join(root, 'agent.save.json')).equals(beforeB), '6: the station file is byte-for-byte window A\'s');
       const durable = host.saveStore.load('agent');
@@ -305,7 +305,7 @@ const browserCopy = (over) => Object.assign({
       A.ok(conflictFiles(root).some(n => fs.readFileSync(path.join(root, n), 'utf8').indexOf('the stale window\'s old world') >= 0), '6: window B\'s copy is kept aside, never lost');
       // window A is never told that another window wrote over it
       work = structuredClone(work); work.updatedAt = 9200; work.workstreams[0].history.push({ role: 'assistant', content: 'window A after B' });
-      cacheA.set('starnet.save', JSON.stringify(work)); a.push(work);
+      cacheA.set('vultron.save', JSON.stringify(work)); a.push(work);
       A.eq([await a.flush({ force: true }), a.health().conflict], [true, null], '6: window A\'s next autosave lands with no conflict');
       // a sidecar restart still knows where the re-seed began (it is in the station file's wrapper, not only in memory)
       const restarted = sidecar(root);

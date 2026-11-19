@@ -36,7 +36,7 @@
  *       /workshop-run jail actually SERVES it 200 + runnable html + opaque-origin sandbox CSP.
  *   J5  parityCheck(step) — the reusable sim↔truth sweep every journey calls (exported for reuse).
  *
- * LAWS (Charter Part 5 + StarNet task doctrine):
+ * LAWS (Charter Part 5 + Vultron task doctrine):
  *   - NO-FAKE-GREEN: a journey that CANNOT run exits BLOCKED-nonzero; it never silently passes.
  *   - Scripts DETECT + ledger, never notify. This writes .bugloops/journeys-<stamp>/ evidence +
  *     a JSON report; the guardian/overseer file findings.
@@ -115,7 +115,7 @@ const KEEP = process.argv.includes('--keep');
 const SCRATCH = join(OUT_DIR, '_seed-workspace');
 const PROFILE = join(OUT_DIR, '_profile');
 // A FRESH BROWSER PER RUN (2026-09-23): the end-of-run wipe below fails silently while Chrome still holds
-// the profile, and a surviving profile carries a dirty `starnet.save` that cloudsave.reconcile() pushes over
+// the profile, and a surviving profile carries a dirty `vultron.save` that cloudsave.reconcile() pushes over
 // the fresh seed (the audit gate inherited a placed prop every Guardian hour). Wipe before launch; fail loud.
 function freshProfile(dir) {
   rmSync(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 250 });
@@ -134,7 +134,7 @@ async function backendSnapshot() {
   if (!JOURNEY_API_TOKEN) return null;
   try {
     const r = await fetch(APP_URL + 'api/state/snapshot', {
-      headers: { 'X-StarNet-Token': JOURNEY_API_TOKEN, Origin: APP_URL.replace(/\/$/, '') },
+      headers: { 'X-Vultron-Token': JOURNEY_API_TOKEN, Origin: APP_URL.replace(/\/$/, '') },
       cache: 'no-store'
     });
     return r.ok ? await r.json() : null;
@@ -747,7 +747,7 @@ async function journeyDoubleSend(cdp, A, mock, diag) {
  * same contract test/workshop.e2e.test.js locks, driven here as the terminal step of the summon→deliver
  * journey so a regression in the Open path is caught by the journey corps too.  */
 async function journeyDeliverableOpen(cdp, A, base, token, mock) {
-  const H = { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: base };
+  const H = { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: base };
   const post = (p, b) => fetch(base + p, { method: 'POST', headers: H, body: JSON.stringify(b) });
   const agentId = 'agent';                                          // the seeded hero agent id
   // settle first: release any parked stream from a prior journey, HALT any sidecar-side run still executing
@@ -1086,7 +1086,7 @@ async function main() {
     if (await isUp(APP_URL)) { console.error(`BLOCKED: journey port :${PORT} already has a server; set SKYNET_JOURNEY_PORT to a free port`); return finish(2); }
     mock = await startControllableMock(DEFAULT_MODEL);
     process.env.SKYNET_OPENROUTER_BASE = mock.base;
-    process.env.STARNET_OPENROUTER_BASE = mock.base;
+    process.env.VULTRON_OPENROUTER_BASE = mock.base;
     console.log(`provider: controllable journey mock on ${mock.base}`);
     console.log(`sidecar: booting SEEDED SKYNET_DEV on :${PORT} (model=${DEFAULT_MODEL}) ...`);
     materializeSeedWorkspace(SCRATCH);
@@ -1102,7 +1102,7 @@ async function main() {
   let token = '';
   try {
     const html = await (await fetch(APP_URL)).text();
-    const m = html.match(/window\.__STARNET_API_TOKEN__=("(?:\\.|[^"])*")/);
+    const m = html.match(/window\.__VULTRON_API_TOKEN__=("(?:\\.|[^"])*")/);
     if (m) token = String(JSON.parse(m[1]) || '');
     JOURNEY_API_TOKEN = token;
   } catch (_) {}

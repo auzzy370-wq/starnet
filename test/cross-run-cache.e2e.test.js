@@ -11,7 +11,7 @@
    2. That prompt carries the persona and the routine note — and none of the observed evidence or learned text (the
       Commander's dossier rides the run-context note: token-efficiency lane); the evidence (here a real TRACK RECORD line folded from seeded run history) rides the run's own
       <run_context> note, which still differs per run.
-   3. STARNET_STABLE_PREFIX=0 puts the evidence back in the system prompt (the kill switch keeps the old shape).
+   3. VULTRON_STABLE_PREFIX=0 puts the evidence back in the system prompt (the kill switch keeps the old shape).
    4. Every host site that feeds a server-composed persona into a run asks for the evidence (static pin), so a new site
       cannot silently drop it.
    No external inference: a mock OpenRouter upstream records every body. */
@@ -51,10 +51,10 @@ function startUpstream() {
 function hermeticEnv(base, extra) {
   const env = {};
   for (const k of Object.keys(process.env)) {
-    if (/^(OPENROUTER|ANTHROPIC|OPENAI|GEMINI|GOOGLE_API|XAI|GROQ|MISTRAL|DEEPSEEK|TOGETHER|FIREWORKS|PERPLEXITY|CEREBRAS|KIMI|ELEVENLABS|STARNET_|SKYNET_)/i.test(k)) env[k] = '';
+    if (/^(OPENROUTER|ANTHROPIC|OPENAI|GEMINI|GOOGLE_API|XAI|GROQ|MISTRAL|DEEPSEEK|TOGETHER|FIREWORKS|PERPLEXITY|CEREBRAS|KIMI|ELEVENLABS|VULTRON_|SKYNET_)/i.test(k)) env[k] = '';
   }
-  return Object.assign(env, { SKYNET_FULL_ACCESS: '1', STARNET_FULL_ACCESS: '1', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0',
-    SKYNET_THREAD_MINE: '0', STARNET_LIVE_PRICES: '0', STARNET_CREDITS_URL: '', SKYNET_CREDITS_URL: '',
+  return Object.assign(env, { SKYNET_FULL_ACCESS: '1', VULTRON_FULL_ACCESS: '1', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0',
+    SKYNET_THREAD_MINE: '0', VULTRON_LIVE_PRICES: '0', VULTRON_CREDITS_URL: '', SKYNET_CREDITS_URL: '',
     SKYNET_OPENROUTER_BASE: base, SKYNET_OPENROUTER_KEY: 'sk-or-v1-cross-run-fake', SKYNET_DEFAULT_MODEL: 'test/model' }, extra || {});
 }
 
@@ -70,7 +70,7 @@ function seedHistory(ws) {
 }
 
 async function station(up, extraEnv) {
-  const fixture = SidecarFixture.create({ prefix: 'starnet-cross-run-', timeoutMs: 30000, env: hermeticEnv(up.base, extraEnv) });
+  const fixture = SidecarFixture.create({ prefix: 'vultron-cross-run-', timeoutMs: 30000, env: hermeticEnv(up.base, extraEnv) });
   seedHistory(fixture.workspace);
   await fixture.start();
   A.eq((await fixture.json('POST', '/api/roster', { updatedAt: Date.now(), agents: [
@@ -147,11 +147,11 @@ function staticPin() {
     await st.fixture.dispose(); st = null;
 
     // ---- 3: the kill switch restores the old placement ----
-    st = await station(up, { STARNET_STABLE_PREFIX: '0' });
+    st = await station(up, { VULTRON_STABLE_PREFIX: '0' });
     const k1 = await runNow(st.fixture, up, st.jobId);
     const offSys = leadingSystem(k1[0]);
-    A.ok(/TRACK RECORD: scheduled runs — finished clean/.test(offSys), 'STARNET_STABLE_PREFIX=0: the evidence is back in the system prompt');
-    A.eq(hostNotes(k1[0].messages, 'run_context').length, 0, 'STARNET_STABLE_PREFIX=0: no run-context note');
+    A.ok(/TRACK RECORD: scheduled runs — finished clean/.test(offSys), 'VULTRON_STABLE_PREFIX=0: the evidence is back in the system prompt');
+    A.eq(hostNotes(k1[0].messages, 'run_context').length, 0, 'VULTRON_STABLE_PREFIX=0: no run-context note');
   } finally {
     if (st) await st.fixture.dispose();
     await new Promise(r => up.server.close(r));

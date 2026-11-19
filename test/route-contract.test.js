@@ -3,7 +3,7 @@
    A page could not tell the station's refusals apart. The token gate answered a page from before a restart and a page
    the station withheld its key from with the same 403 'forbidden token'; a route's own 403 (a malformed agent id) looked
    no different; and every reader guessed from the status or a word ('forbidden' read as "the station restarted").
-   Now every answer >= 400 names itself in X-StarNet-Code, from ONE table (sidecar/respond.js CODES):
+   Now every answer >= 400 names itself in X-Vultron-Code, from ONE table (sidecar/respond.js CODES):
      · respond.fail writes {ok:false, code, error} with the header naming the same code, and writes nothing once the
        head went out;
      · respond.stampFailureCodes, the main request handler's first statement, gives an unlabelled failure (an explicit
@@ -27,7 +27,7 @@ const errorClass = require('../sidecar/providers/errorClass.js');
 const { SidecarFixture } = require('./helpers/sidecar-fixture.js');
 const { readSidecarSource, sidecarSourceFiles } = require('./helpers/source.js');
 
-const CODE = 'x-starnet-code';
+const CODE = 'x-vultron-code';
 const DEADLINE_MS = 5000;
 const has = (o, k) => Object.prototype.hasOwnProperty.call(o || {}, k);
 const CODES = respond.CODES || {};
@@ -72,15 +72,15 @@ function fakeRes(sent) {
     const j = JSON.parse(r.body);
     A.eq(r.status, 404, 'the status is the one given');
     A.eq([j.ok, j.code, j.error, j.runId], [false, 'not_found', 'no such run', 'r1'], 'the body is {...extra, ok:false, code, error}');
-    A.eq(r.head['X-StarNet-Code'], j.code, 'the header names the same code as the body');
+    A.eq(r.head['X-Vultron-Code'], j.code, 'the header names the same code as the body');
     A.eq([r.head['Cache-Control'], /^application\/json/.test(r.head['Content-Type'])], ['no-store', true], 'JSON, never cached');
     const over = fakeRes();
     respond.fail(over, 409, 'conflict', 'busy', { ok: true, code: 'mine', error: 'hidden' });
     const jo = JSON.parse(over.body);
-    A.eq([jo.ok, jo.code, jo.error, over.head['X-StarNet-Code']], [false, 'conflict', 'busy', 'conflict'], 'extra can never overwrite ok, code or error');
+    A.eq([jo.ok, jo.code, jo.error, over.head['X-Vultron-Code']], [false, 'conflict', 'busy', 'conflict'], 'extra can never overwrite ok, code or error');
     const stray = fakeRes();
     respond.fail(stray, 400, 'not_a_code', 'x');
-    A.eq([stray.head['X-StarNet-Code'], JSON.parse(stray.body).code], ['bad_request', 'bad_request'], 'a code outside the table is written as its status default: the vocabulary stays closed');
+    A.eq([stray.head['X-Vultron-Code'], JSON.parse(stray.body).code], ['bad_request', 'bad_request'], 'a code outside the table is written as its status default: the vocabulary stays closed');
     const late = fakeRes(true);
     A.eq(respond.fail(late, 400, 'bad_json', 'bad json'), false, 'fail answers false once the head went out');
     A.eq([late.heads, late.body], [0, null], 'and writes nothing (readBody already answered its 413)');
@@ -98,10 +98,10 @@ const CASES = [
   ['/message-404', (q, s) => { s.writeHead(404, 'Gone Fishing', { 'X-Other': '1' }); s.end(); }, 'not_found'],
   ['/teapot', (q, s) => { s.writeHead(418); s.end(); }, 'refused'],
   ['/insufficient', (q, s) => { s.writeHead(507); s.end('disk full'); }, 'station_error'],
-  ['/explicit-code', (q, s) => { s.writeHead(403, 'Nope', { 'X-StarNet-Code': 'wrong_owner' }); s.end('x'); }, 'wrong_owner'],
-  ['/explicit-code-lower', (q, s) => { s.writeHead(403, { 'x-starnet-code': 'path_refused' }); s.end('x'); }, 'path_refused'],
-  ['/explicit-code-raw', (q, s) => { s.writeHead(403, ['X-StarNet-Code', 'ticket_refused', 'X-Other', '2']); s.end('x'); }, 'ticket_refused'],
-  ['/set-before', (q, s) => { s.setHeader('X-StarNet-Code', 'frozen'); s.writeHead(423); s.end('x'); }, 'frozen'],
+  ['/explicit-code', (q, s) => { s.writeHead(403, 'Nope', { 'X-Vultron-Code': 'wrong_owner' }); s.end('x'); }, 'wrong_owner'],
+  ['/explicit-code-lower', (q, s) => { s.writeHead(403, { 'x-vultron-code': 'path_refused' }); s.end('x'); }, 'path_refused'],
+  ['/explicit-code-raw', (q, s) => { s.writeHead(403, ['X-Vultron-Code', 'ticket_refused', 'X-Other', '2']); s.end('x'); }, 'ticket_refused'],
+  ['/set-before', (q, s) => { s.setHeader('X-Vultron-Code', 'frozen'); s.writeHead(423); s.end('x'); }, 'frozen'],
   ['/fail', (q, s) => { respond.fail(s, 413, 'too_large', 'too big'); }, 'too_large'],
   ['/stamp-twice', (q, s) => { respond.stampFailureCodes(s); s.writeHead(404); s.end(); }, 'not_found'],
   ['/ok-saying-no', (q, s) => { s.writeHead(200, { 'Content-Type': 'application/json' }); s.end('{"ok":false,"error":"x"}'); }, null],
@@ -150,8 +150,8 @@ async function stampOnRealResponses() {
         const tag = method + ' ' + p;
         A.eq([b.status, b.message, b.body], [a.status, a.message, a.body], tag + ': the stamp changes no status, status message or body');
         A.eq(restOf(b), restOf(a), tag + ': and no other header');
-        A.eq(b.headers[CODE] || null, want, tag + ': X-StarNet-Code is ' + want);
-        if (want) A.eq(codeLines(b), 1, tag + ': one X-StarNet-Code line, never a second');
+        A.eq(b.headers[CODE] || null, want, tag + ': X-Vultron-Code is ' + want);
+        if (want) A.eq(codeLines(b), 1, tag + ': one X-Vultron-Code line, never a second');
       }
     }
     const late = await rawRequest(stamped.address().port, 'GET', '/late-head');
@@ -163,7 +163,7 @@ async function stampOnRealResponses() {
 
 // ---- 4. the seam: the real sidecar ---------------------------------------------------------------------------------
 async function seam() {
-  const app = SidecarFixture.create({ prefix: 'starnet-route-contract-' });
+  const app = SidecarFixture.create({ prefix: 'vultron-route-contract-' });
   // Exact old index bytes may replace only the composition root. All relative dependencies,
   // actual stores, route table and HTTP transport remain the real isolated sidecar's.
   if (process.env.ACK_ROUTE_CONTROL) {
@@ -185,7 +185,7 @@ async function seam() {
     await app.start();
     const B = app.baseUrl, port = Number(new URL(B).port);
     const ask = (p, headers, init) => fetch(B + p, Object.assign({ headers: Object.assign({ Origin: B }, headers || {}), signal: AbortSignal.timeout(DEADLINE_MS) }, init || {}));
-    const keyed = headers => Object.assign({ 'X-StarNet-Token': app.token }, headers || {});
+    const keyed = headers => Object.assign({ 'X-Vultron-Token': app.token }, headers || {});
 
     // a 2xx carries no code, and the desktop page may read the header
     const health = await ask('/api/health', keyed());
@@ -193,7 +193,7 @@ async function seam() {
     await health.text();
     const desk = await ask('/api/cron', keyed({ Origin: 'tauri://localhost' }));
     const exposed = String(desk.headers.get('access-control-expose-headers') || '').toLowerCase().split(/\s*,\s*/);
-    A.ok(exposed.includes(CODE), 'the desktop (Tauri) page may read X-StarNet-Code: Access-Control-Expose-Headers is ' + desk.headers.get('access-control-expose-headers'));
+    A.ok(exposed.includes(CODE), 'the desktop (Tauri) page may read X-Vultron-Code: Access-Control-Expose-Headers is ' + desk.headers.get('access-control-expose-headers'));
     A.ok(exposed.includes('x-voice-provider') && exposed.includes('x-voice-cache'), 'the voice headers stay exposed');
     A.eq([desk.status, desk.headers.get(CODE)], [200, null], 'the desktop page\'s own 2xx carries no code');
     await desk.text();
@@ -202,12 +202,12 @@ async function seam() {
 
     // the gate: four refusals, four names, the legacy bodies byte-identical
     const gate = async (label, res, body, code) => A.eq([res.status, await res.text(), res.headers.get(CODE)], [403, body, code], label);
-    await gate('a wrong key: the legacy body, named token_stale', await ask('/api/cron', { 'X-StarNet-Token': 'not-this-launch' }), 'forbidden token', 'token_stale');
+    await gate('a wrong key: the legacy body, named token_stale', await ask('/api/cron', { 'X-Vultron-Token': 'not-this-launch' }), 'forbidden token', 'token_stale');
     await gate('no key at all: the same body, named token_missing', await ask('/api/cron'), 'forbidden token', 'token_missing');
     await gate('a stale ?ticket= on the EventSource shape is a stale page', await ask('/api/channels/events?ticket=old-launch-ticket'), 'forbidden token', 'token_stale');
     await gate('the EventSource shape with no ticket carried no key', await ask('/api/channels/events'), 'forbidden token', 'token_missing');
     await gate('a foreign Origin is named forbidden_origin', await ask('/api/cron', keyed({ Origin: 'https://evil.example' })), 'forbidden origin', 'forbidden_origin');
-    const deskStale = await ask('/api/cron', { Origin: 'tauri://localhost', 'X-StarNet-Token': 'not-this-launch' });
+    const deskStale = await ask('/api/cron', { Origin: 'tauri://localhost', 'X-Vultron-Token': 'not-this-launch' });
     A.eq(deskStale.headers.get('access-control-allow-origin'), 'tauri://localhost', 'the desktop page may read its own refusal');
     await gate('the desktop page\'s stale key is named token_stale too', deskStale, 'forbidden token', 'token_stale');
     for (const p of ['/', '/api/cron']) {
@@ -364,7 +364,7 @@ const GATE_TEXT_ROWS = {
   }
   A.eq(counts, GATE_TEXT_ROWS, 'gate refusal texts are written only by refuseAtGate (res.end(reason)) and the audited rows');
   const gateFn = (/function refuseAtGate\(req, res, reason\) \{[\s\S]*?\n\}/.exec(src) || [''])[0];
-  A.ok(/res\.end\(reason\)/.test(gateFn) && /'X-StarNet-Code': code/.test(gateFn), 'refuseAtGate writes the reason verbatim and names it in X-StarNet-Code');
+  A.ok(/res\.end\(reason\)/.test(gateFn) && /'X-Vultron-Code': code/.test(gateFn), 'refuseAtGate writes the reason verbatim and names it in X-Vultron-Code');
   for (const reason of ['forbidden host', 'forbidden origin', 'forbidden token']) {
     A.ok(src.includes("return refuseAtGate(req, res, '" + reason + "');"), 'the ' + reason + ' check refuses through refuseAtGate');
   }

@@ -1,6 +1,6 @@
 /* node test/cron.channel-media.e2e.test.js -- a routine that delivers to Telegram must be able to send IMAGES.
 
-   Issue (2026-10-18): "Telegram messages cannot be automated from starnet to include images." A routine's REPLY is
+   Issue (2026-10-18): "Telegram messages cannot be automated from vultron to include images." A routine's REPLY is
    what reaches the chat (deliverCronResult), and an unattended run cannot channel.send at all (the exec lockout:
    nobody is there to approve it). The delivery sent words only, so a routine that made a chart or rendered an
    image could at best name its path — Telegram never received the picture.
@@ -154,13 +154,13 @@ async function waitFor(pred, ms, label) {
   const telegram = await startTelegram();
   const model = await startModel();
   const sidecar = SidecarFixture.create({
-    prefix: 'starnet-cron-channel-media-',
+    prefix: 'vultron-cron-channel-media-',
     env: {
-      SKYNET_TELEGRAM_API_BASE: telegram.base, STARNET_TELEGRAM_API_BASE: telegram.base,
-      SKYNET_OPENROUTER_BASE: model.base, STARNET_OPENROUTER_BASE: model.base,
-      SKYNET_OPENROUTER_KEY: 'sk-or-v1-routine-media-fake', STARNET_OPENROUTER_KEY: 'sk-or-v1-routine-media-fake',
+      SKYNET_TELEGRAM_API_BASE: telegram.base, VULTRON_TELEGRAM_API_BASE: telegram.base,
+      SKYNET_OPENROUTER_BASE: model.base, VULTRON_OPENROUTER_BASE: model.base,
+      SKYNET_OPENROUTER_KEY: 'sk-or-v1-routine-media-fake', VULTRON_OPENROUTER_KEY: 'sk-or-v1-routine-media-fake',
       SKYNET_DEFAULT_MODEL: 'test/model', SKYNET_AUX_BUDGET: '0',
-      SKYNET_FULL_ACCESS: '', STARNET_FULL_ACCESS: ''
+      SKYNET_FULL_ACCESS: '', VULTRON_FULL_ACCESS: ''
     }
   });
   try {

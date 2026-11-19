@@ -11,14 +11,14 @@
 #   APPLE_ID + APPLE_PASSWORD + APPLE_TEAM_ID -> notarize (kills the Gatekeeper wall)
 #   AZURE_TENANT_ID + AZURE_CLIENT_ID + AZURE_CLIENT_SECRET -> Authenticode-sign the
 #     Windows exe + NSIS installer via Azure Artifact Signing. The bundled Node runtime
-#     retains its valid upstream OpenJS signature. (Account starnet-signing / eastus;
-#     absent = unsigned StarNet exe/installer, still installable for internal testing.)
+#     retains its valid upstream OpenJS signature. (Account vultron-signing / eastus;
+#     absent = unsigned Vultron exe/installer, still installable for internal testing.)
 # With no Apple secrets the DMG is unsigned: fine for internal testing (System
 # Settings -> Privacy & Security -> Open Anyway), not for public distribution.
 # Operator setup for both signing tiers: docs/CODE_SIGNING.md.
 #
 # publish-test=true additionally publishes everything as a public PRE-release on
-# starnet-releases (needs RELEASES_TOKEN, same secret release.yml uses) — a shareable
+# vultron-releases (needs RELEASES_TOKEN, same secret release.yml uses) — a shareable
 # no-login download link whose release notes ARE the per-OS install instructions.
 # Pre-releases never become the repo's "latest", so the Windows updater feed
 # (releases/latest/download/latest.json) cannot be disturbed by a test publish.
@@ -28,7 +28,7 @@ on:
   workflow_dispatch:
     inputs:
       publish-test:
-        description: "Publish a public test pre-release to starnet-releases (shareable download link)"
+        description: "Publish a public test pre-release to vultron-releases (shareable download link)"
         required: false
         default: "false"
       google_early_access:
@@ -108,10 +108,10 @@ jobs:
         shell: bash
         run: bash scripts/hydrate-sharp-macos-x64.sh
 
-      - name: Stage StarNet Google sign-in registration
+      - name: Stage Vultron Google sign-in registration
         env:
-          STARNET_GOOGLE_DESKTOP_CLIENT_JSON: ${{ secrets.STARNET_GOOGLE_DESKTOP_CLIENT_JSON }}
-          STARNET_GOOGLE_EARLY_ACCESS: ${{ inputs.google_early_access == 'true' && '1' || '' }}
+          VULTRON_GOOGLE_DESKTOP_CLIENT_JSON: ${{ secrets.VULTRON_GOOGLE_DESKTOP_CLIENT_JSON }}
+          VULTRON_GOOGLE_EARLY_ACCESS: ${{ inputs.google_early_access == 'true' && '1' || '' }}
         run: node scripts/stage-google-client.mjs --optional
 
       - name: Stage bundled Node sidecar runtime
@@ -185,8 +185,8 @@ jobs:
           if [ "$RUNNER_OS" = "Windows" ]; then
             if [ -n "${AZURE_CLIENT_SECRET:-}" ] && [ -n "${AZURE_CLIENT_ID:-}" ] && [ -n "${AZURE_TENANT_ID:-}" ]; then
               cargo install trusted-signing-cli --locked
-              SIGN_CFG='{"bundle":{"windows":{"signCommand":"trusted-signing-cli -e https://eus.codesigning.azure.net -a starnet-signing -c starnet-public %1"}}}'
-              echo "::notice::Windows Authenticode signing ENABLED (Azure Artifact Signing: starnet-signing/starnet-public)"
+              SIGN_CFG='{"bundle":{"windows":{"signCommand":"trusted-signing-cli -e https://eus.codesigning.azure.net -a vultron-signing -c vultron-public %1"}}}'
+              echo "::notice::Windows Authenticode signing ENABLED (Azure Artifact Signing: vultron-signing/vultron-public)"
             else
               echo "::warning::no Azure Trusted Signing secrets — Windows exe/installer will be UNSIGNED (SmartScreen warning for users)"
             fi
@@ -233,7 +233,7 @@ jobs:
         if: runner.os != 'macOS' || hashFiles('notary-submission.json') == ''
         uses: actions/upload-artifact@v4
         with:
-          name: starnet-${{ matrix.target }}
+          name: vultron-${{ matrix.target }}
           if-no-files-found: error
           # ** matches zero segments: covers target/release (host builds) AND
           # target/<triple>/release (mac legs built with an explicit --target)
@@ -287,7 +287,7 @@ jobs:
         if: hashFiles('notarization-input/notary-submission.json') != ''
         uses: actions/upload-artifact@v4
         with:
-          name: starnet-${{ matrix.target }}
+          name: vultron-${{ matrix.target }}
           if-no-files-found: error
           path: notarization-input/**/*.dmg
 
@@ -304,13 +304,13 @@ jobs:
       - name: Download Intel macOS distributable
         uses: actions/download-artifact@v4
         with:
-          name: starnet-darwin-x64
+          name: vultron-darwin-x64
           path: intel-distributable
 
       - name: Install, Finder-launch, and recover v0.9.0 station
         shell: bash
         env:
-          STARNET_REQUIRE_NOTARIZED: ${{ inputs.require_signed_mac }}
+          VULTRON_REQUIRE_NOTARIZED: ${{ inputs.require_signed_mac }}
         run: |
           dmg=$(find intel-distributable -type f -name '*_x64.dmg' -print -quit)
           test -n "${dmg:-}"
@@ -332,7 +332,7 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          pattern: starnet-*
+          pattern: vultron-*
           path: dist
           merge-multiple: true
 
@@ -347,7 +347,7 @@ jobs:
 
           ## macOS
           1. Download **`arm64`** for Apple Silicon (M1 or later) or **`x64`** for an Intel Mac.
-          2. Open it and drag **StarNet** onto the **Applications** folder.
+          2. Open it and drag **Vultron** onto the **Applications** folder.
           3. Launch it from Applications. The Developer ID signature and stapled Apple notarization ticket should open without the old unidentified/developer-risk wall.
 
           ## Windows
@@ -357,9 +357,9 @@ jobs:
           # Windows + mac only on the public page (release-platforms law: Linux installers are untested, never published)
           ASSETS=$(find dist -type f \( -name '*.dmg' -o -name '*-setup.exe' \))
           gh release create "$TAG" \
-            --repo androoAGI/starnet-releases \
-            --title "StarNet ${VERSION} test build (r${{ github.run_number }})" \
+            --repo YOUR-GITHUB-USER/vultron-releases \
+            --title "Vultron ${VERSION} test build (r${{ github.run_number }})" \
             --notes-file notes.md \
             --prerelease \
             $ASSETS
-          echo "::notice::shareable download page: https://github.com/androoAGI/starnet-releases/releases/tag/$TAG"
+          echo "::notice::shareable download page: https://github.com/YOUR-GITHUB-USER/vultron-releases/releases/tag/$TAG"

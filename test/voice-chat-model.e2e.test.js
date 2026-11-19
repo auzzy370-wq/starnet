@@ -42,7 +42,7 @@ const { SidecarFixture } = require('./helpers/sidecar-fixture.js');
   const fixture = SidecarFixture.create({ timeoutMs: 20000, env: {
     SKYNET_SCOUT: '0', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0', SKYNET_THREAD_MINE: '0',
     OPENROUTER_KEY: key, OPENROUTER_API_KEY: key, SKYNET_OPENROUTER_BASE: base + '/router',
-    SKYNET_FALLBACK_MODELS: '', SKYNET_FULL_ACCESS: '0', STARNET_FULL_ACCESS: '0'
+    SKYNET_FALLBACK_MODELS: '', SKYNET_FULL_ACCESS: '0', VULTRON_FULL_ACCESS: '0'
   } });
   let n = 0;
   async function run(voiceTurn, pad) {

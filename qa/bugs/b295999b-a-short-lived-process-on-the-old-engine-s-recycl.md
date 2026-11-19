@@ -15,7 +15,7 @@ origin: audit
 
 ## Symptom
 
-StarNet refused to start with WORKSPACE_BUSY after an earlier engine had gone, and the user saw Retry/Cancel. It happened when a short-lived process held the old engine's recycled PID at the moment of the check.
+Vultron refused to start with WORKSPACE_BUSY after an earlier engine had gone, and the user saw Retry/Cancel. It happened when a short-lived process held the old engine's recycled PID at the moment of the check.
 
 ## Repro
 

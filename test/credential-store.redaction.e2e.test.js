@@ -5,7 +5,7 @@
    THE BUG (probes P4 and providers-echo). redact()'s known-value layer (context.js) and the prompt scrub (prompt-scrub.js)
    held the desktop shell's pushed keys and pools, the OpenRouter alias and the page copy's keys, but nothing from the
    operator's environment and no endpoint at all. A provider key with no vendor prefix set in the environment
-   (MISTRAL_API_KEY), a backup key in STARNET_KEY_POOL_<ID>, a CUSTOM_OPENAI_KEY, a token in the path of
+   (MISTRAL_API_KEY), a backup key in VULTRON_KEY_POOL_<ID>, a CUSTOM_OPENAI_KEY, a token in the path of
    CUSTOM_OPENAI_BASE_URL or in a query, a password before an endpoint's host, and a token in the endpoint a page saved with
    its key all reached the run stream, the transcript and diagnostics raw when a model or an upstream echoed them; on the
    desktop, a key the shell handed over at spawn was not held until the shell pushed it. GET /api/providers answered each
@@ -20,7 +20,7 @@
 
    REAL sidecars and one recording upstream, at a path per station. Rows:
      1. headless (no marker): keys with no recognisable prefix for Mistral, DeepSeek and Together in the environment, a
-        backup key in STARNET_KEY_POOL_MISTRAL, a token-shaped CUSTOM_OPENAI_KEY, a token in the path of
+        backup key in VULTRON_KEY_POOL_MISTRAL, a token-shaped CUSTOM_OPENAI_KEY, a token in the path of
         CUSTOM_OPENAI_BASE_URL, ?api_key= in DEEPSEEK_BASE_URL, a password before the host in GROQ_BASE_URL, and the
         page's Fireworks key with a token in the path of the endpoint it was saved with (POST /api/providers/engine-key,
         as a browser page saves it). The model echoes every one bare in its reply: the run stream and /api/transcript carry
@@ -30,7 +30,7 @@
         in the stream.
      2. desktop (the shell's marker, its IPC token, its spawn pair for Together, which the store adopts into the
         keychain layer at boot): echoed before any push, the key is redacted.
-     3. placeholders (decision 8): CUSTOM_OPENAI_KEY=lm-studio and STARNET_KEY_POOL_CUSTOM=anything. A routine's prompt,
+     3. placeholders (decision 8): CUSTOM_OPENAI_KEY=lm-studio and VULTRON_KEY_POOL_CUSTOM=anything. A routine's prompt,
         the workspace file its fs_read call returns and the model's reply all say "lm-studio" and "anything": the
         upstream receives the prompt and the tool result with both words, and Run Now's stream carries the reply intact.
    RED at a3af8dafd: rows 1 and 2 (each env value, the endpoint parts, the page endpoint's token and the adopted key raw
@@ -49,7 +49,7 @@ const S = {
   mistral: 'Qm9wZ3JhbW1pbmdJc0Z1bjEyMzQ1Njc4OTBhYmNkZWY',            // MISTRAL_API_KEY
   deepseek: 'dsOperatorEnvKey7f3a9c1e5b2d8f4a6c0e9b3dQ',            // DEEPSEEK_API_KEY
   together: 'togetherOperatorEnvKey4e8b2c6a0d9f1e3b5c7a',           // TOGETHER_API_KEY
-  mistralPool: 'mistralPoolEntry0c4e8a2f6b1d9e3a7c5f0b8dZ',        // STARNET_KEY_POOL_MISTRAL
+  mistralPool: 'mistralPoolEntry0c4e8a2f6b1d9e3a7c5f0b8dZ',        // VULTRON_KEY_POOL_MISTRAL
   customKey: 'operatorCustomKeyShapeless9876543210ZYXWVU',         // CUSTOM_OPENAI_KEY, shaped like a token
   pathToken: 'pathtok7f3a9c1e5b2d8f4a6c0e9b3d7f1a5c8e2b',          // in CUSTOM_OPENAI_BASE_URL's path
   queryToken: 'qtokA1b2C3d4E5f6G7h8I9j0K1l2M3n4',                  // DEEPSEEK_BASE_URL ?api_key=
@@ -110,12 +110,12 @@ const AMBIENT = ['ANTHROPIC_API_KEY', 'OPENROUTER_KEY', 'OPENROUTER_API_KEY', 'O
   'XAI_BASE_URL', 'X_AI_BASE_URL', 'GROQ_BASE_URL', 'MISTRAL_BASE_URL', 'DEEPSEEK_BASE_URL', 'TOGETHER_BASE_URL', 'FIREWORKS_BASE_URL',
   'PERPLEXITY_BASE_URL', 'CEREBRAS_BASE_URL', 'CUSTOM_OPENAI_BASE_URL', 'OPENAI_COMPATIBLE_BASE_URL', 'OLLAMA_BASE_URL', 'KEY_POOL_CUSTOM',
   'KEY_POOL_MISTRAL', 'KEY_POOL_TOGETHER', 'KEY_POOL_OPENROUTER', 'DESKTOP_SHELL', 'IPC_TOKEN', 'CREDITS_URL', 'CREDITS_TOKEN', 'FALLBACK_MODELS', 'DEFAULT_MODEL'];
-const pair = (name, value) => ({ ['SKYNET_' + name]: value, ['STARNET_' + name]: value });
+const pair = (name, value) => ({ ['SKYNET_' + name]: value, ['VULTRON_' + name]: value });
 function station(label, env) {
   const blank = {};
-  for (const n of AMBIENT) { blank[n] = ''; blank['STARNET_' + n] = ''; blank['SKYNET_' + n] = ''; }
+  for (const n of AMBIENT) { blank[n] = ''; blank['VULTRON_' + n] = ''; blank['SKYNET_' + n] = ''; }
   const fx = SidecarFixture.create({ prefix: 'cs-redaction-' + label + '-', timeoutMs: 45000, env: Object.assign(blank, {
-    STARNET_FULL_ACCESS: '1', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0', SKYNET_THREAD_MINE: '0'
+    VULTRON_FULL_ACCESS: '1', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0', SKYNET_THREAD_MINE: '0'
   }, env) });
   return {
     fx,
@@ -134,7 +134,7 @@ const rawIn = (text, secrets) => Object.entries(secrets).filter(([, v]) => Strin
     /* ================= 1. headless: every layer's secrets, and the endpoints' credential parts ================= */
     {
       const env = {
-        MISTRAL_API_KEY: S.mistral, DEEPSEEK_API_KEY: S.deepseek, TOGETHER_API_KEY: S.together, STARNET_KEY_POOL_MISTRAL: S.mistralPool,
+        MISTRAL_API_KEY: S.mistral, DEEPSEEK_API_KEY: S.deepseek, TOGETHER_API_KEY: S.together, VULTRON_KEY_POOL_MISTRAL: S.mistralPool,
         CUSTOM_OPENAI_KEY: S.customKey, CUSTOM_OPENAI_BASE_URL: up.base + '/t/' + S.pathToken + '/v1',
         DEEPSEEK_BASE_URL: 'http://127.0.0.1:9/v1?api_key=' + S.queryToken, GROQ_BASE_URL: 'http://operator:' + S.password + '@127.0.0.1:9/v1',
         TOGETHER_BASE_URL: AZURE
@@ -178,7 +178,7 @@ const rawIn = (text, secrets) => Object.entries(secrets).filter(([, v]) => Strin
 
     /* ================= 2. desktop: the shell's spawn key, adopted at boot ================= */
     {
-      const s = station('desktop', Object.assign({ STARNET_DESKTOP_SHELL: '1', CUSTOM_OPENAI_BASE_URL: up.base + '/dk/v1' }, pair('IPC_TOKEN', IPC), pair('TOGETHER_API_KEY', SHELL)));
+      const s = station('desktop', Object.assign({ VULTRON_DESKTOP_SHELL: '1', CUSTOM_OPENAI_BASE_URL: up.base + '/dk/v1' }, pair('IPC_TOKEN', IPC), pair('TOGETHER_API_KEY', SHELL)));
       stations.push(s);
       await s.fx.start();
       const r = await s.run({ provider: 'custom', model: MODEL, agentId: 'echo', streamId: 'cs-redaction-shell', messages: [{ role: 'user', content: 'SHELL-ROW say it' }] });
@@ -192,7 +192,7 @@ const rawIn = (text, secrets) => Object.entries(secrets).filter(([, v]) => Strin
 
     /* ================= 3. placeholders (decision 8): ordinary text stays text ================= */
     {
-      const s = station('placeholder', { CUSTOM_OPENAI_KEY: 'lm-studio', STARNET_KEY_POOL_CUSTOM: 'anything', CUSTOM_OPENAI_BASE_URL: up.base + '/pl/v1' });
+      const s = station('placeholder', { CUSTOM_OPENAI_KEY: 'lm-studio', VULTRON_KEY_POOL_CUSTOM: 'anything', CUSTOM_OPENAI_BASE_URL: up.base + '/pl/v1' });
       stations.push(s);
       await s.fx.start();
       await s.fx.json('POST', '/api/cron/arm', { enabled: false });

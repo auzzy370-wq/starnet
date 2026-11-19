@@ -1,5 +1,5 @@
 /* node dev/brief-quote-live-proof.js — LIVE proof of the Task Brief gate seam for the 2026-10-12 Publisher report:
-   "StarNet repeatedly blocked authorized actions with brief_update quote/source validation errors."
+   "Vultron repeatedly blocked authorized actions with brief_update quote/source validation errors."
 
    The chain on trunk: the agent asks (brief_ask, conversation mode) → the Commander answers → the agent records its
    understanding (brief_update) quoting the answer the way models do — re-typed, not byte-exact → the host rejects

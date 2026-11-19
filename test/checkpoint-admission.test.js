@@ -31,7 +31,7 @@ const { makeConsentBroker } = require('../sidecar/permissions.js');
 const { sidecarTopLevelFunction } = require('./helpers/source');
 
 const isWin = process.platform === 'win32';
-const BASE = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-ckpt-admission-')));
+const BASE = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-ckpt-admission-')));
 const links = [];
 function link(target, at) { fs.symlinkSync(target, at, isWin ? 'junction' : 'dir'); links.push(at); }
 

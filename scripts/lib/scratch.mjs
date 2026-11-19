@@ -24,7 +24,7 @@ export function createScratch(label, { root = tmpdir() } = {}) {
   return {
     root,
     dir(kind = 'scratch') {
-      const d = mkdtempSync(join(root, `starnet-${tag}-${String(kind).replace(/[^A-Za-z0-9_-]+/g, '-')}-`));
+      const d = mkdtempSync(join(root, `vultron-${tag}-${String(kind).replace(/[^A-Za-z0-9_-]+/g, '-')}-`));
       made.push(d);
       return d;
     },

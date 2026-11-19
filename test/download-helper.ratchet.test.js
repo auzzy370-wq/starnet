@@ -6,7 +6,7 @@ const fs = require('node:fs'), path = require('node:path'), os = require('node:o
 const A = require('./_assert.js');
 const writer = require('../sidecar/backupfile.js');
 const root = path.resolve(__dirname, '..');
-const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-download-proof-'));
+const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-download-proof-'));
 const source = rel => fs.readFileSync(process.env.ACK_DOWNLOAD_CONTROL_DIR
   ? path.join(process.env.ACK_DOWNLOAD_CONTROL_DIR, 'truthful-ack-download-original-' + rel.replaceAll('/', '-') + '.txt')
   : path.join(root, rel), 'utf8');
@@ -95,7 +95,7 @@ function callback(src, marker) {
     vm.runInContext(named(market, 'safeFilename') + '\n' + named(market, 'downloadRecipeFile') + '\nthis.run=downloadRecipeFile;', recipe.context);
     await recipe.context.run({ name: 'Honest recipe', steps: [] });
     A.eq([recipe.posts.length, recipe.clicks.length], [1, 0], 'actual recipe export uses the desktop owner');
-    A.ok(recipe.notices[0] && recipe.notices[0].includes(path.join(tmp, 'honest-recipe.starnet-recipe.json')), 'recipe no longer calls an unobserved handoff saved');
+    A.ok(recipe.notices[0] && recipe.notices[0].includes(path.join(tmp, 'honest-recipe.vultron-recipe.json')), 'recipe no longer calls an unobserved handoff saved');
 
     const build = rig(true), status = { innerHTML: '', textContent: '' };
     Object.assign(build.context, { exp: {}, station: { serialize: () => ({}), doc: () => ({ meta: { name: 'fixture' } }) }, WorldModel: {},
@@ -129,7 +129,7 @@ function callback(src, marker) {
       restore.context.fetch = async () => ({ ok: answer.ok, json: async () => answer.j });
       vm.runInContext(source('frontend/app/backup.js') + '\nthis.Backup=Backup;', restore.context);
       const B = restore.context.Backup;
-      const result = await B.importFile(JSON.stringify({ schema: B.SCHEMA, version: B.VERSION, store: { 'starnet.save': '{}' }, notebook: [{ text: 'a saved memory' }] }));
+      const result = await B.importFile(JSON.stringify({ schema: B.SCHEMA, version: B.VERSION, store: { 'vultron.save': '{}' }, notebook: [{ text: 'a saved memory' }] }));
       if (accepted) A.eq([result.ok, result.memoriesRestored, result.memoriesForgotten], [true, 0, 2], 'confirmed zero additions still preserve the host forgotten count');
       else {
         A.eq([result.ok, result.memoriesRestored], [false, undefined], 'unconfirmed memory restore is never advertised as zero restored successfully');
@@ -138,7 +138,7 @@ function callback(src, marker) {
     }
   } finally {
     const owned = path.resolve(tmp);
-    if (path.dirname(owned) !== path.resolve(os.tmpdir()) || !path.basename(owned).startsWith('starnet-download-proof-')) throw Error('fixture cleanup escaped allocated directory');
+    if (path.dirname(owned) !== path.resolve(os.tmpdir()) || !path.basename(owned).startsWith('vultron-download-proof-')) throw Error('fixture cleanup escaped allocated directory');
     fs.rmSync(owned, { recursive: true, force: true });
   }
   A.report('download-helper.ratchet');

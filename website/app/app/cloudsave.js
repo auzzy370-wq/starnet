@@ -1,4 +1,4 @@
-/* STARNET — cloudsave.js : write the agent through to the durable sidecar, and pull it back on boot.
+/* VULTRON — cloudsave.js : write the agent through to the durable sidecar, and pull it back on boot.
 
    localStorage is a fast CACHE that a browser wipe can erase. The sidecar's <workspaces>/<id>.save.json is the
    DURABLE copy (app-data dir, survives a cache wipe / different browser). This module keeps them in sync:
@@ -50,7 +50,7 @@ const CloudSave = (() => {
   let cacheOkSeq = 0;                  // the newest push whose doc the browser cache DID hold
   let health = Core ? Core.freshHealth() : { lastPushOkAt: 0, lastPushFailAt: 0, consecutiveFailures: 0, nextRetryAt: 0 };
   let warnedStale = false;             // ONE console warn per failing↔healthy transition, never per attempt
-  // EL-11 FIX 1: the sidecar REFUSES writes when the workspace was stamped by a NEWER StarNet — as an HTTP 200
+  // EL-11 FIX 1: the sidecar REFUSES writes when the workspace was stamped by a NEWER Vultron — as an HTTP 200
   // body { ok:false, degraded:true }. That refusal gets its OWN persistent state (the save-dot renders it and
   // stationui explains it); it is NOT a transient network failure and must never stamp health OK.
   let degraded = false;
@@ -62,11 +62,11 @@ const CloudSave = (() => {
   // definitively holds no save; 'forbidden' (auth 401/403) and 'unreachable' (network/timeout/5xx) mean we
   // could not ask — states that must NEVER be presented to the boot path as "no save exists".
   let lastPullOutcome = 'unreachable';   // until a pull settles, we have proven nothing
-  // starnet-releases#4 Blocker 2: the catch-up a growthStale refusal asked for (resolves true once the re-synced save is queued)
+  // vultron-releases#4 Blocker 2: the catch-up a growthStale refusal asked for (resolves true once the re-synced save is queued)
   let staleCatchUp = null;
   // a restore into the station was accepted and this page is reloading onto it: it saves nothing more (restoreConflict)
   let retired = false;
-  /* A WINDOW ANOTHER WINDOW SAVED PAST (wave-1 save-latch-kill; gh#153, #121, starnet-releases#4 — "a desktop window plus a
+  /* A WINDOW ANOTHER WINDOW SAVED PAST (wave-1 save-latch-kill; gh#153, #121, vultron-releases#4 — "a desktop window plus a
      browser tab"). A conflict refusal used to LATCH: every later save of this window refused and preserved, the station file
      frozen, the banner never clearing. Review 10-27 of the first fix (merge on the boot merge's rules, then reload) found it
      dropped every change of the window that was not a session turn while saying they were merged, piled up restored copies
@@ -106,7 +106,7 @@ const CloudSave = (() => {
   // liveTab) may be that tab's view, and merging it would move the station under the live tab (re-review 10-25)
   let preserveOnlySeq = 0;
   // a window that reopens on a merge (adoptAndReenter) reloads: its notice (app.js boot, mergeNotice) rides sessionStorage across that one reload
-  const MERGE_NOTE_KEY = 'starnet.save.merged';
+  const MERGE_NOTE_KEY = 'vultron.save.merged';
   /* WHERE THIS PAGE'S NEWEST SAVE IS (review 10-23 #1): the push seq of the newest doc the station file accepted, and of the
      newest doc a conflict refusal preserved beside it (in conflict.recovery). A restore may only retire this page when its
      newest push is in one of the two: otherwise the reload would drop it. */
@@ -131,15 +131,15 @@ const CloudSave = (() => {
   function writerId() { return inherited || clientId; }
   /* THIS WINDOW'S CRASH JOURNAL (wave-1 save-latch-kill; qa/bugs 27bae3d6). The browser cache is a journal of THIS window's
      newest save, never a store another window reads as its own: two tabs of one browser share localStorage, and the single
-     'starnet.save' key let a reloaded tab boot ANOTHER live tab's stale snapshot as its own work, and let any tab's persist
-     overwrite a crashed tab's unsent save. Each window now writes its own key (save.js key(): 'starnet.save', or
-     'starnet.save.w.<window>' for a second live tab). openJournal() picks it at boot: a live window's journal is never
+     'vultron.save' key let a reloaded tab boot ANOTHER live tab's stale snapshot as its own work, and let any tab's persist
+     overwrite a crashed tab's unsent save. Each window now writes its own key (save.js key(): 'vultron.save', or
+     'vultron.save.w.<window>' for a second live tab). openJournal() picks it at boot: a live window's journal is never
      touched (every page answers "anyone here?" with the key it writes), a DEAD window's journal is crash recovery — the
      newest one is continued by this page (reconcile resends or merges its unsent work exactly as before), every other one's
      unsent work is merged into the station and its key removed once the station has it. */
-  const LEGACY_KEY = 'starnet.save', JOURNAL_PREFIX = 'starnet.save.w.';
-  const JOURNAL_RE = /^starnet\.save\.w\.[A-Za-z0-9_-]{1,80}$/;
-  const JOURNAL_NOTE_KEY = 'starnet.save.journal';   // sessionStorage: the journal this tab writes, so its reload continues it
+  const LEGACY_KEY = 'vultron.save', JOURNAL_PREFIX = 'vultron.save.w.';
+  const JOURNAL_RE = /^vultron\.save\.w\.[A-Za-z0-9_-]{1,80}$/;
+  const JOURNAL_NOTE_KEY = 'vultron.save.journal';   // sessionStorage: the journal this tab writes, so its reload continues it
   let journalKey = null;          // set by openJournal(); null = never opened (the legacy key, as before)
   let otherJournals = [];         // dead windows' journals this page did not continue: settled once the station is read
   const heardClaims = new Set();  // journals other pages said they write (their boot's claim)
@@ -149,7 +149,7 @@ const CloudSave = (() => {
     journalKey = k;
     try { if (typeof Save !== 'undefined' && Save && typeof Save.useKey === 'function') Save.useKey(k); } catch (_) {}
   }
-  /* ANOTHER LIVE STARNET PAGE IN THIS BROWSER (re-review 10-25): two tabs share one browser cache, so a tab reopened while
+  /* ANOTHER LIVE VULTRON PAGE IN THIS BROWSER (re-review 10-25): two tabs share one browser cache, so a tab reopened while
      another runs is not a crash recovery. Every page answers a reopening page's "anyone here?"; a reopening page that hears an
      answer neither resends nor merges a dirty cache (that would move the station under the live tab): its save is preserved,
      as before. No BroadcastChannel (an old webview, a test) = nobody answers. */
@@ -165,7 +165,7 @@ const CloudSave = (() => {
   }
   try {
     if (typeof BroadcastChannel === 'function') {
-      pagesChannel = new BroadcastChannel('starnet-pages');
+      pagesChannel = new BroadcastChannel('vultron-pages');
       pagesChannel.addEventListener('message', e => {
         const m = e && e.data;
         // the journal this page writes (null while it is still booting: it owns none yet)
@@ -207,7 +207,7 @@ const CloudSave = (() => {
      No Web Locks (an insecure origin, an old webview, a test), a lock list that does not answer in time, more than one journal, or
      another holder: the ping alone, as before, and with it the old hazard: a live page that answers after the ping's time is read
      as dead, and its journal merged while it runs. */
-  const PAGE_LOCK = 'starnet-page';
+  const PAGE_LOCK = 'vultron-page';
   const PAGE_LOCK_READ_MS = 250;   // the boot path never hangs on the lock list: past this, the ping decides
   let pageLock = null;             // resolves true once this page holds its lock, false when it could not take one
   try {
@@ -247,10 +247,10 @@ const CloudSave = (() => {
 
   function now() { return Date.now(); }
   function num(v) { const n = Number(v); return Number.isFinite(n) ? n : 0; }
-  function isSave(d) { return !!(d && typeof d === 'object' && d.schema === 'starnet.save' && d.agent && typeof d.agent === 'object'); }
+  function isSave(d) { return !!(d && typeof d === 'object' && d.schema === 'vultron.save' && d.agent && typeof d.agent === 'object'); }
 
   // this build's readable schema ceiling. A save/remote whose version exceeds this was written by a NEWER
-  // StarNet and MUST NOT be adopted into the cache (that would clobber the local doc with fields this code
+  // Vultron and MUST NOT be adopted into the cache (that would clobber the local doc with fields this code
   // can't read). Mirror Save.CURRENT when available; fall back to a literal only if Save hasn't loaded yet.
   // The literal IS save.js CURRENT (test/cloudsave-version-fallback.test.js): a stale one called this build's own saves newer.
   function currentVersion() { return (typeof Save !== 'undefined' && Number.isFinite(Save.CURRENT)) ? Save.CURRENT : 7; }
@@ -264,10 +264,10 @@ const CloudSave = (() => {
   // save" when the harness proved no such thing (the July-19 incident: a 403'd pull rendered genesis over an
   // intact 200KB save). Distinct object, never a real save envelope.
   function unknownSentinel(reason) { return { __saveUnknown: true, reason: String(reason || 'unreachable') }; }
-  // the station's own name for a failure it answered (X-StarNet-Code, sidecar/respond.js: a lower-case code); '' from an older station
+  // the station's own name for a failure it answered (X-Vultron-Code, sidecar/respond.js: a lower-case code); '' from an older station
   function stationCodeOf(r) {
     let c = '';
-    try { c = String((r && r.headers && typeof r.headers.get === 'function' && r.headers.get('X-StarNet-Code')) || '').trim(); } catch (_) { c = ''; }
+    try { c = String((r && r.headers && typeof r.headers.get === 'function' && r.headers.get('X-Vultron-Code')) || '').trim(); } catch (_) { c = ''; }
     return /^[a-z][a-z0-9_]{0,63}$/.test(c) ? c : '';
   }
 
@@ -312,7 +312,7 @@ const CloudSave = (() => {
     }
   }
 
-  // GROWTH-STALE REFUSAL (starnet-releases#4 Blocker 2). The station refuses a save whose rating watermark
+  // GROWTH-STALE REFUSAL (vultron-releases#4 Blocker 2). The station refuses a save whose rating watermark
   // (stationStats.ratingSyncAt) trails its rating ledger, so a stale tab cannot erase acknowledged XP. That refusal is
   // right, and resending the same save can never pass it: only a rating catch-up advances the watermark. Ask XpStore for
   // one; on success it persists a fresh save (App.persist -> push), and THAT save is what the next attempt sends. Nothing
@@ -355,7 +355,7 @@ const CloudSave = (() => {
     const viaMerge = merging && !armed && !!base && !!(Core && Core.mergeDelta);
     // WHY this attempt failed, by name, from what the station answered (null until it fails; no answer at all = 'offline')
     let cause = null;
-    // (r: the station's answer — its status, and its own name for a failure, X-StarNet-Code)
+    // (r: the station's answer — its status, and its own name for a failure, X-Vultron-Code)
     const causeOf = (r, body) => Core && Core.causeOf ? Core.causeOf({ answered: true, status: r && r.status, body, code: stationCodeOf(r) }) : 'refused';
     let wire;
     try { wire = viaMerge ? mergeWire(doc) : (armed ? Object.assign({}, doc, { _saveRestore: true }) : doc); }
@@ -626,10 +626,10 @@ const CloudSave = (() => {
   function pull() {
     // DEV-ONLY fault injection (stranded-user testing law): with a SKYNET_DEV seed loaded, a localStorage flag
     // forces the pull outcome so the save-unknown gate's failure states can be WALKED in the live app.
-    // Inert in production: __STARNET_DEV__ is only ever injected by a SKYNET_DEV=1 sidecar.
+    // Inert in production: __VULTRON_DEV__ is only ever injected by a SKYNET_DEV=1 sidecar.
     try {
-      if (typeof window !== 'undefined' && window.__STARNET_DEV__) {
-        const f = localStorage.getItem('starnet.dev.pullFault');
+      if (typeof window !== 'undefined' && window.__VULTRON_DEV__) {
+        const f = localStorage.getItem('vultron.dev.pullFault');
         if (f === 'forbidden' || f === 'unreachable') { lastPullOutcome = f; return Promise.resolve(null); }
       }
     } catch (_) {}
@@ -1050,7 +1050,7 @@ const CloudSave = (() => {
   //
   // DESKTOP REALITY (July-22 data-loss incident): the page runs on the tauri.localhost origin and the shell
   // rewrites ONLY window.fetch to the sidecar's real loopback URL — a relative sendBeacon posts into the
-  // bundled-asset protocol and VANISHES (and sendBeacon cannot set the X-StarNet-Token header anyway). The old
+  // bundled-asset protocol and VANISHES (and sendBeacon cannot set the X-Vultron-Token header anyway). The old
   // code then treated sendBeacon's `true` ("queued for dispatch") as a confirmed 200: it nulled `pending` and
   // stamped health OK, so the newest save silently evaporated on EVERY desktop close/minimize while the
   // save-dot claimed "backed up". Three rules now:
@@ -1064,7 +1064,7 @@ const CloudSave = (() => {
   function beaconUrl() {
     if (typeof ApiTicket !== 'undefined' && ApiTicket.saveBeaconUrl) return ApiTicket.saveBeaconUrl();
     let base = '';
-    try { if (typeof window !== 'undefined' && window.__STARNET_API__) base = String(window.__STARNET_API__); } catch (_) {}
+    try { if (typeof window !== 'undefined' && window.__VULTRON_API__) base = String(window.__VULTRON_API__); } catch (_) {}
     return base + ENDPOINT;   // no ticket minter loaded: an unauthenticated beacon (refused) beats a leaked master token
   }
   function installUnloadFlush() {
@@ -1095,7 +1095,7 @@ const CloudSave = (() => {
       : { lastPushOkAt: health.lastPushOkAt, lastPushFailAt: health.lastPushFailAt, consecutiveFailures: health.consecutiveFailures, nextRetryAt: 0, warn: false, stale: false, cause: health.consecutiveFailures > 0 ? (health.cause || 'offline') : null };
     s.conflict = conflict;   // conflict.reset: the station file is empty because this computer's station was RESET
     s.seeded = seeded;       // { revision, at } once this window's copy re-seeded a missing station file (bug 5c019483)
-    s.degraded = degraded;   // EL-11 FIX 1: refused-by-newer-StarNet is its own persistent, renderable state
+    s.degraded = degraded;   // EL-11 FIX 1: refused-by-newer-Vultron is its own persistent, renderable state
     // #121: the browser cache could not hold this page's newest save, so the station file is its only durable copy.
     // cacheFailedConfirmed is true only once the station file acknowledged exactly that save with nothing newer queued.
     s.cacheFailed = cacheFailed;

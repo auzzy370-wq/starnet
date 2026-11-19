@@ -15,7 +15,7 @@ origin: audit
 
 ## Symptom
 
-Kill StarNet while a recurring routine is mid-run (a Windows force-kill, an update, a crash) and start it again: the ROUTINES row still reads "last ✓ ok 1h ago · next in 1h" and the routine's run history is empty. The occurrence that fired, spent money and died is invisible on the routine itself; only the separate run-recovery page knows it happened.
+Kill Vultron while a recurring routine is mid-run (a Windows force-kill, an update, a crash) and start it again: the ROUTINES row still reads "last ✓ ok 1h ago · next in 1h" and the routine's run history is empty. The occurrence that fired, spent money and died is invisible on the routine itself; only the separate run-recovery page knows it happened.
 
 ## Repro
 
@@ -29,7 +29,7 @@ Deterministic replay: `test/cron.interrupted-settlement.http.test.js` (seeds the
 Live (scratchpad probeA, port 9741, before the fix) after the reboot:
 `afterReboot: { state: "scheduled", lastStatus: "ok", lastRunId: "prev-run-ok", lastRunAt: "2026-10-20T05:55:03Z" }`, `history: { ok: true, runs: [] }`, while `run-recoveries` listed `{ cronJobId: "probeinterval", status: "resumable" }` and `runs.jsonl` held `{ reason: "interrupted", streamId: "cron-635032f7…" }` with NO `cronJobId`.
 Root cause: `syncInterruptedRunHistory` in `sidecar/index.js` wrote the interrupted row without the journal's `meta.cronJobId`, so `handleCronHistory` (which matches `r.cronJobId === id || r.runId === job.lastRunId`) could not see it, and nothing ever told the routine record its newest occurrence died (advance-before-run had already moved nextRunAt; `markRun` never ran).
-After the fix the same probe reads `{ state: "error", lastStatus: "error", lastError: "interrupted: StarNet stopped before this run finished; it can continue from its last durable step", lastRunId: <the run> }` and the history lists the run with `reason: "interrupted"`. Regression `test/cron.interrupted-settlement.http.test.js` went RED (8 problems) before the fix and GREEN after; it also proves a routine that settled a LATER occurrence is never rewritten and a second boot changes nothing.
+After the fix the same probe reads `{ state: "error", lastStatus: "error", lastError: "interrupted: Vultron stopped before this run finished; it can continue from its last durable step", lastRunId: <the run> }` and the history lists the run with `reason: "interrupted"`. Regression `test/cron.interrupted-settlement.http.test.js` went RED (8 problems) before the fix and GREEN after; it also proves a routine that settled a LATER occurrence is never rewritten and a second boot changes nothing.
 
 _Found by the `sweep/autonomy` lane, 2026-10-20._
 

@@ -29,13 +29,13 @@ function sandbox(opts) {
     SK: { providers: { registry: require('../sidecar/providers/registry.js') } },
     JSON, Promise, Set, Array, String, Number, Math, Object,
     DESKTOP: !!opts.desktop, DEVMODE: false, DEV: null, selectionRevision: 0,
-    LS: { key: 'starnet.byok.key', baseUrl: 'starnet.byok.baseUrl', prov: 'starnet.byok.prov' },
+    LS: { key: 'vultron.byok.key', baseUrl: 'vultron.byok.baseUrl', prov: 'vultron.byok.prov' },
     readinessCache: require('../frontend/app/provider-readiness.js').makeCache(),
-    readiness: p => ({ credential: { present: p !== 'ollama' && !!((opts.configured || {})[p] || (opts.storage || {})['starnet.byok.key.' + p]) } }),
+    readiness: p => ({ credential: { present: p !== 'ollama' && !!((opts.configured || {})[p] || (opts.storage || {})['vultron.byok.key.' + p]) } }),
     refreshProviderReadiness: async () => {},
     getProv: () => 'openrouter',
     localStorage: { getItem: k => store.has(k) ? store.get(k) : null, setItem: (k, v) => { store.set(k, String(v)); }, removeItem: k => { store.delete(k); } },
-    getKey: p => opts.desktop ? '' : (store.get('starnet.byok.key.' + p) || ''),
+    getKey: p => opts.desktop ? '' : (store.get('vultron.byok.key.' + p) || ''),
     syncEngineKey: () => Promise.resolve({ ok: true }),
     invoke: (cmd, args) => { invokes.push({ cmd, args }); return opts.invoke ? opts.invoke(cmd, args) : Promise.resolve(true); },
     console: { warn: m => warns.push(String(m)), log() {} }
@@ -53,9 +53,9 @@ function sandbox(opts) {
   A.eq(sandbox({ desktop: true, configured: {} }).api.hasStoredCredential('custom'), false,
     'desktop: an unknown CUSTOM sidecar state is not a credential');
   // browser: unchanged
-  A.eq(sandbox({ desktop: false, storage: { 'starnet.byok.baseUrl.custom': 'http://localhost:1234/v1' } }).api.hasStoredCredential('custom'), false,
+  A.eq(sandbox({ desktop: false, storage: { 'vultron.byok.baseUrl.custom': 'http://localhost:1234/v1' } }).api.hasStoredCredential('custom'), false,
     'browser: a keyless CUSTOM endpoint is not a credential');
-  A.eq(sandbox({ desktop: false, storage: { 'starnet.byok.key.custom': 'sk-local' } }).api.hasStoredCredential('custom'), true,
+  A.eq(sandbox({ desktop: false, storage: { 'vultron.byok.key.custom': 'sk-local' } }).api.hasStoredCredential('custom'), true,
     'browser: a CUSTOM key saved in this browser is a credential');
   A.eq(sandbox({ desktop: true, configured: { ollama: true } }).api.hasStoredCredential('ollama'), false,
     'an Ollama endpoint is never a credential');
@@ -68,7 +68,7 @@ function sandbox(opts) {
     A.eq(rejected, false, 'a failed desktop endpoint store never rejects');
     A.ok(res && res.engine && res.engine.ok === false && /could not apply it to the station/.test(res.engine.error),
       'a failed desktop endpoint store resolves the failure in the { engine } shape SETTINGS warns on');
-    A.eq(s.store.get('starnet.byok.baseUrl.custom'), 'http://localhost:1234/v1', 'the endpoint stays saved in this window');
+    A.eq(s.store.get('vultron.byok.baseUrl.custom'), 'http://localhost:1234/v1', 'the endpoint stays saved in this window');
     A.eq(s.invokes.length, 1, 'the desktop store was attempted once');
     A.eq([s.invokes[0].cmd, s.invokes[0].args.provider, s.invokes[0].args.baseUrl], ['harness_store_provider_key', 'custom', 'http://localhost:1234/v1'],
       'the desktop store carries the provider and its endpoint');

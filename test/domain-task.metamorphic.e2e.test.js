@@ -1,5 +1,5 @@
 /* node test/domain-task.metamorphic.e2e.test.js — PROSE IS ADVICE; ONLY A LEAD'S onlyHost SCOPES A RUN
-   (domain-task-advisory; starnet-releases#5, gh#58, the 10-14 delegated-web-tools report).
+   (domain-task-advisory; vultron-releases#5, gh#58, the 10-14 delegated-web-tools report).
 
    The run host classified the latest user message of every task run with DomainTask.classify and, when it read as one
    exact host, took team.* and web_search off the wire, refused delegation and stopped every tool on NXDOMAIN — for a
@@ -33,10 +33,10 @@ const LABEL = 'bounded read (requested by lead)';
 const CONTROL = 'Summarize what we know about the release plan.';
 // the report briefs test/domain-task.metamorphic.test.js holds the dispatcher to (provenance there)
 const REPORT = [
-  ['rel#5 engineering', 'Review the deployment script for starnet-demo.io, write a unit test for it, and run it.'],
-  ['rel#5 security', 'Review the security headers and TLS setup on starnet-demo.io and list the risks.'],
-  ['rel#5 qa', 'Check starnet-demo.io and read the release checklist in its docs.'],
-  ['rel#5 automation', 'Inspect the CI status page on ci.starnet-demo.io and summarize what failed.'],
+  ['rel#5 engineering', 'Review the deployment script for vultron-demo.io, write a unit test for it, and run it.'],
+  ['rel#5 security', 'Review the security headers and TLS setup on vultron-demo.io and list the risks.'],
+  ['rel#5 qa', 'Check vultron-demo.io and read the release checklist in its docs.'],
+  ['rel#5 automation', 'Inspect the CI status page on ci.vultron-demo.io and summarize what failed.'],
   ['rel#5 markdown', 'Review deploy-notes.md and confirm the release steps.'],
   ['gh#58 api', 'POST to https://api.x.com/v1/items with ${MY_KEY}, then check the response'],
   ['gh#58 residual', 'check my orders on printify.com and summarize them'],
@@ -99,10 +99,10 @@ const server = http.createServer((req, res) => {
 (async () => {
   await new Promise(r => server.listen(0, '127.0.0.1', r));
   const base = 'http://127.0.0.1:' + server.address().port;
-  const fixture = SidecarFixture.create({ timeoutMs: 30000, env: { SKYNET_AUX_BUDGET: '0', SKYNET_OPENROUTER_BASE: base, OPENROUTER_API_KEY: 'synthetic-key', SKYNET_FULL_ACCESS: '0', STARNET_FULL_ACCESS: '0' } });
+  const fixture = SidecarFixture.create({ timeoutMs: 30000, env: { SKYNET_AUX_BUDGET: '0', SKYNET_OPENROUTER_BASE: base, OPENROUTER_API_KEY: 'synthetic-key', SKYNET_FULL_ACCESS: '0', VULTRON_FULL_ACCESS: '0' } });
   // one /api/run for the lead, read to its end (a permission card, should one open, is answered once)
   async function runLead(message) {
-    const response = await fetch(fixture.baseUrl + '/api/run', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-StarNet-Token': fixture.token },
+    const response = await fetch(fixture.baseUrl + '/api/run', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Vultron-Token': fixture.token },
       body: JSON.stringify({ agentId: 'agent', provider: 'openrouter', key: 'synthetic-key', model: 'test/model', isTask: true, messages: [{ role: 'user', content: message }] }) });
     if (response.status !== 200) throw new Error('run ' + response.status + ' ' + await response.text());
     const reader = response.body.getReader(), decoder = new TextDecoder(), events = [];

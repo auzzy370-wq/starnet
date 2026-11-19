@@ -27,7 +27,7 @@ A.ok(read('frontend/app/app.js').includes('DossierStore.composeBlock()') && read
    What stays is the manual's truth: a crew-row click never focuses an agent, and it says what the click does at each size. */
 const ICSS = read('frontend/css/interface.css');
 A.ok(!/\.crew-dossier/.test(ICSS), 'the hover DOSSIER key is gone too (Andrew 10-26: "unaligned, looks terrible"): right-click / Shift+F10 on the row open the dossier');
-const MAN = require('../sidecar/manual.js').starnetManual();
+const MAN = require('../sidecar/manual.js').vultronManual();
 A.ok(!/focuses it/.test(MAN) && !/click the row to focus/.test(MAN) && !/intended agent is focused/.test(MAN), 'the manual never says a crew-row click focuses an agent');
 A.ok(/None of these changes who COMMS talks to/.test(MAN) && /agent ON THE LINE/.test(MAN), 'the manual says messages go to the agent ON THE LINE and a row click does not change that');
 A.ok(/With one agent a crew-manifest row click opens its dossier; with 2\+ it shows that agent's sessions\. A right-click on the row or its sprite opens the dossier/.test(MAN) && !/DOSSIER key/.test(MAN),

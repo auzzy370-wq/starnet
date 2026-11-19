@@ -113,7 +113,7 @@ const imageCall = { name: 'image_generate', args: { prompt: 'a sunrise over the 
   A.ok(/studioRefusal: \(\) => \{\s*if \(askedBy\.getStore\(\) \|\| !\(isRoutineTrigger\(trigger\) && String\(o\.cronJobId \|\| ''\)\)\) return null;/.test(src),
     'the images refusal hint is for a routine\'s own run only (a worker, hop, trigger or chat keeps the plain refusal)');
   A.ok(/▣ ALLOW IMAGES on this routine in AUTOMATE › SCHEDULES/.test(src), 'the refusal names the real row key and where it lives');
-  A.ok(/switched off for the rest of THIS run because it read content from outside StarNet/.test(src), 'a granted run lifted by taint is told why, not sent to grant what it has');
+  A.ok(/switched off for the rest of THIS run because it read content from outside Vultron/.test(src), 'a granted run lifted by taint is told why, not sent to grant what it has');
 
   // taint: an image is not itself an outward action, so taint.js keeps the TOOL; the GRANT is what taint lifts
   A.ok(taint.allowedWhenTainted(IMAGE) === true, 'taint does not lock image_generate as a tool (a standing Always grant behaves as before)');

@@ -34,7 +34,7 @@ const REAL_CONF = JSON.parse(fs.readFileSync(path.join(ROOT, 'src-tauri', 'tauri
     put('sidecar/index.js', 'require("./tools/builtin/shell.js");\n');
     put('sidecar/tools/builtin/shell.js', 'module.exports = {};\n');
     put('shared/events.js', 'module.exports = {};\n');
-    put('bin/starnet.js', 'require("./lib/cli-core.js");\n');
+    put('bin/vultron.js', 'require("./lib/cli-core.js");\n');
     put('bin/lib/cli-core.js', 'module.exports = function main() {};\n');
     put('frontend/app/app.js', 'window.App = {};\n');
     put('frontend/index.html', '<!doctype html>\n');

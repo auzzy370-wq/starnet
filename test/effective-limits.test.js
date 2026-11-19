@@ -32,7 +32,7 @@ assert.match(html, /Paid images only; chat calls spend no dollars\./, 'plan/loca
 assert.match(html, /unavailable/, 'unknown owner readback stays unavailable');
 assert.doesNotMatch(html, /<input|<button|generationId/, 'effective inventory is read-only and does not expose provider handles');
 const hostile = { classes: ['subscription'], rows: [{ ...row('maxSubscriptionTokens'), label: '<img src=x onerror=bad>', hint: '<script>bad</script>', where: '"bad"', env: '<bad>' }] };
-assert.doesNotMatch(ctx.render(hostile), /<img|<script>|STARNET_<bad>/, 'metadata rendered as text');
+assert.doesNotMatch(ctx.render(hostile), /<img|<script>|VULTRON_<bad>/, 'metadata rendered as text');
 assert.match(ctx.render(null), /unavailable/, 'missing API section is not an all-clear');
 assert.match(ctx.render({ classes: [], rows: [] }), /No payer is selected/, 'empty payer inventory states its scope');
 console.log('effective-limits.test: active/source/payer/unknown/read-only renderer assertions OK');

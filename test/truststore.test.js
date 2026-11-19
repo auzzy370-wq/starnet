@@ -22,7 +22,7 @@ global.localStorage = {
   setItem: (k, v) => { mem[k] = String(v); },
   removeItem: k => { delete mem[k]; }
 };
-const KEY = 'starnet.trust.v1';
+const KEY = 'vultron.trust.v1';
 
 const bus = A.makeBus();
 let emitted = 0;

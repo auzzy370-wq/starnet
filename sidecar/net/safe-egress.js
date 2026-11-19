@@ -569,12 +569,12 @@ function session(opts) {
    (the Etsy reports, 2026-10-08). Moved here from browser.js explainRefusal (whose text it still is, byte for byte, in
    the browser's voice) so web_fetch, web_request and connector sign-in can say it too. */
 const ANSWER_VOICES = deepFreeze({
-  browser: { lead: 'StarNet\'s browser safety check refused it: ',
+  browser: { lead: 'Vultron\'s browser safety check refused it: ',
     ownDns: 'A browser using its own secure DNS can still open the site, so it may work there. ',
-    route: 'StarNet\'s browser uses no outside proxy, VPN or gateway: it connects from this computer. ' },
+    route: 'Vultron\'s browser uses no outside proxy, VPN or gateway: it connects from this computer. ' },
   web: { lead: '', ownDns: 'A browser using its own secure DNS can still open the site, so it may work there. ',
-    route: 'StarNet uses no outside proxy, VPN or gateway: it connects from this computer. ' },
-  station: { lead: '', ownDns: '', route: 'StarNet uses no outside proxy, VPN or gateway: it connects from this computer. ' }
+    route: 'Vultron uses no outside proxy, VPN or gateway: it connects from this computer. ' },
+  station: { lead: '', ownDns: '', route: 'Vultron uses no outside proxy, VPN or gateway: it connects from this computer. ' }
 });
 function voiceOf(who) {
   if (typeof who === 'string' && has(ANSWER_VOICES, who)) return who;

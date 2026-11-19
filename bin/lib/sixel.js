@@ -1,4 +1,4 @@
-/* bin/lib/sixel.js — the REAL StarNet wordmark as a terminal image (Sixel), sized to the terminal's own cells.
+/* bin/lib/sixel.js — the REAL Vultron wordmark as a terminal image (Sixel), sized to the terminal's own cells.
 
    The master (bin/lib/logo-image.js) is the brand wordmark's light, one channel. logoSixel() scales it to fit `rows`
    text rows of `cellH` pixels (and no wider than `maxCols` cells), colors it on a red ramp (the glow fades to deep red,

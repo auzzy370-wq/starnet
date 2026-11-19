@@ -21,7 +21,7 @@
      on the retry is reported in its own section and does not turn the gate red; a second failure does.
    - EVERY step runs with an allowlisted environment: the variables Windows and POSIX need to spawn processes
      (PATH, SYSTEMROOT, TEMP, ...) plus a fresh scratch profile for the app-data roots. The developer's ambient
-     variables (provider keys, STARNET_/SKYNET_ overrides, NODE_OPTIONS, GIT_DIR, ...) never reach a test.
+     variables (provider keys, VULTRON_/SKYNET_ overrides, NODE_OPTIONS, GIT_DIR, ...) never reach a test.
      What the profile does NOT isolate, on Windows: the home directory (see buildStepEnv).
    - An INTERRUPTED run (SIGINT / SIGTERM) is never green: the current step is killed, no later step starts, and
      the last line says INTERRUPTED with how many steps ran, whatever the step that was running exited with.
@@ -69,7 +69,7 @@ const PASS_ENV = new Set([
 
 /* HERMETIC PROFILE (2026-08-20): the sidecar's boot-time station auto-recovery scans the real per-user app-data
    roots for a lost station, and a test's fresh temp workspace looks exactly like one — so on a machine with an
-   installed StarNet station, test-booted sidecars ingested the user's REAL station into their temp workspaces
+   installed Vultron station, test-booted sidecars ingested the user's REAL station into their temp workspaces
    (schema-stamp and sidecar.http broke the day the desktop app was first installed on the dev box). Every step
    gets its own empty scratch profile for APPDATA / LOCALAPPDATA / XDG_DATA_HOME (and HOME on POSIX), so no
    spawned sidecar can find or recover the real station through them — and no step can plant a station a later
@@ -204,7 +204,7 @@ function captureFailLines(stream, sink, failLines) {
    FAIL lines (only flaky steps need that).
    Resolves { status, signal, timedOut, ms, failLines }; never rejects. */
 function runAttempt(step, opts) {
-  const profile = mkdtempSync(join(tmpdir(), 'starnet-gate-profile-'));
+  const profile = mkdtempSync(join(tmpdir(), 'vultron-gate-profile-'));
   const started = Date.now();
   const capture = !!opts.capture;
   const failLines = [];

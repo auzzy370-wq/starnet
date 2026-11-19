@@ -30,7 +30,7 @@ const { cleanName, cleanMime } = require('./attachment-name.js');   // the ONE r
 const RESEND_K = 4;
 const RESEND_TURNS = 2;
 const RESEND_IMAGE_MIME = /^image\/(png|jpeg|gif|webp)$/;   // the picture types expandOne sends as image blocks
-const RESENT = Symbol.for('starnet.attachments.resent');   // off-wire (never enumerable): the report on an expansion's result array
+const RESENT = Symbol.for('vultron.attachments.resent');   // off-wire (never enumerable): the report on an expansion's result array
 
 const hasRefs = m => !!(m && m.role === 'user' && Array.isArray(m.attachments) && m.attachments.length);
 // a user message that counts as a turn: the very rule TurnDirective.capture applies to find the current directive

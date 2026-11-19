@@ -92,7 +92,7 @@ function startMockOpenRouter(script) {
 function boot(port, env, attemptsLeft) {
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, [INDEX], {
-      env: Object.assign({}, process.env, env, { SKYNET_PORT: String(port), STARNET_PORT: String(port) }),
+      env: Object.assign({}, process.env, env, { SKYNET_PORT: String(port), VULTRON_PORT: String(port) }),
       stdio: ['ignore', 'pipe', 'pipe']
     });
     let out = '', settled = false;
@@ -182,9 +182,9 @@ function twoStageFloor() {
   ]);
   const ws = fs.mkdtempSync(path.join(os.tmpdir(), 'sk-routing-sample-'));
   const env = {
-    SKYNET_WORKSPACES: ws, STARNET_WORKSPACES: ws,
+    SKYNET_WORKSPACES: ws, VULTRON_WORKSPACES: ws,
     // deliberately NO dev mode: the sample seam is a first-class production route, not a DEV-gated one
-    STARNET_DEV: '', SKYNET_DEV: '',
+    VULTRON_DEV: '', SKYNET_DEV: '',
     SKYNET_OPENROUTER_BASE: mock.base,
     SKYNET_OPENROUTER_KEY: 'sk-or-v1-routing-sample-fake',
     SKYNET_DEFAULT_MODEL: 'test/model'
@@ -195,7 +195,7 @@ function twoStageFloor() {
   try {
     const token = await bootToken(B, B);
     A.ok(token.length >= 32, 'got a session API token');
-    const headers = { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: B };
+    const headers = { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: B };
     const post = (body) => fetch(B + '/api/routing/sample', { method: 'POST', headers, body: JSON.stringify(body == null ? {} : body) })
       .then(r => r.json().then(j => ({ status: r.status, j })));
 

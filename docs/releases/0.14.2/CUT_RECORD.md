@@ -1,4 +1,4 @@
-# StarNet v0.14.2 — cut record
+# Vultron v0.14.2 — cut record
 
 The record of how v0.14.2 was cut, gated and published (cut plan step 8.6). Drafted 2026-10-31 at about 07:45Z (03:45 EDT), after Publish. Verified at about 08:22Z: 48 run IDs and 50 SHAs matched, and the verifier's 42 corrections are applied. Brought up to date at about 18:30Z (14:30 EDT), through the release session's merge-back entry.
 
@@ -21,7 +21,7 @@ The record of how v0.14.2 was cut, gated and published (cut plan step 8.6). Draf
 | Bump | e6dcc7f0e waiver (committed before the bump) → a12e47b7f `release: v0.14.2` → 3d2cbc7e2 notes → 192dd3c6e relock, the first pin |
 | Tag push | 2026-10-31 02:03 EDT. It started release-train 41174997476 at 06:03Z |
 | Published | **2026-10-31T07:32:02Z** (03:32 EDT), by `gh release edit --draft=false --prerelease=false --latest`. releases/latest = v0.14.2 |
-| Release | https://github.com/androoAGI/starnet-releases/releases/tag/v0.14.2: 9 assets, the same set as v0.14.1 |
+| Release | https://github.com/YOUR-GITHUB-USER/vultron-releases/releases/tag/v0.14.2: 9 assets, the same set as v0.14.1 |
 | Notes | RELEASE_NOTES.md at TIP has 116 bullets in 20 sections. Heading plus summary is 520 characters and ends on the summary's full stop. No CR, BOM, TODO or HTML comment, and no soak duration is cited |
 | Claims | `claims.mjs` PASS: 37 claims, 383 locked surface files |
 
@@ -29,9 +29,9 @@ The record of how v0.14.2 was cut, gated and published (cut plan step 8.6). Draf
 
 | Asset | SHA-256 |
 |---|---|
-| StarNet_0.14.2_x64-setup.exe | aaa65c68818b0f7c7d2dd635b6a5cc6199fd380522caa93a2a682fd94ffb8547 |
-| StarNet_0.14.2_aarch64.dmg | 69d6155b8c0de31a59bea3d6e7350293508512b1ac3221cee442c727ee341e89 |
-| StarNet_0.14.2_x64.dmg | 7bbeb6adf0a5b4edfa856f9586f595bffac251bf365f35201ce93255857d253d |
+| Vultron_0.14.2_x64-setup.exe | aaa65c68818b0f7c7d2dd635b6a5cc6199fd380522caa93a2a682fd94ffb8547 |
+| Vultron_0.14.2_aarch64.dmg | 69d6155b8c0de31a59bea3d6e7350293508512b1ac3221cee442c727ee341e89 |
+| Vultron_0.14.2_x64.dmg | 7bbeb6adf0a5b4edfa856f9586f595bffac251bf365f35201ce93255857d253d |
 
 **latest.json** has version 0.14.2 and the platforms windows-x86_64, darwin-aarch64 and darwin-x86_64 (parity with 0.14.1), with every signature present. Its pub_date is 2026-10-31T06:59:54.150Z.
 - Its `notes` equal the tagged RELEASE_NOTES.md without the file's final newline (compared on the copy in `draft-v0.14.2/`, whose sha256 3c2c4247… equals the published asset's GitHub digest). The published release body equals the file byte for byte (read at writing with `gh release view --json body`). The copy `draft-v0.14.2/release-body.md` carries one extra trailing newline from `--jq` output, not from GitHub.
@@ -77,13 +77,13 @@ All five were dispatched 10-31 at about 05:14Z on `agent/release-0142`, with hea
 
 | Run | Workflow | Result |
 |---|---|---|
-| 41171786720 | desktop-build | **Attempt 1 red.** build (macos-15-intel) failed in "Build desktop bundles": codesign of `StarNet.app/Contents/MacOS/node` reported "The timestamp service is not available.", then "failed to sign app". This is Apple's timestamp server, a transient unrelated to the CSS-only delta; intel-macos-installed-acceptance failed downstream of it (`db-intel-fail.log`, about lines 830–842). **Attempt 2 green** after `gh run rerun --failed`: all 4 builds, notarize-macos ×2 and intel-macos-installed-acceptance; publish-test skipped |
+| 41171786720 | desktop-build | **Attempt 1 red.** build (macos-15-intel) failed in "Build desktop bundles": codesign of `Vultron.app/Contents/MacOS/node` reported "The timestamp service is not available.", then "failed to sign app". This is Apple's timestamp server, a transient unrelated to the CSS-only delta; intel-macos-installed-acceptance failed downstream of it (`db-intel-fail.log`, about lines 830–842). **Attempt 2 green** after `gh run rerun --failed`: all 4 builds, notarize-macos ×2 and intel-macos-installed-acceptance; publish-test skipped |
 | 41171788931 | fast-gate | The workflow is red only on its http shards. The `gate` job is green: test:fast 1501/1501 in 20m37s, and customer journeys 38/38. rust-policy is green. The 4 http shards ran all 269 entries: 263 PASS and 6 FAIL, the known Linux reds output-recovery, cron-lock-recycled-pid, loops-endurance, checkpoint-stale-lock, shell and remote (Codex, coord-release-c646-ci-http-complete-census.json; the same set as 43e6fe061) |
 | 41171791770 | secret-history | Green (gitleaks) |
 | 41171793466 | floor-canaries | Green, with `{"canary":"voice-floor","ok":true,…}` in the log (read at writing) |
 | 41171794989 | soak | Green: the plan, scale and soak jobs |
 
-The TIP installer from 41171786720 is `StarNet_0.14.2_x64-setup.exe`, sha256 00fe7c3ac11ea12fc3a139e94f0dd74541f7a506f18004ac1a76cdb4dbed17d4. release-assemble-manifest verified its signature against the baked public key.
+The TIP installer from 41171786720 is `Vultron_0.14.2_x64-setup.exe`, sha256 00fe7c3ac11ea12fc3a139e94f0dd74541f7a506f18004ac1a76cdb4dbed17d4. release-assemble-manifest verified its signature against the baked public key.
 
 ### 3.2 Tag, draft and public runs (ref v0.14.2, headSha = TIP)
 
@@ -92,7 +92,7 @@ The TIP installer from 41171786720 is `StarNet_0.14.2_x64-setup.exe`, sha256 00f
 | 41174997476 | release-train, on the tag push | **SUCCESS**: gate, build ×3 (the win-x64 leg runs the published-upgrade proof, CUT_PLAN A2), voice-floor-canary, notarize-macos ×2, intel-macos-installed-acceptance, assemble and stage-draft |
 | 41179035674 | T0 on the draft | **SUCCESS**, in draft mode: staged installer downloaded, silent install, first launch proven over CDP. Its candidate lifecycle, v0.14.1 continuity and installed-suite steps are skipped in this mode (CUT_PLAN A5) |
 | 41179037717 | G1, default cases | Windows: idle-close, close-to-tray, updater-smoke and kill-relaunch PASS; **cli-app-closed FAIL** with the exact pre-registered signature (§3.3). **lifecycle-macos PASS** (kill-relaunch and cli-app-closed): this is bullet 81's Publish gate |
-| 41179039452 | G1, `cases=cli-app-closed` alone | FAIL on both platforms **at precondition**: "the app has never run here (no startup.log) … the app's workspace holds no station … expected exactly 1 station sidecar while starnet ran, saw at most 0". The case's assertion never ran |
+| 41179039452 | G1, `cases=cli-app-closed` alone | FAIL on both platforms **at precondition**: "the app has never run here (no startup.log) … the app's workspace holds no station … expected exactly 1 station sidecar while vultron ran, saw at most 0". The case's assertion never ran |
 | 41179376463 | G1, `cases=kill-relaunch,cli-app-closed` (the decisive run) | **SUCCESS**: kill-relaunch PASS and cli-app-closed PASS on both Windows and macOS |
 | 41181001214 | G1 public canary (`public_canary=true`, baseline v0.14.1), CUT_PLAN 8.2 | Run conclusion **failure**, on the Windows `lifecycle` job only. **public-updater-canary SUCCESS:** public-upgrade-continuity.json reads outcome PASS. v0.14.1 (8e8311987) updated itself through the in-app updater to the published installer (aaa65c68…), all 10 checks true, with installed smoke GREEN after the update. **lifecycle-macos PASS** (kill-relaunch, cli-app-closed). **Windows lifecycle:** idle-close, close-to-tray, updater-smoke and kill-relaunch PASS. cli-app-closed FAILs with the pre-registered close-to-tray signature (`g1-41181001214/packaged-lifecycle-v0.14.2/startup.log` L29–30, L44, L51, L52–53). Disposition (CUT_STATUS): known harness contamination, **no rollback** |
 
@@ -101,8 +101,8 @@ The TIP installer from 41171786720 is `StarNet_0.14.2_x64-setup.exe`, sha256 00f
 - **Where.** Windows cli-app-closed failed in every five-case run: T0 41057301652 (192dd3c6e), 41134994592 (989533214) and 41160568422 (43e6fe061), G1 41179037717 on the draft, and the public canary 41181001214 (§3.2). The startup.log signature below was read in 41134994592, 41160568422, 41179037717 and 41181001214. For 41057301652, CUT_STATUS records no startup.log reading.
 - **Cause, from the run's own startup.log** (`g1-41179037717/packaged-lifecycle-v0.14.2/startup.log`):
   - L29–30, in the close-to-tray case: "close-request: close_to_tray=true", then "close-request: staying resident (close-to-tray preference)";
-  - L44: "startup: started by starnet (--background, …)";
-  - L51: "terminal-done: every starnet session it ran for has ended; deciding as a window close";
+  - L44: "startup: started by vultron (--background, …)";
+  - L51: "terminal-done: every vultron session it ran for has ended; deciding as a window close";
   - L52–53: "close_to_tray=true", then "staying resident".
 - **Reading.** The app applied the close-to-tray preference that the earlier case set on the same profile and never reset. That is the product's designed rule. The defect is the harness's case isolation. Codex corroborated this independently (coord-release-989-lifecycle-startup-corroboration.json).
 - **No claim rests on it.** The case is new since 10-27 (a5e11f275, cd0759e4d); v0.14.1's G1 ran only idle-close, close-to-tray and updater-smoke. No 0.14.2 bullet claims quit-after-last-terminal.
@@ -155,7 +155,7 @@ All but the live check ran in the release worktree at TIP. Their receipt headers
 - **Box load.** During these runs the main box was shared with other sessions' gates and the ai-sandbox v5 Godot lanes, which held the CPU at 100% at times. Andrew had the release session ask that session to ease off until the update was out (memory note, 10-30 ~19:45; his words are not in CUT_STATUS), and the v5 lanes were capped at 2 windowed + 2 headless (CUT_STATUS). He later approved "Pause v5 ~30 min (Recommended)" for a quiet receipt run.
 - **43e6fe061 → TIP is not content-equivalent for http.** It changes two CSS files and their website mirrors, `test/comms-wait-line.test.js` and claims.json. For that delta the http evidence is the exact-SHA CI http shards (269 ran, 263 PASS, only the known 6 Linux reds) plus the two targeted local solos on TIP, cancel-host-run.e2e and workflow-project.e2e (§4, Solos).
 - **T0 for TIP was carried from 43e6fe061: 41160566353 and the 5.3 run 41160568422.** Codex found the backend, packaging code and manifests byte-identical; the delta is CSS, one test and claims.
-  - 41160566353 (no manifest) passed: a clean install with a CDP-proven first launch (its proof records pageTitle "about:blank" at http://tauri.localhost/, where the other pre-tag T0 proofs record "STARNET"), v0.14.1 → candidate continuity with all 6 checks true, and an installed smoke GREEN with expectedHead == 43e6fe061…
+  - 41160566353 (no manifest) passed: a clean install with a CDP-proven first launch (its proof records pageTitle "about:blank" at http://tauri.localhost/, where the other pre-tag T0 proofs record "VULTRON"), v0.14.1 → candidate continuity with all 6 checks true, and an installed smoke GREEN with expectedHead == 43e6fe061…
   - 41160568422 (with manifest): idle-close, close-to-tray, updater-smoke and kill-relaunch PASS; cli-app-closed FAIL with the pre-registered signature.
   - The shipping installer (aaa65c68…) was then covered by the draft T0 (clean install and first launch only), by G1 (lifecycle cases, §3.2) and, after Publish, by the public canary (0.14.1 → 0.14.2 through the in-app updater, installed smoke GREEN).
   - Carrying T0 is a deviation from waiver §2 (§5.3).
@@ -187,7 +187,7 @@ Run as `SKYNET_GUARDIAN_TRUNK=agent/release-0142 node scripts/qa/ready.mjs` on a
 | qa/STATUS.md row | WARN |
 | Five version pins | PASS, all 0.14.2 |
 | Tag not yet local | PASS before tagging; WARN "already tagged at HEAD" after |
-| Tag not on origin; no release on starnet-releases | PASS (before the push) |
+| Tag not on origin; no release on vultron-releases | PASS (before the push) |
 | Claims lock | PASS: 37 claims, 383 files |
 | website/app mirror | PASS |
 | test:fast at HEAD | PASS: 1501 steps |
@@ -248,7 +248,7 @@ Run as `SKYNET_GUARDIAN_TRUNK=agent/release-0142 node scripts/qa/ready.mjs` on a
   - CUT_STATUS records the pushes of 989533214, 43e6fe061 and c6468b7f9 (192dd3c6e's is in the memory note), but no separate owner words.
   - GO #1, the pre-bump push (done 10-29 ~23:57Z, CUT_PLAN 2.2), rests on the same reading.
 - **The tag push (GO #3)** followed his "done" on the key and his direction "go ahead ssh it to the laptop and then proceed with everything else". His standing 10-29 go, "I trust your recommendation" (SOAK_WAIVER §6), was read by the release session as covering the tag push once the pre-tag checks were green (memory note, 10-29).
-- **Before Publish,** at his ask ("update my starnet to the final version super quick, then I will greenlight the update for publish"), the official draft installer (sha aaa65c68…, from release-train 41174997476) was installed over the TIP desktop-build copy on his machine and launched normally. The registry reads 0.14.2, and /health reports "v0.14.2". So his own UPDATE CENTER update (waiver §2, CUT_PLAN 8.2b) cannot run on that box (§10).
+- **Before Publish,** at his ask ("update my vultron to the final version super quick, then I will greenlight the update for publish"), the official draft installer (sha aaa65c68…, from release-train 41174997476) was installed over the TIP desktop-build copy on his machine and launched normally. The registry reads 0.14.2, and /health reports "v0.14.2". So his own UPDATE CENTER update (waiver §2, CUT_PLAN 8.2b) cannot run on that box (§10).
 - **Publish GO (GO #4), 2026-10-31 03:31 EDT:** "Looks good to me, go ahead and publish it", given after the official build was installed on his machine and he had looked it over. Published at 07:32:02Z (03:32 EDT).
 - **Website deploy (GO #5):** "Deploy the website (Recommended)" (§10, 8.5).
 - **Push and merge-back (GO #6):** "Yes, push and merge back (Recommended)". It means: push `agent/release-0142` after this record lands, then do the merge-back into local trunk with full gates. A trunk push needs a separate go (GO #7).
@@ -260,7 +260,7 @@ Run as `SKYNET_GUARDIAN_TRUNK=agent/release-0142 node scripts/qa/ready.mjs` on a
 - **The B4 real-vendor probe** ran 10-29 on 7210e0ae1, for about $0.07 (`b4/B4-RECEIPT.md`).
   - Six routes PASS, each 8/8 checks: OpenRouter gpt-4o-mini, kimi-k2, mistral-small-3.2 and qwen3-coder; Ollama native qwen3:8b; and OpenAI-compatible qwen3:8b at Ollama.
   - **Gemini 2.5 Flash and DeepSeek v3.1 via OpenRouter FAIL** (the tool probe ends "empty"), **identically on v0.14.1**. They are pre-existing and not claimed in the notes.
-  - Not probed: StarNet credits, OpenAI direct, and the Grok and Kimi sign-ins.
+  - Not probed: Vultron credits, OpenAI direct, and the Grok and Kimi sign-ins.
   - With the notes walk (about $0.87), about $0.94 of the $3 cap was spent.
 - **Follow-up bug.** Gemini's upstream `MALFORMED_FUNCTION_CALL` (finish_reason "error") is recorded only as run end "empty", and the provider's reason is dropped. It is filed as qa bug 64dbe836 (a42b2c0d1).
 - **Windows stop/boot cycles under soak: not covered** (waiver §3).
@@ -280,7 +280,7 @@ Run as `SKYNET_GUARDIAN_TRUNK=agent/release-0142 node scripts/qa/ready.mjs` on a
   - *Discrepancy:* waiver §3 counts connector OAuth among the fixed paths, but CUT_PLAN 0.3 and the claims ledger say connector OAuth still runs on the bundled undici 6.28.0. The shipped bullet claims web fetch only either way.
 - **The copy-fix ruling (CUT_PLAN 0.6).**
   - (a) The two refused-file notes were fixed before the bump in the copy lane (merge dc3fea600: f7980ea6e, 04ad31994, a94a55edf), so bullet 18 keeps its clause.
-  - (b) Q6, "nothing was charged" on call_too_expensive, was removed in the same lane (8954f54ab, 474787a27). The message now says the conversation could cost more, so StarNet refused the call.
+  - (b) Q6, "nothing was charged" on call_too_expensive, was removed in the same lane (8954f54ab, 474787a27). The message now says the conversation could cost more, so Vultron refused the call.
   - Andrew's own Q6 ruling is not recorded in the release folder.
 
 ## 7. Lag investigation
@@ -310,7 +310,7 @@ Run as `SKYNET_GUARDIAN_TRUNK=agent/release-0142 node scripts/qa/ready.mjs` on a
   - W-B4 and W-B5 (bullets 75, 76, 79 and 80) were decided by CI: kill-relaunch, idle-close and updater-smoke PASS, v0.14.1 continuity PASS, and the startup.log stop lines are present. The human walks, including W-B5's skill approvals across a 0.14.1 reinstall, are not recorded.
   - W-B8 (bullet 49's Drive clause) was VERIFIED on the installed 43e6fe061 build (`gates/wb8-43e6fe061.txt`). W-B6 is lifecycle-macos on the draft: PASS.
 - **Group T (Telegram)** was not walked, for want of a test bot. Those bullets publish at their ledger level.
-- **The manual draft checks (CUT_PLAN 7.4):** the installer over v0.14.1 (stop and reap lines, skill approvals), desktop.open through `--starnet-breakaway`, notepad from a StarNet terminal, and dual-stack sites. Nothing is recorded beyond Andrew installing and looking over the official build.
+- **The manual draft checks (CUT_PLAN 7.4):** the installer over v0.14.1 (stop and reap lines, skill approvals), desktop.open through `--vultron-breakaway`, notepad from a Vultron terminal, and dual-stack sites. Nothing is recorded beyond Andrew installing and looking over the official build.
 - **The 6 Linux http reds** are called pre-existing. Whether each was triaged as a test issue or a macOS product issue is not recorded. checkpoint-stale-lock (index.lock permission) and shell.test (ESC stripping) are the POSIX-flavoured ones, and macOS is POSIX.
 - **cli-path-hook's local pass,** and whether station-builder.test.js's laptop timeout is only laptop slowness.
 - **The Guardian checks** in §5.3.
@@ -321,7 +321,7 @@ Run as `SKYNET_GUARDIAN_TRUNK=agent/release-0142 node scripts/qa/ready.mjs` on a
   - WALK_RESULTS left 0.14.1 unverified. The release session later recorded it as pre-existing in v0.14.1 (terminal.js:79-80), not a blocker, and sent it to system32-02 (memory note).
   - It needs an owner.
 - **Uploads submitted late (Q-W2, bullet 17).** If the person submits an agent-filled form after the reply has ended, the staged copy is gone (ERR_FILE_NOT_FOUND), although the input still shows the file. 06adcd770 rewords the receipt, and the notes name the workaround. The lifecycle fix is the coordinator's polish lane's, for a later release (memory note).
-- **Two deleted bullets:** a pick made while a QUICK TOUR page is typing is dropped, and the interactive `starnet --agent` opens on the lead. The alternatives are in CLAIMS_LEDGER.
+- **Two deleted bullets:** a pick made while a QUICK TOUR page is typing is dropped, and the interactive `vultron --agent` opens on the lead. The alternatives are in CLAIMS_LEDGER.
 - **Bug 1ac8819d:** the E-STOP half is still open; f9860dcac is a partial fix (§11).
 - **Walk follow-ups, not claimed** (WALK_RESULTS; its two dev-only items, the seed banner's "full access on" with SEED_FULL_ACCESS=0 and an untracked mock-comms residue folder removed after Group M, are left out):
   - the refusal reason shows only "✗ error" on the COMMS tool line;
@@ -379,7 +379,7 @@ Run as `SKYNET_GUARDIAN_TRUNK=agent/release-0142 node scripts/qa/ready.mjs` on a
     - In a cmd chain, `%ERRORLEVEL%` expands at parse time, so a chained "http rc=0" meant nothing. Use delayed expansion.
     - The raw local fast logs carry no gate-receipt header (Codex), so their SHA association rests on path, manifest and the ritual's checks.
     - qa:ready prints "artifact: [object Object]" for the installed-smoke row.
-    - The plan's `npx wrangler pages deploy website-deploy --project-name starnet-site`, without `--branch`, makes a preview deployment (a3787df9). A production deploy needs `--branch main --commit-hash <sha>`.
+    - The plan's `npx wrangler pages deploy website-deploy --project-name vultron-site`, without `--branch`, makes a preview deployment (a3787df9). A production deploy needs `--branch main --commit-hash <sha>`.
     - `sed -i` on website/index.html stripped CR from 220 lines of its mixed line endings (09eb79245, discarded). Restamp with a byte-preserving swap.
 
 ## 10. After Publish (status at about 18:30Z, 14:30 EDT)
@@ -390,9 +390,9 @@ Run as `SKYNET_GUARDIAN_TRUNK=agent/release-0142 node scripts/qa/ready.mjs` on a
 | 8.2 public canary | 41181001214 (§3.2): the updater job passed (0.14.1 → 0.14.2 through the in-app updater, 10/10 checks, installed smoke GREEN). The run is red only on the Windows lifecycle job's cli-app-closed, with the pre-registered signature. Disposition: no rollback |
 | Andrew's own UPDATE CENTER update | Not possible: he installed the official 0.14.2 directly, at his request, before Publish. The public canary stands in for it (CUT_STATUS) |
 | 8.2b rollback | Not triggered: the 8.2 disposition is no rollback (CUT_STATUS). If it is ever needed: mark v0.14.2 pre-release, mark v0.14.1 latest, then check that releases/latest and latest.json name 0.14.1. Never edit v0.14.2's notes or latest.json |
-| 8.3 source mirror | Done (CUT_STATUS; confirmed at writing). sync-source-release 41181493422 (workflow_dispatch on the default branch feat/harness-backend, 07:39:56Z) succeeded. v0.14.2 is Latest on androoAGI/starnet, published 07:41:45Z. CUT_PLAN 8.2b holds 8.3–8.5 until 8.2 and Andrew's own update have passed. His own update could not run, so 8.3–8.5 went ahead on the public canary's updater PASS (07:36:53Z) alone, which was the release session's reading. No owner words on that substitution are recorded; GO #5 came after it |
+| 8.3 source mirror | Done (CUT_STATUS; confirmed at writing). sync-source-release 41181493422 (workflow_dispatch on the default branch feat/harness-backend, 07:39:56Z) succeeded. v0.14.2 is Latest on YOUR-GITHUB-USER/vultron, published 07:41:45Z. CUT_PLAN 8.2b holds 8.3–8.5 until 8.2 and Andrew's own update have passed. His own update could not run, so 8.3–8.5 went ahead on the public canary's updater PASS (07:36:53Z) alone, which was the release session's reading. No owner words on that substitution are recorded; GO #5 came after it |
 | 8.4 website restamp | Done: **7de0ca852** on `agent/release-0142`, local and unpushed (authored 03:43 EDT, parent c6468b7f9; read at writing). 0.14.1 → 0.14.2 in website/index.html (#ver-badge, span.ver, #ver-foot), website/pricing.html (#ver-foot) and website/site.js (FALLBACK_VERSION): 5 insertions, 5 deletions, bytes preserved (0.14.1 precedent f7d94d0e0). A first attempt, 09eb79245 (never pushed), was discarded: `sed -i` had stripped CR from 220 lines of index.html's mixed line endings (a whitespace-only, 442-line diff). It was reset locally and redone byte-exactly with a latin1-safe swap. `npm run website:stage` done |
-| 8.5 website deploy | Done, under Andrew's GO #5: "Deploy the website (Recommended)". The plan's command without `--branch` made a preview deployment (a3787df9, branch alias agent-release-0142; unlinked). Production is ca6c04c8, made with `npx wrangler pages deploy website-deploy --project-name starnet-site --branch main --commit-hash 7de0ca852`. Verified live: starnetos.com and www show v0.14.2, and site.js reads FALLBACK_VERSION '0.14.2' |
+| 8.5 website deploy | Done, under Andrew's GO #5: "Deploy the website (Recommended)". The plan's command without `--branch` made a preview deployment (a3787df9, branch alias agent-release-0142; unlinked). Production is ca6c04c8, made with `npx wrangler pages deploy website-deploy --project-name vultron-site --branch main --commit-hash 7de0ca852`. Verified live: vultron.vercel.app and www show v0.14.2, and site.js reads FALLBACK_VERSION '0.14.2' |
 | 8.6 cut record | This file. Owed: commit it by pathspec as `docs/releases/0.14.2/CUT_RECORD.md` on `agent/release-0142`, on top of 7de0ca852. No docs/NEXT.md or qa/STATUS.md on this branch |
 | 8.7 push `agent/release-0142` | GO #6 given: "Yes, push and merge back (Recommended)". It means: push `agent/release-0142` after this record lands, then do the merge-back into local trunk with full gates. No trunk push without a separate go. The push is still owed: remote `agent/release-0142` = c6468b7f9 (read at writing) |
 | 8.8 external PRs | Owed (GO): comment on and close PRs #159 and #162; comment on issues #145, #148 and #158, closing #145 only with installer proof (CUT_PLAN 8.8). Read at writing: all five are open, and none was updated after 10-29 01:34Z |
@@ -508,12 +508,12 @@ trunk agent/release-0142 @ c6468b7f · generated 2026-10-31T05:59:57.143Z
 [PASS] five version pins agree — all five = 0.14.2
 [WARN] tag v0.14.2 not yet local — already tagged at HEAD — the tag step is done; nothing pushed yet
 [PASS] tag v0.14.2 not on origin
-[PASS] no release v0.14.2 on androoAGI/starnet-releases
+[PASS] no release v0.14.2 on YOUR-GITHUB-USER/vultron-releases
 [PASS] claims lock current for HEAD — PASS claims planning authority · 37 claims · 383 locked surface files
 [PASS] website/app mirror in sync
 [PASS] test:fast green at HEAD — 1501 step(s) green · 2026-10-31T06:00:43.156Z · log <scratch>/gates/fast-c6468b7f9.log
 [WARN] test:http green at HEAD — not proven at HEAD
-       fix: required when sidecar/ship/route code changed since the last cut (starnet-backend-law): `npm run test:http 2>&1 | tee gate-http.log` → --gates-proven-by gate-http.log
+       fix: required when sidecar/ship/route code changed since the last cut (vultron-backend-law): `npm run test:http 2>&1 | tee gate-http.log` → --gates-proven-by gate-http.log
 [WARN] T0 clean-install proof for v0.14.2 — owed — runs on a fresh hosted Windows VM against the STAGED DRAFT (after the tag push)
        fix: Actions → t0-clean-install-proof → Run workflow → tag=v0.14.2 (runbook §1.7a). RELEASE BLOCKER: do not Publish without it
 [WARN] G1 packaged-lifecycle proof for v0.14.2 — owed — idle-close / close-to-tray / updater-smoke on a fresh hosted Windows VM against the staged draft (this is the branch 0.10.5/0.10.6 escaped through)
@@ -543,7 +543,7 @@ PREFLIGHT FAIL (PASS 10 · FAIL 1 · WARN 7 · SKIP 1) — 1 hard row(s) red. Do
    pins already = 0.14.2 (release commit exists)
 
 3. NOTES [done]
-   RELEASE_NOTES.md has a real # StarNet v0.14.2 entry (no TODO, no HTML comment)
+   RELEASE_NOTES.md has a real # Vultron v0.14.2 entry (no TODO, no HTML comment)
 
 4. RELOCK [done]
    claims lock current for HEAD (qa(claims): re-lock the release surface for v0.14.2)
@@ -562,12 +562,12 @@ PREFLIGHT FAIL (PASS 10 · FAIL 1 · WARN 7 · SKIP 1) — 1 hard row(s) red. Do
    [PASS] five version pins agree — all five = 0.14.2
    [PASS] tag v0.14.2 not yet local
    [PASS] tag v0.14.2 not on origin
-   [PASS] no release v0.14.2 on androoAGI/starnet-releases
+   [PASS] no release v0.14.2 on YOUR-GITHUB-USER/vultron-releases
    [PASS] claims lock current for HEAD — PASS claims planning authority · 37 claims · 383 locked surface files
    [PASS] website/app mirror in sync
    [PASS] test:fast green at HEAD — 1501 step(s) green · 2026-10-31T06:00:43.156Z · log <scratch>/gates/fast-c6468b7f9.log
    [WARN] test:http green at HEAD — not proven at HEAD
-          fix: required when sidecar/ship/route code changed since the last cut (starnet-backend-law): `npm run test:http 2>&1 | tee gate-http.log` → --gates-proven-by gate-http.log
+          fix: required when sidecar/ship/route code changed since the last cut (vultron-backend-law): `npm run test:http 2>&1 | tee gate-http.log` → --gates-proven-by gate-http.log
    [WARN] T0 clean-install proof for v0.14.2 — owed — runs on a fresh hosted Windows VM against the STAGED DRAFT (after the tag push)
           fix: Actions → t0-clean-install-proof → Run workflow → tag=v0.14.2 (runbook §1.7a). RELEASE BLOCKER: do not Publish without it
    [WARN] G1 packaged-lifecycle proof for v0.14.2 — owed — idle-close / close-to-tray / updater-smoke on a fresh hosted Windows VM against the staged draft (this is the branch 0.10.5/0.10.6 escaped through)

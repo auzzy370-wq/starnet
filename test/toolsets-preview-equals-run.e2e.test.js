@@ -116,9 +116,9 @@ async function runTask(fixture, placed) {
   const fixture = SidecarFixture.create({
     prefix: 'sk-preview-',
     env: {
-      SKYNET_OPENROUTER_BASE: provider.baseUrl, STARNET_OPENROUTER_BASE: provider.baseUrl,
-      SKYNET_OPENROUTER_KEY: 'sk-or-v1-preview-fake', STARNET_OPENROUTER_KEY: 'sk-or-v1-preview-fake',
-      SKYNET_DEFAULT_MODEL: 'test/model', STARNET_DEFAULT_MODEL: 'test/model', SKYNET_FULL_ACCESS: '0'
+      SKYNET_OPENROUTER_BASE: provider.baseUrl, VULTRON_OPENROUTER_BASE: provider.baseUrl,
+      SKYNET_OPENROUTER_KEY: 'sk-or-v1-preview-fake', VULTRON_OPENROUTER_KEY: 'sk-or-v1-preview-fake',
+      SKYNET_DEFAULT_MODEL: 'test/model', VULTRON_DEFAULT_MODEL: 'test/model', SKYNET_FULL_ACCESS: '0'
     }
   });
   try {

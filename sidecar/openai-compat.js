@@ -1,13 +1,13 @@
 /* sidecar/openai-compat.js — an OpenAI-compatible HTTP surface (/v1/*) so EXTERNAL local clients and other
-   harnesses can start REAL StarNet agent runs over HTTP. This is the seam where "another harness talks to
-   StarNet" actually runs agent work. An independent implementation, wire-compatible with the reference
-   harness's API server surface, built on StarNet's one-process / runOnce / U.bus architecture.
+   harnesses can start REAL Vultron agent runs over HTTP. This is the seam where "another harness talks to
+   Vultron" actually runs agent work. An independent implementation, wire-compatible with the reference
+   harness's API server surface, built on Vultron's one-process / runOnce / U.bus architecture.
 
    ── WHY THIS IS A SEPARATE AUTH SEAM (read before changing) ────────────────────────────────────────────────
    The rest of the sidecar's /api/* routes are fenced by the per-LAUNCH token that index.js injects into the
    served page (see apiauth.js). That token is for the STATION'S OWN browser UI. /v1/* is different: it is for
    external local clients (an OpenAI SDK, another harness, a CLI) that NEVER see the page and cannot read that
-   token. So /v1 carries its OWN bearer key (env STARNET_API_KEY / STARNET_V1_KEY, or a persisted server config)
+   token. So /v1 carries its OWN bearer key (env VULTRON_API_KEY / VULTRON_V1_KEY, or a persisted server config)
    compared timing-safe, exactly like the reference harness's API_SERVER_KEY.
 
    HARD REFUSAL TO RUN WITHOUT A STRONG KEY: /v1 dispatches terminal-capable agent work — a guessable key is
@@ -17,7 +17,7 @@
    is ALSO applied here (index.js's isApi gate only covers /api/*, so /v1 must enforce it itself).
 
    ── REAL HTTP STATUS CODES (deliberate) ────────────────────────────────────────────────────────────────────
-   Unlike StarNet's media endpoints' 200-always contract, /v1 returns real HTTP codes (401/403/429/400/404/502/503)
+   Unlike Vultron's media endpoints' 200-always contract, /v1 returns real HTTP codes (401/403/429/400/404/502/503)
    because OpenAI-client compatibility IS the contract here — an OpenAI SDK inspects res.status.
 
    ── RUNS RIDE THE EXISTING AUTONOMOUS SEAM ─────────────────────────────────────────────────────────────────
@@ -38,10 +38,10 @@ const UserText = require('../frontend/app/usertext.js');
 // TYPED OUTCOMES: how a run ended, read through the ONE resolver every surface shares (frontend/app/runoutcome.js)
 const RunOutcome = require('../frontend/app/runoutcome.js');
 
-const DEFAULT_MAX_CONCURRENT = 0;   // unlimited by default; env STARNET_V1_MAX_CONCURRENT opts into a ceiling
+const DEFAULT_MAX_CONCURRENT = 0;   // unlimited by default; env VULTRON_V1_MAX_CONCURRENT opts into a ceiling
 const MIN_KEY_LEN = 16;              // below this, refuse to enable (guessable key on a terminal-capable surface = RCE)
 const AID_RE = /^[A-Za-z0-9_-]{1,40}$/;
-const DEFAULT_MODEL_ID = 'starnet-agent';   // the stable advertised model id
+const DEFAULT_MODEL_ID = 'vultron-agent';   // the stable advertised model id
 const RUN_TTL_MS = 60 * 60 * 1000;   // terminal /v1/runs records are swept an hour after they finish
 const MAX_BODY = 10 * 1024 * 1024;   // 10MB — long agent conversations with tool calls
 
@@ -123,7 +123,7 @@ function coerceBool(v, def) {
    run's own end as the station stamped it — so a reply the provider cut at its output limit is 'limited' with finish_reason
    'length' (it read completed / 'stop'), an empty reply is a failure that says so (it read interrupted), a provider safety
    block is 'refused' with 'content_filter', and an error the run raised outranks an end that still says done (an image
-   task's unmet completion). The station's codes ride along: starnet.outcome and starnet.failure_code.
+   task's unmet completion). The station's codes ride along: vultron.outcome and vultron.failure_code.
    runOutcome(src, hadText, error): src is the run accumulator ({ end, reason, errMsg, failureCode }) or a bare end reason. */
 const V1_STATUS = { succeeded: 'completed', asked: 'awaiting_input', cut_short: 'limited', out_of_budget: 'limited', step_limit: 'limited',
   failed: 'failed', empty: 'failed', refused: 'refused', stopped: 'cancelled', interrupted: 'interrupted', blocked: 'failed' };
@@ -147,7 +147,7 @@ function finishReasonFor(src) {
   if (status === 'refused') return o.failureCode === 'content_policy_blocked' ? 'content_filter' : 'stop';
   if (status === 'completed' || status === 'awaiting_input') return 'stop';
   // a run SOMEONE STOPPED (review r7: a desk STOP / E-STOP reaching a /v1 run through its stop handle) is no error: its own word, with no
-  // `error` object (an OpenAI client read finish_reason 'error' + agent_error as a failure, and retried); starnet.status says 'cancelled'
+  // `error` object (an OpenAI client read finish_reason 'error' + agent_error as a failure, and retried); vultron.status says 'cancelled'
   if (status === 'cancelled') return 'cancelled';
   return 'error';
 }
@@ -185,14 +185,14 @@ function deriveSessionId(system, firstUser) {
      roster()             -> [{agentId,name,model,provider}]  (for /v1/models + agent selection)
      store                          the channel transcript store (loadHistory/appendTurn) — for app visibility
      isAllowedHost(host)  -> bool   apiauth.isAllowedHost (the loopback pin)
-     defaultModel         -> string the run model when the client selects the generic 'starnet-agent' ('' => runOnce default)
+     defaultModel         -> string the run model when the client selects the generic 'vultron-agent' ('' => runOnce default)
      resolveWire(agentId, matched) -> { ok, provider, model, source } (optional) the host's ONE {provider, model}
                                     resolution (index.js v1WireFor -> sidecar/run-wire.js). When injected it decides every
                                     /v1 run's pair: `matched` (target.matched) says a roster agent was selected — it runs its
-                                    own pair; the generic 'starnet-agent' runs STARNET_V1_MODEL when the host has it set,
+                                    own pair; the generic 'vultron-agent' runs VULTRON_V1_MODEL when the host has it set,
                                     else the station default. defaultModel / the roster row's raw fields are not consulted,
                                     and the Idempotency-Key fingerprint binds to this resolved pair. ok:false (no model, or
-                                    a STARNET_V1_PROVIDER the host does not know) answers 503 model_not_configured with its
+                                    a VULTRON_V1_PROVIDER the host does not know) answers 503 model_not_configured with its
                                     error; the wire's reasoningEffort rides the run as its own effort.
      hasCredential(provider) -> bool (optional) does the station hold a usable credential for the resolved provider? false
                                     answers 503 provider_not_configured BEFORE any run starts (the prompt never leaves
@@ -251,7 +251,7 @@ function makeOpenAiCompat(deps) {
 
   // ---- run wiring: the ONE place that calls runOnce (the autonomous seam) ------------------------------------
   // Resolve which roster agent (if any) the request's `model` field selects, per the LOCKED design: the generic
-  // 'starnet-agent' (or an unknown value) => the default agent; a value matching a roster agentId or name => that
+  // 'vultron-agent' (or an unknown value) => the default agent; a value matching a roster agentId or name => that
   // specialist (so `model` can pick an agent, mapping onto runOnce's agentId).
   function resolveTarget(modelField) {
     const q = String(modelField == null ? '' : modelField).trim();
@@ -267,8 +267,8 @@ function makeOpenAiCompat(deps) {
   }
 
   /* WHICH PAIR a request runs on. With the host's resolver it is the one every surface runs (run-wire.js): the selected
-     roster agent's own pair, or — for the generic 'starnet-agent' (an ephemeral or session agent that is not on the roster)
-     — the host's STARNET_V1_MODEL when it is set, else the station default every unpinned agent follows (the host decides;
+     roster agent's own pair, or — for the generic 'vultron-agent' (an ephemeral or session agent that is not on the roster)
+     — the host's VULTRON_V1_MODEL when it is set, else the station default every unpinned agent follows (the host decides;
      `matched` tells it which target this is). Before, the generic model ran openrouter + an env model whatever
      the station ran on, and a selected unpinned agent ran the env model on its stale stamped provider. */
   function runWireOf(agentId, target) {
@@ -284,7 +284,7 @@ function makeOpenAiCompat(deps) {
   }
   /* The answer a wire that cannot run gets, before any run starts (and before a stream opens or a request is reserved):
      503 model_not_configured for a refusal, 503 provider_not_configured when the station holds no credential for the
-     resolved provider (STARNET_V1_PROVIDER=anthropic with no Anthropic key sent the prompt out unauthenticated). null =
+     resolved provider (VULTRON_V1_PROVIDER=anthropic with no Anthropic key sent the prompt out unauthenticated). null =
      the wire can run. */
   function wireRefusal(wire) {
     if (wire.ok === false) return openAiError(redact(wire.error), { type: 'server_error', code: 'model_not_configured' });
@@ -361,7 +361,7 @@ function makeOpenAiCompat(deps) {
     const key = apiKeyFn();
     if (!keyUsable(key)) {
       json(res, 403, openAiError(
-        'The StarNet /v1 API is disabled. It dispatches terminal-capable agent work, so it refuses to run without a strong bearer key. Set STARNET_API_KEY to a secret of at least ' + MIN_KEY_LEN + ' characters (e.g. `openssl rand -hex 32`) and restart the station to enable /v1.',
+        'The Vultron /v1 API is disabled. It dispatches terminal-capable agent work, so it refuses to run without a strong bearer key. Set VULTRON_API_KEY to a secret of at least ' + MIN_KEY_LEN + ' characters (e.g. `openssl rand -hex 32`) and restart the station to enable /v1.',
         { type: 'invalid_request_error', code: 'api_disabled' }), { 'WWW-Authenticate': 'Bearer' });
       return true;
     }
@@ -375,7 +375,7 @@ function makeOpenAiCompat(deps) {
   // the session id header, honored only under auth (which is always true past gate()). Rejects control chars.
   function sessionIdOf(req) {
     const h = (req && req.headers) || {};
-    const raw = String(h['x-starnet-session-id'] || h['x-skynet-session-id'] || h['x-hermes-session-id'] || '').trim();
+    const raw = String(h['x-vultron-session-id'] || h['x-skynet-session-id'] || h['x-hermes-session-id'] || '').trim();
     if (!raw) return '';
     if (/[\r\n\x00]/.test(raw) || raw.length > 256) return '';
     return raw;
@@ -384,13 +384,13 @@ function makeOpenAiCompat(deps) {
   // ---- GET /v1/models ---------------------------------------------------------------------------------------
   function handleModels(req, res) {
     const created = Math.floor(now() / 1000);
-    const data = [{ id: DEFAULT_MODEL_ID, object: 'model', created, owned_by: 'starnet', root: DEFAULT_MODEL_ID, parent: null }];
+    const data = [{ id: DEFAULT_MODEL_ID, object: 'model', created, owned_by: 'vultron', root: DEFAULT_MODEL_ID, parent: null }];
     let roster = [];
     try { roster = rosterFn() || []; } catch (_) { roster = []; }
     for (const a of roster) {
       const id = String(a.name || a.agentId || '').trim();
       if (!id || id.toLowerCase() === DEFAULT_MODEL_ID) continue;
-      data.push({ id, object: 'model', created, owned_by: 'starnet', root: String(a.model || id), parent: DEFAULT_MODEL_ID });
+      data.push({ id, object: 'model', created, owned_by: 'vultron', root: String(a.model || id), parent: DEFAULT_MODEL_ID });
     }
     json(res, 200, { object: 'list', data });
   }
@@ -398,7 +398,7 @@ function makeOpenAiCompat(deps) {
   // ---- GET /v1/capabilities ---------------------------------------------------------------------------------
   function handleCapabilities(req, res) {
     json(res, 200, {
-      object: 'starnet.capabilities',
+      object: 'vultron.capabilities',
       version: version(),
       endpoints: {
         chat_completions: '/v1/chat/completions',
@@ -410,7 +410,7 @@ function makeOpenAiCompat(deps) {
         health: '/health'
       },
       streaming: true,
-      session_continuity_header: 'X-StarNet-Session-Id',
+      session_continuity_header: 'X-Vultron-Session-Id',
       surface: 'autonomous',
       max_concurrent_runs: maxConcurrent(),
       // deliberate follow-ups NOT in this slice (see docs/OPENAI_COMPAT.md):
@@ -442,7 +442,7 @@ function makeOpenAiCompat(deps) {
     const runModel = wire.model, provider = wire.provider, wireSource = wire.source, reasoningEffort = wire.reasoningEffort;
     // conversation for runOnce = prior turns (history) + the new user directive last (system passed separately).
     const messages = parsed.history.map(m => ({ role: m.role, content: m.content })).concat([{ role: 'user', content: parsed.lastUser }]);
-    let system = parsed.system || 'You are the Commander\'s StarNet agent, reached over an OpenAI-compatible API. Use your REAL tools when given a task and report what you actually did.';
+    let system = parsed.system || 'You are the Commander\'s Vultron agent, reached over an OpenAI-compatible API. Use your REAL tools when given a task and report what you actually did.';
 
     if (contract.schema) system += '\nReturn ONLY strict JSON matching this schema: ' + JSON.stringify(contract.schema);
     const id = reservedId || 'chatcmpl-' + String(newId()).replace(/-/g, '').slice(0, 24);
@@ -469,7 +469,7 @@ function makeOpenAiCompat(deps) {
       const finishReason = finishReasonFor(acc);
       const usage = { prompt_tokens: acc.tokensIn, completion_tokens: acc.tokensOut, total_tokens: acc.tokensIn + acc.tokensOut };
       const finishChunk = chatChunk({ id, model: modelField, created, delta: {}, finishReason, usage });
-      finishChunk.starnet = runOutcome(acc, !!acc.buf, acc.errMsg && redact(acc.errMsg));
+      finishChunk.vultron = runOutcome(acc, !!acc.buf, acc.errMsg && redact(acc.errMsg));
       if (finishReason === 'error') finishChunk.error = { message: redact(acc.errMsg || 'agent run did not produce a response'), type: 'agent_error' };
       sseData(res, finishChunk);
       try { res.write('data: [DONE]\n\n'); } catch (_) {}
@@ -511,9 +511,9 @@ function makeOpenAiCompat(deps) {
     const finishReason = finishReasonFor(acc);
     const usage = { prompt_tokens: acc.tokensIn, completion_tokens: acc.tokensOut, total_tokens: acc.tokensIn + acc.tokensOut };
     const response = chatCompletionObject({ id, model: modelField, created, content: acc.buf, finishReason, usage });
-    response.starnet = runOutcome(acc, !!acc.buf, acc.errMsg && redact(acc.errMsg));
-    if (finishReason === 'error') response.error = { message: response.starnet.error || response.starnet.status, type: 'agent_error' };
-    return json(res, 200, response, { 'X-StarNet-Session-Id': sessionId });
+    response.vultron = runOutcome(acc, !!acc.buf, acc.errMsg && redact(acc.errMsg));
+    if (finishReason === 'error') response.error = { message: response.vultron.error || response.vultron.status, type: 'agent_error' };
+    return json(res, 200, response, { 'X-Vultron-Session-Id': sessionId });
   }
 
   // Keyed streams share progress; their terminal frame waits for durable persistence.
@@ -538,7 +538,7 @@ function makeOpenAiCompat(deps) {
     };
     try {
       // the fingerprint binds to the PAIR this request resolves to (runWireOf — what the run really goes out on), never to
-      // defaultModel(): a replay after the station default or STARNET_V1_MODEL changed is a different request
+      // defaultModel(): a replay after the station default or VULTRON_V1_MODEL changed is a different request
       const fpTarget = resolveTarget(body.model), fpWire = runWireOf('', fpTarget);
       // a wire that cannot run is answered now, never reserved: a fixed config must not replay a saved refusal
       { const refused = wireRefusal(fpWire); if (refused) return json(res, 503, refused); }
@@ -642,7 +642,7 @@ function makeOpenAiCompat(deps) {
     { const refused = wireRefusal(wire); if (refused) return json(res, 503, refused); }
     const runModel = wire.model, provider = wire.provider, wireSource = wire.source, reasoningEffort = wire.reasoningEffort;
     const messages = history.map(m => ({ role: m.role, content: m.content })).concat([{ role: 'user', content: lastUser }]);
-    const sys = system || 'You are the Commander\'s StarNet agent, reached over an OpenAI-compatible API. Use your REAL tools when given a task and report what you actually did.';
+    const sys = system || 'You are the Commander\'s Vultron agent, reached over an OpenAI-compatible API. Use your REAL tools when given a task and report what you actually did.';
 
     const ac = new AbortController();
     sweepRuns();
@@ -660,7 +660,7 @@ function makeOpenAiCompat(deps) {
       const usage = { prompt_tokens: acc.tokensIn, completion_tokens: acc.tokensOut, total_tokens: acc.tokensIn + acc.tokensOut };
       const evName = runTerminalEvent(acc);
       const outcome = runOutcome(acc, !!acc.buf, acc.errMsg && redact(acc.errMsg));
-      const term = { event: evName, run_id: runId, timestamp: now(), output: acc.buf, usage, starnet: outcome };
+      const term = { event: evName, run_id: runId, timestamp: now(), output: acc.buf, usage, vultron: outcome };
       rec.output = acc.buf; rec.usage = usage; rec.outcome = outcome;
       if (outcome.error) { term.error = outcome.error; rec.error = outcome.error; }
       pushRunEvent(runId, term);
@@ -683,7 +683,7 @@ function makeOpenAiCompat(deps) {
   function handleRunStatus(req, res, runId) {
     const r = runs.get(runId);
     if (!r) return json(res, 404, openAiError('Run not found: ' + runId, { code: 'run_not_found' }));
-    json(res, 200, { object: 'starnet.run', run_id: runId, status: r.status, created_at: r.created, updated_at: r.updated, session_id: r.sessionId, model: r.model, output: r.output, usage: r.usage, error: r.error, starnet: r.outcome || null });
+    json(res, 200, { object: 'vultron.run', run_id: runId, status: r.status, created_at: r.created, updated_at: r.updated, session_id: r.sessionId, model: r.model, output: r.output, usage: r.usage, error: r.error, vultron: r.outcome || null });
   }
 
   // ---- GET /v1/runs/{id}/events (SSE) -----------------------------------------------------------------------
@@ -717,7 +717,7 @@ function makeOpenAiCompat(deps) {
   }
 
   // ---- GET /health (no auth — liveness probe) ---------------------------------------------------------------
-  function handleHealth(req, res) { json(res, 200, { status: 'ok', platform: 'starnet-agent', version: version() }); }
+  function handleHealth(req, res) { json(res, 200, { status: 'ok', platform: 'vultron-agent', version: version() }); }
 
   // ── the single entrypoint index.js dispatches to ──────────────────────────────────────────────────────────
   // returns true if this module OWNED the request (wrote a response); false if the path isn't ours (index.js
@@ -771,7 +771,7 @@ function makeOpenAiCompat(deps) {
   function announce() {
     const line = enabled()
       ? '  · /v1 OpenAI-compatible API ENABLED (bearer auth; ' + (maxConcurrent() > 0 ? 'max ' + maxConcurrent() + ' concurrent' : 'unlimited concurrency') + ')'
-      : '  · /v1 OpenAI-compatible API disabled — set STARNET_API_KEY (>=' + MIN_KEY_LEN + ' chars) to enable external harness access';
+      : '  · /v1 OpenAI-compatible API disabled — set VULTRON_API_KEY (>=' + MIN_KEY_LEN + ' chars) to enable external harness access';
     try { if (typeof d.logBoot === 'function') d.logBoot(line); else console.log(line); } catch (_) {}
   }
 

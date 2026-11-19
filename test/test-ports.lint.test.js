@@ -18,7 +18,7 @@
      P2 no port is a fixed base plus a random or clock-derived offset (Math.random(), crypto.randomInt(), Date.now() % N);
      P3 nothing binds a literal port in 1024..65535: .listen(<n>), a boot helper's first argument (boot(<n>, …) or a
         base plus an offset, boot(<n> + i, …)), the port key in the options of a boot / start / serve / listen / launch
-        call, '--port', '<n>' / --port=<n>, SKYNET_…PORT / STARNET_…PORT set to <n> (any such name, a quoted key, an
+        call, '--port', '<n>' / --port=<n>, SKYNET_…PORT / VULTRON_…PORT set to <n> (any such name, a quoted key, an
         env assignment, String(<n>)), or any of those spelled with a name the file binds to such a literal;
      P4 no boot, listen or port name derives its port from another port (boot(port + 1, ...), listen(basePort + 3),
         cdpPort = port + 1000): the neighbour of a bindable port is not proven bindable;
@@ -52,7 +52,7 @@ const EXEMPT = new Set(['test/helpers/ports.js', 'test/test-ports.lint.test.js']
 const ALLOW = [
   { file: 'test/cli.test.js', law: 'P3', match: "'--port', '9001",
     reason: 'parseArgs input for the CLI flag parser: the parsed value is asserted, nothing is bound or dialled' },
-  { file: 'test/cli.test.js', law: 'P3', match: "STARNET_PORT: '4444",
+  { file: 'test/cli.test.js', law: 'P3', match: "VULTRON_PORT: '4444",
     reason: 'a fake env object handed to parseArgs to prove the env fallback; nothing is bound' },
   { file: 'test/returnstore-recovery.test.js', law: 'P3', match: ['boot(3000,', 'boot(5000,', 'boot(6000,'],
     reason: 'boot(nowMs, loader) there starts the return store at a fake clock time; the number is a timestamp, not a port' },
@@ -69,8 +69,8 @@ const BOOT = '\\bboot(?:[A-Z][\\w$]*)?\\(';
 // a call whose options object can carry the port it binds:
 // boot…({ port: … }), startMock({ host, port: … }), launchChrome({ cdpPort: … })
 const BINDS_OPTIONS = '(?:\\.listen|\\b(?:boot|start|serve|listen|launch)[\\w$]*)\\(\\s*\\{[^}]*?\\b(?:port|[a-z][\\w$]*Port)\\s*:\\s*';
-// SKYNET_PORT, STARNET_PORT and every other SKYNET_…PORT / STARNET_…PORT, quoted or not, set with : or = (never ===)
-const ENV_PORT = '\\b(?:SKYNET|STARNET)_\\w*PORT[\'"]?\\s*(?<![=!<>])[:=](?!=)\\s*(?:String\\(|Number\\()?\\s*';
+// SKYNET_PORT, VULTRON_PORT and every other SKYNET_…PORT / VULTRON_…PORT, quoted or not, set with : or = (never ===)
+const ENV_PORT = '\\b(?:SKYNET|VULTRON)_\\w*PORT[\'"]?\\s*(?<![=!<>])[:=](?!=)\\s*(?:String\\(|Number\\()?\\s*';
 // a name a boot helper's first argument may carry and still be a port: a port name, or a base (BASE, basePort, BOOT_BASE)
 const PORTISH = new RegExp('^(?:' + PORT_NAME.slice(2) + ')$|^(?:base|BASE)(?:[A-Z_][\\w$]*)?$|(?:Base|_BASE)$');
 
@@ -196,11 +196,11 @@ const MUST_FLAG = [
   ['P3', "const PORT = 9002;\nserver.listen({ host: HOST, port: PORT });"],
   ['P3', "spawn(process.execPath, [CLI, '--port', '9001']);"],
   ['P3', "spawn(process.execPath, [CLI, '--port=9001']);"],
-  ['P3', "env: { STARNET_PORT: '8787' }"],
-  ['P3', "env: Object.assign({}, process.env, { 'STARNET_PORT': '8902' })"],
-  ['P3', "process.env.STARNET_PORT = String(8904);"],
+  ['P3', "env: { VULTRON_PORT: '8787' }"],
+  ['P3', "env: Object.assign({}, process.env, { 'VULTRON_PORT': '8902' })"],
+  ['P3', "process.env.VULTRON_PORT = String(8904);"],
   ['P3', "env.SKYNET_PORT = '8903';"],
-  ['P3', "env: { STARNET_REMOTE_PORT: '8797', STARNET_REMOTE_LAN: '1' }"],
+  ['P3', "env: { VULTRON_REMOTE_PORT: '8797', VULTRON_REMOTE_LAN: '1' }"],
   ['P3', "env: { SKYNET_PORT: String(9000 + i) }"],
   ['P3', "const PORT = 9001;\nenv: { SKYNET_PORT: String(PORT) }"],
   ['P3', "const glob = 'test/*.js';\nserver.listen(8899);\nconst tail = '*/';"],
@@ -229,7 +229,7 @@ const MUST_PASS = [
   "const tag = 'run-' + process.pid;",
   "if (cur && cur.pid === process.pid && cur.host === os.hostname()) fs.unlinkSync(LOCK_FILE);",
   "A.ok(seen.port === port + 1, 'a comparison is not a pick');",
-  "if (env.STARNET_PORT === '8787') skip();",
+  "if (env.VULTRON_PORT === '8787') skip();",
   "const cdpPort = await allocatePort();",
   "const [port, cdpPort] = await allocatePorts(2);",
   "const importEnd = importStart + 2;",

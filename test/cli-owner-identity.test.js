@@ -1,13 +1,13 @@
 'use strict';
-/* node test/cli-owner-identity.test.js — `starnet` reads the desktop station's owner claim the way the station does,
+/* node test/cli-owner-identity.test.js — `vultron` reads the desktop station's owner claim the way the station does,
    and never deletes it.
 
    1. A RECYCLED PID is not the station. A hard-killed station leaves its workspace-owner claim behind, and Windows
-      recycles PIDs within one boot: the claim can name a PID some unrelated program holds now. `starnet` read that
+      recycles PIDs within one boot: the claim can name a PID some unrelated program holds now. `vultron` read that
       PID as "alive", could not find a port for it, and refused ("the desktop app owns the default workspace (pid …)
       but its port could not be discovered") until a reboot. It now judges the claim with sidecar/process-identity.js
       (judgeReuse, the rule the station's own boot uses): a claim stamped an hour before the process now holding its
-      PID was created is a dead station, so `starnet` takes the app-closed path. Proven with the REAL bin/starnet.js
+      PID was created is a dead station, so `vultron` takes the app-closed path. Proven with the REAL bin/vultron.js
       against a scratch profile, the claim naming THIS test process's own PID.
    2. A claim that process could have written (stamped after it was created) still names a live owner: refused as
       before. Uncertainty never authorizes a second station.
@@ -16,7 +16,7 @@
       the workspace in between lost its live claim).
    4. Cheapest first: a claim stamped before this computer last started is dead before any PID check (the station's
       own boot rule, shared through sidecar/process-identity.js predatesBoot); a live owner the OS shows LISTENING is
-      attached to with NO identity probe (a PowerShell / ps call — seconds on every `starnet` while the app runs);
+      attached to with NO identity probe (a PowerShell / ps call — seconds on every `vultron` while the app runs);
       only a live PID with no port — the case that refused — is probed. */
 const fs = require('fs');
 const os = require('os');
@@ -26,7 +26,7 @@ const { spawn } = require('child_process');
 const { EventEmitter } = require('events');
 const A = require('./_assert.js');
 
-const BIN = path.resolve(__dirname, '..', 'bin', 'starnet.js');
+const BIN = path.resolve(__dirname, '..', 'bin', 'vultron.js');
 
 function portAnswers(port) {
   return new Promise(resolve => {
@@ -49,10 +49,10 @@ const tail = s => s.trim().split('\n').slice(-3).join(' | ');
 (async () => {
   // ---- 3. stopChild never deletes the claim (no process needed) ----
   {
-    const cli3 = require('../bin/starnet.js');
-    const ws = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-claim-keep-'));
+    const cli3 = require('../bin/vultron.js');
+    const ws = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-claim-keep-'));
     try {
-      const lock = path.join(ws, '.starnet-workspace-owner.json');
+      const lock = path.join(ws, '.vultron-workspace-owner.json');
       const claim = JSON.stringify({ version: 1, pid: 999999, nonce: 'dead-child', startedAt: 1 });
       fs.writeFileSync(lock, claim);
       const child = new EventEmitter();
@@ -65,22 +65,22 @@ const tail = s => s.trim().split('\n').slice(-3).join(' | ');
 
   // ---- 4. the claim is judged cheapest first: the identity probe runs only where it decides anything ----
   {
-    const { discoverDesktop } = require('../bin/starnet.js');
-    const ws = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-claim-order-'));
+    const { discoverDesktop } = require('../bin/vultron.js');
+    const ws = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-claim-order-'));
     try {
-      fs.writeFileSync(path.join(ws, '.starnet-workspace-owner.json'), JSON.stringify({ version: 1, pid: 4242, nonce: 'n', startedAt: 9000000000000 }));
+      fs.writeFileSync(path.join(ws, '.vultron-workspace-owner.json'), JSON.stringify({ version: 1, pid: 4242, nonce: 'n', startedAt: 9000000000000 }));
       const probes = [];
       const verdict = v => (claim, pid) => { probes.push(pid); return v; };
       // a live owner LISTENING on a port is a station to attach to: no identity probe (it is a PowerShell / ps call)
       const listening = discoverDesktop(ws, { pidAlive: () => true, listeningPortOf: () => 51234, claimVerdict: verdict('reused'), bootedAt: () => 1 });
       A.eq([listening.ownerAlive, listening.port, listening.source], [true, 51234, 'os'], 'a listening owner is attached to');
-      A.eq(probes.length, 0, 'and its identity is never probed (no PowerShell per `starnet` while the app runs)');
+      A.eq(probes.length, 0, 'and its identity is never probed (no PowerShell per `vultron` while the app runs)');
       // a live PID with no port the OS can name — the case that used to refuse — is probed: a recycled PID is no owner
       const silent = discoverDesktop(ws, { pidAlive: () => true, listeningPortOf: () => 0, claimVerdict: verdict('reused'), bootedAt: () => 1 });
       A.eq(probes, [4242], 'a live owner with no port is probed, once');
       A.eq([silent.ownerAlive, silent.ownerReused], [false, true], 'and a recycled PID is not the owner');
       // a claim stamped before this computer last started is dead before any PID check (the station's own boot rule)
-      fs.writeFileSync(path.join(ws, '.starnet-workspace-owner.json'), JSON.stringify({ version: 1, pid: 4242, nonce: 'n', startedAt: 1000 }));
+      fs.writeFileSync(path.join(ws, '.vultron-workspace-owner.json'), JSON.stringify({ version: 1, pid: 4242, nonce: 'n', startedAt: 1000 }));
       let asked = 0;
       const stale = discoverDesktop(ws, { pidAlive: () => { asked++; return true; }, listeningPortOf: () => 51234, claimVerdict: verdict('same-process'), bootedAt: () => 10000000 });
       A.eq([stale.ownerAlive, stale.ownerStale, asked], [false, true, 0], 'a pre-boot claim names no running station, and its PID is not even asked about');
@@ -90,11 +90,11 @@ const tail = s => s.trim().split('\n').slice(-3).join(' | ');
   }
 
   if (await portAnswers(8787)) { console.log('cli-owner-identity.test: something answers on 127.0.0.1:8787 (a running `npm start` would be attached first) — skipped the CLI cases'); A.report('cli-owner-identity.test'); return; }
-  const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-owner-identity-'));
+  const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-owner-identity-'));
   try {
     const env = Object.assign({}, process.env, {
-      APPDATA: profile, LOCALAPPDATA: profile, XDG_DATA_HOME: profile, STARNET_APP_EXE: '',
-      STARNET_PORT: '', SKYNET_PORT: '', STARNET_WORKSPACES: '', SKYNET_WORKSPACES: '', STARNET_TOKEN: '', STARNET_API_TOKEN: '', SKYNET_API_TOKEN: ''
+      APPDATA: profile, LOCALAPPDATA: profile, XDG_DATA_HOME: profile, VULTRON_APP_EXE: '',
+      VULTRON_PORT: '', SKYNET_PORT: '', VULTRON_WORKSPACES: '', SKYNET_WORKSPACES: '', VULTRON_TOKEN: '', VULTRON_API_TOKEN: '', SKYNET_API_TOKEN: ''
     });
     if (process.platform !== 'win32') env.HOME = profile;
     const appData = process.platform === 'darwin' ? path.join(profile, 'Library', 'Application Support', 'ai.skynet.harness')
@@ -105,7 +105,7 @@ const tail = s => s.trim().split('\n').slice(-3).join(' | ');
     fs.writeFileSync(path.join(ws, 'agent.roster.json'), JSON.stringify({ agents: [{ agentId: 'agent', name: 'ULTRON' }] }));
     // an app that ran here, from a place that is gone now: no app to start (so the closed path ends in exit 3, not a launch)
     fs.writeFileSync(path.join(appData, 'startup.log'), 'startup exe=Ok("' + path.join(profile, 'gone', 'skynet-desktop.exe').replace(/\\/g, '\\\\') + '") port=1\nspawn_sidecar pid=999999 port=1 listening=true\n');
-    const lock = path.join(ws, '.starnet-workspace-owner.json');
+    const lock = path.join(ws, '.vultron-workspace-owner.json');
     const born = Date.now() - Math.round(process.uptime() * 1000);   // when THIS process was created (±a little)
     let self = {};
     if (process.platform === 'linux') {

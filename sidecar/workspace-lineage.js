@@ -1,4 +1,4 @@
-/* sidecar/workspace-lineage.js — bounded evidence that this machine had StarNet state before this boot. */
+/* sidecar/workspace-lineage.js — bounded evidence that this machine had Vultron state before this boot. */
 'use strict';
 // Whether a workspace holds a station, was erased or was reset is ONE fact: the station record (station-record.js, the
 // lifecycle's one module). Every question below asks it through read(), which applies P1: a save or roster file under any
@@ -37,7 +37,7 @@ function inspectWorkspaceLineage(deps) {
   const snapshotsRoot = path.resolve(String(d.snapshotsRoot || path.join(path.dirname(current), 'update-snapshots')));
   try {
     const snapshots = fs.existsSync(snapshotsRoot)
-      ? fs.readdirSync(snapshotsRoot).filter(name => /\.starnet-backup\.json$/i.test(name)).slice(0, 12) : [];
+      ? fs.readdirSync(snapshotsRoot).filter(name => /\.vultron-backup\.json$/i.test(name)).slice(0, 12) : [];
     if (snapshots.length && !record.acknowledges(snapshotsRoot)) evidence.push({ kind: 'update-snapshot', root: snapshotsRoot, count: snapshots.length, examples: snapshots });
   } catch (_) {}
   return {

@@ -20,7 +20,7 @@ function page(storage, held) {
   const timers = [];
   const h = held || {};
   const make = new Function('coach', 'localStorage', 'setTimeout', 'clearTimeout', 'awakeningHeld', 'dialogueOpen', 'tourCoaching',
-    "const COACH_KEY = 'starnet.navcoach.seen'; let coachTimer = 0; let coachShown = false;\n" + dismiss + '\n' + show + '\nreturn { dismissCoach, showCoachOnce };');
+    "const COACH_KEY = 'vultron.navcoach.seen'; let coachTimer = 0; let coachShown = false;\n" + dismiss + '\n' + show + '\nreturn { dismissCoach, showCoachOnce };');
   const api = make(coach, storage, (fn) => { timers.push(fn); return timers.length; }, () => {}, () => !!h.awakening, () => !!h.dialogue, () => !!h.tour);
   return { coach, timers, api };
 }
@@ -43,10 +43,10 @@ const store = () => { const m = new Map(); return { getItem: k => (m.has(k) ? m.
 {
   const ls = store(), held = { awakening: false, dialogue: false, tour: true };
   const p = page(ls, held);
-  p.api.showCoachOnce();   // the demo's Dialogue.close → 'starnet:dialogue-closed'
+  p.api.showCoachOnce();   // the demo's Dialogue.close → 'vultron:dialogue-closed'
   A.eq(p.coach.hidden, true, 'the tip waits while the optional tour still coaches');
   held.tour = false;
-  p.api.showCoachOnce();   // Tutorial.finishUp → 'starnet:tutorial-ended'
+  p.api.showCoachOnce();   // Tutorial.finishUp → 'vultron:tutorial-ended'
   A.eq(p.coach.hidden, false, 'the tip shows once the tour has ended');
 }
 // the wiring the behaviour above relies on: navdock reads the real Tutorial.isCoaching and re-asks on the tour's end, and
@@ -54,13 +54,13 @@ const store = () => { const m = new Map(); return { getItem: k => (m.has(k) ? m.
 {
   A.ok(/const tourCoaching = \(\) => typeof Tutorial !== 'undefined' && typeof Tutorial\.isCoaching === 'function' && !!Tutorial\.isCoaching\(\);/.test(nav), 'navdock holds on Tutorial.isCoaching()');
   A.ok(/if \(tourCoaching\(\)\) return;/.test(show), 'showCoachOnce reads that hold');
-  A.ok(/addEventListener\('starnet:tutorial-ended'[^\n]*showCoachOnce\(\)/.test(nav), 'navdock asks again when the tour ends');
+  A.ok(/addEventListener\('vultron:tutorial-ended'[^\n]*showCoachOnce\(\)/.test(nav), 'navdock asks again when the tour ends');
   const tut = fs.readFileSync(path.join(__dirname, '..', 'frontend', 'app', 'tutorial.js'), 'utf8');
   const fin = A.fnBody(tut, 'function finishUp(skipped, valueHandoff)');
   A.ok(fin && fin.length < tut.length, 'Tutorial.finishUp is found');
   A.ok(fin.indexOf('active = false') >= 0 && fin.indexOf('active = false') < fin.indexOf('tourEnded()'), 'the tour ends (isCoaching false) before it is announced');
   A.eq((fin.match(/tourEnded\(\)/g) || []).length, 3, 'every exit of finishUp announces the end (value hand-off, replay, first-task return)');
-  A.ok(/CustomEvent\('starnet:tutorial-ended'\)/.test(A.fnBody(tut, 'function tourEnded()') || ''), 'tourEnded fires starnet:tutorial-ended');
+  A.ok(/CustomEvent\('vultron:tutorial-ended'\)/.test(A.fnBody(tut, 'function tourEnded()') || ''), 'tourEnded fires vultron:tutorial-ended');
 }
 
 // the walk's path: the tip shows, fades by itself, then the Commander uses the docks for 40 minutes, then reloads
@@ -70,9 +70,9 @@ const store = () => { const m = new Map(); return { getItem: k => (m.has(k) ? m.
   p1.api.showCoachOnce();
   A.eq(p1.coach.hidden, false, 'a new station shows the tip once');
   p1.timers.shift()();   // the 15 s fade
-  A.ok(p1.coach.hidden && !ls.getItem('starnet.navcoach.seen'), 'the fade hides it without retiring it (an unnoticed tip may come back)');
+  A.ok(p1.coach.hidden && !ls.getItem('vultron.navcoach.seen'), 'the fade hides it without retiring it (an unnoticed tip may come back)');
   p1.api.dismissCoach();   // a dock opens (navdock toggle → dismissCoach())
-  A.eq(ls.getItem('starnet.navcoach.seen'), '1', 'opening a dock retires the tip even after it faded — they found the docks');
+  A.eq(ls.getItem('vultron.navcoach.seen'), '1', 'opening a dock retires the tip even after it faded — they found the docks');
   const p2 = page(ls);
   p2.api.showCoachOnce();
   A.eq(p2.coach.hidden, true, 'after a reload the tip stays gone');
@@ -83,7 +83,7 @@ const store = () => { const m = new Map(); return { getItem: k => (m.has(k) ? m.
   const p1 = page(ls);
   p1.api.showCoachOnce();
   p1.api.dismissCoach(true);
-  A.ok(p1.coach.hidden && ls.getItem('starnet.navcoach.seen') === '1', 'GOT IT hides and retires the tip');
+  A.ok(p1.coach.hidden && ls.getItem('vultron.navcoach.seen') === '1', 'GOT IT hides and retires the tip');
   const p2 = page(ls);
   p2.api.showCoachOnce();
   A.eq(p2.coach.hidden, true, 'GOT IT holds across a reload');

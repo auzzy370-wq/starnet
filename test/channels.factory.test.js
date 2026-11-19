@@ -67,7 +67,7 @@ function resolve(props, names, scope) { return Bags.evaluate(props, names, scope
 function pair(run) { return run ? [run.provider, run.model, run.system] : null; }
 
 (async () => {
-  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-channel-factory-'));
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-channel-factory-'));
   const opened = [];
   try {
     for (const kind of ['telegram','telegram-bot','discord','slack','matrix','signal']) {

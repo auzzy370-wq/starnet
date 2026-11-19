@@ -16,7 +16,7 @@ const os = require('os');
 const crypto = require('crypto');
 const { makeFsTools } = require('../sidecar/tools/builtin/fs.js');
 
-const ROOT = path.join(os.tmpdir(), 'starnet-fs-concurrent-' + process.pid);
+const ROOT = path.join(os.tmpdir(), 'vultron-fs-concurrent-' + process.pid);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const LSP_OK = { status: 'available', added: [], removed: [], addedCount: 0, removedCount: 0 };
 

@@ -23,7 +23,7 @@ function bootSidecar(port, workspaces, attempts) {
   return new Promise((resolve, reject) => {
     const appSandbox = path.join(workspaces, '_appdata');
     const env = Object.assign({}, process.env);
-    for (const k of Object.keys(env)) if (/^(STARNET_|SKYNET_|HERMES_|OPENROUTER_)/i.test(k)) delete env[k];
+    for (const k of Object.keys(env)) if (/^(VULTRON_|SKYNET_|HERMES_|OPENROUTER_)/i.test(k)) delete env[k];
     Object.assign(env, {
       SKYNET_PORT: String(port), SKYNET_WORKSPACES: workspaces, SKYNET_DEV: '1', SKYNET_QUEST_REFRESH: '0',
       SKYNET_CLOUD_URL: '', SKYNET_CREDITS_URL: '', SKYNET_EDGE_TTS: '0', SKYNET_LIVE_PRICES: '0',
@@ -56,7 +56,7 @@ function bootSidecar(port, workspaces, attempts) {
     ({ child, port } = await bootSidecar(await allocatePort(), ws, 30));
     const B = 'http://' + HOST + ':' + port;
     const token = await bootToken(B, B);
-    const headers = { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: B };
+    const headers = { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: B };
     const post = async (route, body) => (await fetch(B + route, { method: 'POST', headers, body: JSON.stringify(body) })).json();
     const card = async () => (await fetch(B + '/api/workshop/backlog?agent=agent', { headers })).json();
 

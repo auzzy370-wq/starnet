@@ -121,15 +121,15 @@ async function runTo(B, H, body, onEvent) {
 (async () => {
   const mock = await startMockProvider();
   const fixture = SidecarFixture.create({ prefix: 'sk-run-truth-', env: {
-    SKYNET_OPENROUTER_BASE: mock.base, STARNET_OPENROUTER_BASE: mock.base,
-    SKYNET_OPENROUTER_KEY: 'sk-or-v1-local-proof', STARNET_OPENROUTER_KEY: 'sk-or-v1-local-proof',
-    SKYNET_DEFAULT_MODEL: 'test/model', STARNET_DEFAULT_MODEL: 'test/model',
-    SKYNET_FULL_ACCESS: '', STARNET_FULL_ACCESS: ''
+    SKYNET_OPENROUTER_BASE: mock.base, VULTRON_OPENROUTER_BASE: mock.base,
+    SKYNET_OPENROUTER_KEY: 'sk-or-v1-local-proof', VULTRON_OPENROUTER_KEY: 'sk-or-v1-local-proof',
+    SKYNET_DEFAULT_MODEL: 'test/model', VULTRON_DEFAULT_MODEL: 'test/model',
+    SKYNET_FULL_ACCESS: '', VULTRON_FULL_ACCESS: ''
   } });
   try {
     await fixture.start();
     const B = fixture.baseUrl, token = fixture.token;
-    const H = { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: B };
+    const H = { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: B };
     const roster = await fetch(B + '/api/roster', { method: 'POST', headers: H, body: JSON.stringify({ agents: [{ agentId: 'agent', system: 'LEAD', name: 'NOVA', model: 'test/model' }] }) });
     A.eq(roster.status, 200, 'the agent is on the roster');
 
@@ -137,10 +137,10 @@ async function runTo(B, H, body, onEvent) {
     {
       const id = 'w-runtruth1017';
       const made = await (await fetch(B + '/api/widgets/configure', { method: 'POST', headers: H, body: JSON.stringify({
-        id, label: 'AI spend', request: 'total spend this month from the ledger', display: 'metric', source: { kind: 'agent', id: 'starnet' } }) })).json();
-      A.ok(made.widget && made.widget.config && made.widget.config.version === 1, 'Connected apps > StarNet > Create: the widget is configured (version 1)');
+        id, label: 'AI spend', request: 'total spend this month from the ledger', display: 'metric', source: { kind: 'agent', id: 'vultron' } }) })).json();
+      A.ok(made.widget && made.widget.config && made.widget.config.version === 1, 'Connected apps > Vultron > Create: the widget is configured (version 1)');
       const second = await fetch(B + '/api/widgets/configure', { method: 'POST', headers: H, body: JSON.stringify({
-        id: 'w-other1017', label: 'Other', request: 'something else', display: 'metric', source: { kind: 'agent', id: 'starnet' } }) });
+        id: 'w-other1017', label: 'Other', request: 'something else', display: 'metric', source: { kind: 'agent', id: 'vultron' } }) });
       A.eq(second.status, 200, 'a second configured widget exists (the one this refresh must not touch)');
       const ask = await (await fetch(B + '/api/widgets/request', { method: 'POST', headers: H, body: JSON.stringify({ id }) })).json();
       A.ok(/Publish the result with widget\.set/.test(ask.prompt || ''), 'the refresh instruction tells the agent to publish with widget.set');

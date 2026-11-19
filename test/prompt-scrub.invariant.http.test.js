@@ -45,7 +45,7 @@ const { spawn } = require('node:child_process');
 const FK = require('./helpers/fake-keys.js');
 
 const root = path.resolve(__dirname, '..');
-const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-prompt-scrub-'));
+const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-prompt-scrub-'));
 const WS = path.join(tmp, 'workspace'), PROFILE = path.join(tmp, 'profile');
 for (const d of [WS, path.join(PROFILE, 'AppData', 'Roaming'), path.join(PROFILE, 'AppData', 'Local'), path.join(PROFILE, 'xdg')]) fs.mkdirSync(d, { recursive: true });
 const { list: KEYS, by: K } = FK.make('prompt-scrub-invariant');
@@ -92,7 +92,7 @@ function decide(body) {
     const frag = l => { const m = KEYLIKE.exec(l); const at = m ? Math.max(0, m.index - 30) : 0; return l.slice(at, at + 120).replace(/[|\n]/g, ' ').trim(); };
     return 'TOPIC: outreach api setup | EVIDENCE: ' + frag(keyed[0] || act[0]);
   }
-  if (/INV-ASK1/.test(words)) return 'I need one detail first.\nTASK_QUESTION: Which repo should the issue go in? || starnet | docs';
+  if (/INV-ASK1/.test(words)) return 'I need one detail first.\nTASK_QUESTION: Which repo should the issue go in? || vultron | docs';
   return 'Done.';
 }
 const mock = http.createServer((req, res) => {
@@ -164,7 +164,7 @@ function freePort() { return new Promise((resolve, reject) => { const s = net.cr
 function hermeticEnv(port, mockPort) {
   const env = {};
   for (const [k, v] of Object.entries(process.env)) {
-    if (/^(SKYNET|STARNET)_/i.test(k) || /KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL/i.test(k) || /^(HTTP|HTTPS|ALL|NO)_PROXY$/i.test(k)) continue;
+    if (/^(SKYNET|VULTRON)_/i.test(k) || /KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL/i.test(k) || /^(HTTP|HTTPS|ALL|NO)_PROXY$/i.test(k)) continue;
     env[k] = v;
   }
   const orBase = 'http://127.0.0.1:' + mockPort + '/api/v1';
@@ -172,7 +172,7 @@ function hermeticEnv(port, mockPort) {
     APPDATA: path.join(PROFILE, 'AppData', 'Roaming'), LOCALAPPDATA: path.join(PROFILE, 'AppData', 'Local'), XDG_DATA_HOME: path.join(PROFILE, 'xdg'),
     USERPROFILE: PROFILE, HOME: PROFILE,
     SKYNET_WORKSPACES: WS, SKYNET_PORT: String(port), SKYNET_DEV: '1',
-    SKYNET_OPENROUTER_BASE: orBase, STARNET_OPENROUTER_BASE: orBase, SKYNET_OPENROUTER_KEY: PROVIDER_KEY,
+    SKYNET_OPENROUTER_BASE: orBase, VULTRON_OPENROUTER_BASE: orBase, SKYNET_OPENROUTER_KEY: PROVIDER_KEY,
     SKYNET_DEFAULT_MODEL: 'test/model', SKYNET_FULL_ACCESS: '1',
     SKYNET_EDGE_TTS: '0', SKYNET_EDGE_TTS_PROBE: '0', SKYNET_REFLECT: '0', SKYNET_SKILL_REVIEW: '0',
     SKYNET_AUX_BUDGET: '0',   // (review r2) the aux governor off: every gated post-run pass spends, thread mining included
@@ -193,8 +193,8 @@ async function boot(mockPort) {
     await sleep(200);
   }
   const html = await (await fetch(base + '/', { headers: { Origin: base } })).text();
-  const m = html.match(/window\.__STARNET_API_TOKEN__=("(?:\\.|[^"])*")/);
-  headers = { 'Content-Type': 'application/json', 'X-StarNet-Token': m ? JSON.parse(m[1]) : '', Origin: base };
+  const m = html.match(/window\.__VULTRON_API_TOKEN__=("(?:\\.|[^"])*")/);
+  headers = { 'Content-Type': 'application/json', 'X-Vultron-Token': m ? JSON.parse(m[1]) : '', Origin: base };
 }
 async function stop() {
   if (!child || child.exitCode !== null) return;
@@ -292,7 +292,7 @@ const TYPED = {};   // phase -> the key ids its own words typed
     phase = 'ASK2';
     const tr = await api('GET', '/api/transcript?agent=agent&stream=invASK&limit=200');
     const hist = ((tr.json && tr.json.turns) || []).filter(t => t && (t.role === 'user' || t.role === 'assistant') && typeof t.content === 'string').map(t => ({ role: t.role, content: t.content }));
-    A.eq(await run('ASK2', '', { streamId: 'invASK', messages: hist.concat([{ role: 'user', content: 'INV-ASK2 the starnet repo' }]) }), 'done', 'phase C: ASK2 (the answer) completed');
+    A.eq(await run('ASK2', '', { streamId: 'invASK', messages: hist.concat([{ role: 'user', content: 'INV-ASK2 the vultron repo' }]) }), 'done', 'phase C: ASK2 (the answer) completed');
     phase = 'final';
   } catch (e) {
     A.ok(false, 'scenario threw: ' + ((e && e.stack) || e));

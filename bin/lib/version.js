@@ -1,8 +1,8 @@
-/* bin/lib/version.js — which StarNet build this `starnet` command belongs to, read from what actually ships beside bin/.
+/* bin/lib/version.js — which Vultron build this `vultron` command belongs to, read from what actually ships beside bin/.
    package.json is not a bundle resource (src-tauri/tauri.conf.json ships sidecar, frontend, shared, bin), so an
    installed build needs its own source of truth:
      a checkout              package.json
-     the macOS app           StarNet.app/Contents/Info.plist (bin/ sits in Contents/Resources) CFBundleShortVersionString
+     the macOS app           Vultron.app/Contents/Info.plist (bin/ sits in Contents/Resources) CFBundleShortVersionString
      a Windows install       skynet-desktop.exe beside bin\ — its VS_FIXEDFILEINFO file version, the number the
                              installer's own GetDLLVersion reads (src-tauri/installer/hooks.nsh)
    and 'unknown' when none says — never a made-up 'dev'. */

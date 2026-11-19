@@ -27,7 +27,7 @@ async function until(check, what, ms) {
   for (;;) { if (check()) return; if (Date.now() > end) throw new Error('timed out waiting for ' + what); await sleep(50); }
 }
 const session = (id, text) => ({ id, title: id, agentId: 'agent', createdAt: 1, lastActiveAt: 2, history: [{ role: 'user', content: text }] });
-const envelope = (version, revision, workstreams, extra) => Object.assign({ schema: 'starnet.save', version, updatedAt: Date.now(), _saveRevision: revision, _saveClient: 'tab1',
+const envelope = (version, revision, workstreams, extra) => Object.assign({ schema: 'vultron.save', version, updatedAt: Date.now(), _saveRevision: revision, _saveClient: 'tab1',
   agent: { id: 'agent', name: 'NOVA', createdAt: 5000 }, generalId: 'general', activeId: 'general', deletedIds: [], forgetIds: [], workstreams }, extra || null);
 
 (async () => {

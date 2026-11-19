@@ -335,7 +335,7 @@ const count = (ev, name, runId) => ev.filter(([n, p]) => n === name && p && p.ru
       emit('agent.run.end', { agentId, runId, reason: 'error', turns: 0, usd: 0 }); }],
     ['if (!concurrencyGate.tryEnter(agentId)) {', {}, (emit, { agentId, runId, trigger, model, runStartExtra, concurrencyGate }) => {
       emit('agent.run.start', { agentId, runId, trigger: trigger, model, ...runStartExtra });
-      emit('agent.run.error', { agentId, runId, transient: true, message: 'Too many agents are working at once (limit ' + concurrencyGate.max() + '). Wait for one to finish, or raise STARNET_MAX_CONCURRENT_AGENTS.', failureCode: 'concurrency_limit' });
+      emit('agent.run.error', { agentId, runId, transient: true, message: 'Too many agents are working at once (limit ' + concurrencyGate.max() + '). Wait for one to finish, or raise VULTRON_MAX_CONCURRENT_AGENTS.', failureCode: 'concurrency_limit' });
       emit('agent.run.end', { agentId, runId, reason: 'error', turns: 0, usd: 0 }); }],
     ...[{ exhausted: true, balanceUsd: 0 }, { exhausted: true, held: { counted: true, runs: 2, usd: 3 }, balanceUsd: 0 }, { linkRefused: true }, {}].map(m => (
       ['const refusal = budgetCaps.managedRefusalMessage(', { refusal: require('../sidecar/budgetcaps.js').managedRefusalMessage(m) }, (emit, { agentId, runId, trigger, model, runStartExtra, refusal }) => {

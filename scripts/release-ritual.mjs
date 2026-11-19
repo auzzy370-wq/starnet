@@ -84,7 +84,7 @@ export function bumpDone(io, target) {
 export function notesDone(io, target) {
   const t = io.readText('RELEASE_NOTES.md');
   if (t == null) return false;
-  const header = (/^#\s*StarNet\s+v?(\S+)/m.exec(stripBom(t)) || [])[1];
+  const header = (/^#\s*Vultron\s+v?(\S+)/m.exec(stripBom(t)) || [])[1];
   return header === target && !/TODO: summarize/.test(t) && !notesHtmlComment(t);
 }
 
@@ -167,9 +167,9 @@ export function runRitual(ctx, io) {
     const s = step('notes');
     const text = io.readText('RELEASE_NOTES.md');
     // written for this tag (header matches, no TODO scaffold); notesDone additionally needs no HTML comment left in it
-    const written = text != null && (/^#\s*StarNet\s+v?(\S+)/m.exec(stripBom(text)) || [])[1] === target && !/TODO: summarize/.test(text);
+    const written = text != null && (/^#\s*Vultron\s+v?(\S+)/m.exec(stripBom(text)) || [])[1] === target && !/TODO: summarize/.test(text);
     const comment = written ? notesHtmlComment(text) : null;
-    if (notesDone(io, target)) { s.status = 'done'; s.lines.push('RELEASE_NOTES.md has a real # StarNet ' + tag + ' entry (no TODO, no HTML comment)'); }
+    if (notesDone(io, target)) { s.status = 'done'; s.lines.push('RELEASE_NOTES.md has a real # Vultron ' + tag + ' entry (no TODO, no HTML comment)'); }
     else if (dry && !bumpDone(io, target)) { s.lines.push('would STOP until RELEASE_NOTES.md is written for ' + tag + ' (replace the TODO scaffold; `git add RELEASE_NOTES.md && git commit --amend --no-edit`)'); }
     else if (comment) { stop(s, 'RELEASE_NOTES.md for ' + tag + ' still holds an HTML comment: ' + comment, ['fill it or delete it: the notes are published as-is (GitHub release body, the updater text, the source mirror), so a placeholder or internal note in a comment ships to users', 'git add RELEASE_NOTES.md && git commit --amend --no-edit    (amend the `release: ' + tag + '` commit — it must be HEAD)', 'then run this same command again']); return out; }
     else { stop(s, 'RELEASE_NOTES.md is still the TODO scaffold for ' + tag, ['write the user-facing notes (GitHub release body + in-app UPDATE CENTER text)', 'git add RELEASE_NOTES.md && git commit --amend --no-edit    (amend the `release: ' + tag + '` commit — it must be HEAD)', 'then run this same command again']); return out; }
@@ -341,9 +341,9 @@ export function parseRitualArgs(argv) {
 const INVOKED_DIRECTLY = (() => { try { return process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href; } catch { return false; } })();
 
 if (INVOKED_DIRECTLY) {
-  const ROOT = process.env.STARNET_PREFLIGHT_ROOT ? resolve(process.env.STARNET_PREFLIGHT_ROOT) : resolve(dirname(fileURLToPath(import.meta.url)), '..');
+  const ROOT = process.env.VULTRON_PREFLIGHT_ROOT ? resolve(process.env.VULTRON_PREFLIGHT_ROOT) : resolve(dirname(fileURLToPath(import.meta.url)), '..');
   const a = parseRitualArgs(process.argv.slice(2));
-  const ctx = Object.assign(a, { keyFile: process.env.STARNET_UPDATER_KEY_FILE || join(homedir(), '.tauri', 'starnet-updater.key') });
+  const ctx = Object.assign(a, { keyFile: process.env.VULTRON_UPDATER_KEY_FILE || join(homedir(), '.tauri', 'vultron-updater.key') });
   const result = runRitual(ctx, makeRitualIo(ROOT));
   process.stdout.write(renderRitual(result, ctx) + '\n');
   process.exit(result.exitCode);

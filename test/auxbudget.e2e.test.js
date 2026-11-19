@@ -66,7 +66,7 @@ function startMock() {
 
 async function driveRun(B, token, agentId, text) {
   const r = await fetch(B + '/api/run', {
-    method: 'POST', headers: { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: B },
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: B },
     body: JSON.stringify({ key: 'sk-or-v1-auxbudget-fake', model: 'test/model', agentId, isTask: true, messages: [{ role: 'user', content: text }] })
   });
   const rd = r.body.getReader(); while (true) { const { done } = await rd.read(); if (done) break; }   // drain to run end
@@ -126,11 +126,11 @@ async function runArm(label, budgetEnv, envName) {
   A.ok(on.aux >= 1, 'governor ON still lets the top-priority passes spend (aux=' + on.aux + ')');
   A.ok(on.aux < off.aux, 'the governor DEMONSTRABLY cut aggregate aux spend (' + on.aux + ' < ' + off.aux + ')');
 
-  // ARM C — the STARNET_ spelling of the knob (GitHub #105, quick win 32): the aux knobs read process.env.SKYNET_* directly,
-  // so STARNET_AUX_BUDGET=0 was silently ignored and the default budget of 2 still capped the run. Through ENV() it is honoured.
-  const starnetOff = await runArm('starnet-off', '0', 'STARNET_AUX_BUDGET');
-  A.ok(starnetOff.aux > 2, 'STARNET_AUX_BUDGET=0 turns the governor off exactly as SKYNET_AUX_BUDGET=0 does (aux=' + starnetOff.aux + ')');
+  // ARM C — the VULTRON_ spelling of the knob (GitHub #105, quick win 32): the aux knobs read process.env.SKYNET_* directly,
+  // so VULTRON_AUX_BUDGET=0 was silently ignored and the default budget of 2 still capped the run. Through ENV() it is honoured.
+  const vultronOff = await runArm('vultron-off', '0', 'VULTRON_AUX_BUDGET');
+  A.ok(vultronOff.aux > 2, 'VULTRON_AUX_BUDGET=0 turns the governor off exactly as SKYNET_AUX_BUDGET=0 does (aux=' + vultronOff.aux + ')');
 
-  console.log('[auxbudget.e2e] aux-calls OFF=' + off.aux + ' ON(budget2)=' + on.aux + ' STARNET-OFF=' + starnetOff.aux + ' (main+aux total OFF=' + off.total + ' ON=' + on.total + ')');
+  console.log('[auxbudget.e2e] aux-calls OFF=' + off.aux + ' ON(budget2)=' + on.aux + ' VULTRON-OFF=' + vultronOff.aux + ' (main+aux total OFF=' + off.total + ' ON=' + on.total + ')');
   A.report('auxbudget.e2e.test');
 })().catch(e => { console.log('FAIL: auxbudget.e2e.test threw - ' + (e && e.stack || e)); process.exit(1); });

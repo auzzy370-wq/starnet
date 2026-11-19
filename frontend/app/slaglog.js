@@ -1,4 +1,4 @@
-/* STARNET — slaglog.js : the SLAG post-mortem — wasted-spend, turned into a lesson.
+/* VULTRON — slaglog.js : the SLAG post-mortem — wasted-spend, turned into a lesson.
 
    The standout teaching mechanic of the floor economy. Every run that burns real dollars
    without producing a deliverable (agent.run.end reason ∈ max_iters | budget | error |
@@ -24,14 +24,14 @@
 
   const COLD_CACHE = 0.15;   // below this the prompt-cache is basically cold (the smelter is dark)
   // FriendlyError kinds whose message already names the real door (friendlyerror.js KINDS, retryable:false).
-  // Absent on purpose: unknown + server_error (plausibly StarNet's own fault — those keep "report it").
+  // Absent on purpose: unknown + server_error (plausibly Vultron's own fault — those keep "report it").
   const KNOWN_ERROR_KINDS = { billing: 1, managed_credit: 1, managed_credit_link: 1, auth: 1, no_model: 1, oauth: 1, grok_oauth_unavailable: 1,
     claude_cli_missing: 1, claude_cli_signed_out: 1,
     quota_exhausted: 1, model_not_found: 1, context_overflow: 1, content_policy_blocked: 1, capdenied: 1,
     spotify_not_connected: 1, stale_session: 1, spend_unknown: 1, local_model_memory: 1, local_timeout: 1,
     // the OLLAMA card points at a server that is not Ollama (GH#111): its message names the CUSTOM card that fixes it
     endpoint_mismatch: 1,
-    // the StarNet relay refused one call's price: its message names the two fixes (fresh chat, cheaper model)
+    // the Vultron relay refused one call's price: its message names the two fixes (fresh chat, cheaper model)
     call_too_expensive: 1,
     // harness stops whose own message is the fix and a plain resend repeats them (2026-10-11): a tool call too big for
     // the model's output limit (ask in smaller parts / switch model), and a Commander hook that blocks the run
@@ -43,10 +43,10 @@
     // pre-check script did not pass or whose required skill is gone, an agent being deleted, a model that cannot run the task, an
     // image task with no STUDIO route — the run never started, and its message names the fix
     routine_precheck: 1, routine_skill: 1, agent_deleting: 1, model_unsuitable: 1, image_blocked: 1,
-    // the station refused the request and named it (truthful acks, X-StarNet-Code): a route's own refusal leads with its sentence,
+    // the station refused the request and named it (truthful acks, X-Vultron-Code): a route's own refusal leads with its sentence,
     // and a page whose address the gate refused is told the address to use — a resend is refused the same way
     station_refused: 1, wrong_address: 1 };
-  // …and the retryable kinds whose message names a door that is NOT StarNet's bug: an unanswered StarNet balance check,
+  // …and the retryable kinds whose message names a door that is NOT Vultron's bug: an unanswered Vultron balance check,
   // a provider's outage or rate limit, an agent still busy with its last run. Their own message is the fix; a resend in a
   // moment CAN go through, so the cause must not say it won't (2026-10-08: a refused link / an unanswered balance check
   // became "copy the diagnostics … report it"). network + timeout stay generic with unknown/server_error.
@@ -76,11 +76,11 @@
           return { reason, title: 'stopped before the budget cap',
             cause: 'The run stopped before its next call: calls already running under the same PER RUN cap (its run and the workers that run started) had taken what was left.',
             fix: ctx.atBalance === true ? 'Add credits under SETTINGS → AI & MODELS to keep going, or split the work into smaller work-items.' : 'Raise PER RUN in SETTINGS › SPENDING LIMITS, or split the work into smaller work-items.' };
-        // a StarNet run whose ceiling was the WALLET (agent.run.end budgetCapIsBalance — admission clamped it to the
+        // a Vultron run whose ceiling was the WALLET (agent.run.end budgetCapIsBalance — admission clamped it to the
         // reported balance): raising a budget buys nothing there, and COMMS already says "add credits" for the same stop
         if (ctx.atBalance === true)
-          return { reason, title: 'used the rest of the StarNet balance',
-            cause: 'The run used what was left on your StarNet balance before it delivered.',
+          return { reason, title: 'used the rest of the Vultron balance',
+            cause: 'The run used what was left on your Vultron balance before it delivered.',
             fix: 'Add credits under SETTINGS → AI & MODELS to keep going, or split the work into smaller work-items.' };
         if (cacheKnown && Number(ctx.cacheFrac) < COLD_CACHE)
           return { reason, title: 'budget cap on a cold cache',
@@ -94,7 +94,7 @@
         // a KNOWN cause — an empty provider wallet, a model the key can't use, a missing key — names its real
         // fix. "send it again, then report it" is wrong there: a resend hits the same wall and the "bug" is the
         // account (2026-10-07: three Anthropic "credit balance is too low" runs became a quest telling the
-        // Commander to report StarNet).
+        // Commander to report Vultron).
         if (ctx.error && ctx.error.msg && KNOWN_ERROR_KINDS[ctx.error.kind])
           return { reason, title: 'errored out',
             // Allocation can fail after earlier turns already ran. Do not claim

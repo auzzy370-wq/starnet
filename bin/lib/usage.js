@@ -6,7 +6,7 @@
      a sign-in that hit its limit           the station cools it (the next sign-in takes the runs): until when
      an API key                             its rate-limit buckets from its last response (per-minute meters, not a
                                             balance); none yet: unknown
-     StarNet credits                        the linked balance
+     Vultron credits                        the linked balance
      Ollama                                 runs on this computer: no limit
    and, last, what the station's ledger says was spent (the old /usage line).
 

@@ -25,7 +25,7 @@ A.eq(C.PROVIDERS.map(p => [p.id, p.name, p.endpoint, p.blurb]), appProviders.map
 A.eq(C.GROUPS.map(g => [g.id, g.label, g.note, g.ids || null]), appGroups.map(g => [g.id, g.label, g.note, g.ids || null]), 'the app\'s four groups');
 A.ok(appProviders.every(p => p.live), 'every app provider is live (none is "coming soon" here)');
 const grouped = C.ordered().map(p => p.id);
-A.eq(grouped.slice(0, 6), ['starnet', 'codex', 'grok', 'kimi', 'claude-cli', 'openrouter'], 'the groups in order: credits, subscriptions, then keys');
+A.eq(grouped.slice(0, 6), ['vultron', 'codex', 'grok', 'kimi', 'claude-cli', 'openrouter'], 'the groups in order: credits, subscriptions, then keys');
 A.eq(grouped.slice(-2), ['ollama', 'custom'], 'your own models last');
 A.eq(grouped.length, appProviders.length, 'none dropped, none twice');
 
@@ -36,15 +36,15 @@ A.eq(C.status(P('openrouter'), f), ['● KEY SAVED', 'ok'], 'a saved key: KEY SA
 A.eq(C.status(P('anthropic'), f)[0], '○ NO KEY', 'no key');
 A.eq(C.status(P('codex'), f)[0], '● SIGNED IN', 'a sign-in held');
 A.eq(C.status(P('grok'), f)[0], '○ NOT SIGNED IN', 'no sign-in');
-A.eq(C.status(P('starnet'), f)[0], '● LINKED · $4.50', 'a link shows its balance');
-A.eq(C.status(P('starnet'), { credits: { state: 'linkable' } })[0], '○ NOT LINKED', 'not linked');
+A.eq(C.status(P('vultron'), f)[0], '● LINKED · $4.50', 'a link shows its balance');
+A.eq(C.status(P('vultron'), { credits: { state: 'linkable' } })[0], '○ NOT LINKED', 'not linked');
 A.eq(C.status(P('claude-cli'), f)[0], '● SIGNED IN', 'Claude Code signed in');
 A.eq(C.status(P('claude-cli'), { claude: { installed: false } })[0], '○ CLAUDE CODE NOT INSTALLED', 'Claude Code missing');
 A.eq(C.status(P('claude-cli'), { claude: null })[0], '○ COULDN’T CHECK CLAUDE CODE', 'a check that failed says so');
 A.eq(C.status(P('claude-cli'), {})[0], '◐ CHECKING CLAUDE CODE…', 'before the check answers');
 A.eq([C.status(P('ollama'), f)[0], C.status(P('ollama'), { ollama: true })[0]], ['○ NOT ANSWERING', '● REACHABLE'], 'Ollama: what its check found');
 A.eq([C.status(P('custom'), f)[0], C.status(P('custom'), {})[0]], ['● ENDPOINT SAVED', '○ NO ENDPOINT'], 'custom: an endpoint');
-A.eq(['starnet', 'codex', 'grok', 'kimi', 'claude-cli', 'ollama', 'custom', 'openrouter', 'gemini'].map(C.flowOf), ['credits', 'device', 'device', 'device', 'claude', 'local', 'custom', 'key', 'key'], 'each provider connects its app way');
+A.eq(['vultron', 'codex', 'grok', 'kimi', 'claude-cli', 'ollama', 'custom', 'openrouter', 'gemini'].map(C.flowOf), ['credits', 'device', 'device', 'device', 'claude', 'local', 'custom', 'key', 'key'], 'each provider connects its app way');
 A.eq(C.brainOf('grok'), { id: 'grok', flow: 'device', path: 'grok' }, 'a device sign-in is the awakening\'s');
 A.eq(C.brainOf('anthropic'), null, 'a key provider is no sign-in');
 A.eq(C.need(P('codex')), 'ChatGPT subscription', 'a sign-in says its subscription');
@@ -60,8 +60,8 @@ A.eq([C.normEndpoint('localhost:1234/v1'), C.normEndpoint('api.example.com/v1'),
   A.eq(st.calls.map(c => c[0]), ['/api/providers/connect'], '...one call');
   st = fake({});
   A.ok(/older than \/connect/.test((await C.saveKey(st, 'anthropic', 'k1')).error), 'an older station says so');
-  st = fake({ '/api/providers/connect': { ok: true, status: 409, json: { ok: false, code: 'open-app', error: 'open StarNet, then try again' } } });
-  A.eq(await C.saveKey(st, 'anthropic', 'k1'), { ok: false, error: 'open StarNet, then try again' }, 'the desktop station with its window not loaded: its own words');
+  st = fake({ '/api/providers/connect': { ok: true, status: 409, json: { ok: false, code: 'open-app', error: 'open Vultron, then try again' } } });
+  A.eq(await C.saveKey(st, 'anthropic', 'k1'), { ok: false, error: 'open Vultron, then try again' }, 'the desktop station with its window not loaded: its own words');
   st = fake({ '/api/providers/connect': { ok: true, status: 409, json: { ok: false, code: 'no-page' } }, '/api/providers/validate': { ok: true, status: 200, json: { ok: false, credentialVerified: false, error: 'provider rejected this key (HTTP 401)' } } });
   A.eq(await C.saveKey(st, 'groq', 'bad'), { ok: false, error: 'provider rejected this key (HTTP 401)' }, 'no page: a refused key says why');
   A.eq(st.calls.map(c => c[0]), ['/api/providers/connect', '/api/providers/validate'], '...and is never handed over');

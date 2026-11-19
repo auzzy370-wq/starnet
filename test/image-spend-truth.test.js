@@ -19,7 +19,7 @@ const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
 const answer = usage => async () => new Response(JSON.stringify({ choices: [{ message: { images: [{ image_url: { url: PNG } }] } }], ...(usage ? { usage } : {}) }), { status: 200, headers: { 'Content-Type': 'application/json' } });
 
 (async () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-image-spend-'));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-image-spend-'));
   const engine = makeCostEngine();
   const tools = (fetchImpl, extra) => makeImageTools(Object.assign({ openrouter: { apiKey: 'k' }, fsp, pathMod: path, root, fetchImpl,
     // index.js recordMediaUsage: the media route has no catalog, so anything without a provider figure is unpriced
@@ -283,7 +283,7 @@ const answer = usage => async () => new Response(JSON.stringify({ choices: [{ me
         A.ok(/Cost: \$0\.0500/.test(priced.content), 'a priced image');
         A.eq(pool.mediaCount(), { running: 0, unknown: 0 }, 'is no count');
         const first = await withCheck(answer(null)).generateTool.run({ prompt: 'a cat' }, ctx);
-        A.ok(/StarNet stops a run at 1 of them/.test(first.content), 'an unknown image says the count: ' + first.content);
+        A.ok(/Vultron stops a run at 1 of them/.test(first.content), 'an unknown image says the count: ' + first.content);
         A.eq(pool.mediaCount(), { running: 0, unknown: 1 }, 'and counts');
         let posted = 0, refused = '';
         try { await withCheck(async (...x) => { posted++; return answer(null)(...x); }).generateTool.run({ prompt: 'a cat' }, ctx); } catch (e) { refused = e.message; }
@@ -431,7 +431,7 @@ const answer = usage => async () => new Response(JSON.stringify({ choices: [{ me
         let posted = 0, refused4 = '';
         try { await useRun('t4')(async (...x) => { posted++; return answer(null)(...x); }).generateTool.run({ prompt: 'a cat' }, ctx); } catch (e) { refused4 = e.message; }
         A.eq(posted, 0, 'at the limit no request goes out, in a new run');
-        A.ok(/did not start: StarNet has recorded 1 image/.test(refused4) && /nothing was charged/.test(refused4) && /Room comes back in about 24 hours/.test(refused4) && !/SETTINGS/.test(refused4), 'and the refusal is plain: ' + refused4);
+        A.ok(/did not start: Vultron has recorded 1 image/.test(refused4) && /nothing was charged/.test(refused4) && /Room comes back in about 24 hours/.test(refused4) && !/SETTINGS/.test(refused4), 'and the refusal is plain: ' + refused4);
       }
     }
 
@@ -480,7 +480,7 @@ const answer = usage => async () => new Response(JSON.stringify({ choices: [{ me
     A.ok(!/spendPool\.admit\([^)]*pending/i.test(idx) && !/runBudget\.check\(spentUsd \+ pendingUsd/.test(idx), 'and nothing tells the pool a pending charge');
     A.ok(/if \(name === 'agent\.cost' && !providerUnmetered\) spendPool\.booked\(runId, Number\(payload\.usd\) \|\| 0\);/.test(idx), 'the one place a charge reaches the pool');
     const ui = fs.readFileSync(path.join(__dirname, '..', 'frontend', 'app', 'stationui.js'), 'utf8');
-    A.ok(/Images whose cost is unknown are not held by these dollar limits/.test(ui) && ui.includes('StarNet stops a run at ' + S.MEDIA_UNKNOWN_COST_MAX + ' of them instead, and every run at ' + S.MEDIA_UNKNOWN_COST_DAY_MAX + ' in any 24 hours') && /On a subscription chat this one does not apply/.test(ui), 'SETTINGS says plainly what the limits cannot stop');
+    A.ok(/Images whose cost is unknown are not held by these dollar limits/.test(ui) && ui.includes('Vultron stops a run at ' + S.MEDIA_UNKNOWN_COST_MAX + ' of them instead, and every run at ' + S.MEDIA_UNKNOWN_COST_DAY_MAX + ' in any 24 hours') && /On a subscription chat this one does not apply/.test(ui), 'SETTINGS says plainly what the limits cannot stop');
     A.ok(/onUsage: recordMediaUsage, spendStop: mediaSpend,/.test(idx) && /drainToolCosts: \(\) => pendingMediaCosts\.splice\(0\), spendView,/.test(idx), 'runOnce wires the check and the view');
     A.ok(/ledger\.record\(\{[^\n]*unmetered: mediaFlags\.unmetered, unpriced: mediaFlags\.unpriced, usageMissing, \.\.\.generationFields\(result\)/.test(idx) && /runStore\.record\(\{[^\n]*reasoningEffort, unmetered: mediaFlags\.unmetered, unpriced: mediaFlags\.unpriced, usageMissing, spendUnknown/.test(idx), 'both actual spend writers carry the flags alongside generation receipts');
     const chat = fs.readFileSync(path.join(__dirname, '..', 'frontend', 'app', 'chat.js'), 'utf8');

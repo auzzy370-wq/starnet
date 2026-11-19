@@ -1,4 +1,4 @@
-/* test/build-clip.test.js — THE HAND, part 2 (2026-10-11, Andrew: "fully polish and integrate this into starnet" — his build-mode
+/* test/build-clip.test.js — THE HAND, part 2 (2026-10-11, Andrew: "fully polish and integrate this into vultron" — his build-mode
    prototype): BOX SELECT takes belts too, a double-click takes a WHOLE LINE, and a piece of floor goes in your hand — Ctrl+C / X / V /
    D, COPY LINE, DELETE LINE — with its belts, its junction settings, its names, briefs, budgets and crew.
    Locked here:

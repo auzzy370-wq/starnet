@@ -8,7 +8,7 @@
      · post/del resolve { ok, status, code, j } for EVERY answer, and reject only when no answer came (a network failure,
        an abort, the deadline — with today's sentences);
      · ok === true iff 2xx AND a JSON object AND j.ok !== false;
-     · when ok is false, code is never empty: the station's X-StarNet-Code, else j.code, else bad_body (a 2xx that is not
+     · when ok is false, code is never empty: the station's X-Vultron-Code, else j.code, else bad_body (a 2xx that is not
        JSON), refused (a 2xx {ok:false}) or http_<status>;
      · j is the parsed body or null, never synthesized;
      · get returns the body of a 2xx JSON answer, or throws an Error carrying { status, code, j };
@@ -62,7 +62,7 @@ const parsed = text => { try { return JSON.parse(text); } catch (_) { return nul
   let rows = 0;
   for (const status of STATUSES) for (const [bodyName, body] of Object.entries(BODIES)) for (const [hName, h] of Object.entries(HEADERS)) {
     const label = status + ' ' + bodyName + ' ' + hName;
-    const headers = h ? { 'X-StarNet-Code': h } : {};
+    const headers = h ? { 'X-Vultron-Code': h } : {};
     const two = status >= 200 && status < 300;
     const j = parsed(body);
     const expectOk = two && isJsonObject(body) && j.ok !== false;
@@ -103,13 +103,13 @@ const parsed = text => { try { return JSON.parse(text); } catch (_) { return nul
 
   /* ---- 2. the gate's own refusals, as refuseAtGate sends them: text body, the code in the header ---- */
   for (const code of ['token_stale', 'token_missing']) {
-    const r = await client(reply(403, 'forbidden token', { 'X-StarNet-Code': code, 'Content-Type': 'text/plain; charset=utf-8' })).api.post('/api/x', {});
+    const r = await client(reply(403, 'forbidden token', { 'X-Vultron-Code': code, 'Content-Type': 'text/plain; charset=utf-8' })).api.post('/api/x', {});
     A.ok(r.ok === false && r.status === 403 && r.code === code && r.j === null, 'the gate\'s ' + code + ' resolves as a named refusal: ' + JSON.stringify(r));
   }
 
   // a header value that is no station code (a proxy's, a fake's: codes are lower-case names) is ignored, never read as one
   {
-    const r = await client(reply(403, '{"ok":false,"code":"wrong_owner","error":"not yours"}', { 'X-StarNet-Code': 'text/plain' })).api.post('/api/x', {});
+    const r = await client(reply(403, '{"ok":false,"code":"wrong_owner","error":"not yours"}', { 'X-Vultron-Code': 'text/plain' })).api.post('/api/x', {});
     A.eq(r.code, 'wrong_owner', 'a header value that is not a code falls through to the body\'s own code: ' + r.code);
   }
 
@@ -148,7 +148,7 @@ const parsed = text => { try { return JSON.parse(text); } catch (_) { return nul
   {
     const c = client(reply(200, '{}'));
     A.ok(typeof c.api.read === 'function' && typeof c.api.why === 'function', 'Harness.api exposes read(response) and why(result)');
-    const r = await c.api.read(new Response('nope', { status: 409, headers: { 'X-StarNet-Code': 'conflict' } }));
+    const r = await c.api.read(new Response('nope', { status: 409, headers: { 'X-Vultron-Code': 'conflict' } }));
     A.ok(r.ok === false && r.status === 409 && r.code === 'conflict' && r.j === null, 'read(response) answers the same shape: ' + JSON.stringify(r));
   }
 
@@ -180,8 +180,8 @@ const parsed = text => { try { return JSON.parse(text); } catch (_) { return nul
     }
     A.eq(why({ ok: true, status: 200, code: '', j: {} }), '', 'an ok result has nothing to explain');
     // a page the station kept its key from: the withheld notice it already shows, when the page knows its reason
-    const withheld = client(reply(200, '{}'), { tokenWithheld: 'other-user', tokenWithheldNotice: r => 'StarNet could not confirm this browser (' + r + ').' }).api.why;
-    A.eq(withheld({ ok: false, status: 403, code: 'token_missing', j: null }), 'StarNet could not confirm this browser (other-user)', 'token_missing reads as this page\'s own withheld notice when it knows the reason');
+    const withheld = client(reply(200, '{}'), { tokenWithheld: 'other-user', tokenWithheldNotice: r => 'Vultron could not confirm this browser (' + r + ').' }).api.why;
+    A.eq(withheld({ ok: false, status: 403, code: 'token_missing', j: null }), 'Vultron could not confirm this browser (other-user)', 'token_missing reads as this page\'s own withheld notice when it knows the reason');
   }
 
   A.report('harness-api.contract.test');

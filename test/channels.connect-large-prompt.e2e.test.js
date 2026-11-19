@@ -42,8 +42,8 @@ function bigPrompt(bytes) {
 
 (async () => {
   const telegram = await startTelegram();
-  const env = { SKYNET_TELEGRAM_API_BASE: telegram.base, STARNET_TELEGRAM_API_BASE: telegram.base };
-  const sidecar = SidecarFixture.create({ prefix: 'starnet-channel-big-prompt-', env, timeoutMs: 20000 });
+  const env = { SKYNET_TELEGRAM_API_BASE: telegram.base, VULTRON_TELEGRAM_API_BASE: telegram.base };
+  const sidecar = SidecarFixture.create({ prefix: 'vultron-channel-big-prompt-', env, timeoutMs: 20000 });
   try {
     await sidecar.start();
     const system = bigPrompt(300 * 1024);

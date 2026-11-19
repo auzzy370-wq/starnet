@@ -71,7 +71,7 @@
       return 'launched';
     }
     // Windows: the opener runs outside the station's job (sidecar/breakaway.js), so the window it opens for the person
-    // is theirs — closing or crashing StarNet never closes it. A pass-through everywhere else.
+    // is theirs — closing or crashing Vultron never closes it. A pass-through everywhere else.
     const breakaway = deps.breakaway || require('../../breakaway.js').makeBreakaway({ platform });
     const execFile = typeof deps.execFile === 'function' ? deps.execFile : CP.execFile.bind(CP);
     function runViaExecFile(cmd, args) {

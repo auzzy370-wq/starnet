@@ -1,7 +1,7 @@
 /* bin/lib/camfeed.js — the station camera locked on the agent in COMMS, made of ASCII. A small furnished room drawn from the
    app's own art (the agent's real skin with its walk / sit / type frames; its desk and chair, a lounge couch, a coffee corner,
    a bank of wall screens and a whiteboard, a rack and a console), the camera easing after the agent the way the station's
-   camera lock does. Each frame is put on StarNet's palette (lit reds on the wordmark's ramp, the rest on the station's warm
+   camera lock does. Each frame is put on Vultron's palette (lit reds on the wordmark's ramp, the rest on the station's warm
    greys) and turned into ASCII: every 3 × 6 px cell becomes the glyph whose shape matches its bright pixels (bin/lib/ascii-glyphs.js),
    drawn in their colour on black — pure ASCII, no picture under it. Kept dark and fading into the panel's black at its edges,
    so it sits in the CREW panel rather than on it (LOOK).
@@ -23,7 +23,7 @@ const png = require('./png.js');
 const G = require('./ascii-glyphs.js');
 const { encodeSixel } = require('./sixel.js');
 
-// ---- the palette: StarNet's ramps, and a lookup from any colour to its nearest entry --------------------------------
+// ---- the palette: Vultron's ramps, and a lookup from any colour to its nearest entry --------------------------------
 const RAMPS = {
   red: [[40, 2, 8], [70, 4, 14], [118, 8, 22], [170, 14, 32], [215, 24, 44], [255, 46, 62], [255, 104, 116], [255, 176, 184]],
   grey: [[12, 12, 12], [30, 22, 25], [52, 40, 44], [80, 64, 68], [127, 102, 107], [170, 156, 160], [217, 210, 212], [255, 255, 255]],
@@ -60,8 +60,8 @@ function nearest(r, g, b) {
 
 /* THE LOOK: dark pure ASCII, so the feed sits IN the panel rather than on it — lit characters on black (no picture under
    them), only real light (screens, LEDs) on the red ramp, everything else in deep warm greys, the agent a little brighter
-   than its room, and the whole fading into the panel's own black at its edges. Overridable (STARNET_FEED_LOOK as JSON) for tuning. */
-const USER_LOOK = (() => { try { return JSON.parse(process.env.STARNET_FEED_LOOK || '{}') || {}; } catch (_) { return {}; } })();
+   than its room, and the whole fading into the panel's own black at its edges. Overridable (VULTRON_FEED_LOOK as JSON) for tuning. */
+const USER_LOOK = (() => { try { return JSON.parse(process.env.VULTRON_FEED_LOOK || '{}') || {}; } catch (_) { return {}; } })();
 const LOOK = Object.assign({
   wall: [15, 11, 12], trim: [60, 15, 21], floorLine: [18, 13, 14],
   redStrict: 2.0, redGamma: 1.15, redMax: 0.75,
@@ -84,7 +84,7 @@ const DESK = { x: 300, y: 70 };
 const SEAT = { x: 372, y: 198 };
 const MONITOR = { x: 382, y: 92, r: 210 };   // the desk monitor: its light falls on everything within r
 // [furniture, x, y] (top-left, world px). The couch is a lounge on the left; the screens and whiteboard hang on the back wall
-// lit: a light source — its bright pixels glow on StarNet's red, as the station's screens do; the rest are surfaces (greys)
+// lit: a light source — its bright pixels glow on Vultron's red, as the station's screens do; the rest are surfaces (greys)
 const PROPS = [['screens', 150, -6, 'lit'], ['whiteboard', 480, -14], ['couch', -380, 118], ['coffee', 30, 120], ['crate', -26, 146],
   ['plant', 232, 94], ['rack', 560, 96, 'lit'], ['console', 720, 52, 'lit'], ['boxes', 800, 140]];
 // where it goes when idle: where it stands (feet), how it holds itself there, how long
@@ -114,7 +114,7 @@ const POSES = {
 
 /* THE LOOK, finished: each cell of the picture becomes the glyph whose shape matches its bright pixels, drawn in their colour
    on black; the edges fade into the panel's black (vig: [x, y] fractions, the feed's own by default; skip: how dark a cell
-   stays empty, the feed's own by default); then StarNet's palette
+   stays empty, the feed's own by default); then Vultron's palette
    and Sixel. col: r,g,b per pixel; light: 0..1 per pixel. Shared by the camera feed and the FLOOR (bin/lib/floor.js). */
 function asciiSixel(col, light, W, H, vig, skip) {
   return encodeSixel(asciiIdx(col, light, W, H, vig, skip), W, H, PALETTE);
@@ -307,7 +307,7 @@ function makeCamFeed() {
         lightAt[y * W + x] = (1 - d) * (1 - d);
       }
     }
-    // ---- StarNet palette + the agent's rim (none while idle) ----
+    // ---- Vultron palette + the agent's rim (none while idle) ----
     const RIM = rimKey === 'i' ? null : ({ w: ACCENT_RIM, n: [255, 180, 58], n2: [150, 96, 20], s: [70, 52, 56], d: [93, 255, 168], u: [217, 169, 91], f: [255, 107, 61] }[rimKey]).map(v => v * LOOK.rimK);
     const col = new Float32Array(W * H * 3), light = new Float32Array(W * H);
     for (let i = 0; i < W * H; i++) {

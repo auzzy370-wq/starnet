@@ -48,7 +48,7 @@ const base = { workspaceDir: WS, pathMod: path };
   const handed = 'the work\n\n' + note(Object.assign({ hasFolder: false, artifacts: [{ kind: 'file', path: 'x.md' }] }, base)) + '\n';
   A.eq(withoutHostNotes(handed).trim(), 'the work', 'the note comes off');
   A.eq(withoutHostNotes('plain work\nsecond line'), 'plain work\nsecond line', 'other text is untouched');
-  A.eq(withoutHostNotes('[StarNet] something the model wrote'), '[StarNet] something the model wrote', 'only that sentence');
+  A.eq(withoutHostNotes('[Vultron] something the model wrote'), '[Vultron] something the model wrote', 'only that sentence');
   {
     const calls = [], noteText = note(Object.assign({ hasFolder: false, artifacts: [{ kind: 'file', path: 'bay1/x.md' }] }, base));
     const say = () => {};

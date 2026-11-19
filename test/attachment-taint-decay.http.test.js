@@ -138,11 +138,11 @@ function startMock() {
 (async () => {
   const mock = await startMock();
   const fixture = SidecarFixture.create({ prefix: 'attachment-decay-', timeoutMs: 30000, env: {
-    SKYNET_OPENROUTER_BASE: mock.base, STARNET_OPENROUTER_BASE: mock.base,
-    SKYNET_OPENROUTER_KEY: 'fixture', STARNET_OPENROUTER_KEY: 'fixture',
-    SKYNET_DEFAULT_MODEL: 'test/model', STARNET_DEFAULT_MODEL: 'test/model',
-    SKYNET_FULL_ACCESS: '1', STARNET_FULL_ACCESS: '1',
-    SKYNET_SKILL_CURATOR: '0', SKYNET_SCOUT: '0', SKYNET_QUEST_REFRESH: '0', SKYNET_CRON_ENABLED: '0', STARNET_CRON_ENABLED: '0'
+    SKYNET_OPENROUTER_BASE: mock.base, VULTRON_OPENROUTER_BASE: mock.base,
+    SKYNET_OPENROUTER_KEY: 'fixture', VULTRON_OPENROUTER_KEY: 'fixture',
+    SKYNET_DEFAULT_MODEL: 'test/model', VULTRON_DEFAULT_MODEL: 'test/model',
+    SKYNET_FULL_ACCESS: '1', VULTRON_FULL_ACCESS: '1',
+    SKYNET_SKILL_CURATOR: '0', SKYNET_SCOUT: '0', SKYNET_QUEST_REFRESH: '0', SKYNET_CRON_ENABLED: '0', VULTRON_CRON_ENABLED: '0'
   } });
   const results = [];
   try {
@@ -177,7 +177,7 @@ function startMock() {
     seedLegacy(LEGACY_FILE, LEGACY_IMG);
     await fixture.start();
     // the sidecar's port and launch token change when flow G restarts it, so these are read again then
-    let B = fixture.baseUrl, H = { 'Content-Type': 'application/json', 'X-StarNet-Token': fixture.token, Origin: B };
+    let B = fixture.baseUrl, H = { 'Content-Type': 'application/json', 'X-Vultron-Token': fixture.token, Origin: B };
     const get = async (route) => (await fetch(B + route, { headers: H })).json();
     const upload = async (agent, name, mime, buf) => {
       const up = await (await fetch(B + '/api/attachments', { method: 'POST', headers: H, body: JSON.stringify({ agent, name, dataUrl: 'data:' + mime + ';base64,' + buf.toString('base64') }) })).json();
@@ -466,8 +466,8 @@ function startMock() {
     // rule: when the lock is not what stops it, the call still ends there, with nothing sent and no outside byte read, so it cannot
     // taint the worker and no network is involved.
     {
-      await fixture.restart({ SKYNET_FULL_ACCESS: '', STARNET_FULL_ACCESS: '' });
-      B = fixture.baseUrl; H = { 'Content-Type': 'application/json', 'X-StarNet-Token': fixture.token, Origin: B };
+      await fixture.restart({ SKYNET_FULL_ACCESS: '', VULTRON_FULL_ACCESS: '' });
+      B = fixture.baseUrl; H = { 'Content-Type': 'application/json', 'X-Vultron-Token': fixture.token, Origin: B };
       const roster = await fetch(B + '/api/roster', { method: 'POST', headers: H, body: JSON.stringify({ agents: [
         { agentId: AGENT, name: 'LEAD', model: 'test/model', provider: 'openrouter', approvalMode: 'full' },
         { agentId: WORKER, system: WORKER_MARK + ' - you are a worker.', name: 'WORKER', model: 'test/model', provider: 'openrouter', approvalMode: 'ask' }

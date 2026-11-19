@@ -369,7 +369,7 @@ fn os(s: &OsStr) -> String {
 fn is_secret_env_name(name: &str) -> bool {
     let upper = name.to_ascii_uppercase();
     if upper.ends_with("_ERROR") {
-        return false; // STARNET_CONNECTOR_KEY_ERROR is a human reason, not a key
+        return false; // VULTRON_CONNECTOR_KEY_ERROR is a human reason, not a key
     }
     [
         "KEY",
@@ -592,7 +592,7 @@ mod tests {
 
     fn temp_dir(tag: &str) -> PathBuf {
         let dir = std::env::temp_dir().join(format!(
-            "starnet-sidecar-output-{tag}-{}-{}",
+            "vultron-sidecar-output-{tag}-{}-{}",
             std::process::id(),
             SystemTime::now()
                 .duration_since(UNIX_EPOCH)
@@ -626,7 +626,7 @@ mod tests {
                 r#"{"ultron":"12345:telegram-secret-part"}"#.into(),
             ),
             ("SKYNET_SLACK_TOKEN".into(), "slackbot-aaaa slackapp-bbbb".into()),
-            ("STARNET_CONNECTOR_KEY_ERROR".into(), "keychain unavailable".into()),
+            ("VULTRON_CONNECTOR_KEY_ERROR".into(), "keychain unavailable".into()),
             ("SKYNET_PORT".into(), "4567890123".into()),
             ("MY_SERVICE_PASSWORD".into(), "hunter2-but-longer".into()),
         ]);
@@ -664,7 +664,7 @@ mod tests {
             assert_eq!(redact(&r, input), expected, "input: {input}");
         }
         // Ordinary crash text survives untouched.
-        let frame = r"    at Object.<anonymous> (C:\Program Files\StarNet\sidecar\index.js:12:11)";
+        let frame = r"    at Object.<anonymous> (C:\Program Files\Vultron\sidecar\index.js:12:11)";
         assert_eq!(redact(&r, frame), frame);
         assert_eq!(redact(&r, "listening on 127.0.0.1:8787/api"), "listening on 127.0.0.1:8787/api");
     }

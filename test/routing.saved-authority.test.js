@@ -70,7 +70,7 @@ const readOf = extra => Object.assign({ agentId: 'agent',
 const reset = () => { reads = 0; stats = 0; };
 const write = station => {
   const previous = store.loadPrimaryState('agent');
-  const result = store.save('agent', { schema: 'starnet.save', version: require('../frontend/app/save.js').CURRENT, updatedAt: now++,
+  const result = store.save('agent', { schema: 'vultron.save', version: require('../frontend/app/save.js').CURRENT, updatedAt: now++,
     _saveRevision: previous.status === 'ok' ? previous.wrapper.revision : 0, _saveClient: 'saved-authority-test',
     _saveDirty: true, agent: { id: 'agent' }, station }, { compareRevision: true });
   if (!result.ok) throw new Error('fixture real save failed');

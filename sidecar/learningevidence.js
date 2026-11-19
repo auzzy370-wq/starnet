@@ -4,7 +4,7 @@
 const { redact: defaultRedact } = require('./context.js');
 const { SECRET_KEY } = require('./secret-values.js');
 const { textOf, quotedMaterial } = require('./trusted-learning.js');
-const SCHEMA = 'starnet.learning-evidence.v1';
+const SCHEMA = 'vultron.learning-evidence.v1';
 const MAX_ITEMS = 40;
 const MAX_ARGS = 2400;
 const MAX_TEXT = 1600;

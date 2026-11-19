@@ -11,7 +11,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { makeOverseer } = require('../sidecar/overseer.js');
 
-const root = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-overseer-batch-'));
+const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-overseer-batch-'));
 let clock = 1000;
 const saved = { generalId: 'home', workstreams: [{ id: 'home', title: null, agentId: 'agent' }], deletedIds: [] };
 const mk = (file, extra) => makeOverseer(Object.assign({ fs, path, file: path.join(root, file), now: () => clock,

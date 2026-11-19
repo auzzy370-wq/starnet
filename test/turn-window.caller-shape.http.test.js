@@ -15,9 +15,9 @@ const mock = http.createServer((req, res) => {
 (async () => {
   await new Promise(resolve => mock.listen(0, '127.0.0.1', resolve));
   const base = 'http://127.0.0.1:' + mock.address().port;
-  const fx = SidecarFixture.create({ prefix: 'window-callers-', env: { STARNET_OPENROUTER_BASE: base, SKYNET_OPENROUTER_BASE: base,
-    STARNET_OPENROUTER_KEY: 'fixture', SKYNET_OPENROUTER_KEY: 'fixture', STARNET_DEFAULT_MODEL: 'test/model', SKYNET_DEFAULT_MODEL: 'test/model',
-    STARNET_TURNID_WINDOW: 'id', STARNET_CRON_ENABLED: '0', SKYNET_CRON_ENABLED: '0', SKYNET_AUX_BUDGET: '0', SKYNET_REFLECT: '0', SKYNET_SKILL_REVIEW: '0' } });
+  const fx = SidecarFixture.create({ prefix: 'window-callers-', env: { VULTRON_OPENROUTER_BASE: base, SKYNET_OPENROUTER_BASE: base,
+    VULTRON_OPENROUTER_KEY: 'fixture', SKYNET_OPENROUTER_KEY: 'fixture', VULTRON_DEFAULT_MODEL: 'test/model', SKYNET_DEFAULT_MODEL: 'test/model',
+    VULTRON_TURNID_WINDOW: 'id', VULTRON_CRON_ENABLED: '0', SKYNET_CRON_ENABLED: '0', SKYNET_AUX_BUDGET: '0', SKYNET_REFLECT: '0', SKYNET_SKILL_REVIEW: '0' } });
   const io = makeSegmentedTranscriptIo({ fs, path, root: path.join(fx.workspace, 'transcript-history-v2'), schedule() {} });
   io.appendDurable({ streamId: 's', agentId: 'agent', role: 'user', content: 'CANONICAL_SHAPE_OWNER', turnId: 'caller_seed_0001', directive: true });
   io.appendDurable({ streamId: 's', agentId: 'agent', role: 'assistant', content: 'CANONICAL_SHAPE_ANSWER', turnId: 'caller_seed_0001' }); io.close();

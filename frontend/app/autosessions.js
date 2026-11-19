@@ -1,4 +1,4 @@
-/* STARNET — autosessions.js : surface an UNATTENDED cron/routine run as a readable SESSION.
+/* VULTRON — autosessions.js : surface an UNATTENDED cron/routine run as a readable SESSION.
 
    THE BUG THIS CLOSES. A cron routine fires headless (cron-driver.js fireJob → runOnce with
    surface:'autonomous', trigger:'schedule'; RUN NOW — POST /api/cron/run — runs the same unattended
@@ -294,13 +294,13 @@ const AutoSessions = ((TurnMerge) => {
     } else if (outcome === 'stopped') {
       // a STOPPED fire (review r7): no verdict, and no clean "routine ran, nothing to report" either — a stop usually lands while the run is
       // still thinking, before any reply, and that marker is what a succeeded [SILENT] run says. Said as the HUD says it.
-      if (!next.some(m => m.role === 'assistant')) next.push(fetchOk ? sysMarker('■ routine stopped before it finished') : sysMarker('⚠ couldn\'t load the output yet — StarNet will retry automatically when this session opens', true, true));
+      if (!next.some(m => m.role === 'assistant')) next.push(fetchOk ? sysMarker('■ routine stopped before it finished') : sysMarker('⚠ couldn\'t load the output yet — Vultron will retry automatically when this session opens', true, true));
     } else if (!saidSomething) {
       // no assistant prose AND not failed. Be precise about WHY there's nothing: a FAILED transcript fetch is NOT
       // the same as a run that settled quietly — never claim "nothing to report" when we simply couldn't read it.
       next.push(fetchOk
         ? sysMarker('— routine ran, nothing to report —')
-        : sysMarker('⚠ couldn\'t load the output yet — StarNet will retry automatically when this session opens', true, true));
+        : sysMarker('⚠ couldn\'t load the output yet — Vultron will retry automatically when this session opens', true, true));
     }
     // the transcript IS this session's history (it replaces it): a saved history that named rows is replaced with it, never kept beside it
     if (typeof Workstreams !== 'undefined' && Workstreams.setHistory) Workstreams.setHistory(ws, next); else ws.history = next;

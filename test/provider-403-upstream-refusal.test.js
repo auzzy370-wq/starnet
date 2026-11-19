@@ -1,9 +1,9 @@
 /* node test/provider-403-upstream-refusal.test.js — a provider refusing ONE request is not a rejected key, and the
    failure review never re-sends refused content to the provider that refused it (xai-403-1023).
 
-   Live (StarNet Cloud proxy logs 2026-10-23 03:38-04:47 UTC): 26 managed completions failed with
+   Live (Vultron Cloud proxy logs 2026-10-23 03:38-04:47 UTC): 26 managed completions failed with
    {"status":403,"type":"upstream_error","provider":"xAI","message":"Provider returned error"}, in pairs 1-2 s apart.
-   · The app filed every 403 as `auth` (a rejected credential): a StarNet-credits user, who has no key, was told
+   · The app filed every 403 as `auth` (a rejected credential): a Vultron-credits user, who has no key, was told
      "The provider rejected the API key — check it, or paste a new one under SETTINGS → AI & MODELS".
      A router that rejects OUR credential answers 401 with no provider named; a 403 that NAMES the upstream provider
      means our key got through and the upstream (xAI's safety check, typically) refused this request.
@@ -39,14 +39,14 @@ async function thrown(p, req) {
   return null;
 }
 const REQ = { model: 'x-ai/grok-4.1-fast', messages: [{ role: 'user', content: 'hi' }], preStreamRetries: 0 };
-// what the StarNet Cloud proxy answers (safeUpstreamFailure keeps message/type/code/provider only)
+// what the Vultron Cloud proxy answers (safeUpstreamFailure keeps message/type/code/provider only)
 const MANAGED_403 = { error: { status: 403, type: 'upstream_error', code: 403, provider: 'xAI', message: 'Provider returned error' } };
 const mkManaged = body => makeOpenAICompatibleProvider({ key: 'fixture-link-token', baseUrl: 'https://managed.example.test/v1', fetch: jsonFetch(403, body) });
 const mkOpenRouter = body => makeOpenRouterProvider({ key: 'sk-or-v1-fixture', baseUrl: 'https://or.test/api/v1', fetch: jsonFetch(403, body) });
 const REJECTED = /rejected the API key/i;
 
 (async () => {
-  // ---- 1. the managed (StarNet credits) 403 naming xAI: not auth — the model refused this request ----
+  // ---- 1. the managed (Vultron credits) 403 naming xAI: not auth — the model refused this request ----
   const managedErr = await thrown(mkManaged(MANAGED_403), REQ);
   A.ok(managedErr && managedErr.status === 403, 'managed: the 403 throws with its status');
   A.ok(/^openai-compatible http 403 - \[[^\]]*provider xAI\] Provider returned error/.test(String(managedErr && managedErr.message)),
@@ -83,7 +83,7 @@ const REJECTED = /rejected the API key/i;
     A.ok(!REJECTED.test(v.userMessage), label + ': never "the provider rejected the API key" (' + v.userMessage + ')');
     A.ok(/xAI/.test(v.userMessage) && /refused this request/.test(v.userMessage), label + ': names the provider that refused this request (' + v.userMessage + ')');
     A.ok(!/Provider returned error|upstream_error|\[request/.test(v.userMessage), label + ': no raw upstream text in the headline (' + v.userMessage + ')');
-    // a StarNet-credits user has no key: the copy must not assume one
+    // a Vultron-credits user has no key: the copy must not assume one
     A.ok(!/\byour (?:api )?key\b/i.test(v.userMessage), label + ': never assumes the user has a key (' + v.userMessage + ')');
     A.ok(/not a problem with your account or credits/.test(v.userMessage), label + ': says the account and credits were not the problem (' + v.userMessage + ')');
     const or = F.friendlyError('openrouter http 403 — Provider returned error');

@@ -74,6 +74,6 @@ States it now refuses, each with its exit:
 
 A ChatGPT sign-in is not refused: its bearer is minted for the realtime URL and is no key saved with an endpoint.
 
-The operator's STT-only overrides STARNET_/SKYNET_GROQ_BASE and _OPENAI_BASE stay ahead of the provider's endpoint, as at trunk. They are a deployment's own choice, and dropping them would send its speech to the public host.
+The operator's STT-only overrides VULTRON_/SKYNET_GROQ_BASE and _OPENAI_BASE stay ahead of the provider's endpoint, as at trunk. They are a deployment's own choice, and dropping them would send its speech to the public host.
 
 Users with an OpenRouter proxy now send audio and web calls to their proxy, and a gateway OpenAI key no longer opens native Live Voice.

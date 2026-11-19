@@ -14,11 +14,11 @@ const deps = { now: () => time++, hash, env: key => env[key], read: () => disk,
   save: value => { if (failSave) throw Error('disk full'); disk = value; }, failNote: (where, error) => failures.push(where) };
 const d = Dual.make(deps);
 A.eq(d.modes(), { merge: 'legacy', window: 'id', replay: 'id', display: 'id' }, 'persisted modes override the defaults');
-env.STARNET_TURNID_MERGE = 'shadow';
+env.VULTRON_TURNID_MERGE = 'shadow';
 A.eq(d.modes().merge, 'shadow', 'environment mode overrides saved mode');
 d.setMode('merge', 'id');
 A.eq([disk.modes.merge, d.modes().merge], ['id', 'shadow'], 'saving respects active environment precedence');
-delete env.STARNET_TURNID_MERGE;
+delete env.VULTRON_TURNID_MERGE;
 failSave = true;
 A.throws(() => d.setMode('merge', 'legacy'), 'failed durable write refuses mode change');
 A.eq(d.modes().merge, 'id', 'failed save cannot publish a new mode in memory');
@@ -57,7 +57,7 @@ A.eq(out.length, rows.length, 'content matching preserves each station row once'
 A.eq(Merge.merge(out, wire.turns, { identity: wire.identity }).rows, out, 'collision proof is stable across cache save/reload');
 
 // The disk audit's 50-range status bound must not bound its identity predicate. Real duplicate rows in 55 segments.
-const root = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-turn-dual-audit-'));
+const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-turn-dual-audit-'));
 let io;
 try {
   for (let n = 1; n <= 55; n++) {

@@ -4,7 +4,7 @@
    sidecar/station-record.js is the one module that reads and writes it (B3: gh#123, gh#101, gh#65, bug 5451970e). Before
    it the question had five answers that disagreed: workspace-lineage's STATE_EVIDENCE allowlist (the onboarding gate,
    one rung per incident), hasStationState (the same regex, for the quest refresh), two more parsers of .fresh-start.json
-   (workspace-recovery, savestore) and the terminal's own save/roster existence probe (bin/starnet.js). A fresh install
+   (workspace-recovery, savestore) and the terminal's own save/roster existence probe (bin/vultron.js). A fresh install
    was trapped in Recovery Mode by whichever background file matched the regex next, a torn marker refused every first
    save, and the terminal booted the station an ERASE had set aside. This source ratchet keeps the answer single, over
    sidecar/, bin/ and src-tauri/src/:
@@ -76,7 +76,7 @@ function walk(dir, out, exts) {
 const files = sidecarSourceFiles().map(f => ({ rel: f.rel, text: f.text }))
   .concat(walk(path.join(ROOT, 'bin'), [], ['.js', '.mjs', '.cjs']).concat(walk(path.join(ROOT, 'src-tauri', 'src'), [], ['.rs']))
     .map(rel => ({ rel, text: fs.readFileSync(path.join(ROOT, rel), 'utf8') })));
-A.ok(files.some(f => f.rel === 'sidecar/index.js') && files.some(f => f.rel === 'bin/starnet.js') && files.some(f => f.rel === 'src-tauri/src/main.rs'), 'the scan covers the sidecar, the terminal and the desktop shell (' + files.length + ' files)');
+A.ok(files.some(f => f.rel === 'sidecar/index.js') && files.some(f => f.rel === 'bin/vultron.js') && files.some(f => f.rel === 'src-tauri/src/main.rs'), 'the scan covers the sidecar, the terminal and the desktop shell (' + files.length + ' files)');
 A.ok(files.some(f => f.rel === MODULE), 'the station record module is present');
 
 // ---- 1. names ----
@@ -118,11 +118,11 @@ for (const rel of Object.keys(PROBE_BASELINE)) A.eq(probeSeen[rel] || 0, PROBE_B
 // ---- 3. the readers ask the module ----
 const text = rel => (files.find(f => f.rel === rel) || { text: '' }).text;
 const ASKS = /require\((?:'\.\/station-record\.js'|path\.join\(REPO, 'sidecar', 'station-record\.js'\))\)/;
-for (const rel of ['sidecar/index.js', 'sidecar/workspace-lineage.js', 'sidecar/workspace-recovery.js', 'sidecar/savestore.js', 'sidecar/station-recovery.js', 'bin/starnet.js']) {
+for (const rel of ['sidecar/index.js', 'sidecar/workspace-lineage.js', 'sidecar/workspace-recovery.js', 'sidecar/savestore.js', 'sidecar/station-recovery.js', 'bin/vultron.js']) {
   A.ok(ASKS.test(text(rel)), rel + ' reads the station lifecycle through station-record.js');
 }
-// the terminal loads it on first use only: `starnet --version` runs on bin/ alone (test/cli-version.test.js)
-A.eq(/^const [^\n]*require\([^\n]*station-record/m.test(text('bin/starnet.js')), false, 'bin/starnet.js never loads the record module at require time');
+// the terminal loads it on first use only: `vultron --version` runs on bin/ alone (test/cli-version.test.js)
+A.eq(/^const [^\n]*require\([^\n]*station-record/m.test(text('bin/vultron.js')), false, 'bin/vultron.js never loads the record module at require time');
 
 // ---- 4. nothing writes hard proof before a founding ----
 {

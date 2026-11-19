@@ -6,13 +6,13 @@ const os = require('node:os');
 const path = require('node:path');
 const { inspectWorkspaceLineage } = require('../sidecar/workspace-lineage.js');
 
-const root = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-lineage-'));
+const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-lineage-'));
 const current = path.join(root, 'current', 'workspaces');
 const legacy = path.join(root, 'legacy', 'workspaces');
 const snapshots = path.join(root, 'current', 'update-snapshots');
 fs.mkdirSync(current, { recursive: true });
 try {
-  fs.writeFileSync(path.join(current, '.starnet-workspace-owner.json'), '{}');
+  fs.writeFileSync(path.join(current, '.vultron-workspace-owner.json'), '{}');
   fs.writeFileSync(path.join(current, '.schema-version.json'), '{}');
   fs.writeFileSync(path.join(current, '.migrated'), '1');
   fs.writeFileSync(path.join(current, '.migration-receipt.json'), JSON.stringify({ version: 1, validated: true, sourceRoots: [], files: [] }));
@@ -68,7 +68,7 @@ try {
 
   fs.rmSync(legacy, { recursive: true, force: true });
   fs.mkdirSync(snapshots, { recursive: true });
-  fs.writeFileSync(path.join(snapshots, 'pre-2.0-1.starnet-backup.json'), '{}');
+  fs.writeFileSync(path.join(snapshots, 'pre-2.0-1.vultron-backup.json'), '{}');
   v = inspectWorkspaceLineage({ fs, path, workspaceRoot: current, candidateRoots: [], snapshotsRoot: snapshots, platform: process.platform });
   A.eq(v.evidence[0].kind, 'update-snapshot', 'verified update-snapshot presence blocks genesis');
 
@@ -107,7 +107,7 @@ try {
   const { requestFresh } = require('../sidecar/workspace-lineage.js');
   const Recovery = require('../sidecar/workspace-recovery.js');
   const freshOpts = at => ({ fs, path, workspaceRoot: current, candidateRoots: [legacy], snapshotsRoot: snapshots, platform: process.platform, now: () => at, buildVersion: 'lineage-test' });
-  fs.unlinkSync(path.join(current, '.starnet-workspace-owner.json'));   // the fixture's unstamped claim: a live-looking owner refuses the apply
+  fs.unlinkSync(path.join(current, '.vultron-workspace-owner.json'));   // the fixture's unstamped claim: a live-looking owner refuses the apply
   fs.writeFileSync(path.join(current, 'ledger.jsonl'), '{"event":"failed-first-run"}\n');
   fs.writeFileSync(path.join(current, 'loops.json'), '{}');
   fs.writeFileSync(path.join(current, 'loops.halt.json'), '{}');         // infra (E-STOP bookkeeping): it leaves with the generation too
@@ -116,7 +116,7 @@ try {
   fs.mkdirSync(legacy, { recursive: true });
   fs.writeFileSync(path.join(legacy, 'agent.save.json'), '{"version":5}');
   fs.mkdirSync(snapshots, { recursive: true });
-  fs.writeFileSync(path.join(snapshots, 'x.starnet-backup.json'), '{}');
+  fs.writeFileSync(path.join(snapshots, 'x.vultron-backup.json'), '{}');
   let before = inspectWorkspaceLineage({ fs, path, workspaceRoot: current, candidateRoots: [legacy], snapshotsRoot: snapshots, platform: process.platform });
   A.eq(before.priorInstallEvidence, true, 'fixture: the gate would fire');
   const requested = requestFresh(freshOpts(Date.UTC(2026, 7, 22, 12, 0, 0)));

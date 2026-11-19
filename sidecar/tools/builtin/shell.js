@@ -942,7 +942,7 @@
     return out.length ? out : null;
   }
   const GUI_RUNTIME_REFUSAL = 'launches a GUI/native runtime on the user\'s interactive desktop';
-  const UNPROVEN_PROGRAM_REFUSAL = 'runs a local program StarNet could not confirm is a console tool, so it may open a window on the user\'s desktop. Use shell.exec with a known working directory and one existing console program as its own command, not after other commands in a chain or inside a shell wrapper/group. A live terminal write cannot prove its current directory; scripts still need readable source, for example `python x.py` or `powershell -File x.ps1`';
+  const UNPROVEN_PROGRAM_REFUSAL = 'runs a local program Vultron could not confirm is a console tool, so it may open a window on the user\'s desktop. Use shell.exec with a known working directory and one existing console program as its own command, not after other commands in a chain or inside a shell wrapper/group. A live terminal write cannot prove its current directory; scripts still need readable source, for example `python x.py` or `powershell -File x.ps1`';
   // `^&`, a backtick, `$(...)` or a PowerShell `(...)` argument can run another command this parse does not split out.
   // A caret before anything but an operator or a quote is data: `git.exe show HEAD^`. `^"` flips the quoting a later parse sees.
   // Read in any dialect and inside quotes on purpose: the first head can itself be a wrapper spelled .exe, whose text is
@@ -1158,7 +1158,7 @@
     if (analysis.opaqueWrapper || analysis.opaqueBody) return UNPROVEN_PROGRAM_REFUSAL;
     const heads = analysis.heads;
     if (heads.some(h => BROWSER_NAMES.has(exeName((headTokens(h)[0] || {}).value)))) {
-      return 'launches a browser outside StarNet\'s synthetic-input CDP sandbox — use browser.test_navigate/browser.test_input';
+      return 'launches a browser outside Vultron\'s synthetic-input CDP sandbox — use browser.test_navigate/browser.test_input';
     }
     const entries = commandSourceEntries(c, opts);
     const sources = entries.map(e => e.text);
@@ -1171,7 +1171,7 @@
       return 'can inject/capture input, launch opaque code, or alter the user\'s interactive session';
     }
     if (sources.some(s => /(?:^|\s)--open(?:[=\s]|$)/i.test(s))) return 'opens a framework/browser window on the user\'s screen — keep dev servers headless';
-    if (BROWSER_AUTOMATION_RE.test(expanded)) return 'runs browser automation outside StarNet\'s owned pointer-lock emulator — use browser.test_*';
+    if (BROWSER_AUTOMATION_RE.test(expanded)) return 'runs browser automation outside Vultron\'s owned pointer-lock emulator — use browser.test_*';
     if (entries.some(e => e.kind === 'code' ? guiRuntimeInCode(e.text) : guiRuntimeInCommand(e.text, e.dialect))) return GUI_RUNTIME_REFUSAL;
     if (!opts.floorsOnly) for (let i = 0; i < heads.length; i++) { const refusal = localProgramRefusal(heads, i, opts); if (refusal) return refusal; }
     return null;
@@ -1186,7 +1186,7 @@
   const MACHINE_HEAD_RULES = [
     { re: /^(?:shutdown|logoff|reboot|halt|poweroff|tsdiscon|rwinsta)(?:\.(?:exe|com))?(?=\s|$)/i, why: 'shuts down, reboots, disconnects, or logs the user out of their machine' },
     { re: /^(?:taskkill|tskill|pskill|kill|pkill|killall)(?:\.(?:exe|com))?(?=\s|$)/i, why: 'kills processes the agent does not own — stop your OWN background processes with shell.bg.kill' },
-    { re: /^schtasks(?:\.(?:exe|com))?(?=\s|$)[\s\S]*?\s\/(?:create|change|delete|run)\b/i, why: 'creates or changes a Windows scheduled task (machine persistence that outlives StarNet)' },
+    { re: /^schtasks(?:\.(?:exe|com))?(?=\s|$)[\s\S]*?\s\/(?:create|change|delete|run)\b/i, why: 'creates or changes a Windows scheduled task (machine persistence that outlives Vultron)' },
     { re: /^reg(?:\.exe)?\s+(?:add|delete|import|load|unload|copy)\b/i, why: 'writes the Windows registry' },
     { re: /^regedit(?:\.(?:exe|com))?(?=\s|$)/i, why: 'opens or imports into the Windows registry' },
     { re: /^sc(?:\.exe)?\s+(?:create|config|delete|start|stop|failure|sdset)\b/i, why: 'creates or changes Windows services' },
@@ -1224,14 +1224,14 @@
   const MACHINE_GLOBAL_RULES = [
     { re: /\bHKEY_|(?:^|[\s"'`=(\\])HK(?:LM|CU|CR|U|CC)[:\\]/i, why: 'references a Windows registry hive' },
     { re: /\bdefaults\s+write\b/i, why: 'changes macOS system preferences' },
-    { re: /(?:^|[\s"'`=(])shell:startup\b|Start\s?Menu[\\/]+Programs[\\/]+Startup/i, why: 'writes to the Startup folder (machine persistence that outlives StarNet)' }
+    { re: /(?:^|[\s"'`=(])shell:startup\b|Start\s?Menu[\\/]+Programs[\\/]+Startup/i, why: 'writes to the Startup folder (machine persistence that outlives Vultron)' }
   ];
   function breaksMachineState(cmd, dialect) {
     const c = String(cmd == null ? '' : cmd);
     const analysis = analyzeCommands(c, 0, dialect);
-    if (analysis.opaqueWrapper) return 'uses native shell-wrapper quoting StarNet could not confirm as command text; use one plainly quoted command string or a script file';
-    if (analysis.opaqueBody) return 'runs command text StarNet cannot read with certainty (a cmd switch built by expansion, or a body or target it cannot place), so what it starts cannot be inspected; write the command out plainly or use a script file';
-    if (analysis.opaquePowerShell) return 'runs a base64-encoded PowerShell command, or one with an option StarNet does not recognize, so it cannot be inspected — write the script to a file and run it plainly';
+    if (analysis.opaqueWrapper) return 'uses native shell-wrapper quoting Vultron could not confirm as command text; use one plainly quoted command string or a script file';
+    if (analysis.opaqueBody) return 'runs command text Vultron cannot read with certainty (a cmd switch built by expansion, or a body or target it cannot place), so what it starts cannot be inspected; write the command out plainly or use a script file';
+    if (analysis.opaquePowerShell) return 'runs a base64-encoded PowerShell command, or one with an option Vultron does not recognize, so it cannot be inspected — write the script to a file and run it plainly';
     if (analysis.heads.some(h => {
       const first = (headTokens(h)[0] || {}).value || '';
       return /^(?:%[^%\s]+%|![^!\s]+!)$/.test(first);
@@ -1374,7 +1374,7 @@
     const abs = P.isAbsolute(raw) || /^[A-Za-z]:[\\/]/.test(raw) ? P.resolve(raw) : P.resolve(current, raw);
     if (!withinJail(P, abs, jailRoot) && !allowExternal) throw new Error('cwd must stay inside your workspace');
     if (!allowProtected && !withinJail(P, abs, jailRoot) && root && pathInside(P, abs, root))
-      throw new Error('cwd cannot point at another agent or protected StarNet workspace sibling');
+      throw new Error('cwd cannot point at another agent or protected Vultron workspace sibling');
     if (fs && fs.existsSync && !fs.existsSync(abs)) throw new Error('cwd does not exist: ' + raw);
     if (fs && fs.statSync) {
       try { if (!fs.statSync(abs).isDirectory()) throw new Error('cwd is not a directory: ' + raw); }
@@ -1460,7 +1460,7 @@
   }
 
   /* ANSI/VT control sequences, stripped before any shell output reaches the model (ref-parity: the reference
-     harness has an ansi_strip; StarNet had nothing, so escapes arrived raw). npm, git, cargo, pytest and friends emit colour
+     harness has an ansi_strip; Vultron had nothing, so escapes arrived raw). npm, git, cargo, pytest and friends emit colour
      whenever they believe a TTY is attached, and the model reads the control bytes as TOKENS — '[32m'
      is billed content that means "green" to nobody, and on a long build log it is a large fraction of the
      output. Three shapes are handled: OSC strings (window titles, hyperlinks — ESC ] … BEL or ST), CSI
@@ -1668,7 +1668,7 @@
           ? environment.workspaceRoot(aid) : cwd;
         const shellDialect = environment && environmentBackendId !== 'local' ? 'posix' : (isWin ? 'cmd' : 'posix');
         const safetyDeny = remoteOwner ? null : commandSafetyRisk(cmd, { cwd: hostCwd, exactCwd: true, fs: fs, pathMod: P, dialect: shellDialect, isWin, env: commandEnvOf(environment, ownEnv, aid, ctx.surface) });
-        if (safetyDeny) throw new Error('refused [' + safetyDeny.kind + ']: this command ' + safetyDeny.reason + '. StarNet task processes preserve the user\'s control of their computer; use browser.test_* for local UI/game verification.');
+        if (safetyDeny) throw new Error('refused [' + safetyDeny.kind + ']: this command ' + safetyDeny.reason + '. Vultron task processes preserve the user\'s control of their computer; use browser.test_* for local UI/game verification.');
         if (!environment) { try { fs.mkdirSync(cwd, { recursive: true }); } catch (_) {} }
         const checkpoint = typeof ctx.checkpointMutation === 'function'
           ? Promise.resolve().then(function () { return ctx.checkpointMutation(hostCwd, 'shell.exec', { always: true }); }).catch(function () { return null; })
@@ -1700,7 +1700,7 @@
           : '';
         const markerIsWin = environment && environmentBackendId !== 'local' ? false : isWin;
         /* A full-power command that opens a window on the person's screen (`start`, `explorer`, a headed browser…) opens
-           THEIR app: on Windows it runs outside the station's job (sidecar/breakaway.js), so quitting or crashing StarNet
+           THEIR app: on Windows it runs outside the station's job (sidecar/breakaway.js), so quitting or crashing Vultron
            never closes what it opened. Every other command stays the station's and ends with it. */
         const forPerson = isWin && remoteOwner && (!environment || environmentBackendId === 'local') && !!opensVisibleWindow(cmd, shellDialect);
         const nonce = markerNonce();   // S1: this call's marker token — printed content cannot forge the cwd or exit code (code the command runs could; it already has shell reach)
@@ -1987,7 +1987,7 @@
            exactly that instead of "Killed". Remote backends that report plain ok keep their old wording. */
         if (r && r.incomplete) {
           const err = new Error('Kill INCOMPLETE for background process ' + id + ': ' + (r.error || 'processes are still running')
-            + '. Surviving PID(s): ' + (r.survivors || []).join(', ') + '. Its receipt is kept so the next StarNet start reaps them.');
+            + '. Surviving PID(s): ' + (r.survivors || []).join(', ') + '. Its receipt is kept so the next Vultron start reaps them.');
           err.toolSummary = 'kill incomplete';
           throw err;
         }

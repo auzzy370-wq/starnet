@@ -1,4 +1,4 @@
-/* bin/lib/station-model.js — the PURE model behind the `starnet` dashboard, `ls` and `watch`.
+/* bin/lib/station-model.js — the PURE model behind the `vultron` dashboard, `ls` and `watch`.
 
    It folds what the station PROVES into what the terminal may say: the roster (GET /api/runtime/agent), the live
    feed (GET /api/observe — every run's events and approvals), the reconnect snapshot (GET /api/state/snapshot —
@@ -114,8 +114,8 @@ function askInspect(tool, raw) {
 /* runPairOf(row) — the PAIR a GET /api/runtime/agent row's runs really go out on: its resolved `wire` (sidecar/run-wire.js
    — what COMMS, a routine or a chat runs for this agent) when it names a model. The raw model/provider are the row as
    saved: an unpinned agent's empty model means "follows the station default", never "no model set", and its provider may
-   be an older page's stale stamp. An older station sends no wire: the raw row is all there is. The dashboard, `starnet
-   ls` and `starnet status` all read this, so the terminal never refuses or mislabels an agent the station runs. */
+   be an older page's stale stamp. An older station sends no wire: the raw row is all there is. The dashboard, `vultron
+   ls` and `vultron status` all read this, so the terminal never refuses or mislabels an agent the station runs. */
 function runPairOf(row) {
   const r = row || {};
   const w = (r.wire && typeof r.wire === 'object' && r.wire.model) ? r.wire : null;
@@ -457,7 +457,7 @@ function makeStation() {
       const src = run ? sourceOf(run) : '';
       return (a.now || 'thinking') + (src && src !== 'terminal' && src !== 'desktop' ? ' · ' + src : '');
     }
-    // review r8: in the outcome's own words (RunOutcome.line, as the `starnet -p` receipt says it), its failureCode included — never the bare end word
+    // review r8: in the outcome's own words (RunOutcome.line, as the `vultron -p` receipt says it), its failureCode included — never the bare end word
     if (a.last) return 'last run: ' + (a.last.seen === false ? 'ended unseen' : RunOutcome.line(lastOutcome(a.last)));
     return '';
   }

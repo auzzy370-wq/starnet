@@ -28,7 +28,7 @@ const TaskBriefPolicy = require('../sidecar/taskbrief-policy.js');
 const { makeTool } = require('../sidecar/tools/tool.js');
 
 (async () => {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-issue77-gap-'));
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-issue77-gap-'));
   const registry = makeRegistry();
   // the REAL shell tool definitions (impact classes included); nothing here ever spawns
   makeShellTool({ spawn: () => { throw new Error('must not spawn'); }, fs, pathMod: path, root: tmp, bg: {} }).register(registry);

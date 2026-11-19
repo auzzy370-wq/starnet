@@ -1,4 +1,4 @@
-/* node test/remote.e2e.test.js — StarNet Remote phase 1 against a REAL booted sidecar.
+/* node test/remote.e2e.test.js — Vultron Remote phase 1 against a REAL booted sidecar.
 
    A mock provider plays the model (zero spend). The phone is relay/app/phone-client.js, the WebCrypto-only
    client a phone browser runs. What this proves, in order:
@@ -93,11 +93,11 @@ function startMockModel() {
   const llm = await startMockModel();
   const lanPort = await freePort();
   const fx = new SidecarFixture({ prefix: 'sn-remote-e2e-', timeoutMs: 15000, env: {
-    SKYNET_OPENROUTER_BASE: llm.base, STARNET_OPENROUTER_BASE: llm.base,
-    SKYNET_OPENROUTER_KEY: 'sk-or-v1-remote-fake', STARNET_OPENROUTER_KEY: 'sk-or-v1-remote-fake',
-    SKYNET_DEFAULT_MODEL: 'test/model', STARNET_DEFAULT_MODEL: 'test/model',
-    STARNET_REMOTE_PORT: String(lanPort), STARNET_REMOTE_LAN: '1', STARNET_REMOTE_RELAY: 'off',
-    STARNET_REMOTE_PUSH_HOSTS: '127.0.0.1'
+    SKYNET_OPENROUTER_BASE: llm.base, VULTRON_OPENROUTER_BASE: llm.base,
+    SKYNET_OPENROUTER_KEY: 'sk-or-v1-remote-fake', VULTRON_OPENROUTER_KEY: 'sk-or-v1-remote-fake',
+    SKYNET_DEFAULT_MODEL: 'test/model', VULTRON_DEFAULT_MODEL: 'test/model',
+    VULTRON_REMOTE_PORT: String(lanPort), VULTRON_REMOTE_LAN: '1', VULTRON_REMOTE_RELAY: 'off',
+    VULTRON_REMOTE_PUSH_HOSTS: '127.0.0.1'
   } });
   // Seed the same durable markers the dispatch host writes, then use the real sealed phone routes.
   const { makeSegmentedTranscriptIo } = require('../sidecar/transcript-history.js');
@@ -111,7 +111,7 @@ function startMockModel() {
   const staleDispatchSession = { id: 'dispatch_phone', title: 'Research', agentId: 'forge', conversationMode: 'direct', lastActiveAt: 0,
     history: [{ role: 'user', content: 'Research request', sourceRunId: 'phone_original', ts: 99 },
       { role: 'assistant', content: 'RAW_REJECTED_SAVED_DESK', sourceRunId: 'phone_original', ts: 100 }] };
-  const saveWithSessions = workstreams => fx.json('POST', '/api/save', { schema: 'starnet.save', version: 6,
+  const saveWithSessions = workstreams => fx.json('POST', '/api/save', { schema: 'vultron.save', version: 6,
     agent: { id: 'agent', name: 'ULTRON', createdAt: 1 }, workstreams });
   const append = (streamId, sourceRunId, dispatchState, role, content, extra) => seeded.appendStrict({ streamId, sourceRunId, dispatchState, role, content, agentId: 'forge', ...extra });
   append('dispatch_phone', 'phone_original', 'pending', 'user', 'RAW_CONTRACT_PROMPT');
@@ -274,7 +274,7 @@ function startMockModel() {
     A.eq((await client.call('approvals')).data.length, 0, 'nothing left waiting');
 
     // 9. session parity with the desk
-    const saved = await fx.json('POST', '/api/save', { schema: 'starnet.save', version: 6, _saveRevision: persistedDispatch.body.revision, agent: { id: 'agent', name: 'ULTRON', createdAt: 1 },
+    const saved = await fx.json('POST', '/api/save', { schema: 'vultron.save', version: 6, _saveRevision: persistedDispatch.body.revision, agent: { id: 'agent', name: 'ULTRON', createdAt: 1 },
       workstreams: [staleDispatchSession,
         { id: 'ws_desk_launch', title: 'Launch plan', agentId: 'forge', conversationMode: 'direct', lane: 'active', kind: 'chat', archived: false, lastActiveAt: Date.now() - 5000,
           history: deskHistory },

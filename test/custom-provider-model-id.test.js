@@ -4,9 +4,9 @@
    Reproduced on v0.13.5 code, end to end (onboarding WAKE → harness key check → sidecar /api/providers/validate → the
    CUSTOM adapter): onboarding validates the key BEFORE it stores its model pick, and the key check sent the STORED
    pick (or none on a fresh install), so the sidecar tested the key on whatever model the endpoint LISTS FIRST. That
-   model 400'd, and the adapter then called it "a routed-catalog model id … switch to STARNET or OPENROUTER" — advice
+   model 400'd, and the adapter then called it "a routed-catalog model id … switch to VULTRON or OPENROUTER" — advice
    that is wrong for an endpoint whose own ids are vendor/model. Separately the Model button humanized the typed id
-   ("deepseek ai/deepseek v4.1 flash"), so the Commander read it as StarNet stripping the dashes. Locks:
+   ("deepseek ai/deepseek v4.1 flash"), so the Commander read it as Vultron stripping the dashes. Locks:
      1. WAKE checks the key on the model the Commander TYPED (fresh install AND a stale stored custom pick), through the
         real onWakeAttempt / validateAndSetKey / handleProviderValidate / CUSTOM adapter.
      2. A CUSTOM endpoint refusing a vendor/model id never gets the routed-catalog hint; the error names the id sent.
@@ -92,7 +92,7 @@ async function wake(store) {
   for (const id of ['in-name', 'connect-msg', 'in-base-url', 'in-model', 'in-key']) elements[id] = { value: '', textContent: '', innerHTML: '', className: '' };
   elements['in-base-url'].value = BASE; elements['in-model'].value = TYPED; elements['in-key'].value = 'test-only-placeholder-key';
   const seen = { preflight: 0 };
-  const run = Function('Harness', 'elements', 'seen', `const el=id=>elements[id],SFX={boot(){},open(){}},stopCodexPoll=()=>{},stopStarnetLinkPoll=()=>{},stopStarnetBalancePoll=()=>{},providerNeedsBaseUrl=p=>p==='custom',isOAuthProviderId=()=>false,providerNeedsKey=()=>false,providerSignupUrl=()=>'',providerLabel=()=>'Custom',esc=x=>x,wakeBtnBusy=()=>{};let pickedProvider='custom',codexConnected=false,prefilledKey='',keyOverwriteConfirmed=false,resumingSaved=null;
+  const run = Function('Harness', 'elements', 'seen', `const el=id=>elements[id],SFX={boot(){},open(){}},stopCodexPoll=()=>{},stopVultronLinkPoll=()=>{},stopVultronBalancePoll=()=>{},providerNeedsBaseUrl=p=>p==='custom',isOAuthProviderId=()=>false,providerNeedsKey=()=>false,providerSignupUrl=()=>'',providerLabel=()=>'Custom',esc=x=>x,wakeBtnBusy=()=>{};let pickedProvider='custom',codexConnected=false,prefilledKey='',keyOverwriteConfirmed=false,resumingSaved=null;
     const preflightWire=async()=>{seen.preflight++;return{ok:false,why:'test stop after the key check'}};
     ${A.fnBody(app, 'async function onWakeAttempt(')}
     return onWakeAttempt();`);
@@ -134,7 +134,7 @@ async function wake(store) {
   };
   const custom = await failOf('custom', 'vendor-org/model-the-endpoint-refuses');
   A.ok(/Invalid Model Name/.test(custom), 'the endpoint\'s own refusal is kept: ' + custom);
-  A.ok(!/routed-catalog|STARNET|OPENROUTER|Switch the provider/i.test(custom), 'a CUSTOM endpoint is never told its vendor/model id is a routed-catalog id: ' + custom);
+  A.ok(!/routed-catalog|VULTRON|OPENROUTER|Switch the provider/i.test(custom), 'a CUSTOM endpoint is never told its vendor/model id is a routed-catalog id: ' + custom);
   A.ok(custom.indexOf('"vendor-org/model-the-endpoint-refuses"') >= 0, 'the error names the exact id that was sent: ' + custom);
   const customBare = await failOf('custom', 'bare-model');
   A.ok(customBare.indexOf('"bare-model"') >= 0 && !/routed-catalog/.test(customBare), 'a slashless id on CUSTOM is named too: ' + customBare);

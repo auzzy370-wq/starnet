@@ -23,7 +23,7 @@ const CanonicalHistory = require('./channel-history.js');
    step's side effect on the world's disk, so a step run twice is counted whatever process ran it. Some runs end by asking
    (a TASK_QUESTION with two tagged options): the lifted hub's real TaskIntent and prompt registry make that a keyboard.
    A run whose plan says ask (S6) stops at its first tool step for the Commander's permission: the lifted hub's real
-   consent prompt, the channelAskConsent slice over the real makeConsentWait, and STARNET REMOTE's real approvals index.
+   consent prompt, the channelAskConsent slice over the real makeConsentWait, and VULTRON REMOTE's real approvals index.
 
    FAULTS: send failures (retryable, refused for good, a refused credential), a lost response (the platform took it), a
    crash before a send, after the platform took it and before its mark, and inside a receipt or answer write; write
@@ -215,7 +215,7 @@ function makeWorld(seed, opts) {
     // back before anything of them went (a newer result replaced them, or it is queued again with its new count)
     digests: [], withdrawn: new Set(),
     // S6: every edit of a keyboard's message the Bot API was asked for, the faults armed for the next ones, the hold on a
-    // keyboard's answer, and STARNET REMOTE's real index of open asks (w.approvals.answer is what a paired phone calls)
+    // keyboard's answer, and VULTRON REMOTE's real index of open asks (w.approvals.answer is what a paired phone calls)
     editCalls: [], editFaults: [], kbHold: null, approvals: makeApprovals({ now: () => w.now }),
     // (review round 1) what the platform refused for good, and when the group removed the bot: the only grounds on which a
     // finished reply may be given up (P1); and every slash command the run host's registry was asked to run (P5)

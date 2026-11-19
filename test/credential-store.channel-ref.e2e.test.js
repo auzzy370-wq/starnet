@@ -25,7 +25,7 @@
         with a .bak not swept; an endpoint-only record; a record trunk purged, and a bot trunk forgot, each beside an entry.
      6. A record in the exact shape trunk's auto-start writes (probe R2) beside an entry: the bot follows the station, as it did.
      7. A torn main, an older key in the .bak, and an entry holding the newer one: the newer key stands.
-     8. 3195ab5a: a starnet Telegram record with a stale endpoint delivers through a real hub to the linked URL with the device token.
+     8. 3195ab5a: a vultron Telegram record with a stale endpoint delivers through a real hub to the linked URL with the device token.
      9. A sync and a forget on every other kind of record, through its own route: Discord (a sync replaces its own key, a disconnect
         keeps the credential, a purge destroys it, which trunk ignored), a generic channel and an agent-bound bot. Each seeded as trunk
         writes it; a replaced key and everything forgotten end in no file at all, .bak files included, and a restart brings none back.
@@ -64,7 +64,7 @@ const K = {
   newer: 'sk-or-v1-NEWER-KEY-IN-THE-ENTRY-0123456789abcdef0',
   half: 'sk-or-v1-KEY-IN-BOTH-FILES-0123456789abcdef012345',
   kc: 'sk-or-v1-DESKTOP-KEYCHAIN-KEY-0123456789abcdef012',
-  device: 'starnet-device-token-0123456789abcdefghijklmnop',
+  device: 'vultron-device-token-0123456789abcdefghijklmnop',
   dcOwn: 'sk-or-v1-DISCORD-OWN-KEY-0123456789abcdef0123456',
   dcNext: 'sk-or-v1-DISCORD-NEXT-KEY-0123456789abcdef012345',
   slOwn: 'sk-or-v1-SLACK-OWN-KEY-0123456789abcdef012345678',
@@ -162,14 +162,14 @@ function fakeTelegram() {
 // nothing the test runner exports may stand in for a key, an endpoint or a link
 const AMBIENT = ['OPENROUTER_KEY', 'OPENROUTER_API_KEY', 'OPENROUTER_BASE', 'CUSTOM_OPENAI_KEY', 'OPENAI_COMPATIBLE_KEY', 'CUSTOM_OPENAI_BASE_URL', 'OPENAI_COMPATIBLE_BASE_URL',
   'OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'GEMINI_API_KEY', 'GROQ_API_KEY', 'DESKTOP_SHELL', 'IPC_TOKEN', 'CREDITS_URL', 'CREDITS_TOKEN', 'CLOUD_URL', 'TELEGRAM_TOKEN', 'API_KEY', 'DEFAULT_MODEL', 'FALLBACK_MODELS'];
-const pair = (name, value) => ({ ['SKYNET_' + name]: value, ['STARNET_' + name]: value });
+const pair = (name, value) => ({ ['SKYNET_' + name]: value, ['VULTRON_' + name]: value });
 function station(label, up, tg, env) {
   const blank = {};
-  for (const n of AMBIENT) { blank[n] = ''; blank['STARNET_' + n] = ''; blank['SKYNET_' + n] = ''; }
+  for (const n of AMBIENT) { blank[n] = ''; blank['VULTRON_' + n] = ''; blank['SKYNET_' + n] = ''; }
   const fx = SidecarFixture.create({ prefix: 'cs-channel-ref-' + label + '-', timeoutMs: 45000, env: Object.assign(blank, {
-    STARNET_FULL_ACCESS: '1', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0', SKYNET_THREAD_MINE: '0', SKYNET_AUX_BUDGET: '0',
-    STARNET_OPENROUTER_BASE: up.base + '/or/api/v1',   // the station's own OpenRouter endpoint: never the real one
-    STARNET_TELEGRAM_API_BASE: tg.base, SKYNET_TELEGRAM_API_BASE: tg.base
+    VULTRON_FULL_ACCESS: '1', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0', SKYNET_THREAD_MINE: '0', SKYNET_AUX_BUDGET: '0',
+    VULTRON_OPENROUTER_BASE: up.base + '/or/api/v1',   // the station's own OpenRouter endpoint: never the real one
+    VULTRON_TELEGRAM_API_BASE: tg.base, SKYNET_TELEGRAM_API_BASE: tg.base
   }, env) });
   const ws = fx.workspace;
   const api = {
@@ -317,7 +317,7 @@ function station(label, up, tg, env) {
 
     /* ================= 3. the desktop: an own key lasts for the session (decision 3, state 5) ================= */
     await row('3', async () => {
-      const desktop = { STARNET_DESKTOP_SHELL: '1', ...pair('IPC_TOKEN', IPC), ...pair('OPENROUTER_KEY', K.kc) };
+      const desktop = { VULTRON_DESKTOP_SHELL: '1', ...pair('IPC_TOKEN', IPC), ...pair('OPENROUTER_KEY', K.kc) };
       const s = await open('desktop', desktop);
       A.eq((await s.roster({ bot: 'openrouter' })).status, 200, 'desktop: the roster is saved');
       const c = await s.connect({ key: K.own });
@@ -341,7 +341,7 @@ function station(label, up, tg, env) {
     /* ================= 4. R4, a guard: a desktop bot on a keyless endpoint of its own ================= */
     await row('4', async () => {
       const Ubot = up.base + '/bot/v1';
-      const s = await open('r4', { STARNET_DESKTOP_SHELL: '1', ...pair('IPC_TOKEN', IPC) });
+      const s = await open('r4', { VULTRON_DESKTOP_SHELL: '1', ...pair('IPC_TOKEN', IPC) });
       A.eq((await s.roster({ bot: 'custom' })).status, 200, 'R4: the roster is saved');
       await s.connect({ provider: 'custom', model: LOCAL, baseUrl: Ubot });
       A.eq(await s.dm('R4-CONNECT'), [['/bot/', '']], 'R4: the bot runs keyless at its own endpoint');
@@ -421,15 +421,15 @@ function station(label, up, tg, env) {
       A.eq([holders(s.ws, K.older), holders(s.ws, K.newer)], [[], OWN_FILES], 'torn: the older key leaves main and .bak');
     });
 
-    /* ================= 8. 3195ab5a: a starnet Telegram record with a stale endpoint, through a real hub ================= */
+    /* ================= 8. 3195ab5a: a vultron Telegram record with a stale endpoint, through a real hub ================= */
     await row('8', async () => {
       const stale = up.base + '/stale/v1', cloud = up.base + '/cloud';
-      const s = await open('starnet', { STARNET_CLOUD_URL: cloud }, x => {
+      const s = await open('vultron', { VULTRON_CLOUD_URL: cloud }, x => {
         x.seed('.secrets/credits.json', { url: cloud, deviceToken: K.device, accountId: 'fixture-account', linkedAt: Date.now() });
-        x.seed('channels/secrets.json', { telegram: { token: TOKEN, key: 'stale-record-key-0123456789', baseUrl: stale, provider: 'starnet', model: MODEL, enabled: true, agentId: 'bot', ownerId: '99' } });
+        x.seed('channels/secrets.json', { telegram: { token: TOKEN, key: 'stale-record-key-0123456789', baseUrl: stale, provider: 'vultron', model: MODEL, enabled: true, agentId: 'bot', ownerId: '99' } });
       });
-      A.eq((await s.roster({ bot: 'starnet' })).status, 200, '3195ab5a: the roster is saved');
-      A.eq(await s.dm('LINKED-TELEGRAM'), [['/cloud/', K.device]], '3195ab5a: a Telegram message on a starnet record with a stale endpoint goes to the linked URL with the device token');
+      A.eq((await s.roster({ bot: 'vultron' })).status, 200, '3195ab5a: the roster is saved');
+      A.eq(await s.dm('LINKED-TELEGRAM'), [['/cloud/', K.device]], '3195ab5a: a Telegram message on a vultron record with a stale endpoint goes to the linked URL with the device token');
       A.eq(up.seen.filter(r => /^\/stale\//.test(r.path)).map(r => r.path), [], '3195ab5a: nothing reached the stale endpoint');
       A.ok(!up.seen.some(r => r.key === 'stale-record-key-0123456789'), '3195ab5a: ...and the stale key went nowhere');
     });

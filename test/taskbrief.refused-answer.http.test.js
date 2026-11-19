@@ -72,7 +72,7 @@ const briefsOf = (ws, key) => { const raw = briefs(ws); const rows = raw && (raw
 (async () => {
   const mock = await startMock();
   const fixture = SidecarFixture.create({
-    prefix: 'starnet-refused-answer-', timeoutMs: 30000,
+    prefix: 'vultron-refused-answer-', timeoutMs: 30000,
     env: { SKYNET_OPENROUTER_BASE: mock.base, SKYNET_THREAD_MINE: '0', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0' }
   });
   try {

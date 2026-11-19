@@ -41,7 +41,7 @@ function waitFor(fn, ms, label) {
 async function call(base, route, method, body) {
   const r = await fetch(base + route, {
     method: method || 'GET',
-    headers: { 'Content-Type': 'application/json', 'X-StarNet-Token': TOKEN },
+    headers: { 'Content-Type': 'application/json', 'X-Vultron-Token': TOKEN },
     body: body === undefined ? undefined : JSON.stringify(body)
   });
   let json = null; try { json = await r.json(); } catch (_) {}
@@ -49,7 +49,7 @@ async function call(base, route, method, body) {
 }
 
 (async () => {
-  const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-update-http-'));
+  const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-update-http-'));
   const workspace = path.join(sandbox, 'workspaces');
   fs.mkdirSync(workspace);
   const sentinel = path.join(workspace, 'canonical-user-state.json');
@@ -60,7 +60,7 @@ async function call(base, route, method, body) {
   fs.mkdirSync(snapshots);
   const old = [];
   for (let i = 0; i < 5; i++) {
-    const name = 'pre-0.12.' + i + '-' + (1760000000000 + i) + '-old.starnet-backup.json';
+    const name = 'pre-0.12.' + i + '-' + (1760000000000 + i) + '-old.vultron-backup.json';
     const at = new Date(Date.parse('2026-01-01T00:00:00Z') + i * 86400000);
     for (const f of [name, name + '.receipt.json']) {
       fs.writeFileSync(path.join(snapshots, f), '{}');
@@ -70,25 +70,25 @@ async function call(base, route, method, body) {
     old.push(name);
   }
   fs.writeFileSync(path.join(snapshots, 'keep-me.txt'), 'user file');
-  const bundles = () => fs.readdirSync(snapshots).filter(n => /^pre-.+\.starnet-backup\.json$/.test(n)).sort();
+  const bundles = () => fs.readdirSync(snapshots).filter(n => /^pre-.+\.vultron-backup\.json$/.test(n)).sort();
   // this sidecar is NOT in dev mode, so it scans the profile's station folders at boot and sweeps its Downloads:
   // every profile path stays inside the sandbox, so the real ones are never read
   const profile = path.join(sandbox, 'profile');
   const downloads = path.join(profile, 'Downloads');
   fs.mkdirSync(downloads, { recursive: true });
   // #119: what a stopped capture left, from a process that is gone, beside a finished bundle and someone else's file
-  const unfinished = path.join(downloads, 'starnet-recovery-20261101-120000.starnet-recovery.json.tmp-999999-abcdef0123456789');
-  const finished = path.join(downloads, 'starnet-recovery-20261101-120000.starnet-recovery.json');
+  const unfinished = path.join(downloads, 'vultron-recovery-20261101-120000.vultron-recovery.json.tmp-999999-abcdef0123456789');
+  const finished = path.join(downloads, 'vultron-recovery-20261101-120000.vultron-recovery.json');
   const foreign = path.join(downloads, 'thesis.tmp-999999-abc');
   for (const f of [unfinished, finished, foreign]) fs.writeFileSync(f, 'x');
   const port = await freePort();
   const child = spawn(process.execPath, [INDEX], {
     env: Object.assign({}, process.env, {
       APPDATA: profile, LOCALAPPDATA: profile, XDG_DATA_HOME: profile, USERPROFILE: profile, HOME: profile,
-      STARNET_SWEEP_BACKUP_TEMPS: '1',   // the opt-in the desktop shell sets; safe here because the profile is this sandbox
+      VULTRON_SWEEP_BACKUP_TEMPS: '1',   // the opt-in the desktop shell sets; safe here because the profile is this sandbox
       SKYNET_WORKSPACES: workspace, SKYNET_PORT: String(port), SKYNET_API_TOKEN: TOKEN,
       SKYNET_LIVE_PRICES: '0', SKYNET_QUEST_REFRESH: '0', SKYNET_CRON: '0',
-      SKYNET_OPENROUTER_KEY: '', STARNET_OPENROUTER_KEY: ''
+      SKYNET_OPENROUTER_KEY: '', VULTRON_OPENROUTER_KEY: ''
     }),
     stdio: ['ignore', 'pipe', 'pipe']
   });
@@ -103,7 +103,7 @@ async function call(base, route, method, body) {
     A.eq(bundles(), old.slice(2), 'boot keeps the three newest pre-update recovery points');
     A.eq(old.slice(0, 2).some(n => fs.existsSync(path.join(snapshots, n + '.receipt.json'))), false, 'and removes the older ones with their receipts');
     A.eq(fs.existsSync(path.join(snapshots, 'keep-me.txt')), true, 'nothing else in update-snapshots is touched');
-    const journalStore = { 'starnet.save': JSON.stringify({ version: 5, updatedAt: 123 }) };
+    const journalStore = { 'vultron.save': JSON.stringify({ version: 5, updatedAt: 123 }) };
     const bundleOf = r => { const s = r && r.body && r.body.receipt && r.body.receipt.snapshot; return s && fs.existsSync(s.file) ? Recovery.readBundle(s.file) : null; };
     const station = async () => { const l = await call(base, '/api/lineage', 'GET'); return l.body && l.body.lineage && l.body.lineage.station && l.body.lineage.station.state; };
 
@@ -113,7 +113,7 @@ async function call(base, route, method, body) {
     A.eq([journal.status, journal.body && journal.body.ok], [200, true], 'station-less with a page journal: prepare succeeds');
     const journalBundle = bundleOf(journal);
     A.ok(!!journalBundle, 'and writes a real recovery bundle: the journal is a station the workspace does not hold yet');
-    A.eq(journalBundle && journalBundle.browser.map(b => b.key), ['starnet.save'], 'the bundle carries the page journal');
+    A.eq(journalBundle && journalBundle.browser.map(b => b.key), ['vultron.save'], 'the bundle carries the page journal');
     A.eq(bundles(), [old[3], old[4], path.basename(journal.body.receipt.snapshot.file)].sort(), 'a verified prepare keeps itself + the two newest older recovery points');
     A.eq((await call(base, '/api/update/cancel', 'POST', {})).body.frozen, false, 'a failed install thaws it');
 
@@ -130,7 +130,7 @@ async function call(base, route, method, body) {
 
     // ---- 3. A FOUNDED STATION: the station file's first accepted write, then the barrier and receipt as always ----
     const at = Date.now();
-    const founded = await call(base, '/api/save', 'POST', { schema: 'starnet.save', version: 6, updatedAt: at, _saveRevision: 0, _saveDirty: true, _saveClient: 'update-window',
+    const founded = await call(base, '/api/save', 'POST', { schema: 'vultron.save', version: 6, updatedAt: at, _saveRevision: 0, _saveDirty: true, _saveClient: 'update-window',
       agent: { id: 'agent', name: 'UPDATER', createdAt: at }, agents: [], workstreams: [{ id: 'general', history: [] }], activeId: 'general', generalId: 'general' });
     A.ok(founded.body && founded.body.ok === true, 'the station file\'s first accepted write lands (' + JSON.stringify(founded.body) + ')');
     A.eq(await station(), 'active', 'and founds the station');

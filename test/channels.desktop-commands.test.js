@@ -12,7 +12,7 @@ const A = require('./_assert.js');
 const { makeChannelHub, parseCommand, helpText, COMMANDS } = require('../sidecar/channels/hub.js');
 const slash = require('../sidecar/slash.js');
 
-const DESKTOP_ONLY = 'That command only works in the StarNet desktop app.';
+const DESKTOP_ONLY = 'That command only works in the Vultron desktop app.';
 function build(over) {
   const sends = [], runs = [], slashCalls = [], cleared = [];
   let ids = 0;
@@ -57,7 +57,7 @@ const msg = (userId, text, chatType) => ({ channel: 'telegram', chatId: chatType
         A.ok(r && r.command.name === row.command, 'hub alias /' + a + ' is the registry\'s own alias of /' + row.command);
       }
     }
-    A.eq(parseCommand('/routines@starnetbot list'), { cmd: 'routine', arg: 'list' }, '@suffix and argument survive the alias');
+    A.eq(parseCommand('/routines@vultronbot list'), { cmd: 'routine', arg: 'list' }, '@suffix and argument survive the alias');
     A.eq(parseCommand('/reset'), { cmd: 'new', arg: '' }, '/reset is /new');
     // the note commands' table names exactly the registry's steer / queue / background and every alias of them
     const NOTE = require('../sidecar/channels/hub.js')._internals.NOTE_CMDS;
@@ -136,7 +136,7 @@ const msg = (userId, text, chatType) => ({ channel: 'telegram', chatId: chatType
     await new Promise(r => setTimeout(r, 30));
     await t.hub.onInbound(msg('boss', '/steer make it about the sea'));
     await t.hub.onInbound(msg('boss', '/q also cover the costs'));
-    await t.hub.onInbound(msg('boss', '/btw@starnetbot and the risks'));
+    await t.hub.onInbound(msg('boss', '/btw@vultronbot and the risks'));
     A.eq(steers, ['make it about the sea', 'also cover the costs', 'and the risks'], 'mid-run, each note joins the running task, command word stripped');
     A.ok(t.sends.length === 3 && t.sends.every(s => /^↪ Added to the task/.test(s)), 'and says so: ' + JSON.stringify(t.sends));
     A.eq(t.slashCalls, [], 'the registry is never asked: nothing answers "desktop app only"');

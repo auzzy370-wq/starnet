@@ -185,7 +185,7 @@ function station(script, policy) {
   return {
     log,
     make: async () => {
-      const workspaces = await fsp.mkdtemp(path.join(os.tmpdir(), 'starnet-ladder-'));
+      const workspaces = await fsp.mkdtemp(path.join(os.tmpdir(), 'vultron-ladder-'));
       roots.push(workspaces);
       let body = '{}';
       const media = makeMediaService({

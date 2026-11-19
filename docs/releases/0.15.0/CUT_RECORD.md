@@ -1,4 +1,4 @@
-# StarNet v0.15.0 — cut record
+# Vultron v0.15.0 — cut record
 
 The record of how v0.15.0 was cut, gated and published. Drafted during the final local gates on 2026-11-07 and completed after Publish, at about 09:15Z (04:15 EST).
 
@@ -22,7 +22,7 @@ The record of how v0.15.0 was cut, gated and published. Drafted during the final
 | Bump | 9fa2b17f3 `release: v0.15.0` → 75cde9998 relock. Unlike 0.14.2's, the waiver (fce96b8bb) came after the bump; its terms do not depend on that order |
 | Tag push | 2026-11-07T07:20:40Z (02:20 EST). It started release-train 42350897656 at 07:20:48Z |
 | Published | **2026-11-07T08:48:22Z** (03:48 EST), by `gh release edit --draft=false --prerelease=false --latest`. releases/latest = v0.15.0 |
-| Release | https://github.com/androoAGI/starnet-releases/releases/tag/v0.15.0: 9 assets, the same set as v0.14.2 |
+| Release | https://github.com/YOUR-GITHUB-USER/vultron-releases/releases/tag/v0.15.0: 9 assets, the same set as v0.14.2 |
 | Notes | RELEASE_NOTES.md at TIP has 68 bullets in 20 sections. Heading plus summary is 446 characters and ends on the summary's full stop. No CR, BOM, TODO or HTML comment. The one use of "soak" says C13 follows a soak; no soak duration is cited |
 | Claims | `claims.mjs` PASS: 37 claims, 396 locked surface files |
 
@@ -30,9 +30,9 @@ The record of how v0.15.0 was cut, gated and published. Drafted during the final
 
 | Asset | SHA-256 |
 |---|---|
-| StarNet_0.15.0_x64-setup.exe | c5136ef3c3cc292f890bb701548ba2a40cbdad233cd3acb9c2848794fb3f786e |
-| StarNet_0.15.0_aarch64.dmg | 7c833196832e227a240bfbd9899fe66d52404c8c11edd2d4f27505614dc7f6c4 |
-| StarNet_0.15.0_x64.dmg | bd3043be5a6b2fcf26f5b80ff680ebfdd001aa83b3ceb02989e5aa2ac8beb1cd |
+| Vultron_0.15.0_x64-setup.exe | c5136ef3c3cc292f890bb701548ba2a40cbdad233cd3acb9c2848794fb3f786e |
+| Vultron_0.15.0_aarch64.dmg | 7c833196832e227a240bfbd9899fe66d52404c8c11edd2d4f27505614dc7f6c4 |
+| Vultron_0.15.0_x64.dmg | bd3043be5a6b2fcf26f5b80ff680ebfdd001aa83b3ceb02989e5aa2ac8beb1cd |
 
 **latest.json** (digest e622d1c64020412e3ce41125e0d29efbf48f0fe3df9eb828335d85cbe4baa89b) has version 0.15.0 and the platforms windows-x86_64, darwin-aarch64 and darwin-x86_64, each URL pinned to `/download/v0.15.0/` and each signature equal to its `.sig` asset. Its pub_date is 2026-11-07T08:39:55.650Z. Its `notes` equal the tagged RELEASE_NOTES.md without the file's final newline, and the release body equals the file (checked on the draft before Publish, `draft-review.js`). After Publish the notes' opening was replaced at Andrew's request (§10, "Notes summary"): the live latest.json is now digest 66de9b65af5dd3b56655bb9f618e537ff2142793b1ce47495450e1ed8e0c4c6a, the same file with only `notes` changed.
 
@@ -79,26 +79,26 @@ Dispatched by hand on `agent/release-0150` (`agent/*` pushes trigger nothing), h
 | 42336462042 | soak | Green |
 | 42336464640 | desktop-build | Green: builds for darwin-arm64, darwin-x64, linux-x64 and win-x64; notarize-macos ×2; intel-macos-installed-acceptance; publish-test skipped |
 
-The TIP installer from 42336464640 is `StarNet_0.15.0_x64-setup.exe`, sha256 d4ab41266dd60a81fd3bac7a29ef96262f50b534d12303eafde722df1f5df1f8. Its signature verified against the baked public key.
+The TIP installer from 42336464640 is `Vultron_0.15.0_x64-setup.exe`, sha256 d4ab41266dd60a81fd3bac7a29ef96262f50b534d12303eafde722df1f5df1f8. Its signature verified against the baked public key.
 
-**Pre-tag T0 42338688375** (04:29:40Z–04:37:56Z) on that installer: **green.** Clean-install proof (schema starnet.clean-install-proof.v1): cdpProven true, pageTitle STARNET, sourceCommit TIP. Candidate lifecycle PASS with failedCases []: idle-close, close-to-tray, updater-smoke, kill-relaunch and cli-app-closed. Public upgrade continuity from v0.14.2: PASS, all 6 checks true. Installed smoke GREEN, 9/9 checks, bound to TIP's commit and tree (25f0037da). The installed provider-fallback, delegated-connector, session-reliability and spend-authority suites passed.
+**Pre-tag T0 42338688375** (04:29:40Z–04:37:56Z) on that installer: **green.** Clean-install proof (schema vultron.clean-install-proof.v1): cdpProven true, pageTitle VULTRON, sourceCommit TIP. Candidate lifecycle PASS with failedCases []: idle-close, close-to-tray, updater-smoke, kill-relaunch and cli-app-closed. Public upgrade continuity from v0.14.2: PASS, all 6 checks true. Installed smoke GREEN, 9/9 checks, bound to TIP's commit and tree (25f0037da). The installed provider-fallback, delegated-connector, session-reliability and spend-authority suites passed.
 
 ### 3.2 Tag, draft and public runs (ref v0.15.0, headSha = TIP)
 
 | Run | What | Result |
 |---|---|---|
 | 42350897656 | release-train, on the tag push | **SUCCESS** in 1 h 21 m: gate (28.5 min), build ×3 (the win-x64 leg runs the published-upgrade proof), webkit-floor-boot, voice-floor-canary, notarize-macos ×2, intel-macos-installed-acceptance, assemble and stage-draft. Its floor jobs logged warnings for web-search and update-host and still ended green |
-| 42356647685 | T0 on the draft | **SUCCESS**, in draft mode: the staged installer (c5136ef3…) downloaded, installed silently, first launch proven over CDP, pageTitle STARNET. Its lifecycle, continuity and installed-suite steps are skipped in this mode |
+| 42356647685 | T0 on the draft | **SUCCESS**, in draft mode: the staged installer (c5136ef3…) downloaded, installed silently, first launch proven over CDP, pageTitle VULTRON. Its lifecycle, continuity and installed-suite steps are skipped in this mode |
 | 42356649541 | G1 on the draft, default cases | **SUCCESS**. Windows: idle-close, close-to-tray, updater-smoke, kill-relaunch and cli-app-closed PASS. lifecycle-macos: kill-relaunch and cli-app-closed PASS. Not covered, by its own list: tray menu Quit, the armed-work residency branch, macOS window cases, Linux |
 | 42357042717 | G1 public canary (`public_canary=true`, baseline v0.14.2), after Publish | **SUCCESS on every job.** public-upgrade-continuity PASS: v0.14.2 (installer aaa65c68…, c6468b7f9) found the public update and updated itself through the in-app updater to the published installer (c5136ef3…), source TIP, install integrity verified (2493 files). All 10 checks true, among them state preserved across the install and across a restart, the save moved from v6 to v7, and installed smoke GREEN. Windows lifecycle 5/5 and macOS 2/2 again |
-| 42357418696 | sync-source-release | Success: v0.15.0 is Latest on androoAGI/starnet, 08:55:50Z |
+| 42357418696 | sync-source-release | Success: v0.15.0 is Latest on YOUR-GITHUB-USER/vultron, 08:55:50Z |
 | 42357420606 | floor-canaries on v0.15.0, after Publish | update-host **green**; web-search red (the run's only red); voice and the other floors green |
 
 ### 3.3 Specific failures
 
 - **The NuGet flake.** fast-gate attempt 1 on TIP, `npm ci`, §3.1. It did not recur in the train's gate.
 - **Pre-tag T0 reds on earlier pins, both fixed.** 42324327453 (23f67d526): the upgrade continuity check did not know the save's 6→7 step; fixed by b93d8fc13, and a dry run with `--ref b93d8fc13` on the same installer, 42325187355, was green. 42329619516 (43ca869b7): idle-close exited 73 with a false WORKSPACE_BUSY, "PID 3088 is running but its start time could not be read"; fixed in b53565c29.
-- **pageTitle.** 43ca869b7's green T0 42330733995 recorded pageTitle about:blank; TIP's and the draft's record STARNET. 0.14.2's record saw the same variation.
+- **pageTitle.** 43ca869b7's green T0 42330733995 recorded pageTitle about:blank; TIP's and the draft's record VULTRON. 0.14.2's record saw the same variation.
 - **session-reliability's log** ends on a teardown line after its PASS row.
 
 ### 3.4 Superseded runs (history, not evidence for TIP)
@@ -165,7 +165,7 @@ Run as `SKYNET_GUARDIAN_TRUNK=agent/release-0150 node scripts/qa/ready.mjs` at 0
 | Working tree clean | PASS |
 | Five version pins | PASS, all 0.15.0 |
 | Tag not yet local | WARN after tagging: already tagged at HEAD |
-| Tag not on origin; no release on starnet-releases | PASS (before the push) |
+| Tag not on origin; no release on vultron-releases | PASS (before the push) |
 | Claims lock | PASS: 37 claims, 396 files |
 | website/app mirror | PASS |
 | test:fast at HEAD | PASS: 1784 steps |
@@ -243,11 +243,11 @@ All rest on one go, given 2026-11-06 after Andrew's own test: "Do one last quick
 |---|---|
 | verify-host | **ALL CHECKS PASSED** (`<logs>/verify-host-v0.15.0.txt`): version 0.15.0, the three platforms, non-empty signatures, https URLs pinned to /download/v0.15.0/, every asset reachable (HTTP 200) |
 | Public canary | 42357042717: SUCCESS on every job (§3.2) |
-| Rollback | Not triggered. If it is ever needed: `gh release edit v0.15.0 -R androoAGI/starnet-releases --prerelease`, then `gh release edit v0.14.2 -R androoAGI/starnet-releases --latest`, then check that releases/latest names v0.14.2. Never edit v0.15.0's notes or latest.json to roll back. The one edit since Publish, the notes summary below, changed text only, at Andrew's request |
-| Source mirror | 42357418696 success: v0.15.0 Latest on androoAGI/starnet (08:55:50Z) |
+| Rollback | Not triggered. If it is ever needed: `gh release edit v0.15.0 -R YOUR-GITHUB-USER/vultron-releases --prerelease`, then `gh release edit v0.14.2 -R YOUR-GITHUB-USER/vultron-releases --latest`, then check that releases/latest names v0.14.2. Never edit v0.15.0's notes or latest.json to roll back. The one edit since Publish, the notes summary below, changed text only, at Andrew's request |
+| Source mirror | 42357418696 success: v0.15.0 Latest on YOUR-GITHUB-USER/vultron (08:55:50Z) |
 | Floors after Publish | 42357420606: update-host green; web-search still red (§6) |
 | Website restamp | **d95089f04** on `agent/release-0150` (parent TIP): 0.14.2 → 0.15.0 in website/index.html (#ver-badge, span.ver, #ver-foot), website/pricing.html (#ver-foot) and website/site.js (FALLBACK_VERSION), a byte-exact swap. website-deploy-staging and website-app-sync pass |
-| Website deploy | `npm run website:stage`, then `npx wrangler pages deploy website-deploy --project-name starnet-site --branch main --commit-hash d95089f04…`: production deployment **ecb52d13** (source d95089f). starnetos.com, www.starnetos.com, /pricing and site.js show v0.15.0 and no 0.14.2 (read at writing). The previous production deployment was ca6c04c8 (0.14.2) |
+| Website deploy | `npm run website:stage`, then `npx wrangler pages deploy website-deploy --project-name vultron-site --branch main --commit-hash d95089f04…`: production deployment **ecb52d13** (source d95089f). vultron.vercel.app, www.vultron.vercel.app, /pricing and site.js show v0.15.0 and no 0.14.2 (read at writing). The previous production deployment was ca6c04c8 (0.14.2) |
 | Issue #122 | Replied at 08:56:47Z (issuecomment-6704758128): fixed in v0.15.0, with what changed and what the tests cover. Left open: closing it was not part of the go |
 | Notes summary | Later on 2026-11-07, Andrew asked for the top of the notes to be "a summary of what the new update is", then for "just a basic description". Three plain sentences (469 characters) replaced the opening paragraph. The governor line was narrowed to "One governor admits nine kinds of paid call": it said "every paid call", but image reading books its cost after the call and never asks the governor. Nothing else in the notes changed. Commits on `agent/release-0150`: ffdb4dd65 with relock b0ddf4e75 (a first, longer draft), then bdc0174d8 with relock b721d4ea2 (the published text); claims PASS. Published 20:55:42Z–20:55:49Z after Andrew chose "Everywhere": the release body; latest.json, the same file with only `notes` replaced (e622d1c6… → **66de9b65…**; version, pub_date and URLs unchanged, each signature still equal to its `.sig`, the updater URL serving it, the other 8 assets untouched); and the source mirror's body, rebuilt by scripts/source-release-mirror.mjs (installers unchanged, action noop). verify-host: ALL CHECKS PASSED again (`<logs>/verify-host-v0.15.0-notes-edit.txt`). The app's update panel shows the first 520 characters: the summary and the "Upgrading, and going back" heading. The tag's RELEASE_NOTES.md keeps the shipped opening |
 | This record | Committed by pathspec as `docs/releases/0.15.0/CUT_RECORD.md` on `agent/release-0150`, on top of d95089f04, and the branch pushed (no workflow runs on `agent/*` pushes). The notes-summary row was added afterwards |
@@ -318,7 +318,7 @@ trunk agent/release-0150 @ 71e207be · generated 2026-11-07T07:14:04.290Z
    pins already = 0.15.0 (release commit exists)
 
 3. NOTES [done]
-   RELEASE_NOTES.md has a real # StarNet v0.15.0 entry (no TODO, no HTML comment)
+   RELEASE_NOTES.md has a real # Vultron v0.15.0 entry (no TODO, no HTML comment)
 
 4. RELOCK [done]
    claims lock current for HEAD (qa(claims): re-lock the release surface for v0.15.0)
@@ -336,7 +336,7 @@ trunk agent/release-0150 @ 71e207be · generated 2026-11-07T07:14:04.290Z
    [PASS] five version pins agree — all five = 0.15.0
    [PASS] tag v0.15.0 not yet local
    [PASS] tag v0.15.0 not on origin
-   [PASS] no release v0.15.0 on androoAGI/starnet-releases
+   [PASS] no release v0.15.0 on YOUR-GITHUB-USER/vultron-releases
    [PASS] claims lock current for HEAD — PASS claims planning authority · 37 claims · 396 locked surface files
    [PASS] website/app mirror in sync
    [PASS] test:fast green at HEAD — 1784 step(s) green · 2026-11-07T07:15:32.398Z · log <logs>/final-fast.log
@@ -373,7 +373,7 @@ not reached: tag → push-stop
 [PASS] five version pins agree — all five = 0.15.0
 [WARN] tag v0.15.0 not yet local — already tagged at HEAD — the tag step is done; nothing pushed yet
 [PASS] tag v0.15.0 not on origin
-[PASS] no release v0.15.0 on androoAGI/starnet-releases
+[PASS] no release v0.15.0 on YOUR-GITHUB-USER/vultron-releases
 [PASS] claims lock current for HEAD — PASS claims planning authority · 37 claims · 396 locked surface files
 [PASS] website/app mirror in sync
 [PASS] test:fast green at HEAD — 1784 step(s) green · 2026-11-07T07:15:32.398Z · log <logs>/final-fast.log

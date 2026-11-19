@@ -9,7 +9,7 @@ found: 2026-10-15
 lane: domain-task-advisory
 fix: 52f213958
 origin: customer
-report: https://github.com/androoAGI/starnet-releases/issues/5
+report: https://github.com/YOUR-GITHUB-USER/vultron-releases/issues/5
 affected: 0.13.3 as reported; the prose gates it hit still ship in 0.14.2
 family: prose-classifier-authority
 installer: unverified
@@ -31,7 +31,7 @@ The lane wrote both tests, so 0b8441064 (the base before it) does not have them.
 1. Check out 0b8441064, then copy test/domain-task.metamorphic.e2e.test.js and test/domain-task.metamorphic.test.js from the lane's branch (agent/domain-task-advisory-1103, b64956730) into its test/ folder.
 2. Run `node test/domain-task.metamorphic.e2e.test.js`. It boots the real sidecar with a mock OpenRouter as the only fake. The roster is a Full Access lead and one Full Access crew worker.
 3. For each report brief, the test compares the sorted wire tool names with those of the control brief 'Summarize what we know about the release plan.' on four surfaces: the lead run (the brief is its message), the worker that lead hands the brief to, a dispatched worker (a neutral lead message, with the brief in the worker's prompt) and a routine (POST /api/cron, then /api/cron/run).
-4. With 'Review the security headers and TLS setup on starnet-demo.io and list the risks.', the lead loses web_search and all nine team_* tools, so its team_dispatch is refused and no worker gets the brief from it. As a worker's brief, the worker loses web_search and runs only 3 of its 4 scripted fs_list calls. As a routine, it loses web_search.
+4. With 'Review the security headers and TLS setup on vultron-demo.io and list the risks.', the lead loses web_search and all nine team_* tools, so its team_dispatch is refused and no worker gets the brief from it. As a worker's brief, the worker loses web_search and runs only 3 of its 4 scripted fs_list calls. As a routine, it loses web_search.
 5. Run `node test/domain-task.metamorphic.test.js`. It drives team.dispatch (foreground and background), team.spawn and team.resume (after a registry reload) through makeOrchestrationTools for 81 one-host briefs. An affected brief gets 3 turns, 3 tool calls and, on dispatch, a 45000 ms slice. The control brief gets 16 turns, no tool cap and the ordinary wall clock (9 turns on spawn, 7 on resume).
 
 ## Evidence
@@ -68,7 +68,7 @@ Lane domain-task-advisory, branch agent/domain-task-advisory-1103 (84c78e50a, da
 
 - Ask-mode delegated workers still cannot run shell.exec or verify.run (report item 3). That is the delegated Ask worker shell policy, not a prose gate, and it stays unchanged until Andrew decides. Today's routes: give that worker Full Access, or have the lead run the commands.
 - A Conveyor step or line hop uses its bay room's tools. A bay without a DISH has no web by design (per-bay isolation).
-- gh#58 (androoAGI/starnet#58, fixed in 0.13.2 by the API-wording carve-out and isTargetRequest) was this family's earlier fix. It moved one wording out of the gate, and the gate came back here. This lane removes prose authority itself. ImageTask's admission gate and the keys.save key-shaped-text gate are prose gates outside this lane.
+- gh#58 (YOUR-GITHUB-USER/vultron#58, fixed in 0.13.2 by the API-wording carve-out and isTargetRequest) was this family's earlier fix. It moved one wording out of the gate, and the gate came back here. This lane removes prose authority itself. ImageTask's admission gate and the keys.save key-shaped-text gate are prose gates outside this lane.
 - The record stays claimed until a published tag contains the lane. Nothing has been posted on the issue, and recovery is unconfirmed.
 
 ## Regression

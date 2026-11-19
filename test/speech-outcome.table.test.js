@@ -81,7 +81,7 @@ edgeServer.on('upgrade', (rq, socket) => {
 const roots = [];
 let services = [];
 async function sidecar(o) {
-  const workspaces = await fsp.mkdtemp(path.join(os.tmpdir(), 'starnet-speech-table-'));
+  const workspaces = await fsp.mkdtemp(path.join(os.tmpdir(), 'vultron-speech-table-'));
   roots.push(workspaces);
   const keys = o.keys || {};
   const svc = makeMediaService({

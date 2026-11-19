@@ -6,7 +6,7 @@
    WHY. web_search's keyless engines and a voice leg that dials a provider's public host would otherwise reach the real
    Mojeek, DuckDuckGo and openrouter.ai from a test: the keyless engines must fail so the chain reaches its OpenRouter rung,
    and at trunk the proof that a key went to the wrong host IS that dial. Here it is answered 503, and the host, the path
-   and the credential header are recorded, one JSON line per request, in the file STARNET_TEST_EDGE_OUT names. Its first
+   and the credential header are recorded, one JSON line per request, in the file VULTRON_TEST_EDGE_OUT names. Its first
    line says the edge is up ({ edge: 'ready', pid }), so a test can refuse to go on without it.
 
    WHERE IT SITS. Two seams cover every HTTP dial the sidecar makes through undici:
@@ -21,7 +21,7 @@
 const fs = require('fs');
 const undici = require('undici');
 
-const OUT = String(process.env.STARNET_TEST_EDGE_OUT || '');
+const OUT = String(process.env.VULTRON_TEST_EDGE_OUT || '');
 const LOOPBACK = /^(?:127(?:\.\d{1,3}){3}|localhost|\[::1\]|::1)$/i;
 const CREDENTIAL_HEADERS = ['authorization', 'x-api-key', 'x-goog-api-key'];
 

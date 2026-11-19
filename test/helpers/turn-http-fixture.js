@@ -55,16 +55,16 @@ class TurnHttpFixture {
     const base = 'http://' + HOST + ':' + this.mock.address().port + '/api/v1';
     this.lanPort = await allocatePort(); this.lan = 'http://' + HOST + ':' + this.lanPort;
     this.fx = new SidecarFixture({ prefix: 'turn-http-' + this.seed + '-', timeoutMs: 30000, env: {
-      SKYNET_OPENROUTER_BASE: base, STARNET_OPENROUTER_BASE: base,
-      SKYNET_OPENROUTER_KEY: 'sk-or-v1-turn-property-fixture', STARNET_OPENROUTER_KEY: 'sk-or-v1-turn-property-fixture',
-      SKYNET_DEFAULT_MODEL: 'test/model', STARNET_DEFAULT_MODEL: 'test/model',
-      STARNET_REMOTE_PORT: String(this.lanPort), STARNET_REMOTE_LAN: '1', STARNET_REMOTE_RELAY: 'off',
-      SKYNET_CRON_ENABLED: '0', STARNET_CRON_ENABLED: '0', SKYNET_EDGE_TTS: '0', SKYNET_REFLECT: '0',
+      SKYNET_OPENROUTER_BASE: base, VULTRON_OPENROUTER_BASE: base,
+      SKYNET_OPENROUTER_KEY: 'sk-or-v1-turn-property-fixture', VULTRON_OPENROUTER_KEY: 'sk-or-v1-turn-property-fixture',
+      SKYNET_DEFAULT_MODEL: 'test/model', VULTRON_DEFAULT_MODEL: 'test/model',
+      VULTRON_REMOTE_PORT: String(this.lanPort), VULTRON_REMOTE_LAN: '1', VULTRON_REMOTE_RELAY: 'off',
+      SKYNET_CRON_ENABLED: '0', VULTRON_CRON_ENABLED: '0', SKYNET_EDGE_TTS: '0', SKYNET_REFLECT: '0',
       SKYNET_AUX_BUDGET: '0', SKYNET_QUEST_REFRESH_MS: '0', SKYNET_SCOUT: '0', SKYNET_THREAD_MINE: '0', SKYNET_SKILL_CURATOR: '0', SKYNET_SKILL_REVIEW: '0'
     } });
     await this.fx.start();
     await this.json('POST', '/api/roster', { agents: [{ agentId: 'agent', name: 'TURN', system: 'Answer the supplied message.', model: 'test/model', provider: 'openrouter' }, { agentId: 'turnpeer', name: 'PEER', system: 'Answer the supplied message.', model: 'test/model', provider: 'openrouter' }] });
-    await this.json('POST', '/api/save', { schema: 'starnet.save', version: require('../../frontend/app/save.js').CURRENT, _saveRevision: 0, _saveClient: 'turn-http-page', updatedAt: Date.now(), agent: { id: 'agent', createdAt: 1, name: 'TURN' }, workstreams: [{ id: 's', agentId: 'agent', title: 'Property', history: [] }], station: require('./saved-floor.js').emptyFloor() });
+    await this.json('POST', '/api/save', { schema: 'vultron.save', version: require('../../frontend/app/save.js').CURRENT, _saveRevision: 0, _saveClient: 'turn-http-page', updatedAt: Date.now(), agent: { id: 'agent', createdAt: 1, name: 'TURN' }, workstreams: [{ id: 's', agentId: 'agent', title: 'Property', history: [] }], station: require('./saved-floor.js').emptyFloor() });
     await this.json('POST', '/api/remote/enable', { on: true });
     const pair = await this.json('POST', '/api/remote/pair', { name: 'Property phone' });
     this.deviceKey = await Phone.makeDeviceKey();

@@ -121,7 +121,7 @@ function startMockTelegram() {
 
 function boot(port, env, attemptsLeft) {
   return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, [INDEX], { env: Object.assign({}, process.env, env, { SKYNET_PORT: String(port), STARNET_PORT: String(port) }), stdio: ['ignore', 'pipe', 'pipe'] });
+    const child = spawn(process.execPath, [INDEX], { env: Object.assign({}, process.env, env, { SKYNET_PORT: String(port), VULTRON_PORT: String(port) }), stdio: ['ignore', 'pipe', 'pipe'] });
     let out = '', settled = false;
     const onData = d => {
       out += d.toString();
@@ -163,13 +163,13 @@ async function waitUntil(fn, ms, label) {
     { name: 'deploy_prod', type: 'alias', target: '/usage', desc: 'deploy main to 10.0.0.5' }
   ] }));
   const env = {
-    SKYNET_WORKSPACES: ws, STARNET_WORKSPACES: ws,
+    SKYNET_WORKSPACES: ws, VULTRON_WORKSPACES: ws,
     HOME: home, USERPROFILE: home, APPDATA: path.join(home, 'AppData', 'Roaming'), LOCALAPPDATA: path.join(home, 'AppData', 'Local'), HERMES_HOME: path.join(home, '.hermes'),
-    SKYNET_OPENROUTER_BASE: llm.base, STARNET_OPENROUTER_BASE: llm.base,
-    SKYNET_OPENROUTER_KEY: 'sk-or-v1-chat-truth-fake', STARNET_OPENROUTER_KEY: 'sk-or-v1-chat-truth-fake',
-    SKYNET_DEFAULT_MODEL: 'test/model', STARNET_DEFAULT_MODEL: 'test/model',
-    SKYNET_TELEGRAM_TOKEN: 'TESTTOKEN', STARNET_TELEGRAM_TOKEN: 'TESTTOKEN',
-    SKYNET_TELEGRAM_API_BASE: tg.base, STARNET_TELEGRAM_API_BASE: tg.base
+    SKYNET_OPENROUTER_BASE: llm.base, VULTRON_OPENROUTER_BASE: llm.base,
+    SKYNET_OPENROUTER_KEY: 'sk-or-v1-chat-truth-fake', VULTRON_OPENROUTER_KEY: 'sk-or-v1-chat-truth-fake',
+    SKYNET_DEFAULT_MODEL: 'test/model', VULTRON_DEFAULT_MODEL: 'test/model',
+    SKYNET_TELEGRAM_TOKEN: 'TESTTOKEN', VULTRON_TELEGRAM_TOKEN: 'TESTTOKEN',
+    SKYNET_TELEGRAM_API_BASE: tg.base, VULTRON_TELEGRAM_API_BASE: tg.base
   };
   const sentTo = (chatId, from) => tg.sends.slice(from || 0).filter(s => String(s.chat_id) === String(chatId));
   const textOf = (s) => String((s && s.text) || '');
@@ -187,7 +187,7 @@ async function waitUntil(fn, ms, label) {
     child = live.child;
     const B = 'http://' + HOST + ':' + live.port;
     const token = await bootToken(B, B);
-    const H = { 'X-StarNet-Token': token, Origin: B, 'Content-Type': 'application/json' };
+    const H = { 'X-Vultron-Token': token, Origin: B, 'Content-Type': 'application/json' };
     await waitUntil(() => tg.calls.some(c => c.method === 'getUpdates' && c.body && c.body.offset !== -1), 8000, 'telegram poll loop');
 
     // ---- 1. the "/" menu before pairing: nothing the Commander wrote is in a scope a stranger can read ----
@@ -214,7 +214,7 @@ async function waitUntil(fn, ms, label) {
     let mark = tg.sends.length, runs0 = llm.runs.length;
     tg.dm(OWNER, '/version');
     await waitUntil(() => sentTo(OWNER, mark).length > 0, 8000, 'the /version answer');
-    A.ok(/only works in the StarNet desktop app/.test(textOf(sentTo(OWNER, mark)[0])), '/version answers from the registry: ' + textOf(sentTo(OWNER, mark)[0]));
+    A.ok(/only works in the Vultron desktop app/.test(textOf(sentTo(OWNER, mark)[0])), '/version answers from the registry: ' + textOf(sentTo(OWNER, mark)[0]));
     mark = tg.sends.length;
     tg.dm(OWNER, '/routines');
     await waitUntil(() => sentTo(OWNER, mark).length > 0, 8000, 'the /routines answer');
@@ -310,7 +310,7 @@ async function waitUntil(fn, ms, label) {
     A.eq(callsCarrying('/steer make', runs0).length, 0, 'the command word never reached the model');
     A.ok(!/\[steering\]/.test(finalText), 'no raw marker on the phone: ' + JSON.stringify(finalText));
     A.ok(/MODEL ANSWER \d+\n\n↪ make it about the sea and make it rhyme\n\nMODEL ANSWER \d+/.test(finalText), 'both answers, the note on its own line between them: ' + JSON.stringify(finalText));
-    A.ok(!sentTo(OWNER, mark).some(s => /only works in the StarNet desktop app/.test(textOf(s))), 'never the desktop-only refusal');
+    A.ok(!sentTo(OWNER, mark).some(s => /only works in the Vultron desktop app/.test(textOf(s))), 'never the desktop-only refusal');
   } finally {
     await stop(child);
     try { tg.close(); } catch (_) {}

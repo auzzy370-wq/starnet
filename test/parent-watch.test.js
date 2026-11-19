@@ -1,15 +1,15 @@
 'use strict';
 /* node test/parent-watch.test.js — a station never outlives its owner (sidecar/parent-watch.js).
 
-   A hard-killed owner (the desktop shell, the `starnet` terminal) runs none of its stop code, so its station used to
+   A hard-killed owner (the desktop shell, the `vultron` terminal) runs none of its stop code, so its station used to
    keep running as an orphan holding the workspace claim (#31). The station now watches its owner and shuts itself down
    gracefully when the owner is gone. Proven here:
      1. the decision, with fakes: re-parented (POSIX) = gone; ESRCH = gone; EPERM / any other error = alive; an inherited
-        STARNET_PARENT_PID that is not this process's parent is ignored and says so; nothing named and no ipc = inert;
+        VULTRON_PARENT_PID that is not this process's parent is ignored and says so; nothing named and no ipc = inert;
         an ipc disconnect = gone; it fires once and stops its timer.
      2. REAL processes: an owner process starts a DETACHED child (outside any job the owner holds, so only the watch can
         end it), the test hard-kills the owner (TerminateProcess / SIGKILL), and the child notices and exits — once for
-        the PID watch (STARNET_PARENT_PID, the desktop shell's way) and once for the ipc watch (the terminal's way).
+        the PID watch (VULTRON_PARENT_PID, the desktop shell's way) and once for the ipc watch (the terminal's way).
      3. sidecar/index.js starts the watch in its host-process block and answers it with gracefulShutdown. */
 const fs = require('fs');
 const os = require('os');
@@ -39,13 +39,13 @@ function alive(pid) { try { process.kill(pid, 0); return true; } catch (e) { ret
 
 (async () => {
   // ---- 1. the decision ----
-  A.eq(envParentPid({ STARNET_PARENT_PID: ' 4242 ' }), 4242, 'STARNET_PARENT_PID names the owner');
+  A.eq(envParentPid({ VULTRON_PARENT_PID: ' 4242 ' }), 4242, 'VULTRON_PARENT_PID names the owner');
   A.eq(envParentPid({ SKYNET_PARENT_PID: '77' }), 77, 'the legacy spelling too');
-  A.eq(envParentPid({ STARNET_PARENT_PID: 'x' }), 0, 'junk names nobody');
+  A.eq(envParentPid({ VULTRON_PARENT_PID: 'x' }), 0, 'junk names nobody');
   {
     const gone = [];
     const t = fakeTimers();
-    const proc = fakeProc({ ppid: 4242, env: { STARNET_PARENT_PID: '4242' } });
+    const proc = fakeProc({ ppid: 4242, env: { VULTRON_PARENT_PID: '4242' } });
     const w = makeParentWatch({ proc, setInterval: t.setInterval, clearInterval: t.clearInterval, onGone: r => gone.push(r) });
     A.eq(w.start(), { watching: ['pid 4242'] }, 'the named parent is watched');
     A.ok(t.unrefd, 'the watch timer never keeps the station alive');
@@ -62,7 +62,7 @@ function alive(pid) { try { process.kill(pid, 0); return true; } catch (e) { ret
   {
     const gone = [];
     const t = fakeTimers();
-    const proc = fakeProc({ ppid: 4242, platform: 'win32', env: { STARNET_PARENT_PID: '4242' }, killError: 'ESRCH' });
+    const proc = fakeProc({ ppid: 4242, platform: 'win32', env: { VULTRON_PARENT_PID: '4242' }, killError: 'ESRCH' });
     const w = makeParentWatch({ proc, setInterval: t.setInterval, clearInterval: t.clearInterval, onGone: r => gone.push(r) });
     w.start();
     A.eq(proc.killed, undefined, 'start probes nothing');
@@ -73,16 +73,16 @@ function alive(pid) { try { process.kill(pid, 0); return true; } catch (e) { ret
   {
     const gone = [];
     const t = fakeTimers();
-    const proc = fakeProc({ ppid: 4242, platform: 'win32', env: { STARNET_PARENT_PID: '4242' }, killError: 'EPERM' });
+    const proc = fakeProc({ ppid: 4242, platform: 'win32', env: { VULTRON_PARENT_PID: '4242' }, killError: 'EPERM' });
     makeParentWatch({ proc, setInterval: t.setInterval, clearInterval: t.clearInterval, onGone: r => gone.push(r) }).start();
     t.tick(); t.tick();
     A.eq(gone, [], 'EPERM is a live owner: a watch that cannot prove the owner gone never stops the station');
   }
   {
     const t = fakeTimers();
-    const proc = fakeProc({ ppid: 5000, env: { STARNET_PARENT_PID: '4242' } });
+    const proc = fakeProc({ ppid: 5000, env: { VULTRON_PARENT_PID: '4242' } });
     const r = makeParentWatch({ proc, setInterval: t.setInterval, clearInterval: t.clearInterval }).start();
-    A.eq(r.watching, [], 'an inherited STARNET_PARENT_PID that is not this process\'s parent is not watched');
+    A.eq(r.watching, [], 'an inherited VULTRON_PARENT_PID that is not this process\'s parent is not watched');
     A.ok(/does not name this station's parent \(pid 5000\)/.test(r.ignored || ''), 'and it says why: ' + r.ignored);
     A.eq(t.fns.length, 0, 'no timer');
   }
@@ -105,7 +105,7 @@ function alive(pid) { try { process.kill(pid, 0); return true; } catch (e) { ret
   }
 
   // ---- 2. REAL processes: hard-kill the owner, the detached child leaves on its own ----
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-parent-watch-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-parent-watch-'));
   const started = [];
   try {
     const watchPath = path.resolve(__dirname, '..', 'sidecar', 'parent-watch.js');
@@ -120,8 +120,8 @@ function alive(pid) { try { process.kill(pid, 0); return true; } catch (e) { ret
       "const { spawn } = require('child_process');",
       "const mode = process.argv[2], out = process.argv[3];",
       "const env = Object.assign({}, process.env);",
-      "delete env.STARNET_PARENT_PID; delete env.SKYNET_PARENT_PID;",
-      "if (mode === 'pid') env.STARNET_PARENT_PID = String(process.pid);",
+      "delete env.VULTRON_PARENT_PID; delete env.SKYNET_PARENT_PID;",
+      "if (mode === 'pid') env.VULTRON_PARENT_PID = String(process.pid);",
       "const stdio = mode === 'ipc' ? ['ignore', 'ignore', 'ignore', 'ipc'] : 'ignore';",
       "const c = spawn(process.execPath, [require('path').join(__dirname, 'child.js'), out], { detached: true, stdio, env, windowsHide: true });",
       "if (c.channel && c.channel.unref) c.channel.unref();",

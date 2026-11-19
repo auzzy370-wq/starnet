@@ -113,7 +113,7 @@ A.eq(ctx.pick(), null, '✕ quiets a line for good — even one with a step left
 
 /* ---- 3. an older build's `done` (a crate retired the card for good) is read as shipped: the card returns while ② is open ---- */
 for (const k of Object.keys(store)) delete store[k];
-store['starnet.refit.finline.test'] = JSON.stringify({ [L.A.key]: { done: 1 } });
+store['vultron.refit.finline.test'] = JSON.stringify({ [L.A.key]: { done: 1 } });
 // (the upgrade runs once per station per session: a fresh slice is a fresh session)
 const ctx2 = vm.createContext(Object.assign({}, ctx));
 vm.runInContext(slice(build, '  const FIN_KEY = st =>', '  /* ---------- STARTER GEAR')
@@ -121,7 +121,7 @@ vm.runInContext(slice(build, '  const FIN_KEY = st =>', '  /* ---------- STARTER
 ctx2.valPlan = ctx.valPlan; ctx2.cacheGeo = ctx.cacheGeo; ctx2.setComps(P.lineComponents(s.projectGeometry()));
 feed = { known: true, fed: false }; facts = null;
 A.eq(ctx2.pick() && ctx2.pick().key, L.A.key, 'a line an older build retired for a crate gets its card back while nothing starts it');
-A.eq(JSON.parse(store['starnet.refit.finline.test'])[L.A.key].shipped, 1, '…its `done` now reads as shipped (its FIRST SHIP spent)');
+A.eq(JSON.parse(store['vultron.refit.finline.test'])[L.A.key].shipped, 1, '…its `done` now reads as shipped (its FIRST SHIP spent)');
 feed = { known: true, fed: true }; facts = webhookOf(L.A.key);
 A.ok(!(ctx2.pick() && ctx2.pick().key === L.A.key), '…and it stands down once a start of its own exists');
 

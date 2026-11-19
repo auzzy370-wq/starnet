@@ -68,7 +68,7 @@ function makeSkillsIo(deps) {
       throw e;
     }
   }
-  /* TORN / GLUED ROWS. A crash mid-append leaves a fragment; an older StarNet then glued the next WHOLE record onto it
+  /* TORN / GLUED ROWS. A crash mid-append leaves a fragment; an older Vultron then glued the next WHOLE record onto it
      (logbound.js, before its torn-tail fix). A whole record glued to the end of a fragment is peeled back out (accepted
      only when it re-serializes to exactly those bytes, like the ledger's gluedSpendRows). Anything still unparsable is
      kept in `damaged`, and rewrite() saves those raw lines to <file>.damaged BEFORE it replaces the file: a compaction

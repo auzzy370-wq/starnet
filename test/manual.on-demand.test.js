@@ -4,7 +4,7 @@
    orientation/rule (ALWAYS inline — behaviour the agent must follow unprompted) or reference (product facts,
    named in an inline table of contents and served verbatim by the read-only manual.read tool). Project law:
    simplify = organization, never removal. This pins that
-     A. the WHOLE manual is byte-identical to the pre-split literal (hash) — starnetManual() is still the fallback
+     A. the WHOLE manual is byte-identical to the pre-split literal (hash) — vultronManual() is still the fallback
         and manual.read "all";
      B. the sections partition it: every line of the manual lives in a section, and joined they are the manual;
      C. the inline form carries every orientation/rule section VERBATIM, a TOC line per reference section, the
@@ -23,8 +23,8 @@ const M = require('../sidecar/manual.js');
 const { makeManualReadTool } = require('../sidecar/tools/builtin/manual-read.js');
 const { CAP_REGISTRY } = require('../sidecar/capability/registry.js');
 
-const full = M.starnetManual();
-const index = M.starnetManualIndex();
+const full = M.vultronManual();
+const index = M.vultronManualIndex();
 const ids = M.MANUAL_SECTIONS.map(s => s.id);
 const reference = M.MANUAL_SECTIONS.filter(s => s.kind === 'reference');
 const inline = M.MANUAL_SECTIONS.filter(s => s.kind !== 'reference');
@@ -39,7 +39,7 @@ const inline = M.MANUAL_SECTIONS.filter(s => s.kind !== 'reference');
 // Re-pinned 2026-10-04 (self-driving) for ONE deliberate change: the APPROVALS hotspot and its Alt+A are gone (approvals render
 // in COMMS where the agent paused), and NAVIGATION tells the agent to OPEN a place with station.show instead of describing clicks.
 // Re-pinned 2026-10-05 (self-driving lane 2) for ONE deliberate addition: the agent learns EVERYTHING on demand — a CONCEPTS
-// reference section (every StarNet thing, its place, its tool, its trap), NAVIGATION's generated EVERY PLACE list (frontend/app/
+// reference section (every Vultron thing, its place, its tool, its trap), NAVIGATION's generated EVERY PLACE list (frontend/app/
 // places.js), and the dossier's CAN DO replaces the gone SKILLS tab. All reference: the inline form got SHORTER.
 // Re-pinned 2026-10-11: CONCEPTS documents SEND TO and the implemented line operations.
 // Re-pinned 2026-10-13: CONCEPTS names group.add (an agent brings crew into this chat) and that group.configure's members
@@ -79,7 +79,7 @@ A.eq(crypto.createHash('sha256').update(full, 'utf8').digest('hex'), '89f3be553b
 A.eq(ids, ['about', 'live-state', 'navigation', 'props', 'connectors', 'approval', 'connecting', 'troubleshooting', 'concepts'], 'sections in manual order');
 A.eq(reference.map(s => s.id), ['navigation', 'props', 'troubleshooting', 'concepts'], 'reference sections: navigation, props, troubleshooting, concepts');
 A.eq(inline.map(s => s.kind), ['orientation', 'rule', 'rule', 'rule', 'rule'], 'everything else is orientation or a behaviour rule');
-const body = full.replace('\n<starnet_operator_manual>\n', '').replace('</starnet_operator_manual>', '');
+const body = full.replace('\n<vultron_operator_manual>\n', '').replace('</vultron_operator_manual>', '');
 A.eq(ids.map(id => M.manualSection(id)).join('').replace(/\n/g, ''), body.replace(/\n/g, ''), 'the sections, joined in order, ARE the manual (only blank separator lines differ)');
 for (const line of body.split('\n').filter(Boolean)) {
   const homes = ids.filter(id => M.manualSection(id).split('\n').indexOf(line) >= 0);
@@ -87,7 +87,7 @@ for (const line of body.split('\n').filter(Boolean)) {
 }
 
 // ---- C. the inline form ----
-A.ok(index.indexOf('\n<starnet_operator_manual>\n') === 0 && index.endsWith('</starnet_operator_manual>'), 'inline form keeps the manual fence');
+A.ok(index.indexOf('\n<vultron_operator_manual>\n') === 0 && index.endsWith('</vultron_operator_manual>'), 'inline form keeps the manual fence');
 for (const s of inline) A.ok(index.indexOf(M.manualSection(s.id)) >= 0, s.id + ' (' + s.kind + ') rides inline VERBATIM');
 for (const s of reference) {
   A.ok(index.indexOf(M.manualSection(s.id)) < 0, s.id + ': the reference body is NOT inline');
@@ -109,7 +109,7 @@ A.ok(/capabilities_ground_truth/.test(index) && /NOT a list of your own powers/.
 A.ok(/DISH → WEB/.test(index) && /INTEL CAB → FILES/.test(index) && /WORKBENCH → TERMINAL/.test(index) && /SERVER CART → MEMORY/.test(index) && /WORKSTATION → COMPUTE/.test(index),
   'the props TOC line keeps the prop → power pairings in the live UI vocabulary');
 A.ok(full.length - index.length >= 2500, 'the inline form is materially smaller (' + index.length + ' vs ' + full.length + ' chars)');
-A.eq(M.starnetManualIndex(), index, 'deterministic: rides the cached prefix');
+A.eq(M.vultronManualIndex(), index, 'deterministic: rides the cached prefix');
 A.ok(!/undefined|null|\[object/.test(index), 'no junk leaks into the inline form');
 
 // ---- D. manual.read ----
@@ -136,7 +136,7 @@ A.ok(!/undefined|null|\[object/.test(index), 'no junk leaks into the inline form
   A.eq([g[0].capId, g[0].scope, g[0].requiresConsent, g[0].network, !!g[0].deferred], ['stationinfo', 'read', false, false, false],
     'same grant class as station.inspect, and never deferred (the TOC must point at an advertised tool)');
   const idx = readSidecarSource();
-  A.eq(idx.split("(coreNames.indexOf('manual.read') >= 0 ? starnetManualIndex() : starnetManual())").length - 1, 1,
+  A.eq(idx.split("(coreNames.indexOf('manual.read') >= 0 ? vultronManualIndex() : vultronManual())").length - 1, 1,
     'index.js uses the TOC form only when manual.read is advertised, else the whole manual stays inline');
   A.eq(idx.split('makeManualReadTool().register(registry);').length - 1, 1, 'the run registers manual.read');
 }

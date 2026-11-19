@@ -1,5 +1,5 @@
 /* test/save-adopt-merge.test.js — ONE window, the station "went back" (support reports 10-15…10-25: #121, #153,
-   starnet-releases#4, the androo.agi inbox). A window's save landed but its ACK never arrived; the window died (crash,
+   vultron-releases#4, the androo.agi inbox). A window's save landed but its ACK never arrived; the window died (crash,
    power loss, a killed app) before its next save was sent; the reopened window resumed that next save from the browser
    cache on the old revision and was refused as ANOTHER window's change — and so was every save after it, so the station
    file froze while the window kept working. Live repro: dev/save-unclean-exit-repro.mjs.
@@ -29,7 +29,7 @@ const backups = root => fs.readdirSync(root).filter(n => /^agent\.save-before-ad
 // what App.persist does: the window's state, stamped with this page's revision and writer, into the cache, then queued
 function persist(cs, cache, doc) {
   const d = Object.assign(clone(doc), { _saveDirty: true, _saveRevision: cs.revision(), _saveClient: cs.writerId(), updatedAt: Date.now() });
-  cache.set('starnet.save', JSON.stringify(d)); cs.push(d);
+  cache.set('vultron.save', JSON.stringify(d)); cs.push(d);
   return d;
 }
 const tick = () => new Promise(r => setTimeout(r, 3));
@@ -57,7 +57,7 @@ async function lostAckThenDeath(opts) {
   const newest = clone(headDoc); newest.workstreams.push({ id: 'S3', history: [turn('user', 'three')] });
   const cached = Object.assign(newest, { _saveDirty: true, _saveRevision: cs.revision(), _saveClient: cs.writerId(), updatedAt: Date.now() }, opts && opts.cacheExtra ? opts.cacheExtra : {});
   if (opts && opts.legacy) delete cached._saveClient;
-  cache.set('starnet.save', JSON.stringify(cached));
+  cache.set('vultron.save', JSON.stringify(cached));
   return { root, cache, head, writer: cs.writerId() };
 }
 
@@ -68,7 +68,7 @@ async function lostAckThenDeath(opts) {
       const { root, cache, head } = await lostAckThenDeath();
       const host = sidecar(root);                                   // a fresh station process: the app reopened
       const Z = page(host, cache);
-      const resumed = await Z.reconcile(JSON.parse(cache.get('starnet.save')));
+      const resumed = await Z.reconcile(JSON.parse(cache.get('vultron.save')));
       A.eq(titles(resumed), ['general', 'S1', 'S2', 'S3'], 'a: the reopened window resumes its newest work');
       await Z.flush({ force: true });
       A.eq(Z.health().conflict, null, 'a: no conflict — no other window wrote this station');
@@ -79,7 +79,7 @@ async function lostAckThenDeath(opts) {
       const next = persist(Z, cache, Object.assign(clone(resumed), { workstreams: resumed.workstreams.concat([{ id: 'S4', history: [turn('user', 'four')] }]) }));
       A.eq(await Z.flush({ force: true }), true, 'a: the next save lands');
       A.eq(titles(host.saveStore.load('agent')), titles(next), 'a: and keeps landing');
-      const cached = JSON.parse(cache.get('starnet.save'));
+      const cached = JSON.parse(cache.get('vultron.save'));
       A.eq([cached._saveDirty, cached._saveRevision], [false, host.saveStore.load('agent')._saveRevision], 'a: the browser cache is clean at the station revision');
     }
 
@@ -88,10 +88,10 @@ async function lostAckThenDeath(opts) {
     // something the station file lacks; that comes back into the station and the cache is kept whole beside it)
     {
       const { root, cache } = await lostAckThenDeath({ cacheExtra: { updatedAt: 1 } });
-      const stale = JSON.parse(cache.get('starnet.save'));
+      const stale = JSON.parse(cache.get('vultron.save'));
       stale.workstreams = stale.workstreams.filter(w => w.id !== 'S2' && w.id !== 'S3').concat([{ id: 'S0-unsent', history: [turn('user', 'only in this cache')] }]);
       stale.agent = Object.assign({}, stale.agent, { name: 'OLD-NAME' });
-      cache.set('starnet.save', JSON.stringify(stale));
+      cache.set('vultron.save', JSON.stringify(stale));
       const host = sidecar(root);
       const Z = page(host, cache);
       const resumed = await Z.reconcile(stale);
@@ -103,7 +103,7 @@ async function lostAckThenDeath(opts) {
       const note = Z.mergeNotice();
       A.ok(note && note.base === 'station' && note.added === 1 && /^agent\.save-conflict-kept-\d+-/.test(String(note.kept)), 'b: reported, with the cache kept whole under its own name (' + JSON.stringify(note) + ')');
       A.eq(JSON.parse(fs.readFileSync(path.join(root, note.kept), 'utf8')).agent.name, 'OLD-NAME', 'b: nothing the cache held is lost');
-      A.eq(JSON.parse(cache.get('starnet.save'))._saveDirty, false, 'b: the cache now holds the station file, clean');
+      A.eq(JSON.parse(cache.get('vultron.save'))._saveDirty, false, 'b: the cache now holds the station file, clean');
     }
 
     // ================= c. a cache from 0.14.0 or earlier is MERGED at boot, never refused =================
@@ -112,10 +112,10 @@ async function lostAckThenDeath(opts) {
         headExtra: d => ({ workstreams: d.workstreams.concat([{ id: 'only-on-station', history: [turn('user', 'made by a routine')] }, { id: 'deleted-in-window', history: [turn('user', 'x')] }]),
           stationStats: { ratingSyncAt: 50, xp: 70 }, agent: Object.assign({}, d.agent, { stats: { xp: 70 } }) }),
         cacheExtra: { deletedIds: ['deleted-in-window'], stationStats: { ratingSyncAt: 10, xp: 5 } } });
-      const legacy = JSON.parse(cache.get('starnet.save'));
+      const legacy = JSON.parse(cache.get('vultron.save'));
       legacy.workstreams = legacy.workstreams.filter(w => w.id !== 'only-on-station' && w.id !== 'deleted-in-window');
       legacy.agent = Object.assign({}, legacy.agent, { stats: { xp: 5 } });
-      cache.set('starnet.save', JSON.stringify(legacy));
+      cache.set('vultron.save', JSON.stringify(legacy));
       A.ok(!('_saveClient' in legacy), 'fixture: the cache names no window (0.14.0), and neither does the station file');
       const stationBefore = fs.readFileSync(path.join(root, 'agent.save.json'), 'utf8');
       const host = sidecar(root);
@@ -148,7 +148,7 @@ async function lostAckThenDeath(opts) {
       persist(W, cache, start); await W.flush({ force: true });
       // the window's last edit: cached, never sent (old build: no writer in the cache)
       const unsent = persist(W, cache, Object.assign(clone(start), { workstreams: start.workstreams.concat([{ id: 'unsent', history: [turn('user', 'mine')] }]) }));
-      const legacy = Object.assign({}, unsent); delete legacy._saveClient; cache.set('starnet.save', JSON.stringify(legacy));
+      const legacy = Object.assign({}, unsent); delete legacy._saveClient; cache.set('vultron.save', JSON.stringify(legacy));
       await tick();
       // the app is closed; the terminal turns SCOUT's approval back to ASK (written on the save's own revision)
       const cur = host0.saveStore.load('agent');
@@ -171,8 +171,8 @@ async function lostAckThenDeath(opts) {
     // ================= e. a cache of ANOTHER station is never merged =================
     {
       const { root, cache } = await lostAckThenDeath({ legacy: true });
-      const other = JSON.parse(cache.get('starnet.save')); other.agent = { id: 'agent', name: 'SOL', createdAt: 999999 };
-      cache.set('starnet.save', JSON.stringify(other));
+      const other = JSON.parse(cache.get('vultron.save')); other.agent = { id: 'agent', name: 'SOL', createdAt: 999999 };
+      cache.set('vultron.save', JSON.stringify(other));
       const before = fs.readFileSync(path.join(root, 'agent.save.json'), 'utf8');
       const host = sidecar(root);
       const Z = page(host, cache);
@@ -208,7 +208,7 @@ async function lostAckThenDeath(opts) {
       A.eq(stale._reloads.length, 1, 'f: and the stale tab re-entered (reloaded onto the merge), never sending its own view on top');
       const host = sidecar(root);
       const Z = page(host, shared);                                  // the stale tab is reloaded
-      const resumed = await Z.reconcile(JSON.parse(shared.get('starnet.save')));
+      const resumed = await Z.reconcile(JSON.parse(shared.get('vultron.save')));
       A.eq(resumed.agent.name, 'RENAMED', 'f: the live tab\'s rename stands');
       A.ok(!titles(resumed).includes('OLD'), 'f: the live tab\'s delete stands');
       A.ok(titles(resumed).includes('stale-tab'), 'f: the stale tab\'s own session is brought in');
@@ -232,7 +232,7 @@ async function lostAckThenDeath(opts) {
         return host.fetch(u, o);
       } };
       const Z = page(proxy, cache);
-      const resumed = await Z.reconcile(JSON.parse(cache.get('starnet.save')));
+      const resumed = await Z.reconcile(JSON.parse(cache.get('vultron.save')));
       await Z.flush({ force: true });
       // the resend as the first window is refused (that window saved newer since); since save-latch-kill the page then MERGES
       // its work three-way on the head it opened on (the first window's own save) — written as adopt-<this page>, never as
@@ -249,8 +249,8 @@ async function lostAckThenDeath(opts) {
     {
       const { root, cache } = await lostAckThenDeath({ legacy: true, legacyFile: true,
         headExtra: d => ({ workstreams: d.workstreams.concat([{ id: 'ONLY-ON-STATION', history: [turn('user', 'r')] }]) }) });
-      const legacy = JSON.parse(cache.get('starnet.save')); legacy.workstreams = legacy.workstreams.filter(w => w.id !== 'ONLY-ON-STATION');
-      cache.set('starnet.save', JSON.stringify(legacy));
+      const legacy = JSON.parse(cache.get('vultron.save')); legacy.workstreams = legacy.workstreams.filter(w => w.id !== 'ONLY-ON-STATION');
+      cache.set('vultron.save', JSON.stringify(legacy));
       const host = sidecar(root);
       const proxy = { fetch: async (u, o) => {
         const r = await host.fetch(u, o);
@@ -277,7 +277,7 @@ async function lostAckThenDeath(opts) {
         return host.fetch(u, o);
       } };
       const Z = page(proxy, cache);
-      const resumed = await Z.reconcile(JSON.parse(cache.get('starnet.save')));
+      const resumed = await Z.reconcile(JSON.parse(cache.get('vultron.save')));
       await tick(); await tick();
       // the page saves again before the retry: the newer save replaces the refused one
       const next = persist(Z, cache, Object.assign(clone(resumed), { workstreams: resumed.workstreams.concat([{ id: 'S4', history: [turn('user', 'four')] }]) }));
@@ -292,9 +292,9 @@ async function lostAckThenDeath(opts) {
     {
       const { root, cache } = await lostAckThenDeath({ legacy: true });
       // no session the station lacks — only a crew change — so the merge brings nothing in and writes nothing
-      const legacy = JSON.parse(cache.get('starnet.save')); legacy.workstreams = legacy.workstreams.filter(w => w.id !== 'S3');
+      const legacy = JSON.parse(cache.get('vultron.save')); legacy.workstreams = legacy.workstreams.filter(w => w.id !== 'S3');
       legacy.agent = Object.assign({}, legacy.agent, { name: 'RENAMED-IN-WINDOW' });
-      cache.set('starnet.save', JSON.stringify(legacy));
+      cache.set('vultron.save', JSON.stringify(legacy));
       const host = sidecar(root);
       let adopts = 0;
       const proxy = { fetch: async (u, o) => {
@@ -310,7 +310,7 @@ async function lostAckThenDeath(opts) {
       A.eq(await Z.flush({ force: true }), true, 'k: its next save lands — not frozen');
     }
 
-    // ================= l. a tab reopened while ANOTHER StarNet tab is live never merges under it =================
+    // ================= l. a tab reopened while ANOTHER Vultron tab is live never merges under it =================
     {
       const { root, cache } = await lostAckThenDeath({ legacy: true, legacyFile: true });
       class Channel extends BroadcastChannel { constructor(n) { super(n); this.unref(); } }
@@ -320,7 +320,7 @@ async function lostAckThenDeath(opts) {
       await L.reconcile(null);
       const before = fs.readFileSync(path.join(root, 'agent.save.json'), 'utf8');
       const Z = page(host, cache, { BroadcastChannel: Channel });
-      await Z.reconcile(JSON.parse(cache.get('starnet.save')));
+      await Z.reconcile(JSON.parse(cache.get('vultron.save')));
       await Z.flush({ force: true });
       A.eq([Z.mergeNotice(), backups(root).length], [null, 0], 'l: the reopened tab hears the live one and merges nothing');
       A.eq(fs.readFileSync(path.join(root, 'agent.save.json'), 'utf8'), before, 'l: the station file is untouched');
@@ -333,9 +333,9 @@ async function lostAckThenDeath(opts) {
       const copy = new Map(cache);                                   // the app and a restored tab both read the cache at boot
       const host = sidecar(root);
       const P1 = page(host, cache), P2 = page(host, copy);
-      const r1 = await P1.reconcile(JSON.parse(cache.get('starnet.save')));
+      const r1 = await P1.reconcile(JSON.parse(cache.get('vultron.save')));
       const rev1 = host.saveStore.load('agent')._saveRevision;
-      await P2.reconcile(JSON.parse(copy.get('starnet.save')));
+      await P2.reconcile(JSON.parse(copy.get('vultron.save')));
       A.eq(host.saveStore.load('agent')._saveRevision, rev1, 'i: the second page\'s merge brings nothing, so it writes nothing');
       persist(P1, cache, Object.assign(clone(r1), { workstreams: r1.workstreams.concat([{ id: 'P1-next', history: [turn('user', 'p')] }]) }));
       A.eq(await P1.flush({ force: true }), true, 'i: the first page is not frozen: its next save lands');
@@ -353,10 +353,10 @@ async function lostAckThenDeath(opts) {
       // another window saves first, so the cached save cannot land as it is: the boot merge is asked, and the file is locked
       host.saveStore.save('agent', Object.assign(clone(host.saveStore.load('agent')), { _saveClient: 'other-window', updatedAt: Date.now() + 50 }), { compareRevision: true });
       const Z = page(lock, cache);
-      await Z.reconcile(JSON.parse(cache.get('starnet.save')));
+      await Z.reconcile(JSON.parse(cache.get('vultron.save')));
       A.eq(Z._mergeState().mergeRefused, false, 'm: a locked station file at the boot merge is not a refusal for good');
       locked = false;
-      persist(Z, cache, Object.assign(clone(JSON.parse(cache.get('starnet.save'))), { workstreams: JSON.parse(cache.get('starnet.save')).workstreams.concat([{ id: 'after-lock', history: [turn('user', 'typed after the lock')] }]) }));
+      persist(Z, cache, Object.assign(clone(JSON.parse(cache.get('vultron.save'))), { workstreams: JSON.parse(cache.get('vultron.save')).workstreams.concat([{ id: 'after-lock', history: [turn('user', 'typed after the lock')] }]) }));
       await Z.flush({ force: true });
       await tick();
       A.ok(Z.health().conflict === null && (Z._reloads.length === 1 || titles(host.saveStore.load('agent')).includes('after-lock')), 'm: once the file is readable the window is merged, never left with a banner that will not clear (' + JSON.stringify(Z.health().conflict && Z.health().conflict.error) + ')');

@@ -1,4 +1,4 @@
-/* STARNET — bootguard.js : the FIRST app script. Makes a broken boot LOUD instead of silent.
+/* VULTRON — bootguard.js : the FIRST app script. Makes a broken boot LOUD instead of silent.
 
    The audit finding this answers ("first run fails silently by construction"): nothing in frontend/ listened for
    window `error` / `unhandledrejection`, and app.js guards every module with `typeof X !== 'undefined'` — so a
@@ -30,7 +30,7 @@
         critical global was missing, and the boot check said "passed". A boot check now reads passed only when every
         station script ran; otherwise DEGRADED, naming each script that did not (the fatal rule in 3 is unchanged:
         a station that mostly works is never taken away by the banner). Once per page load the counts, those paths,
-        kinds and lines go to the desktop shell (starnet_boot_report), which writes one "page-boot:" line to
+        kinds and lines go to the desktop shell (vultron_boot_report), which writes one "page-boot:" line to
         startup.log for support and the installed acceptance.
 
    Exposes `window.BootGuard`: state(), verdict(), summaryLine(), report(), check(), render(). Node-requirable for
@@ -61,7 +61,7 @@
   // backoff schedule for the shared/ catalog (ms between attempts). ~27 s total: the desktop shell waits up
   // to ~25 s for the sidecar port, so a boot that races the engine settles inside this window.
   const RETRY_WAITS = [800, 2000, 4000, 8000, 12000];
-  const RELOAD_KEY = 'starnet.bootguard.autoreload';   // sessionStorage: bounded auto-reloads per tab
+  const RELOAD_KEY = 'vultron.bootguard.autoreload';   // sessionStorage: bounded auto-reloads per tab
   const RELOAD_MAX = 2;                                 // a flapping engine gets the banner, never a reload loop
 
   /* THE CRITICAL SET — module global → the file that defines it. Chosen from what app.js already guards with
@@ -92,7 +92,7 @@
   function isStationScript(s) {
     // Every authored station module lives below one of these three roots. Public hosts may append their own
     // analytics/challenge scripts (for example Cloudflare's /beacon.min.js); a blocked optional host script is
-    // not evidence that StarNet failed to boot. Keep the allowlist structural so real app/shared 404s remain loud.
+    // not evidence that Vultron failed to boot. Keep the allowlist structural so real app/shared 404s remain loud.
     return /^(?:app|js|shared)\//.test(shortPath(s));
   }
   // Catalog retry retained for browser/dev service startup; failure does not prove engine health.
@@ -370,7 +370,7 @@
   }
   function report() {
     const L = [];
-    L.push('STARNET BOOT GUARD (page-side — measured by the app window itself)');
+    L.push('VULTRON BOOT GUARD (page-side — measured by the app window itself)');
     L.push('when:           ' + new Date().toISOString());
     L.push('page:           ' + String((root.location && root.location.pathname) || '/'));
     L.push('boot check:     ' + bootVerdict());
@@ -416,12 +416,12 @@
     const head = doc.createElement('div'); head.className = 'bgf-head';
     const below = floorMissing(), old = below.length > 0;
     const mac = isMacUA();
-    head.textContent = old ? (mac ? '▮ STARNET NEEDS A NEWER macOS' : '▮ STARNET NEEDS A NEWER WEB ENGINE') : '▮ STATION FAILED TO BOOT';
+    head.textContent = old ? (mac ? '▮ VULTRON NEEDS A NEWER macOS' : '▮ VULTRON NEEDS A NEWER WEB ENGINE') : '▮ STATION FAILED TO BOOT';
     const lead = doc.createElement('div'); lead.className = 'bgf-lead';
     lead.textContent = old
       ? (mac
-        ? 'this Mac’s built-in web engine is too old to run StarNet. StarNet needs macOS ' + macName(FLOOR.macos) + ' or later with Safari ' + FLOOR.safari + ' or newer — macOS ' + macName(FLOOR.macosWithFloor) + ' or later has it built in. nothing is broken and your station is untouched: update macOS (or Safari) in System Settings, then reopen StarNet.'
-        : 'this computer’s web engine is too old to run StarNet (it has no ' + below.join(', ') + '). nothing is broken and your station is untouched: update the system web engine (WebKitGTK on Linux, WebView2 on Windows), then reopen StarNet.')
+        ? 'this Mac’s built-in web engine is too old to run Vultron. Vultron needs macOS ' + macName(FLOOR.macos) + ' or later with Safari ' + FLOOR.safari + ' or newer — macOS ' + macName(FLOOR.macosWithFloor) + ' or later has it built in. nothing is broken and your station is untouched: update macOS (or Safari) in System Settings, then reopen Vultron.'
+        : 'this computer’s web engine is too old to run Vultron (it has no ' + below.join(', ') + '). nothing is broken and your station is untouched: update the system web engine (WebKitGTK on Linux, WebView2 on Windows), then reopen Vultron.')
       : 'the app window loaded, but a required module did not. this is a broken or blocked file, not your station — your saved station has not been changed by this screen.';
     const list = doc.createElement('ul'); list.className = 'bgf-list';
     why.forEach(w => { const li = doc.createElement('li'); li.textContent = w; list.appendChild(li); });
@@ -474,7 +474,7 @@
         missing: state.missing.slice(0, 32).map(m => m.name),
         belowFloor: belowFloor()
       };
-      const p = core.invoke('starnet_boot_report', { report });
+      const p = core.invoke('vultron_boot_report', { report });
       if (p && typeof p.then === 'function') p.then(null, function () {});
     } catch (_) {}
   }

@@ -3,7 +3,7 @@
    workspace + profile, no provider call ever leaves the machine). Locks POST /api/providers/connect + /connect/take:
      1. what is not a key provider (a sign-in, credits, Ollama, Claude Code), an unknown one, or a key provider with no key
         is refused before anything moves
-     2. no StarNet page: a browser/terminal station answers { code: 'no-page' } (the terminal then proves the key and hands
+     2. no Vultron page: a browser/terminal station answers { code: 'no-page' } (the terminal then proves the key and hands
         it to /api/providers/engine-key — the store this station's runs read) — and that path really connects a provider
      3. a page connected: the bus carries only a one-time SLOT (never the key — every page and listener hears the bus); the
         page collects the key once (a second take, or one after the answer, finds nothing); its answer is the route's
@@ -15,7 +15,7 @@ const apitickets = require('../sidecar/apitickets.js');
 const { SidecarFixture } = require('./helpers/sidecar-fixture.js');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-// a StarNet PAGE on the station's bus (an SSE ticket, as the app's EventSource signs in); onCommand sees each station.command
+// a Vultron PAGE on the station's bus (an SSE ticket, as the app's EventSource signs in); onCommand sees each station.command
 function page(fixture, onCommand) {
   const p = '/api/channels/events?ticket=' + encodeURIComponent(apitickets.mint(fixture.token, 'sse', apitickets.SCOPE_SSE, { now: Date.now() }));
   let raw = '';
@@ -34,7 +34,7 @@ function page(fixture, onCommand) {
   req.on('error', () => {}); req.end();
   return { raw: () => raw, close: () => { try { req.destroy(); } catch (_) {} } };
 }
-const ENV = { STARNET_REMOTE_RELAY: 'off', SKYNET_REMOTE_RELAY: 'off' };
+const ENV = { VULTRON_REMOTE_RELAY: 'off', SKYNET_REMOTE_RELAY: 'off' };
 const KEY = 'gsk_connect-e2e-SECRET-0123456789';
 
 (async () => {
@@ -44,7 +44,7 @@ const KEY = 'gsk_connect-e2e-SECRET-0123456789';
     const connect = body => fixture.json('POST', '/api/providers/connect', body);
 
     /* 1 */
-    for (const [b, why] of [[{ provider: 'codex', key: 'x' }, 'a sign-in'], [{ provider: 'starnet', key: 'x' }, 'credits'], [{ provider: 'ollama', key: 'x' }, 'Ollama'], [{ provider: 'claude-cli', key: 'x' }, 'Claude Code']]) {
+    for (const [b, why] of [[{ provider: 'codex', key: 'x' }, 'a sign-in'], [{ provider: 'vultron', key: 'x' }, 'credits'], [{ provider: 'ollama', key: 'x' }, 'Ollama'], [{ provider: 'claude-cli', key: 'x' }, 'Claude Code']]) {
       const r = await connect(b);
       A.ok(r.status === 400 && /does not take an API key/.test(r.body.error), why + ': no key to take — ' + JSON.stringify(r.body));
     }

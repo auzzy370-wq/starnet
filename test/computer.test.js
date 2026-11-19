@@ -62,20 +62,20 @@ const ATTENDED = { surface: 'interactive', isTask: true, ownerTrusted: true, rem
   A.eq(driver.log[5].action, 'type', 'type action routed to driver');
   A.eq(driver.log[7].action, 'hotkey', 'hotkey action routed to driver');
   A.eq(T.win32DriverRequested({}), false, 'local win32 desktop driver is opt-in');
-  A.eq(T.win32DriverRequested({ STARNET_COMPUTER_DRIVER: 'win32' }), true, 'STARNET_COMPUTER_DRIVER=win32 enables local desktop driver');
+  A.eq(T.win32DriverRequested({ VULTRON_COMPUTER_DRIVER: 'win32' }), true, 'VULTRON_COMPUTER_DRIVER=win32 enables local desktop driver');
   A.eq(T.win32DriverRequested({ SKYNET_COMPUTER_DRIVER: 'true' }), true, 'legacy SKYNET_COMPUTER_DRIVER=true enables local desktop driver');
   A.eq(typeof C._internals.makeWin32DesktopDriver, 'function', 'computer tool exposes local desktop driver internals for tests');
 
   // driver activation: desktop-shell presence is NEVER authority. A reviewed explicit opt-in is
   // necessary but still not sufficient without the per-call attended lease above.
   A.eq(T.win32DriverActive({}, 'win32'), false, 'bare win32 server run keeps the safe no-driver stub');
-  A.eq(T.win32DriverActive({ STARNET_DESKTOP_SHELL: '1' }, 'win32'), false, 'desktop shell marker alone never activates physical input');
-  A.eq(T.win32DriverActive({ STARNET_DESKTOP_SHELL: '1' }, 'linux'), false, 'non-win32 desktop shell does NOT activate the win32 driver');
-  A.eq(T.win32DriverActive({ STARNET_DESKTOP_SHELL: '1', STARNET_COMPUTER_DRIVER: '0' }, 'win32'), false, 'explicit disable overrides the desktop-shell default');
-  A.eq(T.win32DriverActive({ STARNET_DESKTOP_SHELL: '1', STARNET_COMPUTER_DRIVER: 'win32' }, 'win32'), true, 'desktop host can load the native driver while the lease still gates every call');
-  A.eq(T.win32DriverActive({ STARNET_COMPUTER_DRIVER: 'win32' }, 'linux'), false, 'win32 driver can never activate off Windows');
+  A.eq(T.win32DriverActive({ VULTRON_DESKTOP_SHELL: '1' }, 'win32'), false, 'desktop shell marker alone never activates physical input');
+  A.eq(T.win32DriverActive({ VULTRON_DESKTOP_SHELL: '1' }, 'linux'), false, 'non-win32 desktop shell does NOT activate the win32 driver');
+  A.eq(T.win32DriverActive({ VULTRON_DESKTOP_SHELL: '1', VULTRON_COMPUTER_DRIVER: '0' }, 'win32'), false, 'explicit disable overrides the desktop-shell default');
+  A.eq(T.win32DriverActive({ VULTRON_DESKTOP_SHELL: '1', VULTRON_COMPUTER_DRIVER: 'win32' }, 'win32'), true, 'desktop host can load the native driver while the lease still gates every call');
+  A.eq(T.win32DriverActive({ VULTRON_COMPUTER_DRIVER: 'win32' }, 'linux'), false, 'win32 driver can never activate off Windows');
 
-  // RUN-CONTEXT ESCAPE TEST: no normal StarNet task/autonomous/test/missing-context call may
+  // RUN-CONTEXT ESCAPE TEST: no normal Vultron task/autonomous/test/missing-context call may
   // reach even an injected fake driver. Full/standing consent is intentionally irrelevant here.
   {
     const isolated = fakeDriver();
@@ -100,13 +100,13 @@ const ATTENDED = { surface: 'interactive', isTask: true, ownerTrusted: true, rem
     await FT.run({ action: 'type', text: 'hi', expectApp: 'notepad' }, ATTENDED);
     A.eq(fgDriver.log.length, 2, 'mismatched expectApp is advisory and does not narrow remote-owner control');
 
-    // typing into StarNet's own window is always refused, even without expectApp
+    // typing into Vultron's own window is always refused, even without expectApp
     const selfDriver = fakeDriver();
-    selfDriver.foreground = async () => ({ title: 'STARNET — station', process: 'msedge' });
+    selfDriver.foreground = async () => ({ title: 'VULTRON — station', process: 'msedge' });
     const ST = makeComputerTools({ driver: selfDriver, allowPhysicalInput: true }).useTool;
     await ST.run({ action: 'type', text: 'hi' }, ATTENDED);
     await ST.run({ action: 'hotkey', keys: ['Ctrl', 'l'] }, ATTENDED);
-    A.eq(selfDriver.log.length, 2, 'the paired owner may intentionally control the StarNet window too');
+    A.eq(selfDriver.log.length, 2, 'the paired owner may intentionally control the Vultron window too');
 
     // mouse/screenshot are NOT focus-gated (clicking is how you restore focus)
     const clicked = await ST.run({ action: 'click', x: 5, y: 5 }, ATTENDED);
@@ -162,29 +162,29 @@ const ATTENDED = { surface: 'interactive', isTask: true, ownerTrusted: true, rem
     A.ok(/user-control denied|no run authority/.test(r.content), 'missing authority error is explicit');
   }
 
-  // STARNET IS NEVER DRIVEN THROUGH THE SCREEN: a Full Power run's click/keystroke that lands in StarNet's own window is
+  // VULTRON IS NEVER DRIVEN THROUGH THE SCREEN: a Full Power run's click/keystroke that lands in Vultron's own window is
   // refused before the driver moves anything, and the refusal names the station tools that do the job in the background
   {
     const FULL = { unrestrictedHost: true, inputMode: 'full-power', surface: 'interactive', isTask: true };
     const d = fakeDriver();
-    let at = { title: 'StarNet', process: 'skynet-desktop', pid: 3184 };
+    let at = { title: 'Vultron', process: 'skynet-desktop', pid: 3184 };
     let fg = { title: 'Untitled - Notepad', process: 'notepad', pid: 77 };
     d.windowAt = async () => at;
     d.foreground = async () => fg;
     const GT = makeComputerTools({ driver: d, allowPhysicalInput: true, selfPids: [3184] }).useTool;
-    await rejects(GT.run({ action: 'click', x: 166, y: 998 }, FULL), /StarNet itself.*NOT sent.*station builder/, 'a click on the desktop shell window is refused and points at the station builder');
+    await rejects(GT.run({ action: 'click', x: 166, y: 998 }, FULL), /Vultron itself.*NOT sent.*station builder/, 'a click on the desktop shell window is refused and points at the station builder');
     at = { title: 'whatever', process: 'renamed', pid: 3184 };
-    await rejects(GT.run({ action: 'double_click', x: 1, y: 1 }, FULL), /StarNet itself/, 'the shell pid alone identifies StarNet (structural, not a title guess)');
-    at = { title: 'STARNET - Google Chrome', process: 'chrome', pid: 9 };
-    await rejects(GT.run({ action: 'click', x: 1, y: 1 }, FULL), /StarNet itself/, 'StarNet open in a browser tab is StarNet too');
+    await rejects(GT.run({ action: 'double_click', x: 1, y: 1 }, FULL), /Vultron itself/, 'the shell pid alone identifies Vultron (structural, not a title guess)');
+    at = { title: 'VULTRON - Google Chrome', process: 'chrome', pid: 9 };
+    await rejects(GT.run({ action: 'click', x: 1, y: 1 }, FULL), /Vultron itself/, 'Vultron open in a browser tab is Vultron too');
     at = { title: 'Untitled - Notepad', process: 'notepad', pid: 77 };
     const dragged = await GT.run({ action: 'drag', x: 1, y: 1, dx: 0, dy: 0 }, FULL);
-    A.ok(/computer.drag ok/.test(dragged.content), 'a drag between two non-StarNet points goes through');
-    fg = { title: 'StarNet', process: 'skynet-desktop', pid: 3184 };
-    await rejects(GT.run({ action: 'type', text: 'Approved Prototype Foundry' }, FULL), /focused window is StarNet itself/, 'typing into a focused StarNet window is refused');
-    await rejects(GT.run({ action: 'hotkey', keys: ['ctrl', 'v'] }, FULL), /StarNet itself/, 'a paste hotkey into StarNet is refused');
+    A.ok(/computer.drag ok/.test(dragged.content), 'a drag between two non-Vultron points goes through');
+    fg = { title: 'Vultron', process: 'skynet-desktop', pid: 3184 };
+    await rejects(GT.run({ action: 'type', text: 'Approved Prototype Foundry' }, FULL), /focused window is Vultron itself/, 'typing into a focused Vultron window is refused');
+    await rejects(GT.run({ action: 'hotkey', keys: ['ctrl', 'v'] }, FULL), /Vultron itself/, 'a paste hotkey into Vultron is refused');
     const sent = d.log.length;
-    A.eq(sent, 1, 'only the non-StarNet drag reached the driver');
+    A.eq(sent, 1, 'only the non-Vultron drag reached the driver');
     const shot = await GT.run({ action: 'screenshot' }, FULL);
     A.ok(/computer.screenshot ok/.test(shot.content), 'looking at the screen is never refused');
     const notStar = { title: 'Notes', process: 'notepad', pid: 77 };
@@ -194,11 +194,11 @@ const ATTENDED = { surface: 'interactive', isTask: true, ownerTrusted: true, rem
     // a window probe that fails is not proof the target is safe: fail closed
     d.windowAt = async () => { throw new Error('probe crashed'); };
     await rejects(GT.run({ action: 'click', x: 3, y: 3 }, FULL), /could not confirm.*NOT sent/, 'an unreadable target window refuses the input');
-    // the paired remote owner is the user at the machine: StarNet's window stays theirs to drive
-    d.windowAt = async () => ({ title: 'StarNet', process: 'skynet-desktop', pid: 3184 });
+    // the paired remote owner is the user at the machine: Vultron's window stays theirs to drive
+    d.windowAt = async () => ({ title: 'Vultron', process: 'skynet-desktop', pid: 3184 });
     const owner = await GT.run({ action: 'click', x: 4, y: 4 }, ATTENDED);
-    A.ok(/computer.click ok/.test(owner.content), 'the paired remote owner may click StarNet');
-    A.eq(T.isSelfWindow({ title: 'StarNetwork Monitor', process: 'netmon', pid: 5 }, [3184]), false, 'a title that only starts with the letters is not StarNet');
+    A.ok(/computer.click ok/.test(owner.content), 'the paired remote owner may click Vultron');
+    A.eq(T.isSelfWindow({ title: 'Vultronwork Monitor', process: 'netmon', pid: 5 }, [3184]), false, 'a title that only starts with the letters is not Vultron');
   }
 
   A.report('computer.test');

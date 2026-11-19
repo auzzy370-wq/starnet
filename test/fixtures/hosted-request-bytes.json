@@ -10,7 +10,7 @@
           "authorization": "Bearer sk-test-openai-000000",
           "content-type": "application/json"
         },
-        "body": "{\"model\":\"gpt-5.4\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a StarNet agent. Answer briefly.\"},{\"role\":\"user\",\"content\":\"hello there\"}],\"stream\":true,\"stream_options\":{\"include_usage\":true}}"
+        "body": "{\"model\":\"gpt-5.4\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a Vultron agent. Answer briefly.\"},{\"role\":\"user\",\"content\":\"hello there\"}],\"stream\":true,\"stream_options\":{\"include_usage\":true}}"
       }
     ],
     "error": ""
@@ -26,7 +26,7 @@
           "authorization": "Bearer sk-test-openai-000000",
           "content-type": "application/json"
         },
-        "body": "{\"model\":\"gpt-5.4\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a StarNet agent. Answer briefly.\"},{\"role\":\"user\",\"content\":\"read notes.md and search for its title\"},{\"role\":\"assistant\",\"content\":\"\",\"tool_calls\":[{\"id\":\"call_1\",\"type\":\"function\",\"function\":{\"name\":\"fs_read\",\"arguments\":\"{\\\"path\\\":\\\"notes.md\\\"}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_1\",\"content\":\"# Station notes\\nline two\"},{\"role\":\"user\",\"content\":\"now search\"}],\"stream\":true,\"stream_options\":{\"include_usage\":true},\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"fs_read\",\"description\":\"Read a file in the workspace.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"workspace path\"}},\"required\":[\"path\"]}}},{\"type\":\"function\",\"function\":{\"name\":\"web_search\",\"description\":\"Search the web.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"query\":{\"type\":\"string\"},\"limit\":{\"type\":\"integer\"}},\"required\":[\"query\"]}}}],\"tool_choice\":\"auto\"}"
+        "body": "{\"model\":\"gpt-5.4\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a Vultron agent. Answer briefly.\"},{\"role\":\"user\",\"content\":\"read notes.md and search for its title\"},{\"role\":\"assistant\",\"content\":\"\",\"tool_calls\":[{\"id\":\"call_1\",\"type\":\"function\",\"function\":{\"name\":\"fs_read\",\"arguments\":\"{\\\"path\\\":\\\"notes.md\\\"}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_1\",\"content\":\"# Station notes\\nline two\"},{\"role\":\"user\",\"content\":\"now search\"}],\"stream\":true,\"stream_options\":{\"include_usage\":true},\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"fs_read\",\"description\":\"Read a file in the workspace.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"workspace path\"}},\"required\":[\"path\"]}}},{\"type\":\"function\",\"function\":{\"name\":\"web_search\",\"description\":\"Search the web.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"query\":{\"type\":\"string\"},\"limit\":{\"type\":\"integer\"}},\"required\":[\"query\"]}}}],\"tool_choice\":\"auto\"}"
       }
     ],
     "error": ""
@@ -42,7 +42,7 @@
           "authorization": "Bearer sk-test-openai-000000",
           "content-type": "application/json"
         },
-        "body": "{\"model\":\"gpt-5.4\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a StarNet agent. Answer briefly.\"},{\"role\":\"user\",\"content\":\"think about 17 * 23\"}],\"stream\":true,\"stream_options\":{\"include_usage\":true},\"reasoning_effort\":\"high\"}"
+        "body": "{\"model\":\"gpt-5.4\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a Vultron agent. Answer briefly.\"},{\"role\":\"user\",\"content\":\"think about 17 * 23\"}],\"stream\":true,\"stream_options\":{\"include_usage\":true},\"reasoning_effort\":\"high\"}"
       }
     ],
     "error": ""
@@ -58,7 +58,7 @@
           "authorization": "Bearer sk-test-openai-000000",
           "content-type": "application/json"
         },
-        "body": "{\"model\":\"gpt-5.4\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a StarNet agent. Answer briefly.\"},{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"what is in this picture?\"},{\"type\":\"image_url\",\"image_url\":{\"url\":\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==\"}}]}],\"stream\":true,\"stream_options\":{\"include_usage\":true}}"
+        "body": "{\"model\":\"gpt-5.4\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a Vultron agent. Answer briefly.\"},{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"what is in this picture?\"},{\"type\":\"image_url\",\"image_url\":{\"url\":\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==\"}}]}],\"stream\":true,\"stream_options\":{\"include_usage\":true}}"
       }
     ],
     "error": ""
@@ -72,10 +72,10 @@
         "headers": {
           "authorization": "Bearer sk-or-test-000000",
           "content-type": "application/json",
-          "http-referer": "https://starnet.example",
-          "x-title": "STARNET"
+          "http-referer": "https://vultron.example",
+          "x-title": "VULTRON"
         },
-        "body": "{\"model\":\"anthropic/claude-sonnet-4.5\",\"messages\":[{\"role\":\"system\",\"content\":[{\"type\":\"text\",\"text\":\"You are a StarNet agent. Answer briefly.\",\"cache_control\":{\"type\":\"ephemeral\"}}]},{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"hello there\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"stream\":true,\"usage\":{\"include\":true},\"reasoning\":{\"effort\":\"medium\"}}"
+        "body": "{\"model\":\"anthropic/claude-sonnet-4.5\",\"messages\":[{\"role\":\"system\",\"content\":[{\"type\":\"text\",\"text\":\"You are a Vultron agent. Answer briefly.\",\"cache_control\":{\"type\":\"ephemeral\"}}]},{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"hello there\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"stream\":true,\"usage\":{\"include\":true},\"reasoning\":{\"effort\":\"medium\"}}"
       }
     ],
     "error": ""
@@ -89,10 +89,10 @@
         "headers": {
           "authorization": "Bearer sk-or-test-000000",
           "content-type": "application/json",
-          "http-referer": "https://starnet.example",
-          "x-title": "STARNET"
+          "http-referer": "https://vultron.example",
+          "x-title": "VULTRON"
         },
-        "body": "{\"model\":\"anthropic/claude-sonnet-4.5\",\"messages\":[{\"role\":\"system\",\"content\":[{\"type\":\"text\",\"text\":\"You are a StarNet agent. Answer briefly.\",\"cache_control\":{\"type\":\"ephemeral\"}}]},{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"read notes.md and search for its title\",\"cache_control\":{\"type\":\"ephemeral\"}}]},{\"role\":\"assistant\",\"content\":\"\",\"tool_calls\":[{\"id\":\"call_1\",\"type\":\"function\",\"function\":{\"name\":\"fs_read\",\"arguments\":\"{\\\"path\\\":\\\"notes.md\\\"}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_1\",\"content\":[{\"type\":\"text\",\"text\":\"# Station notes\\nline two\",\"cache_control\":{\"type\":\"ephemeral\"}}]},{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"now search\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"stream\":true,\"usage\":{\"include\":true},\"reasoning\":{\"effort\":\"medium\"},\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"fs_read\",\"description\":\"Read a file in the workspace.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"workspace path\"}},\"required\":[\"path\"]}}},{\"type\":\"function\",\"function\":{\"name\":\"web_search\",\"description\":\"Search the web.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"query\":{\"type\":\"string\"},\"limit\":{\"type\":\"integer\"}},\"required\":[\"query\"]}}}],\"tool_choice\":\"auto\"}"
+        "body": "{\"model\":\"anthropic/claude-sonnet-4.5\",\"messages\":[{\"role\":\"system\",\"content\":[{\"type\":\"text\",\"text\":\"You are a Vultron agent. Answer briefly.\",\"cache_control\":{\"type\":\"ephemeral\"}}]},{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"read notes.md and search for its title\",\"cache_control\":{\"type\":\"ephemeral\"}}]},{\"role\":\"assistant\",\"content\":\"\",\"tool_calls\":[{\"id\":\"call_1\",\"type\":\"function\",\"function\":{\"name\":\"fs_read\",\"arguments\":\"{\\\"path\\\":\\\"notes.md\\\"}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_1\",\"content\":[{\"type\":\"text\",\"text\":\"# Station notes\\nline two\",\"cache_control\":{\"type\":\"ephemeral\"}}]},{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"now search\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"stream\":true,\"usage\":{\"include\":true},\"reasoning\":{\"effort\":\"medium\"},\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"fs_read\",\"description\":\"Read a file in the workspace.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"workspace path\"}},\"required\":[\"path\"]}}},{\"type\":\"function\",\"function\":{\"name\":\"web_search\",\"description\":\"Search the web.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"query\":{\"type\":\"string\"},\"limit\":{\"type\":\"integer\"}},\"required\":[\"query\"]}}}],\"tool_choice\":\"auto\"}"
       }
     ],
     "error": ""
@@ -106,10 +106,10 @@
         "headers": {
           "authorization": "Bearer sk-or-test-000000",
           "content-type": "application/json",
-          "http-referer": "https://starnet.example",
-          "x-title": "STARNET"
+          "http-referer": "https://vultron.example",
+          "x-title": "VULTRON"
         },
-        "body": "{\"model\":\"anthropic/claude-sonnet-4.5\",\"messages\":[{\"role\":\"system\",\"content\":[{\"type\":\"text\",\"text\":\"You are a StarNet agent. Answer briefly.\",\"cache_control\":{\"type\":\"ephemeral\"}}]},{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"think about 17 * 23\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"stream\":true,\"usage\":{\"include\":true},\"reasoning\":{\"effort\":\"high\"}}"
+        "body": "{\"model\":\"anthropic/claude-sonnet-4.5\",\"messages\":[{\"role\":\"system\",\"content\":[{\"type\":\"text\",\"text\":\"You are a Vultron agent. Answer briefly.\",\"cache_control\":{\"type\":\"ephemeral\"}}]},{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"think about 17 * 23\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"stream\":true,\"usage\":{\"include\":true},\"reasoning\":{\"effort\":\"high\"}}"
       }
     ],
     "error": ""
@@ -123,10 +123,10 @@
         "headers": {
           "authorization": "Bearer sk-or-test-000000",
           "content-type": "application/json",
-          "http-referer": "https://starnet.example",
-          "x-title": "STARNET"
+          "http-referer": "https://vultron.example",
+          "x-title": "VULTRON"
         },
-        "body": "{\"model\":\"anthropic/claude-sonnet-4.5\",\"messages\":[{\"role\":\"system\",\"content\":[{\"type\":\"text\",\"text\":\"You are a StarNet agent. Answer briefly.\",\"cache_control\":{\"type\":\"ephemeral\"}}]},{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"what is in this picture?\"},{\"type\":\"image_url\",\"image_url\":{\"url\":\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==\"}}]}],\"stream\":true,\"usage\":{\"include\":true},\"reasoning\":{\"effort\":\"medium\"}}"
+        "body": "{\"model\":\"anthropic/claude-sonnet-4.5\",\"messages\":[{\"role\":\"system\",\"content\":[{\"type\":\"text\",\"text\":\"You are a Vultron agent. Answer briefly.\",\"cache_control\":{\"type\":\"ephemeral\"}}]},{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"what is in this picture?\"},{\"type\":\"image_url\",\"image_url\":{\"url\":\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==\"}}]}],\"stream\":true,\"usage\":{\"include\":true},\"reasoning\":{\"effort\":\"medium\"}}"
       }
     ],
     "error": ""
@@ -143,7 +143,7 @@
           "content-type": "application/json",
           "x-api-key": "sk-ant-test-000000"
         },
-        "body": "{\"model\":\"claude-sonnet-4-5\",\"max_tokens\":32000,\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"hello there\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"stream\":true,\"thinking\":{\"type\":\"enabled\",\"budget_tokens\":8000},\"system\":[{\"type\":\"text\",\"text\":\"You are a StarNet agent. Answer briefly.\",\"cache_control\":{\"type\":\"ephemeral\"}}]}"
+        "body": "{\"model\":\"claude-sonnet-4-5\",\"max_tokens\":32000,\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"hello there\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"stream\":true,\"thinking\":{\"type\":\"enabled\",\"budget_tokens\":8000},\"system\":[{\"type\":\"text\",\"text\":\"You are a Vultron agent. Answer briefly.\",\"cache_control\":{\"type\":\"ephemeral\"}}]}"
       }
     ],
     "error": ""
@@ -160,7 +160,7 @@
           "content-type": "application/json",
           "x-api-key": "sk-ant-test-000000"
         },
-        "body": "{\"model\":\"claude-sonnet-4-5\",\"max_tokens\":32000,\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"read notes.md and search for its title\",\"cache_control\":{\"type\":\"ephemeral\"}}]},{\"role\":\"assistant\",\"content\":[{\"type\":\"tool_use\",\"id\":\"call_1\",\"name\":\"fs_read\",\"input\":{\"path\":\"notes.md\"},\"cache_control\":{\"type\":\"ephemeral\"}}]},{\"role\":\"user\",\"content\":[{\"type\":\"tool_result\",\"tool_use_id\":\"call_1\",\"content\":\"# Station notes\\nline two\"},{\"type\":\"text\",\"text\":\"now search\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"stream\":true,\"thinking\":{\"type\":\"enabled\",\"budget_tokens\":8000},\"tools\":[{\"name\":\"fs_read\",\"description\":\"Read a file in the workspace.\",\"input_schema\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"workspace path\"}},\"required\":[\"path\"]}},{\"name\":\"web_search\",\"description\":\"Search the web.\",\"input_schema\":{\"type\":\"object\",\"properties\":{\"query\":{\"type\":\"string\"},\"limit\":{\"type\":\"integer\"}},\"required\":[\"query\"]}}],\"system\":[{\"type\":\"text\",\"text\":\"You are a StarNet agent. Answer briefly.\",\"cache_control\":{\"type\":\"ephemeral\"}}]}"
+        "body": "{\"model\":\"claude-sonnet-4-5\",\"max_tokens\":32000,\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"read notes.md and search for its title\",\"cache_control\":{\"type\":\"ephemeral\"}}]},{\"role\":\"assistant\",\"content\":[{\"type\":\"tool_use\",\"id\":\"call_1\",\"name\":\"fs_read\",\"input\":{\"path\":\"notes.md\"},\"cache_control\":{\"type\":\"ephemeral\"}}]},{\"role\":\"user\",\"content\":[{\"type\":\"tool_result\",\"tool_use_id\":\"call_1\",\"content\":\"# Station notes\\nline two\"},{\"type\":\"text\",\"text\":\"now search\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"stream\":true,\"thinking\":{\"type\":\"enabled\",\"budget_tokens\":8000},\"tools\":[{\"name\":\"fs_read\",\"description\":\"Read a file in the workspace.\",\"input_schema\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"workspace path\"}},\"required\":[\"path\"]}},{\"name\":\"web_search\",\"description\":\"Search the web.\",\"input_schema\":{\"type\":\"object\",\"properties\":{\"query\":{\"type\":\"string\"},\"limit\":{\"type\":\"integer\"}},\"required\":[\"query\"]}}],\"system\":[{\"type\":\"text\",\"text\":\"You are a Vultron agent. Answer briefly.\",\"cache_control\":{\"type\":\"ephemeral\"}}]}"
       }
     ],
     "error": ""
@@ -177,7 +177,7 @@
           "content-type": "application/json",
           "x-api-key": "sk-ant-test-000000"
         },
-        "body": "{\"model\":\"claude-sonnet-4-5\",\"max_tokens\":32000,\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"think about 17 * 23\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"stream\":true,\"thinking\":{\"type\":\"enabled\",\"budget_tokens\":16000},\"system\":[{\"type\":\"text\",\"text\":\"You are a StarNet agent. Answer briefly.\",\"cache_control\":{\"type\":\"ephemeral\"}}]}"
+        "body": "{\"model\":\"claude-sonnet-4-5\",\"max_tokens\":32000,\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"think about 17 * 23\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"stream\":true,\"thinking\":{\"type\":\"enabled\",\"budget_tokens\":16000},\"system\":[{\"type\":\"text\",\"text\":\"You are a Vultron agent. Answer briefly.\",\"cache_control\":{\"type\":\"ephemeral\"}}]}"
       }
     ],
     "error": ""
@@ -194,7 +194,7 @@
           "content-type": "application/json",
           "x-api-key": "sk-ant-test-000000"
         },
-        "body": "{\"model\":\"claude-sonnet-4-5\",\"max_tokens\":32000,\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"what is in this picture?\"},{\"type\":\"image\",\"source\":{\"type\":\"base64\",\"media_type\":\"image/png\",\"data\":\"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==\"},\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"stream\":true,\"thinking\":{\"type\":\"enabled\",\"budget_tokens\":8000},\"system\":[{\"type\":\"text\",\"text\":\"You are a StarNet agent. Answer briefly.\",\"cache_control\":{\"type\":\"ephemeral\"}}]}"
+        "body": "{\"model\":\"claude-sonnet-4-5\",\"max_tokens\":32000,\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"what is in this picture?\"},{\"type\":\"image\",\"source\":{\"type\":\"base64\",\"media_type\":\"image/png\",\"data\":\"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==\"},\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"stream\":true,\"thinking\":{\"type\":\"enabled\",\"budget_tokens\":8000},\"system\":[{\"type\":\"text\",\"text\":\"You are a Vultron agent. Answer briefly.\",\"cache_control\":{\"type\":\"ephemeral\"}}]}"
       }
     ],
     "error": ""
@@ -210,7 +210,7 @@
           "content-type": "application/json",
           "x-goog-api-key": "gemini-test-key-000000"
         },
-        "body": "{\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"hello there\"}]}],\"systemInstruction\":{\"parts\":[{\"text\":\"You are a StarNet agent. Answer briefly.\"}]},\"generationConfig\":{\"thinkingConfig\":{\"thinkingBudget\":8192}}}"
+        "body": "{\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"hello there\"}]}],\"systemInstruction\":{\"parts\":[{\"text\":\"You are a Vultron agent. Answer briefly.\"}]},\"generationConfig\":{\"thinkingConfig\":{\"thinkingBudget\":8192}}}"
       }
     ],
     "error": ""
@@ -226,7 +226,7 @@
           "content-type": "application/json",
           "x-goog-api-key": "gemini-test-key-000000"
         },
-        "body": "{\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"read notes.md and search for its title\"}]},{\"role\":\"model\",\"parts\":[{\"functionCall\":{\"name\":\"fs_read\",\"args\":{\"path\":\"notes.md\"}}}]},{\"role\":\"user\",\"parts\":[{\"functionResponse\":{\"name\":\"fs_read\",\"response\":{\"content\":\"# Station notes\\nline two\"}}},{\"text\":\"now search\"}]}],\"systemInstruction\":{\"parts\":[{\"text\":\"You are a StarNet agent. Answer briefly.\"}]},\"tools\":[{\"functionDeclarations\":[{\"name\":\"fs_read\",\"description\":\"Read a file in the workspace.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"workspace path\"}},\"required\":[\"path\"]}},{\"name\":\"web_search\",\"description\":\"Search the web.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"query\":{\"type\":\"string\"},\"limit\":{\"type\":\"integer\"}},\"required\":[\"query\"]}}]}],\"generationConfig\":{\"thinkingConfig\":{\"thinkingBudget\":8192}}}"
+        "body": "{\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"read notes.md and search for its title\"}]},{\"role\":\"model\",\"parts\":[{\"functionCall\":{\"name\":\"fs_read\",\"args\":{\"path\":\"notes.md\"}}}]},{\"role\":\"user\",\"parts\":[{\"functionResponse\":{\"name\":\"fs_read\",\"response\":{\"content\":\"# Station notes\\nline two\"}}},{\"text\":\"now search\"}]}],\"systemInstruction\":{\"parts\":[{\"text\":\"You are a Vultron agent. Answer briefly.\"}]},\"tools\":[{\"functionDeclarations\":[{\"name\":\"fs_read\",\"description\":\"Read a file in the workspace.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"workspace path\"}},\"required\":[\"path\"]}},{\"name\":\"web_search\",\"description\":\"Search the web.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"query\":{\"type\":\"string\"},\"limit\":{\"type\":\"integer\"}},\"required\":[\"query\"]}}]}],\"generationConfig\":{\"thinkingConfig\":{\"thinkingBudget\":8192}}}"
       }
     ],
     "error": ""
@@ -242,7 +242,7 @@
           "content-type": "application/json",
           "x-goog-api-key": "gemini-test-key-000000"
         },
-        "body": "{\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"think about 17 * 23\"}]}],\"systemInstruction\":{\"parts\":[{\"text\":\"You are a StarNet agent. Answer briefly.\"}]},\"generationConfig\":{\"thinkingConfig\":{\"thinkingBudget\":16384}}}"
+        "body": "{\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"think about 17 * 23\"}]}],\"systemInstruction\":{\"parts\":[{\"text\":\"You are a Vultron agent. Answer briefly.\"}]},\"generationConfig\":{\"thinkingConfig\":{\"thinkingBudget\":16384}}}"
       }
     ],
     "error": ""
@@ -258,7 +258,7 @@
           "content-type": "application/json",
           "x-goog-api-key": "gemini-test-key-000000"
         },
-        "body": "{\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"what is in this picture?\"},{\"inlineData\":{\"mimeType\":\"image/png\",\"data\":\"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==\"}}]}],\"systemInstruction\":{\"parts\":[{\"text\":\"You are a StarNet agent. Answer briefly.\"}]},\"generationConfig\":{\"thinkingConfig\":{\"thinkingBudget\":8192}}}"
+        "body": "{\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"what is in this picture?\"},{\"inlineData\":{\"mimeType\":\"image/png\",\"data\":\"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==\"}}]}],\"systemInstruction\":{\"parts\":[{\"text\":\"You are a Vultron agent. Answer briefly.\"}]},\"generationConfig\":{\"thinkingConfig\":{\"thinkingBudget\":8192}}}"
       }
     ],
     "error": ""
@@ -277,7 +277,7 @@
           "originator": "codex_cli_rs",
           "session_id": "09bbaa25-55df-3a4c-784c-669c04ec7b03"
         },
-        "body": "{\"model\":\"gpt-5.4-codex\",\"instructions\":\"You are a StarNet agent. Answer briefly.\",\"input\":[{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hello there\"}]}],\"store\":false,\"stream\":true,\"reasoning\":{\"effort\":\"low\",\"summary\":\"auto\"},\"include\":[\"reasoning.encrypted_content\"],\"prompt_cache_key\":\"09bbaa25-55df-3a4c-784c-669c04ec7b03\"}"
+        "body": "{\"model\":\"gpt-5.4-codex\",\"instructions\":\"You are a Vultron agent. Answer briefly.\",\"input\":[{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hello there\"}]}],\"store\":false,\"stream\":true,\"reasoning\":{\"effort\":\"low\",\"summary\":\"auto\"},\"include\":[\"reasoning.encrypted_content\"],\"prompt_cache_key\":\"09bbaa25-55df-3a4c-784c-669c04ec7b03\"}"
       }
     ],
     "error": ""
@@ -296,7 +296,7 @@
           "originator": "codex_cli_rs",
           "session_id": "09bbaa25-55df-3a4c-784c-669c04ec7b03"
         },
-        "body": "{\"model\":\"gpt-5.4-codex\",\"instructions\":\"You are a StarNet agent. Answer briefly.\",\"input\":[{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"read notes.md and search for its title\"}]},{\"type\":\"function_call\",\"call_id\":\"call_1\",\"name\":\"fs_read\",\"arguments\":\"{\\\"path\\\":\\\"notes.md\\\"}\"},{\"type\":\"function_call_output\",\"call_id\":\"call_1\",\"output\":\"# Station notes\\nline two\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"now search\"}]}],\"store\":false,\"stream\":true,\"reasoning\":{\"effort\":\"low\",\"summary\":\"auto\"},\"include\":[\"reasoning.encrypted_content\"],\"tools\":[{\"type\":\"function\",\"name\":\"fs_read\",\"description\":\"Read a file in the workspace.\",\"strict\":false,\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"workspace path\"}},\"required\":[\"path\"]}},{\"type\":\"function\",\"name\":\"web_search\",\"description\":\"Search the web.\",\"strict\":false,\"parameters\":{\"type\":\"object\",\"properties\":{\"query\":{\"type\":\"string\"},\"limit\":{\"type\":\"integer\"}},\"required\":[\"query\"]}}],\"tool_choice\":\"auto\",\"parallel_tool_calls\":true,\"prompt_cache_key\":\"09bbaa25-55df-3a4c-784c-669c04ec7b03\"}"
+        "body": "{\"model\":\"gpt-5.4-codex\",\"instructions\":\"You are a Vultron agent. Answer briefly.\",\"input\":[{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"read notes.md and search for its title\"}]},{\"type\":\"function_call\",\"call_id\":\"call_1\",\"name\":\"fs_read\",\"arguments\":\"{\\\"path\\\":\\\"notes.md\\\"}\"},{\"type\":\"function_call_output\",\"call_id\":\"call_1\",\"output\":\"# Station notes\\nline two\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"now search\"}]}],\"store\":false,\"stream\":true,\"reasoning\":{\"effort\":\"low\",\"summary\":\"auto\"},\"include\":[\"reasoning.encrypted_content\"],\"tools\":[{\"type\":\"function\",\"name\":\"fs_read\",\"description\":\"Read a file in the workspace.\",\"strict\":false,\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"workspace path\"}},\"required\":[\"path\"]}},{\"type\":\"function\",\"name\":\"web_search\",\"description\":\"Search the web.\",\"strict\":false,\"parameters\":{\"type\":\"object\",\"properties\":{\"query\":{\"type\":\"string\"},\"limit\":{\"type\":\"integer\"}},\"required\":[\"query\"]}}],\"tool_choice\":\"auto\",\"parallel_tool_calls\":true,\"prompt_cache_key\":\"09bbaa25-55df-3a4c-784c-669c04ec7b03\"}"
       }
     ],
     "error": ""
@@ -315,7 +315,7 @@
           "originator": "codex_cli_rs",
           "session_id": "09bbaa25-55df-3a4c-784c-669c04ec7b03"
         },
-        "body": "{\"model\":\"gpt-5.4-codex\",\"instructions\":\"You are a StarNet agent. Answer briefly.\",\"input\":[{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"think about 17 * 23\"}]}],\"store\":false,\"stream\":true,\"reasoning\":{\"effort\":\"high\",\"summary\":\"auto\"},\"include\":[\"reasoning.encrypted_content\"],\"prompt_cache_key\":\"09bbaa25-55df-3a4c-784c-669c04ec7b03\"}"
+        "body": "{\"model\":\"gpt-5.4-codex\",\"instructions\":\"You are a Vultron agent. Answer briefly.\",\"input\":[{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"think about 17 * 23\"}]}],\"store\":false,\"stream\":true,\"reasoning\":{\"effort\":\"high\",\"summary\":\"auto\"},\"include\":[\"reasoning.encrypted_content\"],\"prompt_cache_key\":\"09bbaa25-55df-3a4c-784c-669c04ec7b03\"}"
       }
     ],
     "error": ""
@@ -334,75 +334,75 @@
           "originator": "codex_cli_rs",
           "session_id": "09bbaa25-55df-3a4c-784c-669c04ec7b03"
         },
-        "body": "{\"model\":\"gpt-5.4-codex\",\"instructions\":\"You are a StarNet agent. Answer briefly.\",\"input\":[{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"what is in this picture?\"},{\"type\":\"input_image\",\"image_url\":\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==\"}]}],\"store\":false,\"stream\":true,\"reasoning\":{\"effort\":\"low\",\"summary\":\"auto\"},\"include\":[\"reasoning.encrypted_content\"],\"prompt_cache_key\":\"09bbaa25-55df-3a4c-784c-669c04ec7b03\"}"
+        "body": "{\"model\":\"gpt-5.4-codex\",\"instructions\":\"You are a Vultron agent. Answer briefly.\",\"input\":[{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"what is in this picture?\"},{\"type\":\"input_image\",\"image_url\":\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==\"}]}],\"store\":false,\"stream\":true,\"reasoning\":{\"effort\":\"low\",\"summary\":\"auto\"},\"include\":[\"reasoning.encrypted_content\"],\"prompt_cache_key\":\"09bbaa25-55df-3a4c-784c-669c04ec7b03\"}"
       }
     ],
     "error": ""
   },
   {
-    "case": "starnet/plain",
+    "case": "vultron/plain",
     "requests": [
       {
         "method": "POST",
-        "url": "https://cloud.starnet.example/v1/chat/completions",
+        "url": "https://cloud.vultron.example/v1/chat/completions",
         "headers": {
           "accept": "text/event-stream",
           "authorization": "Bearer snk-test-000000",
           "content-type": "application/json",
-          "x-starnet-run-id": "run-fixture-1"
+          "x-vultron-run-id": "run-fixture-1"
         },
-        "body": "{\"model\":\"openai/gpt-5.4\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a StarNet agent. Answer briefly.\"},{\"role\":\"user\",\"content\":\"hello there\"}],\"stream\":true,\"stream_options\":{\"include_usage\":true}}"
+        "body": "{\"model\":\"openai/gpt-5.4\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a Vultron agent. Answer briefly.\"},{\"role\":\"user\",\"content\":\"hello there\"}],\"stream\":true,\"stream_options\":{\"include_usage\":true}}"
       }
     ],
     "error": ""
   },
   {
-    "case": "starnet/tools",
+    "case": "vultron/tools",
     "requests": [
       {
         "method": "POST",
-        "url": "https://cloud.starnet.example/v1/chat/completions",
+        "url": "https://cloud.vultron.example/v1/chat/completions",
         "headers": {
           "accept": "text/event-stream",
           "authorization": "Bearer snk-test-000000",
           "content-type": "application/json",
-          "x-starnet-run-id": "run-fixture-1"
+          "x-vultron-run-id": "run-fixture-1"
         },
-        "body": "{\"model\":\"openai/gpt-5.4\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a StarNet agent. Answer briefly.\"},{\"role\":\"user\",\"content\":\"read notes.md and search for its title\"},{\"role\":\"assistant\",\"content\":\"\",\"tool_calls\":[{\"id\":\"call_1\",\"type\":\"function\",\"function\":{\"name\":\"fs_read\",\"arguments\":\"{\\\"path\\\":\\\"notes.md\\\"}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_1\",\"content\":\"# Station notes\\nline two\"},{\"role\":\"user\",\"content\":\"now search\"}],\"stream\":true,\"stream_options\":{\"include_usage\":true},\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"fs_read\",\"description\":\"Read a file in the workspace.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"workspace path\"}},\"required\":[\"path\"]}}},{\"type\":\"function\",\"function\":{\"name\":\"web_search\",\"description\":\"Search the web.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"query\":{\"type\":\"string\"},\"limit\":{\"type\":\"integer\"}},\"required\":[\"query\"]}}}],\"tool_choice\":\"auto\"}"
+        "body": "{\"model\":\"openai/gpt-5.4\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a Vultron agent. Answer briefly.\"},{\"role\":\"user\",\"content\":\"read notes.md and search for its title\"},{\"role\":\"assistant\",\"content\":\"\",\"tool_calls\":[{\"id\":\"call_1\",\"type\":\"function\",\"function\":{\"name\":\"fs_read\",\"arguments\":\"{\\\"path\\\":\\\"notes.md\\\"}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_1\",\"content\":\"# Station notes\\nline two\"},{\"role\":\"user\",\"content\":\"now search\"}],\"stream\":true,\"stream_options\":{\"include_usage\":true},\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"fs_read\",\"description\":\"Read a file in the workspace.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"workspace path\"}},\"required\":[\"path\"]}}},{\"type\":\"function\",\"function\":{\"name\":\"web_search\",\"description\":\"Search the web.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"query\":{\"type\":\"string\"},\"limit\":{\"type\":\"integer\"}},\"required\":[\"query\"]}}}],\"tool_choice\":\"auto\"}"
       }
     ],
     "error": ""
   },
   {
-    "case": "starnet/reasoning",
+    "case": "vultron/reasoning",
     "requests": [
       {
         "method": "POST",
-        "url": "https://cloud.starnet.example/v1/chat/completions",
+        "url": "https://cloud.vultron.example/v1/chat/completions",
         "headers": {
           "accept": "text/event-stream",
           "authorization": "Bearer snk-test-000000",
           "content-type": "application/json",
-          "x-starnet-run-id": "run-fixture-1"
+          "x-vultron-run-id": "run-fixture-1"
         },
-        "body": "{\"model\":\"openai/gpt-5.4\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a StarNet agent. Answer briefly.\"},{\"role\":\"user\",\"content\":\"think about 17 * 23\"}],\"stream\":true,\"stream_options\":{\"include_usage\":true},\"reasoning_effort\":\"high\"}"
+        "body": "{\"model\":\"openai/gpt-5.4\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a Vultron agent. Answer briefly.\"},{\"role\":\"user\",\"content\":\"think about 17 * 23\"}],\"stream\":true,\"stream_options\":{\"include_usage\":true},\"reasoning_effort\":\"high\"}"
       }
     ],
     "error": ""
   },
   {
-    "case": "starnet/image",
+    "case": "vultron/image",
     "requests": [
       {
         "method": "POST",
-        "url": "https://cloud.starnet.example/v1/chat/completions",
+        "url": "https://cloud.vultron.example/v1/chat/completions",
         "headers": {
           "accept": "text/event-stream",
           "authorization": "Bearer snk-test-000000",
           "content-type": "application/json",
-          "x-starnet-run-id": "run-fixture-1"
+          "x-vultron-run-id": "run-fixture-1"
         },
-        "body": "{\"model\":\"openai/gpt-5.4\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a StarNet agent. Answer briefly.\"},{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"what is in this picture?\"},{\"type\":\"image_url\",\"image_url\":{\"url\":\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==\"}}]}],\"stream\":true,\"stream_options\":{\"include_usage\":true}}"
+        "body": "{\"model\":\"openai/gpt-5.4\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a Vultron agent. Answer briefly.\"},{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"what is in this picture?\"},{\"type\":\"image_url\",\"image_url\":{\"url\":\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==\"}}]}],\"stream\":true,\"stream_options\":{\"include_usage\":true}}"
       }
     ],
     "error": ""
@@ -418,7 +418,7 @@
           "authorization": "Bearer custom-key-000000",
           "content-type": "application/json"
         },
-        "body": "{\"model\":\"m-reason\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a StarNet agent. Answer briefly.\"},{\"role\":\"user\",\"content\":\"hello there\"}],\"stream\":true,\"stream_options\":{\"include_usage\":true}}"
+        "body": "{\"model\":\"m-reason\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a Vultron agent. Answer briefly.\"},{\"role\":\"user\",\"content\":\"hello there\"}],\"stream\":true,\"stream_options\":{\"include_usage\":true}}"
       }
     ],
     "error": ""
@@ -434,7 +434,7 @@
           "authorization": "Bearer custom-key-000000",
           "content-type": "application/json"
         },
-        "body": "{\"model\":\"m-reason\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a StarNet agent. Answer briefly.\"},{\"role\":\"user\",\"content\":\"read notes.md and search for its title\"},{\"role\":\"assistant\",\"content\":\"\",\"tool_calls\":[{\"id\":\"call_1\",\"type\":\"function\",\"function\":{\"name\":\"fs_read\",\"arguments\":\"{\\\"path\\\":\\\"notes.md\\\"}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_1\",\"content\":\"# Station notes\\nline two\"},{\"role\":\"user\",\"content\":\"now search\"}],\"stream\":true,\"stream_options\":{\"include_usage\":true},\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"fs_read\",\"description\":\"Read a file in the workspace.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"workspace path\"}},\"required\":[\"path\"]}}},{\"type\":\"function\",\"function\":{\"name\":\"web_search\",\"description\":\"Search the web.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"query\":{\"type\":\"string\"},\"limit\":{\"type\":\"integer\"}},\"required\":[\"query\"]}}}],\"tool_choice\":\"auto\"}"
+        "body": "{\"model\":\"m-reason\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a Vultron agent. Answer briefly.\"},{\"role\":\"user\",\"content\":\"read notes.md and search for its title\"},{\"role\":\"assistant\",\"content\":\"\",\"tool_calls\":[{\"id\":\"call_1\",\"type\":\"function\",\"function\":{\"name\":\"fs_read\",\"arguments\":\"{\\\"path\\\":\\\"notes.md\\\"}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_1\",\"content\":\"# Station notes\\nline two\"},{\"role\":\"user\",\"content\":\"now search\"}],\"stream\":true,\"stream_options\":{\"include_usage\":true},\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"fs_read\",\"description\":\"Read a file in the workspace.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"workspace path\"}},\"required\":[\"path\"]}}},{\"type\":\"function\",\"function\":{\"name\":\"web_search\",\"description\":\"Search the web.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"query\":{\"type\":\"string\"},\"limit\":{\"type\":\"integer\"}},\"required\":[\"query\"]}}}],\"tool_choice\":\"auto\"}"
       }
     ],
     "error": ""
@@ -450,7 +450,7 @@
           "authorization": "Bearer custom-key-000000",
           "content-type": "application/json"
         },
-        "body": "{\"model\":\"m-reason\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a StarNet agent. Answer briefly.\"},{\"role\":\"user\",\"content\":\"think about 17 * 23\"}],\"stream\":true,\"stream_options\":{\"include_usage\":true},\"reasoning_effort\":\"high\"}"
+        "body": "{\"model\":\"m-reason\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a Vultron agent. Answer briefly.\"},{\"role\":\"user\",\"content\":\"think about 17 * 23\"}],\"stream\":true,\"stream_options\":{\"include_usage\":true},\"reasoning_effort\":\"high\"}"
       }
     ],
     "error": ""
@@ -466,7 +466,7 @@
           "authorization": "Bearer custom-key-000000",
           "content-type": "application/json"
         },
-        "body": "{\"model\":\"m-reason\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a StarNet agent. Answer briefly.\"},{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"what is in this picture?\"},{\"type\":\"image_url\",\"image_url\":{\"url\":\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==\"}}]}],\"stream\":true,\"stream_options\":{\"include_usage\":true}}"
+        "body": "{\"model\":\"m-reason\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a Vultron agent. Answer briefly.\"},{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"what is in this picture?\"},{\"type\":\"image_url\",\"image_url\":{\"url\":\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==\"}}]}],\"stream\":true,\"stream_options\":{\"include_usage\":true}}"
       }
     ],
     "error": ""
@@ -481,7 +481,7 @@
           "accept": "text/event-stream",
           "content-type": "application/json"
         },
-        "body": "{\"model\":\"m-reason\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a StarNet agent. Answer briefly.\"},{\"role\":\"user\",\"content\":\"hello there\"}],\"stream\":true,\"stream_options\":{\"include_usage\":true}}"
+        "body": "{\"model\":\"m-reason\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a Vultron agent. Answer briefly.\"},{\"role\":\"user\",\"content\":\"hello there\"}],\"stream\":true,\"stream_options\":{\"include_usage\":true}}"
       }
     ],
     "error": ""
@@ -496,7 +496,7 @@
           "accept": "text/event-stream",
           "content-type": "application/json"
         },
-        "body": "{\"model\":\"m-reason\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a StarNet agent. Answer briefly.\"},{\"role\":\"user\",\"content\":\"read notes.md and search for its title\"},{\"role\":\"assistant\",\"content\":\"\",\"tool_calls\":[{\"id\":\"call_1\",\"type\":\"function\",\"function\":{\"name\":\"fs_read\",\"arguments\":\"{\\\"path\\\":\\\"notes.md\\\"}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_1\",\"content\":\"# Station notes\\nline two\"},{\"role\":\"user\",\"content\":\"now search\"}],\"stream\":true,\"stream_options\":{\"include_usage\":true},\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"fs_read\",\"description\":\"Read a file in the workspace.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"workspace path\"}},\"required\":[\"path\"]}}},{\"type\":\"function\",\"function\":{\"name\":\"web_search\",\"description\":\"Search the web.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"query\":{\"type\":\"string\"},\"limit\":{\"type\":\"integer\"}},\"required\":[\"query\"]}}}],\"tool_choice\":\"auto\"}"
+        "body": "{\"model\":\"m-reason\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a Vultron agent. Answer briefly.\"},{\"role\":\"user\",\"content\":\"read notes.md and search for its title\"},{\"role\":\"assistant\",\"content\":\"\",\"tool_calls\":[{\"id\":\"call_1\",\"type\":\"function\",\"function\":{\"name\":\"fs_read\",\"arguments\":\"{\\\"path\\\":\\\"notes.md\\\"}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_1\",\"content\":\"# Station notes\\nline two\"},{\"role\":\"user\",\"content\":\"now search\"}],\"stream\":true,\"stream_options\":{\"include_usage\":true},\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"fs_read\",\"description\":\"Read a file in the workspace.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"workspace path\"}},\"required\":[\"path\"]}}},{\"type\":\"function\",\"function\":{\"name\":\"web_search\",\"description\":\"Search the web.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"query\":{\"type\":\"string\"},\"limit\":{\"type\":\"integer\"}},\"required\":[\"query\"]}}}],\"tool_choice\":\"auto\"}"
       }
     ],
     "error": ""
@@ -511,7 +511,7 @@
           "accept": "text/event-stream",
           "content-type": "application/json"
         },
-        "body": "{\"model\":\"m-reason\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a StarNet agent. Answer briefly.\"},{\"role\":\"user\",\"content\":\"think about 17 * 23\"}],\"stream\":true,\"stream_options\":{\"include_usage\":true},\"reasoning_effort\":\"high\"}"
+        "body": "{\"model\":\"m-reason\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a Vultron agent. Answer briefly.\"},{\"role\":\"user\",\"content\":\"think about 17 * 23\"}],\"stream\":true,\"stream_options\":{\"include_usage\":true},\"reasoning_effort\":\"high\"}"
       }
     ],
     "error": ""
@@ -526,7 +526,7 @@
           "accept": "text/event-stream",
           "content-type": "application/json"
         },
-        "body": "{\"model\":\"m-reason\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a StarNet agent. Answer briefly.\"},{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"what is in this picture?\"},{\"type\":\"image_url\",\"image_url\":{\"url\":\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==\"}}]}],\"stream\":true,\"stream_options\":{\"include_usage\":true}}"
+        "body": "{\"model\":\"m-reason\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a Vultron agent. Answer briefly.\"},{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"what is in this picture?\"},{\"type\":\"image_url\",\"image_url\":{\"url\":\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==\"}}]}],\"stream\":true,\"stream_options\":{\"include_usage\":true}}"
       }
     ],
     "error": ""

@@ -1,4 +1,4 @@
-/* bin/lib/dashboard.js — the live `starnet` dashboard: the terminal I/O and the station wiring around the pure model
+/* bin/lib/dashboard.js — the live `vultron` dashboard: the terminal I/O and the station wiring around the pure model
    (station-model.js) and screen (tui.js).
 
    What it reads (all over the attached station's loopback API, token in the header):
@@ -6,7 +6,7 @@
      GET /api/state/snapshot   every 3 s — which runs and asks are live (the truth after any gap)
      GET /api/runtime/agent    the roster · GET /api/budget/status spend · GET /api/routing/lines/stats + /api/line-jobs flows
      GET /api/transcript       this terminal's earlier conversation with each agent
-     GET /api/projects         is the folder `starnet` was started in a trusted project (bin/lib/folder.js)
+     GET /api/projects         is the folder `vultron` was started in a trusted project (bin/lib/folder.js)
    What it does (only when the person at the keyboard says so):
      POST /api/run             a message, on the agent's own terminal conversation (cli-<agentId>), as its roster defines it,
                                working in that trusted project when there is one
@@ -42,7 +42,7 @@ function goalStallOf(oc) {
   if (oc.outcome === 'failed') return 'the step ' + RunOutcome.line(oc);
   return 'the step did not finish: ' + RunOutcome.line(oc);
 }
-// a line job the Commander STOPPED (/api/routing/sample's stopped:true) is no failed job: said as the stop (review r8; `starnet flow run` too)
+// a line job the Commander STOPPED (/api/routing/sample's stopped:true) is no failed job: said as the stop (review r8; `vultron flow run` too)
 function flowStopped(r) { return !!(r && r.json && r.json.stopped === true); }
 
 function runDashboard(station, opts) {
@@ -53,7 +53,7 @@ function runDashboard(station, opts) {
   const client = station.client;
   const model = makeStation();
   const level = tui.colorLevel(env, !!out.isTTY);
-  // the color theme: the app's presets or the terminal's red (STARNET_THEME, else the last /theme pick)
+  // the color theme: the app's presets or the terminal's red (VULTRON_THEME, else the last /theme pick)
   const themeFile = o.themeFile || theme.configFile(env);
   const themeTargets = { palette: tui.PALETTE, bg: tui.BG, logoRamp: sixel.RAMP, camfeed };
   let themeName = theme.apply(theme.load(env, themeFile), themeTargets);
@@ -64,10 +64,10 @@ function runDashboard(station, opts) {
     stationLabel: station.mode === 'spawned' ? 'private station · port ' + client.base.replace(/^.*:/, '')
       : station.workspace ? 'desktop station · port ' + client.base.replace(/^.*:/, '')
         : 'station · ' + client.base.replace(/^http:\/\//, ''),
-    still: !!(env.STARNET_STILL === '1'),
-    // the REAL logo: an image where the terminal draws Sixel, else the same logo as braille dots. STARNET_LOGO=dots skips
+    still: !!(env.VULTRON_STILL === '1'),
+    // the REAL logo: an image where the terminal draws Sixel, else the same logo as braille dots. VULTRON_LOGO=dots skips
     // the image, =ascii draws the drawn-letter version, =plain keeps to the one-line mark
-    logo: ['plain', 'ascii', 'dots'].indexOf(env.STARNET_LOGO) >= 0 ? env.STARNET_LOGO : 'full',
+    logo: ['plain', 'ascii', 'dots'].indexOf(env.VULTRON_LOGO) >= 0 ? env.VULTRON_LOGO : 'full',
     logoImage: null,
     // the folder this terminal works in: project = the trusted project every message works in; trust = the card asking
     // to trust the folder it was started in
@@ -251,7 +251,7 @@ function runDashboard(station, opts) {
   // ---- the live feed ---------------------------------------------------------------------------------------
   function connectFeed() {
     if (stopped) return;
-    const headers = { Accept: 'text/event-stream', Origin: client.base, 'x-starnet-token': client.token() };
+    const headers = { Accept: 'text/event-stream', Origin: client.base, 'x-vultron-token': client.token() };
     if (cursor) headers['Last-Event-ID'] = cursor;
     let req;
     try {
@@ -310,7 +310,7 @@ function runDashboard(station, opts) {
     const id = 'run' + Math.random().toString(36).slice(2);
     let req;
     try {
-      req = http.request({ host: client.host, port: client.port, method: 'POST', path: '/api/run', headers: { Origin: client.base, 'Content-Type': 'application/json', 'Content-Length': payload.length, 'x-starnet-token': client.token(), Accept: 'application/x-ndjson' } }, res => {
+      req = http.request({ host: client.host, port: client.port, method: 'POST', path: '/api/run', headers: { Origin: client.base, 'Content-Type': 'application/json', 'Content-Length': payload.length, 'x-vultron-token': client.token(), Accept: 'application/x-ndjson' } }, res => {
         if (res.statusCode !== 200) {
           const chunks = [];
           res.on('data', d => chunks.push(d));
@@ -364,7 +364,7 @@ function runDashboard(station, opts) {
     else flash('the station did not take that answer' + (r.error ? ' (' + r.error + ')' : r.status ? ' (HTTP ' + r.status + ')' : ''));
     paint();
   }
-  // ---- the folder: work in the trusted project `starnet` was started in, or ask to trust it -------------------------
+  // ---- the folder: work in the trusted project `vultron` was started in, or ask to trust it -------------------------
   function setProject(root) { ui.project = root ? { root, label: folderLib.shortPath(root, 60) } : null; }
   async function locateFolder() {
     // a folder here only means that folder to a station on this machine
@@ -515,8 +515,8 @@ function runDashboard(station, opts) {
     ui.picker = p; ui.overlay = null; paint();
     const f = await connectFacts();
     if (!f.read) p.error = 'the station did not list its providers: ' + f.error;
-    // STARNET MANAGED is drawn only where the app draws it: a station a StarNet account can link (or already has)
-    p.items = connect.ordered().filter(x => x.id !== 'starnet' || f.credits.state !== 'absent').map(x => {
+    // VULTRON MANAGED is drawn only where the app draws it: a station a Vultron account can link (or already has)
+    p.items = connect.ordered().filter(x => x.id !== 'vultron' || f.credits.state !== 'absent').map(x => {
       const g = connect.groupOf(x.id), st = connect.status(x, f);
       return { p: x, group: g.label, groupShort: g.short, search: (x.id + ' ' + x.name + ' ' + g.label + ' ' + connect.need(x)).toLowerCase(),
         cols: [[padTo(x.name, 18), 'fg'], [padTo(connect.need(x), 36), 'dim'], st] };
@@ -530,7 +530,7 @@ function runDashboard(station, opts) {
     const run = { cancelled: false };
     connecting = run;
     ui.picker = null;
-    ui.wake = { connect: true, crew: true, log: [], ask: null, stage: { title: 'CONNECT', detail: p.name }, speaker: 'STARNET', feedKey: null, note: '', typing: false, ff: false };
+    ui.wake = { connect: true, crew: true, log: [], ask: null, stage: { title: 'CONNECT', detail: p.name }, speaker: 'VULTRON', feedKey: null, note: '', typing: false, ff: false };
     paint();
     let out = { ok: false, msg: '' };
     try {
@@ -542,7 +542,7 @@ function runDashboard(station, opts) {
         if (run.cancelled || a.value !== 'again') break;
       }
     } catch (e) { out = { ok: false, msg: 'the connection stopped: ' + ((e && e.message) || e) }; }
-    const said = ui.wake ? [...ui.wake.log].reverse().find(e => e.who === 'STARNET') : null;
+    const said = ui.wake ? [...ui.wake.log].reverse().find(e => e.who === 'VULTRON') : null;
     connecting = null; ui.wake = null; ui.input = ''; modelsCache = null;
     const a = model.state.agents.get(ui.focus);
     if (out.ok) sayHere('/connect', [out.msg + ' /model picks one of its models' + (a ? ' for ' + a.name : '') + '.'], true, 'CONNECT');
@@ -560,7 +560,7 @@ function runDashboard(station, opts) {
       const live = accts ? accts.filter(a => a.connected === true || a.loggedIn === true) : [];
       if (live.length) {
         const max = Number(r.json.max) || 8, room = accts.length < max;
-        const say = t => wakeIO.say([{ text: t, cps: 70 }], { who: 'STARNET' });
+        const say = t => wakeIO.say([{ text: t, cps: 70 }], { who: 'VULTRON' });
         await say(p.name + ' is signed in' + (live.length > 1 ? ' — ' + live.length + ' accounts' : '') + '. another account of the same subscription stacks on it: when one hits its limit, the runs carry on with the next.' + (room ? '' : ' it holds ' + max + ' at most — that is all of them.'));
         const a = await wakeIO.ask({ options: (room ? [{ label: 'Add another account', value: 'add' }] : []).concat([{ label: 'Keep it as is', value: 'keep', skip: true }]) });
         if (a.value !== 'add') return { ok: true, msg: p.name + ' stays as it is — ' + live.length + ' sign-in' + (live.length === 1 ? '' : 's') + '.' };
@@ -572,7 +572,7 @@ function runDashboard(station, opts) {
     return ok ? { ok: true, msg: p.name + ' is connected.' } : { ok: false, retry: true };
   }
   async function connectKey(p, run) {
-    const say = t => wakeIO.say([{ text: t, cps: 70 }], { who: 'STARNET' });
+    const say = t => wakeIO.say([{ text: t, cps: 70 }], { who: 'VULTRON' });
     const back = { label: 'Go back', value: 'back', skip: true };
     let baseUrl = '';
     if (p.id === 'custom') {
@@ -585,7 +585,7 @@ function runDashboard(station, opts) {
         await say('that doesn’t look like a URL — for example http://localhost:1234/v1');
       }
     }
-    await say((p.id === 'custom' ? 'its API key, if it needs one' : 'paste your ' + p.name + ' key') + ' — it stays hidden here, StarNet checks it with ' + (p.id === 'custom' ? 'the endpoint' : p.name) + ' first, then keeps it where the app keeps keys');
+    await say((p.id === 'custom' ? 'its API key, if it needs one' : 'paste your ' + p.name + ' key') + ' — it stays hidden here, Vultron checks it with ' + (p.id === 'custom' ? 'the endpoint' : p.name) + ' first, then keeps it where the app keeps keys');
     for (;;) {
       const a = await wakeIO.ask({ options: p.id === 'custom' ? [back, { label: 'No key — save the endpoint', value: 'nokey' }] : [back], custom: true, secret: true, customLabel: 'the key' });
       if (run.cancelled || a.value === 'back') return { ok: false };
@@ -595,7 +595,7 @@ function runDashboard(station, opts) {
       wakeIO.note('', 'dim');
       if (run.cancelled) return { ok: false };
       if (r.ok) {
-        const where = r.store === 'keychain' ? ' in your OS keychain' : r.store === 'browser' ? ' in StarNet' : ' on this station';
+        const where = r.store === 'keychain' ? ' in your OS keychain' : r.store === 'browser' ? ' in Vultron' : ' on this station';
         return { ok: true, msg: p.name + (key ? ' key saved' + where + (r.verified ? ' — ' + (p.id === 'custom' ? 'the endpoint' : p.name) + ' accepted it.' : '.') : ' endpoint saved' + where + '.') };
       }
       await say('not saved: ' + r.error + '. paste it again, or go back');
@@ -645,7 +645,7 @@ function runDashboard(station, opts) {
     { name: 'usage', desc: 'how much is left on each connected provider — each sign-in’s limits, as the provider last said them' },
     { name: 'connect', aliases: ['providers'], desc: 'add a provider — the app’s AI & MODELS list: sign in, link, or paste a key', argsHint: '[provider]' },
     { name: 'theme', aliases: ['themes'], desc: 'the terminal colors: ' + theme.NAMES.join(' · '), argsHint: '[' + theme.NAMES.join('|') + ']' },
-    { name: 'quit', aliases: ['exit'], desc: 'quit starnet' }
+    { name: 'quit', aliases: ['exit'], desc: 'quit vultron' }
   ].map(c => Object.assign({ source: 'terminal', aliases: [], argsHint: '', here: true }, c));
   const HANDLED_HERE = ['help', 'quit', 'exit', 'stat', 'crew', 'work', 'floor', 'comms', 'connect', 'providers', 'usage', 'split', 'theme', 'themes', 'model', 'new', 'clear', 'resume', 'stop', 'flow', 'retry', 'status', 'whoami', 'version', 'skills', 'history', 'cron',
     'agents', 'insights', 'memory', 'bundles', 'blueprint', 'reload-mcp', 'reload-skills', 'steer', 'copy', 'compress', 'reasoning', 'fast', 'debug', 'queue', 'background', 'loop', 'save', 'goal', 'subgoal', 'yolo', 'personality'];
@@ -814,7 +814,7 @@ function runDashboard(station, opts) {
     const a = model.state.agents.get(act.agentId);
     if (!folderLib.isLocalHost(client.host)) return flash('a file opens only from a station on this computer');
     let tickets;
-    try { tickets = require(require('node:path').join(__dirname, '..', '..', 'sidecar', 'apitickets.js')); } catch (_) { return flash('this starnet cannot sign a file link (the station’s ticket module is missing)', 'bad', 8000); }
+    try { tickets = require(require('node:path').join(__dirname, '..', '..', 'sidecar', 'apitickets.js')); } catch (_) { return flash('this vultron cannot sign a file link (the station’s ticket module is missing)', 'bad', 8000); }
     let project = typeof act.root === 'string' ? act.root : null;
     if (project === null) {
       const r = act.runId ? await get('/api/runs?agent=*&runId=' + encodeURIComponent(act.runId), 8000) : null;
@@ -1018,7 +1018,7 @@ function runDashboard(station, opts) {
       if (!a) return flash('no agent to talk to');
       return send(a.id, body, text);
     }
-    flash(cmd + ' only works in the StarNet desktop app', 'am', 6000);
+    flash(cmd + ' only works in the Vultron desktop app', 'am', 6000);
   }
   // /cron: the routines scheduler, as the app's /cron does it — on / off arms it, alone it says its real state (a read
   // that failed says the state is unknown, never "off, 0 jobs")
@@ -1039,22 +1039,22 @@ function runDashboard(station, opts) {
     say('Routines: scheduler ' + (j.halted ? 'stopped (E-STOP)' : j.enabled ? 'on' : 'off') + ', ' + jobs.length + ' job' + (jobs.length === 1 ? '' : 's') +
       (bits.length ? ' - ' + bits.join(' | ') : '.') + (j.halted ? ' Use /cron on to resume.' : ' Use /cron on or /cron off to arm/disarm.'));
   }
-  /* THE APP'S COMMANDS, HERE (Andrew 10-24: "they should also be able to use any command they would use in starnet"). Each
+  /* THE APP'S COMMANDS, HERE (Andrew 10-24: "they should also be able to use any command they would use in vultron"). Each
      one does what the app's own does (frontend/app/chat.js), on the station routes it uses, and says it in COMMS under the
      command. A read that failed says so — never "none". */
   const sayHere = (cmd, lines, ok, title) => { model.noteSaid(ui.focus || 'agent', cmd, title || '', lines, ok !== false, now()); ui.scroll = 0; ui.overlay = null; paint(); };
   const usd2 = n => '$' + (Number(n) || 0).toFixed(2);
   /* /theme: the app's color presets (amber, green, blue, purple, white) or the terminal's own neon red. The pick recolors
-     the whole screen at once — the accent, the logo, the camera feed — and is kept for the next starnet (cli.json). */
+     the whole screen at once — the accent, the logo, the camera feed — and is kept for the next vultron (cli.json). */
   function themeCommand(arg) {
     const want = String(arg || '').toLowerCase().trim();
     const list = () => theme.NAMES.map(n => (n === themeName ? '▸ ' : '  ') + n + ' — ' + theme.BLURB[n]);
-    if (!want) return sayHere('/theme', ['Theme: ' + themeName + (env.STARNET_THEME ? ' (STARNET_THEME)' : '') + '. /theme <name> picks one:'].concat(list()), true, 'THEME');
+    if (!want) return sayHere('/theme', ['Theme: ' + themeName + (env.VULTRON_THEME ? ' (VULTRON_THEME)' : '') + '. /theme <name> picks one:'].concat(list()), true, 'THEME');
     if (!theme.known(want)) return sayHere('/theme', ['No theme named ' + want + '. Pick one of: ' + theme.NAMES.join(', ') + '.'], false, 'THEME');
     themeName = theme.apply(want, themeTargets);
     let kept = '';
-    try { theme.save(themeName, env, themeFile); kept = ' — kept for the next starnet'; } catch (e) { kept = ' — for this session only (it could not be saved: ' + e.message + ')'; }
-    if (env.STARNET_THEME && env.STARNET_THEME.toLowerCase().trim() !== themeName) kept += '; STARNET_THEME=' + env.STARNET_THEME + ' still wins at the next start';
+    try { theme.save(themeName, env, themeFile); kept = ' — kept for the next vultron'; } catch (e) { kept = ' — for this session only (it could not be saved: ' + e.message + ')'; }
+    if (env.VULTRON_THEME && env.VULTRON_THEME.toLowerCase().trim() !== themeName) kept += '; VULTRON_THEME=' + env.VULTRON_THEME + ' still wins at the next start';
     redrawAll();
     sayHere('/theme', ['Theme: ' + themeName + ', ' + theme.BLURB[themeName] + kept + '.'], true, 'THEME');
   }
@@ -1276,10 +1276,10 @@ function runDashboard(station, opts) {
     if (!a) return sayHere('/background', ['No agent shown.'], false);
     const sid = core.cliStreamId(a.id) + '-' + Date.now().toString(36);
     send(a.id, text, '/background ' + text, sid);
-    sayHere('/background', ['Running in a new conversation of its own — /resume opens it. It stops if you quit starnet.']);
+    sayHere('/background', ['Running in a new conversation of its own — /resume opens it. It stops if you quit vultron.']);
   }
   /* /loop <interval> <prompt> | status | off: the same prompt on a clock, in this conversation (the app's rules: a minute at
-     the least — every tick is a real model turn — 20 runs at most, gone when starnet quits; /routine is the lasting form) */
+     the least — every tick is a real model turn — 20 runs at most, gone when vultron quits; /routine is the lasting form) */
   /* A loop belongs to the conversation it was set in (its stream, as the app keys its loops by workstream): it fires only
      while that conversation is the one shown, and into it. Off it (/new, /resume, another agent shown) a tick is skipped,
      and 20 such ticks in a row end the loop — the app's own rule. */
@@ -1318,7 +1318,7 @@ function runDashboard(station, opts) {
     if (low === 'off' || low === 'stop' || low === 'clear') { if (!loopStop(id, 'you stopped it')) sayHere('/loop', ['No loop is running in this conversation.']); return; }
     if (!raw || low === 'status') {
       if (!cur) return sayHere('/loop', ['No loop in this conversation. /loop <interval> <prompt> — e.g. /loop 5m check whether the build went green.']);
-      return sayHere('/loop', ['Loop: every ' + cur.label + ', ' + cur.fired + '/' + LOOP_MAX_ITERS + ' runs done' + (cur.skipped ? ', ' + cur.skipped + ' tick' + (cur.skipped === 1 ? '' : 's') + ' skipped (a run or an ask had the floor)' : '') + ' — "' + cur.prompt.slice(0, 60) + '".' + (cur.sid === streamOf(id) ? '' : ' It belongs to an earlier conversation and fires only while that one is shown (/resume opens it).') + ' It stops if you quit starnet; /routine makes it permanent.']);
+      return sayHere('/loop', ['Loop: every ' + cur.label + ', ' + cur.fired + '/' + LOOP_MAX_ITERS + ' runs done' + (cur.skipped ? ', ' + cur.skipped + ' tick' + (cur.skipped === 1 ? '' : 's') + ' skipped (a run or an ask had the floor)' : '') + ' — "' + cur.prompt.slice(0, 60) + '".' + (cur.sid === streamOf(id) ? '' : ' It belongs to an earlier conversation and fires only while that one is shown (/resume opens it).') + ' It stops if you quit vultron; /routine makes it permanent.']);
     }
     const sp = raw.search(/\s/);
     const m = sp > 0 ? /^(\d+)\s*(s|sec|secs|m|min|mins|h|hr|hrs)?$/.exec(raw.slice(0, sp).toLowerCase()) : null;
@@ -1332,7 +1332,7 @@ function runDashboard(station, opts) {
     const rec = { ms, label: loopLabel(ms), prompt, sid: streamOf(id), fired: 0, skipped: 0, skipStreak: 0, timer: null };
     loops.set(id, rec);
     loopArm(id, rec);
-    sayHere('/loop', ['Looping every ' + rec.label + ' (up to ' + LOOP_MAX_ITERS + ' runs): "' + prompt.slice(0, 60) + '". First run in ' + rec.label + '. Each run costs a real model turn — /loop off stops it, and so does quitting starnet.']);
+    sayHere('/loop', ['Looping every ' + rec.label + ' (up to ' + LOOP_MAX_ITERS + ' runs): "' + prompt.slice(0, 60) + '". First run in ' + rec.label + '. Each run costs a real model turn — /loop off stops it, and so does quitting vultron.']);
   }
 
   /* /goal, /subgoal: the app's SESSION GOAL LOOP (frontend/app/goalloop.js, its own state machine), driven from here. A goal
@@ -1445,7 +1445,7 @@ function runDashboard(station, opts) {
     if (d.message) sayGoal(id, d.message);
   }
   function goalCommand(args) {
-    if (!goalLib()) return sayHere('/goal', ['Session goals could not load (the app\'s goalloop.js is not beside this starnet).'], false);
+    if (!goalLib()) return sayHere('/goal', ['Session goals could not load (the app\'s goalloop.js is not beside this vultron).'], false);
     const id = ui.focus, a = model.state.agents.get(id);
     if (!a) return sayHere('/goal', ['No agent shown.'], false);
     const sid = streamOf(id), g = goals.get(sid), cur = g && g.s;
@@ -1481,7 +1481,7 @@ function runDashboard(station, opts) {
     kickGoal(sid);
   }
   function subgoalCommand(args) {
-    if (!goalLib()) return sayHere('/subgoal', ['Session goals could not load (the app\'s goalloop.js is not beside this starnet).'], false);
+    if (!goalLib()) return sayHere('/subgoal', ['Session goals could not load (the app\'s goalloop.js is not beside this vultron).'], false);
     const g = goals.get(streamOf(ui.focus)), cur = g && g.s;
     const raw = String(args || '').trim(), low = raw.toLowerCase();
     if (!raw) { const subs = (cur && cur.subgoals) || []; return sayHere('/subgoal', [subs.length ? 'Subgoals: ' + subs.map((t, i) => (i + 1) + '. ' + t).join(' | ') : 'No subgoals set. Use /subgoal <text> once a session goal is set.']); }
@@ -1498,7 +1498,7 @@ function runDashboard(station, opts) {
   }
 
   /* /yolo, /personality: the agent's approval mode and personality, on the station's own routes (POST /api/agent/approval,
-     /api/agent/personality): through the StarNet app when it is open (its own controls save them), else that agent's roster
+     /api/agent/personality): through the Vultron app when it is open (its own controls save them), else that agent's roster
      entry alone — and then the app's own setting applies again the next time it opens, which the reply says. */
   /* with no app open: a change that GIVES power holds on the roster until the app opens with its own setting (said so); one
      that takes it away the station also writes into the app's save — the reply says only what the station says took it
@@ -1506,10 +1506,10 @@ function runDashboard(station, opts) {
   const viaRoster = (r, name) => {
     const j = r && r.json;
     if (!(j && j.via === 'roster')) return '';
-    if (j.save === 'patched' || j.save === 'agrees') return ' (No StarNet app is open: the station\'s roster and the app\'s save both hold this now.)';
-    if (j.save === 'no-record') return ' (No StarNet app is open: the station\'s roster holds this; the app\'s save has no record of ' + name + '.)';
-    if (j.save === 'not-saved') return ' (No StarNet app is open: the station\'s roster holds this, but the app\'s save did not take it (' + (j.saveError || 'refused') + '), so the app may give ' + name + ' its own saved setting back when it opens — /yolo off again then.)';
-    return ' (No StarNet app is open, so the station\'s roster holds this; the app\'s own setting applies again when it opens.)';
+    if (j.save === 'patched' || j.save === 'agrees') return ' (No Vultron app is open: the station\'s roster and the app\'s save both hold this now.)';
+    if (j.save === 'no-record') return ' (No Vultron app is open: the station\'s roster holds this; the app\'s save has no record of ' + name + '.)';
+    if (j.save === 'not-saved') return ' (No Vultron app is open: the station\'s roster holds this, but the app\'s save did not take it (' + (j.saveError || 'refused') + '), so the app may give ' + name + ' its own saved setting back when it opens — /yolo off again then.)';
+    return ' (No Vultron app is open, so the station\'s roster holds this; the app\'s own setting applies again when it opens.)';
   };
   const refused = r => (r.json && r.json.error) || r.error || (r.status === 404 ? 'this station is older than this command' : 'HTTP ' + r.status);
   /* the app was asked and did not confirm in time (the station's 6 s): it applies a change before it proves its save, so
@@ -1518,8 +1518,8 @@ function runDashboard(station, opts) {
   const unconfirmed = (r, a) => {
     const j = r && r.json;
     if (!(r && r.status === 409 && j && j.unanswered)) return null;
-    if (j.gone) return { gone: true, line: 'The StarNet app did not confirm in time, and ' + a.name + ' is no longer on the station\'s roster.' };
-    return { st: j.station || {}, lead: 'The StarNet app did not confirm in time — it may still be applying it.' };
+    if (j.gone) return { gone: true, line: 'The Vultron app did not confirm in time, and ' + a.name + ' is no longer on the station\'s roster.' };
+    return { st: j.station || {}, lead: 'The Vultron app did not confirm in time — it may still be applying it.' };
   };
   async function yoloCommand(args) {
     const a = model.state.agents.get(ui.focus);
@@ -1546,7 +1546,7 @@ function runDashboard(station, opts) {
     const a = model.state.agents.get(ui.focus);
     if (!a) return sayHere('/personality', ['No agent shown.'], false);
     let mods;
-    try { mods = require('./app-modules.js').load(); } catch (e) { return sayHere('/personality', ['The app\'s personalities could not load beside this starnet (' + ((e && e.message) || e) + ').'], false); }
+    try { mods = require('./app-modules.js').load(); } catch (e) { return sayHere('/personality', ['The app\'s personalities could not load beside this vultron (' + ((e && e.message) || e) + ').'], false); }
     const P = mods.Personas, key = String(args || '').trim().toLowerCase();
     if (key && P.exists && P.exists(key)) {
       const id = P.resolve ? P.resolve(key) : key;
@@ -1584,14 +1584,14 @@ function runDashboard(station, opts) {
 
   // what the terminal answers for what only the app (or the station by itself) does
   const APP_ONLY = {
-    '/voice': 'Spoken replies play in the StarNet app — a terminal has no speaker or microphone path.',
-    '/suggestions': 'Recurring-task suggestions are learned in the StarNet app\'s own storage — open the app to review them.',
+    '/voice': 'Spoken replies play in the Vultron app — a terminal has no speaker or microphone path.',
+    '/suggestions': 'Recurring-task suggestions are learned in the Vultron app\'s own storage — open the app to review them.',
     '/save': 'Nothing to save from here: the station records every run, transcript and setting as it happens.',
     // the station keeps a conversation's transcript as it happened (append-only, no copy route yet): these stay the app's
-    '/branch': 'Forking a conversation is the StarNet app\'s for now — the station keeps a terminal conversation\'s transcript as it happened and has no copy of one yet. /new starts a fresh conversation; /resume goes back to an earlier one.',
-    '/fork': 'Forking a conversation is the StarNet app\'s for now — the station keeps a terminal conversation\'s transcript as it happened and has no copy of one yet. /new starts a fresh conversation; /resume goes back to an earlier one.',
+    '/branch': 'Forking a conversation is the Vultron app\'s for now — the station keeps a terminal conversation\'s transcript as it happened and has no copy of one yet. /new starts a fresh conversation; /resume goes back to an earlier one.',
+    '/fork': 'Forking a conversation is the Vultron app\'s for now — the station keeps a terminal conversation\'s transcript as it happened and has no copy of one yet. /new starts a fresh conversation; /resume goes back to an earlier one.',
     '/undo': 'The station keeps this conversation\'s transcript as it happened, so no turn can be taken back from here yet. /new starts clean; /resume goes back to an earlier conversation.',
-    '/title': 'A terminal conversation is named by its first message (/resume lists them by it); renaming one is the StarNet app\'s for now.'
+    '/title': 'A terminal conversation is named by its first message (/resume lists them by it); renaming one is the Vultron app\'s for now.'
   };
 
   function showStatus() {
@@ -1616,7 +1616,7 @@ function runDashboard(station, opts) {
     const cli = require('./version.js').cliVersion(require('node:path').join(__dirname, '..', '..'));
     const r = await get('/api/version');
     const v = (r.ok && r.status === 200 && r.json) || {};
-    ui.overlay = { title: 'VERSION', items: [['starnet', cli], ['station', v.harness ? 'harness ' + v.harness + (v.app ? ' · app ' + v.app : '') : 'did not say (' + (r.error || 'HTTP ' + r.status) + ')'], ['node', (v.node ? v.node + ' (station) · ' : '') + process.version + ' (here)']], foot: 'any key closes this' };
+    ui.overlay = { title: 'VERSION', items: [['vultron', cli], ['station', v.harness ? 'harness ' + v.harness + (v.app ? ' · app ' + v.app : '') : 'did not say (' + (r.error || 'HTTP ' + r.status) + ')'], ['node', (v.node ? v.node + ' (station) · ' : '') + process.version + ' (here)']], foot: 'any key closes this' };
     paint();
   }
   // /skills: the agent's skills and recipes as the station lists them for it (its saved floor), picked into the prompt
@@ -1650,7 +1650,7 @@ function runDashboard(station, opts) {
   async function waitOrSkip(ms) { const end = now() + ms; while (now() < end && ui.wake && !ui.wake.ff) await sleep(40); }
   const wakeIO = {
     stage: (title, detail) => { if (ui.wake) { ui.wake.stage = { title: String(title || ''), detail: String(detail || '') }; paint(); } },
-    speaker: name => { if (ui.wake) ui.wake.speaker = String(name || 'STARNET'); },
+    speaker: name => { if (ui.wake) ui.wake.speaker = String(name || 'VULTRON'); },
     note: (text, style) => { if (ui.wake) { ui.wake.note = String(text || ''); ui.wake.noteStyle = style || 'dim'; paint(); } },
     feed: key => { if (ui.wake) { ui.wake.feedKey = key || null; paint(); } },
     roster: list => { model.setRoster({ agents: list }); ui.focus = 'agent'; if (ui.wake) ui.wake.crew = true; loadSkins().then(paint, () => {}); paint(); },
@@ -1718,32 +1718,32 @@ function runDashboard(station, opts) {
     const r = await get('/api/save?agent=agent', 15000);
     if (!(r.ok && r.status === 200 && r.json)) return false;
     const save = r.json.save || null;
-    // an agent a headless run set up (`starnet -p` on an empty station) was never met by a person: it gets the full awakening
-    const boot = !!(save && save.agent && save.agent.bootstrappedBy === 'starnet-cli' && save.agent.onboarded !== true);
+    // an agent a headless run set up (`vultron -p` on an empty station) was never met by a person: it gets the full awakening
+    const boot = !!(save && save.agent && save.agent.bootstrappedBy === 'vultron-cli' && save.agent.onboarded !== true);
     const a = boot ? null : save && save.agent;
     if (a && !((a.onboarded === undefined) ? !a.purpose : !a.onboarded)) return false;   // the app's own needsAwakening
-    ui.wake = { log: [], ask: null, stage: { title: 'THE AWAKENING', detail: '' }, speaker: 'STARNET', feedKey: null, note: '', typing: false, ff: false };
+    ui.wake = { log: [], ask: null, stage: { title: 'THE AWAKENING', detail: '' }, speaker: 'VULTRON', feedKey: null, note: '', typing: false, ff: false };
     paint();
     /* one setup at a time: the app runs this station (open, or in the background for a terminal) and its page holds the
-       setup it started — a save written from here would leave that page stale. Quitting it never helps now: `starnet`
+       setup it started — a save written from here would leave that page stale. Quitting it never helps now: `vultron`
        starts it again. A prior install's station is the app's to recover. */
     if (station.mode === 'attached' && station.workspace) {
-      await wakeIO.say([{ text: 'StarNet’s setup isn’t finished on this station. open StarNet — it’s already running — and finish creating your Overseer in its window, then come back here.', cps: 60 }], { who: 'STARNET' });
+      await wakeIO.say([{ text: 'Vultron’s setup isn’t finished on this station. open Vultron — it’s already running — and finish creating your Overseer in its window, then come back here.', cps: 60 }], { who: 'VULTRON' });
       return true;
     }
     if (!a && !boot && r.json.lineage && r.json.lineage.priorInstallEvidence) {
-      await wakeIO.say([{ text: 'this computer has a station from an earlier StarNet install. open the StarNet app to recover it before setting up a new one.', cps: 60 }], { who: 'STARNET' });
+      await wakeIO.say([{ text: 'this computer has a station from an earlier Vultron install. open the Vultron app to recover it before setting up a new one.', cps: 60 }], { who: 'VULTRON' });
       return true;
     }
     let aw;
     try {
       aw = require('./awaken.js').makeAwakening({ st: require('./station-io.js').makeStationIO(client), io: wakeIO, mods: require('./app-modules.js').load(), env });
     } catch (e) {
-      await wakeIO.say([{ text: 'the setup could not load the StarNet app’s files (' + ((e && e.message) || e) + '). open the StarNet app to set up this station.', cps: 80 }], { who: 'STARNET' });
+      await wakeIO.say([{ text: 'the setup could not load the Vultron app’s files (' + ((e && e.message) || e) + '). open the Vultron app to set up this station.', cps: 80 }], { who: 'VULTRON' });
       return true;
     }
     aw.run({ save, resume: !!a, privateStation: station.mode === 'spawned' }).then(async res => {
-      const last = ui.wake && [...ui.wake.log].reverse().find(e => e.who !== 'YOU' && e.who !== 'STARNET');
+      const last = ui.wake && [...ui.wake.log].reverse().find(e => e.who !== 'YOU' && e.who !== 'VULTRON');
       ui.wake = null;
       await loadRoster().catch(() => {});
       ui.focus = 'agent';
@@ -1754,7 +1754,7 @@ function runDashboard(station, opts) {
     }, e => {
       if (!ui.wake) return;
       ui.wake.ask = null; ui.wake.typing = false;
-      ui.wake.log.push({ who: 'STARNET', text: 'setup stopped: ' + ((e && e.message) || e) + '. press ctrl+c, then run starnet again to pick up from here.', full: true, bad: true });
+      ui.wake.log.push({ who: 'VULTRON', text: 'setup stopped: ' + ((e && e.message) || e) + '. press ctrl+c, then run vultron again to pick up from here.', full: true, bad: true });
       paint();
     });
     return true;
@@ -1963,9 +1963,9 @@ function runDashboard(station, opts) {
     if (s) try { out.write(s); } catch (_) {}
     if (floorDrew) { const took = Date.now() - w0; floorNext = took > 15 ? Date.now() + Math.min(1000, took) : 0; floorDrew = false; }
   }
-  // the mouse, wherever the terminal reports it (STARNET_MOUSE=0 keeps the terminal's own selection; shift+drag selects
+  // the mouse, wherever the terminal reports it (VULTRON_MOUSE=0 keeps the terminal's own selection; shift+drag selects
   // text while it is on, in most terminals)
-  const mouseOn = env.STARNET_MOUSE !== '0';
+  const mouseOn = env.VULTRON_MOUSE !== '0';
   function enterScreen() {
     out.write('\x1b[?1049h\x1b[?25l\x1b[?2004h\x1b[2J\x1b[H' + (mouseOn ? mouse.ENABLE : ''));   // …and bracketed paste on, so a paste arrives marked
     readline.emitKeypressEvents(inp);
@@ -2017,7 +2017,7 @@ function runDashboard(station, opts) {
   const onExit = () => { if (!stopped) leaveScreen(); };
   /* A SIGTERM (the desktop app's boot reaper on macOS, a `kill`, an update) or a SIGHUP kills node WITHOUT 'exit', so
      onExit never ran and the terminal stayed on the alternate screen with mouse reporting on. Give it back, then end
-     with the signal's conventional code (128 + its number); starnet.js still stops a station it booted. */
+     with the signal's conventional code (128 + its number); vultron.js still stops a station it booted. */
   const SIGNALS = ['SIGTERM', 'SIGHUP'];
   const onSignal = sig => stop(128 + ((os.constants.signals && os.constants.signals[sig]) || 15));
   function stop(code) {
@@ -2049,7 +2049,7 @@ function runDashboard(station, opts) {
     if (stopped) return;
     if (!(rt.ok && rt.status === 200)) {
       stop(core.EXIT.STATION);
-      process.stderr.write('starnet: could not read the station roster (' + (rt.error || 'HTTP ' + rt.status) + ')\n');
+      process.stderr.write('vultron: could not read the station roster (' + (rt.error || 'HTTP ' + rt.status) + ')\n');
       return;
     }
     await Promise.all([loadSnapshot(), loadBudget(), loadLines().catch(() => {}), locateFolder().catch(() => {})]);
@@ -2072,7 +2072,7 @@ function runDashboard(station, opts) {
     timers.push(setInterval(paint, 100));   // the working spinner turns at 10 frames a second (paint writes only rows that changed)
     timers.push(setInterval(flushQueued, 500));   // a queued message goes the moment its conversation is free
     checkOnboarding().catch(() => {});   // a station with no agent yet: the awakening, here
-  })().catch(e => { stop(0); process.stderr.write('starnet: ' + ((e && e.message) || e) + '\n'); });
+  })().catch(e => { stop(0); process.stderr.write('vultron: ' + ((e && e.message) || e) + '\n'); });
   return exited;
 }
 

@@ -49,16 +49,16 @@ function appsPage(payload) {
 (async () => {
   const model = await provider();
   const lanPort = await allocatePort();
-  const fx = SidecarFixture.create({ prefix: 'starnet-scheduler-consumers-', env: {
-    SKYNET_DEV: '1', STARNET_DEV: '1', STARNET_REMOTE_PORT: String(lanPort), STARNET_REMOTE_LAN: '1', STARNET_REMOTE_RELAY: 'off',
-    SKYNET_OPENROUTER_BASE: model.base, STARNET_OPENROUTER_BASE: model.base,
-    SKYNET_OPENROUTER_KEY: 'sk-or-v1-scheduler-fake', STARNET_OPENROUTER_KEY: 'sk-or-v1-scheduler-fake',
-    SKYNET_DEFAULT_MODEL: 'test/model', STARNET_DEFAULT_MODEL: 'test/model'
+  const fx = SidecarFixture.create({ prefix: 'vultron-scheduler-consumers-', env: {
+    SKYNET_DEV: '1', VULTRON_DEV: '1', VULTRON_REMOTE_PORT: String(lanPort), VULTRON_REMOTE_LAN: '1', VULTRON_REMOTE_RELAY: 'off',
+    SKYNET_OPENROUTER_BASE: model.base, VULTRON_OPENROUTER_BASE: model.base,
+    SKYNET_OPENROUTER_KEY: 'sk-or-v1-scheduler-fake', VULTRON_OPENROUTER_KEY: 'sk-or-v1-scheduler-fake',
+    SKYNET_DEFAULT_MODEL: 'test/model', VULTRON_DEFAULT_MODEL: 'test/model'
   } });
   let phone;
   try {
     await fx.start();
-    const founded = await fx.json('POST', '/api/save', { schema: 'starnet.save', version: 6,
+    const founded = await fx.json('POST', '/api/save', { schema: 'vultron.save', version: 6,
       agent: { id: 'agent', name: 'Scheduler proof', createdAt: 1 }, workstreams: [] });
     A.eq(founded.status, 200, 'real founding save accepted');
     const made = await fx.json('POST', '/api/apps', { name: 'Scheduler proof', description: 'A schedule consumer' });

@@ -31,7 +31,7 @@ async function serve(api) {
 
 (async () => {
   let n = 0, serial = 0;
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-v1-lifecycle-'));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-v1-lifecycle-'));
   try {
     // ---- (a) a sync request whose client leaves aborts its run ----
     {

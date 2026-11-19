@@ -1,4 +1,4 @@
-/* STARNET — dockglow.js : the deferred BUILD-dock glow-target (G1c, feature 4b).
+/* VULTRON — dockglow.js : the deferred BUILD-dock glow-target (G1c, feature 4b).
 
    The kit-out tour glows the path into REFIT while it's teaching the first floor. This is the SAME idea, but
    standing on its own AFTER the tour: while a STATION quest is open (an agent reached for a tool its room can't
@@ -36,7 +36,7 @@ const DockGlow = (() => {
      not looked at yet: opening the BUILD dock (and closing it again) or entering BUILD MODE marks every open gap seen, and
      only a NEW gap lights it again. Gaps first seen before this rule existed count as seen (SINCE, stamped on first run),
      so an update never opens on a lit BUILD. Seen ids keep their own key (the newest 200). */
-  const SEEN_KEY = 'starnet.dockglow.seen.v1', SINCE_KEY = 'starnet.dockglow.since.v1';
+  const SEEN_KEY = 'vultron.dockglow.seen.v1', SINCE_KEY = 'vultron.dockglow.since.v1';
   let seen = null, since = null, dockWasOpen = false;
   function seenIds() {
     if (!seen) { let a = []; try { a = JSON.parse(localStorage.getItem(SEEN_KEY) || '[]'); } catch (_) { a = []; } seen = new Set(Array.isArray(a) ? a : []); }

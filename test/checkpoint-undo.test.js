@@ -89,7 +89,7 @@ const { runGit, gitRun, launchSpawn, runRows } = require('./helpers/checkpoint-r
 const isWin = process.platform === 'win32';
 const foldsCase = isWin || process.platform === 'darwin';
 
-const BASE = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-ckpt-undo-')));
+const BASE = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-ckpt-undo-')));
 const ROOT = path.join(BASE, 'ws');
 const links = [];
 function link(target, at) {

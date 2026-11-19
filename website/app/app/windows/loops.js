@@ -1,4 +1,4 @@
-/* STARNET — windows/loops.js : the LOOPS lane of the AUTOMATION window (standing objectives).
+/* VULTRON — windows/loops.js : the LOOPS lane of the AUTOMATION window (standing objectives).
 
    Loads AFTER stationui.js and windows/automation.js (see index.html) and registers itself as an
    AutomationWindow LANE — its two sections (ACTIVE LOOPS · START A LOOP) mount inside the shared
@@ -759,7 +759,7 @@
      decided cards vanish) and a loop finishing is not a conversational turn. A badge plus a toast is the
      honest, low-risk surface; a channel ping for a Commander who is genuinely away is a later, separate call
      that belongs server-side next to cron's autoNotify. */
-  const SEEN_KEY = 'starnet.loops.seen.v1';
+  const SEEN_KEY = 'vultron.loops.seen.v1';
   const loadSeen = () => { try { return new Set(JSON.parse(localStorage.getItem(SEEN_KEY) || '[]')); } catch (_) { return new Set(); } };
   const saveSeen = (s) => { try { localStorage.setItem(SEEN_KEY, JSON.stringify([...s].slice(-400))); } catch (_) {} };
 
@@ -800,7 +800,7 @@
   async function watch() {
     let j;
     try {
-      const r = await fetch('/api/loops', { headers: { 'X-StarNet-Token': window.__STARNET_API_TOKEN__ || '' } });
+      const r = await fetch('/api/loops', { headers: { 'X-Vultron-Token': window.__VULTRON_API_TOKEN__ || '' } });
       if (!r.ok) return;                        // an errored read must not clear the waiting badge
       j = await r.json();
     }

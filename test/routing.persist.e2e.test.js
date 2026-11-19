@@ -39,8 +39,8 @@ function boot(port, env, attemptsLeft) {
       env: Object.assign({}, process.env, env, {
         SKYNET_PORT: String(port),
         // zero network dependence: no provider keys → the catalog warm fails closed offline
-        OPENROUTER_KEY: '', OPENROUTER_API_KEY: '', STARNET_OPENROUTER_KEY: '', SKYNET_OPENROUTER_KEY: '',
-        STARNET_OPENROUTER_API_KEY: '', SKYNET_OPENROUTER_API_KEY: ''
+        OPENROUTER_KEY: '', OPENROUTER_API_KEY: '', VULTRON_OPENROUTER_KEY: '', SKYNET_OPENROUTER_KEY: '',
+        VULTRON_OPENROUTER_API_KEY: '', SKYNET_OPENROUTER_API_KEY: ''
       }),
       stdio: ['ignore', 'pipe', 'pipe']
     });
@@ -86,14 +86,14 @@ async function stop(b) { try { b.child.kill(); } catch (_) {} await sleep(200); 
     let B = 'http://' + HOST + ':' + b.port;
     let token = await bootToken(B, B);
     A.ok(token.length >= 32, 'got a session API token');
-    let headers = { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: B };
+    let headers = { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: B };
     const api = fetchApi(() => B, () => headers);
     const rebootTo = async () => {
       await stop(b);
       b = await boot(b.port, env, 20);
       B = 'http://' + HOST + ':' + b.port;
       token = await bootToken(B, B);
-      headers = { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: B };
+      headers = { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: B };
     };
     // Stats lists a line ONLY while routing is armed, so the named line proves what routes, live and after a restart.
     const armedLines = async () => {
@@ -164,7 +164,7 @@ async function stop(b) { try { b.child.kill(); } catch (_) {} await sleep(200); 
     b = await boot(b.port, env, 20);
     B = 'http://' + HOST + ':' + b.port;
     token = await bootToken(B, B);
-    headers = { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: B };
+    headers = { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: B };
     A.ok(/routing\.plan\.json is ignored/.test(b.out()), 'boot says the old routing.plan.json is ignored');
     A.ok(b.out().indexOf('routing plan restored') < 0, 'and restores nothing from it');
     A.eq(await armedLines(), [LINE_ID], 'the station routes by its saved floor alone: the old plan\'s agents name no line');

@@ -1,4 +1,4 @@
-/* STARNET — workstreams.js : the unified unit-of-work record (session organization).
+/* VULTRON — workstreams.js : the unified unit-of-work record (session organization).
    A WORKSTREAM is one named conversation that simultaneously IS the Comms thread (its
    `history`), IS a kanban card (its `lane`), and OWNS its backend runs + deliverables +
    per-conversation cost. This module is the single owner of workstreams[] + activeId +
@@ -888,15 +888,15 @@
     });
     const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 48) || 'general';
     if (format === 'json') {
-      const doc = { schema: 'starnet.conversation', version: 1, exportedAt: opts.exportedAt != null ? opts.exportedAt : now(), title, messages, secretsIncluded: false };
-      return { format: 'json', mime: 'application/json', filename: 'starnet-' + slug + '.json', text: JSON.stringify(doc, null, 2), doc };
+      const doc = { schema: 'vultron.conversation', version: 1, exportedAt: opts.exportedAt != null ? opts.exportedAt : now(), title, messages, secretsIncluded: false };
+      return { format: 'json', mime: 'application/json', filename: 'vultron-' + slug + '.json', text: JSON.stringify(doc, null, 2), doc };
     }
-    const lines = ['# ' + title, '', '_Exported from StarNet. Hidden/system data and obvious credentials are excluded._', ''];
+    const lines = ['# ' + title, '', '_Exported from Vultron. Hidden/system data and obvious credentials are excluded._', ''];
     for (const m of messages) {
       if (m.goalStep != null) { lines.push('## Station', '', 'Goal step: ' + m.goalStep, ''); continue; }
       lines.push('## ' + (m.role === 'user' ? 'Commander' : 'Agent'), '', m.content, '');
     }
-    return { format: 'markdown', mime: 'text/markdown', filename: 'starnet-' + slug + '.md', text: lines.join('\n') };
+    return { format: 'markdown', mime: 'text/markdown', filename: 'vultron-' + slug + '.md', text: lines.join('\n') };
   }
   /* what a delete of a session leaves in the page (commit 16): the runs it held (and its delegated workers' runs) and the attachment files its
      messages name. The page purges the beliefs learned from those runs and asks the station to delete the files no other session names. */
@@ -1026,7 +1026,7 @@
   }
 
   // ---------- migrations / imports (pure; save.js + stationui.js delegate here) ----------
-  // starnet.save v1 { agent, history, usage } -> the v2 workstreams slice. The entire legacy
+  // vultron.save v1 { agent, history, usage } -> the v2 workstreams slice. The entire legacy
   // conversation becomes a single General stream; its cost is SEEDED from the existing lifetime
   // usage so the per-stream number matches reality (nothing invented). agent + lifetime usage stay
   // at the envelope root (save.js merges this slice in) — they remain the billing source of truth.

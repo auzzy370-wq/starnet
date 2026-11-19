@@ -109,16 +109,16 @@ const queuedOn = (pool) => Object.values(pool.requests).reduce((n, a) => n + a.l
 (async () => {
   const mock = await startMockProvider();
   const fixture = SidecarFixture.create({ prefix: 'sk-run-stream-pool-', env: {
-    SKYNET_OPENROUTER_BASE: mock.base, STARNET_OPENROUTER_BASE: mock.base,
-    SKYNET_OPENROUTER_KEY: 'sk-or-v1-local-proof', STARNET_OPENROUTER_KEY: 'sk-or-v1-local-proof',
-    SKYNET_DEFAULT_MODEL: 'test/model', STARNET_DEFAULT_MODEL: 'test/model',
-    SKYNET_FULL_ACCESS: '', STARNET_FULL_ACCESS: ''   // ASK mode: every write waits on the Commander
+    SKYNET_OPENROUTER_BASE: mock.base, VULTRON_OPENROUTER_BASE: mock.base,
+    SKYNET_OPENROUTER_KEY: 'sk-or-v1-local-proof', VULTRON_OPENROUTER_KEY: 'sk-or-v1-local-proof',
+    SKYNET_DEFAULT_MODEL: 'test/model', VULTRON_DEFAULT_MODEL: 'test/model',
+    SKYNET_FULL_ACCESS: '', VULTRON_FULL_ACCESS: ''   // ASK mode: every write waits on the Commander
   } });
   const pools = [];
   try {
     await fixture.start();
     const B = fixture.baseUrl, token = fixture.token;
-    const H = { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: B };
+    const H = { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: B };
     const roster = await fetch(B + '/api/roster', { method: 'POST', headers: H, body: JSON.stringify({ agents: CREW.map(id => ({ agentId: id, system: 'You write briefs.', name: id.toUpperCase(), model: 'test/model' })) }) });
     A.eq(roster.status, 200, 'the crew is on the roster');
     const runBody = (agentId, extra) => Object.assign({ key: 'sk-or-v1-local-proof', model: 'test/model', agentId, isTask: true, streamId: 'ws_' + agentId, placed: ['cabinet'],
@@ -128,10 +128,10 @@ const queuedOn = (pool) => Object.values(pool.requests).reduce((n, a) => n + a.l
     // ===================== THE FIX: one stream for every run =====================
     const pool = new http.Agent({ keepAlive: true, maxSockets: 6 });
     pools.push(pool);
-    const sse = await request(pool, B, 'GET', '/api/channels/events?' + sseQuery(token), { headers: { 'X-StarNet-Token': token, Origin: B } });
+    const sse = await request(pool, B, 'GET', '/api/channels/events?' + sseQuery(token), { headers: { 'X-Vultron-Token': token, Origin: B } });
     A.eq(sse.res.statusCode, 200, 'the station bus (SSE) holds its one connection, as a page\'s does');
     sse.res.resume();
-    const st = await request(pool, B, 'GET', '/api/run/stream', { headers: { 'X-StarNet-Token': token, Origin: B } });
+    const st = await request(pool, B, 'GET', '/api/run/stream', { headers: { 'X-Vultron-Token': token, Origin: B } });
     A.eq(st.res.statusCode, 200, 'GET /api/run/stream opens');
     A.ok(/ndjson/.test(String(st.res.headers['content-type'])), 'it is an NDJSON stream');
     const lines = [];
@@ -245,7 +245,7 @@ const queuedOn = (pool) => Object.values(pool.requests).reduce((n, a) => n + a.l
     // ===================== THE CONTROL: per-run responses through the same six sockets =====================
     const pool2 = new http.Agent({ keepAlive: true, maxSockets: 6 });
     pools.push(pool2);
-    const sse2 = await request(pool2, B, 'GET', '/api/channels/events?' + sseQuery(token), { headers: { 'X-StarNet-Token': token, Origin: B } });
+    const sse2 = await request(pool2, B, 'GET', '/api/channels/events?' + sseQuery(token), { headers: { 'X-Vultron-Token': token, Origin: B } });
     sse2.res.resume();
     const per = [];
     for (let i = 0; i < 5; i++) {

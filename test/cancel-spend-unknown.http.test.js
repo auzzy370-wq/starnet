@@ -55,11 +55,11 @@ const server = http.createServer((req, res) => {
   await new Promise(r => server.listen(0, '127.0.0.1', r));
   const base = 'http://127.0.0.1:' + server.address().port;
   const fixture = SidecarFixture.create({ prefix: 'cancel-spend-', timeoutMs: 20000, env: {
-    SKYNET_OPENROUTER_BASE: base, STARNET_OPENROUTER_BASE: base,
-    SKYNET_OPENROUTER_KEY: 'fixture', STARNET_OPENROUTER_KEY: 'fixture',
-    SKYNET_DEFAULT_MODEL: 'test/model', STARNET_DEFAULT_MODEL: 'test/model',
+    SKYNET_OPENROUTER_BASE: base, VULTRON_OPENROUTER_BASE: base,
+    SKYNET_OPENROUTER_KEY: 'fixture', VULTRON_OPENROUTER_KEY: 'fixture',
+    SKYNET_DEFAULT_MODEL: 'test/model', VULTRON_DEFAULT_MODEL: 'test/model',
     DEEPSEEK_BASE_URL: base, DEEPSEEK_API_KEY: 'fixture',   // the openai-compatible adapter (usage before text in one chunk)
-    SKYNET_CRON_ENABLED: '0', STARNET_CRON_ENABLED: '0'
+    SKYNET_CRON_ENABLED: '0', VULTRON_CRON_ENABLED: '0'
   } });
   let seq = 0;
   const body = (text, sid, via) => JSON.stringify({ model: (via && via.model) || 'test/model', provider: (via && via.provider) || 'openrouter', key: 'fixture', agentId: 'agent', streamId: sid || 'cancel-spend', isTask: true, messages: [{ role: 'user', content: text }] });

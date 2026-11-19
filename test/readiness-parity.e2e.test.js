@@ -12,7 +12,7 @@ const { makeCache } = require('../frontend/app/provider-readiness.js');
 const { functionSourceIn } = require('./helpers/source.js');
 const ROOT = path.resolve(__dirname, '..');
 const cli = fx => new Promise((resolve, reject) => execFile(process.execPath,
-  [path.join(ROOT, 'bin/starnet.js'), 'status', '--port', String(fx.port), '--token', fx.token, '--json'],
+  [path.join(ROOT, 'bin/vultron.js'), 'status', '--port', String(fx.port), '--token', fx.token, '--json'],
   { cwd: ROOT, windowsHide: true, timeout: 15000, env: { ...process.env, APPDATA: fx.profile, LOCALAPPDATA: fx.profile, XDG_DATA_HOME: fx.profile } },
   (error, stdout) => error ? reject(error) : resolve(JSON.parse(stdout))));
 function page(cache) {
@@ -86,9 +86,9 @@ async function acpRefusal(fx) {
   });
   await new Promise(r => server.listen(0, '127.0.0.1', r));
   const baseUrl = 'http://127.0.0.1:' + server.address().port + '/v1';
-  const env = { STARNET_CRON_ENABLED: '0', SKYNET_CRON_ENABLED: '0', STARNET_DEFAULT_MODEL: 'fixture-model', SKYNET_DEFAULT_MODEL: 'fixture-model' };
+  const env = { VULTRON_CRON_ENABLED: '0', SKYNET_CRON_ENABLED: '0', VULTRON_DEFAULT_MODEL: 'fixture-model', SKYNET_DEFAULT_MODEL: 'fixture-model' };
   for (const p of Reg.listProviderProfiles({ public: false })) for (const name of [...(p.keyEnv || []), ...(p.baseUrlEnv || [])]) {
-    env[name] = ''; env['STARNET_' + name] = ''; env['SKYNET_' + name] = '';
+    env[name] = ''; env['VULTRON_' + name] = ''; env['SKYNET_' + name] = '';
   }
   const fx = SidecarFixture.create({ prefix: 'readiness-parity-', env });
   const preload = path.join(fx.workspace, 'fixture-fetch.cjs');

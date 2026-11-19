@@ -40,7 +40,7 @@
    path could replace the staged file — or its folder — with a hard link or a junction to a secret between the checks
    and Chrome's read (scratchpad rr5r-stage-race.js: S1/S1s/S2/S2b/S3 leaked ~/.ssh/id_rsa). The staged copy now lives
    OUTSIDE every agent jail and every blessed project root, in a station-owned scratch root the run is never told about
-   and never works in: <base>/starnet-upload-staging-<station id>, where <base> is the PER-USER %LOCALAPPDATA%\StarNet on
+   and never works in: <base>/vultron-upload-staging-<station id>, where <base> is the PER-USER %LOCALAPPDATA%\Vultron on
    Windows (review round 7 minor 6: os.tmpdir() there may be a TEMP other accounts share and write) and os.tmpdir() on
    POSIX; a per-agent subfolder under it, and a fresh crypto-random folder per copy holding one fresh file under the
    original name. The per-agent folder is locked owner-only (Windows icacls /inheritance:r /grant:r, the root too; else
@@ -74,13 +74,13 @@
    MAJOR, dropStaged), and re-prove it immediately before each file is unlinked (review round 6 minor).
 
    THE STAGING ROOT MUST BE OURS (review round 6 MAJOR). On POSIX os.tmpdir() is shared (/tmp), so another user could
-   create starnet-upload-staging-<id> first (or a link by that name), and the old recursive mkdir adopted it. The root
+   create vultron-upload-staging-<id> first (or a link by that name), and the old recursive mkdir adopted it. The root
    is now created NON-recursively with mode 0o700. A root or per-agent folder that already exists is used only when it
    is a real directory, not a link and not reached through one, and (POSIX) owned by this user with no group/other
    write bit; anything else refuses the upload, fail closed.
    WINDOWS (review round 7 minor 6). os.tmpdir() is NOT always per-user (TEMP=C:\Temp, or a TEMP that grants other
    accounts modify rights, as a walk machine's did), and Windows stat carries no owner, so the old root could be
-   pre-created by another account and adopted. The root now lives in %LOCALAPPDATA%\StarNet (inside the user's own
+   pre-created by another account and adopted. The root now lives in %LOCALAPPDATA%\Vultron (inside the user's own
    profile), both folders are locked owner-only (icacls /inheritance:r /grant:r), and then their security descriptors
    are READ (Windows PowerShell Get-Acl, SIDs, no localized names): the owner must be this user (or SYSTEM, or
    Administrators for an elevated process) and no other account may hold a right that writes, deletes, or changes the
@@ -134,12 +134,12 @@ const AGENT_ID_RE = /^[A-Za-z0-9_-]{1,40}$/;
 function mfold(P, s) { return (P.sep === '\\' ? String(s).toLowerCase() : String(s)); }
 function minside(P, a, b) { const x = mfold(P, P.resolve(a)), y = mfold(P, P.resolve(b)); return x === y || x.indexOf(y + P.sep) === 0; }
 
-/* THE STATION-OWNED STAGING ROOT (review round 5 BLOCKER): <base>/starnet-upload-staging-<station id>, OUTSIDE every
-   agent jail and every blessed project root. <base> (stagingBase) is PER-USER: %LOCALAPPDATA%\StarNet on Windows (review
+/* THE STATION-OWNED STAGING ROOT (review round 5 BLOCKER): <base>/vultron-upload-staging-<station id>, OUTSIDE every
+   agent jail and every blessed project root. <base> (stagingBase) is PER-USER: %LOCALAPPDATA%\Vultron on Windows (review
    round 7 minor 6), os.tmpdir() on POSIX (its squat-safe checks: stagingDirProblem); `tmp` names another base (tests).
    The station id is a short stable hash of this station's workspaces root, so two stations sharing one base never
    collide and the SAME station finds its own leftovers at boot (sweepUploadStaging). */
-const STAGING_LEAF = 'starnet-upload-staging-';
+const STAGING_LEAF = 'vultron-upload-staging-';
 function stagingId(workspaces) {
   return require('node:crypto').createHash('sha256').update(String(workspaces == null ? '' : workspaces)).digest('hex').slice(0, 16);
 }
@@ -149,7 +149,7 @@ function localAppData(P) {
 }
 function stagingBase(P, tmp) {
   if (tmp) return tmp;
-  return process.platform === 'win32' ? P.join(localAppData(P), 'StarNet') : require('node:os').tmpdir();
+  return process.platform === 'win32' ? P.join(localAppData(P), 'Vultron') : require('node:os').tmpdir();
 }
 function defaultStagingRoot(P, workspaces, tmp) { return P.join(stagingBase(P, tmp), STAGING_LEAF + stagingId(workspaces)); }
 // where 0.14.x staged on Windows (os.tmpdir()): swept at boot for a crash's leftovers, never staged into again
@@ -164,7 +164,7 @@ function defaultHardenStagingDir(fsp, dir) {
     let user = String(process.env.USERNAME || '').trim();
     if (!user) { try { user = require('node:os').userInfo().username; } catch (_) { user = ''; } }
     if (!user) return reject(new Error('no current user to grant staging ACLs to'));
-    // through the guard: icacls never inherits station secrets (STARNET_/SKYNET_ keys stripped from its env)
+    // through the guard: icacls never inherits station secrets (VULTRON_/SKYNET_ keys stripped from its env)
     require('./child-env.js').guardChildProcess(require('node:child_process')).execFile('icacls', [dir, '/inheritance:r', '/grant:r', user + ':(OI)(CI)F'],
       { windowsHide: true, timeout: 15000 }, (err) => err ? reject(err) : resolve());
   });
@@ -224,7 +224,7 @@ const WIN_SYSTEM_SIDS = new Set(['SY', 'S-1-5-18', 'BA', 'S-1-5-32-544']);
 const WIN_SELF_ALIASES = new Set(['CO', 'S-1-3-0', 'OW', 'S-1-3-4']);   // CREATOR OWNER, OWNER RIGHTS: whoever owns it (checked above)
 const WIN_GRANT_ACES = new Set(['A', 'OA', 'XA', 'ZA']);
 const WIN_INERT_ACES = new Set(['D', 'OD', 'XD', 'ZD', 'AU', 'AL', 'OU', 'OL', 'XU', 'ML', 'SP']);   // deny / audit / alarm / label
-const WIN_UNREADABLE = 'has a permission entry StarNet cannot check';
+const WIN_UNREADABLE = 'has a permission entry Vultron cannot check';
 // the DACL text after "D:" -> { nullDacl } | { aces: [{ type, rights, sid }] } | null (not a DACL this parser can read whole)
 function winDaclEntries(d) {
   let i = 0;
@@ -505,7 +505,7 @@ function makeEgressReader(deps) {
     const root = stagingRoot ? P.resolve(stagingRoot) : P.resolve(d);
     const rel = mfold(P, P.resolve(d)) === mfold(P, root) ? P.basename(root) : P.basename(root) + P.sep + P.basename(P.resolve(d));
     if (!defaultBase) return rel;
-    if (process.platform === 'win32') return '%LOCALAPPDATA%\\StarNet\\' + rel;
+    if (process.platform === 'win32') return '%LOCALAPPDATA%\\Vultron\\' + rel;
     return (require('node:os').tmpdir() === '/tmp' ? '/tmp/' : '$TMPDIR/') + rel.split(P.sep).join('/');
   }
   function stageDirFor(agentId) {
@@ -543,14 +543,14 @@ function makeEgressReader(deps) {
   }
   // what the person can do about a staging folder that is not ours (review round 7 minor 7)
   const STAGING_FIX = {
-    'is a link to somewhere else': 'Remove that link and try again; StarNet then makes a private folder in its place',
-    'belongs to another user': 'Remove that folder (or have its owner remove it) and try again; StarNet then makes a private one in its place',
-    'is writable by other users': 'Remove that folder and try again; StarNet then makes a private one in its place',
-    [WIN_UNREADABLE]: 'Remove that folder and try again; StarNet then makes a private one in its place',
-    'is not this station\'s staging folder': 'Restart StarNet and try again'
+    'is a link to somewhere else': 'Remove that link and try again; Vultron then makes a private folder in its place',
+    'belongs to another user': 'Remove that folder (or have its owner remove it) and try again; Vultron then makes a private one in its place',
+    'is writable by other users': 'Remove that folder and try again; Vultron then makes a private one in its place',
+    [WIN_UNREADABLE]: 'Remove that folder and try again; Vultron then makes a private one in its place',
+    'is not this station\'s staging folder': 'Restart Vultron and try again'
   };
   const fixFor = why => STAGING_FIX[why] || (/^could not be checked/.test(why)
-    ? 'StarNet reads its owner with Windows PowerShell: make sure powershell.exe can run, then try again'
+    ? 'Vultron reads its owner with Windows PowerShell: make sure powershell.exe can run, then try again'
     : 'Remove that folder and try again');
   // THE STAGING ROOT AND THE PER-AGENT FOLDER, PROVEN OURS (review round 6 MAJOR; Windows, review round 7 minor 6):
   // each is created non-recursively with mode 0o700, and one that already exists must pass stagingDirProblem. Then,
@@ -563,7 +563,7 @@ function makeEgressReader(deps) {
       return 'cannot be staged for the browser: the upload staging folder ' + why + ' (' + shownStaging(what) + '), so nothing was uploaded. ' + (fix || fixFor(why));
     };
     if (!stagingRoot || fold(P.dirname(P.resolve(dir))) !== fold(P.resolve(stagingRoot))) return refuse(dir, 'is not this station\'s staging folder');
-    // the per-user base on Windows (%LOCALAPPDATA%\StarNet) is made when a station's workspaces live elsewhere; never recursively
+    // the per-user base on Windows (%LOCALAPPDATA%\Vultron) is made when a station's workspaces live elsewhere; never recursively
     if (defaultBase && process.platform === 'win32') {
       try { await fsp.mkdir(P.dirname(P.resolve(stagingRoot))); }
       catch (e) { if (!(e && e.code === 'EEXIST')) throw e; }

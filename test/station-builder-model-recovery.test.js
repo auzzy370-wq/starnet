@@ -13,7 +13,7 @@
        order with no number staff the line in that order; the plan says how it matched them;
      · every refusal says what was wrong, the exact shape that is accepted with a tiny example on THIS line's own
        steps, and which lines (or which shape) fit what was asked;
-     · a refit belt drawn from one machine onto another connects them (StarNet lays the belt), a machine set on a
+     · a refit belt drawn from one machine onto another connects them (Vultron lays the belt), a machine set on a
        taken tile stands on the nearest free one (the card says where, and why), and what still cannot be placed is
        refused by NAME and tile;
      · station.build's result tells the model it is DONE, so it reports and stops. */
@@ -35,7 +35,7 @@ function walkerStation() {
   return st;
 }
 const snap = st => JSON.stringify(st.serialize());
-const COPY_DRAFT = 'Write a sharp 2-sentence launch post for StarNet 0.13.5 based on the options discussed.';
+const COPY_DRAFT = 'Write a sharp 2-sentence launch post for Vultron 0.13.5 based on the options discussed.';
 const STRAT_REVIEW = 'Review the draft post. Approve if it is ready to ship, or send it back with specific cuts.';
 
 /* ---- 1. the walker's FIRST plan: the right line, its steps named for their work — it plans, staffed in order ---- */
@@ -92,7 +92,7 @@ const STRAT_REVIEW = 'Review the draft post. Approve if it is ready to ship, or 
     'a staffed plan with only stock instructions names them for the lead to judge (crew kept), then the usual next step: ' + SB.planNext(full.plan, names));
   const told = SB.plan(st.serialize(), { line: 'revision_loop', steps: [{ step: 1, agent: 'COPY', instructions: COPY_DRAFT }, { step: 2, agent: 'STRATEGY', instructions: STRAT_REVIEW }] }, env);
   A.eq(SB.planNext(told.plan, names), null, 'a staffed plan told its work keeps the usual next step');
-  const aimed = SB.plan(st.serialize(), { line: 'revision_loop', purpose: 'launch posts for StarNet', steps: [{ step: 1, agent: 'COPY' }, { step: 2, agent: 'STRATEGY' }] }, env);
+  const aimed = SB.plan(st.serialize(), { line: 'revision_loop', purpose: 'launch posts for Vultron', steps: [{ step: 1, agent: 'COPY' }, { step: 2, agent: 'STRATEGY' }] }, env);
   A.eq(SB.planNext(aimed.plan, names), null, 'a purpose carries the work into the stock instructions, so that plan keeps it too');
   const custom = SB.plan(st.serialize(), { shape: ['WRITER', 'REVIEWER'], steps: [{ step: 1, agent: 'COPY' }, { step: 2, agent: 'STRATEGY' }] }, env);
   A.ok(/^Steps 1 \(Writer\) and 2 \(Reviewer\) have only their roles' stock instructions/.test(SB.planNext(custom.plan, names) || ''), 'a custom line with stock instructions is named the same: ' + SB.planNext(custom.plan, names));
@@ -322,10 +322,10 @@ const STRAT_REVIEW = 'Review the draft post. Approve if it is ready to ship, or 
   const { makeToolSearchTool } = require('../sidecar/tools/builtin/toolsearch.js');
   const fake = (name, description, schema) => ({ name, description, schema: schema || { type: 'object', properties: {} } });
   const reg = new Map([tools.mapTool, tools.planTool, tools.buildTool, tools.makePropTool, tools.testLineTool, tools.startLineTool].filter(Boolean).map(t => [t.name, t]));
-  for (const t of [fake('app.create', 'Create a new StarNet app: a dashboard or tool that lives INSIDE StarNet, in its own StarNet window, from a name and a one-line description.', { type: 'object', required: ['name'] }),
-    fake('app.edit', 'Rewrite one file of a StarNet app the crew made, by its app id.'), fake('session.create', 'Create a new chat session for an agent, with a title.'),
-    fake('loop.create', 'Create one durable StarNet LOOP when the Commander asks to keep working, iterate, or continue until an objective/convergence/check passes.', { type: 'object', required: ['objective'] }),
-    fake('routine.create', 'Create a StarNet ROUTINE: work an agent runs on a schedule (digests, research, monitoring, reports, drafts, reminders).', { type: 'object', required: ['prompt', 'schedule'] }),
+  for (const t of [fake('app.create', 'Create a new Vultron app: a dashboard or tool that lives INSIDE Vultron, in its own Vultron window, from a name and a one-line description.', { type: 'object', required: ['name'] }),
+    fake('app.edit', 'Rewrite one file of a Vultron app the crew made, by its app id.'), fake('session.create', 'Create a new chat session for an agent, with a title.'),
+    fake('loop.create', 'Create one durable Vultron LOOP when the Commander asks to keep working, iterate, or continue until an objective/convergence/check passes.', { type: 'object', required: ['objective'] }),
+    fake('routine.create', 'Create a Vultron ROUTINE: work an agent runs on a schedule (digests, research, monitoring, reports, drafts, reminders).', { type: 'object', required: ['prompt', 'schedule'] }),
     fake('task.create', 'Add one durable card to the Commander\'s task board when they say "add this to my board", "make a task", or equivalent.', { type: 'object', required: ['title'] }),
     fake('station.layout', 'Read the station floor the way the Workflow panel shows it: whether routing is live (confirmed against the router) and whether automation is stopped (E-STOP), every assembly line.')]) reg.set(t.name, t);
   const search = makeToolSearchTool({ registry: { get: n => reg.get(n) || null } }).toolSearchTool;

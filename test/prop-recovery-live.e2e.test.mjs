@@ -41,7 +41,7 @@ const stopChild = (child, graceful = false) => new Promise(resolve => {
   if (graceful) killTimer = setTimeout(kill, 3000); else kill();
 });
 
-const root = mkdtempSync(join(tmpdir(), 'starnet-crt-loss-'));
+const root = mkdtempSync(join(tmpdir(), 'vultron-crt-loss-'));
 const workspace = join(root, 'workspace');
 const profile = join(root, 'profile');
 const appPort = await freePort();
@@ -63,8 +63,8 @@ try {
   const diagnostics = collectDiagnostics(cdp);
   // Optional before-fix proof uses the old renderer bytes in the same real app,
   // without modifying any checkout or the owner's installed application.
-  if(process.env.STARNET_REPRO_BASELINE){
-    const source=execFileSync('git',['show',process.env.STARNET_REPRO_BASELINE+':frontend/app/propremaster.js'],{encoding:'utf8'});
+  if(process.env.VULTRON_REPRO_BASELINE){
+    const source=execFileSync('git',['show',process.env.VULTRON_REPRO_BASELINE+':frontend/app/propremaster.js'],{encoding:'utf8'});
     await cdp.send('Fetch.enable',{patterns:[{urlPattern:'*app/propremaster.js*'}]});
     cdp.on('Fetch.requestPaused',p=>{cdp.send('Fetch.fulfillRequest',{requestId:p.requestId,responseCode:200,responseHeaders:[{name:'Content-Type',value:'text/javascript'}],body:Buffer.from(source).toString('base64')}).catch(()=>{});});
   }
@@ -102,7 +102,7 @@ try {
   try { cdp?.ws.close(); } catch {}
   await Promise.all([stopChild(chrome, true), stopChild(sidecar)]);
   const resolvedRoot = root.replace(/\\/g, '/');
-  if (resolvedRoot.startsWith(tmpdir().replace(/\\/g, '/') + '/') && /starnet-crt-loss-/.test(resolvedRoot)) {
+  if (resolvedRoot.startsWith(tmpdir().replace(/\\/g, '/') + '/') && /vultron-crt-loss-/.test(resolvedRoot)) {
     // Chrome's children can hold chrome_debug.log for seconds after the parent exits on a loaded
     // Windows box (2s was not enough under a full gate) — the same transient-lock window
     // stationbake.connections.test.mjs allows, and it still fails if the lock never lifts.

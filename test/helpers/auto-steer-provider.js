@@ -37,8 +37,8 @@ async function startProvider() {
   await new Promise(r=>server.listen(0,'127.0.0.1',r));
   return {requests,waiting,release,base:'http://127.0.0.1:'+server.address().port+'/api/v1',close:()=>{release();server.closeAllConnections();return new Promise(r=>server.close(r));}};
 }
-function environment(provider) {return {SKYNET_OPENROUTER_BASE:provider.base,STARNET_OPENROUTER_BASE:provider.base,
- SKYNET_OPENROUTER_KEY:'sk-or-v1-auto-steer-fixture',STARNET_OPENROUTER_KEY:'sk-or-v1-auto-steer-fixture',
- SKYNET_DEFAULT_MODEL:'test/auto-steer',STARNET_DEFAULT_MODEL:'test/auto-steer',SKYNET_FULL_ACCESS:'1',STARNET_FULL_ACCESS:'1',
- SKYNET_AUX_BUDGET:'0',STARNET_AUX_BUDGET:'0',SKYNET_EDGE_TTS_PROBE:'0'};}
+function environment(provider) {return {SKYNET_OPENROUTER_BASE:provider.base,VULTRON_OPENROUTER_BASE:provider.base,
+ SKYNET_OPENROUTER_KEY:'sk-or-v1-auto-steer-fixture',VULTRON_OPENROUTER_KEY:'sk-or-v1-auto-steer-fixture',
+ SKYNET_DEFAULT_MODEL:'test/auto-steer',VULTRON_DEFAULT_MODEL:'test/auto-steer',SKYNET_FULL_ACCESS:'1',VULTRON_FULL_ACCESS:'1',
+ SKYNET_AUX_BUDGET:'0',VULTRON_AUX_BUDGET:'0',SKYNET_EDGE_TTS_PROBE:'0'};}
 module.exports={startProvider,environment};

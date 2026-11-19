@@ -3,7 +3,7 @@
 // The 2026-10-21 support report: a 950-workstream station (about 2.5M characters) could not be stored in the
 // browser cache. 0.13.5 resumed it from the station file, then showed "Another window saved newer station
 // changes" with no other window open. This boots exactly that: a seeded sidecar whose station file holds a large
-// station, and ONE fresh browser profile whose cache refuses any `starnet.save` write over CACHE_CAP characters.
+// station, and ONE fresh browser profile whose cache refuses any `vultron.save` write over CACHE_CAP characters.
 // It prints what the window and the station file each hold, and whether a conflict file appeared.
 //
 //   node dev/save-conflict-repro.mjs [--workstreams 950] [--cap 1500000]
@@ -53,7 +53,7 @@ try {
   await cdp.send('Page.addScriptToEvaluateOnNewDocument', { source: `(() => {
     const set = Storage.prototype.setItem;
     Storage.prototype.setItem = function (k, v) {
-      if (k === 'starnet.save' && String(v).length > ${CACHE_CAP}) throw new DOMException('The quota has been exceeded.', 'QuotaExceededError');
+      if (k === 'vultron.save' && String(v).length > ${CACHE_CAP}) throw new DOMException('The quota has been exceeded.', 'QuotaExceededError');
       return set.call(this, k, v);
     };
   })();` });
@@ -63,7 +63,7 @@ try {
   const probe = () => evalJS(cdp, `(() => { const h = CloudSave.health(); return {
     clientRevision: CloudSave.revision(), cacheFailed: h.cacheFailed, confirmed: h.cacheFailedConfirmed, failures: h.consecutiveFailures,
     conflict: h.conflict ? { revision: h.conflict.revision } : null, banner: !!document.getElementById('save-conflict-notice'),
-    windowWorkstreams: (Workstreams.serialize().workstreams || []).length, cached: !!localStorage.getItem('starnet.save') }; })()`);
+    windowWorkstreams: (Workstreams.serialize().workstreams || []).length, cached: !!localStorage.getItem('vultron.save') }; })()`);
   console.log('after boot   ', JSON.stringify(await probe()), 'file rev', fileSave().doc._saveRevision, 'conflicts', conflicts());
   for (let i = 1; i <= 3; i++) {
     await evalJS(cdp, 'App.persist(); CloudSave.flush({ force: true })');

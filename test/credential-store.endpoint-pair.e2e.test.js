@@ -24,9 +24,9 @@
         saved next to that URL runs {K, U}; with the page copy removed the env key alone is told both exits; and
         CUSTOM_OPENAI_BASE_URL gives E an endpoint of its own, over the keyless page URL.
      3. GUARDS. A keyless station on a keyless page URL runs keyless. An OpenRouter env URL with a page key: the key goes to the
-        env URL. The desktop's keychain key on its kept endpoint, after a restart with no window. A StarNet routine under a
+        env URL. The desktop's keychain key on its kept endpoint, after a restart with no window. A Vultron routine under a
         stale endpoint (the 3195ab5a rows that record calls blocked): Run Now and the scheduled fire on the linked URL with the
-        device token, a stale CUSTOM page URL, a stale starnet record in the page file and a stale request endpoint beside them. A
+        device token, a stale CUSTOM page URL, a stale vultron record in the page file and a stale request endpoint beside them. A
         sign-in's bearer goes to the sign-in's own endpoint under a stale one a run names, on record at the outbound edge
         (test/helpers/outbound-edge.js), which also keeps this row off the network.
 
@@ -53,14 +53,14 @@ const K = {
   saved: 'custom-SAVED-NEXT-TO-URL-key-0123456789abcdef',
   kc: 'custom-KEYCHAIN-key-0123456789abcdefghijklmnop',
   or: 'sk-or-v1-PAGE-COPY-openrouter-0123456789abcdef012',
-  device: 'starnet-device-token-0123456789abcdefghijklmnop',
+  device: 'vultron-device-token-0123456789abcdefghijklmnop',
   grok: 'eyJhbGciOiJSUzI1NiJ9.eyJleHAiOjE5MDAwMDAwMDB9.ZmFrZS1zaWduYXR1cmUtZm9yLXRlc3Q'
 };
-const MODELS = { custom: 'local-model', openrouter: 'test/model', starnet: 'test/model', grok: 'grok-4' };
+const MODELS = { custom: 'local-model', openrouter: 'test/model', vultron: 'test/model', grok: 'grok-4' };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 // Opt-in evidence for an intermittent routine-store refusal. Read only fixture-owned state;
 // never remove or repair a lock here, and never dump the process environment.
-const DIAGNOSTICS = process.env.STARNET_ENDPOINT_PAIR_DIAGNOSTICS || '';
+const DIAGNOSTICS = process.env.VULTRON_ENDPOINT_PAIR_DIAGNOSTICS || '';
 function diagnostic(label, fx, phase, details) {
   if (!DIAGNOSTICS) return;
   const lock = { path: path.join(fx.workspace, 'cron.lock') };
@@ -92,8 +92,8 @@ async function waitFor(pred, label, ms) {
   return false;
 }
 // word for word: what a Commander reads, each naming the key that has no endpoint and both ways out (decision 5)
-const P3C_SENTENCE = 'CUSTOM_OPENAI_KEY is set in the environment that starts StarNet, but no CUSTOM base URL goes with it: the URL saved under SETTINGS → AI & MODELS was saved without a key, and an environment key is never sent to a URL saved in the page. Save the key next to that URL in Settings, or set CUSTOM_OPENAI_BASE_URL.';
-const STATE2_SENTENCE = 'CUSTOM_OPENAI_KEY is set in the environment that starts StarNet, but no CUSTOM base URL goes with it: set CUSTOM_OPENAI_BASE_URL, or save the key next to the URL under SETTINGS → AI & MODELS';
+const P3C_SENTENCE = 'CUSTOM_OPENAI_KEY is set in the environment that starts Vultron, but no CUSTOM base URL goes with it: the URL saved under SETTINGS → AI & MODELS was saved without a key, and an environment key is never sent to a URL saved in the page. Save the key next to that URL in Settings, or set CUSTOM_OPENAI_BASE_URL.';
+const STATE2_SENTENCE = 'CUSTOM_OPENAI_KEY is set in the environment that starts Vultron, but no CUSTOM base URL goes with it: set CUSTOM_OPENAI_BASE_URL, or save the key next to the URL under SETTINGS → AI & MODELS';
 
 // ---- the recording upstream: one path per endpoint, so each request's endpoint is on record beside its key ----
 function recorder() {
@@ -160,14 +160,14 @@ function fakeTelegram() {
 // nothing the test runner exports may stand in for a key, an endpoint or a link
 const AMBIENT = ['OPENROUTER_KEY', 'OPENROUTER_API_KEY', 'OPENROUTER_BASE', 'CUSTOM_OPENAI_KEY', 'OPENAI_COMPATIBLE_KEY', 'CUSTOM_OPENAI_BASE_URL', 'OPENAI_COMPATIBLE_BASE_URL', 'KEY_POOL_CUSTOM',
   'OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'GEMINI_API_KEY', 'GROQ_API_KEY', 'DESKTOP_SHELL', 'IPC_TOKEN', 'CREDITS_URL', 'CREDITS_TOKEN', 'CLOUD_URL', 'TELEGRAM_TOKEN', 'API_KEY', 'V1_KEY', 'DEFAULT_MODEL', 'FALLBACK_MODELS'];
-const pair = (name, value) => ({ ['SKYNET_' + name]: value, ['STARNET_' + name]: value });
+const pair = (name, value) => ({ ['SKYNET_' + name]: value, ['VULTRON_' + name]: value });
 function station(label, up, env) {
   const blank = {};
-  for (const n of AMBIENT) { blank[n] = ''; blank['STARNET_' + n] = ''; blank['SKYNET_' + n] = ''; }
+  for (const n of AMBIENT) { blank[n] = ''; blank['VULTRON_' + n] = ''; blank['SKYNET_' + n] = ''; }
   const fx = SidecarFixture.create({ prefix: 'cs-endpoint-pair-' + label + '-', timeoutMs: 45000, env: Object.assign(blank, {
-    STARNET_FULL_ACCESS: '1', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0', SKYNET_THREAD_MINE: '0', SKYNET_AUX_BUDGET: '0',
-    STARNET_CRON_TICK_MS: '400', SKYNET_CRON_TICK_MS: '400', STARNET_API_KEY: V1,
-    STARNET_TELEGRAM_API_BASE: 'http://127.0.0.1:9', SKYNET_TELEGRAM_API_BASE: 'http://127.0.0.1:9'
+    VULTRON_FULL_ACCESS: '1', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0', SKYNET_THREAD_MINE: '0', SKYNET_AUX_BUDGET: '0',
+    VULTRON_CRON_TICK_MS: '400', SKYNET_CRON_TICK_MS: '400', VULTRON_API_KEY: V1,
+    VULTRON_TELEGRAM_API_BASE: 'http://127.0.0.1:9', SKYNET_TELEGRAM_API_BASE: 'http://127.0.0.1:9'
   }, env) });
   // the scheduler is armed before boot, so a routine due in a second really fires
   fs.writeFileSync(path.join(fx.workspace, 'cron.armed.json'), JSON.stringify({ version: 1, armed: true }));
@@ -225,7 +225,7 @@ function station(label, up, env) {
       await fx.start();
       diagnostic(label, fx, 'due-while-down:ready');
     },
-    push: body => fx.request('/api/key', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-StarNet-Token': IPC }, body: JSON.stringify(body) })
+    push: body => fx.request('/api/key', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Vultron-Token': IPC }, body: JSON.stringify(body) })
       .then(async r => ({ status: r.status, body: await r.json().catch(() => null) })),
     engineKey: body => fx.json('POST', '/api/providers/engine-key', body),
     providers: async () => { const r = await fx.json('GET', '/api/providers'); const m = {}; for (const p of (r.body.providers || [])) m[p.id] = p; return m; },
@@ -273,7 +273,7 @@ const ranDone = r => r.status === 200 && endOf(r.text).reason === 'done';
     /* ================= 1. P3b: an env key with no endpoint, beside the page's saved pair ================= */
     {
       const U = up.base + '/u/v1';
-      const s = station('p3b', up, { CUSTOM_OPENAI_KEY: K.env, STARNET_KEY_POOL_CUSTOM: K.envPool, STARNET_TELEGRAM_API_BASE: tg.base, SKYNET_TELEGRAM_API_BASE: tg.base });
+      const s = station('p3b', up, { CUSTOM_OPENAI_KEY: K.env, VULTRON_KEY_POOL_CUSTOM: K.envPool, VULTRON_TELEGRAM_API_BASE: tg.base, SKYNET_TELEGRAM_API_BASE: tg.base });
       stations.push(s);
       await s.fx.start();
       const saved = await s.engineKey({ provider: 'custom', key: K.page, keyPool: [], baseUrl: U });
@@ -367,7 +367,7 @@ const ranDone = r => r.status === 200 && endOf(r.text).reason === 'done';
     /* ================= 2. P3c: the env key beside a URL saved with no key ================= */
     {
       const U = up.base + '/needs-key/v1';
-      const s = station('p3c', up, { CUSTOM_OPENAI_KEY: K.env, STARNET_KEY_POOL_CUSTOM: '' });
+      const s = station('p3c', up, { CUSTOM_OPENAI_KEY: K.env, VULTRON_KEY_POOL_CUSTOM: '' });
       stations.push(s);
       await s.fx.start();
       const saved = await s.engineKey({ provider: 'custom', baseUrl: U, keyPool: [], key: '' });
@@ -410,7 +410,7 @@ const ranDone = r => r.status === 200 && endOf(r.text).reason === 'done';
     /* ================= 3. guards ================= */
     // a keyless station on a keyless page URL, and a page key beside the operator's OpenRouter URL
     {
-      const s = station('keyless', up, { STARNET_OPENROUTER_BASE: up.base + '/orenv/api/v1' });
+      const s = station('keyless', up, { VULTRON_OPENROUTER_BASE: up.base + '/orenv/api/v1' });
       stations.push(s);
       await s.fx.start();
       A.eq((await s.engineKey({ provider: 'custom', baseUrl: up.base + '/local/v1', keyPool: [], key: '' })).status, 200, 'guard: a keyless page URL is saved');
@@ -429,7 +429,7 @@ const ranDone = r => r.status === 200 && endOf(r.text).reason === 'done';
     // the desktop: the keychain key on its kept endpoint, after a restart with no window
     {
       const kept = up.base + '/kept/v1';
-      const s = station('desktop', up, { STARNET_DESKTOP_SHELL: '1', ...pair('IPC_TOKEN', IPC), ...pair('CUSTOM_OPENAI_KEY', K.kc) });
+      const s = station('desktop', up, { VULTRON_DESKTOP_SHELL: '1', ...pair('IPC_TOKEN', IPC), ...pair('CUSTOM_OPENAI_KEY', K.kc) });
       stations.push(s);
       await s.fx.start();
       A.eq((await s.roster({ cus: { provider: 'custom' } })).status, 200, 'desktop: the roster is saved');
@@ -447,31 +447,31 @@ const ranDone = r => r.status === 200 && endOf(r.text).reason === 'done';
       const file = fs.readFileSync(path.join(s.fx.workspace, '.secrets', 'provider-endpoints.json'), 'utf8');
       A.ok(file.includes(kept) && !file.includes(K.kc), 'desktop: the file keeps the URL, never the key');
     }
-    // StarNet's linked account under a stale endpoint, and a sign-in under a stale one, on record at the outbound edge
+    // Vultron's linked account under a stale endpoint, and a sign-in under a stale one, on record at the outbound edge
     {
       const stale = up.base + '/stale/v1', cloud = up.base + '/cloud';
       const edgeOut = path.join(fs.mkdtempSync(path.join(require('os').tmpdir(), 'cs-endpoint-pair-edge-')), 'edge.jsonl');
       const prior = String(process.env.NODE_OPTIONS || '').trim();
-      const s = station('accounts', up, { STARNET_CLOUD_URL: cloud, NODE_OPTIONS: (prior ? prior + ' ' : '') + '--require=' + EDGE, STARNET_TEST_EDGE_OUT: edgeOut });
+      const s = station('accounts', up, { VULTRON_CLOUD_URL: cloud, NODE_OPTIONS: (prior ? prior + ' ' : '') + '--require=' + EDGE, VULTRON_TEST_EDGE_OUT: edgeOut });
       stations.push(s);
       s.edgeDir = path.dirname(edgeOut);
       const ws = s.fx.workspace;
       fs.mkdirSync(path.join(ws, '.secrets'), { recursive: true });
       fs.writeFileSync(path.join(ws, '.secrets', 'credits.json'), JSON.stringify({ url: cloud, deviceToken: K.device, accountId: 'fixture-account', linkedAt: Date.now() }));
-      // an older build's page file with a stale starnet record, and a stale CUSTOM page endpoint beside it
-      fs.writeFileSync(path.join(ws, '.secrets', 'provider-keys.json'), JSON.stringify({ version: 1, providers: { starnet: { key: 'stale-key-0123456789', baseUrl: stale, rev: 'a1' }, custom: { baseUrl: stale, rev: 'a2' } } }));
+      // an older build's page file with a stale vultron record, and a stale CUSTOM page endpoint beside it
+      fs.writeFileSync(path.join(ws, '.secrets', 'provider-keys.json'), JSON.stringify({ version: 1, providers: { vultron: { key: 'stale-key-0123456789', baseUrl: stale, rev: 'a1' }, custom: { baseUrl: stale, rev: 'a2' } } }));
       fs.mkdirSync(path.join(ws, 'grok'), { recursive: true });
       fs.writeFileSync(path.join(ws, 'grok', 'tokens.json'), JSON.stringify({ access_token: K.grok, refresh_token: 'rf-endpoint-pair-0123456789', expires_at: 1900000000000, last_refresh: '2026-10-31T01:00:00.000Z' }));
       await s.fx.start();
       A.ok(fs.existsSync(edgeOut) && /"edge":"ready"/.test(fs.readFileSync(edgeOut, 'utf8')), 'accounts: the outbound edge is up (this station must never reach the network)');
-      A.eq((await s.roster({ net: { provider: 'starnet' }, grk: { provider: 'grok' } })).status, 200, 'accounts: the roster is saved');
-      const id = await s.routine('net', 'starnet', 'GUARD-STARNET');
+      A.eq((await s.roster({ net: { provider: 'vultron' }, grk: { provider: 'grok' } })).status, 200, 'accounts: the roster is saved');
+      const id = await s.routine('net', 'vultron', 'GUARD-VULTRON');
       const ran = await s.runNow(id);
-      A.ok(ranDone(ran), '3195ab5a: Run Now of a StarNet routine runs under the stale endpoints: ' + String(ran.text).slice(-240));
-      A.eq(once(sentFor(up, 'GUARD-STARNET')), [['/cloud/', K.device]], '3195ab5a: ...on the linked URL, with the device token');
-      const fire = await s.scheduled('net', 'starnet', 'LINKED-SCHEDULED');
+      A.ok(ranDone(ran), '3195ab5a: Run Now of a Vultron routine runs under the stale endpoints: ' + String(ran.text).slice(-240));
+      A.eq(once(sentFor(up, 'GUARD-VULTRON')), [['/cloud/', K.device]], '3195ab5a: ...on the linked URL, with the device token');
+      const fire = await s.scheduled('net', 'vultron', 'LINKED-SCHEDULED');
       A.eq(once(fire.sent || []), [['/cloud/', K.device]], '3195ab5a: the scheduled fire too: ' + JSON.stringify(fire.blocked ? fire.blocked.lastError : fire.timedOut || 'sent'));
-      const body = await s.fx.request('/api/run', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ provider: 'starnet', model: MODELS.starnet, baseUrl: stale, agentId: 'net', messages: [{ role: 'user', content: 'LINKED-BODY-RUN say done' }] }) });
+      const body = await s.fx.request('/api/run', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ provider: 'vultron', model: MODELS.vultron, baseUrl: stale, agentId: 'net', messages: [{ role: 'user', content: 'LINKED-BODY-RUN say done' }] }) });
       A.ok(ranDone({ status: body.status, text: await body.text() }), '3195ab5a: a run naming the stale endpoint runs too');
       A.eq(once(sentFor(up, 'LINKED-BODY-RUN')), [['/cloud/', K.device]], '3195ab5a: ...on the linked URL');
 

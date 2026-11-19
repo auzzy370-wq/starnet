@@ -18,7 +18,7 @@ const SIDECAR = join(REPO, 'sidecar', 'index.js');
 
 // Mock UI tests only need a label, but live audit uses this model for a real provider call.
 export const DEFAULT_MODEL = process.env.SKYNET_DEFAULT_MODEL
-  || process.env.STARNET_DEFAULT_MODEL
+  || process.env.VULTRON_DEFAULT_MODEL
   || 'anthropic/claude-sonnet-4.6';
 export const PLACEHOLDER_KEY = process.env.SKYNET_OPENROUTER_KEY || 'sk-or-shoot-placeholder';
 
@@ -82,7 +82,7 @@ export async function waitUp(url, tries = 60) {
 // The game screen only. A fallback on "the dock is visible" answered ready as soon as a new document was parsed: its stylesheets are still
 // loading then, so #bottombar lays out and CDP's evaluate is not held back by them (comms-owner looked at #screen-boot through that gap).
 export const READY_EXPR = `(() => { try {
-  if (!window.__STARNET_DEV__) return false;
+  if (!window.__VULTRON_DEV__) return false;
   const g = document.getElementById('screen-game');
   return !!(g && g.classList.contains('active'));
 } catch (e) { return false; } })()`;

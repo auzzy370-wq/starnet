@@ -33,7 +33,7 @@ const { waitUp, waitDevReady } = await import(pathToFileURL(join(repo, 'scripts/
 const port = Number(arg('--port', '9861')), cdpPort = Number(arg('--cdp', '19861'));
 const sweeps = Number(arg('--sweeps', '3')), repaints = Number(arg('--repaints', '0')), maxRoot = Number(arg('--max-root', '30')), maxCanvasMB = Number(arg('--max-canvas-mb', '0'));
 const station = resolve(arg('--station', join(repo, 'dev/fixtures/seed-workspace')));
-const OUT = resolve(arg('--out', join(tmpdir(), 'starnet-window-leaks')));
+const OUT = resolve(arg('--out', join(tmpdir(), 'vultron-window-leaks')));
 const KEYS = (arg('--keys', 'settings,connectors,deliverables,tasks,workflows,automation,messaging,notifs,quests,manual,updates,commander,trophies')).split(',').filter(Boolean);
 const APP_URL = `http://127.0.0.1:${port}/`;
 const scratch = join(OUT, '_ws-' + port), profile = join(OUT, '_profile-' + cdpPort), home = join(OUT, '_home-' + port);
@@ -52,7 +52,7 @@ function bootStation() {
   }
   for (const d of ['appdata', 'local', 'home', 'xdg', 'hermes', 'tmp']) mkdirSync(join(home, d), { recursive: true });
   const env = {};
-  for (const [k, v] of Object.entries(process.env)) if (!/^(CLAUDE|ANTHROPIC|OPENAI|OPENROUTER|STARNET|SKYNET|HERMES|CODEX|NODE_OPTIONS|SEED_)|KEY|TOKEN|SECRET|PASSWORD/i.test(k)) env[k] = v;
+  for (const [k, v] of Object.entries(process.env)) if (!/^(CLAUDE|ANTHROPIC|OPENAI|OPENROUTER|VULTRON|SKYNET|HERMES|CODEX|NODE_OPTIONS|SEED_)|KEY|TOKEN|SECRET|PASSWORD/i.test(k)) env[k] = v;
   Object.assign(env, { SKYNET_DEV: '1', SKYNET_FULL_ACCESS: '1', SKYNET_WORKSPACES: scratch, SKYNET_PORT: String(port), PORT: String(port),
     APPDATA: join(home, 'appdata'), LOCALAPPDATA: join(home, 'local'), HOME: join(home, 'home'), USERPROFILE: join(home, 'home'),
     XDG_DATA_HOME: join(home, 'xdg'), HERMES_HOME: join(home, 'hermes'), CODEX_HOME: join(home, 'home', '.codex'),

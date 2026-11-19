@@ -17,7 +17,7 @@ const { makeChannelHub } = require('../sidecar/channels/hub.js');
 const { makeHandoffRunner } = require('../sidecar/routing/handoff-runner.js');
 const { mergeFiles, productOf } = require('../sidecar/routing/work-product.js');
 const P = require('../frontend/app/pipeline.js');
-const ROOT = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-line-files-'));
+const ROOT = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-line-files-'));
 const workspaces = path.join(ROOT, 'workspaces');
 async function denied(p, message) { try { await p; A.ok(false, message); } catch (_) { A.ok(true, message); } }
 
@@ -184,7 +184,7 @@ async function main() {
 }
 main().catch(e => A.ok(false, String(e && e.stack || e))).finally(async () => {
   const owned = path.resolve(ROOT), temp = path.resolve(os.tmpdir()) + path.sep;
-  if (!owned.startsWith(temp) || !path.basename(owned).startsWith('starnet-line-files-')) throw new Error('unexpected fixture cleanup target');
+  if (!owned.startsWith(temp) || !path.basename(owned).startsWith('vultron-line-files-')) throw new Error('unexpected fixture cleanup target');
   await fsp.rm(owned, { recursive: true, force: true });
   A.report('line-handoff-files.test');
 });

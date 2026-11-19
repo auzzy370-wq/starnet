@@ -35,7 +35,7 @@ try {
   const diag = collectDiagnostics(cdp);
   await evalJS(cdp, `location.href = ${JSON.stringify(URL)}`);
   if (!(await waitDevReady(cdp, evalJS, { url: URL }))) throw new Error('no game screen');
-  await evalJS(cdp, `(() => { localStorage.setItem('starnet.crewrail.w', '400'); localStorage.setItem('starnet.crewrail.rows', '2'); localStorage.setItem('starnet.chatw', '767'); location.reload(); return 1; })()`);
+  await evalJS(cdp, `(() => { localStorage.setItem('vultron.crewrail.w', '400'); localStorage.setItem('vultron.crewrail.rows', '2'); localStorage.setItem('vultron.chatw', '767'); location.reload(); return 1; })()`);
   await sleep(1500);
   if (!(await waitDevReady(cdp, evalJS, { url: URL }))) throw new Error('no game screen after reload');
   await evalJS(cdp, `StationUI.setLook(Object.assign({ themeGlow: 20, panelBright: -100, flicker: false, textScale: 90 }, ${JSON.stringify(LOOKP)}))`);

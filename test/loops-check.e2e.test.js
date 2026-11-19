@@ -132,7 +132,7 @@ function makeRepo() {
     ({ child, port } = await boot(await allocatePort(), env, 20));
     const B = 'http://' + HOST + ':' + port;
     const token = await bootToken(B, B);
-    const headers = { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: B };
+    const headers = { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: B };
     const mk = (body) => fetch(B + '/api/loops', { method: 'POST', headers, body: JSON.stringify(body) });
 
     /* ---- an UNBLESSED root: the loop must stand down BEFORE it spends -----------------------------------

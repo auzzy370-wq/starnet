@@ -7,13 +7,13 @@
     { "name": "a probe that failed is unknown (busy)", "stamp": { "startedAt": 1000, "executable": "node.exe" }, "seen": { "ok": false, "reason": "access denied" }, "verdict": "unknown" },
     { "name": "no start time on the probe is unknown", "stamp": { "startedAt": 1000, "executable": "node.exe" }, "seen": { "ok": true, "executable": "node.exe" }, "verdict": "unknown" },
     { "name": "no start time on the stamp is unknown", "stamp": { "executable": "node.exe" }, "seen": { "ok": true, "startedAt": 5000, "executable": "node.exe" }, "verdict": "unknown" },
-    { "name": "the 2026-10-15 soak: cmd.exe born 31 min after the node claim", "stamp": { "startedAt": 1792053050000, "executable": "C:\\Users\\x\\AppData\\Local\\StarNet\\node.exe" }, "seen": { "ok": true, "startedAt": 1792054912000, "executable": "C:\\Windows\\System32\\cmd.exe" }, "verdict": "reused" },
+    { "name": "the 2026-10-15 soak: cmd.exe born 31 min after the node claim", "stamp": { "startedAt": 1792053050000, "executable": "C:\\Users\\x\\AppData\\Local\\Vultron\\node.exe" }, "seen": { "ok": true, "startedAt": 1792054912000, "executable": "C:\\Windows\\System32\\cmd.exe" }, "verdict": "reused" },
     { "name": "same image born more than the slack after the stamp is reused", "stamp": { "startedAt": 1000000, "executable": "node.exe" }, "seen": { "ok": true, "startedAt": 1060001, "executable": "node.exe" }, "verdict": "reused" },
     { "name": "same image born exactly at the slack edge is not proof", "stamp": { "startedAt": 1000000, "executable": "node.exe" }, "seen": { "ok": true, "startedAt": 1060000, "executable": "node.exe" }, "verdict": "same-process" },
     { "name": "a holder born before its own stamp is the same process", "stamp": { "startedAt": 1000000, "executable": "node.exe" }, "seen": { "ok": true, "startedAt": 999000, "executable": "node.exe" }, "verdict": "same-process" },
     { "name": "another image born past the 2 s slack is reused", "stamp": { "startedAt": 1000000, "executable": "node.exe" }, "seen": { "ok": true, "startedAt": 1002001, "executable": "cmd.exe" }, "verdict": "reused" },
     { "name": "another image inside the 2 s slack is not proof", "stamp": { "startedAt": 1000000, "executable": "node.exe" }, "seen": { "ok": true, "startedAt": 1002000, "executable": "cmd.exe" }, "verdict": "same-process" },
-    { "name": "image names compare without directory, case or .exe", "stamp": { "startedAt": 1000000, "executable": "C:\\Program Files\\StarNet\\NODE.EXE" }, "seen": { "ok": true, "startedAt": 1030000, "executable": "/usr/local/bin/node" }, "verdict": "same-process" },
+    { "name": "image names compare without directory, case or .exe", "stamp": { "startedAt": 1000000, "executable": "C:\\Program Files\\Vultron\\NODE.EXE" }, "seen": { "ok": true, "startedAt": 1030000, "executable": "/usr/local/bin/node" }, "verdict": "same-process" },
     { "name": "a missing image on either side never counts as another image", "stamp": { "startedAt": 1000000 }, "seen": { "ok": true, "startedAt": 1030000, "executable": "cmd.exe" }, "verdict": "same-process" },
     { "name": "an approximate (cim) reading proves reuse only past slack + tolerance", "stamp": { "startedAt": 1000000, "executable": "svchost.exe" }, "seen": { "ok": true, "startedAt": 8260001, "executable": "svchost.exe", "source": "cim", "toleranceMs": 7200000 }, "verdict": "reused" },
     { "name": "an approximate reading inside slack + tolerance is not proof", "stamp": { "startedAt": 1000000, "executable": "svchost.exe" }, "seen": { "ok": true, "startedAt": 8260000, "executable": "svchost.exe", "source": "cim", "toleranceMs": 7200000 }, "verdict": "same-process" },
@@ -34,7 +34,7 @@
     ["Wed Oct 15 08:30:50 2026 /usr/local/bin/node", { "startedAt": 1792053050000, "executable": "/usr/local/bin/node" }],
     ["Mon Jan  5 01:02:03 2026 node", { "startedAt": 1767574923000, "executable": "node" }],
     ["Mon Jan  5 01:02:03 2026", { "startedAt": 1767574923000, "executable": "" }],
-    ["  Sat Feb 29 23:59:59 2028 /Applications/StarNet.app/Contents/MacOS/node\n", { "startedAt": 1835481599000, "executable": "/Applications/StarNet.app/Contents/MacOS/node" }],
+    ["  Sat Feb 29 23:59:59 2028 /Applications/Vultron.app/Contents/MacOS/node\n", { "startedAt": 1835481599000, "executable": "/Applications/Vultron.app/Contents/MacOS/node" }],
     ["garbage", null],
     ["Wed Foo 15 08:30:50 2026 node", null],
     ["", null]
@@ -50,7 +50,7 @@
     ["node.exe", "node"],
     ["node", "node"],
     ["/usr/local/bin/node", "node"],
-    ["C:/Program Files/StarNet/Skynet-Desktop.EXE", "skynet-desktop"],
+    ["C:/Program Files/Vultron/Skynet-Desktop.EXE", "skynet-desktop"],
     ["  cmd.exe  ", "cmd"],
     ["", ""]
   ]

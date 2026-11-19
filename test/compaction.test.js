@@ -162,7 +162,7 @@ function reg() { const r = makeRegistry(); r.register({ impact: 'none', name: 'n
     for (let k = 0; k < messages.length; k++) if (messages[k].role === 'tool') { let j = k - 1; while (j >= 0 && messages[j].role === 'tool') j--; A.eq(messages[j].role, 'assistant', 'tool result ' + k + ' still paired'); }
   }
 
-  // ---- 4b. microCompaction:false (STARNET_COMPACT_MICRO=0) -> the free tier is skipped, the paid fold runs ----
+  // ---- 4b. microCompaction:false (VULTRON_COMPACT_MICRO=0) -> the free tier is skipped, the paid fold runs ----
   {
     const { seq, emit } = setup();
     const R = makeRegistry(); R.register({ impact: 'none', name: 'noop', schema: { type: 'object' }, run: async () => 'C'.repeat(20000) });

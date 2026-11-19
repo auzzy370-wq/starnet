@@ -1,7 +1,7 @@
 'use strict';
 /* node test/station-refusal-readers.test.js — INV-6, refusals are read from the station's code (truthful-ack lane, 2026-11-03).
 
-   Every failure the station answers names itself in X-StarNet-Code (sidecar/respond.js CODES). The page used to decide
+   Every failure the station answers names itself in X-Vultron-Code (sidecar/respond.js CODES). The page used to decide
    "the station restarted — reload" from a bare 403 or the word 'forbidden': a malformed agent id, another run's
    ticket or a wrong address read as a restart, a 404 'no such run' read as "that model isn't available", and the
    page's own "the station refused this request (HTTP 403)" read as "the provider rejected the API key".
@@ -48,7 +48,7 @@ const CloudSaveCore = require('../frontend/app/cloudsavecore.js');
 // one answer per code, shaped as the station sends it: the gate's legacy text bodies, a route's fail() envelope
 const GATE_BODY = { token_stale: 'forbidden token', token_missing: 'forbidden token', forbidden_origin: 'forbidden origin', forbidden_host: 'forbidden host' };
 const bodyOf = code => GATE_BODY[code] || JSON.stringify({ ok: false, code, error: code === 'not_found' ? 'no such run' : code.replace(/_/g, ' ') });
-const answer = (code, body) => new Response(body == null ? bodyOf(code) : body, { status: CODES[code], headers: { 'X-StarNet-Code': code } });
+const answer = (code, body) => new Response(body == null ? bodyOf(code) : body, { status: CODES[code], headers: { 'X-Vultron-Code': code } });
 const NOT_A_PROVIDER_FAULT = k => ['auth', 'billing', 'model_not_found', 'quota_exhausted', 'oauth', 'no_model', 'rate_limit', 'provider_server_error',
   'provider_unreachable', 'managed_credit', 'managed_credit_link', 'call_too_expensive', 'grok_oauth_unavailable'].indexOf(k) < 0;
 
@@ -172,12 +172,12 @@ const NOT_A_PROVIDER_FAULT = k => ['auth', 'billing', 'model_not_found', 'quota_
     A.eq(gateRefusedPage(H)(answer(code)), TOKEN(code), 'app.js poll (' + code + '): reloads iff the gate refused this page\'s key');
     const g = await groupWords(H, answer(code));
     A.eq(/Reconnect to this station by refreshing the page/.test(g), code === 'token_stale', 'group chat (' + code + '): "refresh to reconnect" iff token_stale: ' + g);
-    A.eq(/StarNet could not confirm this browser/.test(g), code === 'token_missing', 'group chat (' + code + '): the withheld notice iff token_missing');
+    A.eq(/Vultron could not confirm this browser/.test(g), code === 'token_missing', 'group chat (' + code + '): the withheld notice iff token_missing');
     global.Harness = H;
     const rated = await XpStore.recordWorkRating({ runId: 'r-' + code, verdict: 'great' }, async () => answer(code));
     delete global.Harness;
     A.eq(/Rating connection was rejected — reload/.test(rated.error), code === 'token_stale', 'rating (' + code + '): "rejected — reload" iff token_stale: ' + rated.error);
-    A.eq(/StarNet could not confirm this browser/.test(rated.error), code === 'token_missing', 'rating (' + code + '): the withheld notice iff token_missing');
+    A.eq(/Vultron could not confirm this browser/.test(rated.error), code === 'token_missing', 'rating (' + code + '): the withheld notice iff token_missing');
     nextPull = () => Promise.resolve(answer(code));
     const pulled = await CloudSave.reconcile(null);
     A.eq(pulled && pulled.reason === 'forbidden', TOKEN(code), 'save pull (' + code + '): "refused this window" iff the gate refused its key (' + (pulled && pulled.reason) + ')');

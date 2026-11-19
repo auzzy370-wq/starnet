@@ -150,8 +150,8 @@ const tick = () => new Promise(resolve => setImmediate(resolve));
   A.eq(ro.calls[0].maxToolCalls, undefined, 'a worker asked to fix main.py has no 3-tool one-host cap');
 }
 
-/* ---- THE BOUND IS THE LEAD'S CALL, NOT THE BRIEF'S WORDING (starnet-releases#5): a worker brief that named one host
-   beside "review"/"check" was cut to 3 turns / 3 tools / 45s unasked — "Review the deployment script for starnet-demo.io,
+/* ---- THE BOUND IS THE LEAD'S CALL, NOT THE BRIEF'S WORDING (vultron-releases#5): a worker brief that named one host
+   beside "review"/"check" was cut to 3 turns / 3 tools / 45s unasked — "Review the deployment script for vultron-demo.io,
    write a unit test for it, and run it" stopped after three tools and read as a broken worker, and so did the security,
    QA and automation briefs that only read. Every brief, read or work, now keeps the ordinary budgets, and the SAME brief
    with bounded:true gets the quick-read cap, on all three dimensions: the worker's slice is the setTimeout the
@@ -163,8 +163,8 @@ const tick = () => new Promise(resolve => setImmediate(resolve));
   global.setTimeout = function (fn, ms) { slices.push(ms); return realSetTimeout.apply(this, arguments); };
   try {
     const briefs = [
-      ['Review the deployment script for starnet-demo.io, write a unit test for it, and run it.', 'the reporter\'s review + write + run brief'],
-      ['Review the deployment script for starnet-demo.io, write a unit test that covers it, then run the test and report the result.', 'review, write a test, run it'],
+      ['Review the deployment script for vultron-demo.io, write a unit test for it, and run it.', 'the reporter\'s review + write + run brief'],
+      ['Review the deployment script for vultron-demo.io, write a unit test that covers it, then run the test and report the result.', 'review, write a test, run it'],
       ['Inspect the nginx config for example.com and fix the redirect.', 'inspect + fix'],
       ['Check example.com and save the summary into notes.md', 'check + save'],
       ['Review the auth flow for example.com and implement the missing token refresh.', 'review + implement'],
@@ -198,8 +198,8 @@ const tick = () => new Promise(resolve => setImmediate(resolve));
     const subagents = makeSubagentManager({ fs, pathMod: path, file: path.join(root, 'sub.json'), clock: { now: () => 1000 }, emit: () => {}, newId: counter() });
     const ro = fakeRunOnce();
     const { spawnTool } = makeOrchestrationTools({ runOnce: ro, roster: () => new Map(), key: 'k', model: 'm', selfSystem: 'S', newId: counter(), workerMaxIters: 9, subagents });
-    await spawnTool.run({ tasks: [{ prompt: 'Review the deployment script for starnet-demo.io, write a unit test for it, and run it.' }, { prompt: "Read example.com's pricing page" }, { prompt: 'Summarize the release notes.', bounded: true }] }, { agentId: 'lead', emit: () => {} });
-    const work = ro.calls.find(c => /starnet-demo\.io/.test(JSON.stringify(c.messages)));
+    await spawnTool.run({ tasks: [{ prompt: 'Review the deployment script for vultron-demo.io, write a unit test for it, and run it.' }, { prompt: "Read example.com's pricing page" }, { prompt: 'Summarize the release notes.', bounded: true }] }, { agentId: 'lead', emit: () => {} });
+    const work = ro.calls.find(c => /vultron-demo\.io/.test(JSON.stringify(c.messages)));
     const read = ro.calls.find(c => /example\.com/.test(JSON.stringify(c.messages)));
     const asked = ro.calls.find(c => /release notes/.test(JSON.stringify(c.messages)));
     A.eq(work && work.maxIters, 9, '#5 spawn: a review + write + run clone keeps the ordinary turn cap');
@@ -213,7 +213,7 @@ const tick = () => new Promise(resolve => setImmediate(resolve));
   }
 }
 
-/* ---- ONE BRIEF, ONE ANSWER, BY CONSTRUCTION (review 10-15, starnet-releases#5): the dispatcher used to classify each
+/* ---- ONE BRIEF, ONE ANSWER, BY CONSTRUCTION (review 10-15, vultron-releases#5): the dispatcher used to classify each
    worker's brief, and needed the worker run's own file probe (index.js runFileExists) so "check about.me" with about.me in
    its workspace was not capped at 3 turns / 3 tools / 45s. It reads no brief now, so there is no probe to keep in step: a
    file name and a site name both keep the ordinary budgets on dispatch, spawn and resume, and a stale host that still

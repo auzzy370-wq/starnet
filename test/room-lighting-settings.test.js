@@ -113,13 +113,13 @@ assert.equal(bake.LIGHT.ambient, original.ambient);
 {
   const loadStart = src.indexOf('  function defaults() {'), loadEnd = src.indexOf('  let store = load();');
   assert.ok(loadStart >= 0 && loadEnd > loadStart);
-  const saved = { 'starnet.station.v1': JSON.stringify({ v: 1, settings: { roomLighting: 'high', theme: 'amber' } }) };
+  const saved = { 'vultron.station.v1': JSON.stringify({ v: 1, settings: { roomLighting: 'high', theme: 'amber' } }) };
   const localStorage = { getItem: k => (k in saved ? saved[k] : null) };
-  const loadSettings = new Function('localStorage', 'KEY', 'window', src.slice(loadStart, loadEnd) + '\nreturn load;')(localStorage, 'starnet.station.v1', {});
+  const loadSettings = new Function('localStorage', 'KEY', 'window', src.slice(loadStart, loadEnd) + '\nreturn load;')(localStorage, 'vultron.station.v1', {});
   assert.equal(loadSettings().settings.roomLighting, 30, 'a legacy HIGH save loads as its 0-100 level');
-  saved['starnet.station.v1'] = JSON.stringify({ v: 1, settings: { roomLighting: 'medium' } });
+  saved['vultron.station.v1'] = JSON.stringify({ v: 1, settings: { roomLighting: 'medium' } });
   assert.equal(loadSettings().settings.roomLighting, 15, 'a legacy MEDIUM save loads as 15');
-  saved['starnet.station.v1'] = JSON.stringify({ v: 1, settings: { roomLighting: 64 } });
+  saved['vultron.station.v1'] = JSON.stringify({ v: 1, settings: { roomLighting: 64 } });
   assert.equal(loadSettings().settings.roomLighting, 64, 'a numeric save is kept');
   // A restored backup from before the slider carries the same strings into the live store.
   assert.match(src, /Object\.assign\(store\.settings, b\.settings\); store\.settings\.roomLighting = resolveRoomLighting\(store\.settings\.roomLighting\);/,

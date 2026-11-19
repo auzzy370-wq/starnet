@@ -124,13 +124,13 @@ function stopChild(child) {
 
 (async () => {
   const mock = await startMockOpenRouter();
-  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-summarize-failover-'));
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-summarize-failover-'));
   let child = null;
   try {
     const env = {
       SKYNET_WORKSPACES: workspace,
       SKYNET_OPENROUTER_BASE: mock.base,
-      STARNET_OPENROUTER_BASE: mock.base,
+      VULTRON_OPENROUTER_BASE: mock.base,
       SKYNET_AUX_BUDGET: '0',
       SKYNET_FULL_ACCESS: '1',
       OPENROUTER_KEY: '', SKYNET_OPENROUTER_KEY: '',
@@ -155,7 +155,7 @@ function stopChild(child) {
     messages.push({ role: 'user', content: 'Fail over, inspect once, compact, then finish.' });
     const response = await fetch(base + '/api/run', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: base },
+      headers: { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: base },
       body: JSON.stringify({
         key: 'KEYA', keyPool: ['KEYB'], model: 'compact/model',
         agentId: 'summarize-failover', isTask: true, messages

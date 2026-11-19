@@ -6,7 +6,7 @@
      - after a real restart, the 24-hour count is read back from the file (the day limit, set to 11 here, refuses);
      - a damaged ledger line refuses images instead of reading as zero.
    Hermetic: a temp station home, temp APPDATA/LOCALAPPDATA (SidecarFixture) and a temp USERPROFILE. No real provider,
-   no key, no live model call. The $ budget caps are off (STARNET_BUDGET_PER_DAY=0) so the chat itself is never stopped
+   no key, no live model call. The $ budget caps are off (VULTRON_BUDGET_PER_DAY=0) so the chat itself is never stopped
    by them: what refuses here is the image count. */
 'use strict';
 const A = require('./_assert.js');
@@ -73,14 +73,14 @@ const unknownRows = file => ledgerRows(file).filter(r => r.aux === 'image-unknow
 (async () => {
   const started = Date.now();
   const stub = await startStub();
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-image-cap-home-'));
-  const noKeys = { STARNET_OPENROUTER_KEY: '', SKYNET_OPENROUTER_KEY: '', OPENROUTER_KEY: '', OPENROUTER_API_KEY: '', STARNET_OPENROUTER_API_KEY: '',
-    SKYNET_OPENROUTER_API_KEY: '', OPENAI_API_KEY: '', STARNET_OPENAI_API_KEY: '', SKYNET_OPENAI_API_KEY: '' };
-  const fx = SidecarFixture.create({ prefix: 'starnet-image-cap-', timeoutMs: 60000, env: Object.assign({}, noKeys, {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-image-cap-home-'));
+  const noKeys = { VULTRON_OPENROUTER_KEY: '', SKYNET_OPENROUTER_KEY: '', OPENROUTER_KEY: '', OPENROUTER_API_KEY: '', VULTRON_OPENROUTER_API_KEY: '',
+    SKYNET_OPENROUTER_API_KEY: '', OPENAI_API_KEY: '', VULTRON_OPENAI_API_KEY: '', SKYNET_OPENAI_API_KEY: '' };
+  const fx = SidecarFixture.create({ prefix: 'vultron-image-cap-', timeoutMs: 60000, env: Object.assign({}, noKeys, {
     USERPROFILE: home, HOMEPATH: home, HOME: home,
-    STARNET_OPENROUTER_BASE: stub.baseUrl, SKYNET_FULL_ACCESS: '1', SKYNET_AUX_BUDGET: '0',
-    STARNET_BUDGET_PER_DAY: '0', STARNET_BUDGET_PER_RUN: '0', STARNET_BUDGET_PER_AGENT: '0', STARNET_BUDGET_GLOBAL: '0',
-    STARNET_IMAGE_UNKNOWN_COST_DAY_MAX: '11' }) });
+    VULTRON_OPENROUTER_BASE: stub.baseUrl, SKYNET_FULL_ACCESS: '1', SKYNET_AUX_BUDGET: '0',
+    VULTRON_BUDGET_PER_DAY: '0', VULTRON_BUDGET_PER_RUN: '0', VULTRON_BUDGET_PER_AGENT: '0', VULTRON_BUDGET_GLOBAL: '0',
+    VULTRON_IMAGE_UNKNOWN_COST_DAY_MAX: '11' }) });
   const ledgerFile = () => path.join(fx.workspace, 'ledger.jsonl');
   try {
     await fx.start();
@@ -96,7 +96,7 @@ const unknownRows = file => ledgerRows(file).filter(r => r.aux === 'image-unknow
     A.eq(refused.length, 1, 'one was refused: ' + refused.map(r => r.text.slice(0, 160)).join(' | '));
     A.ok(refused[0] && /this run and its workers have generated 10 images whose cost is unknown/.test(refused[0].text) && /stops at 10 in one run/.test(refused[0].text)
       && /nothing was charged/.test(refused[0].text) && /start a new run/.test(refused[0].text), 'by the per-run cap, in plain words: ' + (refused[0] && refused[0].text.slice(0, 400)));
-    A.ok(results.filter(r => !/did not start/.test(r.text)).every(r => /Cost: UNKNOWN/.test(r.text) && /StarNet stops a run at 10 of them, and every run at 11 in any 24 hours/.test(r.text)), 'every image made says its cost is unknown and the counts that stop it');
+    A.ok(results.filter(r => !/did not start/.test(r.text)).every(r => /Cost: UNKNOWN/.test(r.text) && /Vultron stops a run at 10 of them, and every run at 11 in any 24 hours/.test(r.text)), 'every image made says its cost is unknown and the counts that stop it');
     const rows1 = unknownRows(ledgerFile());
     A.eq(rows1.length, 10, 'the real ledger file holds one image-unknown-cost row per image: ' + rows1.length);
     A.ok(rows1.every(r => r.usd === 0 && r.unpriced === true && r.model === 'image' && r.agentId === 'cap-run-one' && typeof r.entryId === 'string' && r.ts > 0), 'each a $0 unpriced aux row under its run, written through ledgerIo');
@@ -109,14 +109,14 @@ const unknownRows = file => ledgerRows(file).filter(r => r.aux === 'image-unknow
     A.eq(stub.images, 11, 'the new run made one more image (11 of 11 today), and only one');
     const dayRefused = stub.toolResults.filter(r => /did not start/.test(r.text));
     A.eq(dayRefused.length, 1, 'its second image was refused');
-    A.ok(dayRefused[0] && /StarNet has recorded 11 images whose cost is unknown in the last 24 hours across all runs/.test(dayRefused[0].text) && /Room comes back in about 24 hours/.test(dayRefused[0].text),
+    A.ok(dayRefused[0] && /Vultron has recorded 11 images whose cost is unknown in the last 24 hours across all runs/.test(dayRefused[0].text) && /Room comes back in about 24 hours/.test(dayRefused[0].text),
       'by the 24-hour limit, counted from the file across the restart: ' + (dayRefused[0] && dayRefused[0].text.slice(0, 400)));
     A.eq(unknownRows(ledgerFile()).length, 11, 'and the file now holds 11');
 
     // ---- a damaged line: unknown is never headroom
     await fx.stop();
     fs.appendFileSync(ledgerFile(), '{"runId":"torn","agentId":"x","usd":0.5,"tok\n');
-    await fx.start({ STARNET_IMAGE_UNKNOWN_COST_DAY_MAX: '50' });
+    await fx.start({ VULTRON_IMAGE_UNKNOWN_COST_DAY_MAX: '50' });
     const before = stub.images;
     await runImages(fx, 'cap-run-three', 1);
     A.eq(stub.images, before, 'no image request with a damaged spend log');

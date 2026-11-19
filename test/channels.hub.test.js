@@ -496,7 +496,7 @@ async function run() {
     const runOnce = async (o) => {
       call++;
       o.emit('agent.run.start', { agentId: o.agentId, runId: o.runId, trigger: 'event', model: o.model });
-      o.emit('agent.run.error', { agentId: o.agentId, runId: o.runId, transient: true, message: 'Too many agents are working at once (limit 6). Wait for one to finish, or raise STARNET_MAX_CONCURRENT_AGENTS.' });
+      o.emit('agent.run.error', { agentId: o.agentId, runId: o.runId, transient: true, message: 'Too many agents are working at once (limit 6). Wait for one to finish, or raise VULTRON_MAX_CONCURRENT_AGENTS.' });
       o.emit('agent.run.end', { agentId: o.agentId, runId: o.runId, reason: 'error', turns: 0, usd: 0 });
     };
     const hub = makeChannelHub({
@@ -982,9 +982,9 @@ async function run() {
     A.ok(!/\)\.\)/.test(unpriced) && /SKYNET_MODEL_PRICES\.\)$/.test(unpriced), 'the unpriced note ends cleanly, never "…).)" (review voice-remote-channels-12): ' + unpriced);
     const subscription = await endWith({ reason: 'budget', budgetScope: 'run', subscriptionModel: 'claude-opus', subscriptionCapTokens: 2000000 }, { token: 'partial' });
     A.ok(/2,000,000-token per-run ceiling/.test(subscription) && /Runtime limits/.test(subscription), 'the subscription TOKEN ceiling names its real lever: ' + subscription);
-    A.ok(!/\)\.\)/.test(subscription) && /STARNET_MAX_SUBSCRIPTION_TOKENS\.\)$/.test(subscription), 'the subscription note ends cleanly, never "…).)": ' + subscription);
+    A.ok(!/\)\.\)/.test(subscription) && /VULTRON_MAX_SUBSCRIPTION_TOKENS\.\)$/.test(subscription), 'the subscription note ends cleanly, never "…).)": ' + subscription);
     const cancelled = await endWith({ reason: 'cancelled' }, { token: 'partial' });
-    A.ok(/stopped from the StarNet app/.test(cancelled), 'a station-side cancel says who stopped it: ' + cancelled);
+    A.ok(/stopped from the Vultron app/.test(cancelled), 'a station-side cancel says who stopped it: ' + cancelled);
     const stuck = await endWith({ reason: 'error' }, { error: 'loop guard: fs_read failed 3 times with identical arguments — stopping a stuck loop' });
     A.ok(/got stuck repeating one step: fs_read failed 3 times/.test(stuck), 'a loop-guard stop leads with what happened in plain words: ' + stuck);
   }

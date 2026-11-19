@@ -8,7 +8,7 @@
    that for the life of the process. Nothing said why.
 
    The laws this locks (sidecar/version-source.js and its wiring in sidecar/index.js):
-     V1 an env stamp (STARNET_BUILD_DESCRIBE) wins, and no git runs;
+     V1 an env stamp (VULTRON_BUILD_DESCRIBE) wins, and no git runs;
      V2 no <repo>/.git at all (a packaged app) is 'pkg' at once, and no git runs;
      V3 a .git FILE (a worktree's gitfile) is a checkout, like a .git directory; only a probe that says ABSENT
         (ENOENT, ENOTDIR) is no checkout, any other probe error (EACCES, EPERM, EBUSY, a real ERR_INVALID_ARG_VALUE,
@@ -125,7 +125,7 @@ const scenario = (name, fn) => scenarios.push({ name, fn });
 scenario('V1 env stamp wins and no git runs', async () => {
   const w = world({ env: '  v0.14.2-release  ', describe: [ok(DESC)] });
   const r = w.src.read();
-  A.eq([r.harness, r.harnessSource, r.final], ['v0.14.2-release', 'env', true], 'V1 STARNET_BUILD_DESCRIBE wins (trimmed), final');
+  A.eq([r.harness, r.harnessSource, r.final], ['v0.14.2-release', 'env', true], 'V1 VULTRON_BUILD_DESCRIBE wins (trimmed), final');
   A.eq(w.calls.length, 0, 'V1 an env stamp spawns no git');
 });
 
@@ -397,12 +397,12 @@ scenario('V8 nobody waits after a failure, a retry, an exhausted budget or a coo
 
 scenario('V8 the bounds: /api/version answers well inside every CLI timeout; a run never waits', async () => {
   const D = VS.DEFAULTS;
-  const bin = fs.readFileSync(path.join(__dirname, '..', 'bin', 'starnet.js'), 'utf8');
+  const bin = fs.readFileSync(path.join(__dirname, '..', 'bin', 'vultron.js'), 'utf8');
   const dash = fs.readFileSync(path.join(__dirname, '..', 'bin', 'lib', 'dashboard.js'), 'utf8');
   const timeouts = [];
   const attach = /request\('GET', '\/api\/version', null, \{ timeoutMs: (\d+) \}\)/.exec(bin);
   if (attach) timeouts.push(Number(attach[1]));
-  A.ok(!!attach, 'V8 found the CLI attach probe\'s /api/version timeout in bin/starnet.js');
+  A.ok(!!attach, 'V8 found the CLI attach probe\'s /api/version timeout in bin/vultron.js');
   if (/request\('GET', '\/api\/version'\)/.test(bin)) {   // status: the client default
     const dflt = /o\.timeoutMs \|\| (\d+)/.exec(bin);
     A.ok(!!dflt, 'V8 found the CLI client\'s default timeout'); if (dflt) timeouts.push(Number(dflt[1]));
@@ -424,7 +424,7 @@ scenario('V8 the bounds: /api/version answers well inside every CLI timeout; a r
 // ---- V13 a run never waits (VD-HANDOVER-01): its [RUNTIME] build is read at once ----
 scenario('V13 a run reads its build at once and says when git is still resolving (VD-HANDOVER-01)', async () => {
   const rt = require('../sidecar/runtimeinfo.js');
-  const line = (harness) => rt.runtimeIdentityBlock({ harness }).split('\n').find(l => /^StarNet harness build at run start: /.test(l)) || '';
+  const line = (harness) => rt.runtimeIdentityBlock({ harness }).split('\n').find(l => /^Vultron harness build at run start: /.test(l)) || '';
   // the first describe attempt runs (git hangs): the build is named at once, with no wait, as still resolving
   const w = world({ describe: [HANG] });
   const label = typeof w.src.runtimeHarness === 'function' ? w.src.runtimeHarness() : '(no runtimeHarness)';
@@ -432,7 +432,7 @@ scenario('V13 a run reads its build at once and says when git is still resolving
   A.eq(w.sleeps.length, 0, 'V13 ...at once: no wait was taken');
   const r = w.src.read();
   A.eq([r.pending, r.resolving, r.harnessSource], [true, true, 'unknown'], 'V13 read() says git is resolving; harnessSource stays in the documented set');
-  A.eq(line(label), 'StarNet harness build at run start: ' + VS.RESOLVING, 'V13 the [RUNTIME] line carries the whole label');
+  A.eq(line(label), 'Vultron harness build at run start: ' + VS.RESOLVING, 'V13 the [RUNTIME] line carries the whole label');
   w.src.stop();
   if (typeof w.src.runtimeHarness !== 'function') return;
   // a failed first attempt, then a retry in flight: nothing is pending (nobody waits), git is still being asked
@@ -452,7 +452,7 @@ scenario('V13 a run reads its build at once and says when git is still resolving
   const ex = world({ describe: [DIE] });
   ex.src.read(); await ex.src.idle();
   A.eq([ex.src.runtimeHarness(), ex.src.read().resolving], ['', false], 'V13 an exhausted budget names no build and is not resolving');
-  A.eq(line(ex.src.runtimeHarness()), 'StarNet harness build at run start: unknown', 'V13 ...so its [RUNTIME] line says unknown');
+  A.eq(line(ex.src.runtimeHarness()), 'Vultron harness build at run start: unknown', 'V13 ...so its [RUNTIME] line says unknown');
   // a stopped source is not resolving
   const st = world({ describe: [HANG] });
   st.src.read(); st.src.stop();

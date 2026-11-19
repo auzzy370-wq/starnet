@@ -43,7 +43,7 @@ try { HistoryRef = require('../frontend/app/historyref.js'); } catch (e) { A.ok(
 
 // ---- the migration half does not need the module: a v6 save reads as v7, nothing moved ---------------------------------------
 const S = 's1', OTHER = 's2';
-const KEY = 'starnet.save';
+const KEY = 'vultron.save';
 function scenario(seed) {
   const r = rng(seed), pick = n => Math.floor(r() * n), chance = p => r() < p;
   let rowId = 100 + pick(900), ts = 1700000000000 + seed * 1000;
@@ -136,7 +136,7 @@ function stationOver(seals, opts) {
   if (HistoryRef) A.ok(Save.CURRENT >= HistoryRef.SINCE_VERSION, 'a build that can write a packed element stamps a version at or past the one that introduced it');
   for (let seed = 1; seed <= 60; seed++) {
     const { history } = scenario(seed);
-    const v6 = { schema: 'starnet.save', version: 6, updatedAt: 1700000000000 + seed, agent: { id: 'agent', name: 'NOVA' },
+    const v6 = { schema: 'vultron.save', version: 6, updatedAt: 1700000000000 + seed, agent: { id: 'agent', name: 'NOVA' },
       workstreams: [{ id: S, title: 'T' + seed, titleStrong: true, history: clone(history), runIds: ['run-1'], cost: { tokens: seed, usd: 0, calls: 1 } },
         { id: 'empty', title: null, history: [] }], futureField: { keep: [seed] } };
     const raw = JSON.stringify(v6);
@@ -148,7 +148,7 @@ function stationOver(seals, opts) {
     A.eq(Save.fromDoc(JSON.parse(raw)).doc && Save.fromDoc(JSON.parse(raw)).doc.version, Save.CURRENT, 'seed ' + seed + ': the in-memory path stamps the current version');
   }
   // a v6 doc of every older rung still climbs the ladder to the current version
-  mem[KEY] = JSON.stringify({ schema: 'starnet.save', version: 5, agent: { id: 'agent' }, workstreams: [{ id: S, history: [{ role: 'user', content: 'old' }] }] });
+  mem[KEY] = JSON.stringify({ schema: 'vultron.save', version: 5, agent: { id: 'agent' }, workstreams: [{ id: S, history: [{ role: 'user', content: 'old' }] }] });
   const climbed = Save.loadStatus();
   A.eq([climbed.status, climbed.doc && climbed.doc.version, climbed.doc && climbed.doc.workstreams[0].titleStrong, climbed.doc && climbed.doc.workstreams[0].history], ['ok', Save.CURRENT, false, [{ role: 'user', content: 'old' }]], 'a v5 save climbs 5 -> current, its history untouched');
 

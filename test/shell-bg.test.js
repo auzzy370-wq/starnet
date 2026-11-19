@@ -207,7 +207,7 @@ const reaperBlock = (async () => {
 
   // A real workspace gives the guard what it asks for: an absolute folder, a file system it can read, and the program on PATH.
   const nodeFs = require('fs'), os = require('os');
-  const ws = nodeFs.mkdtempSync(path.join(os.tmpdir(), 'starnet-shell-bg-'));
+  const ws = nodeFs.mkdtempSync(path.join(os.tmpdir(), 'vultron-shell-bg-'));
   try {
     const bin = path.join(ws, 'bin');
     nodeFs.mkdirSync(bin);

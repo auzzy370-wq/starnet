@@ -119,11 +119,11 @@ const server = http.createServer((req, res) => {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const endpoint = 'http://127.0.0.1:' + server.address().port + '/v1';
   const fixture = SidecarFixture.create({ prefix: 'skill-candidate-http-', timeoutMs: 30000, env: {
-    STARNET_DEFAULT_MODEL: MODEL, SKYNET_DEFAULT_MODEL: MODEL,
-    STARNET_OPENROUTER_BASE: endpoint, SKYNET_OPENROUTER_BASE: endpoint,
-    STARNET_OPENROUTER_KEY: 'local-fixture-only', SKYNET_OPENROUTER_KEY: 'local-fixture-only',
-    STARNET_FULL_ACCESS: '1', SKYNET_FULL_ACCESS: '1', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0',
-    SKYNET_REFLECT: '0', SKYNET_SCOUT: '0', SKYNET_QUEST_REFRESH: '0', SKYNET_CRON_ENABLED: '0', STARNET_CRON_ENABLED: '0'
+    VULTRON_DEFAULT_MODEL: MODEL, SKYNET_DEFAULT_MODEL: MODEL,
+    VULTRON_OPENROUTER_BASE: endpoint, SKYNET_OPENROUTER_BASE: endpoint,
+    VULTRON_OPENROUTER_KEY: 'local-fixture-only', SKYNET_OPENROUTER_KEY: 'local-fixture-only',
+    VULTRON_FULL_ACCESS: '1', SKYNET_FULL_ACCESS: '1', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0',
+    SKYNET_REFLECT: '0', SKYNET_SCOUT: '0', SKYNET_QUEST_REFRESH: '0', SKYNET_CRON_ENABLED: '0', VULTRON_CRON_ENABLED: '0'
   } });
   let seeded;
   const api = async (method, route, body, status = 200) => {
@@ -206,7 +206,7 @@ const server = http.createServer((req, res) => {
       assert.equal(relisted.latestEvaluation && relisted.latestEvaluation.receiptId, receipt.receiptId, 'the passing owner-suite receipt still leads');
       // a receipt made under another model is not offered: approve re-checks the evaluator and would refuse it
       try {
-        await fixture.restart({ STARNET_DEFAULT_MODEL: 'lifecycle/other-model', SKYNET_DEFAULT_MODEL: 'lifecycle/other-model' });
+        await fixture.restart({ VULTRON_DEFAULT_MODEL: 'lifecycle/other-model', SKYNET_DEFAULT_MODEL: 'lifecycle/other-model' });
         const otherModel = (await candidates()).find(c => c.candidateId === candidate.candidateId);
         assert.equal(otherModel.latestEvaluation, null, 'no receipt from the previous model is offered');
       } finally { await fixture.restart(); }

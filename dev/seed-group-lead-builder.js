@@ -1,7 +1,7 @@
 /* dev/seed-group-lead-builder.js — DEV-ONLY live proof for THE GROUP'S LEAD IS THE ORCHESTRATOR (2026-10-13).
 
    The report: asked in a group chat to configure a conveyor, the lead (ULTRON) had no station tools (group runs were
-   lead:false) and drove StarNet's own window by computer use for 21 minutes. This boots a real sidecar from THIS tree +
+   lead:false) and drove Vultron's own window by computer use for 21 minutes. This boots a real sidecar from THIS tree +
    the real frontend (open http://127.0.0.1:<PORT> so the station bridge is attached) and an in-process scripted model
    that plays the group lead, in ASK mode so station.build raises the real approval card:
      brief_proceed (when offered) → station_layout → tool_search "station builder" → station_map → station_plan a line

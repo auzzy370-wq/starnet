@@ -228,7 +228,7 @@ async function retryTargetStaysAsTyped(root) {
   const typed = 'save this key ' + VENDOR_KEY + ' as OPENAI';
   const w = { id: 'ws_retry', agentId: 'agent', history: [
     { role: 'user', content: typed, sourceRunId: 'r1', ts: 1 },
-    { role: 'system', sys: true, error: true, content: '⚠ StarNet could not reach the AI provider', ts: 2 },
+    { role: 'system', sys: true, error: true, content: '⚠ Vultron could not reach the AI provider', ts: 2 },
   ] };
   const station = [stored(w.history[0])];
   for (let open = 1; open <= 2; open++) {

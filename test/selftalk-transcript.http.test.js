@@ -16,10 +16,10 @@ const server = http.createServer((req, res) => {
   await new Promise(r => server.listen(0, '127.0.0.1', r));
   const base = 'http://127.0.0.1:' + server.address().port;
   const fixture = SidecarFixture.create({ prefix: 'selftalk-transcript-', timeoutMs: 20000, env: {
-    SKYNET_OPENROUTER_BASE: base, STARNET_OPENROUTER_BASE: base,
-    SKYNET_OPENROUTER_KEY: 'fixture', STARNET_OPENROUTER_KEY: 'fixture',
-    SKYNET_DEFAULT_MODEL: 'test/model', STARNET_DEFAULT_MODEL: 'test/model',
-    SKYNET_CRON_ENABLED: '0', STARNET_CRON_ENABLED: '0'
+    SKYNET_OPENROUTER_BASE: base, VULTRON_OPENROUTER_BASE: base,
+    SKYNET_OPENROUTER_KEY: 'fixture', VULTRON_OPENROUTER_KEY: 'fixture',
+    SKYNET_DEFAULT_MODEL: 'test/model', VULTRON_DEFAULT_MODEL: 'test/model',
+    SKYNET_CRON_ENABLED: '0', VULTRON_CRON_ENABLED: '0'
   } });
   async function run(body) {
     const r = await fixture.json('POST', '/api/run', Object.assign({ model: 'test/model', provider: 'openrouter', key: 'fixture', agentId: 'agent' }, body));

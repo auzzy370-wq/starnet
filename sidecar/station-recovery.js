@@ -5,7 +5,7 @@
    zero completed mutations lost before that barrier; this module does not pretend that periodic/continuous
    RPO exists when the caller has not established one.
 
-   The bundle holds the files under WORKSPACES plus browser-owned `starnet.*` state supplied by the caller, as readable
+   The bundle holds the files under WORKSPACES plus browser-owned `vultron.*` state supplied by the caller, as readable
    text. It is not encrypted and not signed. The credentials this module can recognize, and approvals made on this
    station, are left out and listed under `reauthentication`. Anything pasted into a conversation or a file still rides.
 
@@ -25,7 +25,7 @@ const { isCredentialName } = require('./secret-values.js');
 const { LIFECYCLE_FILES } = require('./station-record.js');
 const channelSecrets = require('./channels/secrets.js');
 
-const SCHEMA = 'starnet.station-recovery';
+const SCHEMA = 'vultron.station-recovery';
 const VERSION = 1;
 const REQUIRED_CATEGORIES = [
   'agents', 'rooms_props', 'conversations', 'memories', 'routines', 'loops', 'tasks',
@@ -33,18 +33,18 @@ const REQUIRED_CATEGORIES = [
 ];
 
 const SAFE_BROWSER_SECRET_KEYS = new Set([
-  'starnet.byok.model', 'starnet.byok.prov', 'starnet.byok.reasoningEffort'
+  'vultron.byok.model', 'vultron.byok.prov', 'vultron.byok.reasoningEffort'
 ]);
-const BROWSER_SECRET_NAMESPACE = /^(?:starnet|skynet)\.(?:channels?|oauth|auth|credentials?|secrets?)(?:[._:-]|$)/i;
+const BROWSER_SECRET_NAMESPACE = /^(?:vultron|skynet)\.(?:channels?|oauth|auth|credentials?|secrets?)(?:[._:-]|$)/i;
 const BROWSER_SECRET_SEGMENT = /(?:^|[._:-])(?:api[-_]?key|apikey|key|keys|token|tokens|secret|secrets|credential|credentials|password|passwd|pwd|authorization|bearer)(?:$|[._:-])/i;
 const SECRET_FIELD = /^(?:access[_-]?token|refresh[_-]?token|id[_-]?token|token|key|api[_-]?key|secret|client[_-]?secret|password|passwd|pwd|authorization|bearer|cookie|session)$/i;
 // .browsers holds downloaded browser builds: hundreds of MB that a reinstall fetches again, never the person's work
-const EPHEMERAL_TOP = new Set(['.browser-profile', '.browsers', '.starnet-workspace-owner.json.generations']);
+const EPHEMERAL_TOP = new Set(['.browser-profile', '.browsers', '.vultron-workspace-owner.json.generations']);
 // The workspace's own lifecycle files (its station record and legacy reset marker, station-record.js) are ephemeral too:
 // they say what happened to THIS workspace, so a bundle never carries them and a restore never writes one an older bundle
 // still holds. The restored station's first boot records it from its own files.
 const LIFECYCLE = new Set(LIFECYCLE_FILES);
-const EPHEMERAL_FILES = new Set(['cron.lock', 'proc-ledger.json', '.starnet-workspace-owner.json', '.migration-pending'].concat(LIFECYCLE_FILES));
+const EPHEMERAL_FILES = new Set(['cron.lock', 'proc-ledger.json', '.vultron-workspace-owner.json', '.migration-pending'].concat(LIFECYCLE_FILES));
 const SYSTEM_SECRET_TOP = new Set(['.secrets', 'codex', 'grok', 'kimi']);
 
 function sha256(data) { return crypto.createHash('sha256').update(data).digest('hex'); }
@@ -80,19 +80,19 @@ function escapesStation(rel) {
   if (!p || p.charAt(0) === '/' || /^[a-z]:(?:\/|$)/i.test(p)) return true;
   return p.split('/').some(seg => !seg || seg === '.' || seg === '..' || /^\.{1,2}\s[\s.]*$/.test(seg));
 }
-// never in any bundle StarNet writes, and each would change how the restored station boots or who owns it
+// never in any bundle Vultron writes, and each would change how the restored station boots or who owns it
 function plantedPath(rel) {
   const p = slash(rel).toLowerCase();
   const top = p.split('/')[0];
   // .migration-pending is not here: a released capture did not skip it, so an honest old bundle can hold it. restorePlan drops it.
   // Nor are the lifecycle files, for the same reason (a released capture carried the reset marker): restorePlan drops them.
-  return top === '.browser-profile' || top === '.starnet-workspace-owner.json.generations' || (EPHEMERAL_FILES.has(p) && p !== '.migration-pending' && !LIFECYCLE.has(p)) || /(?:^|\/)\.owner\.lock$/.test(p);
+  return top === '.browser-profile' || top === '.vultron-workspace-owner.json.generations' || (EPHEMERAL_FILES.has(p) && p !== '.migration-pending' && !LIFECYCLE.has(p)) || /(?:^|\/)\.owner\.lock$/.test(p);
 }
 
 function browserKeyIsSecret(raw) {
-  const key = String(raw || '').replace(/^skynet\./i, 'starnet.');
+  const key = String(raw || '').replace(/^skynet\./i, 'vultron.');
   if (SAFE_BROWSER_SECRET_KEYS.has(key)) return false;
-  if (/^starnet\.byok\./i.test(key)) return true;
+  if (/^vultron\.byok\./i.test(key)) return true;
   return BROWSER_SECRET_NAMESPACE.test(key) || BROWSER_SECRET_SEGMENT.test(key);
 }
 
@@ -229,11 +229,11 @@ function sanitizeManagedJson(rel, raw, options = {}) {
     const machinePaths = allow.filter(x => x.indexOf('path:') === 0);
     // an "always" was a click on this station, and a restored file saying so was never that click: none of them travel
     value = Object.assign({}, doc, { allow: [], meta: {} });
-    for (const key of allow) if (key.indexOf('path:') !== 0) reauthentication.push({ kind: 'approval', id: key, reason: 'This "always allow" is off after a restore. StarNet asks again the next time an agent needs it.', fields: ['permissions.allow'] });
+    for (const key of allow) if (key.indexOf('path:') !== 0) reauthentication.push({ kind: 'approval', id: key, reason: 'This "always allow" is off after a restore. Vultron asks again the next time an agent needs it.', fields: ['permissions.allow'] });
     for (const key of machinePaths) reauthentication.push({ kind: 'project-path', id: key.slice(5), reason: 'Machine-specific path authority is not transferable; restore or relocate the project, then re-authorize it.', fields: ['permissions.allow'] });
   } else if (p === 'connectors/state.json') {
-    if (typeof doc.format === 'string' && doc.format.startsWith('starnet.connector-vault.')) {
-      if (typeof options.readConnectorState !== 'function') throw new Error('Encrypted connector export requires the running StarNet app and its unlocked OS credential store.');
+    if (typeof doc.format === 'string' && doc.format.startsWith('vultron.connector-vault.')) {
+      if (typeof options.readConnectorState !== 'function') throw new Error('Encrypted connector export requires the running Vultron app and its unlocked OS credential store.');
       doc = options.readConnectorState();
       if (!doc || doc.version !== 2 || !Array.isArray(doc.configs) || !isObj(doc.oauth)) throw new Error('Encrypted connector export could not verify the original settings.');
     }
@@ -447,7 +447,7 @@ function classifyPolicy(rel, st) {
   if (SYSTEM_SECRET_TOP.has(top)) return { action: 'skip', reason: 'system-managed credential material is intentionally excluded', reauth: { kind: top === '.secrets' ? 'credential-store' : 'provider', id: top, reason: 'Reauthentication required on the restored profile.' } };
   if (AUTHORITY_FILES.has(p.toLowerCase())) return { action: 'skip', reason: 'an approval made on this station does not travel', reauth: { kind: 'approval', id: p.toLowerCase(), reason: AUTHORITY_FILES.get(p.toLowerCase()) } };
   if (CREDENTIAL_FILE.test(p)) return { action: 'skip', reason: CREDENTIAL_ROW, reauth: credentialReauth(p) };
-  // these names are StarNet's own bookkeeping only among its own stores: agent/thesis.bak and draft.tmp.md are someone's work
+  // these names are Vultron's own bookkeeping only among its own stores: agent/thesis.bak and draft.tmp.md are someone's work
   const store = budgetTier(p) < 2;
   if (EPHEMERAL_FILES.has(p.toLowerCase()) || /(?:^|\/)\.owner\.lock$/.test(p.toLowerCase()) || (store && siblingNames.isTemp(p))) return { action: 'skip', reason: 'ephemeral lock/process/temp state' };
   // persist's names grammar (sidecar/persist/names.js) knows every forensic generation, new and legacy: .corrupt-<n>,
@@ -543,7 +543,7 @@ const BUNDLE_MAX_CHARS = Math.min(448 * 1024 * 1024, Math.floor(require('buffer'
 const SKIP_ROWS_LISTED = 1000;
 // the same limit met by a bundle a person asked for (no shorter pre-update budget: only the one-string cap applies)
 const EXPLICIT_BUDGET_REASON = 'too large for one recovery bundle';
-const CREDENTIAL_STORE_HOW_TO_GET = 'Open StarNet with this OS account and create the bundle from SETTINGS > APP & BACKUP > RECOVERY BUNDLE: the running app can read its own encrypted store and keeps the connector list without its credentials. Otherwise add these connectors again after restoring.';
+const CREDENTIAL_STORE_HOW_TO_GET = 'Open Vultron with this OS account and create the bundle from SETTINGS > APP & BACKUP > RECOVERY BUNDLE: the running app can read its own encrypted store and keeps the connector list without its credentials. Otherwise add these connectors again after restoring.';
 const HEX64 = '0'.repeat(64);
 const BIG = Number.MAX_SAFE_INTEGER;   // stands in for any size/count when a row's largest possible text is reserved
 // the characters one array element adds to JSON.stringify(bundle, null, 2) at `depth` (files/browser rows 2, report
@@ -748,7 +748,7 @@ function capture(opts) {
   // browser-owned state (pure: no disk), first so a budget can charge it; its report rows join after the files' as before
   const browser = [], browserSkipped = [], browserReauth = [];
   for (const key of Object.keys(browserStore).sort()) {
-    if (!/^(?:starnet|skynet)\./i.test(key)) { browserSkipped.push({ path: 'browser:' + key, reason: 'foreign browser key' }); continue; }
+    if (!/^(?:vultron|skynet)\./i.test(key)) { browserSkipped.push({ path: 'browser:' + key, reason: 'foreign browser key' }); continue; }
     if (browserKeyIsSecret(key)) {
       browserSkipped.push({ path: 'browser:' + key, reason: 'browser credential material is intentionally excluded' });
       browserReauth.push({ kind: 'browser-credential', id: key, reason: 'Credential value is intentionally excluded.' });
@@ -968,8 +968,8 @@ function capture(opts) {
 
 function validate(bundle) {
   const errors = [];
-  if (!bundle || bundle.schema !== SCHEMA) errors.push('not a StarNet station recovery bundle');
-  if (bundle && Number(bundle.version) > VERSION) errors.push('bundle was created by a newer StarNet recovery format');
+  if (!bundle || bundle.schema !== SCHEMA) errors.push('not a Vultron station recovery bundle');
+  if (bundle && Number(bundle.version) > VERSION) errors.push('bundle was created by a newer Vultron recovery format');
   const files = bundle && Array.isArray(bundle.files) ? bundle.files : [];
   const browser = bundle && Array.isArray(bundle.browser) ? bundle.browser : [];
   const seen = new Set();
@@ -977,7 +977,7 @@ function validate(bundle) {
     const rel = slash(row && row.path);
     if (escapesStation(rel)) { errors.push('unsafe bundle path: ' + rel); continue; }
     if (systemSecretPath(rel)) errors.push('bundle contains forbidden system credential path: ' + rel);
-    if (plantedPath(rel)) errors.push('bundle contains a path StarNet never writes: ' + rel);
+    if (plantedPath(rel)) errors.push('bundle contains a path Vultron never writes: ' + rel);
     // exact only: a case-sensitive station can hold Foo and foo. restore() refuses them on a disk that cannot.
     if (seen.has(rel)) errors.push('duplicate bundle path: ' + rel);
     seen.add(rel);
@@ -988,7 +988,7 @@ function validate(bundle) {
   for (const dir of bundle && Array.isArray(bundle.directories) ? bundle.directories : []) {
     const rel = slash(dir);
     if (typeof dir !== 'string' || escapesStation(rel)) errors.push('unsafe bundle path: ' + rel);
-    else if (systemSecretPath(rel) || plantedPath(rel)) errors.push('bundle contains a path StarNet never writes: ' + rel);
+    else if (systemSecretPath(rel) || plantedPath(rel)) errors.push('bundle contains a path Vultron never writes: ' + rel);
   }
   for (const row of browser) {
     const data = Buffer.from(String(row.value == null ? '' : row.value), 'utf8');
@@ -1196,7 +1196,7 @@ function restore(opts) {
     }
     if (e && typeof e === 'object') {
       if (rollbackError) e.rollbackError = rollbackError;
-      // the one state a person must hear about: their station is not where StarNet will look for it
+      // the one state a person must hear about: their station is not where Vultron will look for it
       if (targetMoved && !fs.existsSync(target) && fs.existsSync(rollback)) e.stationDisplaced = { target, rollback };
     }
     throw e;
@@ -1234,7 +1234,7 @@ function semanticFingerprint(bundle) {
 
 /* A REHEARSAL NEVER TOUCHES A STATION (#119). The bundle is restored into a folder the caller made for this and nothing
    else, captured again the way a backup is, and compared by content; the folder is removed whatever happens. What it
-   proves: this bundle restores, and what lands is what was captured. What it cannot prove: that a StarNet opens it. */
+   proves: this bundle restores, and what lands is what was captured. What it cannot prove: that a Vultron opens it. */
 function rehearse(opts) {
   const o = opts || {}, fs = o.fs || fsNative, path = o.path || pathNative;
   if (!o.scratchRoot) throw new Error('rehearse requires scratchRoot');

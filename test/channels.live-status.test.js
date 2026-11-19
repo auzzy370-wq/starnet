@@ -13,7 +13,7 @@ if(process.env.CHANNEL_STATUS_CONTROL) {
   old._compile(fs.readFileSync(process.env.CHANNEL_STATUS_CONTROL,'utf8'),filename); Hub=old.exports;
 }
 (async()=>{
-  const root=fs.mkdtempSync(path.join(os.tmpdir(),'starnet-channel-status-')), hubs=[];
+  const root=fs.mkdtempSync(path.join(os.tmpdir(),'vultron-channel-status-')), hubs=[];
   try {
     for(const kind of ['telegram','telegram-bot']) {
       const sends=[], runs=[]; let model='live-model', unavailable=false, n=0;

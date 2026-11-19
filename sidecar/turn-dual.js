@@ -24,7 +24,7 @@ function make(d) {
     load();
     const out = Object.assign({}, DEFAULTS, saved);
     for (const surface of Object.keys(DEFAULTS)) {
-      const env = typeof d.env === 'function' ? d.env('STARNET_TURNID_' + surface.toUpperCase()) : undefined;
+      const env = typeof d.env === 'function' ? d.env('VULTRON_TURNID_' + surface.toUpperCase()) : undefined;
       if (valid(surface, env)) out[surface] = env;
     }
     return out;

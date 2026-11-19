@@ -12,14 +12,14 @@ function write(root, rel, value) {
   fs.writeFileSync(file, typeof value === 'string' ? value : JSON.stringify(value));
 }
 (async () => {
-  const fixture = SidecarFixture.create({ prefix: 'starnet-erased-restart-', timeoutMs: 30000, env: {
-    STARNET_DEV: '0', SKYNET_DEV: '0', STARNET_CRON_ENABLED: '0', SKYNET_CRON_ENABLED: '0',
-    STARNET_LOOP_ENABLED: '0', SKYNET_LOOP_ENABLED: '0', STARNET_EDGE_TTS: '0', SKYNET_EDGE_TTS: '0',
-    STARNET_CLOUD_URL: 'http://127.0.0.1:1', STARNET_CREDITS_URL: 'http://127.0.0.1:1',
-    STARNET_SCRATCH_ROOT: '', SKYNET_SCRATCH_ROOT: '', STARNET_DESKTOP_SHELL: '0',
-    OPENROUTER_API_KEY: '', SKYNET_OPENROUTER_KEY: '', STARNET_OPENROUTER_KEY: '',
-    OPENAI_API_KEY: '', SKYNET_OPENAI_API_KEY: '', STARNET_OPENAI_API_KEY: '',
-    STARNET_DEFAULT_MODEL: 'test/replay', SKYNET_DEFAULT_MODEL: 'test/replay'
+  const fixture = SidecarFixture.create({ prefix: 'vultron-erased-restart-', timeoutMs: 30000, env: {
+    VULTRON_DEV: '0', SKYNET_DEV: '0', VULTRON_CRON_ENABLED: '0', SKYNET_CRON_ENABLED: '0',
+    VULTRON_LOOP_ENABLED: '0', SKYNET_LOOP_ENABLED: '0', VULTRON_EDGE_TTS: '0', SKYNET_EDGE_TTS: '0',
+    VULTRON_CLOUD_URL: 'http://127.0.0.1:1', VULTRON_CREDITS_URL: 'http://127.0.0.1:1',
+    VULTRON_SCRATCH_ROOT: '', SKYNET_SCRATCH_ROOT: '', VULTRON_DESKTOP_SHELL: '0',
+    OPENROUTER_API_KEY: '', SKYNET_OPENROUTER_KEY: '', VULTRON_OPENROUTER_KEY: '',
+    OPENAI_API_KEY: '', SKYNET_OPENAI_API_KEY: '', VULTRON_OPENAI_API_KEY: '',
+    VULTRON_DEFAULT_MODEL: 'test/replay', SKYNET_DEFAULT_MODEL: 'test/replay'
   } });
   const fixtureRoot = fixture.workspace;
   fixture.workspace = path.join(fixtureRoot, 'workspaces');
@@ -30,13 +30,13 @@ function write(root, rel, value) {
   fs.mkdirSync(childTemp);
   Object.assign(fixture.env, { HOME: fixture.profile, USERPROFILE: fixture.profile,
     TMP: childTemp, TEMP: childTemp, TMPDIR: childTemp });
-  const legacy = path.join(fixture.profile, 'StarNet', 'workspaces');
+  const legacy = path.join(fixture.profile, 'Vultron', 'workspaces');
   const marker = { version: 1, erased: true, at: '2026-10-11T00:00:00.000Z', acknowledgedRoots: [legacy], quarantine: null, moved: [] };
   const markerBytes = JSON.stringify(marker);
   write(fixture.workspace, '.fresh-start.json', markerBytes);
   write(fixture.workspace, '.migrated', '1');
   write(legacy, 'agent.save.json', { version: 1, agentId: 'agent', updatedAt: 1000, savedAt: 1000, doc: {
-    schema: 'starnet.save', version: Save.CURRENT, updatedAt: 1000,
+    schema: 'vultron.save', version: Save.CURRENT, updatedAt: 1000,
     agent: { id: 'agent', name: 'SYNTHETIC-OLD-STATION', provider: 'replay', model: 'test/replay' },
     station: { rooms: [{ id: 'old-command' }], props: [] }, workstreams: [], activeId: 'general', generalId: 'general'
   } });
@@ -96,7 +96,7 @@ function write(root, rel, value) {
       if (path.dirname(target) !== parent || !path.basename(target).startsWith(base + '.recovery-')) throw new Error('unsafe fixture cleanup');
       fs.rmSync(target, { recursive: true, force: true });
     }
-    if (path.dirname(fixtureRoot) !== path.resolve(require('node:os').tmpdir()) || !path.basename(fixtureRoot).startsWith('starnet-erased-restart-')) throw new Error('unsafe fixture root cleanup');
+    if (path.dirname(fixtureRoot) !== path.resolve(require('node:os').tmpdir()) || !path.basename(fixtureRoot).startsWith('vultron-erased-restart-')) throw new Error('unsafe fixture root cleanup');
     fs.rmSync(fixtureRoot, { recursive: true, force: true });
   }
   A.report('workspace-recovery-fresh-start.http.test');

@@ -78,43 +78,43 @@ const big = () => 'x'.repeat(4000);   // big enough for the parse counter to see
     // ---- a. alone: no wait ----
     {
       const b = browser();
-      b.cache.set('starnet.save', JSON.stringify(station()));
+      b.cache.set('vultron.save', JSON.stringify(station()));
       const p = page(b, offline);
-      A.eq(await p.cs.openJournal(), 'starnet.save', 'a: a page alone continues its journal');
+      A.eq(await p.cs.openJournal(), 'vultron.save', 'a: a page alone continues its journal');
       A.ok(p.armed.filter(ms => ms === 250).length <= 1, 'a: at most the lock read guard is armed, never the ping\'s wait (' + p.armed + ')');
-      A.eq(b.held.filter(h => h.name === 'starnet-page').length, 1, 'a: it holds the page lock');
+      A.eq(b.held.filter(h => h.name === 'vultron-page').length, 1, 'a: it holds the page lock');
       A.eq(b.held[0].mode, 'shared', 'a: shared, so no page ever waits for another\'s');
     }
     {
       // the wait itself: openJournal must finish well before a 250 ms timer could fire, so it is run against a clock that never fires
       const b = browser();
-      b.cache.set('starnet.save', JSON.stringify(station()));
+      b.cache.set('vultron.save', JSON.stringify(station()));
       const p = page(b, offline);
       p.ctx.setTimeout = () => 0;   // nothing armed from here on ever fires
       let done = false;
       const opening = p.cs.openJournal().then(k => { done = true; return k; });
       for (let i = 0; i < 8; i++) await settle();
       A.ok(done, 'a: openJournal finished with no timer firing: the fixed 250 ms wait is gone for a page alone');
-      A.eq(await opening, 'starnet.save', 'a: and it took the journal');
+      A.eq(await opening, 'vultron.save', 'a: and it took the journal');
     }
     {
       // first run: no journal at all, so nothing to ask anyone
       const b = browser();
       const p = page(b, offline);
-      A.eq(await p.cs.openJournal(), 'starnet.save', 'a: a first run takes the legacy key');
+      A.eq(await p.cs.openJournal(), 'vultron.save', 'a: a first run takes the legacy key');
     }
     {
       // a reload: the old page's lock is gone, and the new page of the tab continues its own journal without waiting
       const b = browser();
-      b.cache.set('starnet.save.w.mine', JSON.stringify(station()));
-      const session = new Map([['starnet.save.journal', 'starnet.save.w.mine']]);
+      b.cache.set('vultron.save.w.mine', JSON.stringify(station()));
+      const session = new Map([['vultron.save.journal', 'vultron.save.w.mine']]);
       const p = page(b, offline, { session });
       p.ctx.setTimeout = () => 0;
       let done = false;
       p.cs.openJournal().then(() => { done = true; });
       for (let i = 0; i < 8; i++) await settle();
       A.ok(done, 'a: a reload does not wait either');
-      A.eq(p.cs.journalKey(), 'starnet.save.w.mine', 'a: a reloaded tab continues its own journal');
+      A.eq(p.cs.journalKey(), 'vultron.save.w.mine', 'a: a reloaded tab continues its own journal');
     }
 
     // ---- b. another live page: the ping still runs and its journal is never taken ----
@@ -123,13 +123,13 @@ const big = () => 'x'.repeat(4000);   // big enough for the parse counter to see
       host.saveStore.save('agent', station(), { compareRevision: true });
       const b = browser();
       const first = page(b, host);
-      A.eq(await first.cs.openJournal(), 'starnet.save', 'b: the first window takes the legacy key');
+      A.eq(await first.cs.openJournal(), 'vultron.save', 'b: the first window takes the legacy key');
       first.Save.write(Object.assign(station(), { _saveDirty: false }));
       const second = page(b, host);
       const k2 = await second.cs.openJournal();
       A.ok(second.armed.filter(ms => ms === 250).length >= 2, 'b: with another holder the ping ran its wait (' + second.armed + ')');
-      A.ok(k2 !== 'starnet.save' && /^starnet\.save\.w\./.test(k2), 'b: a second tab takes a journal of its own (' + k2 + ')');
-      A.eq(first.cs.journalKey(), 'starnet.save', 'b: the live first tab kept its journal');
+      A.ok(k2 !== 'vultron.save' && /^vultron\.save\.w\./.test(k2), 'b: a second tab takes a journal of its own (' + k2 + ')');
+      A.eq(first.cs.journalKey(), 'vultron.save', 'b: the live first tab kept its journal');
     }
     {
       // duplicated tab: same sessionStorage, the original alive. The lock shows it, so the ping runs and the journal stays the original's.
@@ -149,7 +149,7 @@ const big = () => 'x'.repeat(4000);   // big enough for the parse counter to see
       ['no Web Locks', () => ({})],
       ['a refused lock', () => ({ locks: { request: () => Promise.reject(new Error('SecurityError')), query: async () => ({ held: [] }) } })],
       // this page holds nothing, so the one holder on the list is another page: never read as this page's own, never "alone"
-      ['a refused lock, with one other holder', () => ({ locks: { request: () => Promise.reject(new Error('SecurityError')), query: async () => ({ held: [{ name: 'starnet-page', mode: 'shared' }] }) } })],
+      ['a refused lock, with one other holder', () => ({ locks: { request: () => Promise.reject(new Error('SecurityError')), query: async () => ({ held: [{ name: 'vultron-page', mode: 'shared' }] }) } })],
       ['a request that throws', () => ({ locks: { request: () => { throw new Error('nope'); }, query: async () => ({ held: [] }) } })],
       ['a lock list that throws', () => ({ locks: { request: (n, o, cb) => { cb(); return new Promise(() => {}); }, query: async () => { throw new Error('nope'); } } })],
       ['a lock list that never answers', () => ({ locks: { request: (n, o, cb) => { cb(); return new Promise(() => {}); }, query: () => new Promise(() => {}) } })],
@@ -163,8 +163,8 @@ const big = () => 'x'.repeat(4000);   // big enough for the parse counter to see
       const p = page(b, offline, { navigator: nav() });
       const k = await p.cs.openJournal();
       A.ok(p.armed.includes(250), what + ': the ping ran');
-      A.ok(k !== 'starnet.save', what + ': the live page\'s journal is not taken (' + k + ')');
-      A.eq(live.cs.journalKey(), 'starnet.save', what + ': the live page keeps it');
+      A.ok(k !== 'vultron.save', what + ': the live page\'s journal is not taken (' + k + ')');
+      A.eq(live.cs.journalKey(), 'vultron.save', what + ': the live page keeps it');
     }
 
     // ---- d. two journals: the ping always runs. A dead window's lock is gone: its journal is continued, its unsent work lands ----
@@ -176,15 +176,15 @@ const big = () => 'x'.repeat(4000);   // big enough for the parse counter to see
       const dead = page(b, host);
       await dead.cs.openJournal();
       dead.die();
-      b.cache.set('starnet.save.w.deadA', JSON.stringify(station({ _saveDirty: true, _saveRevision: rev, _saveClient: 'deadA', updatedAt: Date.now() + 5,
+      b.cache.set('vultron.save.w.deadA', JSON.stringify(station({ _saveDirty: true, _saveRevision: rev, _saveClient: 'deadA', updatedAt: Date.now() + 5,
         workstreams: [{ id: 'general', title: null, history: [K.turn('user', 'hi')] }, { id: 'unsent', title: 'U', history: [K.turn('user', 'dead window typed this')] }] })));
-      b.cache.set('starnet.save', JSON.stringify(station({ _saveDirty: false, _saveRevision: rev, _saveClient: 'deadB', updatedAt: Date.now() + 10 })));
+      b.cache.set('vultron.save', JSON.stringify(station({ _saveDirty: false, _saveRevision: rev, _saveClient: 'deadB', updatedAt: Date.now() + 10 })));
       const p = page(b, host);
       const k = await p.cs.openJournal();
-      A.eq(k, 'starnet.save', 'd: the page continues the newest dead journal');
+      A.eq(k, 'vultron.save', 'd: the page continues the newest dead journal');
       A.ok(p.armed.filter(ms => ms === 250).length >= 2, 'd: with two journals the ping ran, even with no other holder on the list (' + p.armed + ')');
       A.ok(host.saveStore.load('agent').workstreams.some(w => w.id === 'unsent'), 'd: the other dead window\'s unsent work reached the station before boot');
-      A.ok(!b.cache.has('starnet.save.w.deadA'), 'd: and its journal is removed');
+      A.ok(!b.cache.has('vultron.save.w.deadA'), 'd: and its journal is removed');
     }
     {
       // F1: a live tab of a build from before the lock writes one journal, a dead window left another. The list shows nobody
@@ -196,13 +196,13 @@ const big = () => 'x'.repeat(4000);   // big enough for the parse counter to see
       await oldTab.cs.openJournal();
       const tabRaw = JSON.stringify(station({ _saveDirty: true, _saveRevision: rev, _saveClient: 'oldtab', updatedAt: Date.now() + 9,
         workstreams: [{ id: 'general', title: null, history: [K.turn('user', 'hi')] }, { id: 'tab-s', title: 'T', history: [K.turn('user', 'typed in the live old tab')] }] }));
-      b.cache.set('starnet.save', tabRaw);
-      b.cache.set('starnet.save.w.other', JSON.stringify(station({ _saveDirty: false, _saveRevision: rev, _saveClient: 'other', updatedAt: Date.now() + 5 })));
+      b.cache.set('vultron.save', tabRaw);
+      b.cache.set('vultron.save.w.other', JSON.stringify(station({ _saveDirty: false, _saveRevision: rev, _saveClient: 'other', updatedAt: Date.now() + 5 })));
       const p = page(b, host);
       await p.cs.openJournal();
       A.ok(p.armed.filter(ms => ms === 250).length >= 2, 'd: the list shows nobody, and the ping still ran');
-      A.ok(p.cs.journalKey() !== 'starnet.save', 'd: the lockless tab\'s journal was not taken (' + p.cs.journalKey() + ')');
-      A.eq(b.cache.get('starnet.save'), tabRaw, 'd: its journal is not merged or removed');
+      A.ok(p.cs.journalKey() !== 'vultron.save', 'd: the lockless tab\'s journal was not taken (' + p.cs.journalKey() + ')');
+      A.eq(b.cache.get('vultron.save'), tabRaw, 'd: its journal is not merged or removed');
       A.ok(!host.saveStore.load('agent').workstreams.some(w => w.id === 'tab-s'), 'd: and nothing of it was sent in its place');
     }
 
@@ -214,61 +214,61 @@ const big = () => 'x'.repeat(4000);   // big enough for the parse counter to see
       oldPage.Save.write(Object.assign(station({ _saveDirty: false }), { marker: 'old page' }));
       const p = page(b, offline);
       const k = await p.cs.openJournal();
-      A.eq(k, 'starnet.save', 'e: (the lock cannot show it, so this page first took the old page\'s journal)');
+      A.eq(k, 'vultron.save', 'e: (the lock cannot show it, so this page first took the old page\'s journal)');
       for (let i = 0; i < 8; i++) await settle();
-      A.ok(/^starnet\.save\.w\./.test(p.cs.journalKey()), 'e: told otherwise, this page moved to a journal of its own (' + p.cs.journalKey() + ')');
-      A.eq(oldPage.cs.journalKey(), 'starnet.save', 'e: the old page keeps its journal');
+      A.ok(/^vultron\.save\.w\./.test(p.cs.journalKey()), 'e: told otherwise, this page moved to a journal of its own (' + p.cs.journalKey() + ')');
+      A.eq(oldPage.cs.journalKey(), 'vultron.save', 'e: the old page keeps its journal');
       A.ok(b.cache.has(p.cs.journalKey()), 'e: and this page carried the save it held');
     }
     {
       // a pre-journal build answers with no journal field: it writes the legacy key
       const b = browser();
-      b.cache.set('starnet.save', JSON.stringify(station()));
-      const preJournal = new b.Channel('starnet-pages');
+      b.cache.set('vultron.save', JSON.stringify(station()));
+      const preJournal = new b.Channel('vultron-pages');
       preJournal.addEventListener('message', e => { if (e.data && e.data.ping) preJournal.postMessage({ pong: e.data.ping, from: 'pre-journal' }); });
       const p = page(b, offline);
       await p.cs.openJournal();
       for (let i = 0; i < 8; i++) await settle();
-      A.ok(/^starnet\.save\.w\./.test(p.cs.journalKey()), 'e: a page of a pre-journal build holds the legacy key: this page moved off it (' + p.cs.journalKey() + ')');
+      A.ok(/^vultron\.save\.w\./.test(p.cs.journalKey()), 'e: a page of a pre-journal build holds the legacy key: this page moved off it (' + p.cs.journalKey() + ')');
     }
     {
       // an answer naming another journal moves nothing
       const b = browser();
-      b.cache.set('starnet.save', JSON.stringify(station()));
-      const other = new b.Channel('starnet-pages');
-      other.addEventListener('message', e => { if (e.data && e.data.ping) other.postMessage({ pong: e.data.ping, from: 'other', journal: 'starnet.save.w.other' }); });
+      b.cache.set('vultron.save', JSON.stringify(station()));
+      const other = new b.Channel('vultron-pages');
+      other.addEventListener('message', e => { if (e.data && e.data.ping) other.postMessage({ pong: e.data.ping, from: 'other', journal: 'vultron.save.w.other' }); });
       const p = page(b, offline);
       await p.cs.openJournal();
       for (let i = 0; i < 8; i++) await settle();
-      A.eq(p.cs.journalKey(), 'starnet.save', 'e: a page writing another journal moves nothing');
+      A.eq(p.cs.journalKey(), 'vultron.save', 'e: a page writing another journal moves nothing');
     }
 
     {
       // the answer comes well after the boot, and after this page has saved: the save goes with it, later saves stay off the old key
       const b = browser();
-      b.cache.set('starnet.save', JSON.stringify(station({ marker: 'theirs' })));
-      const slow = new b.Channel('starnet-pages');
+      b.cache.set('vultron.save', JSON.stringify(station({ marker: 'theirs' })));
+      const slow = new b.Channel('vultron-pages');
       const pings = [];
       slow.addEventListener('message', e => { if (e.data && e.data.ping) pings.push(e.data.ping); });
       const p = page(b, offline);
       await p.cs.openJournal();
       for (let i = 0; i < 4; i++) await settle();
-      A.eq(p.cs.journalKey(), 'starnet.save', 'e: no answer yet: this page is on the key it took');
+      A.eq(p.cs.journalKey(), 'vultron.save', 'e: no answer yet: this page is on the key it took');
       A.eq(pings.length, 1, 'e: alone, one ping went out after the journal was picked');
       p.Save.write(Object.assign(station(), { marker: 'mine' }));
       slow.postMessage({ pong: 'some-other-ping', from: 'pre-journal' });
       for (let i = 0; i < 4; i++) await settle();
-      A.eq(p.cs.journalKey(), 'starnet.save', 'e: an answer to some other ping moves nothing');
+      A.eq(p.cs.journalKey(), 'vultron.save', 'e: an answer to some other ping moves nothing');
       slow.postMessage({ pong: pings[0], from: 'pre-journal' });
       for (let i = 0; i < 4; i++) await settle();
       const fresh = p.cs.journalKey();
-      A.ok(/^starnet\.save\.w\./.test(fresh), 'e: the late answer moved this page (' + fresh + ')');
+      A.ok(/^vultron\.save\.w\./.test(fresh), 'e: the late answer moved this page (' + fresh + ')');
       A.eq(p.cs._lateMoves(), 1, 'e: the move came from the late ping');
       A.eq(JSON.parse(b.cache.get(fresh)).marker, 'mine', 'e: and carried the save this page made');
-      A.eq(p.session.get('starnet.save.journal'), fresh, 'e: a reload of this tab continues the new key');
+      A.eq(p.session.get('vultron.save.journal'), fresh, 'e: a reload of this tab continues the new key');
       p.Save.write(Object.assign(station(), { marker: 'mine again' }));
       A.eq(JSON.parse(b.cache.get(fresh)).marker, 'mine again', 'e: later saves land on the new key');
-      A.eq(JSON.parse(b.cache.get('starnet.save')).marker, 'mine', 'e: and never again on the other page\'s');
+      A.eq(JSON.parse(b.cache.get('vultron.save')).marker, 'mine', 'e: and never again on the other page\'s');
       slow.postMessage({ pong: pings[0], from: 'pre-journal' });
       for (let i = 0; i < 4; i++) await settle();
       A.eq([p.cs.journalKey(), p.cs._lateMoves()], [fresh, 1], 'e: a repeated answer moves nothing');
@@ -280,15 +280,15 @@ const big = () => 'x'.repeat(4000);   // big enough for the parse counter to see
       host.saveStore.save('agent', station(), { compareRevision: true });
       const rev = host.saveStore.load('agent')._saveRevision;
       const b = browser();
-      b.held.push({ name: 'starnet-page', mode: 'shared', owner: 'ghost' });   // a busy live page, or a dead page's lock not yet dropped
+      b.held.push({ name: 'vultron-page', mode: 'shared', owner: 'ghost' });   // a busy live page, or a dead page's lock not yet dropped
       const unsent = (id, t) => JSON.stringify(station({ _saveDirty: true, _saveRevision: rev, _saveClient: id, updatedAt: Date.now() + t,
         workstreams: [{ id: 'general', title: null, history: [K.turn('user', 'hi')] }, { id: id + '-s', title: 'S', history: [K.turn('user', id + ' typed this')] }] }));
-      b.cache.set('starnet.save', unsent('legacy', 5));
-      b.cache.set('starnet.save.w.other', unsent('other', 9));
+      b.cache.set('vultron.save', unsent('legacy', 5));
+      b.cache.set('vultron.save.w.other', unsent('other', 9));
       const p = page(b, host);
-      A.eq(await p.cs.openJournal(), 'starnet.save.w.other', 'g: the newest journal is continued, whoever holds a lock');
+      A.eq(await p.cs.openJournal(), 'vultron.save.w.other', 'g: the newest journal is continued, whoever holds a lock');
       A.ok(host.saveStore.load('agent').workstreams.some(w => w.id === 'legacy-s'), 'g: the other journal\'s unsent work is merged');
-      A.ok(!b.cache.has('starnet.save'), 'g: and it is removed');
+      A.ok(!b.cache.has('vultron.save'), 'g: and it is removed');
       await p.cs.reconcile(p.Save.load());
       await p.cs.flush({ force: true });
       A.ok(host.saveStore.load('agent').workstreams.some(w => w.id === 'other-s'), 'g: both reach the station');
@@ -302,11 +302,11 @@ const big = () => 'x'.repeat(4000);   // big enough for the parse counter to see
       const running = page(b, host);
       await running.cs.openJournal();
       running.Save.write(Object.assign(station(), { _saveDirty: false }));
-      b.cache.set('starnet.save.w.dead', JSON.stringify(station({ _saveDirty: true, _saveRevision: rev, _saveClient: 'dead', updatedAt: Date.now() + 5,
+      b.cache.set('vultron.save.w.dead', JSON.stringify(station({ _saveDirty: true, _saveRevision: rev, _saveClient: 'dead', updatedAt: Date.now() + 5,
         workstreams: [{ id: 'general', title: null, history: [K.turn('user', 'hi')] }, { id: 'dead-s', title: 'D', history: [K.turn('user', 'dead typed this')] }] })));
       const p = page(b, host);
-      A.eq(await p.cs.openJournal(), 'starnet.save.w.dead', 'g: every holder answered: the dead journal is continued as usual');
-      A.eq(running.cs.journalKey(), 'starnet.save', 'g: and the running page keeps its own');
+      A.eq(await p.cs.openJournal(), 'vultron.save.w.dead', 'g: every holder answered: the dead journal is continued as usual');
+      A.eq(running.cs.journalKey(), 'vultron.save', 'g: and the running page keeps its own');
     }
 
     // ---- j. the first-run path is never reached with a save unread: no other holder, one journal, an empty station file ----
@@ -316,7 +316,7 @@ const big = () => 'x'.repeat(4000);   // big enough for the parse counter to see
       const holds = d => !!(d && d.workstreams && d.workstreams.some(w => w.id === 'mine'));
       for (const dirty of [true, false]) {
         const label = dirty ? 'unsent' : 'clean';
-        for (const key of ['starnet.save', 'starnet.save.w.crashed']) {
+        for (const key of ['vultron.save', 'vultron.save.w.crashed']) {
           // a cold start
           const b = browser(), host = K.sidecar(K.workspace());
           b.cache.set(key, only(dirty));
@@ -328,67 +328,67 @@ const big = () => 'x'.repeat(4000);   // big enough for the parse counter to see
         // leaving its journal, and this tab reloads remembering a key with nothing behind it
         const b = browser(), host = K.sidecar(K.workspace());
         const raw = only(dirty);
-        b.cache.set('starnet.save', raw);
+        b.cache.set('vultron.save', raw);
         const running = page(b, host);
         await running.cs.openJournal();
         const session = new Map();
         const first = page(b, host, { session });
         const remembered = await first.cs.openJournal();
-        A.ok(/^starnet\.save\.w\./.test(remembered) && !b.cache.has(remembered), 'j reload ' + label + ': the note names a key with no journal behind it (' + remembered + ')');
-        A.eq(session.get('starnet.save.journal'), remembered, 'j reload ' + label + ': on the tab\'s own session');
+        A.ok(/^vultron\.save\.w\./.test(remembered) && !b.cache.has(remembered), 'j reload ' + label + ': the note names a key with no journal behind it (' + remembered + ')');
+        A.eq(session.get('vultron.save.journal'), remembered, 'j reload ' + label + ': on the tab\'s own session');
         running.die(); first.die();
         const again = page(b, host, { session });
         await again.cs.openJournal();
         A.ok(holds(await again.cs.reconcile(again.Save.load())), 'j reload ' + label + ': the reload opens on the only copy, never first-run');
-        A.eq(again.cs.journalKey(), 'starnet.save', 'j reload ' + label + ': and continues that journal');
-        A.eq(session.get('starnet.save.journal'), 'starnet.save', 'j reload ' + label + ': the next reload does too');
+        A.eq(again.cs.journalKey(), 'vultron.save', 'j reload ' + label + ': and continues that journal');
+        A.eq(session.get('vultron.save.journal'), 'vultron.save', 'j reload ' + label + ': the next reload does too');
         await again.cs.flush({ force: true });
         A.ok(holds(host.saveStore.load('agent')), 'j reload ' + label + ': and it reaches the station');
-        A.ok(b.cache.has('starnet.save'), 'j reload ' + label + ': with the copy still there');
+        A.ok(b.cache.has('vultron.save'), 'j reload ' + label + ': with the copy still there');
       }
       {
         // which journal, and how: a reload remembering a key with nothing behind it, on an empty station file
-        const NOTE = () => new Map([['starnet.save.journal', 'starnet.save.w.gone']]);
+        const NOTE = () => new Map([['vultron.save.journal', 'vultron.save.w.gone']]);
         const doc = (t, over) => JSON.stringify(K.stationDoc(Object.assign({ updatedAt: t, _saveDirty: false, _saveClient: 'crashed', _saveRevision: 7 }, over || {})));
         {
           // the newest of them, and the others are left as they were
           const b = browser(), host = K.sidecar(K.workspace());
-          b.cache.set('starnet.save.w.old', doc(1000, { marker: 'old' }));
-          const newRaw = doc(9000, { marker: 'new' }), oldRaw = b.cache.get('starnet.save.w.old');
-          b.cache.set('starnet.save.w.new', newRaw);
+          b.cache.set('vultron.save.w.old', doc(1000, { marker: 'old' }));
+          const newRaw = doc(9000, { marker: 'new' }), oldRaw = b.cache.get('vultron.save.w.old');
+          b.cache.set('vultron.save.w.new', newRaw);
           const claims = [];
-          const ear = new b.Channel('starnet-pages');
+          const ear = new b.Channel('vultron-pages');
           ear.addEventListener('message', e => { if (e.data && e.data.claim) claims.push(e.data.claim); });
           const p = page(b, host, { session: NOTE() });
           await p.cs.openJournal();
           const view = await p.cs.reconcile(p.Save.load());
           for (let i = 0; i < 4; i++) await settle();
-          A.eq(p.cs.journalKey(), 'starnet.save.w.new', 'j which: the newest journal is continued');
+          A.eq(p.cs.journalKey(), 'vultron.save.w.new', 'j which: the newest journal is continued');
           A.eq(view.marker, 'new', 'j which: and is the view');
-          A.eq(b.cache.get('starnet.save.w.old'), oldRaw, 'j which: the other is left as it was');
-          A.ok(claims.includes('starnet.save.w.new'), 'j which: the page claims the journal it took, so another page that took it moves (' + claims + ')');
+          A.eq(b.cache.get('vultron.save.w.old'), oldRaw, 'j which: the other is left as it was');
+          A.ok(claims.includes('vultron.save.w.new'), 'j which: the page claims the journal it took, so another page that took it moves (' + claims + ')');
         }
         {
           // a journal of a newer build is never opened or changed, however new
           const b = browser(), host = K.sidecar(K.workspace());
           const future = doc(9000, { version: 999, marker: 'future' });
-          b.cache.set('starnet.save.w.future', future);
-          b.cache.set('starnet.save.w.old', doc(1000, { marker: 'old' }));
+          b.cache.set('vultron.save.w.future', future);
+          b.cache.set('vultron.save.w.old', doc(1000, { marker: 'old' }));
           const p = page(b, host, { session: NOTE() });
           await p.cs.openJournal();
           A.eq((await p.cs.reconcile(p.Save.load())).marker, 'old', 'j future: the newer build\'s journal is not opened');
-          A.eq(p.cs.journalKey(), 'starnet.save.w.old', 'j future: and not continued');
-          A.eq(b.cache.get('starnet.save.w.future'), future, 'j future: and stays as it was');
+          A.eq(p.cs.journalKey(), 'vultron.save.w.old', 'j future: and not continued');
+          A.eq(b.cache.get('vultron.save.w.future'), future, 'j future: and stays as it was');
         }
         {
           // an old journal goes up the migration ladder like any other load, with its backup
           const b = browser(), host = K.sidecar(K.workspace());
-          b.cache.set('starnet.save.w.v3', doc(1000, { version: 3, marker: 'v3' }));
+          b.cache.set('vultron.save.w.v3', doc(1000, { version: 3, marker: 'v3' }));
           const p = page(b, host, { session: NOTE() });
           await p.cs.openJournal();
           const view = await p.cs.reconcile(p.Save.load());
           A.eq([view.marker, view.version], ['v3', p.Save.CURRENT], 'j migrate: the view is migrated');
-          A.ok(b.cache.has('starnet.save.pre-migrate.backup'), 'j migrate: with the backup from before it');
+          A.ok(b.cache.has('vultron.save.pre-migrate.backup'), 'j migrate: with the backup from before it');
           await p.cs.flush({ force: true });
           A.eq(host.saveStore.load('agent').version, p.Save.CURRENT, 'j migrate: and the station gets the migrated save');
         }
@@ -398,19 +398,19 @@ const big = () => 'x'.repeat(4000);   // big enough for the parse counter to see
         // station, and the journal that looks free is not this tab's to open on (seeds 42, 107 and 117 lost sight of their own turn that way)
         const b = browser(), host = K.sidecar(K.workspace());
         host.saveStore.save('agent', station(), { compareRevision: true });
-        b.cache.set('starnet.save', only(false));
-        const session = new Map([['starnet.save.journal', 'starnet.save.w.gone']]);
+        b.cache.set('vultron.save', only(false));
+        const session = new Map([['vultron.save.journal', 'vultron.save.w.gone']]);
         const p = page(b, host, { session });
         await p.cs.openJournal();
         A.ok(!holds(await p.cs.reconcile(p.Save.load())), 'j station: a reload opens on the station, not on the journal that looks free');
-        A.eq(p.cs.journalKey(), 'starnet.save.w.gone', 'j station: and keeps the key it remembers');
+        A.eq(p.cs.journalKey(), 'vultron.save.w.gone', 'j station: and keeps the key it remembers');
       }
       {
         // a reload whose note has a journal behind it still continues it
         const b = browser();
-        b.cache.set('starnet.save.w.mine', JSON.stringify(station({ marker: 'mine' })));
-        const p = page(b, offline, { session: new Map([['starnet.save.journal', 'starnet.save.w.mine']]) });
-        A.eq(await p.cs.openJournal(), 'starnet.save.w.mine', 'j: a reload continues its own journal');
+        b.cache.set('vultron.save.w.mine', JSON.stringify(station({ marker: 'mine' })));
+        const p = page(b, offline, { session: new Map([['vultron.save.journal', 'vultron.save.w.mine']]) });
+        A.eq(await p.cs.openJournal(), 'vultron.save.w.mine', 'j: a reload continues its own journal');
       }
     }
 
@@ -483,7 +483,7 @@ const big = () => 'x'.repeat(4000);   // big enough for the parse counter to see
       const sending = T.cs.flush({ force: true });
       await settle();
       persist(Date.now() + 3000, w0.concat([sess('s1', 'S1', 'one'), sess('s2', 'S2', 'PRECIOUS turn')]));
-      b.cache.set('starnet.save.w.other', JSON.stringify(Object.assign(host.saveStore.load('agent'), { _saveDirty: false, _saveClient: 'other', updatedAt: Date.now() + 100000 })));
+      b.cache.set('vultron.save.w.other', JSON.stringify(Object.assign(host.saveStore.load('agent'), { _saveDirty: false, _saveClient: 'other', updatedAt: Date.now() + 100000 })));
       T.channel.open = false;   // busy: no answer in time
       const N = page(b, host);
       await N.cs.openJournal();
@@ -508,8 +508,8 @@ const big = () => 'x'.repeat(4000);   // big enough for the parse counter to see
       const raw = JSON.stringify(Object.assign({}, v, { _saveDirty: true, _saveClient: 'oldtab', updatedAt: Date.now() + 500,
         workstreams: (v.workstreams || []).concat([{ id: 'tab-s', title: 'T', history: [K.turn('user', 'the old tab typed this'), K.turn('user', 'and this')] }]) }));
       const b = browser();
-      b.cache.set('starnet.save', raw);
-      const tab = new b.Channel('starnet-pages');
+      b.cache.set('vultron.save', raw);
+      const tab = new b.Channel('vultron-pages');
       tab.addEventListener('message', e => { if (e.data && e.data.ping) tab.postMessage({ pong: e.data.ping, from: 'oldtab' }); });
       const p = page(b, host);
       await p.cs.openJournal();
@@ -517,8 +517,8 @@ const big = () => 'x'.repeat(4000);   // big enough for the parse counter to see
       await p.cs.reconcile(p.Save.load());
       for (let i = 0; i < 4; i++) await settle();
       await p.cs.flush({ force: true });
-      A.ok(p.cs.journalKey() !== 'starnet.save', 'i (' + when + '): the page ends off the legacy key (' + p.cs.journalKey() + ')');
-      A.eq(b.cache.get('starnet.save'), raw, 'i (' + when + '): the tab\'s journal is exactly as it wrote it');
+      A.ok(p.cs.journalKey() !== 'vultron.save', 'i (' + when + '): the page ends off the legacy key (' + p.cs.journalKey() + ')');
+      A.eq(b.cache.get('vultron.save'), raw, 'i (' + when + '): the tab\'s journal is exactly as it wrote it');
       const got = new Set(); for (const w of host.saveStore.load('agent').workstreams) for (const t of w.history || []) got.add(t.content);
       A.ok(got.has('the old tab typed this') && got.has('and this'), 'i (' + when + '): every turn of the tab reached the station');
     }
@@ -526,17 +526,17 @@ const big = () => 'x'.repeat(4000);   // big enough for the parse counter to see
     // ---- f. the extra whole-save parse ----
     {
       const b = browser();
-      b.cache.set('starnet.save', JSON.stringify(station({ pad: big() })));
+      b.cache.set('vultron.save', JSON.stringify(station({ pad: big() })));
       const p = page(b, offline);
       p.resetParses();
       await p.cs.openJournal();
       A.eq(p.parses(), 0, 'f: one legacy journal, this page\'s whatever it holds: not parsed before Save.load reads it');
-      A.eq(p.cs.journalKey(), 'starnet.save', 'f: and it is taken');
+      A.eq(p.cs.journalKey(), 'vultron.save', 'f: and it is taken');
     }
     {
       const b = browser();
-      b.cache.set('starnet.save.w.mine', JSON.stringify(station({ pad: big() })));
-      const p = page(b, offline, { session: new Map([['starnet.save.journal', 'starnet.save.w.mine']]) });
+      b.cache.set('vultron.save.w.mine', JSON.stringify(station({ pad: big() })));
+      const p = page(b, offline, { session: new Map([['vultron.save.journal', 'vultron.save.w.mine']]) });
       p.resetParses();
       await p.cs.openJournal();
       A.eq(p.parses(), 0, 'f: a reload\'s own one journal: not parsed either');
@@ -544,25 +544,25 @@ const big = () => 'x'.repeat(4000);   // big enough for the parse counter to see
     {
       // a lone dead window's journal is taken only when it holds a save: this one needs reading
       const b = browser();
-      b.cache.set('starnet.save.w.gone', JSON.stringify(station({ pad: big() })));
+      b.cache.set('vultron.save.w.gone', JSON.stringify(station({ pad: big() })));
       const p = page(b, offline);
       p.resetParses();
-      A.eq(await p.cs.openJournal(), 'starnet.save.w.gone', 'f: a lone dead window\'s journal is continued');
+      A.eq(await p.cs.openJournal(), 'vultron.save.w.gone', 'f: a lone dead window\'s journal is continued');
       A.eq(p.parses(), 1, 'f: and it had to be read to know it holds a save');
     }
     {
       const b = browser();
-      b.cache.set('starnet.save.w.gone', 'not json');
+      b.cache.set('vultron.save.w.gone', 'not json');
       const p = page(b, offline);
-      A.eq(await p.cs.openJournal(), 'starnet.save', 'f: an unreadable lone journal is not taken');
+      A.eq(await p.cs.openJournal(), 'vultron.save', 'f: an unreadable lone journal is not taken');
     }
     {
       // an unreadable legacy journal: the shortcut takes it, exactly as the long way did (reconcile reads and judges it)
       const b = browser();
-      b.cache.set('starnet.save', 'not json');
+      b.cache.set('vultron.save', 'not json');
       const p = page(b, offline);
-      A.eq(await p.cs.openJournal(), 'starnet.save', 'f: an unreadable legacy journal stays this page\'s to judge');
-      A.ok(b.cache.has('starnet.save'), 'f: and is left in place');
+      A.eq(await p.cs.openJournal(), 'vultron.save', 'f: an unreadable legacy journal stays this page\'s to judge');
+      A.ok(b.cache.has('vultron.save'), 'f: and is left in place');
     }
   } catch (e) { A.ok(false, 'threw: ' + (e && e.stack || e)); }
   finally { K.cleanup(); }

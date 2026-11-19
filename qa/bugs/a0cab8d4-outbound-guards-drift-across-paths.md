@@ -39,4 +39,4 @@ Fixed in the safe-egress lane: sidecar/net/safe-egress.js owns the outbound trus
 
 ## Regression
 
-Both invariant files fail at 0b8441064 (985 and 11 failures) and pass at e9d823479 (7553 and 65 assertions, the real-socket test under PATH node v22.23.0 and the installed StarNet node v22.23.2).
+Both invariant files fail at 0b8441064 (985 and 11 failures) and pass at e9d823479 (7553 and 65 assertions, the real-socket test under PATH node v22.23.0 and the installed Vultron node v22.23.2).

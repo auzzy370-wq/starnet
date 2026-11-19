@@ -151,7 +151,7 @@ function startMockTelegram() {
 function boot(port, env, attemptsLeft) {
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, [INDEX], {
-      env: Object.assign({}, process.env, env, { SKYNET_PORT: String(port), STARNET_PORT: String(port) }),
+      env: Object.assign({}, process.env, env, { SKYNET_PORT: String(port), VULTRON_PORT: String(port) }),
       stdio: ['ignore', 'pipe', 'pipe']
     });
     let out = '', settled = false;
@@ -189,12 +189,12 @@ const lastUserTurn = (req) => {
   const tg = await startMockTelegram();
   const ws = fs.mkdtempSync(path.join(os.tmpdir(), 'sk-tg-buttons-e2e-'));
   const env = {
-    SKYNET_WORKSPACES: ws, STARNET_WORKSPACES: ws,
-    SKYNET_OPENROUTER_BASE: llm.base, STARNET_OPENROUTER_BASE: llm.base,
-    SKYNET_OPENROUTER_KEY: 'sk-or-v1-buttons-fake', STARNET_OPENROUTER_KEY: 'sk-or-v1-buttons-fake',
-    SKYNET_DEFAULT_MODEL: 'test/model', STARNET_DEFAULT_MODEL: 'test/model',
-    SKYNET_TELEGRAM_TOKEN: 'TESTTOKEN', STARNET_TELEGRAM_TOKEN: 'TESTTOKEN',
-    SKYNET_TELEGRAM_API_BASE: tg.base, STARNET_TELEGRAM_API_BASE: tg.base
+    SKYNET_WORKSPACES: ws, VULTRON_WORKSPACES: ws,
+    SKYNET_OPENROUTER_BASE: llm.base, VULTRON_OPENROUTER_BASE: llm.base,
+    SKYNET_OPENROUTER_KEY: 'sk-or-v1-buttons-fake', VULTRON_OPENROUTER_KEY: 'sk-or-v1-buttons-fake',
+    SKYNET_DEFAULT_MODEL: 'test/model', VULTRON_DEFAULT_MODEL: 'test/model',
+    SKYNET_TELEGRAM_TOKEN: 'TESTTOKEN', VULTRON_TELEGRAM_TOKEN: 'TESTTOKEN',
+    SKYNET_TELEGRAM_API_BASE: tg.base, VULTRON_TELEGRAM_API_BASE: tg.base
   };
   const { child, port } = await boot(await allocatePort(), env, 20);
   const B = 'http://' + HOST + ':' + port;
@@ -206,7 +206,7 @@ const lastUserTurn = (req) => {
     // Enrol the Telegram account through the same explicit local pairing flow as the desktop UI.
     const pair = await (await fetch(B + '/api/channels/telegram/owner/pair', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: B },
+      headers: { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: B },
       body: '{}'
     })).json();
     A.ok(/^[-A-Z0-9]{11}$/.test(String(pair.code || '')), 'local owner pairing issued a code');
@@ -291,7 +291,7 @@ const lastUserTurn = (req) => {
     stDoc.props.push({ id: 'pc1', t: 'console', x: 7, y: 1, w: 2, h: 1, agentId: 'tg_4242' });
     stDoc.props.push({ id: 'cab1', t: 'war_intelcab', x: 10, y: 1, w: 1, h: 2 });
     stDoc._nid = 4;
-    const docked = await publishFloor(fetchApi(B, { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: B }), canonical(stDoc),
+    const docked = await publishFloor(fetchApi(B, { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: B }), canonical(stDoc),
       { label: 'the station with tg_4242\'s bay, workstation and cabinet' });
     A.eq((docked.plan.dockBays || []).map(b => [b.agentId, b.propId, b.objects]), [['tg_4242', 'bay1', ['computer', 'cabinet']]], 'tg_4242 is docked at its saved bay: computer + cabinet');
 

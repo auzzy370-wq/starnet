@@ -30,10 +30,10 @@ const PNG = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYPhfDwA
   await new Promise(r => server.listen(0, '127.0.0.1', r));
   const base = 'http://127.0.0.1:' + server.address().port;
   const fixture = SidecarFixture.create({ timeoutMs: 30000, env: {
-    STARNET_CLOUD_URL: base, STARNET_CREDITS_URL: '', SKYNET_CREDITS_URL: '',
-    STARNET_OPENROUTER_KEY: 'byok-fixture', SKYNET_OPENROUTER_KEY: 'byok-fixture',
-    STARNET_OPENROUTER_BASE: base + '/byok/v1', SKYNET_OPENROUTER_BASE: base + '/byok/v1',
-    STARNET_FULL_ACCESS: '1', SKYNET_FULL_ACCESS: '1', SKYNET_AUX_BUDGET: '0'
+    VULTRON_CLOUD_URL: base, VULTRON_CREDITS_URL: '', SKYNET_CREDITS_URL: '',
+    VULTRON_OPENROUTER_KEY: 'byok-fixture', SKYNET_OPENROUTER_KEY: 'byok-fixture',
+    VULTRON_OPENROUTER_BASE: base + '/byok/v1', SKYNET_OPENROUTER_BASE: base + '/byok/v1',
+    VULTRON_FULL_ACCESS: '1', SKYNET_FULL_ACCESS: '1', SKYNET_AUX_BUDGET: '0'
   } });
   try {
     fs.mkdirSync(path.join(fixture.workspace, '.secrets'), { recursive: true });
@@ -43,7 +43,7 @@ const PNG = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYPhfDwA
     await fixture.json('POST', '/api/roster', { updatedAt: Date.now(), agents: [
       { agentId: 'agent', provider: 'openrouter', model: 'test/model', approvalMode: 'full' },
       // Stale provider with no pinned model must still follow the lead.
-      { agentId: 'worker', provider: 'starnet', model: '', system: 'BYOK_WORKER', approvalMode: 'full' }
+      { agentId: 'worker', provider: 'vultron', model: '', system: 'BYOK_WORKER', approvalMode: 'full' }
     ] });
     for (const round of [0, 1]) {
       if (round) await fixture.restart();
@@ -59,7 +59,7 @@ const PNG = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYPhfDwA
       }
     }
     calls.length = 0; mode = 'direct';
-    const managed = await fixture.json('POST', '/api/run', { provider: 'starnet', model: 'test/model', agentId: 'agent', messages: [{ role: 'user', content: 'Hello' }] });
+    const managed = await fixture.json('POST', '/api/run', { provider: 'vultron', model: 'test/model', agentId: 'agent', messages: [{ role: 'user', content: 'Hello' }] });
     assert.match(managed.text, /Out of managed credit/);
     assert.equal(calls.filter(c => c.auth === 'Bearer managed-fixture' && c.url.includes('/chat/completions')).length, 0, 'actual managed runs remain blocked without credit');
     console.log('byok-linked-credit: OK — direct, delegation, images, restart and managed refusal');

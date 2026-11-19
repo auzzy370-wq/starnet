@@ -90,7 +90,7 @@ function boot(port, env, attemptsLeft) {
 
 (async () => {
   const mock = await startMock();
-  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-stacking-oauth-'));
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-stacking-oauth-'));
   fs.mkdirSync(path.join(workspace, 'codex'), { recursive: true });
   fs.writeFileSync(path.join(workspace, 'codex', 'tokens.json'), JSON.stringify({ access_token: PRIMARY, refresh_token: 'fixture-a', token_type: 'Bearer' }));
   const acctDir = path.join(workspace, '.secrets', 'accounts', 'codex', ACCT);
@@ -106,7 +106,7 @@ function boot(port, env, attemptsLeft) {
   fs.writeFileSync(path.join(grokDir, 'account.json'), JSON.stringify({ id: 'feed1234', seq: 1 }));
   fs.writeFileSync(path.join(grokDir, 'tokens.json'), JSON.stringify(Object.assign({ access_token: 'GROK-B', refresh_token: 'grok-rb' }, grokLife)));
 
-  const env = { SKYNET_WORKSPACES: workspace, SKYNET_QUEST_REFRESH: '0', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0', STARNET_IPC_TOKEN: IPC };
+  const env = { SKYNET_WORKSPACES: workspace, SKYNET_QUEST_REFRESH: '0', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0', VULTRON_IPC_TOKEN: IPC };
   let { child, port } = await boot(await allocatePort(), env, 20);
   const B = () => `http://${HOST}:${port}`;
   /* The mock reaches the station the way the desktop hands it an endpoint: the token-gated runtime push. A per-run
@@ -114,14 +114,14 @@ function boot(port, env, attemptsLeft) {
      (keptEndpointProvider), so every boot pushes Codex's and Grok's again — no run here can dial chatgpt.com or api.x.ai. */
   const pushEndpoints = async () => {
     for (const [provider, baseUrl] of [['codex', mock.base], ['grok', mock.base + '/grok']]) {
-      const r = await fetch(B() + '/api/key', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-StarNet-Token': IPC, Origin: B() }, body: JSON.stringify({ provider, baseUrl }) });
+      const r = await fetch(B() + '/api/key', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Vultron-Token': IPC, Origin: B() }, body: JSON.stringify({ provider, baseUrl }) });
       A.eq(r.status, 200, 'the ' + provider + ' mock endpoint is pushed to the station');
     }
   };
   try {
     let token = await bootToken(B(), B());
     await pushEndpoints();
-    const H = () => ({ 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: B() });
+    const H = () => ({ 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: B() });
     const get = async (p) => (await fetch(B() + p, { headers: H() })).json();
     const post = async (p, body) => (await fetch(B() + p, { method: 'POST', headers: H(), body: JSON.stringify(body || {}) })).json();
     const run = async (marker) => {

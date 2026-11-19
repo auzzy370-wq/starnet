@@ -1,5 +1,5 @@
 /* test/save-health-cause.test.js — the save light names WHY the newest save is not in the station file (wave-1
-   save-latch-kill; quick win 11; gh#121, starnet-releases#4).
+   save-latch-kill; quick win 11; gh#121, vultron-releases#4).
 
    Before: a save body over the station file's 16 MiB cap was answered 400 'bad json', every failed station-file write was
    answered 400 with its text, and after three failures the save light said "check disk space / folder permissions" for all
@@ -32,7 +32,7 @@ const { sidecarFunctionSource } = require('./helpers/source');
   A.eq(c(true, 500, { ok: false, code: 'EACCES' }), 'diskDenied', 'a: EACCES is the folder refusing the write');
   A.eq(c(true, 500, { ok: false, code: 'EBUSY' }), 'writeFailed', 'a: a locked file (EBUSY) is a failed write, never the disk');
   A.eq(c(true, 200, { ok: false, conflict: true }), 'conflict', 'a: a conflict refusal');
-  A.eq(c(true, 200, { ok: false, degraded: true }), 'degraded', 'a: a newer StarNet\'s workspace');
+  A.eq(c(true, 200, { ok: false, degraded: true }), 'degraded', 'a: a newer Vultron\'s workspace');
   A.eq(c(true, 200, { ok: false, stale: true, unreadable: true }), 'unreadable', 'a: an unreadable station file');
   A.eq(c(true, 200, { ok: false, growthStale: true }), 'growthStale', 'a: a rating catch-up refusal');
   A.eq(c(true, 503, { ok: false, growthUnavailable: true }), 'growthUnavailable', 'a: rating history unavailable');
@@ -57,7 +57,7 @@ const big = () => doc({ workstreams: [{ id: 'general', title: null, history: [tu
 // what App.persist does: the window's state, stamped with this page's revision and writer, into the cache, then queued
 function persist(cs, cache, d) {
   const out = Object.assign(JSON.parse(JSON.stringify(d)), { _saveDirty: true, _saveRevision: cs.revision(), _saveClient: cs.writerId(), updatedAt: Date.now() });
-  cache.set('starnet.save', JSON.stringify(out)); cs.push(out);
+  cache.set('vultron.save', JSON.stringify(out)); cs.push(out);
   return out;
 }
 

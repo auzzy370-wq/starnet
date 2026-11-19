@@ -23,7 +23,7 @@
    npm-undici Agent). Those two are https-only, so their proof is the TLS ClientHello a raw listener receives at the
    live address: the connection was made, past the dead first address, and SNI names the requested host (for the http
    consumers the Host header does). Each consumer row is its own section: one failing consumer cannot hide the next.
-   Run it under the installed StarNet node too (C:/Users/andro/AppData/Local/StarNet/node.exe). */
+   Run it under the installed Vultron node too (C:/Users/andro/AppData/Local/Vultron/node.exe). */
 'use strict';
 const A = require('./_assert.js');
 const S = require('../sidecar/net/safe-egress.js');

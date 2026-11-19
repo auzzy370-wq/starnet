@@ -122,7 +122,7 @@ function startMockTelegramMulti(bots) {
 function boot(port, env, attemptsLeft) {
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, [INDEX], {
-      env: Object.assign({}, process.env, env, { SKYNET_PORT: String(port), STARNET_PORT: String(port) }),
+      env: Object.assign({}, process.env, env, { SKYNET_PORT: String(port), VULTRON_PORT: String(port) }),
       stdio: ['ignore', 'pipe', 'pipe']
     });
     let out = '', settled = false;
@@ -162,19 +162,19 @@ const STATION = 'STATIONTOKEN', TOK_A = 'TOKCHAIN';
   });
   const ws = fs.mkdtempSync(path.join(os.tmpdir(), 'sk-tg-botchain-e2e-'));
   const env = {
-    SKYNET_WORKSPACES: ws, STARNET_WORKSPACES: ws,
-    SKYNET_OPENROUTER_BASE: llm.base, STARNET_OPENROUTER_BASE: llm.base,
-    SKYNET_OPENROUTER_KEY: 'sk-or-v1-botchain-fake', STARNET_OPENROUTER_KEY: 'sk-or-v1-botchain-fake',
-    SKYNET_DEFAULT_MODEL: 'test/model', STARNET_DEFAULT_MODEL: 'test/model',
-    SKYNET_TELEGRAM_TOKEN: STATION, STARNET_TELEGRAM_TOKEN: STATION,
-    SKYNET_TELEGRAM_API_BASE: tg.base, STARNET_TELEGRAM_API_BASE: tg.base
+    SKYNET_WORKSPACES: ws, VULTRON_WORKSPACES: ws,
+    SKYNET_OPENROUTER_BASE: llm.base, VULTRON_OPENROUTER_BASE: llm.base,
+    SKYNET_OPENROUTER_KEY: 'sk-or-v1-botchain-fake', VULTRON_OPENROUTER_KEY: 'sk-or-v1-botchain-fake',
+    SKYNET_DEFAULT_MODEL: 'test/model', VULTRON_DEFAULT_MODEL: 'test/model',
+    SKYNET_TELEGRAM_TOKEN: STATION, VULTRON_TELEGRAM_TOKEN: STATION,
+    SKYNET_TELEGRAM_API_BASE: tg.base, VULTRON_TELEGRAM_API_BASE: tg.base
   };
   const { child, port } = await boot(await allocatePort(), env, 20);
   const B = 'http://' + HOST + ':' + port;
   try {
     const token = await bootToken(B, B);
     const api = (method, url, body) => fetch(B + url, {
-      method, headers: { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: B },
+      method, headers: { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: B },
       body: body === undefined ? undefined : JSON.stringify(body)
     }).then(async r => ({ status: r.status, j: await r.json().catch(() => ({})) }));
 
@@ -196,7 +196,7 @@ const STATION = 'STATIONTOKEN', TOK_A = 'TOKCHAIN';
 
     // ---- 2. deploy a two-stage floor: research-agent (the bot's bound agent) chains into writer-agent ----
     const belt = (x, y, dir) => ({ x, y, dir });
-    const { plan } = await publishFloor(fetchApi(B, { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: B }), floorOf({
+    const { plan } = await publishFloor(fetchApi(B, { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: B }), floorOf({
       props: [{ id: 'i', t: 'intake', x: 0, y: 0, w: 1, h: 1 },
               { id: 'b1', t: 'bay', x: 4, y: 0, w: 1, h: 1, agentId: 'research-agent' },
               { id: 'b2', t: 'bay', x: 7, y: 0, w: 1, h: 1, agentId: 'writer-agent' },

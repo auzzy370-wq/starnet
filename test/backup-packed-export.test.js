@@ -59,28 +59,28 @@ async function scenarios(root) {
   const prove = async () => {
     const p = Rig.page({ tree: T, tp: st.tp, init: { workstreams: recs(), activeId: 'ex1', generalId: 'ex1' } });
     let ticks = 0; while (await p.sweep() && ticks++ < 10);
-    const doc = Object.assign({ schema: 'starnet.save', version: 7, updatedAt: 1760000000000, agent: { id: 'agent', name: 'NOVA' } }, p.W.serialize());
+    const doc = Object.assign({ schema: 'vultron.save', version: 7, updatedAt: 1760000000000, agent: { id: 'agent', name: 'NOVA' } }, p.W.serialize());
     return { p, doc };
   };
   const { p, doc } = await prove();
   const packedText = JSON.stringify(doc);
   assert.ok(doc.workstreams.filter(w => w.history.some(el => el && el.$ref)).length === 3, 'fixture: all three sessions name rows (' + packedText.length + ' bytes)');
   assert.ok(doc.workstreams.find(w => w.id === 'ex3').history.some(r => r.content === legacy.content && !r.$ref), 'fixture: the legacy row stays inline');
-  const put = text => { mem.clear(); mem.set('starnet.save', text); mem.set('starnet.theme', 'green'); };
+  const put = text => { mem.clear(); mem.set('vultron.save', text); mem.set('vultron.theme', 'green'); };
   const withStation = (tp, notebook) => { global.Harness = { api: harnessApi(tp.fetch), notebook: async () => notebook || [] }; };
-  const exportedDoc = async () => JSON.parse((await Backup.build()).store['starnet.save']);
+  const exportedDoc = async () => JSON.parse((await Backup.build()).store['vultron.save']);
   let saved = [];
   global.U = { saveFile: async o => { saved.push(o); return { ok: true, file: o.name, line: 'saved' }; } };
 
   await run('a save that names rows is exported whole: every conversation by value, page-only fields back, no reference anywhere', async () => {
     put(packedText); withStation(st.tp); st.tp.calls.length = 0;
     const bundle = await Backup.build();
-    const text = bundle.store['starnet.save'];
+    const text = bundle.store['vultron.save'];
     assert.ok(!/"\$ref"/.test(text), 'no reference in the exported save');
     const out = JSON.parse(text);
     for (const id of ['ex1', 'ex2', 'ex3']) assert.deepEqual(out.workstreams.find(w => w.id === id).history, history(id), id + ': exactly the conversation the page holds');
     assert.deepEqual(Object.assign({}, out, { workstreams: 0 }), Object.assign({}, doc, { workstreams: 0 }), 'and nothing else in the save is touched');
-    assert.equal(bundle.store['starnet.theme'], 'green', 'other settings ride along');
+    assert.equal(bundle.store['vultron.theme'], 'green', 'other settings ride along');
     assert.equal(Backup.validate(bundle), null, 'RESTORE BACKUP accepts it');
     assert.ok(st.tp.rowsCalls().length >= 3, 'the rows were read from the station (' + st.tp.rowsCalls().length + ' requests)');
   });
@@ -88,7 +88,7 @@ async function scenarios(root) {
   await run('the file opens on a station that holds none of the rows: a fresh page boots every row, nothing left to read', async () => {
     put(packedText); withStation(st.tp);
     const bundle = await Backup.build();
-    const empty = station(['other']), q = Rig.page({ tree: T, tp: empty.tp, init: JSON.parse(bundle.store['starnet.save']) });
+    const empty = station(['other']), q = Rig.page({ tree: T, tp: empty.tp, init: JSON.parse(bundle.store['vultron.save']) });
     assert.deepEqual(q.W.pendingHydration(), [], 'no conversation boots packed');
     for (const id of ['ex1', 'ex2', 'ex3']) assert.deepEqual(q.W.get(id).history, history(id), id + ' boots with every row');
     assert.equal(empty.tp.rowsCalls().length, 0, 'and asks the station for nothing');
@@ -110,7 +110,7 @@ async function scenarios(root) {
     await assert.rejects(Backup.build(), e => e.code === 'EXPORT_PACKED_UNREADABLE' && e.sessions.length === 3);
     const r = await Backup.exportAll();
     assert.equal(r.ok, false); assert.match(r.line, /Export stopped/); assert.deepEqual(saved, [], 'no file was handed out');
-    assert.equal(mem.get('starnet.save'), packedText, 'and the save in the cache is untouched');
+    assert.equal(mem.get('vultron.save'), packedText, 'and the save in the cache is untouched');
   });
 
   await run('a row the station cannot return and cannot prove undone stops the export, naming how many conversations', async () => {
@@ -124,13 +124,13 @@ async function scenarios(root) {
   });
 
   await run('a save that names nothing is exported as the very text it was, without a request', async () => {
-    const inline = JSON.stringify({ schema: 'starnet.save', version: 7, agent: { id: 'agent', name: 'NOVA' }, workstreams: recs(), activeId: 'ex1', generalId: 'ex1' });
+    const inline = JSON.stringify({ schema: 'vultron.save', version: 7, agent: { id: 'agent', name: 'NOVA' }, workstreams: recs(), activeId: 'ex1', generalId: 'ex1' });
     put(inline); withStation(st.tp); st.tp.calls.length = 0;
     const bundle = await Backup.build();
-    assert.equal(bundle.store['starnet.save'], inline); assert.equal(st.tp.calls.length, 0);
+    assert.equal(bundle.store['vultron.save'], inline); assert.equal(st.tp.calls.length, 0);
     // (message text that merely MENTIONS a reference is not one)
-    const talk = JSON.stringify({ schema: 'starnet.save', version: 7, agent: { id: 'agent', name: 'NOVA' }, workstreams: [record('ex1', [{ role: 'user', content: 'use {"$ref": "#/defs/a"} here', ts: 1 }], 1)] });
-    put(talk); assert.equal((await Backup.build()).store['starnet.save'], talk); assert.equal(st.tp.calls.length, 0);
+    const talk = JSON.stringify({ schema: 'vultron.save', version: 7, agent: { id: 'agent', name: 'NOVA' }, workstreams: [record('ex1', [{ role: 'user', content: 'use {"$ref": "#/defs/a"} here', ts: 1 }], 1)] });
+    put(talk); assert.equal((await Backup.build()).store['vultron.save'], talk); assert.equal(st.tp.calls.length, 0);
   });
 
   await run('the in-memory save (a cache that cannot hold it) is exported whole too; so is the undo of a cleared conversation, or left out if it cannot be read', async () => {
@@ -139,12 +139,12 @@ async function scenarios(root) {
     const withUndo = Object.assign({}, clone(doc), { sessionUndo: checkpoint });
     mem.clear(); global.CloudSave = { memorySave: () => clone(withUndo) };
     try {
-      let out = JSON.parse((await Backup.build()).store['starnet.save']);
+      let out = JSON.parse((await Backup.build()).store['vultron.save']);
       assert.ok(!/"\$ref"/.test(JSON.stringify(out)), 'no reference anywhere in the memory save');
       assert.deepEqual(out.sessionUndo.rows[0].history, history('ex1'), 'the undo of a cleared conversation carries its rows');
       const quiet = Rig.transport(st.routes); quiet.down = true; withStation(quiet);
       mem.clear(); global.CloudSave = { memorySave: () => Object.assign(clone(doc), { workstreams: [], sessionUndo: checkpoint }) };
-      out = JSON.parse((await Backup.build()).store['starnet.save']);
+      out = JSON.parse((await Backup.build()).store['vultron.save']);
       assert.equal(out.sessionUndo, null, 'an undo whose rows cannot be read is left out: the export goes on without it');
       assert.ok(!/"\$ref"/.test(JSON.stringify(out)));
     } finally { delete global.CloudSave; }

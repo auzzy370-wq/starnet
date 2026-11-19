@@ -50,7 +50,7 @@ function boot(port, env, attemptsLeft) {
     ({ child, port } = await boot(await allocatePort(), env, 20));
     const B = 'http://' + HOST + ':' + port;
     const token = await bootToken(B, B);
-    const headers = { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: B };
+    const headers = { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: B };
 
     // the REAL browser modules, driven over the REAL wire (injected fetch adds the launch token)
     const { RecLedger } = require('../frontend/app/recledger.js');
@@ -94,7 +94,7 @@ function boot(port, env, attemptsLeft) {
     ({ child, port } = await boot(port, env, 20));
     const B2 = 'http://' + HOST + ':' + port;
     const token2 = await bootToken(B2, B2);
-    const h2 = { 'Content-Type': 'application/json', 'X-StarNet-Token': token2, Origin: B2 };
+    const h2 = { 'Content-Type': 'application/json', 'X-Vultron-Token': token2, Origin: B2 };
     const j2 = await (await fetch(B2 + '/api/recommendations?surface=spine&limit=10', { headers: h2 })).json();
     const row2 = (j2.entries || []).find(e => e.id === rowId);
     A.ok(!!row2 && row2.state === 'completed' && row2.outcome.quality === 1,

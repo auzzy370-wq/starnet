@@ -131,5 +131,5 @@
     };
   }
 
-  root.StarnetChapters = { CREW: CREW, WHO_COLOR: WHO_COLOR, ORDER: ORDER, CH: CH, LEAD_MS: LEAD_MS, TAIL_MS: TAIL_MS, perform: perform };
+  root.VultronChapters = { CREW: CREW, WHO_COLOR: WHO_COLOR, ORDER: ORDER, CH: CH, LEAD_MS: LEAD_MS, TAIL_MS: TAIL_MS, perform: perform };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -757,7 +757,7 @@ function world(opts) {
     const lapsed = new Function(helper + '\nreturn workdirLapsedError;')();
     const fsx = require('fs'), osx = require('os'), px = require('path');
     let enoent = null;
-    try { fsx.realpathSync(px.join(osx.tmpdir(), 'starnet-no-such-loop-folder-' + process.pid)); } catch (e) { enoent = e; }
+    try { fsx.realpathSync(px.join(osx.tmpdir(), 'vultron-no-such-loop-folder-' + process.pid)); } catch (e) { enoent = e; }
     const gone = lapsed('loop', enoent);
     A.ok(/^This loop's folder no longer exists/.test(gone.message) && /resume the loop/.test(gone.message) && gone.code === 'WORKDIR_GONE', 'a deleted loop folder: ' + gone.message);
     A.ok(gone.message.indexOf(osx.tmpdir()) < 0 && !/ENOENT|routine/.test(gone.message), 'no raw ENOENT, no host path, no routine wording');

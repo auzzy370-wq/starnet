@@ -403,7 +403,7 @@ function fileInputsHolding() {
 async function clearFilesHolding({ cdp: c, paths, caseless, signal }) {
   const norm = p => { const r = path.resolve(String(p)); return caseless ? r.toLowerCase() : r; };
   const want = new Set((paths || []).map(norm));
-  const group = 'starnet-upload-clear';
+  const group = 'vultron-upload-clear';
   const items = async objectId => {
     const r = await c.send('Runtime.getProperties', { objectId, ownProperties: true });
     return ((r && r.result) || []).filter(p => /^\d+$/.test(p.name) && p.value && p.value.objectId).map(p => p.value.objectId);

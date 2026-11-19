@@ -39,7 +39,7 @@ const { assertWorkspaceId } = require('./workspace-reserved.js');
 const CHECKPOINT_HOLD_MAX_MS = 120000;   // the checkpoint maintenance ceiling; a stalled snapshot cannot hold a tool forever
 
 // The brand is MODULE-PRIVATE: only makeRunPaths below can mint an object isRunPaths accepts. A Symbol.for() key was
-// forgeable by any code that could build a plain object ({ [Symbol.for('starnet.runPaths')]: true, root: '/' }).
+// forgeable by any code that could build a plain object ({ [Symbol.for('vultron.runPaths')]: true, root: '/' }).
 const BRANDED = new WeakSet();
 
 function safeAgentId(id) {

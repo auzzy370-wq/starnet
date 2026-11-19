@@ -123,13 +123,13 @@ function seedStore(file) {
   const telegram = await startTelegram();
   const model = await startModel();
   const sidecar = SidecarFixture.create({
-    prefix: 'starnet-cron-upgrade-backlog-',
+    prefix: 'vultron-cron-upgrade-backlog-',
     env: {
-      SKYNET_TELEGRAM_API_BASE: telegram.base, STARNET_TELEGRAM_API_BASE: telegram.base,
-      SKYNET_OPENROUTER_BASE: model.base, STARNET_OPENROUTER_BASE: model.base,
-      SKYNET_OPENROUTER_KEY: 'sk-or-v1-upgrade-backlog-fake', STARNET_OPENROUTER_KEY: 'sk-or-v1-upgrade-backlog-fake',
+      SKYNET_TELEGRAM_API_BASE: telegram.base, VULTRON_TELEGRAM_API_BASE: telegram.base,
+      SKYNET_OPENROUTER_BASE: model.base, VULTRON_OPENROUTER_BASE: model.base,
+      SKYNET_OPENROUTER_KEY: 'sk-or-v1-upgrade-backlog-fake', VULTRON_OPENROUTER_KEY: 'sk-or-v1-upgrade-backlog-fake',
       SKYNET_DEFAULT_MODEL: 'test/model', SKYNET_AUX_BUDGET: '0',
-      SKYNET_FULL_ACCESS: '', STARNET_FULL_ACCESS: ''
+      SKYNET_FULL_ACCESS: '', VULTRON_FULL_ACCESS: ''
     }
   });
   try {

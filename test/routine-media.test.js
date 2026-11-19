@@ -1,6 +1,6 @@
 /* node test/routine-media.test.js — the files a chat-bound routine's delivery carries (sidecar/routine-media.js).
 
-   Issue 2026-10-18: "Telegram messages cannot be automated from starnet to include images." An unattended run
+   Issue 2026-10-18: "Telegram messages cannot be automated from vultron to include images." An unattended run
    cannot channel.send, and the routine delivery was words-only. These lock the pure half of the fix: which files
    ride the delivery, that the ATTACH instruction never reaches the Commander as prose, that a failed file is a
    reported failure rather than a silent omission, and that the note is only written for a chat destination.

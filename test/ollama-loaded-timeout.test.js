@@ -8,13 +8,13 @@
    could never finish, and COMMS showed retry lines instead of where the model sat.
 
    Locked here (real adapter inside the real loop, mock Ollama whose /api/chat never answers):
-     · /api/ps listed the model at every read of the attempt, and no other StarNet call is open on that Ollama:
+     · /api/ps listed the model at every read of the attempt, and no other Vultron call is open on that Ollama:
        ONE /api/chat send, the run ends `error` with failureCode local_timeout, not transient, and the message keeps
        the placement sentence (ollama-native.js placementNote)
      · the model was NOT listed (a load that may have hung): today's ladder, unchanged (several sends, `timeout`)
      · listed at the timeout but missing at an earlier read of the same attempt (the load ate the wait): that attempt
        is re-sent once; the next one, loaded throughout, ends the turn
-     · another StarNet call still open on that Ollama (this turn may have been queued behind it): re-sent as before
+     · another Vultron call still open on that Ollama (this turn may have been queued behind it): re-sent as before
      · /api/ps unreadable at the timeout: nothing proven, re-sent as before
      · errorClass: the adapter's flag is its own non-retryable reason; an unflagged connect timeout stays `timeout` */
 'use strict';
@@ -119,7 +119,7 @@ const adapter = (s, extra) => makeOpenAICompatibleProvider(Object.assign(
     A.eq(res.failureCode, 'local_timeout', 'and that second timeout ends the turn');
   }
 
-  // ---- 4. another StarNet call still open on that Ollama: this turn may have queued behind it, so re-sent ----
+  // ---- 4. another Vultron call still open on that Ollama: this turn may have queued behind it, so re-sent ----
   // (a re-send is proven by the second send; the rest of the ladder is case 2's, so the run is stopped there)
   const stopAtSecond = s => { const ac = new AbortController(); s.onSend = st => { if (st.chatsFor('task') >= 2) ac.abort(); }; return ac.signal; };
   {
@@ -130,7 +130,7 @@ const adapter = (s, extra) => makeOpenAICompatibleProvider(Object.assign(
     const bgRun = (async () => { try { for await (const e of bg.stream({ model: 'qwen3:8b', messages: [{ role: 'user', content: 'quest' }], signal: ac.signal })) void e; } catch (_) {} })();
     await sleep(20);
     const { res } = await runTurn(turn, 'task', stopAtSecond(s));
-    A.eq(s.chatsFor('task'), 2, 'a turn with another StarNet call open on that Ollama is re-sent as before');
+    A.eq(s.chatsFor('task'), 2, 'a turn with another Vultron call open on that Ollama is re-sent as before');
     A.eq(res.reason, 'cancelled', 'and was still on the ladder when stopped');
     ac.abort();
     await bgRun;

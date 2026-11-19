@@ -28,8 +28,8 @@ function launch(store, opts) {
   } : Date;
   let openBody = null;
   const invoke = async cmd => {
-    if (cmd === 'starnet_update_status') return { desktop: true, currentVersion: o.current || '0.13.1', pending: o.pending || null };
-    if (cmd === 'starnet_update_check') {
+    if (cmd === 'vultron_update_status') return { desktop: true, currentVersion: o.current || '0.13.1', pending: o.pending || null };
+    if (cmd === 'vultron_update_check') {
       // The native check stamps the same clock updates.js reads, so a controlled clock moves nextCheckAt too.
       const now = clock ? clock.t : Date.now();
       checks.push(now);
@@ -117,7 +117,7 @@ function launch(store, opts) {
 
   // ---- idle copy states only what is known; AUTO-CHECK off never checks on open ----
   {
-    const store = new Map([['starnet.updates.v1', JSON.stringify({ autoCheck: false, lastCheckAt: 0, nextCheckAt: 0 })]]);
+    const store = new Map([['vultron.updates.v1', JSON.stringify({ autoCheck: false, lastCheckAt: 0, nextCheckAt: 0 })]]);
     const off = launch(store);
     await off.init(); await tick();
     const body = off.open(); await tick();
@@ -128,7 +128,7 @@ function launch(store, opts) {
     A.ok(/NEVER CHECKED/.test(body.innerHTML), 'the status label does not claim READY');
 
     // a check ran on an earlier launch: the header and the body agree (review app-shell-ui-06)
-    const dated = new Map([['starnet.updates.v1', JSON.stringify({ autoCheck: false, lastCheckAt: 5 })]]);
+    const dated = new Map([['vultron.updates.v1', JSON.stringify({ autoCheck: false, lastCheckAt: 5 })]]);
     const d = launch(dated);
     await d.init(); await tick();
     const db = d.open(); await tick();
@@ -137,26 +137,26 @@ function launch(store, opts) {
     A.ok(/Not checked since /.test(db.innerHTML) && !/since never/.test(db.innerHTML), 'the body names when the last check ran');
 
     // the last check found the version the Commander skipped: the idle window says it is skipped
-    const skip = new Map([['starnet.updates.v1', JSON.stringify({ autoCheck: false, availableVersion: '0.13.3', ignoredVersion: '0.13.3', lastCheckAt: 5 })]]);
+    const skip = new Map([['vultron.updates.v1', JSON.stringify({ autoCheck: false, availableVersion: '0.13.3', ignoredVersion: '0.13.3', lastCheckAt: 5 })]]);
     const sk = launch(skip);
     await sk.init(); await tick();
     const sb = sk.open(); await tick();
     A.ok(/v0\.13\.3 is skipped/.test(sb.innerHTML), 'a remembered skip is named after a relaunch');
 
     // SKIP 0.13.3 → CHECK NOW → INSTALL → relaunch on 0.13.3: the running version is never called skipped
-    const landed = launch(new Map([['starnet.updates.v1', JSON.stringify({ autoCheck: false, availableVersion: '0.13.3', ignoredVersion: '0.13.3', lastCheckAt: 5 })]]), { current: '0.13.3' });
+    const landed = launch(new Map([['vultron.updates.v1', JSON.stringify({ autoCheck: false, availableVersion: '0.13.3', ignoredVersion: '0.13.3', lastCheckAt: 5 })]]), { current: '0.13.3' });
     await landed.init(); await tick();
     const lb = landed.open(); await tick();
     A.ok(!/is skipped/.test(lb.innerHTML), 'the version already running is not called skipped');
     A.ok(/Not checked since /.test(lb.innerHTML), 'the body falls back to when the last check ran');
 
     // a newer build is running than the skipped one the last check found: that old skip is stale, not news
-    const past = launch(new Map([['starnet.updates.v1', JSON.stringify({ autoCheck: false, availableVersion: '0.13.3', ignoredVersion: '0.13.3', lastCheckAt: 5 })]]), { current: '0.13.10' });
+    const past = launch(new Map([['vultron.updates.v1', JSON.stringify({ autoCheck: false, availableVersion: '0.13.3', ignoredVersion: '0.13.3', lastCheckAt: 5 })]]), { current: '0.13.10' });
     await past.init(); await tick();
     const pb = past.open(); await tick();
     A.ok(!/is skipped/.test(pb.innerHTML), 'a skipped version older than the running one is not named');
 
-    const known = new Map([['starnet.updates.v1', JSON.stringify({ autoCheck: false, availableVersion: '0.13.2', lastCheckAt: 5 })]]);
+    const known = new Map([['vultron.updates.v1', JSON.stringify({ autoCheck: false, availableVersion: '0.13.2', lastCheckAt: 5 })]]);
     const k = launch(known);
     await k.init(); await tick();
     const kb = k.open(); await tick();
@@ -165,7 +165,7 @@ function launch(store, opts) {
 
   // Failed native rearming must honor the retry deadline, including after restarting.
   {
-    const store = new Map([['starnet.updates.v1', JSON.stringify({ autoCheck: true, availableVersion: '0.13.2', nextCheckAt: Date.now() + 3600000 })]]);
+    const store = new Map([['vultron.updates.v1', JSON.stringify({ autoCheck: true, availableVersion: '0.13.2', nextCheckAt: Date.now() + 3600000 })]]);
     const first = launch(store, { error: 'offline fixture' });
     await first.init(); await tick();
     A.eq(first.checks.length, 1, 'remembered update initially re-arms immediately');
@@ -200,7 +200,7 @@ function launch(store, opts) {
     A.eq(s.badge.style.display, 'none', 'the NEW chip goes out after SKIP VERSION');
     A.ok(!/id="up-ignore"|id="up-install"/.test(body.innerHTML), 'the INSTALL / SKIP card does not come back at once');
     A.ok(/v0\.13\.3 is skipped/.test(body.innerHTML), 'the window says which version is skipped');
-    A.ok(!/You have the latest StarNet/.test(body.innerHTML), 'a skipped update is never shown as "latest"');
+    A.ok(!/You have the latest Vultron/.test(body.innerHTML), 'a skipped update is never shown as "latest"');
     A.ok(/UPDATE SKIPPED/.test(body.innerHTML), 'the status label says skipped, not up to date');
 
     clock.t += 20 * 60 * 1000;                       // a later open still may look for something newer...
@@ -253,7 +253,7 @@ function launch(store, opts) {
     A.eq(pending.length, 1, 'one automatic timer is scheduled');
     A.ok(pending[0] && pending[0].delay >= UpdateCore.REMIND_LATER_MS - 1000, 'the next automatic step waits for the reminder');
     const before = s.checks.length;
-    const readyToasts = () => s.toasts.filter(t => /StarNet update v0\.13\.3 is ready in Update Center/.test(t)).length;
+    const readyToasts = () => s.toasts.filter(t => /Vultron update v0\.13\.3 is ready in Update Center/.test(t)).length;
     const toastsBefore = readyToasts();
     clock.t += 25 * 60 * 60 * 1000;                  // the timer fires a day later
     if (pending[0]) pending[0].fn();

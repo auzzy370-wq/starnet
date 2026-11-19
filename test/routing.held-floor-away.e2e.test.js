@@ -1,7 +1,7 @@
 /* node test/routing.held-floor-away.e2e.test.js — A HELD SAVED FLOOR REFUSES UNATTENDED WORK AND COSTS IT NOTHING, over a REAL sidecar.
 
    The saved floor is the routing authority (sidecar/routing/saved-authority.js). When it cannot be proved right now (corrupt, from a newer
-   StarNet, not vouched for, waiting for a migration, a primary gone beside its backup), nothing may be dispatched from it, and a refusal is
+   Vultron, not vouched for, waiting for a migration, a primary gone beside its backup), nothing may be dispatched from it, and a refusal is
    not a failure: it has to leave every durable counter exactly where it was. Four unattended seams read the agent's bay room off the floor
    (admit.stationFor) and used to read it INSIDE their run, so the typed hold landed in the failure path:
      · the workshop shift     released its claim as a FAILED build: two refusals PARKED a queued item that nothing had ever tried
@@ -57,7 +57,7 @@ function startMockProvider(calls) {
         calls.push({ kind: propose ? 'propose' : words.indexOf(WORKSHOP_MARK) === 0 ? 'workshop' : /^\[IMPLEMENT_BUILD\]/.test(words) ? 'implement' : /^\[NIGHTSHIFT_ACT\]/.test(words) ? 'act' : 'other', words: words.slice(0, 80) });
         res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' });
         const reply = propose
-          ? ['JOB: Release checklist tool', 'KIND: advance-goal', 'GROUNDS: ship the StarNet beta to 100 users', 'CONFIDENCE: high', 'SPEC: a small script that helps ship the beta'].join('\n')
+          ? ['JOB: Release checklist tool', 'KIND: advance-goal', 'GROUNDS: ship the Vultron beta to 100 users', 'CONFIDENCE: high', 'SPEC: a small script that helps ship the beta'].join('\n')
           : 'I could not build that.';
         res.write('data: ' + JSON.stringify({ choices: [{ delta: { content: reply } }] }) + '\n\n');
         res.write('data: ' + JSON.stringify({ choices: [{ delta: {}, finish_reason: 'stop' }], usage: { prompt_tokens: 5, completion_tokens: 2, total_tokens: 7 } }) + '\n\n');
@@ -72,7 +72,7 @@ function startMockProvider(calls) {
 // a HOT dossier snapshot: goals (the keystone) + 4 usable, freshly stamped dims -> readiness tier 'hot' (the night shift's act path needs it)
 function hotBeliefs(now) {
   const b = t => [{ text: t, createdAt: now, updatedAt: now }];
-  return { known: ['goals', 'pain', 'stack', 'ambition'], beliefs: { goals: b('ship the StarNet beta to 100 users'), pain: b('manual release notes eat my fridays'), stack: b('node and a pixel-art canvas'), ambition: b('a living agent station people watch') } };
+  return { known: ['goals', 'pain', 'stack', 'ambition'], beliefs: { goals: b('ship the Vultron beta to 100 users'), pain: b('manual release notes eat my fridays'), stack: b('node and a pixel-art canvas'), ambition: b('a living agent station people watch') } };
 }
 
 // a route that streams NDJSON frames { name, payload }: the frame carrying the named result
@@ -86,13 +86,13 @@ const frameOf = (r, name) => {
   const calls = [];
   const mock = await startMockProvider(calls);
   const fx = SidecarFixture.create({ prefix: 'sk-held-away-', timeoutMs: 30000, env: {
-    SKYNET_DEV: '1', STARNET_DEV: '1',
+    SKYNET_DEV: '1', VULTRON_DEV: '1',
     SKYNET_OPENROUTER_BASE: mock.base, SKYNET_OPENROUTER_KEY: 'sk-or-v1-held-away-fake', SKYNET_DEFAULT_MODEL: 'test/model',
-    SKYNET_FULL_ACCESS: '', STARNET_FULL_ACCESS: '',
+    SKYNET_FULL_ACCESS: '', VULTRON_FULL_ACCESS: '',
     // the loop driver's own floor is a 5 s tick; the night shift never ticks on its own here (its status is read, its beat is forced), but the Commander
     // counts as away after 1 ms so the status read reaches the precheck
-    SKYNET_LOOP_TICK_MS: '5000', STARNET_LOOP_TICK_MS: '5000',
-    SKYNET_NIGHTSHIFT_AWAY_MS: '1', STARNET_NIGHTSHIFT_AWAY_MS: '1', SKYNET_NIGHTSHIFT_TICK_MS: '3600000', STARNET_NIGHTSHIFT_TICK_MS: '3600000',
+    SKYNET_LOOP_TICK_MS: '5000', VULTRON_LOOP_TICK_MS: '5000',
+    SKYNET_NIGHTSHIFT_AWAY_MS: '1', VULTRON_NIGHTSHIFT_AWAY_MS: '1', SKYNET_NIGHTSHIFT_TICK_MS: '3600000', VULTRON_NIGHTSHIFT_TICK_MS: '3600000',
     // no background learning pass spends a model call of its own between the doors (an aux budget of 0 is UNLIMITED)
     SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0', SKYNET_THREAD_MINE: '0', SKYNET_SCOUT: '0', SKYNET_QUEST_REFRESH: '0'
   } });

@@ -48,9 +48,9 @@
      both say this (loop.js stopForSpend, billing-class.js refusalWords). */
   function unknownExit(cause, scope, countAsUsd) {
     const zero = 'set ' + (LIMIT_NAMES[scope] || 'that limit') + ' to 0';
-    if (cause === 'write') return 'restart StarNet: it replays the spend it could not save';
+    if (cause === 'write') return 'restart Vultron: it replays the spend it could not save';
     if (cause === 'unsettled' || cause === 'damaged') return (num(countAsUsd) > 0 ? 'press COUNT AS $' + num(countAsUsd).toFixed(2) + ' or enter its charge' : 'enter its charge') + ' in ' + LIMITS_PAGE + ', or ' + zero;
-    return 'restart StarNet; if it stays, fix the spend files in your workspaces folder, or ' + zero + ' in ' + LIMITS_PAGE;
+    return 'restart Vultron; if it stays, fix the spend files in your workspaces folder, or ' + zero + ' in ' + LIMITS_PAGE;
   }
 
   // PURE: caps {run?,day?,global?} (base), totals {run?,day?,global?} ($ already accrued for each scope),

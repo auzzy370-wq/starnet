@@ -34,7 +34,7 @@ function station(doc) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'routing-onspent-'));
   let now = 1;
   const store = makeSaveStore({ fs, pathMod: path, root, clock: { now: () => now++ } });
-  const result = store.save('agent', { schema: 'starnet.save', version: Save.CURRENT, updatedAt: now++, agent: { id: 'agent' },
+  const result = store.save('agent', { schema: 'vultron.save', version: Save.CURRENT, updatedAt: now++, agent: { id: 'agent' },
     _saveRevision: 0, _saveClient: 'onspent-fixture', _saveDirty: true, station: doc }, { compareRevision: true });
   if (!result.ok) throw new Error('fixture actual save failed');
   const read = makeSavedFloorProjection({ agentId: 'agent', stamp: () => store.stamp('agent'), loadPrimaryState: () => store.loadPrimaryState('agent') });

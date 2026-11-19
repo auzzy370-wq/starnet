@@ -2,7 +2,7 @@
  *
  * WHY ONE TABLE. The floor was declared three ways and they disagreed (gh#136, 5308fc67, E12): tauri.conf.json promised
  * macOS 11.0; bootguard.js called any engine without regex lookbehind TOO OLD ("needs Safari 16.4+"), so a healthy
- * Safari 16.0 Mac read "web engine: TOO OLD" in every copied report and one missing non-critical file rendered "STARNET
+ * Safari 16.0 Mac read "web engine: TOO OLD" in every copied report and one missing non-critical file rendered "VULTRON
  * NEEDS A NEWER macOS" with RELOAD hidden; and the syntax ratchet banned 16.4 syntax so that engines BELOW 16.4 could
  * parse the page. The floor now follows what the station code already uses without a guard (Safari 15.4: Object.hasOwn,
  * Array#at, crypto.randomUUID, structuredClone, dialog.showModal), so no engine that works today loses support.
@@ -23,7 +23,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const TABLE = join(dirname(fileURLToPath(import.meta.url)), 'engine-floor.json');
-export const SCHEMA = 'starnet.engine-floor/1';
+export const SCHEMA = 'vultron.engine-floor/1';
 export const MIRRORS = Object.freeze({ tauri: 'src-tauri/tauri.conf.json', bootguard: 'frontend/app/bootguard.js' });
 const VERSION = /^\d+\.\d+$/;
 const IDENT = /^[A-Za-z_$][\w$]*$/;
@@ -106,7 +106,7 @@ export function apiRules(t) {
 }
 
 /* The WebKit floor shim (an init script): before any page script, delete every API newer than the floor, then publish
-   what it did as window.__STARNET_FLOOR_SHIM__ ({ floor, removed, absent, kept }). `kept` names an API it could not
+   what it did as window.__VULTRON_FLOOR_SHIM__ ({ floor, removed, absent, kept }). `kept` names an API it could not
    delete, which makes the floor run untrustworthy (the harness goes red on it). ES5 on purpose. */
 export function shimSource(t) {
   const del = postFloorApis(t).map(f => { const p = splitPath(f.path); return [f.id, p.owner, p.key]; });
@@ -121,7 +121,7 @@ export function shimSource(t) {
     '      if (delete o[key] && !has.call(o, key)) removed.push(id); else kept.push(id);',
     '    } catch (e) { kept.push(id); }',
     '  }',
-    '  try { Object.defineProperty(globalThis, "__STARNET_FLOOR_SHIM__", { value: Object.freeze({ floor: floor, removed: removed, absent: absent, kept: kept }), configurable: true }); } catch (e) {}',
+    '  try { Object.defineProperty(globalThis, "__VULTRON_FLOOR_SHIM__", { value: Object.freeze({ floor: floor, removed: removed, absent: absent, kept: kept }), configurable: true }); } catch (e) {}',
     '})(' + JSON.stringify(t.safari) + ', ' + JSON.stringify(del) + ');',
     ''
   ].join('\n');

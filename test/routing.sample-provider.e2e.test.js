@@ -27,17 +27,17 @@ test('sample uses each dock provider and saved model without environment default
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const base = 'http://127.0.0.1:' + server.address().port;
   const fixture = SidecarFixture.create({ prefix: 'sample-provider-', timeoutMs: 20000, env: {
-    STARNET_DEFAULT_MODEL: '', SKYNET_DEFAULT_MODEL: '',
-    STARNET_OPENROUTER_KEY: '', SKYNET_OPENROUTER_KEY: '',
-    STARNET_OPENROUTER_BASE: base + '/v1', SKYNET_OPENROUTER_BASE: base + '/v1',
-    STARNET_CREDITS_URL: base, STARNET_CREDITS_API_KEY: 'managed-fixture', STARNET_CREDITS_ACCOUNT: 'fixture',
+    VULTRON_DEFAULT_MODEL: '', SKYNET_DEFAULT_MODEL: '',
+    VULTRON_OPENROUTER_KEY: '', SKYNET_OPENROUTER_KEY: '',
+    VULTRON_OPENROUTER_BASE: base + '/v1', SKYNET_OPENROUTER_BASE: base + '/v1',
+    VULTRON_CREDITS_URL: base, VULTRON_CREDITS_API_KEY: 'managed-fixture', VULTRON_CREDITS_ACCOUNT: 'fixture',
     CUSTOM_OPENAI_KEY: 'direct-fixture', CUSTOM_OPENAI_BASE_URL: base + '/v1'
   } });
   try {
     seedActiveStation(fixture.workspace);
     await fixture.start();
     const agents = [
-      { agentId: 'entry', name: 'Entry', system: 'Sample', provider: 'starnet', model: 'openai/gpt-5.6-sol' },
+      { agentId: 'entry', name: 'Entry', system: 'Sample', provider: 'vultron', model: 'openai/gpt-5.6-sol' },
       { agentId: 'hop', name: 'Hop', system: 'Sample', provider: 'custom', model: 'hop-model' }
     ];
     assert.equal((await fixture.json('POST', '/api/roster', { agents, updatedAt: Date.now() })).status, 200);
@@ -69,7 +69,7 @@ test('sample uses each dock provider and saved model without environment default
     // resolves), never on a stale provider its row still carries (the #24 leak shape) and never refused outright.
     const station = [
       { agentId: 'agent', name: 'Overseer', system: 'Sample', provider: 'custom', model: 'hop-model' },
-      { agentId: 'scout', name: 'Scout', system: 'Sample', provider: 'starnet', model: '' }
+      { agentId: 'scout', name: 'Scout', system: 'Sample', provider: 'vultron', model: '' }
     ];
     assert.equal((await fixture.json('POST', '/api/roster', { agents: station, updatedAt: Date.now() })).status, 200);
     await publishFloor(fixture, floorOf({ props: [
@@ -82,7 +82,7 @@ test('sample uses each dock provider and saved model without environment default
     assert.equal(followed.status, 200, JSON.stringify(followed.body));
     assert.equal(followed.body.delivered.agentId, 'scout', 'the unpinned specialist runs its own bay');
     assert.ok(calls.length > 0 && calls.every(c => c.model === 'hop-model' && c.auth === 'Bearer direct-fixture'),
-      'the unpinned specialist runs on the Overseer model and credential, not its stale starnet row: ' + JSON.stringify(calls));
+      'the unpinned specialist runs on the Overseer model and credential, not its stale vultron row: ' + JSON.stringify(calls));
   } finally {
     await fixture.dispose();
     await new Promise(resolve => server.close(resolve));

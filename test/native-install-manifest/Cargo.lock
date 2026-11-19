@@ -146,7 +146,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "starnet-install-manifest-rules"
+name = "vultron-install-manifest-rules"
 version = "0.1.0"
 dependencies = [
  "serde_json",

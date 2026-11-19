@@ -1,5 +1,5 @@
 /* test/growth-fold.test.js — a station save that trails the rating ledger is FOLDED forward by the station, never refused,
-   when the ledger read is complete (wave-1 save-latch-kill; starnet-releases#4 Blocker 2).
+   when the ledger read is complete (wave-1 save-latch-kill; vultron-releases#4 Blocker 2).
 
      a. growthratings.since() reads every rating after a watermark, oldest first, and says whether that is provably ALL of
         them: not when the store evicted (ramMax) or the bounded boot read cut (cutBefore) a rating newer than the watermark;
@@ -44,7 +44,7 @@ A.eq(ledger.since({ since: mark, epoch: 9999 }).ratings, [], 'a: another station
 // ---- b. the fold matches the page ----
 const fresh = () => Xp.fresh();
 const save = {
-  schema: 'starnet.save', version: 6, updatedAt: 1, agent: { id: 'agent', name: 'NOVA', createdAt: 5000, stats: fresh() },
+  schema: 'vultron.save', version: 6, updatedAt: 1, agent: { id: 'agent', name: 'NOVA', createdAt: 5000, stats: fresh() },
   agents: [{ id: 'agent', name: 'NOVA', stats: fresh() }, { id: 'scout', name: 'SCOUT', stats: fresh() }],
   stationStats: Object.assign(fresh(), { ratingSyncAt: mark, ratingSyncVersion: 2 }), workstreams: []
 };

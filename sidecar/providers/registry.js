@@ -136,8 +136,8 @@
       extraHeaders: {
         'X-Msh-Platform': 'kimi_cli',
         'X-Msh-Version': '1.0.0',
-        'X-Msh-Device-Name': 'starnet',
-        'X-Msh-Device-Model': 'starnet'
+        'X-Msh-Device-Name': 'vultron',
+        'X-Msh-Device-Model': 'vultron'
       },
       staticModels: [
         { id: 'kimi-for-coding', name: 'Kimi for Coding', context_length: 256000, supportsTools: true, supportsReasoning: false },
@@ -147,10 +147,10 @@
       order: 12
     },
     {
-      id: 'starnet',
-      aliases: ['starnet-cloud', 'managed'],
-      name: 'StarNet Managed',
-      label: 'STARNET',
+      id: 'vultron',
+      aliases: ['vultron-cloud', 'managed'],
+      name: 'Vultron Managed',
+      label: 'VULTRON',
       endpoint: 'managed inference (credits)',
       blurb: 'run on credits, no API key — link a station',
       live: true,
@@ -163,7 +163,7 @@
       // baseUrl is DYNAMIC: the linked cloud URL + '/v1' (index.js providerRuntimeBaseUrl). Static default empty.
       // requiresBaseUrl is TRUE even though the LINK flow supplies it (not the user, unlike 'custom'): an
       // unlinked station resolves an empty baseUrl, and before 2026-08-25 that fell through to the adapter's
-      // api.openai.com default — a starnet run silently left for OpenAI's API and died with that vendor's
+      // api.openai.com default — a vultron run silently left for OpenAI's API and died with that vendor's
       // "invalid model ID" (the stranded-user incident). With the flag set, hasCredential/listModels/run
       // admission all read an unresolved link as NOT CONFIGURED and say "link this station" instead.
       baseUrl: '',
@@ -180,7 +180,7 @@
       wireReasoningEffort: true,
       // Our own proxy records which harness run spent each debit (POST /v1/chat/completions reads this header).
       // ONLY this profile names one: a run id is never sent to a third-party provider.
-      runIdHeader: 'x-starnet-run-id',
+      runIdHeader: 'x-vultron-run-id',
       // The proxy forwards the body to OpenRouter untouched, so a Claude pick caches exactly like a direct OpenRouter key:
       // the same cache_control breakpoints (openrouter.applyCacheControl; Claude ids only). Without them every managed
       // Claude call re-billed the whole prompt as fresh input on the user's credits (token-burn audit 2026-10-17).
@@ -221,9 +221,9 @@
       reasoningModels: [
         { match: '^gpt-6(?:[.-]|$)', efforts: ['low', 'medium', 'high', 'xhigh'] },
         // Chat Completions cannot combine gpt-5.6 reasoning with function tools ("set reasoning_effort to 'none'"),
-        // and every StarNet agent run sends tools — so on this wire the model only runs with reasoning off.
+        // and every Vultron agent run sends tools — so on this wire the model only runs with reasoning off.
         { match: '^gpt-5\\.6(?:[.-]|$)', efforts: ['none'], supportsReasoning: false,
-          note: "OpenAI's Chat Completions API can't combine this model's reasoning with tools, so StarNet runs it with reasoning off." },
+          note: "OpenAI's Chat Completions API can't combine this model's reasoning with tools, so Vultron runs it with reasoning off." },
         { match: '^gpt-5\\.5(?:-\\d{4}-\\d{2}-\\d{2})?$', efforts: ['none', 'low', 'medium', 'high', 'xhigh'], default: 'medium' },
         { match: '^gpt-5\\.4(?:-mini|-nano)?(?:-\\d{4}-\\d{2}-\\d{2})?$', efforts: ['none', 'low', 'medium', 'high', 'xhigh'] },
         { match: '^gpt-5\\.2(?:-\\d{4}-\\d{2}-\\d{2})?$', efforts: ['none', 'low', 'medium', 'high'] },
@@ -523,7 +523,7 @@
     {
       // CLAUDE CLI — the locally installed Claude Code CLI (`claude`) as the brain, signed in with the user's own
       // Claude account or key. No key is stored here: providers/claude-cli.js spawns `claude -p` per turn with
-      // every CLI tool disabled, so StarNet's own capability gate still owns tool use. NOT unmetered: a
+      // every CLI tool disabled, so Vultron's own capability gate still owns tool use. NOT unmetered: a
       // subscription login books $0 per turn, an API-key login books the CLI's own reported cost.
       id: 'claude-cli',
       aliases: ['claude-code', 'claude-code-cli'],

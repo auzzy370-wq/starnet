@@ -1,6 +1,6 @@
 /* node test/save-premigrate-backup.test.js — the browser's pre-migration copy of the save follows the Commander's deletes and does not live forever.
 
-   save.js keeps the raw save from before a migration (starnet.save.pre-migrate.backup) so a bad migration can be recovered by hand. That
+   save.js keeps the raw save from before a migration (vultron.save.pre-migrate.backup) so a bad migration can be recovered by hand. That
    copy is every conversation the station held at the moment of the upgrade, written once. The v7 bump (history by reference) writes one
    for every install that has none, so three things have to hold or a conversation the Commander deleted outlives the delete in this
    browser, and the copy outlives everything else:
@@ -14,7 +14,7 @@
 'use strict';
 const A = require('./_assert.js');
 
-const BACKUP = 'starnet.save.pre-migrate.backup', STAMP = BACKUP + '.at', KEY = 'starnet.save';
+const BACKUP = 'vultron.save.pre-migrate.backup', STAMP = BACKUP + '.at', KEY = 'vultron.save';
 const DAY = 24 * 60 * 60 * 1000, T0 = 1700000000000;
 
 // a browser cache that counts reads and writes of the backup, and a clock the test moves
@@ -44,7 +44,7 @@ const sessions = () => [
   { id: 'B', title: 'Garden', history: [row('user', 'tomatoes')] },
   { id: 'C', title: 'Trip', history: [row('user', 'lisbon in may')] }
 ];
-const doc = (version, over) => Object.assign({ schema: 'starnet.save', version, updatedAt: T0, agent: { id: 'agent', name: 'NOVA' }, workstreams: sessions(),
+const doc = (version, over) => Object.assign({ schema: 'vultron.save', version, updatedAt: T0, agent: { id: 'agent', name: 'NOVA' }, workstreams: sessions(),
   sessionUndo: { kind: 'clear', at: T0, activeId: 'A', rows: [{ id: 'A', history: [row('user', SECRET)] }, { id: 'C', history: [row('user', 'lisbon in may')] }] } }, over || {});
 const put = (raw, extra) => { mem = { [KEY]: raw }; Object.assign(mem, extra || {}); reads = 0; writes = 0; };
 const idsIn = raw => { try { return JSON.parse(raw).workstreams.map(w => w.id); } catch (_) { return null; } };
@@ -118,7 +118,7 @@ const idsIn = raw => { try { return JSON.parse(raw).workstreams.map(w => w.id); 
   A.eq(idsIn(mem[BACKUP]), idsIn(rawOld), 'a row removed without forgetting (DELETE AGENT, a task card) is not a delete of the conversation: the copy keeps it');
 
   // a copy that cannot be read cannot be shown to be free of the conversation: it goes whole
-  clock = T0; put(rawOld, { [BACKUP]: '{"schema":"starnet.save","workstreams":[{"id":"A","history":[{"content":"' + SECRET, [STAMP]: String(T0) });
+  clock = T0; put(rawOld, { [BACKUP]: '{"schema":"vultron.save","workstreams":[{"id":"A","history":[{"content":"' + SECRET, [STAMP]: String(T0) });
   Save = freshSave();
   Save.write({ agent: { id: 'agent' }, workstreams: [], forgetIds: ['A'] });
   A.eq([mem[BACKUP], mem[STAMP]], [undefined, undefined], 'an unreadable copy is removed whole, with its stamp');

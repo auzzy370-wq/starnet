@@ -52,7 +52,7 @@ try {
   await cdp.send('Page.addScriptToEvaluateOnNewDocument', { source: `(() => {
     const set = Storage.prototype.setItem;
     Storage.prototype.setItem = function (k, v) {
-      if (k === 'starnet.save' && String(v).length > 1000000) throw new DOMException('The quota has been exceeded.', 'QuotaExceededError');
+      if (k === 'vultron.save' && String(v).length > 1000000) throw new DOMException('The quota has been exceeded.', 'QuotaExceededError');
       return set.call(this, k, v);
     };
   })();` });

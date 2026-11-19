@@ -1,6 +1,6 @@
-/* bin/lib/cli-core.js — the PURE decisions behind the `starnet` command-line surface.
+/* bin/lib/cli-core.js — the PURE decisions behind the `vultron` command-line surface.
 
-   `bin/starnet.js` is the composition root (argv, env, sockets, child processes, stdout/stderr). Everything
+   `bin/vultron.js` is the composition root (argv, env, sockets, child processes, stdout/stderr). Everything
    that can be decided without ambient I/O lives here so it is unit-testable in isolation (test/cli.test.js):
    argument parsing, the attach-vs-spawn choice, the run-event reducer that decides what the CLI is allowed to
    claim, exit codes, the desktop port-discovery parsers, and the non-interactive bootstrap documents.
@@ -41,45 +41,45 @@ const DEFAULT_AGENT_ID = 'agent';
 
 // ---- argv --------------------------------------------------------------------------------------
 const USAGE = [
-  'starnet — run StarNet agents from a terminal (no station UI required)',
+  'vultron — run Vultron agents from a terminal (no station UI required)',
   '',
   'Usage:',
-  '  starnet                              the live crew dashboard (needs a terminal; keys below). On a station with no agent',
+  '  vultron                              the live crew dashboard (needs a terminal; keys below). On a station with no agent',
   '                                       yet it sets one up first: your Overseer, a brain to think with (ChatGPT, Claude,',
-  '                                       Grok, Kimi, StarNet credits or Ollama), the awakening and its interview',
-  '  starnet -p "<prompt>"                run one task and stream the answer to stdout',
-  '  starnet run "<prompt>"               same as -p',
-  '  starnet -p -                         read the prompt from stdin',
-  '  starnet status                       is a station reachable? version, workspace, providers (names only)',
-  '  starnet doctor                       the station\'s static diagnostics report (no live probes)',
-  '  starnet init                         create the default workspace + one full-power agent for headless runs (no run;',
-  '                                       `starnet` then gives it the awakening the first time you open it)',
-  '  starnet ls                           every agent: status, what it is doing now, open asks',
-  '  starnet approve [agent] [--session]  allow the oldest open ask (of that agent); deny [agent] refuses it',
-  '  starnet watch                        print the live events of the station, one line each (--json: one object each)',
-  '  starnet flow                         list workflows; flow run <name> "<text>" sends one job and waits',
+  '                                       Grok, Kimi, Vultron credits or Ollama), the awakening and its interview',
+  '  vultron -p "<prompt>"                run one task and stream the answer to stdout',
+  '  vultron run "<prompt>"               same as -p',
+  '  vultron -p -                         read the prompt from stdin',
+  '  vultron status                       is a station reachable? version, workspace, providers (names only)',
+  '  vultron doctor                       the station\'s static diagnostics report (no live probes)',
+  '  vultron init                         create the default workspace + one full-power agent for headless runs (no run;',
+  '                                       `vultron` then gives it the awakening the first time you open it)',
+  '  vultron ls                           every agent: status, what it is doing now, open asks',
+  '  vultron approve [agent] [--session]  allow the oldest open ask (of that agent); deny [agent] refuses it',
+  '  vultron watch                        print the live events of the station, one line each (--json: one object each)',
+  '  vultron flow                         list workflows; flow run <name> "<text>" sends one job and waits',
   '',
-  'StarNet app closed? starnet starts its station in the background: the app\'s keys, no window (the tray shows it runs).',
-  '  When the last starnet session ends it closes again, unless routines are armed or StarNet is set to stay in the tray',
-  '  (the same as closing its window). Opening StarNet while it runs shows that same station (on macOS: its',
-  '  menu-bar icon\'s Open StarNet — a Dock click does not bring that window back yet).',
+  'Vultron app closed? vultron starts its station in the background: the app\'s keys, no window (the tray shows it runs).',
+  '  When the last vultron session ends it closes again, unless routines are armed or Vultron is set to stay in the tray',
+  '  (the same as closing its window). Opening Vultron while it runs shows that same station (on macOS: its',
+  '  menu-bar icon\'s Open Vultron — a Dock click does not bring that window back yet).',
   '',
-  'Folder: starnet works in the trusted project you start it in. Started in one not trusted yet, the dashboard asks',
+  'Folder: vultron works in the trusted project you start it in. Started in one not trusted yet, the dashboard asks',
   '  TRUST THIS FOLDER? (y trusts it, the same as adding it under PROJECTS in the app); your home folder is never asked',
   'Dashboard keys: tab switch agent · ↑↓ your earlier messages · @name message · y/n/v answer an ask · ctrl+c quit',
   'Dashboard pages: f1 STAT · f2 CREW · f3 COMMS · f4 WORK · f5 SKILLS · f6 FLOOR (or /stat /crew /work /floor) · esc back',
   '  FLOOR: the whole crew in one room, made of ASCII where the terminal draws images — each at its desk while it works, a',
   '  handoff flying from the lead to a worker and its result flying back; a text tree of the same where it does not',
   'Dashboard mouse: click an agent to open its chat, a tab for its page, a card\'s key to answer · right-click an agent',
-  '  for its menu · ctrl+click opens a link or a file an agent wrote · STARNET_MOUSE=0 keeps the terminal\'s own selection',
+  '  for its menu · ctrl+click opens a link or a file an agent wrote · VULTRON_MOUSE=0 keeps the terminal\'s own selection',
   'Dashboard commands: /model [name] · /new · /resume · /stop · /retry · /status · /flow · /flow run <name> <text> · /help',
   '  /connect [provider] adds a provider from the app\'s AI & MODELS list: sign in (ChatGPT, Grok, Kimi, Claude Code),',
-  '  link StarNet credits, use Ollama, or paste an API key (typed hidden, checked first, kept where the app keeps keys)',
+  '  link Vultron credits, use Ollama, or paste an API key (typed hidden, checked first, kept where the app keeps keys)',
   '  and the station\'s own: /usage · /tools · /routine · /away · your own commands · each skill as /<skill> <task> (/skills)',
-  'Dashboard look: the StarNet logo as an image where the terminal draws Sixel (Windows Terminal, WezTerm, iTerm2), braille',
-  '  dots elsewhere · STARNET_LOGO=dots|ascii|plain picks one · NO_COLOR=1 drops color · needs at least 46×16',
+  'Dashboard look: the Vultron logo as an image where the terminal draws Sixel (Windows Terminal, WezTerm, iTerm2), braille',
+  '  dots elsewhere · VULTRON_LOGO=dots|ascii|plain picks one · NO_COLOR=1 drops color · needs at least 46×16',
   '  /theme picks the colors: red (the default), amber, green, blue, purple, white — the app colors; kept for the next',
-  '  starnet (STARNET_THEME=<name> overrides it)',
+  '  vultron (VULTRON_THEME=<name> overrides it)',
   '  where images draw, the foot of CREW is the station camera on the agent you talk to, in ASCII: it wanders, walks to',
   '  its desk and types while it works; its rim glows in the theme color working, amber when it needs you, green when done',
   '',
@@ -95,20 +95,20 @@ const USAGE = [
   '  --yes              approve consent prompts automatically (non-interactive default is DENY)',
   '',
   'Station options:',
-  '  --port <n>         attach to a station on this port (env STARNET_PORT)',
+  '  --port <n>         attach to a station on this port (env VULTRON_PORT)',
   '  --host <h>         station host (default 127.0.0.1)',
-  '  --token <t>        station API token (env STARNET_TOKEN); otherwise read from the served page',
-  '  --workspace <dir>  workspace to boot when no station is reachable (env STARNET_WORKSPACES)',
+  '  --token <t>        station API token (env VULTRON_TOKEN); otherwise read from the served page',
+  '  --workspace <dir>  workspace to boot when no station is reachable (env VULTRON_WORKSPACES)',
   '  --name <NAME>      agent name used by a first-time bootstrap (default OVERSEER)',
   '  --no-spawn         never boot a station; fail (exit 3) if none is reachable',
-  '  --spawn            always boot a station for this run (never attach to a running one); StarNet\'s own station is',
-  '                     never booted without its keys: plain starnet starts it, add --workspace <dir> for a separate one',
+  '  --spawn            always boot a station for this run (never attach to a running one); Vultron\'s own station is',
+  '                     never booted without its keys: plain vultron starts it, add --workspace <dir> for a separate one',
   '',
   'Exit codes: 0 done · 1 run failed · 2 usage · 3 no station / not configured · 4 stopped (Ctrl-C, --timeout, a STOP) · 5 did not finish (asked a',
   '            question, cut short, a spend or step limit, an empty reply, refused — --json names which) · 6 nothing to answer',
   '',
   'Credentials are never taken on the command line. A spawned station reads them from the environment',
-  '(STARNET_OPENROUTER_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY, …) or from a ChatGPT/Codex sign-in already',
+  '(VULTRON_OPENROUTER_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY, …) or from a ChatGPT/Codex sign-in already',
   'stored in the workspace; an attached station uses whatever it already has, plus what /connect adds.'
 ].join('\n');
 
@@ -186,18 +186,18 @@ function parseArgs(argv, env, ctx) {
   }
   // no command: the dashboard when a person is at a terminal, the usage text otherwise (a pipe, a script, CI)
   if (!out.cmd && !out.help && !out.version) { if (c.tty) out.cmd = 'dash'; else out.help = true; }
-  if (out.cmd === 'flow' && out.args[0] === 'run' && out.args.length < 3) throw new Error('flow run needs a workflow and the job text: starnet flow run <name> "<text>"');
+  if (out.cmd === 'flow' && out.args[0] === 'run' && out.args.length < 3) throw new Error('flow run needs a workflow and the job text: vultron flow run <name> "<text>"');
   if ((out.cmd === 'approve' || out.cmd === 'deny') && out.args.length > 1) throw new Error(out.cmd + ' takes at most one agent');
-  if (out.cmd === 'run' && !out.prompt && !out.promptFromStdin) throw new Error('run needs a prompt (starnet -p "…")');
+  if (out.cmd === 'run' && !out.prompt && !out.promptFromStdin) throw new Error('run needs a prompt (vultron -p "…")');
   if (out.spawn && out.noSpawn) throw new Error('--spawn and --no-spawn contradict each other');
   // env fallbacks (flags win)
   if (!out.port) {
-    const ep = String(e.STARNET_PORT || e.SKYNET_PORT || '').trim();
+    const ep = String(e.VULTRON_PORT || e.SKYNET_PORT || '').trim();
     if (/^\d+$/.test(ep)) out.port = Number(ep);
   }
-  if (!out.host) out.host = String(e.STARNET_HOST || e.SKYNET_HOST || '127.0.0.1');
-  if (!out.token) out.token = String(e.STARNET_TOKEN || e.STARNET_API_TOKEN || e.SKYNET_API_TOKEN || '');
-  if (!out.workspace) out.workspace = String(e.STARNET_WORKSPACES || e.SKYNET_WORKSPACES || '');
+  if (!out.host) out.host = String(e.VULTRON_HOST || e.SKYNET_HOST || '127.0.0.1');
+  if (!out.token) out.token = String(e.VULTRON_TOKEN || e.VULTRON_API_TOKEN || e.SKYNET_API_TOKEN || '');
+  if (!out.workspace) out.workspace = String(e.VULTRON_WORKSPACES || e.SKYNET_WORKSPACES || '');
   if (!out.name) out.name = 'OVERSEER';
   out.name = String(out.name).slice(0, 40);
   return out;
@@ -219,12 +219,12 @@ function parseArgs(argv, env, ctx) {
         key pools, bot tokens and credits token in the OS keychain and gives them only to the sidecar it spawns,
         so the terminal never boots that station itself — that would be a keyless copy of the real station (agents
         fail, bots stay offline, routines fire and fail). No app to start (desktop.appExe '') → refuse and say so.
-        --no-spawn (a question: status, ls, …) → refuse, saying `starnet` starts it. --spawn alone refuses too:
+        --no-spawn (a question: status, ls, …) → refuse, saying `vultron` starts it. --spawn alone refuses too:
         with no --workspace it boots the default workspace, which IS that station, so the reason names both ways;
      5. --no-spawn → refuse; otherwise → spawn. */
-const DESKTOP_CLOSED = 'StarNet isn\'t running — run `starnet` to start it (in the background: your keys stay in the app, no window opens)';
-const DESKTOP_CLOSED_SPAWN = '--spawn would boot StarNet\'s own station without the keys the app keeps — run plain `starnet` to start it with them (no window opens), or add --workspace <dir> for a separate terminal-only station';
-const DESKTOP_NO_APP = 'StarNet\'s station keeps its keys in the StarNet app, and the app was not found on this computer — reinstall StarNet, set STARNET_APP_EXE to the app, or add --workspace <dir> for a separate terminal-only station';
+const DESKTOP_CLOSED = 'Vultron isn\'t running — run `vultron` to start it (in the background: your keys stay in the app, no window opens)';
+const DESKTOP_CLOSED_SPAWN = '--spawn would boot Vultron\'s own station without the keys the app keeps — run plain `vultron` to start it with them (no window opens), or add --workspace <dir> for a separate terminal-only station';
+const DESKTOP_NO_APP = 'Vultron\'s station keeps its keys in the Vultron app, and the app was not found on this computer — reinstall Vultron, set VULTRON_APP_EXE to the app, or add --workspace <dir> for a separate terminal-only station';
 function chooseStation(input) {
   const o = input || {};
   const d = o.desktop || {};
@@ -237,7 +237,7 @@ function chooseStation(input) {
   const hit = cands.find(c => c && c.reachable);
   if (hit) return { mode: 'attach', port: hit.port, source: hit.source };
   const named = cands.find(c => c && (c.source === 'flag' || c.source === 'env'));
-  if (named) return { mode: 'refuse', reason: 'no station is answering on port ' + named.port + ' (from ' + (named.source === 'flag' ? '--port' : 'STARNET_PORT') + ')' };
+  if (named) return { mode: 'refuse', reason: 'no station is answering on port ' + named.port + ' (from ' + (named.source === 'flag' ? '--port' : 'VULTRON_PORT') + ')' };
   if (d.ownerAlive && !d.port && !o.workspaceOverride) {
     return { mode: 'refuse', reason: 'the desktop app owns the default workspace (pid ' + d.ownerPid + ') but its port could not be discovered — pass --port <n> to attach, or --workspace <dir> to boot a separate station' };
   }
@@ -296,26 +296,26 @@ function parseStartupExe(text) {
     return ch === 'n' ? '\n' : ch === 't' ? '\t' : ch === 'r' ? '\r' : ch === '0' ? '\0' : ch;
   });
 }
-/* What StarNet's startup.log says about ONE terminal session (src-tauri main.rs logs its --background start and every
+/* What Vultron's startup.log says about ONE terminal session (src-tauri main.rs logs its --background start and every
    join outcome with the session's pid): 'started-for' (it was started for this pid), 'joined', 'starting' (it asked
    before setup was done; tracked once it is), 'closing' (its sessions ended and it is closing: start it again once it
-   has quit), 'not-tracked' (a person's StarNet, or one staying in the tray: a terminal ending never closes it), or
+   has quit), 'not-tracked' (a person's Vultron, or one staying in the tray: a terminal ending never closes it), or
    null (nothing about this pid). The LAST line about the pid wins. */
 function joinOutcome(text, pid) {
   const want = String(pid);
   let out = null;
   for (const line of String(text || '').split(/\r?\n/)) {
-    let m = /started by starnet \(--background, terminal pid (\d+)\)/.exec(line);
+    let m = /started by vultron \(--background, terminal pid (\d+)\)/.exec(line);
     if (m && m[1] === want) { out = 'started-for'; continue; }
-    m = /starnet session pid (\d+)[: ]\s*(.*)$/.exec(line);
+    m = /vultron session pid (\d+)[: ]\s*(.*)$/.exec(line);
     if (!m || m[1] !== want) continue;
-    out = /^joins the station/.test(m[2]) ? 'joined' : /^joins once StarNet has started/.test(m[2]) ? 'starting'
-      : /^arrived while StarNet is closing/.test(m[2]) ? 'closing' : 'not-tracked';
+    out = /^joins the station/.test(m[2]) ? 'joined' : /^joins once Vultron has started/.test(m[2]) ? 'starting'
+      : /^arrived while Vultron is closing/.test(m[2]) ? 'closing' : 'not-tracked';
   }
   return out;
 }
-// the exit code of a terminal-started StarNet whose engine failed and whose startup dialog was cancelled
-// (src-tauri terminal_session.rs EXIT_START_CANCELLED): a 0 would read as a hand-off to a StarNet already starting
+// the exit code of a terminal-started Vultron whose engine failed and whose startup dialog was cancelled
+// (src-tauri terminal_session.rs EXIT_START_CANCELLED): a 0 would read as a hand-off to a Vultron already starting
 const APP_EXIT_START_CANCELLED = 3;
 
 // ---- agent selection ---------------------------------------------------------------------------
@@ -329,7 +329,7 @@ const APP_EXIT_START_CANCELLED = 3;
    Provider ids resolve through the station's own alias map (sidecar/providers/registry.js), so `--provider openai-codex`
    is the 'codex' the agent runs on. A --provider the registry does not know ('olama') is refused, with or without --model:
    the station would otherwise run it on OpenRouter with its own key. A roster row's provider id is kept as typed.
-   Both station modules load on pickAgent's first call, never at CLI start: `starnet --version`, status, ls and every
+   Both station modules load on pickAgent's first call, never at CLI start: `vultron --version`, status, ls and every
    other command that resolves no run wire load nothing from sidecar/ (test/cli-version.test.js runs --version on bin/
    alone). Every bundle ships sidecar/ beside bin/ (src-tauri/tauri.conf.json resources), so a module missing here is a
    broken install and its require throws — never a guessed provider. */
@@ -359,7 +359,7 @@ function pickAgent(runtime, want) {
     agent: own, hero: { provider: rt.provider || '', model: rt.model || '' },
     normalizeProvider: cliProviderId
   });
-  if (!wire.ok) return { ok: false, error: 'no model to run: agent ' + JSON.stringify(agentId) + ' has none configured — pass --model <slug> (or set STARNET_DEFAULT_MODEL for a spawned station)' };
+  if (!wire.ok) return { ok: false, error: 'no model to run: agent ' + JSON.stringify(agentId) + ' has none configured — pass --model <slug> (or set VULTRON_DEFAULT_MODEL for a spawned station)' };
   if (w.provider && !w.model && wire.ignored.some(x => x.source === 'explicit')) {
     return { ok: false, error: '--provider ' + w.provider + ' needs --model too: a provider alone names no model, and agent ' + JSON.stringify(agentId) + ' runs on ' + wire.provider + ' / ' + wire.model };
   }
@@ -522,7 +522,7 @@ function exitCodeForReason(reason, opts) {
 
 // ---- non-interactive bootstrap -----------------------------------------------------------------
 /* A fresh workspace needs exactly what the desktop's onboarding would have written: a roster entry the sidecar
-   can run (agent.roster.json) and a save document the desktop can RESUME (agent.save.json, schema starnet.save
+   can run (agent.roster.json) and a save document the desktop can RESUME (agent.save.json, schema vultron.save
    v5 — the same golden shape dev/fixtures/seed-workspace uses). The desktop's boot path sees a valid save and
    resumes it (or shows the RESUME connect screen when its keychain holds no key) — it never re-runs the
    first-run ceremony over it. approvalMode:'full' is the product law: full power from minute one.
@@ -536,7 +536,7 @@ function bootstrapDocs(input) {
   const name = String(o.name || 'OVERSEER').slice(0, 40);
   const model = String(o.model || '');
   const provider = String(o.provider || 'openrouter');
-  const identity = 'You are ' + name + ', the resident agent of a StarNet station driven from the command line. Sharp, concise, a little dry. Use your real tools (web, files, shell, memory) when a task needs them and report what they actually returned — never what you assume they would.';
+  const identity = 'You are ' + name + ', the resident agent of a Vultron station driven from the command line. Sharp, concise, a little dry. Use your real tools (web, files, shell, memory) when a task needs them and report what they actually returned — never what you assume they would.';
   const purpose = 'Be the always-ready general agent for this station: take a task from the terminal, do the real work with real tools, and answer plainly.';
   const roster = {
     version: 1,
@@ -550,15 +550,15 @@ function bootstrapDocs(input) {
   const save = {
     version: 1, agentId, updatedAt: now, savedAt: now,
     doc: {
-      schema: 'starnet.save', version: 5, updatedAt: now,
+      schema: 'vultron.save', version: 5, updatedAt: now,
       agent: {
         id: agentId, name, color: '#5ad0ff', model, personaId: 'worker-homie', purpose, specialtyId: null, createdAt: now,
         // a station set up for a headless run, never met by a person: the dashboard runs the awakening over it (dashboard.js)
-        bootstrappedBy: 'starnet-cli',
+        bootstrappedBy: 'vultron-cli',
         docs: {
           identity, purpose,
           manual: 'Keep replies brief. Use your real tools when a task needs them and report what they actually returned. Say plainly when something is broken or out of reach.',
-          context: 'This station was bootstrapped headlessly by the starnet CLI. The desktop app can open it at any time; the layout and crew grow from there.'
+          context: 'This station was bootstrapped headlessly by the vultron CLI. The desktop app can open it at any time; the layout and crew grow from there.'
         },
         stats: { xp: 0, level: 1, lifetimeXp: 0, confidence: 50, samples: 0, counters: {}, milestones: [] }
       },
@@ -576,14 +576,14 @@ function bootstrapDocs(input) {
 }
 
 /* Which provider can a SPAWNED station run headlessly, from the environment alone? Mirrors the sidecar's own
-   envFirst() (bare name, STARNET_<name>, SKYNET_<name>) over the registry's keyEnv lists. `codexTokensPresent`
+   envFirst() (bare name, VULTRON_<name>, SKYNET_<name>) over the registry's keyEnv lists. `codexTokensPresent`
    is the workspace's codex/tokens.json (a ChatGPT sign-in the desktop stored), checked by the caller. */
 function inferProvider(input) {
   const o = input || {};
   const env = o.env || {};
   const profiles = Array.isArray(o.profiles) ? o.profiles : [];
   const has = (name) => {
-    for (const k of [name, 'STARNET_' + name, 'SKYNET_' + name]) { if (env[k] != null && String(env[k]).trim()) return true; }
+    for (const k of [name, 'VULTRON_' + name, 'SKYNET_' + name]) { if (env[k] != null && String(env[k]).trim()) return true; }
     return false;
   };
   if (o.explicit) return { provider: String(o.explicit), source: 'flag' };

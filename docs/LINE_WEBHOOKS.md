@@ -1,6 +1,6 @@
 # Line webhooks
 
-Create a webhook in the existing line trigger form. POST to `/api/hooks/<triggerId>` with its secret in `X-StarNet-Hook-Key`, `Authorization: Bearer <secret>`, or the existing `?key=` URL parameter. Authentication happens before the request body is read. A trigger secret does not authorize the station's management API.
+Create a webhook in the existing line trigger form. POST to `/api/hooks/<triggerId>` with its secret in `X-Vultron-Hook-Key`, `Authorization: Bearer <secret>`, or the existing `?key=` URL parameter. Authentication happens before the request body is read. A trigger secret does not authorize the station's management API.
 
 A successful request returns HTTP 202 with `jobId`, `streamId`, `durable:true`, and its admission queue position. This confirms that the LineJob is on disk, not that its work has completed. Read `/api/line-jobs/<jobId>` through the authenticated station API for the current result. The job follows the same line, provider settings, spending limits and authority as other trigger work.
 

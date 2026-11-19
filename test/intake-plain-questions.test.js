@@ -2,7 +2,7 @@
 
    Found live by the onboarding sweep (2026-10-20) on a fresh station, COMMANDER › Start a guided interview:
    1. The stack question rendered as "so i reach for the right tools instead of guessing —what’s open on your
-      screen right now? that’s the honest answer." Answered literally ("just this StarNet window"), it was saved
+      screen right now? that’s the honest answer." Answered literally ("just this Vultron window"), it was saved
       as the Commander's STATED stack. Several asks still carried the retired scene register — a hypothetical
       ("say i work for you for a year, free and tireless — what exists at the end…"), "catch yourself
       complaining", "the rule you catch yourself repeating" — the decode-work the PLAIN-QUESTION LAW

@@ -20,7 +20,7 @@ const { makeCheckpointGitRunner } = require('../sidecar/checkpoint-git.js');
 const { makeCheckpointStore } = require('../sidecar/checkpoint-store.js');
 const failopen = require('../sidecar/failopen.js');
 
-const root = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-checkpoint-stale-lock-'));
+const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-checkpoint-stale-lock-'));
 let nowMs = 1700000000000;
 const clock = { now: () => nowMs };
 const realGit = makeCheckpointGitRunner({ spawn, clock: { now: () => Date.now() } });

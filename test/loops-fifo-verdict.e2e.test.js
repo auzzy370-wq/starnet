@@ -101,7 +101,7 @@ function boot(port, env, attemptsLeft) {
     ({ child, port } = await boot(await allocatePort(), env, 20));
     const B = 'http://' + HOST + ':' + port;
     const token = await bootToken(B, B);
-    const headers = { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: B };
+    const headers = { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: B };
     const post = async (route, body) => { const r = await fetch(B + route, { method: 'POST', headers, body: JSON.stringify(body) }); let j = null; try { j = await r.json(); } catch (_) {} return { status: r.status, body: j || {} }; };
     const loopOf = async id => ((await (await fetch(B + '/api/loops', { headers })).json()).loops || []).find(x => x.id === id);
 

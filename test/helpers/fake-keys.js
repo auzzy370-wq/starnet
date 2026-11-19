@@ -12,7 +12,7 @@ const crypto = require('node:crypto');
 function stream(seed, n, alphabet) {
   let out = '', i = 0;
   while (out.length < n) {
-    const h = crypto.createHash('sha256').update('starnet-fake-key:' + seed + ':' + (i++)).digest();
+    const h = crypto.createHash('sha256').update('vultron-fake-key:' + seed + ':' + (i++)).digest();
     for (const b of h) { if (out.length >= n) break; out += alphabet[b % alphabet.length]; }
   }
   return out;

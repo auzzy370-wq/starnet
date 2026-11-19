@@ -194,7 +194,7 @@ const VENDOR_CUT_SOURCES = [
   ['ntn_', '[A-Za-z0-9]'],                       // Notion
   ['lin_api_', '[A-Za-z0-9]'],                   // Linear
   ['SG\\.', '[A-Za-z0-9_\\-.]'],                 // SendGrid
-  ['whk_', '[A-Za-z0-9_\\-]'],                   // StarNet line-trigger webhook secret
+  ['whk_', '[A-Za-z0-9_\\-]'],                   // Vultron line-trigger webhook secret
   ['hf_', '[A-Za-z0-9]'],                        // HuggingFace
   ['xai-', '[A-Za-z0-9]'],                       // xAI
   ['eyJ', '[A-Za-z0-9_\\-.]'],                   // JWT

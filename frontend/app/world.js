@@ -1,4 +1,4 @@
-/* STARNET — world.js : the LIVE station the agent lives inside.
+/* VULTRON — world.js : the LIVE station the agent lives inside.
 
    Renders the player-built WorldModel station (multi-room) with the generalized
    procedural bake (stationbake.js), under a pan/zoom camera. The agent has a
@@ -1507,7 +1507,7 @@ const World = (() => {
     // element), so without this guard each new agent stacked another full set of listeners and SSE streams.
     if (listenersBound) return;
     listenersBound = true;
-    // THE STARNET FONT, ON CANVAS. `font-display: block` (style.css) governs the DOM only —
+    // THE VULTRON FONT, ON CANVAS. `font-display: block` (style.css) governs the DOM only —
     // canvas has no equivalent: `ctx.font` resolves against whatever is loaded AT DRAW TIME and
     // silently falls through to the next family in the stack when VT323 has not landed yet.
     // The live frame redraws continuously so it heals itself, but StationBake paints its layers
@@ -1744,7 +1744,7 @@ const World = (() => {
      times a second. 0 = no caller cap (the station's own RENDER PACING below then decides). */
   let frameCapMs = 0, lastDrawnAt = 0;
   function setFrameCap(ms) { frameCapMs = ms > 0 ? +ms : 0; paceWake(); }
-  /* RENDER PACING (#69, 2026-10-06): StarNet stays open all day so routines run, and an uncapped rAF loop drew the
+  /* RENDER PACING (#69, 2026-10-06): Vultron stays open all day so routines run, and an uncapped rAF loop drew the
      whole station at the monitor's refresh rate the entire time — 240 draws/s on a 240 Hz panel, a visible-but-
      unfocused window included (rAF only pauses when the page is HIDDEN). Measured on the seeded station: the GPU
      process alone burned ~1.1 cores, the renderer another ~0.7. Only the DRAWING is paced; every event handler and
@@ -1753,7 +1753,7 @@ const World = (() => {
        visible, focused or not → at most 60 draws/s (PACE_VISIBLE_MS), rounded to the nearest vsync
        YOU moving the camera (drag, wheel) → up to 144 draws/s (PACE_MOTION_MS) for PACE_MOTION_HOLD_MS after the hand
        hidden/minimized → the browser stops rAF outright (the desktop shell sets the webview not-visible on minimize/tray)
-     (Andrew, 2026-10-13, on 0.13.5: "when you're not clicked into StarNet it goes at less than 5 FPS … if it's open on
+     (Andrew, 2026-10-13, on 0.13.5: "when you're not clicked into Vultron it goes at less than 5 FPS … if it's open on
      screen this should not happen", and the 30 fps cap made every camera move judder on his 239 Hz panel next to
      0.13.1's ~200 draws/s. The 5 fps unfocused tier is gone and the visible pace is 60: still ~4x under the uncapped
      240 Hz loop #69 measured, and the FRAME BUDGET below keeps a slow machine's UI alive either way.) A caller cap
@@ -2307,7 +2307,7 @@ const World = (() => {
   function releaseAwakening() {
     cancelArrival(); awakeFrozen = false; sparkAt = 0; floodAt = 0; floodEndAt = 0; floodStreams = null; kindleArmed = false; kindleP = 0; kindleHolding = false; armFirstWake();   // hand the newborn back to its own autonomous life — and let it have its FIRST LIGHT
     // first-run chrome that must not talk over the arrival (navdock's nav coach, org P31) waits for this beat
-    if (typeof document !== 'undefined' && typeof CustomEvent === 'function') document.dispatchEvent(new CustomEvent('starnet:awakening-released'));
+    if (typeof document !== 'undefined' && typeof CustomEvent === 'function') document.dispatchEvent(new CustomEvent('vultron:awakening-released'));
   }
   // true while a birth's awakening owns the room (beginAwakening → releaseAwakening)
   function awakeningHeld() { return awakeFrozen; }
@@ -2497,7 +2497,7 @@ const World = (() => {
   const cameraMode = () => camLock ? (camLock.source === 'cine' ? 'auto' : 'lock') : 'manual';   // HUD/verify truth: what drives the camera RIGHT NOW
   function setCinecamIdle(ms) { cineIdleMs = Math.max(1000, +ms || CINE_IDLE_MS); }               // DEV knob (console/verify only): shrink the hands-off threshold; floor 1s
   /* THE IDLE RENDERER (wave 5: gh#69, gh#114, bug 9256a771, email E55), BEHIND A FLAG until Andrew has A/B'd the look.
-     On:  ?idleRenderer=1, or localStorage 'starnet.idleRenderer' = '1' (World.setIdleRenderer(true) writes it).
+     On:  ?idleRenderer=1, or localStorage 'vultron.idleRenderer' = '1' (World.setIdleRenderer(true) writes it).
      Off: the default, and ?idleRenderer=0 wins over the stored value. Off, nothing below changes a single draw. */
   /* THE CINECAM RESTS when the station is TRULY idle. The auto-director is for when the Commander is away and the crew is
      living: it trails walkers and cuts between them, so the floor is never still and draws at the full visible pace for
@@ -2512,7 +2512,7 @@ const World = (() => {
   function setCinecamRest(ms) { cineRestMs = Math.max(1000, +ms || CINE_REST_MS); }   // DEV knob (perf-idle-ab P7 only), like setCinecamIdle
   try {
     const q = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('idleRenderer') : null;
-    idleRenderer = q != null ? (q === '1' || q === 'on') : (typeof localStorage !== 'undefined' && localStorage.getItem('starnet.idleRenderer') === '1');
+    idleRenderer = q != null ? (q === '1' || q === 'on') : (typeof localStorage !== 'undefined' && localStorage.getItem('vultron.idleRenderer') === '1');
   } catch (_) {}
   function liveRunCount() { let n = 0; for (const runs of liveRunsByAgent.values()) n += runs.size; return n; }
   // a pure read (cameraDbg calls it): cinecamTick stamps runSeenAt while a run is live, restWakeOn when a wake event is heard
@@ -2605,7 +2605,7 @@ const World = (() => {
   // persist:false (perf-idle-ab's own A/B) changes the live rule without touching the stored opt-in
   function setIdleRenderer(on, persist) {
     idleRenderer = !!on;
-    if (persist !== false) try { localStorage.setItem('starnet.idleRenderer', idleRenderer ? '1' : '0'); } catch (_) {}
+    if (persist !== false) try { localStorage.setItem('vultron.idleRenderer', idleRenderer ? '1' : '0'); } catch (_) {}
     motionWake();   // the next frame judges itself under the new rule
     return idleRenderer;
   }
@@ -7628,7 +7628,7 @@ const World = (() => {
     // NOTE: the next rAF is scheduled by the frame() crash-guard wrapper, BEFORE this body runs — never here.
   }
 
-  /* A STILL OF THE WHOLE STATION, for a surface that is not this window (StarNet Remote's phone view).
+  /* A STILL OF THE WHOLE STATION, for a surface that is not this window (Vultron Remote's phone view).
      It is the same scene pass the stage gets — floor, walls, props, crew where they really stand, light — aimed
      at an offscreen canvas framed on the full station. It never reads the live stage canvas. Returns
      { canvas, width, height, bodies:[{ agentId, name, x, y, working }] } with bodies in still pixels, or null
@@ -9877,12 +9877,12 @@ const World = (() => {
   // after a DISCONNECT they kept polling /api/connectors every 5s and the EventSource self-reconnected forever
   // from the title screen. Hoisted here so pauseBridge() (on disconnect) can release them and resumeBridge()
   // (on re-entry) can re-arm them. The U.bus.on(...) subscriptions stay put (idempotent under `bridged`).
-  // E6f — API base consistency: the SSE bridge already prefixes window.__STARNET_API__ (the sidecar's loopback
+  // E6f — API base consistency: the SSE bridge already prefixes window.__VULTRON_API__ (the sidecar's loopback
   // origin) so it resolves in the desktop build, where the page origin is the Tauri asset host, NOT the sidecar.
   // Bare /api/* fetches (routing POST, connectors poll) skipped that prefix and would hit the wrong origin there.
   // apiUrl() is the single source of truth so all three use the same base. (Auth token is attached by harness.js's
   // window.fetch monkey-patch for /api/ URLs; the SSE path can't send a header so it presents a single-use ApiTicket.sseUrl ticket.)
-  function apiBase() { return (typeof window !== 'undefined' && window.__STARNET_API__) ? window.__STARNET_API__ : ''; }
+  function apiBase() { return (typeof window !== 'undefined' && window.__VULTRON_API__) ? window.__VULTRON_API__ : ''; }
   function apiUrl(path) { return apiBase() + path; }
   let chanES = null, connPollTimer = null, connPollFn = null, connOpenFn = null, bridgePaused = false;
   let bridgeCursor = '', bridgeRecovering = false;
@@ -10356,7 +10356,7 @@ const World = (() => {
   let lineStatsTimer = 0, stepPollTimer = 0;
   let hoverBay = null, hoverCrate = null;
   let lwDrawOff = false;   // verify-only A/B switch (_dbgLineWatch().setDraw) for the frame-cost measurement — never user-facing
-  const LW_ACK_KEY = 'starnet.linewatch.acked';
+  const LW_ACK_KEY = 'vultron.linewatch.acked';
   function lineWatch() {
     if (!watch && typeof LineWatch !== 'undefined') {
       watch = LineWatch.create({ entryDock: aid => (routingPlan && routingPlan.entryDock) ? (routingPlan.entryDock[aid] || null) : null });

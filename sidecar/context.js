@@ -353,7 +353,7 @@
     [keyRule('ntn_', '[A-Za-z0-9]{20,}\\b'), '[redacted-key]'],                    // Notion integration token
     [keyRule('lin_api_', '[A-Za-z0-9]{20,}\\b'), '[redacted-key]'],                // Linear API key
     [keyRule('SG\\.', '[A-Za-z0-9_-]{16,}\\.[A-Za-z0-9_-]{16,}'), '[redacted-key]'], // SendGrid
-    [keyRule('whk_', '[A-Za-z0-9_-]{20,}'), '[redacted-secret]'],                 // StarNet line-trigger webhook secret (routing/triggers.js)
+    [keyRule('whk_', '[A-Za-z0-9_-]{20,}'), '[redacted-secret]'],                 // Vultron line-trigger webhook secret (routing/triggers.js)
     [keyRule('hf_', '[A-Za-z0-9]{30,}\\b'), '[redacted-key]'],                     // HuggingFace
     [keyRule('xai-', '[A-Za-z0-9]{20,}\\b'), '[redacted-key]'],                    // xAI
     [keyRule('AC', '[a-f0-9]{32}\\b'), '[redacted-key]'],                          // Twilio account SID

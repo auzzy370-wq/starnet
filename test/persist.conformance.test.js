@@ -71,7 +71,7 @@ function havePersist(section) {
 }
 const reset = () => { if (persist) persist._resetForTests(); };   // a fresh process: the per-process memos go
 
-const ROOT = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-persist-conformance-'));
+const ROOT = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-persist-conformance-'));
 let seq = 0;
 const fresh = name => { const d = path.join(ROOT, (++seq) + '-' + String(name).replace(/[^\w.-]+/g, '_').slice(0, 60)); fs.mkdirSync(d, { recursive: true }); return d; };
 const injected = (code, op) => Object.assign(new Error('injected ' + code + (op ? ' (' + op + ')' : '')), { code });
@@ -366,9 +366,9 @@ const KINDS = {
     },
     // a station file as the base code wrote it (HTTP wrapper fields included), and base savestore's own numbered quarantine
     base: {
-      main: '{"version":1,"agentId":"agent","updatedAt":5,"savedAt":1700000000000,"requestUpdatedAt":5,"revision":3,"client":"tab1","doc":{"schema":"starnet.save","updatedAt":5,"_saveRevision":3,"_saveClient":"tab1","agent":{"id":"agent","name":"Kept"}}}',
-      bak: '{"version":1,"agentId":"agent","updatedAt":4,"savedAt":1699999999000,"doc":{"schema":"starnet.save","updatedAt":4,"agent":{"id":"agent","name":"Kept"}}}',
-      reads: 'value:{"schema":"starnet.save","updatedAt":5,"_saveRevision":3,"_saveClient":"tab1","agent":{"id":"agent","name":"Kept"}}',
+      main: '{"version":1,"agentId":"agent","updatedAt":5,"savedAt":1700000000000,"requestUpdatedAt":5,"revision":3,"client":"tab1","doc":{"schema":"vultron.save","updatedAt":5,"_saveRevision":3,"_saveClient":"tab1","agent":{"id":"agent","name":"Kept"}}}',
+      bak: '{"version":1,"agentId":"agent","updatedAt":4,"savedAt":1699999999000,"doc":{"schema":"vultron.save","updatedAt":4,"agent":{"id":"agent","name":"Kept"}}}',
+      reads: 'value:{"schema":"vultron.save","updatedAt":5,"_saveRevision":3,"_saveClient":"tab1","agent":{"id":"agent","name":"Kept"}}',
       legacy: { 'corrupt-1': 'LEGACY savestore quarantine', '2.tmp': 'LEGACY savestore temp' },
       next: 'corrupt-2'
     }

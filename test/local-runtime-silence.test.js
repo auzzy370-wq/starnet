@@ -5,7 +5,7 @@
    no headers within the hosted 30 s connect guard -> three adapter sends, then four loop rungs (7 sends of the same prompt,
    each restarting it on a server that may still have been working on the first); headers then silence -> two idle stalls
    and provider_stalled. Never local_timeout, never a sentence about the server. Now, for a non-native endpoint whose host is
-   loopback or private (errorClass hostScope) with no other StarNet call open on that base URL, silence in ANY phase ends
+   loopback or private (errorClass hostScope) with no other Vultron call open on that base URL, silence in ANY phase ends
    the turn on local_timeout after ONE request, naming the host, the phase and the wait.
 
    Locked here with a fake LM Studio on loopback (a real HTTP server, OS-chosen port), the REAL factory + CUSTOM adapter and
@@ -15,7 +15,7 @@
      3. loopback, one chunk then silence: ONE send, local_timeout ('between chunks phase'), the chunk already shown kept
      4. a private-LAN host (192.168.x, dialled through a fetch that lands on the loopback server): the same three
      5. a public host (dialled the same way): today's ladder — 7 sends and `timeout`; 2 sends and provider_stalled
-     6. another StarNet call open on the same server (review M1): the silent request is re-sent ONCE, then local_timeout
+     6. another Vultron call open on the same server (review M1): the silent request is re-sent ONCE, then local_timeout
         saying the other call was open — in the connect phase and the first-byte phase (idleBusy), and with the other call
         configured as localhost or [::1] on the same port (one server)
      7. the wait note: an unanswered local request says so on the wait line, with the ceiling (limitMs) only when that
@@ -81,7 +81,7 @@ function fakeLmStudio() {
 const viaLoopback = (s, origin) => (url, init) => fetch(String(url).replace(origin, 'http://127.0.0.1:' + s.port), init);
 const card = (s, origin, clock = { now: () => Date.now() }) => factory.selectProvider({ provider: 'lmstudio', baseUrl: origin + '/v1', fetch: viaLoopback(s, origin), clock });
 
-/* ANOTHER StarNet call held open on a server (a quest's background call): its own adapter instance, a fetch that never
+/* ANOTHER Vultron call held open on a server (a quest's background call): its own adapter instance, a fetch that never
    answers (it dials nothing — only its open-call entry matters), stopped by its caller. */
 async function holdOpen(baseUrl) {
   const ac = new AbortController();
@@ -132,7 +132,7 @@ async function localRows(s, origin, hostPort, where, label) {
     A.ok(msg.indexOf('The model server at ' + hostPort + ' ' + where) === 0, label + ' ' + p.mode + ': names the host and where it is: ' + msg);
     A.ok(msg.indexOf('(' + p.phase + ')') > 0, label + ' ' + p.mode + ': names the phase');
     A.ok(p.what.test(msg), label + ' ' + p.mode + ': names the wait');
-    A.ok(/StarNet did not re-send the request/.test(msg), label + ' ' + p.mode + ': says it did not re-send');
+    A.ok(/Vultron did not re-send the request/.test(msg), label + ' ' + p.mode + ': says it did not re-send');
     A.ok(/the server's own log/.test(msg) && /smaller model/.test(msg) && msg.indexOf(p.env) > 0, label + ' ' + p.mode + ': names the fixes and the env');
     A.ok(/timed out/.test(msg), label + ' ' + p.mode + ': keeps the timeout words');
     // COMMS words it as itself with or without the code (review M2): never "timed out — try again", never a context overflow
@@ -168,7 +168,7 @@ async function localRows(s, origin, hostPort, where, label) {
       A.eq(r2.res.failureCode, 'provider_stalled', 'and ends provider_stalled');
     }
 
-    // ---- 6. another StarNet call open on the same server: ONE re-send, then local_timeout (review M1) ----
+    // ---- 6. another Vultron call open on the same server: ONE re-send, then local_timeout (review M1) ----
     {
       const origin = 'http://127.0.0.1:' + s.port;
       const busyRows = [
@@ -188,12 +188,12 @@ async function localRows(s, origin, hostPort, where, label) {
         s.onSend = null;
         await other.stop();
         const msg = (errors[0] && errors[0].message) || '';
-        A.eq(s.chatsFor(text), 2, b.label + ': a silent request with another StarNet call open on that server is re-sent ONCE (sends: ' + s.chatsFor(text) + ')');
+        A.eq(s.chatsFor(text), 2, b.label + ': a silent request with another Vultron call open on that server is re-sent ONCE (sends: ' + s.chatsFor(text) + ')');
         A.eq([res.reason, res.failureCode], ['error', 'local_timeout'], b.label + ': then the turn ends on local_timeout');
         A.eq(errors[0] && errors[0].transient, false, b.label + ': not transient');
         A.ok(msg.indexOf('(' + b.phase + ')') > 0, b.label + ': names the phase: ' + msg);
-        A.ok(/Another StarNet call was open on that server, so StarNet re-sent the request once/.test(msg), b.label + ': says another call was open and the request went twice');
-        A.ok(!/StarNet did not re-send/.test(msg), b.label + ': never claims it was not re-sent');
+        A.ok(/Another Vultron call was open on that server, so Vultron re-sent the request once/.test(msg), b.label + ': says another call was open and the request went twice');
+        A.ok(!/Vultron did not re-send/.test(msg), b.label + ': never claims it was not re-sent');
         A.eq(Friendly.friendlyError(msg, null, { engineAlive: true }).kind, 'local_timeout', b.label + ': COMMS reads it as local_timeout without the code');
       }
     }

@@ -12,12 +12,12 @@
        the real store + skills-io keep all 5 and their exact bodies;
      • a use appends a small usage row (never the whole record); uses and the stale->active flip survive restart;
      • the file is compacted, never rotated: it stays bounded and no .1 is ever made;
-     • a legacy .1 left by an older StarNet is read whole and folded back in by the boot compaction, then removed;
+     • a legacy .1 left by an older Vultron is read whole and folded back in by the boot compaction, then removed;
      • a partial or failed load is never rewritten as the whole library, and refuses every write: the Commander's,
        the model's staged proposals (agent / reflection / review), a rejection and curation;
      • a use re-scans under the current rules and stores a changed scan (new findings under the same verdict too);
      • a torn row's own nested object (a candidate's `skill`, a promotion's `entry`) is never loaded as the active skill;
-     • a usage row carries no `name`, so an older StarNet skips it instead of replacing the skill;
+     • a usage row carries no `name`, so an older Vultron skips it instead of replacing the skill;
      • the package mirror view() hydrates holds only accepted bytes (a refused edit never reaches SKILL.md), and a use
        repairs a mirror this process has not written from the current record (after a failed write, or a boot);
      • a large library is not rewritten on every append (hysteresis); a torn row is reported, not silent;
@@ -120,7 +120,7 @@ const seed = (s) => { for (const n of names) A.ok(s.write({ agentId: 'a', name: 
   A.ok(grew > 0 && grew < 300, 'one use appends a ~150-byte usage row (' + grew + ' bytes), not the ~36 KB record');
   const last = JSON.parse(fs.readFileSync(f.file, 'utf8').trim().split('\n').pop());
   A.eq(last.recordType, 'skill-usage', 'the appended row is a usage row');
-  A.ok(!('name' in last) && last.skillName === 'Delta', 'a usage row carries skillName, never `name` (an older StarNet skips it)');
+  A.ok(!('name' in last) && last.skillName === 'Delta', 'a usage row carries skillName, never `name` (an older Vultron skips it)');
   A.eq(f.store.curate('a', { now: t + 40 * 86400000 }).stale, 5, 'precondition: aging marks every skill stale');
   f.store.markUsed('a', 'Echo');
   const s = f.restart();
@@ -142,7 +142,7 @@ const seed = (s) => { for (const n of names) A.ok(s.write({ agentId: 'a', name: 
   A.eq([a.useCount, a.viewCount], [3, 3], 'its uses AND views survive restart');
 }
 
-// ---- 3. an older StarNet's loader (rows without `name` are skipped) never replaces a skill with a usage row ----
+// ---- 3. an older Vultron's loader (rows without `name` are skipped) never replaces a skill with a usage row ----
 {
   const rows = [{ id: 'x', agentId: 'a', name: 'Xray', summary: 's', body: 'the real body', createdBy: 'user', state: 'active', createdAt: 1, updatedAt: 1 },
     { recordType: 'skill-usage', agentId: 'a', skillName: 'Xray', useCount: 7, lastUsedAt: 9 },
@@ -154,7 +154,7 @@ const seed = (s) => { for (const n of names) A.ok(s.write({ agentId: 'a', name: 
   A.eq(makeSkillStore({ io: { readAll: () => legacy, append() {} }, clock }).view('a', 'Xray', { bump: false }).body, 'the real body', 'even read as a plain record, a nameless usage row cannot replace the skill');
 }
 
-// ---- 4. a legacy .1 (an older StarNet rotated the file) is read whole, folded in at boot, then removed ----
+// ---- 4. a legacy .1 (an older Vultron rotated the file) is read whole, folded in at boot, then removed ----
 {
   const f = fixture('legacy');
   const rec = (n, extra) => Object.assign({ id: n.toLowerCase(), agentId: 'a', name: n, summary: n, body: body(n), createdBy: 'user', state: 'active', createdAt: 1, updatedAt: 1 }, extra || {});

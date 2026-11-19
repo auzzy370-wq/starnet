@@ -94,8 +94,8 @@ A.eq(S.sidecarTopLevelFunction('noSuchSidecarFunctionAnywhere'), '', 'H2: sideca
 
 // H4
 {
-  const prior = process.env.STARNET_SOURCE_AUDIT;
-  const mode = m => { process.env.STARNET_SOURCE_AUDIT = m; delete require.cache[HELPER]; return require(HELPER).readSidecarSource(); };
+  const prior = process.env.VULTRON_SOURCE_AUDIT;
+  const mode = m => { process.env.VULTRON_SOURCE_AUDIT = m; delete require.cache[HELPER]; return require(HELPER).readSidecarSource(); };
   try {
     A.ok(mode('index-only') === indexText, 'H4: index-only is index.js alone');
     const others = mode('without-index');
@@ -103,7 +103,7 @@ A.eq(S.sidecarTopLevelFunction('noSuchSidecarFunctionAnywhere'), '', 'H2: sideca
     A.eq(mode('empty'), '', 'H4: empty is empty');
     A.ok(mode('') === all, 'H4: no mode is the whole sidecar');
   } finally {
-    if (prior === undefined) delete process.env.STARNET_SOURCE_AUDIT; else process.env.STARNET_SOURCE_AUDIT = prior;
+    if (prior === undefined) delete process.env.VULTRON_SOURCE_AUDIT; else process.env.VULTRON_SOURCE_AUDIT = prior;
     delete require.cache[HELPER];
   }
 }

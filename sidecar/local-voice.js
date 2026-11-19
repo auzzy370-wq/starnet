@@ -10,16 +10,16 @@ const { pathToFileURL } = require('node:url');
    (local, not roaming: 150-330 MB of downloaded weights) and ~/Library/Application Support/ai.skynet.harness/models on
    macOS, the two platforms we ship. Never inside the repo or the install folder, and PRIVACY.md and the troubleshooting
    page document this path and the legacy one for manual removal. `legacy` is where an older build left the download: on
-   Windows %LOCALAPPDATA%\StarNet is the NSIS per-user install folder, so an uninstall orphaned the weights there and
-   they kept the folder alive. Linux keeps its cache folder and has nothing to move. A chosen STARNET_MODEL_CACHE wins
+   Windows %LOCALAPPDATA%\Vultron is the NSIS per-user install folder, so an uninstall orphaned the weights there and
+   they kept the folder alive. Linux keeps its cache folder and has nothing to move. A chosen VULTRON_MODEL_CACHE wins
    and pulls no legacy root in. test/fixtures/voice-cache-roots.json pins this one rule against erase_all.rs
    voice_model_cache_roots, which is how ERASE EVERYTHING deletes both. */
 function voiceCacheRoots({ platform, env, homedir, join = path.join }) {
-  if (env.STARNET_MODEL_CACHE) return { root: env.STARNET_MODEL_CACHE, legacy: null };
+  if (env.VULTRON_MODEL_CACHE) return { root: env.VULTRON_MODEL_CACHE, legacy: null };
   const appData = platform === 'win32' ? env.LOCALAPPDATA || join(homedir(), 'AppData', 'Local')
     : platform === 'darwin' ? join(homedir(), 'Library', 'Application Support') : '';
-  if (!appData) return { root: join(env.XDG_CACHE_HOME || join(homedir(), '.cache'), 'starnet', 'models'), legacy: null };
-  return { root: join(appData, 'ai.skynet.harness', 'models'), legacy: join(appData, 'StarNet', 'models') };
+  if (!appData) return { root: join(env.XDG_CACHE_HOME || join(homedir(), '.cache'), 'vultron', 'models'), legacy: null };
+  return { root: join(appData, 'ai.skynet.harness', 'models'), legacy: join(appData, 'Vultron', 'models') };
 }
 
 const roots = voiceCacheRoots({ platform: process.platform, env: process.env, homedir: os.homedir });
@@ -136,12 +136,12 @@ function packagePresent(name) {
   return false;
 }
 
-/* Kill-switch: STARNET_LOCAL_VOICE=0 (or SKYNET_) forces the engine unavailable even where the packages
+/* Kill-switch: VULTRON_LOCAL_VOICE=0 (or SKYNET_) forces the engine unavailable even where the packages
    resolve. Two real uses: a user opting out of the on-disk models, and TESTS reproducing the installed-build
    shape (no node_modules) on a dev checkout — the shape the 2026-07-30 keyed-fallthrough bug only showed on.
    Read dynamically (not cached) so a spawned test server's env always wins over require-time state. */
 function disabledByEnv() {
-  const v = process.env.STARNET_LOCAL_VOICE != null ? process.env.STARNET_LOCAL_VOICE : process.env.SKYNET_LOCAL_VOICE;
+  const v = process.env.VULTRON_LOCAL_VOICE != null ? process.env.VULTRON_LOCAL_VOICE : process.env.SKYNET_LOCAL_VOICE;
   return /^(0|false|no|off)$/i.test(String(v == null ? '' : v).trim());
 }
 
@@ -169,7 +169,7 @@ let ttsBusy = 0;
 let lastTtsMs = null;
 const monotonicMs = () => Number(process.hrtime.bigint() / 1000000n);
 
-// Transformers eagerly loads Sharp even though StarNet's offline voice paths are audio/text only. Sharp
+// Transformers eagerly loads Sharp even though Vultron's offline voice paths are audio/text only. Sharp
 // <0.35 inherits vulnerable libvips loaders; upstream's documented compatible workaround is to disable
 // GIF, TIFF, and VIPS decoding. Apply it before either Transformers copy is imported so future call sites
 // cannot accidentally turn an unused image surface into an untrusted-input decoder.
@@ -245,14 +245,14 @@ async function loadAsr() {
    q4 export the engine used to load (326 vs 305 MB — Kokoro is mostly convolution, which q4 leaves alone,
    so q4 bought almost no size while 4-bit MatMuls added an audible buzz). q8 stays out: it fails to
    initialize in onnxruntime-node on some Windows machines. q4 remains the fallback so a machine where fp32
-   cannot load still speaks. STARNET_KOKORO_DTYPE pins one precision (no fallback) for diagnosis.
+   cannot load still speaks. VULTRON_KOKORO_DTYPE pins one precision (no fallback) for diagnosis.
    A machine that already holds the q4 copy (an install from before fp32) and not fp32 keeps speaking from it:
    loading fp32 first would make its next reply wait on a ~326 MB download and keep two copies on disk. */
 function kokoroOnnxDir(root) {
   return path.join(root, 'transformers-kokoro', 'onnx-community', 'Kokoro-82M-v1.0-ONNX', 'onnx');
 }
 function kokoroDtypes(root = ttsRoot()) {
-  const pinned = String(process.env.STARNET_KOKORO_DTYPE || process.env.SKYNET_KOKORO_DTYPE || '').trim();
+  const pinned = String(process.env.VULTRON_KOKORO_DTYPE || process.env.SKYNET_KOKORO_DTYPE || '').trim();
   if (pinned) return [pinned];
   const dir = kokoroOnnxDir(root);
   if (fs.existsSync(path.join(dir, 'model_q4.onnx')) && !fs.existsSync(path.join(dir, 'model.onnx'))) return ['q4', 'fp32'];

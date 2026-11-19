@@ -74,7 +74,7 @@ function boot(port, env, attempts) {
 
 async function run(base, token, body) {
   const res = await fetch(base + '/api/run', {
-    method: 'POST', headers: { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: base }, body: JSON.stringify(body)
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: base }, body: JSON.stringify(body)
   });
   A.eq(res.status, 200, 'run streams');
   return (await res.text()).split('\n').map(s => s.trim()).filter(Boolean).map(s => { try { return JSON.parse(s); } catch (_) { return null; } }).filter(Boolean);
@@ -83,10 +83,10 @@ const toolNames = req => ((req && req.tools) || []).map(t => (t.function && t.fu
 
 (async () => {
   const provider = await startProvider();
-  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-resolve-e2e-'));
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-resolve-e2e-'));
   fs.mkdirSync(path.join(workspace, 'editor', 'clips'), { recursive: true });
   fs.writeFileSync(path.join(workspace, 'editor', 'clips', 'a.mp4'), 'not really video');   // ffprobe refuses it -> honest note
-  const env = { SKYNET_WORKSPACES: workspace, SKYNET_FULL_ACCESS: '1', SKYNET_AUX_BUDGET: '0', STARNET_OPENROUTER_KEY: '', OPENROUTER_API_KEY: '' };
+  const env = { SKYNET_WORKSPACES: workspace, SKYNET_FULL_ACCESS: '1', SKYNET_AUX_BUDGET: '0', VULTRON_OPENROUTER_KEY: '', OPENROUTER_API_KEY: '' };
   const { child, port } = await boot(await allocatePort(), env, 20);
   const base = 'http://' + HOST + ':' + port;
   try {

@@ -171,7 +171,7 @@ const deepFreeze = x => { if (x && typeof x === 'object' && !Object.isFrozen(x))
 
   // ---------------- 6. the ledger: freshAt and the purgedV catch-up ----------------
   {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-forget-registry-'));
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-forget-registry-'));
     try {
       let clock = 1000;
       const file = path.join(dir, 'session-tombstones.json');

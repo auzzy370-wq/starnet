@@ -41,7 +41,7 @@ import { pathToFileURL, fileURLToPath } from 'node:url';
 
 /* ─────────────────────────────── PURE CORE ─────────────────────────────── */
 
-export const RECEIPT_SCHEMA = 'starnet.soak-receipt.v1';
+export const RECEIPT_SCHEMA = 'vultron.soak-receipt.v1';
 export const MOCK_MODEL = 'soak/mock';
 export const SOAK_AGENT = 'soak_agent';
 export const SOAK_STREAM = 'soak-stream';
@@ -577,7 +577,7 @@ export function buildReceipt(input) {
 
 export function renderSummary(r) {
   const L = [];
-  L.push(`# StarNet soak — ${r.verdict}`);
+  L.push(`# Vultron soak — ${r.verdict}`);
   L.push('');
   L.push(`- schema: ${r.schema}`);
   L.push(`- sidecar head: ${r.sidecarHead || 'unknown'}`);
@@ -1000,17 +1000,17 @@ async function main() {
   const cronLib = require(path.join(repo, 'sidecar', 'cron.js'));
   const mock = await startMockProvider({ slowRunMs: opts.slowRunMs });
   const env = {
-    SKYNET_OPENROUTER_BASE: mock.baseUrl, STARNET_OPENROUTER_BASE: mock.baseUrl,
-    SKYNET_OPENROUTER_KEY: 'sk-or-v1-soak-mock', STARNET_OPENROUTER_KEY: 'sk-or-v1-soak-mock',
-    SKYNET_DEFAULT_MODEL: MOCK_MODEL, STARNET_DEFAULT_MODEL: MOCK_MODEL,
-    SKYNET_CRON_ENABLED: '1', STARNET_CRON_ENABLED: '1',
-    SKYNET_CRON_TICK_MS: String(DEFAULTS.cronTickMs), STARNET_CRON_TICK_MS: String(DEFAULTS.cronTickMs),
-    SKYNET_CRON_TZ: 'UTC', STARNET_CRON_TZ: 'UTC',                     // the accounting enumerates occurrences in UTC
+    SKYNET_OPENROUTER_BASE: mock.baseUrl, VULTRON_OPENROUTER_BASE: mock.baseUrl,
+    SKYNET_OPENROUTER_KEY: 'sk-or-v1-soak-mock', VULTRON_OPENROUTER_KEY: 'sk-or-v1-soak-mock',
+    SKYNET_DEFAULT_MODEL: MOCK_MODEL, VULTRON_DEFAULT_MODEL: MOCK_MODEL,
+    SKYNET_CRON_ENABLED: '1', VULTRON_CRON_ENABLED: '1',
+    SKYNET_CRON_TICK_MS: String(DEFAULTS.cronTickMs), VULTRON_CRON_TICK_MS: String(DEFAULTS.cronTickMs),
+    SKYNET_CRON_TZ: 'UTC', VULTRON_CRON_TZ: 'UTC',                     // the accounting enumerates occurrences in UTC
     SKYNET_CONSENT_TIMEOUT_MS: '2000',
   };
-  if (opts.maxParallel > 0) { env.SKYNET_CRON_MAX_PARALLEL = String(opts.maxParallel); env.STARNET_CRON_MAX_PARALLEL = String(opts.maxParallel); }
-  if (!opts.aux) { env.SKYNET_AUX_BUDGET = '0'; env.STARNET_AUX_BUDGET = '0'; }   // aux passes off by default: deterministic mock answers feed them garbage
-  const fixture = SidecarFixture.create({ prefix: 'starnet-soak-', timeoutMs: 20000, env });
+  if (opts.maxParallel > 0) { env.SKYNET_CRON_MAX_PARALLEL = String(opts.maxParallel); env.VULTRON_CRON_MAX_PARALLEL = String(opts.maxParallel); }
+  if (!opts.aux) { env.SKYNET_AUX_BUDGET = '0'; env.VULTRON_AUX_BUDGET = '0'; }   // aux passes off by default: deterministic mock answers feed them garbage
+  const fixture = SidecarFixture.create({ prefix: 'vultron-soak-', timeoutMs: 20000, env });
   // A FOUNDED station, as a Commander's first save leaves it. A station-less sidecar holds a pushed roster in memory until that
   // save (sidecar/index.js, agentRosterHeld), so its first restart read as a lost crew and its tool runs as failures.
   require(path.join(repo, 'test', 'helpers', 'station.js')).seedActiveStation(fixture.workspace);

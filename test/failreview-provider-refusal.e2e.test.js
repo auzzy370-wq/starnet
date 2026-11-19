@@ -1,6 +1,6 @@
 /* node test/failreview-provider-refusal.e2e.test.js — a run the PROVIDER refused gets no failure review (xai-403-1023).
 
-   Live (StarNet Cloud proxy logs 2026-10-23): every managed 403 {"provider":"xAI","message":"Provider returned error"}
+   Live (Vultron Cloud proxy logs 2026-10-23): every managed 403 {"provider":"xAI","message":"Provider returned error"}
    came in a pair 1-2 s apart. The second request was the failure review: after a failed task it sends the end of that
    conversation to the SAME provider and model, which refused it again — and since its cooldown arms only on a saved
    lesson, it repeated after every failed run. Against the REAL sidecar + a mock OpenRouter that records every call:
@@ -114,7 +114,7 @@ async function settle(state, stableMs, maxMs) {
   // no aux model (the review rides the run's own model, as in the logs); governor unlimited so only the gate decides
   const fixture = SidecarFixture.create({
     prefix: 'sk-frrefusal-',
-    env: { SKYNET_OPENROUTER_BASE: mock.base, STARNET_AUX_MODEL: '', SKYNET_AUX_MODEL: '', SKYNET_REFLECT_MODEL: '', STARNET_REFLECT_MODEL: '', SKYNET_AUX_BUDGET: '0', SKYNET_QUEST_REFRESH: '0', SKYNET_FULL_ACCESS: '1' }
+    env: { SKYNET_OPENROUTER_BASE: mock.base, VULTRON_AUX_MODEL: '', SKYNET_AUX_MODEL: '', SKYNET_REFLECT_MODEL: '', VULTRON_REFLECT_MODEL: '', SKYNET_AUX_BUDGET: '0', SKYNET_QUEST_REFRESH: '0', SKYNET_FULL_ACCESS: '1' }
   });
   await fixture.start();
   try {

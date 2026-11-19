@@ -124,7 +124,7 @@ function attachBus(B, token) {
             if (ev.name === 'station.command') {
               const p = ev.payload || {};
               const out = (p.verb === 'station.dispatch_start' || p.verb === 'station.dispatch_end' || p.verb === 'station.deliver') ? { ok: true, result: {} } : { ok: false, error: 'unknown station verb: ' + p.verb };
-              fetch(B + '/api/station/ack', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: B },
+              fetch(B + '/api/station/ack', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: B },
                 body: JSON.stringify(Object.assign({ id: p.id }, out)) }).catch(() => {});
             }
           }
@@ -179,17 +179,17 @@ async function until(fn, ms, label) {
   const mock = await startMockProvider();
   // ASK mode: no full-access env, so every write asks the Commander
   const fixture = SidecarFixture.create({ prefix: 'sk-approval-life-', env: {
-    SKYNET_OPENROUTER_BASE: mock.base, STARNET_OPENROUTER_BASE: mock.base,
-    SKYNET_OPENROUTER_KEY: 'sk-or-v1-local-proof', STARNET_OPENROUTER_KEY: 'sk-or-v1-local-proof',
-    SKYNET_DEFAULT_MODEL: 'test/model', STARNET_DEFAULT_MODEL: 'test/model',
-    SKYNET_FULL_ACCESS: '', STARNET_FULL_ACCESS: '',
-    STARNET_CONSENT_TIMEOUT_MS: String(CONSENT_TIMEOUT_MS)
+    SKYNET_OPENROUTER_BASE: mock.base, VULTRON_OPENROUTER_BASE: mock.base,
+    SKYNET_OPENROUTER_KEY: 'sk-or-v1-local-proof', VULTRON_OPENROUTER_KEY: 'sk-or-v1-local-proof',
+    SKYNET_DEFAULT_MODEL: 'test/model', VULTRON_DEFAULT_MODEL: 'test/model',
+    SKYNET_FULL_ACCESS: '', VULTRON_FULL_ACCESS: '',
+    VULTRON_CONSENT_TIMEOUT_MS: String(CONSENT_TIMEOUT_MS)
   } });
   let bus = null;
   try {
     await fixture.start();
     const B = fixture.baseUrl, token = fixture.token;
-    const H = { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: B };
+    const H = { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: B };
     const roster = await fetch(B + '/api/roster', { method: 'POST', headers: H, body: JSON.stringify({ agents: [
       { agentId: 'agent', system: 'LEAD', name: 'NOVA', model: 'test/model' },
       { agentId: 'writer', system: 'You write launch copy.', name: 'VEX', model: 'test/model' },

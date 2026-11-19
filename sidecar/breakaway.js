@@ -1,13 +1,13 @@
 /* sidecar/breakaway.js — open an app FOR the person so that it is never the station's.
 
    On Windows the desktop shell holds the station's whole process tree in a kill-on-close Job Object
-   (src-tauri/src/process_job.rs): a station's children end with the station, even when StarNet is killed hard. That
+   (src-tauri/src/process_job.rs): a station's children end with the station, even when Vultron is killed hard. That
    is right for the station's own work (the station browser, MCP and language servers, shells, dev servers) and WRONG
-   for an app the station opened for the person on their screen — a browser, Resolve, Notepad: closing StarNet must
+   for an app the station opened for the person on their screen — a browser, Resolve, Notepad: closing Vultron must
    never close it, let alone lose its unsaved work. Node cannot ask Windows for that (libuv has no
    CREATE_BREAKAWAY_FROM_JOB), so the shell offers a launcher: its own exe run as
-   `--starnet-breakaway <hex spec>` starts the program outside the job, passes its output through, and exits with
-   its exit code. The shell names itself in STARNET_BREAKAWAY_EXE (both spellings) only on Windows; with no launcher
+   `--vultron-breakaway <hex spec>` starts the program outside the job, passes its output through, and exits with
+   its exit code. The shell names itself in VULTRON_BREAKAWAY_EXE (both spellings) only on Windows; with no launcher
    named (macOS, Linux, `npm start`, a terminal-started station, an older shell) every call here is a pass-through.
 
    THE ALLOWLIST (who calls this, and nobody else): desktop.open (an URL or app on the person's screen), the Resolve
@@ -27,11 +27,11 @@
    } */
 'use strict';
 
-const FLAG = '--starnet-breakaway';
+const FLAG = '--vultron-breakaway';
 
 function launcherExe(env) {
   const e = env || {};
-  return String(e.STARNET_BREAKAWAY_EXE || e.SKYNET_BREAKAWAY_EXE || '').trim();
+  return String(e.VULTRON_BREAKAWAY_EXE || e.SKYNET_BREAKAWAY_EXE || '').trim();
 }
 
 function makeBreakaway(deps) {

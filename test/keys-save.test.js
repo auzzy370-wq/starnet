@@ -203,7 +203,7 @@ const OTHER = 'b7e1c0a9d4f2e6b8a3c5d7f9e1a2b4c6';
   {
     const fs = require('node:fs'), os = require('node:os'), path = require('node:path');
     const { makeTaskBriefStore } = require('../sidecar/taskbrief-store.js');
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-keys-brief-'));
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-keys-brief-'));
     try {
       const store = makeTaskBriefStore({ fs, path, workspaces: dir });
       await store.prepare({ key: 'k', text: 'here is my saleshandy api key ' + PASTE, runId: 'r1' }, 1);

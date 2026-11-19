@@ -62,12 +62,12 @@ const { makeStationControlTools, cardFor, ACTIONS } = require('../sidecar/tools/
   A.ok(/they have not been added/.test(r.content) && !/live 10-14|"Done\.|declined/.test(r.content), 'the lead is given the rule, never an incident quote that plants the words it forbids: ' + r.content);
   // what the Commander already answered rides the HOST's caller stamp to the page, so the kickoff starts from it
   pages.length = 0;
-  await t.controlTool.run({ action: 'group.add', args: { agents: ['NOVA'], caller: { brief: 'forged' } } }, Object.assign({ briefAnswers: 'What are we launching? → StarNet 0.13.5' }, ctx));
-  A.eq(JSON.stringify(pages[0].args.caller), JSON.stringify({ streamId: 'ws_chat', runId: 'run_1', brief: 'What are we launching? → StarNet 0.13.5' }), 'the brief answers of the run ride the host stamp; a model-supplied one is dropped');
+  await t.controlTool.run({ action: 'group.add', args: { agents: ['NOVA'], caller: { brief: 'forged' } } }, Object.assign({ briefAnswers: 'What are we launching? → Vultron 0.13.5' }, ctx));
+  A.eq(JSON.stringify(pages[0].args.caller), JSON.stringify({ streamId: 'ws_chat', runId: 'run_1', brief: 'What are we launching? → Vultron 0.13.5' }), 'the brief answers of the run ride the host stamp; a model-supplied one is dropped');
   // the host composes them from the run's own Task Brief: the Commander's answers, in their words, one bounded line
   const { answeredSoFar } = require('../sidecar/taskbrief-context.js');
-  A.eq(answeredSoFar({ questions: [{ text: 'What is being launched?', answer: 'StarNet 0.13.5' }, { text: 'Tone?', answer: '' }, { text: 'Who is your audience?', answer: 'use your judgment' }] }),
-    'What is being launched? → StarNet 0.13.5; Who is your audience? → use your judgment', 'answered questions only, with the answers as given');
+  A.eq(answeredSoFar({ questions: [{ text: 'What is being launched?', answer: 'Vultron 0.13.5' }, { text: 'Tone?', answer: '' }, { text: 'Who is your audience?', answer: 'use your judgment' }] }),
+    'What is being launched? → Vultron 0.13.5; Who is your audience? → use your judgment', 'answered questions only, with the answers as given');
   A.eq(answeredSoFar({ questions: [] }) + answeredSoFar(null), '', 'nothing answered, nothing carried');
   A.ok(answeredSoFar({ questions: Array.from({ length: 9 }, (_, i) => ({ text: 'Q' + i + ' ' + 'x'.repeat(150), answer: 'y'.repeat(300) })) }).length <= 600, 'bounded');
   A.ok(/if \(\/\^station\[\._\]control\$\/\.test\(String\(c\.name \|\| ''\)\) && taskBriefState && taskBriefState\.brief\) \{\s*try \{\s*const answers = require\('\.\/taskbrief-context\.js'\)\.answeredSoFar\(taskBriefState\.brief\);\s*if \(answers\) dctx = Object\.assign\(\{\}, dctx, \{ briefAnswers: answers \}\);/.test(host),
@@ -171,14 +171,14 @@ const { makeStationControlTools, cardFor, ACTIONS } = require('../sidecar/tools/
   {
     const general = chat({ id: 'general-home', title: null, history: [{ role: 'user', content: 'bring two crew in to help me write a launch post', ts: 3 }] });
     const b = boot({ chats: [general], busy: { 'general-home': 'run_b' }, generalId: 'general-home' });
-    await b.GC.addAgents(b.ws.get('general-home'), ['nova'], { streamId: 'general-home', runId: 'run_b', brief: 'What are we launching? → StarNet 0.13.5; Who is it for? → developers' });
-    A.eq(b.ws.get('general-home').pendingJoin.brief, 'What are we launching? → StarNet 0.13.5; Who is it for? → developers', 'the answers are saved with the join');
+    await b.GC.addAgents(b.ws.get('general-home'), ['nova'], { streamId: 'general-home', runId: 'run_b', brief: 'What are we launching? → Vultron 0.13.5; Who is it for? → developers' });
+    A.eq(b.ws.get('general-home').pendingJoin.brief, 'What are we launching? → Vultron 0.13.5; Who is it for? → developers', 'the answers are saved with the join');
     await b.GC.addAgents(b.ws.get('general-home'), ['sam'], { streamId: 'general-home', runId: 'run_b' });
-    A.ok(/StarNet 0\.13\.5/.test(b.ws.get('general-home').pendingJoin.brief || ''), 'a second seat in the same reply keeps them');
+    A.ok(/Vultron 0\.13\.5/.test(b.ws.get('general-home').pendingJoin.brief || ''), 'a second seat in the same reply keeps them');
     b.busy.delete('general-home'); b.ws.get('general-home').lastRunOk = true;
     await b.GC.drainAfterRun('general-home', 'run_b', { stopped: false }); await settle();
     const create = b.sent.find(s => s.body && s.body.op === 'create');
-    A.ok(create && / The Commander already answered: What are we launching\? → StarNet 0\.13\.5; Who is it for\? → developers\. Never ask those again\.$/.test(create.body.kickoff), 'the lead starts from them: ' + (create && create.body.kickoff));
+    A.ok(create && / The Commander already answered: What are we launching\? → Vultron 0\.13\.5; Who is it for\? → developers\. Never ask those again\.$/.test(create.body.kickoff), 'the lead starts from them: ' + (create && create.body.kickoff));
     A.ok(create.body.kickoff.length <= 1000, 'inside the kickoff cap (group-sessions.js text(b.kickoff, 1000))');
   }
   // a stopped reply drops the join and SAYS so in the chat (saved), never a silent no-op

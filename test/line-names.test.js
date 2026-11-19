@@ -174,8 +174,8 @@ function twoUnnamed() {
   const two = SB.planEdit(st.serialize(), { refit: [{ op: 'send', from: a.outbox, to: b.intake }] }, env);
   A.ok(two.ok && !/cannot open the files|only the finished text rides on/.test(two.plan.summary),
     'a different crew next: the refit card no longer makes the retired file-access claim — ' + (two.ok ? two.plan.summary : two.error));
-  const SV = Object.assign({}, env, { services: { projects: [{ name: 'starnet', root: 'C:/code/starnet' }] } });
-  const both = SB.planEdit(st.serialize(), { refit: [{ op: 'send', from: a.outbox, to: b.intake }, { op: 'folder', prop: a.intake, project: 'starnet' }] }, SV);
+  const SV = Object.assign({}, env, { services: { projects: [{ name: 'vultron', root: 'C:/code/vultron' }] } });
+  const both = SB.planEdit(st.serialize(), { refit: [{ op: 'send', from: a.outbox, to: b.intake }, { op: 'folder', prop: a.intake, project: 'vultron' }] }, SV);
   A.ok(both.ok && !/no project folder/.test(both.plan.summary), 'a folder op in the same refit takes the warning away — ' + (both.ok ? 'ok' : both.error));
   st.setSendTo(a.outbox, b.intake);
   const again = SB.planEdit(st.serialize(), { refit: [{ op: 'label', prop: b.intake, text: 'Next' }] }, env);

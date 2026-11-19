@@ -1,6 +1,6 @@
 /* node test/subscription-stacking.e2e.test.js — Claude Code subscription stacking, end to end.
 
-   Boots the real sidecar with STARNET_CLAUDE_BIN pointing at a FAKE `claude` (an npm-style .cmd shim beside
+   Boots the real sidecar with VULTRON_CLAUDE_BIN pointing at a FAKE `claude` (an npm-style .cmd shim beside
    node_modules/@anthropic-ai/claude-code/cli.js, which claude-cli.js runs as `node cli.js`). The fake answers
    by CLI identity: the default sign-in (no CLAUDE_CONFIG_DIR) is out of allowance — the CLI's real
    `error:"rate_limit"` shape — and every extra account answers normally.
@@ -85,13 +85,13 @@ function boot(port, env, attemptsLeft) {
 }
 
 (async () => {
-  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-stacking-'));
-  const fakeRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-fakeclaude-'));
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-stacking-'));
+  const fakeRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-fakeclaude-'));
   const logFile = path.join(fakeRoot, 'calls.log');
   fs.writeFileSync(logFile, '');
   const { child, port } = await boot(await allocatePort(), {
     SKYNET_WORKSPACES: workspace,
-    STARNET_CLAUDE_BIN: makeFakeClaude(fakeRoot),
+    VULTRON_CLAUDE_BIN: makeFakeClaude(fakeRoot),
     FAKE_CLAUDE_LOG: logFile,
     SKYNET_QUEST_REFRESH: '0', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0'
   }, 20);
@@ -99,7 +99,7 @@ function boot(port, env, attemptsLeft) {
   const calls = () => fs.readFileSync(logFile, 'utf8').split('\n').filter(Boolean);
   try {
     const token = await bootToken(B, B);
-    const H = { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: B };
+    const H = { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: B };
     const post = async (p, body) => (await fetch(B + p, { method: 'POST', headers: H, body: JSON.stringify(body || {}) })).json();
     const get = async (p) => (await fetch(B + p, { headers: H })).json();
 

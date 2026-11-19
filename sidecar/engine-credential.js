@@ -49,7 +49,7 @@
 'use strict';
 
 const WHERE = 'SETTINGS → AI & MODELS';
-const ENV_HOME = 'the environment that starts StarNet';
+const ENV_HOME = 'the environment that starts Vultron';
 const UNATTENDED_REMEDY = 'connect or re-save a provider key under ' + WHERE + ' (or set its API key variable in ' + ENV_HOME + ') and pick a model';
 const FILE_VERSION = 1;
 const MAX_KEY = 4096, MAX_POOL = 8, MAX_URL = 2048;
@@ -179,7 +179,7 @@ function makeEngineKeys(deps) {
 
 /* credentialError({ id, label, kind, env, baseUrlEnv, what, keylessUrl, gone, unreadable, tool }) — why this unattended run cannot start, and the two
    real ways out: the page (which now hands the station its copy on save) or the operator's environment. `kind` is the
-   provider's credential shape: key | baseUrl | codex | oauth | starnet | other — or 'removed' (credential-store lane S3,
+   provider's credential shape: key | baseUrl | codex | oauth | vultron | other — or 'removed' (credential-store lane S3,
    decision 7): a run in flight whose key was removed or replaced on this station stops before its next model call, and
    says so; running it again uses the key the station holds now. With `tool` (review r1), the key is a tool's (web_search's
    paid rung, the STUDIO image route): that one call is refused and the run goes on — or 'unpaired' (S7, decision 5): an environment key
@@ -201,7 +201,7 @@ function credentialError(o) {
   switch (o.kind) {
     case 'codex': return 'ChatGPT is not signed in on this station, so ' + what + ' can\'t run — sign in under ' + WHERE;
     case 'oauth': return label + ' is not signed in on this station, so ' + what + ' can\'t run — sign in under ' + WHERE;
-    case 'starnet': return 'this station is not linked to a StarNet account, so ' + what + ' can\'t run on credits — link it under ' + WHERE + ' → STARNET MANAGED';
+    case 'vultron': return 'this station is not linked to a Vultron account, so ' + what + ' can\'t run on credits — link it under ' + WHERE + ' → VULTRON MANAGED';
     case 'baseUrl': return 'no ' + label + ' base URL is saved on this station for ' + what + ' — set it under ' + WHERE +
       (o.baseUrlEnv ? ', or set ' + o.baseUrlEnv + ' in ' + ENV_HOME : '');
     case 'key': return 'no ' + label + ' API key is saved on this station for ' + what + ' — connect or re-save it under ' + WHERE +

@@ -2,13 +2,13 @@
 
    A community map is a station LAYOUT a player shared from build mode (frontend/app/buildshare.js, the same cleaner on
    export and import) plus a picture of that station. Players share on their linked station; a person approves each
-   one on account.starnetos.com; the publisher's PC re-cleans the build, signs the gallery and deploys it with the
+   one on account.vultron.vercel.app; the publisher's PC re-cleans the build, signs the gallery and deploys it with the
    website (scripts/pull-map-submissions.mjs → scripts/build-map-catalog.mjs). Stations and the website read:
 
-     https://starnetos.com/.well-known/starnet-maps.json        the index (this format), signed like the Skill Market
-     https://starnetos.com/.well-known/starnet-maps.json.sig    (sidecar/skills/market-signing.js, the same keys)
-     https://starnetos.com/maps/<slug>/<version>/build.starnet-build.json   immutable, pinned by sha256 in the index
-     https://starnetos.com/maps/<slug>/<version>/still.png                  immutable, pinned by sha256 in the index
+     https://vultron.vercel.app/.well-known/vultron-maps.json        the index (this format), signed like the Skill Market
+     https://vultron.vercel.app/.well-known/vultron-maps.json.sig    (sidecar/skills/market-signing.js, the same keys)
+     https://vultron.vercel.app/maps/<slug>/<version>/build.vultron-build.json   immutable, pinned by sha256 in the index
+     https://vultron.vercel.app/maps/<slug>/<version>/still.png                  immutable, pinned by sha256 in the index
 
    A map is only ever DATA: a station builds it through BuildShare.readBuild, which strips anything that is not layout,
    then through the same confirm, backup and undo a preset gets. There is nothing to install and nothing to revoke —
@@ -19,10 +19,10 @@
 
 const crypto = require('node:crypto');
 
-const FORMAT = 'starnet-maps/v1';
+const FORMAT = 'vultron-maps/v1';
 const LICENSE = 'CC-BY-4.0';
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const BUILD_FILE = 'build.starnet-build.json';
+const BUILD_FILE = 'build.vultron-build.json';
 const STILL_FILE = 'still.png';
 const MAX_MAPS = 2000;
 const MAX_BUILD_BYTES = 2 * 1024 * 1024;
@@ -53,7 +53,7 @@ function pngSize(bytes) {
   return width > 0 && height > 0 ? { width, height } : null;
 }
 
-/* cloudDigest(buildText, png) -> the digest starnet-cloud src/mapsubs.js mapDigest records at upload, so the PC can
+/* cloudDigest(buildText, png) -> the digest vultron-cloud src/mapsubs.js mapDigest records at upload, so the PC can
    prove it is building exactly the map the reviewer approved */
 function cloudDigest(buildText, png) {
   const head = Buffer.from('build\u0000' + sha256hex(Buffer.from(str(buildText), 'utf8')) + '\nstill\u0000');

@@ -8,7 +8,7 @@ const { friendlyError, actionButton, KINDS, CAP_INFO } = require('../frontend/ap
 /* ---- THE SIDECAR'S OUTBOUND CALL FAILED => name the PROVIDER, not the local service ----
    From a real 0.7.0 user report (2026-07-29): their diagnostics showed a healthy local engine serving the report
    itself, with five `fetch failed` entries — the sidecar could not reach chatgpt.com/api.openai.com — while the
-   app told them "Can't reach StarNet's local service, restart it". They lost a day to it.
+   app told them "Can't reach Vultron's local service, restart it". They lost a day to it.
    The discriminator is word order and it is decisive: NODE/undici says "fetch failed", a BROWSER says "Failed to
    fetch". So `fetch failed` can only have been produced inside the sidecar and forwarded, i.e. the broken hop is
    sidecar -> provider. These assertions lock BOTH directions, because the whole defect was one string being
@@ -30,7 +30,7 @@ for (const raw of [
   A.ok(/running fine/i.test(v.userMessage), raw + ' reassures the user their install is healthy');
 }
 // …and the browser-side wordings must NOT be captured by the upstream bucket (they really are local transport).
-for (const raw of ['Failed to fetch', 'cannot reach the STARNET sidecar', 'terminated', 'Load failed']) {
+for (const raw of ['Failed to fetch', 'cannot reach the VULTRON sidecar', 'terminated', 'Load failed']) {
   A.eq(friendlyError(new Error(raw)).kind, 'network', raw + ' stays a LOCAL transport verdict');
 }
 
@@ -44,7 +44,7 @@ for (const raw of ['Failed to fetch', 'cannot reach the STARNET sidecar', 'termi
   A.eq(kindFromRaw('fetch failed', null), 'provider_unreachable', 'BROWSER ladder: "fetch failed" -> upstream');
   A.eq(kindFromRaw('getaddrinfo ENOTFOUND api.openai.com', null), 'provider_unreachable', 'BROWSER ladder: node DNS text -> upstream');
   A.eq(kindFromRaw('failed to fetch', null), 'network', 'BROWSER ladder: the browser word order stays LOCAL');
-  A.eq(kindFromRaw('cannot reach the starnet sidecar', null), 'network', 'BROWSER ladder: an explicit sidecar-unreachable stays LOCAL');
+  A.eq(kindFromRaw('cannot reach the vultron sidecar', null), 'network', 'BROWSER ladder: an explicit sidecar-unreachable stays LOCAL');
   // precedence guard: isTransportLoss also matches `fetch failed`, so whichever test runs first owns the verdict.
   const { isTransportLoss, isUpstreamFetchFailure } = require('../frontend/app/friendlyerror.js')._internals;
   A.ok(isTransportLoss('fetch failed'), 'isTransportLoss still matches "fetch failed" (so ORDER is load-bearing)');
@@ -108,10 +108,10 @@ for (const raw of [
 }
 // ---- the service REFUSED the station's link: relink, never top up ----
 {
-  const v = friendlyError("Managed credits are unavailable — your StarNet account refused this station's link (it was unlinked, or belongs to another account). Relink it under SETTINGS → AI & MODELS → STARNET MANAGED (or use your own provider key).");
+  const v = friendlyError("Managed credits are unavailable — your Vultron account refused this station's link (it was unlinked, or belongs to another account). Relink it under SETTINGS → AI & MODELS → VULTRON MANAGED (or use your own provider key).");
   A.eq(v.kind, 'managed_credit_link', 'a refused link is its own kind');
   A.ok(/relink/i.test(v.userMessage) && !/out of|top up/i.test(v.userMessage), 'it points at relinking, never at a top-up: ' + v.userMessage);
-  A.eq(v.action, 'store', 'the door is AI & MODELS, where the STARNET card relinks');
+  A.eq(v.action, 'store', 'the door is AI & MODELS, where the VULTRON card relinks');
   A.eq(v.retryable, false, 'a refused link does not fix itself on retry');
 }
 
@@ -188,7 +188,7 @@ for (const raw of [
   A.ok(!/undefined/.test(v.userMessage), 'the fallback copy never leaks "undefined"');
 }
 
-// ---- EL-11 FIX 2: sidecar 403 (stale X-StarNet-Token after crash+respawn) => the RELOAD door, never the key door ----
+// ---- EL-11 FIX 2: sidecar 403 (stale X-Vultron-Token after crash+respawn) => the RELOAD door, never the key door ----
 {
   // the exact shape Harness.chat throws after the body-preserving fix (body: "forbidden token")
   const v = friendlyError(new Error('sidecar HTTP 403 — forbidden token'));
@@ -214,7 +214,7 @@ for (const raw of [
 // The sidecar withholds the key when it cannot prove this browser runs as its own OS user; every keyed call then 403s
 // exactly like a stale page, but a reload re-runs the same check — "the station restarted — reload" is false and a dead door.
 {
-  const NOTICE = 'StarNet could not confirm this browser runs as your own user account (the ownership check timed out or failed), so it won’t take commands from this page. TEST NOTICE';
+  const NOTICE = 'Vultron could not confirm this browser runs as your own user account (the ownership check timed out or failed), so it won’t take commands from this page. TEST NOTICE';
   const withheldHarness = { tokenWithheld: () => 'lookup-failed', tokenWithheldNotice: () => NOTICE };
   globalThis.Harness = withheldHarness;
   try {
@@ -231,7 +231,7 @@ for (const raw of [
     // a Harness without the notice still never says "restarted"
     globalThis.Harness = { tokenWithheld: () => 'other-user' };
     const bare = friendlyError(new Error('sidecar HTTP 403'));
-    A.ok(/STARNET_TRUST_LOCAL_PEERS=1/.test(bare.userMessage) && !/restart(ed)? —|reload/i.test(bare.userMessage), 'the fallback withheld copy names the escape hatch: ' + bare.userMessage);
+    A.ok(/VULTRON_TRUST_LOCAL_PEERS=1/.test(bare.userMessage) && !/restart(ed)? —|reload/i.test(bare.userMessage), 'the fallback withheld copy names the escape hatch: ' + bare.userMessage);
     // a page that DOES hold a key keeps the stale-session reload door
     globalThis.Harness = { tokenWithheld: () => '' };
     const stale = friendlyError(new Error('sidecar HTTP 403 — forbidden token'));
@@ -351,10 +351,10 @@ for (const raw of [
   A.eq(kindOf('sidecar HTTP 429 — rate limited, slow down').kind, 'rate_limit', 'BROWSER: a bare 429 is unchanged');
   A.eq(kindOf('sidecar HTTP 429 — openai: insufficient_quota').kind, 'billing',
     'BROWSER: an out-of-money account is billing, not a busy provider');
-  // StarNet's OWN spend-ledger errors name 'the spending limits you set'; they are not a provider out of credit
+  // Vultron's OWN spend-ledger errors name 'the spending limits you set'; they are not a provider out of credit
   // (sidecar/loop.js stopForSpend, one line per cause: an interrupted run, a failed save, an unreadable record)
   for (const own of ['An earlier run was interrupted before its spend was recorded, so the spending limits you set can’t be checked. Settle it in SETTINGS › SPENDING LIMITS.',
-    'Spend history could not be saved to disk, so the spending limits you set can’t be checked. Restart StarNet to recover it.',
+    'Spend history could not be saved to disk, so the spending limits you set can’t be checked. Restart Vultron to recover it.',
     'Spend history could not be read, so the spending limits you set can’t be checked. See SETTINGS › SPENDING LIMITS.']) {
     A.ok(kindOf(own).kind !== 'billing', 'BROWSER: a local spend-ledger error is not told to top up the provider: ' + own.slice(0, 40));
     // its own kind on BOTH paths: a truthful headline, the SPENDING LIMITS door, and no doomed RETRY chip
@@ -387,7 +387,7 @@ for (const raw of [
 /* ---- PROVIDER 5xx/OVERLOAD => name the PROVIDER's servers, never the local service (2026-07-30) ----
    The report wave behind this: users seeing "servers are unavailable out of the blue" during industry-wide
    provider load spikes, because every provider 500/529/"overloaded" landed on the server_error copy that says
-   "The LOCAL StarNet service hit an error". A message naming a component owes proof it is at fault. The
+   "The LOCAL Vultron service hit an error". A message naming a component owes proof it is at fault. The
    discriminator is EVIDENCE in the raw: provider phrasing or a provider name → provider; a "sidecar HTTP 5xx"
    with neither → the one case where our own route demonstrably answered, and only THAT keeps the local copy. */
 {
@@ -403,7 +403,7 @@ for (const raw of [
     A.eq(v.kind, 'provider_server_error', raw + ' is the PROVIDER\'s server fault (delegate path)');
     A.eq(kindFromRaw(raw.toLowerCase(), null), 'provider_server_error', raw + ' — BROWSER ladder agrees');
     A.eq(v.retryable, true, raw + ' is retryable (load spikes pass)');
-    A.ok(!/local .*service|starnet service/i.test(v.userMessage) || /StarNet itself is fine/i.test(v.userMessage),
+    A.ok(!/local .*service|vultron service/i.test(v.userMessage) || /Vultron itself is fine/i.test(v.userMessage),
       raw + ' must NEVER blame the local service');
     A.ok(/provider/i.test(v.userMessage), raw + ' names the provider\'s servers');
     A.ok(/fine/i.test(v.userMessage), raw + ' reassures the user their install is healthy');
@@ -416,7 +416,7 @@ for (const raw of [
     'BROWSER: a bare sidecar 500 keeps the local-service copy');
   A.eq(friendlyError(Object.assign(new Error('sidecar HTTP 500 — internal error'), { status: 500 })).kind,
     'server_error', 'DELEGATE: a bare sidecar 500 keeps the local-service copy');
-  A.ok(/local starnet service/i.test(KINDS.server_error.msg), 'the local copy still exists for the proven-local case');
+  A.ok(/local vultron service/i.test(KINDS.server_error.msg), 'the local copy still exists for the proven-local case');
   // the two ladders must agree on the flagship shape, or the halves drift again
   A.eq(kindFromRaw('anthropic http 529 - overloaded', null),
     friendlyError(new Error('Anthropic http 529 - Overloaded')).kind,
@@ -482,19 +482,19 @@ for (const raw of [
     'the refresh path\'s allowlist sentence routes there too');
 }
 
-// ---- spend_unknown: StarNet's own spend ledger refused the run (failureCode spend_history_unavailable) ----
+// ---- spend_unknown: Vultron's own spend ledger refused the run (failureCode spend_history_unavailable) ----
 // A customer saw "Something went wrong on that turn — try again." + a RETRY that hit the same refusal every time.
 {
   const interrupted = friendlyError('An earlier run was interrupted before its spend was recorded, so the spending limits you set can’t be checked. Settle it in SETTINGS › SPENDING LIMITS.');
   A.eq(interrupted.kind, 'spend_unknown', 'the interrupted-run refusal is spend_unknown');
   A.ok(/earlier call has an unsettled charge/.test(interrupted.userMessage) && /Settle that run in SETTINGS › SPENDING LIMITS/.test(interrupted.userMessage),
     'the unsettled call names the SETTLE fix (got: ' + interrupted.userMessage + ')');
-  const unsaved = friendlyError('Spend history could not be saved to disk, so the spending limits you set can’t be checked. Restart StarNet to recover it.');
-  A.ok(/Restart StarNet/.test(unsaved.userMessage) && !/Settle/.test(unsaved.userMessage), 'a failed save says restart, never settle (got: ' + unsaved.userMessage + ')');
+  const unsaved = friendlyError('Spend history could not be saved to disk, so the spending limits you set can’t be checked. Restart Vultron to recover it.');
+  A.ok(/Restart Vultron/.test(unsaved.userMessage) && !/Settle/.test(unsaved.userMessage), 'a failed save says restart, never settle (got: ' + unsaved.userMessage + ')');
   // d688ea20: the loop's damaged-line cause (sidecar/loop.js) is spend_unknown, names the damaged line and keeps the SETTLE door
   const damagedLine = friendlyError('A line of the spend record is damaged, so what it recorded is unknown and the spending limits you set can’t be checked. Settle it in SETTINGS › SPENDING LIMITS.');
   A.eq(damagedLine.kind, 'spend_unknown', 'the damaged-line refusal is spend_unknown');
-  A.ok(/line of StarNet's spend record is damaged/.test(damagedLine.userMessage) && /Settle it in SETTINGS › SPENDING LIMITS/.test(damagedLine.userMessage) && !/earlier run/.test(damagedLine.userMessage),
+  A.ok(/line of Vultron's spend record is damaged/.test(damagedLine.userMessage) && /Settle it in SETTINGS › SPENDING LIMITS/.test(damagedLine.userMessage) && !/earlier run/.test(damagedLine.userMessage),
     'the damaged cause is never called an interrupted run (got: ' + damagedLine.userMessage + ')');
   const unread = friendlyError('Spend history could not be read, so the spending limits you set can’t be checked. See SETTINGS › SPENDING LIMITS.');
   A.eq(unread.userMessage, KINDS.spend_unknown.msg, 'an unreadable record gets the cause-neutral headline');
@@ -504,10 +504,10 @@ for (const raw of [
   A.eq([counted.kind, counted.action, counted.retryable], ['spend_unknown', 'budget', false], 'still spend_unknown, with the SPENDING LIMITS door');
   A.eq(counted.userMessage, "Your spending limits can't be checked — an earlier call has an unsettled charge, so this run was stopped. Press COUNT AS $2.00 or enter its charge in SETTINGS › SPENDING LIMITS, or set PER DAY to 0.",
     'the headline keeps the one-click exit (got: ' + counted.userMessage + ')');
-  const unreadExit = friendlyError('Spend history could not be read, so the spending limits you set can’t be checked. Restart StarNet; if it stays, fix the spend files in your workspaces folder, or set GLOBAL to 0 in SETTINGS › SPENDING LIMITS.');
-  A.ok(/^Your spending limits can't be checked — StarNet couldn't read its spend history, so this run was stopped\. Restart StarNet; .*set GLOBAL to 0 in SETTINGS › SPENDING LIMITS\.$/.test(unreadExit.userMessage), 'an unreadable record names its exits (got: ' + unreadExit.userMessage + ')');
-  const unsavedExit = friendlyError('Spend history could not be saved to disk, so the spending limits you set can’t be checked. Restart StarNet: it replays the spend it could not save.');
-  A.ok(/Restart StarNet/.test(unsavedExit.userMessage) && !/COUNT AS|Settle/.test(unsavedExit.userMessage), 'a failed save still says restart (got: ' + unsavedExit.userMessage + ')');
+  const unreadExit = friendlyError('Spend history could not be read, so the spending limits you set can’t be checked. Restart Vultron; if it stays, fix the spend files in your workspaces folder, or set GLOBAL to 0 in SETTINGS › SPENDING LIMITS.');
+  A.ok(/^Your spending limits can't be checked — Vultron couldn't read its spend history, so this run was stopped\. Restart Vultron; .*set GLOBAL to 0 in SETTINGS › SPENDING LIMITS\.$/.test(unreadExit.userMessage), 'an unreadable record names its exits (got: ' + unreadExit.userMessage + ')');
+  const unsavedExit = friendlyError('Spend history could not be saved to disk, so the spending limits you set can’t be checked. Restart Vultron: it replays the spend it could not save.');
+  A.ok(/Restart Vultron/.test(unsavedExit.userMessage) && !/COUNT AS|Settle/.test(unsavedExit.userMessage), 'a failed save still says restart (got: ' + unsavedExit.userMessage + ')');
   A.ok(/spend history is unknown/.test(KINDS.spend_unknown.msg), 'the fallback headline says spend history is unknown');
   A.eq(friendlyError(new Error('sidecar HTTP 409 — spend history is unavailable, so a pool cannot be resumed — see SETTINGS › SPENDING LIMITS')).kind, 'spend_unknown',
     'the resume refusal reads the same way');
@@ -522,7 +522,7 @@ for (const raw of [
   A.eq(JSON.stringify(opened), JSON.stringify([['settings', 'budget']]), 'the door opens SETTINGS › SPENDING LIMITS (section budget)');
   // not swallowed: provider billing and the generic unknown stay what they were
   A.eq(friendlyError(Object.assign(new Error('openai http 429 - insufficient_quota'), { status: 429 })).kind, 'billing', 'provider billing is untouched');
-  A.eq(friendlyError('the spending limit on your OpenAI account was reached').kind !== 'spend_unknown', true, 'a provider spending-limit sentence is not StarNet\'s ledger');
+  A.eq(friendlyError('the spending limit on your OpenAI account was reached').kind !== 'spend_unknown', true, 'a provider spending-limit sentence is not Vultron\'s ledger');
 }
 
 // GH#111: the OLLAMA card pointed at LM Studio. The adapter's sentence names the server and the card that speaks to it;
@@ -567,14 +567,14 @@ const wrongServerCase = (async () => {
     A.eq(verdict.kind, 'local_model_memory', 'local allocation failure has its own actionable UI kind');
     A.eq(verdict.retryable, false, 'no blind retry button on an exhausted local runtime');
     A.ok(/Close other local models/.test(verdict.userMessage) && /smaller model/.test(verdict.userMessage), 'the memory remedy names actual choices');
-    A.ok(/restart StarNet after freeing memory/.test(verdict.userMessage), 'restart guidance is conditional on a blank/disconnected station and freed memory');
+    A.ok(/restart Vultron after freeing memory/.test(verdict.userMessage), 'restart guidance is conditional on a blank/disconnected station and freed memory');
     A.eq(verdict.raw, raw, 'raw runtime allocation detail stays available for diagnostics');
   }
   // Review providers-tools-05: a remote model server's allocation failure keeps the memory kind, and its words.
   const remoteRaw = 'The model server at ollama.lan ran out of memory. Free memory on that machine, or choose a smaller model from the model picker in COMMS before trying again. [http 500 - failed to allocate CUDA0 buffer]';
   const remote = friendlyError(Object.assign(new Error(remoteRaw), { status: 500, localModelMemory: true }));
   A.eq(remote.kind, 'local_model_memory', 'a remote allocation failure has the memory kind');
-  A.ok(/^The model server at ollama\.lan ran out of memory\./.test(remote.userMessage) && !/Close other local models|restart StarNet/.test(remote.userMessage), 'and says which machine, never local advice: ' + remote.userMessage);
+  A.ok(/^The model server at ollama\.lan ran out of memory\./.test(remote.userMessage) && !/Close other local models|restart Vultron/.test(remote.userMessage), 'and says which machine, never local advice: ' + remote.userMessage);
   A.eq(require('../frontend/app/friendlyerror.js')._internals.kindFromRaw(remoteRaw, 500), 'local_model_memory', 'the browser fallback reads the remote prefix too');
   A.eq(require('../frontend/app/friendlyerror.js')._internals.kindFromRaw(raw, 500), 'local_model_memory',
     'browser fallback does not mistake the runtime termination for a network loss or generic 500');
@@ -629,7 +629,7 @@ const wrongServerCase = (async () => {
   A.eq(JSON.stringify(calls[1]), JSON.stringify(['grok', true]), 'SIGN IN TO GROK lands on the GROK card and presses its sign-in');
   A.eq(JSON.stringify(calls[2]), JSON.stringify(['codex', true]), 'RECONNECT CHATGPT lands on the CHATGPT card and presses its sign-in');
   A.eq(JSON.stringify(calls[3]), JSON.stringify(['term:settings', 'providers']), 'an unnamed provider opens AI & MODELS without a card focus');
-  A.eq(JSON.stringify(calls[4]), JSON.stringify(['starnet', false]), 'managed credits land on the STARNET MANAGED card');
+  A.eq(JSON.stringify(calls[4]), JSON.stringify(['vultron', false]), 'managed credits land on the VULTRON MANAGED card');
   A.eq(actionButton(friendlyError(new Error('ChatGPT sign-in needed: refresh_token_reused — sign in with ChatGPT again'))).label, '⏼ RECONNECT CHATGPT',
     'a dead ChatGPT refresh reads RECONNECT CHATGPT');
 

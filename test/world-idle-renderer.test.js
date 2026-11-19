@@ -96,9 +96,9 @@ function director(flagOn) {
 }
 {
   // the flag: off unless asked; the query wins over the stored value; setIdleRenderer persists it and wakes the floor
-  A.ok(/idleRenderer = q != null \? \(q === '1' \|\| q === 'on'\) : \(typeof localStorage !== 'undefined' && localStorage\.getItem\('starnet\.idleRenderer'\) === '1'\);/.test(world), 'world.js: the flag is off unless ?idleRenderer=1 or the stored opt-in');
+  A.ok(/idleRenderer = q != null \? \(q === '1' \|\| q === 'on'\) : \(typeof localStorage !== 'undefined' && localStorage\.getItem\('vultron\.idleRenderer'\) === '1'\);/.test(world), 'world.js: the flag is off unless ?idleRenderer=1 or the stored opt-in');
   const set = sliceW('  function setIdleRenderer(');
-  A.ok(/localStorage\.setItem\('starnet\.idleRenderer'/.test(set) && /motionWake\(\);/.test(set), 'setIdleRenderer persists the choice and wakes the floor to judge itself');
+  A.ok(/localStorage\.setItem\('vultron\.idleRenderer'/.test(set) && /motionWake\(\);/.test(set), 'setIdleRenderer persists the choice and wakes the floor to judge itself');
   A.ok(/setIdleRenderer, idleRendererOn: \(\) => idleRenderer,/.test(world), 'World exposes the switch for the A/B');
   // never lower the visible frame rate: the paces are the approved ones and the idle code books no cap
   A.ok(/const PACE_VISIBLE_MS = 1000 \/ 60, PACE_MOTION_MS = 1000 \/ 144/.test(world), 'the visible pace stays 60 and the motion pace 144');
@@ -330,7 +330,7 @@ function loadTextures(search, stored, sizeOf) {   // sizeOf(url) -> [w, h]: the 
     created.push(cv); return cv;
   };
   class Image { constructor() { this.width = 8; this.height = 8; } set src(v) { this._src = v; srcs.push(v); if (sizeOf) [this.width, this.height] = sizeOf(v); Promise.resolve().then(() => this.onload && this.onload()); } get src() { return this._src; } }
-  const store = new Map(stored ? [['starnet.idleRenderer', stored]] : []);
+  const store = new Map(stored ? [['vultron.idleRenderer', stored]] : []);
   const ctx = vm.createContext({
     console, Image, Promise, Map, Set, Object, Array, Math, Number, String, JSON, Proxy, Uint8ClampedArray, URLSearchParams,
     location: { search }, localStorage: { getItem: k => store.has(k) ? store.get(k) : null, setItem: (k, v) => store.set(k, v) },

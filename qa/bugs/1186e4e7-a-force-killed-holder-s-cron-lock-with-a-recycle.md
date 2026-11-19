@@ -15,7 +15,7 @@ origin: audit
 
 ## Symptom
 
-After StarNet is force-killed while it holds the scheduler lock (any routine save or tick), and Windows hands the dead process's PID to some other program, the next launch's routines do not run for up to 8 minutes; the log claims "cron.lock held by another live process" although the workspace-owner check already proved no other StarNet runs.
+After Vultron is force-killed while it holds the scheduler lock (any routine save or tick), and Windows hands the dead process's PID to some other program, the next launch's routines do not run for up to 8 minutes; the log claims "cron.lock held by another live process" although the workspace-owner check already proved no other Vultron runs.
 
 ## Repro
 

@@ -3,7 +3,7 @@
 
    WHY THIS EXISTS. The gates proved provider behaviour against ~180 PERMISSIVE mocks: a fake upstream that answered
    anything it was sent. Every request shape a real server refuses — a system message after index 0 (#102, a Jinja 500
-   from Ollama), a tool result whose call is not in the transcript (E52, OpenRouter), StarNet bookkeeping keys on a
+   from Ollama), a tool result whose call is not in the transcript (E52, OpenRouter), Vultron bookkeeping keys on a
    message (E10, Mistral 422 extra_forbidden), a request ending on an assistant turn (Opus 4.6+ refuses prefill), a
    thinking block replayed against a different prefix (E17, gh#73) — passed every gate and reached users. These
    simulators REFUSE what the real servers refuse, in each wire's own error shape, and answer what they accept in each

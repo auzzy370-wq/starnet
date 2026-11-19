@@ -1,5 +1,5 @@
 'use strict';
-/* test/cli-version.test.js — `starnet --version` names the real build in an INSTALLED app, never "dev".
+/* test/cli-version.test.js — `vultron --version` names the real build in an INSTALLED app, never "dev".
 
    package.json is not a bundle resource (src-tauri/tauri.conf.json ships sidecar, frontend, shared, bin), so in every
    installed build the old reader fell back to "dev" — untruthful, and useless when support asks which version a user is
@@ -7,7 +7,7 @@
    app, the version resource of skynet-desktop.exe in a Windows install (the number the installer's GetDLLVersion reads),
    else "unknown". This copies the REAL bin/ (plus every frontend file it loads — classify.js, and since the typed-outcomes lane
    runoutcome.js; read off bin/'s own requires, so a new one can never be missed again) into scratch install layouts and runs
-   `node bin/starnet.js --version` there, as a terminal would. */
+   `node bin/vultron.js --version` there, as a terminal would. */
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -15,7 +15,7 @@ const { spawnSync } = require('child_process');
 const A = require('./_assert.js');
 
 const REPO = path.join(__dirname, '..');
-const root = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-cli-version-'));
+const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-cli-version-'));
 // the frontend files bin/ requires (an installed app ships frontend/ whole beside bin/; this scratch layout copies what is loaded)
 const FRONTEND_LOADED = (() => {
   const seen = new Set();
@@ -30,7 +30,7 @@ function install(dir) {
   for (const f of FRONTEND_LOADED) fs.copyFileSync(path.join(REPO, 'frontend', 'app', f), path.join(dir, 'frontend', 'app', f));
 }
 function version(dir) {
-  const r = spawnSync(process.execPath, [path.join(dir, 'bin', 'starnet.js'), '--version'], { encoding: 'utf8', timeout: 30000 });
+  const r = spawnSync(process.execPath, [path.join(dir, 'bin', 'vultron.js'), '--version'], { encoding: 'utf8', timeout: 30000 });
   return (String(r.stdout || '').trim() || String(r.stderr || '').trim());
 }
 // a minimal PE-like file carrying a VS_FIXEDFILEINFO block (signature 0xFEEF04BD, struct version, FileVersionMS/LS)
@@ -44,23 +44,23 @@ function fakeExe(major, minor, patch) {
 
 try {
   const pkg = require('../package.json').version;
-  A.eq(version(REPO), 'starnet ' + pkg, 'a checkout: package.json\'s version');
+  A.eq(version(REPO), 'vultron ' + pkg, 'a checkout: package.json\'s version');
 
-  const mac = path.join(root, 'StarNet.app', 'Contents');
+  const mac = path.join(root, 'Vultron.app', 'Contents');
   install(path.join(mac, 'Resources'));
-  fs.writeFileSync(path.join(mac, 'Info.plist'), '<?xml version="1.0" encoding="UTF-8"?>\n<plist version="1.0"><dict>\n  <key>CFBundleName</key>\n  <string>StarNet</string>\n  <key>CFBundleShortVersionString</key>\n  <string>9.8.7</string>\n</dict></plist>\n');
-  A.eq(version(path.join(mac, 'Resources')), 'starnet 9.8.7', 'the macOS app: the bundle\'s own Info.plist version');
+  fs.writeFileSync(path.join(mac, 'Info.plist'), '<?xml version="1.0" encoding="UTF-8"?>\n<plist version="1.0"><dict>\n  <key>CFBundleName</key>\n  <string>Vultron</string>\n  <key>CFBundleShortVersionString</key>\n  <string>9.8.7</string>\n</dict></plist>\n');
+  A.eq(version(path.join(mac, 'Resources')), 'vultron 9.8.7', 'the macOS app: the bundle\'s own Info.plist version');
 
-  const win = path.join(root, 'StarNet');
+  const win = path.join(root, 'Vultron');
   install(win);
   fs.writeFileSync(path.join(win, 'skynet-desktop.exe'), fakeExe(9, 8, 6));
-  A.eq(version(win), 'starnet 9.8.6', 'a Windows install: skynet-desktop.exe\'s version resource');
+  A.eq(version(win), 'vultron 9.8.6', 'a Windows install: skynet-desktop.exe\'s version resource');
 
   const bare = path.join(root, 'bare');
   install(bare);
-  A.eq(version(bare), 'starnet unknown', 'nothing says which build: "unknown", never a made-up "dev"');
+  A.eq(version(bare), 'vultron unknown', 'nothing says which build: "unknown", never a made-up "dev"');
 
-  // --version above ran on bin/ alone: it loads nothing from sidecar/. `starnet run` does — pickAgent resolves the run wire
+  // --version above ran on bin/ alone: it loads nothing from sidecar/. `vultron run` does — pickAgent resolves the run wire
   // with the station's own sidecar/run-wire.js + providers/registry.js, loaded on first use from beside bin/. Every bundle
   // ships sidecar/ there (tauri.conf.json resources), so a layout carrying those modules resolves a run, and one without
   // them is a broken install that throws, never a guessed provider.
@@ -74,11 +74,11 @@ try {
   const rt = { provider: 'openrouter', model: 'station/default', agents: [{ agentId: 'agent', name: 'Overseer', model: 'own/pin', provider: 'openai-codex' }] };
   const sel = require(path.join(win, 'bin', 'lib', 'cli-core.js')).pickAgent(rt, {});
   A.ok(sel && sel.ok && sel.model === 'own/pin' && sel.provider === 'codex',
-    'an install with sidecar/ beside bin/ resolves `starnet run`\'s wire through the station\'s alias map (' + JSON.stringify(sel) + ')');
+    'an install with sidecar/ beside bin/ resolves `vultron run`\'s wire through the station\'s alias map (' + JSON.stringify(sel) + ')');
   let missing = null;
   try { require(path.join(bare, 'bin', 'lib', 'cli-core.js')).pickAgent(rt, {}); } catch (e) { missing = e; }
   A.ok(!!missing && missing.code === 'MODULE_NOT_FOUND' && /sidecar[\\/]run-wire\.js/.test(missing.message),
-    'an install missing sidecar/ fails `starnet run` loudly instead of guessing a provider');
+    'an install missing sidecar/ fails `vultron run` loudly instead of guessing a provider');
 
   // the dashboard's VERSION overlay reads the same thing
   const dash = fs.readFileSync(path.join(REPO, 'bin', 'lib', 'dashboard.js'), 'utf8');

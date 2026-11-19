@@ -35,12 +35,12 @@ const HISTORY = [
   await new Promise(resolve => upstream.listen(0, '127.0.0.1', resolve));
   const baseUrl = 'http://127.0.0.1:' + upstream.address().port + '/v1';
   // SidecarFixture leaves USERPROFILE real on Windows; this boot reads no real sign-in or home directory
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-learnedtail-home-'));
-  const fixture = new SidecarFixture({ env: { HOME: home, USERPROFILE: home, SKYNET_FULL_ACCESS: '1', STARNET_FULL_ACCESS: '1', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0', SKYNET_THREAD_MINE: '0', SKYNET_SCOUT: '0', STARNET_CREDITS_URL: '', SKYNET_CREDITS_URL: '' } });
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-learnedtail-home-'));
+  const fixture = new SidecarFixture({ env: { HOME: home, USERPROFILE: home, SKYNET_FULL_ACCESS: '1', VULTRON_FULL_ACCESS: '1', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0', SKYNET_THREAD_MINE: '0', SKYNET_SCOUT: '0', VULTRON_CREDITS_URL: '', SKYNET_CREDITS_URL: '' } });
   try {
     await fixture.start();
     const run = async (provider, model, system, extra) => {
-      const r = await fetch(fixture.baseUrl + '/api/run', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-StarNet-Token': fixture.token, Origin: fixture.baseUrl },
+      const r = await fetch(fixture.baseUrl + '/api/run', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Vultron-Token': fixture.token, Origin: fixture.baseUrl },
         body: JSON.stringify(Object.assign({ provider, baseUrl, key: 'fixture-key', model, reasoningEffort: 'low', agentId: 'agent', streamId: 'learned-' + provider + '-' + Math.random(), isTask: true, placed: [], system, messages: HISTORY.concat([{ role: 'user', content: 'Write a short note about bees.' }]) }, extra || {})) });
       assert.equal(r.status, 200);
       const events = (await r.text()).trim().split('\n').map(l => JSON.parse(l));
@@ -94,9 +94,9 @@ const HISTORY = [
     assert.ok(runContextOf(bodies[0].messages).includes('- Style: terse'), 'the learned text reaches the task alongside the current brief');
     console.log('OK task brief order');
 
-    // IX1: STARNET_STABLE_PREFIX=0 restores the old single system prompt, and a recovery continuation takes this same branch
+    // IX1: VULTRON_STABLE_PREFIX=0 restores the old single system prompt, and a recovery continuation takes this same branch
     // (`stablePrefix` is false for both). No split there, and nothing may be dropped.
-    await fixture.restart({ STARNET_STABLE_PREFIX: '0' });
+    await fixture.restart({ VULTRON_STABLE_PREFIX: '0' });
     bodies.length = 0;
     await run('custom', 'audit-model', persona + '\n\n' + DOSSIER('terse') + '\n\n' + FORK);
     const old = text(bodies[0].messages[0].content);

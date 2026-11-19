@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /*
- * stage-website-deploy.mjs — build the exact directory that gets uploaded to starnetos.com
+ * stage-website-deploy.mjs — build the exact directory that gets uploaded to vultron.vercel.app
  *
- * WHY THIS EXISTS. starnetos.com is Cloudflare Pages by DIRECT UPLOAD: it has no git integration,
+ * WHY THIS EXISTS. vultron.vercel.app is Cloudflare Pages by DIRECT UPLOAD: it has no git integration,
  * so merging a website lane to trunk publishes nothing and the live site only moves when someone
  * runs `wrangler pages deploy`. That command takes a DIRECTORY, and the obvious directory —
  * website/ — is not the thing we want published: pricing.html is written and reviewed but
@@ -88,10 +88,10 @@ const HELD_BACK = new Set([
 const HELD_BACK_PREFIXES = ['app/assets/sprites/_assembly/'];
 
 /* Holding pricing back is not only about the pricing page: terms.html clause 2 and privacy.html
-   both describe the paid StarNet Credits program, and the terms cite the pricing page as forming
+   both describe the paid Vultron Credits program, and the terms cite the pricing page as forming
    part of them. Publishing that while the page itself is hidden would announce a paid tier nobody
    can read the price of, via a citation that resolves to the homepage.
-   So the staged copies swap in variants carrying the wording ALREADY PUBLISHED on starnetos.com —
+   So the staged copies swap in variants carrying the wording ALREADY PUBLISHED on vultron.vercel.app —
    no legal language invented for the hold. The repo keeps the full Credits versions, and the day
    pricing goes live the substitution simply stops applying and the real files publish untouched. */
 const SUBSTITUTIONS = PRICING_LIVE ? {} : {
@@ -102,7 +102,7 @@ const SUBSTITUTIONS = PRICING_LIVE ? {} : {
 // Anything the staged legal pages must not contain while the paid tier is unannounced.
 const CREDITS_WORDS = /credit|stripe|gateway|billing|subscription/i;
 
-const PROJECT = 'starnet-site';
+const PROJECT = 'vultron-site';
 
 function walk(dir, acc = []) {
   for (const entry of readdirSync(dir)) {
@@ -207,7 +207,7 @@ for (const rel of stagedHtml) {
   if (after !== before) writeFileSync(file, after);
   const leak = after.includes('<!--held:') ? 'an unresolved held block'
     : !COMMUNITY_LIVE && /maps\.html/.test(after) ? 'a link to the held maps page'
-    : !COMMUNITY_LIVE && /account\.starnetos\.com\/account\/skills/.test(after) ? 'the held skill-submit flow' : '';
+    : !COMMUNITY_LIVE && /account\.vultronos\.com\/account\/skills/.test(after) ? 'the held skill-submit flow' : '';
   if (leak) {
     console.error('staged ' + rel + ' still carries ' + leak + ' — refusing to deploy (COMMUNITY_LIVE=' + COMMUNITY_LIVE + ').');
     process.exit(1);
@@ -236,4 +236,8 @@ if (existsSync(sitemapPath) && held.length) {
 
 console.log('staged ' + (shipping.length + 2) + ' files -> website-deploy/');
 for (const f of held) console.log('held back: ' + f);
-console.log('\nnext:\n  npx wrangler pages deploy website-deploy --project-name ' + PROJECT);
+/* Vercel builds this straight from vercel.json: installCommand is a no-op (the scripts here are
+   dependency-free), buildCommand runs this file, and outputDirectory is website-deploy. Uploading the
+   directory by hand works too. */
+console.log('\nnext:\n  Vercel: commit and let the Git integration build it (vercel.json drives this script),');
+console.log('  or drag website-deploy/ into a Vercel project. Project name: ' + PROJECT);

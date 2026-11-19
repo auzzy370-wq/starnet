@@ -107,11 +107,11 @@ async function startSseCollector(url) {
   await new Promise(r => server.listen(0, '127.0.0.1', r));
   const base = 'http://127.0.0.1:' + server.address().port;
   const fx = SidecarFixture.create({ prefix: 'line-parity-', timeoutMs: 30000, env: {
-    SKYNET_DEV: '1', STARNET_DEV: '1',
-    STARNET_CRON_TICK_MS: '100', SKYNET_CRON_TICK_MS: '100',
-    STARNET_DEFAULT_MODEL: '', SKYNET_DEFAULT_MODEL: '', STARNET_OPENROUTER_KEY: '', SKYNET_OPENROUTER_KEY: '',
-    SKYNET_FULL_ACCESS: '1', STARNET_FULL_ACCESS: '1',
-    SKYNET_MAX_ITERS: '5', STARNET_MAX_ITERS: '5',
+    SKYNET_DEV: '1', VULTRON_DEV: '1',
+    VULTRON_CRON_TICK_MS: '100', SKYNET_CRON_TICK_MS: '100',
+    VULTRON_DEFAULT_MODEL: '', SKYNET_DEFAULT_MODEL: '', VULTRON_OPENROUTER_KEY: '', SKYNET_OPENROUTER_KEY: '',
+    SKYNET_FULL_ACCESS: '1', VULTRON_FULL_ACCESS: '1',
+    SKYNET_MAX_ITERS: '5', VULTRON_MAX_ITERS: '5',
     // no background learning passes: they would spend model calls of their own between the doors (an aux budget of 0 is UNLIMITED)
     SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0', SKYNET_THREAD_MINE: '0', SKYNET_SCOUT: '0', SKYNET_QUEST_REFRESH: '0',
     CUSTOM_OPENAI_KEY: 'direct-fixture', CUSTOM_OPENAI_BASE_URL: base + '/v1'
@@ -208,7 +208,7 @@ async function startSseCollector(url) {
       },
       async trigger(job) {
         const t0 = Date.now();
-        const r = await fetch(fx.baseUrl + '/api/hooks/' + hookId, { method: 'POST', headers: { 'Content-Type': 'text/plain', 'X-StarNet-Hook-Key': hookKey }, body: job });
+        const r = await fetch(fx.baseUrl + '/api/hooks/' + hookId, { method: 'POST', headers: { 'Content-Type': 'text/plain', 'X-Vultron-Hook-Key': hookKey }, body: job });
         assert.equal(r.status, 202, await r.text());
         await until(async () => {
           const t = (((await fx.json('GET', '/api/routing/triggers')).body || {}).triggers || []).find(x => x.id === hookId);
@@ -334,7 +334,7 @@ async function startSseCollector(url) {
     hostNote = true;
     const JOB2 = 'Write two short facts about the tides.';
     const two = await pass(2, JOB2);
-    for (const e of ENTRIES) assert.ok(two[e].turn.indexOf('[StarNet] Saved in this agent') < 0, 'pass 2 ' + e + ': the host\'s private-files note never rides the hand-off');
+    for (const e of ENTRIES) assert.ok(two[e].turn.indexOf('[Vultron] Saved in this agent') < 0, 'pass 2 ' + e + ': the host\'s private-files note never rides the hand-off');
     parity(2, JOB2, two, S1);
     // (d) a second job carries no earlier hand-off; a real chat keeps its own earlier jobs (the channel profile's canonical replay), once each
     for (const e of ENTRIES.filter(x => x !== 'channel')) {

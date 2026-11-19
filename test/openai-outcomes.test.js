@@ -47,16 +47,16 @@ const RunOutcome = require('../frontend/app/runoutcome.js');
         assert.equal(res.status,200);
         const raw=await res.text();
         const result=stream ? raw.split('\n').filter(l=>l.startsWith('data: {')).map(l=>JSON.parse(l.slice(6))).at(-1) : JSON.parse(raw);
-        assert.equal(result.starnet.status,status);
-        assert.equal(result.starnet.completed,status==='completed');
+        assert.equal(result.vultron.status,status);
+        assert.equal(result.vultron.completed,status==='completed');
         assert.equal(result.choices[0].finish_reason,finish);
         assert.equal(result.usage.total_tokens,10);
         assert.ok(raw.includes('partial evidence'));
-        if (status==='completed') { assert.equal(result.starnet.error,null,'a clean end carries no error, and never the error of a delegated worker'); assert.equal(result.starnet.failure_code,null); assert.equal(result.error,undefined); }
+        if (status==='completed') { assert.equal(result.vultron.error,null,'a clean end carries no error, and never the error of a delegated worker'); assert.equal(result.vultron.failure_code,null); assert.equal(result.error,undefined); }
         // review r7: a run someone STOPPED is no error — finish_reason says 'cancelled' and no OpenAI `error` object rides it (a client read
         // finish_reason 'error' + agent_error as a failure, and retried)
-        if (status==='cancelled') { assert.equal(result.error,undefined,'a stopped run carries no agent_error'); assert.equal(result.starnet.failed,false); }
-        assert.equal(result.starnet.outcome,{done:'succeeded',error:'failed',budget:'out_of_budget',max_iters:'step_limit',cancelled:'stopped',clarifying:'asked',refusal:'refused',missing:'failed',cut:'cut_short',policy:'refused','done-after-error':'failed',delegated:'succeeded','delegated-noend':'failed'}[reason],'the station outcome rides along');
+        if (status==='cancelled') { assert.equal(result.error,undefined,'a stopped run carries no agent_error'); assert.equal(result.vultron.failed,false); }
+        assert.equal(result.vultron.outcome,{done:'succeeded',error:'failed',budget:'out_of_budget',max_iters:'step_limit',cancelled:'stopped',clarifying:'asked',refusal:'refused',missing:'failed',cut:'cut_short',policy:'refused','done-after-error':'failed',delegated:'succeeded','delegated-noend':'failed'}[reason],'the station outcome rides along');
         if(stream) assert.ok(raw.endsWith('data: [DONE]\n\n'));
       }
       const run=await (await post('/v1/runs',{input:reason})).json();
@@ -73,7 +73,7 @@ const RunOutcome = require('../frontend/app/runoutcome.js');
     const empty=await (await post('/v1/chat/completions',{messages:[{role:'user',content:'empty'}]}));
     assert.equal(empty.status,200,'the partial evidence keeps the 200');
     const ej=await empty.json();
-    assert.equal(ej.starnet.status,'failed'); assert.equal(ej.starnet.outcome,'empty'); assert.match(ej.starnet.error,/empty reply/);
+    assert.equal(ej.vultron.status,'failed'); assert.equal(ej.vultron.outcome,'empty'); assert.match(ej.vultron.error,/empty reply/);
     console.log('openai-outcomes: all 13 terminal scenarios passed across sync, stream and run status; empty and synchronous throw passed');
   } finally { server.closeAllConnections(); await new Promise(r=>server.close(r)); }
 })().catch(e=>{console.error(e);process.exitCode=1;});

@@ -1,4 +1,4 @@
-/* STARNET — propsprites.js : the canonical PROP (furniture) art + catalog.
+/* VULTRON — propsprites.js : the canonical PROP (furniture) art + catalog.
 
    v7's sprites.js drew ~85 furniture pieces as detailed PROCEDURAL pixel art — outlined
    casings, 2–3 tone shading, contact shadows, and animated emissive bits (a TV cycling
@@ -11896,7 +11896,7 @@ const PropSprites = (() => {
   }
   function surfaceLift(f){return f.mount==='surface'?(surfaceMounts?surfaceMounts.liftFor(f):SURFACE_RISE):0;}
   function surfacePlacement(f){return f.mount==='surface'&&surfaceMounts?surfaceMounts.placementFor(f):null;}
-  /* PLAYER-MADE PROPS (userprops.js + sidecar/userprops.js). A player types a noun, the StarNet cloud draws it in
+  /* PLAYER-MADE PROPS (userprops.js + sidecar/userprops.js). A player types a noun, the Vultron cloud draws it in
      the catalog's style, and the station keeps the PNG. Each one joins the catalog at RUNTIME as plain decoration:
      cosmetic tier, category 'yours', one south view, no function (object = capability: a made prop never claims
      a power it does not have). Its art is a PropRemaster runtime view; until that is decoded (or if it is gone
@@ -12018,7 +12018,7 @@ const PropSprites = (() => {
       // layer (World.invalidatePropShadows) instead of a full rebake. Neither edits the save.
       if (typeof World !== 'undefined') { if (typeof World.invalidatePropShadows === 'function') World.invalidatePropShadows(); else if (typeof World.rebake === 'function') World.rebake(); }
       if (typeof window !== 'undefined' && window.dispatchEvent && typeof CustomEvent !== 'undefined')
-        window.dispatchEvent(new CustomEvent('starnet:prop-art-ready',{detail:{revision:PropRemaster.revision()}}));
+        window.dispatchEvent(new CustomEvent('vultron:prop-art-ready',{detail:{revision:PropRemaster.revision()}}));
     });
   }
 

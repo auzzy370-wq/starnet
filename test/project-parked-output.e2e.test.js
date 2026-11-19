@@ -63,17 +63,17 @@ function startProvider() {
 
 (async () => {
   const provider = await startProvider();
-  const projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-parked-project-'));
+  const projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-parked-project-'));
   fs.writeFileSync(path.join(projectRoot, 'README.md'), 'a project with no .output folder of its own\n', 'utf8');
   fs.mkdirSync(path.join(projectRoot, 'a-first'));
   fs.writeFileSync(path.join(projectRoot, 'exact.txt'), 'SCOPE_MARK requested\n', 'utf8');
   fs.writeFileSync(path.join(projectRoot, 'a-first', 'exact.txt'), 'SCOPE_MARK unrelated\n', 'utf8');
   const fixture = SidecarFixture.create({
-    prefix: 'starnet-parked-output-sidecar-', timeoutMs: 15000,
+    prefix: 'vultron-parked-output-sidecar-', timeoutMs: 15000,
     env: {
-      SKYNET_OPENROUTER_BASE: provider.baseUrl, STARNET_OPENROUTER_BASE: provider.baseUrl,
-      SKYNET_OPENROUTER_KEY: 'sk-or-v1-parked-output-fake', STARNET_OPENROUTER_KEY: 'sk-or-v1-parked-output-fake',
-      SKYNET_DEFAULT_MODEL: 'test/parked-output', STARNET_DEFAULT_MODEL: 'test/parked-output'
+      SKYNET_OPENROUTER_BASE: provider.baseUrl, VULTRON_OPENROUTER_BASE: provider.baseUrl,
+      SKYNET_OPENROUTER_KEY: 'sk-or-v1-parked-output-fake', VULTRON_OPENROUTER_KEY: 'sk-or-v1-parked-output-fake',
+      SKYNET_DEFAULT_MODEL: 'test/parked-output', VULTRON_DEFAULT_MODEL: 'test/parked-output'
     }
   });
   try {

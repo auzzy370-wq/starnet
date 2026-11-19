@@ -1,16 +1,16 @@
 /* node test/vision-input.test.js — images never ride to a model the catalog says cannot see them (2026-10-23).
 
-   Evidence (StarNet Cloud proxy logs, 2026-10-23 04:15-06:24 UTC): 14 managed completions in two bursts were refused by
-   OpenRouter with 404 "No endpoints found that support image input". A StarNet app sent image content parts (a COMMS
+   Evidence (Vultron Cloud proxy logs, 2026-10-23 04:15-06:24 UTC): 14 managed completions in two bursts were refused by
+   OpenRouter with 404 "No endpoints found that support image input". A Vultron app sent image content parts (a COMMS
    photo, a channel photo or a browser screenshot) to a text-only model, and because the image stays in the
    conversation, every later turn of that conversation carried it again and failed the same way.
 
    Pinned here, zero network:
      1. provider.imageInputOf reads the catalog: OpenRouter's architecture.input_modalities (relayed verbatim by the
-        StarNet Cloud /v1/models), an explicit supportsImages, else null (unknown).
+        Vultron Cloud /v1/models), an explicit supportsImages, else null (unknown).
      2. provider.withoutImageParts swaps every image part for a short text note the model can act on, and returns a
         transcript with no image part by IDENTITY.
-     3. The OpenRouter adapter and the OpenAI-compatible adapter (the StarNet managed route) send NO image part to a
+     3. The OpenRouter adapter and the OpenAI-compatible adapter (the Vultron managed route) send NO image part to a
         text-only model, keep them for a vision model, and keep them for a model the catalog says nothing about.
      4. The 404 itself: one request (no retry), non-retryable, a message that names the fix — and the adapter
         remembers it, so the next request to that model goes without the image instead of failing again.
@@ -33,7 +33,7 @@ const { makeImageTools } = require('../sidecar/tools/builtin/image.js');
 const { makeFsTools } = require('../sidecar/tools/builtin/fs.js');
 const { makePathTrust } = require('../sidecar/pathtrust.js');
 // temp workspaces only (never a real station profile)
-const VI_BASE = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-vision-input-'));
+const VI_BASE = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-vision-input-'));
 const VI_WORKSPACES = path.join(VI_BASE, 'workspaces');
 const VI_PROJECT = path.join(VI_BASE, 'ReceiptsProject');
 fs.mkdirSync(path.join(VI_WORKSPACES, 'lead'), { recursive: true });
@@ -144,7 +144,7 @@ async function drain(p, req) {
     }
   }
 
-  // ---- 3b. the StarNet managed route (OpenAI-compatible adapter over the cloud's relayed OpenRouter catalog) ----
+  // ---- 3b. the Vultron managed route (OpenAI-compatible adapter over the cloud's relayed OpenRouter catalog) ----
   {
     const posts = [];
     const p = makeOpenAICompatibleProvider({ key: 'fixture-only', baseUrl: 'https://managed.vision.test/v1', fetch: fakeFetch(posts) });
@@ -206,7 +206,7 @@ async function drain(p, req) {
   }
 
   // ---- 6. image_analyze / browser.vision never use a text-only RUN model as the vision model (review 2026-10-23) ----
-  // index.js hands image.js the run's own model as the studio route's vision model. On a StarNet-credits or OpenRouter
+  // index.js hands image.js the run's own model as the studio route's vision model. On a Vultron-credits or OpenRouter
   // run on a text-only model, every image_analyze / browser.vision call posted the picture straight to that model
   // (orPost, outside the adapters) and got the same 404. runModelSeesImages() is the run adapter's supportsImages(model).
   {
@@ -225,7 +225,7 @@ async function drain(p, req) {
         posts.push({ model: body.model, hasImage: imagePartsIn(body) > 0 });
         return { status: 200, json: async () => ({ choices: [{ message: { content: 'a red square' } }] }), headers: { get: () => 'application/json' } };
       };
-      const T = makeImageTools({ openrouter: { apiKey: 'managed-fixture', model: 'vendor/text-only', baseUrl: 'https://managed.studio.test/v1', provider: 'starnet', protocol: 'openrouter-chat' },
+      const T = makeImageTools({ openrouter: { apiKey: 'managed-fixture', model: 'vendor/text-only', baseUrl: 'https://managed.studio.test/v1', provider: 'vultron', protocol: 'openrouter-chat' },
         fsp, pathMod: path, root: VI_WORKSPACES, fetchImpl, auxVision: async () => { throw new Error('aux must not be needed'); }, runModelSeesImages: sees });
       const a = await T.analyzeTool.run({ image: PNG_FULL, prompt: 'what is it?' }, { agentId: 'lead' });
       const b = await T.browserVision({ imageBase64: PNG_B64, question: 'what is on screen?' });
@@ -293,7 +293,7 @@ async function drain(p, req) {
           }
           return { status: 200, ok: true, json: async () => ({ choices: [{ message: { content: 'a red square' } }] }), headers: { get: () => 'application/json' } };
         };
-        const T = makeImageTools({ openrouter: { apiKey: 'managed-fixture', model: host.model, baseUrl: 'https://managed.studio.test/v1', provider: 'starnet', protocol: 'openrouter-chat' },
+        const T = makeImageTools({ openrouter: { apiKey: 'managed-fixture', model: host.model, baseUrl: 'https://managed.studio.test/v1', provider: 'vultron', protocol: 'openrouter-chat' },
           fsp, pathMod: path, root: VI_WORKSPACES, fetchImpl, auxVision: async () => { throw new Error('aux must not be needed'); }, runModelSeesImages: thunk });
         host.model = driftTo;   // promoteToolCapable / onFallback: model = toolModelRoute.model / next.model
         if (driftProvider) host.auxVisionProvider = driftProvider;   // onFallback: auxVisionProvider = next.provider

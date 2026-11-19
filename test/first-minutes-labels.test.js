@@ -5,7 +5,7 @@
      A. the create screen has ONE numbering — the journey strip 01-03. The setup-nav buttons stay a working stepper
         (data-setup-step, aria-controls) with no digits, and the column heads carry no numerals;
      B. the nav coach waits for the arrival: World exposes awakeningHeld() and releaseAwakening() fires
-        'starnet:awakening-released'; navdock's showCoachOnce returns while the awakening holds the room and asks again
+        'vultron:awakening-released'; navdock's showCoachOnce returns while the awakening holds the room and asks again
         on that event (behavioural, in a vm with a stub DOM). Source-level + one tiny vm run: no browser. */
 'use strict';
 const A = require('./_assert.js');
@@ -29,13 +29,13 @@ A.ok(!/<div class="ov-step"><b>\d/.test(html), 'no column head carries a numeral
 
 // ---- B. the nav coach waits for the arrival ----
 const world = read('frontend/app/world.js');
-A.ok(/function releaseAwakening\(\) \{[\s\S]{0,700}dispatchEvent\(new CustomEvent\('starnet:awakening-released'\)\)/.test(world),
+A.ok(/function releaseAwakening\(\) \{[\s\S]{0,700}dispatchEvent\(new CustomEvent\('vultron:awakening-released'\)\)/.test(world),
   'releaseAwakening announces the release');
 A.ok(/function awakeningHeld\(\) \{ return awakeFrozen; \}/.test(world) && /releaseAwakening, awakeningHeld, say,/.test(world),
   'World exposes awakeningHeld()');
 
 const navSrc = read('frontend/app/navdock.js');
-const start = navSrc.indexOf("  const COACH_KEY = 'starnet.navcoach.seen';");
+const start = navSrc.indexOf("  const COACH_KEY = 'vultron.navcoach.seen';");
 const end = navSrc.indexOf('  groups.forEach(g => {', start);
 A.ok(start > 0 && end > start, 'found the nav coach block');
 const block = navSrc.slice(start, end);
@@ -70,21 +70,21 @@ A.eq(born.coach.hidden, true, 'during the awakening the coach stays hidden');
 born.observe();
 A.eq(born.coach.hidden, true, 'a class flicker on #screen-game during the awakening does not show it');
 born.state.held = false;
-born.fire('starnet:awakening-released');
+born.fire('vultron:awakening-released');
 A.eq(born.coach.hidden, false, 'the release shows the coach once the arrival is over');
 
 // org P31 review fix: closeOut releases the awakening while the Dialogue panel still covers COMMS (first-task hand-off,
 // tour). The coach ("Talk to your agent up in COMMS") must hold until that panel closes.
-A.ok(/const wasOpen = open;[\s\S]{0,1400}if \(wasOpen && [^\n]*dispatchEvent\(new CustomEvent\('starnet:dialogue-closed'\)\)/.test(read('frontend/app/dialogue.js')),
+A.ok(/const wasOpen = open;[\s\S]{0,1400}if \(wasOpen && [^\n]*dispatchEvent\(new CustomEvent\('vultron:dialogue-closed'\)\)/.test(read('frontend/app/dialogue.js')),
   'Dialogue.close announces that COMMS is uncovered');
 const handoff = run(true, true);
 handoff.state.held = false;
-handoff.fire('starnet:awakening-released');
+handoff.fire('vultron:awakening-released');
 A.eq(handoff.coach.hidden, true, 'the release with the hand-off panel still over COMMS keeps the coach hidden');
 handoff.observe();
 A.eq(handoff.coach.hidden, true, 'a class flicker while the panel is open does not show it');
 handoff.state.dialogue = false;
-handoff.fire('starnet:dialogue-closed');
+handoff.fire('vultron:dialogue-closed');
 A.eq(handoff.coach.hidden, false, 'closing the panel shows the coach over an uncovered COMMS');
 
 A.report('first-minutes-labels.test');

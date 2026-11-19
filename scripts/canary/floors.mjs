@@ -116,9 +116,9 @@ export async function probeFloor(id, options = {}) {
       const answer = await mod.startDeviceLogin({ fetch: fetchEdge });
       result = { ok: !!answer.device_auth_id && !!answer.user_code && answer.expires_in > 0, why: 'the product device flow did not start' };
     } else if (id === 'google-signin') {
-      const raw = env.STARNET_GOOGLE_DESKTOP_CLIENT_JSON || '';
+      const raw = env.VULTRON_GOOGLE_DESKTOP_CLIENT_JSON || '';
       if (!raw) return finish({ status: 'unconfigured', skipped: true, why: 'publisher Google desktop registration is not available to this check' });
-      const client = mod.loadDesktopClient({ env: { STARNET_GOOGLE_DESKTOP_CLIENT_JSON: raw }, readFile: () => '' });
+      const client = mod.loadDesktopClient({ env: { VULTRON_GOOGLE_DESKTOP_CLIENT_JSON: raw }, readFile: () => '' });
       if (!client) return finish({ why: 'publisher Google desktop registration is invalid' });
       const oauth = fresh('sidecar/mcp/oauth.js'), cfg = fresh('sidecar/mcp/catalog.js').get('google-files').staticOauth;
       const verifier = randomBytes(32).toString('base64url');

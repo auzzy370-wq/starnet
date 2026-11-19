@@ -13,7 +13,7 @@ A.ok(csv.indexOf('<table') >= 0 && csv.indexOf('two, too') >= 0, 'quoted CSV cel
 A.ok(csv.indexOf('<td>3</td>') < 0 && csv.indexOf('<td>4</td>') < 0, 'CSV preview obeys row and column bounds');
 
 // open URLs carry a SCOPED TICKET, never the launch token (2026-09-25 — these reach OS-browser history/Referer)
-global.window = { __STARNET_API_TOKEN__: 'secret', crypto: require('node:crypto').webcrypto };
+global.window = { __VULTRON_API_TOKEN__: 'secret', crypto: require('node:crypto').webcrypto };
 global.ApiTicket = require('../frontend/app/apiticket.js');
 const runOpen = D.openUrl('/workshop-run/a/r/index.html');
 const runSplit = Tickets.splitRunTicket(runOpen);
@@ -65,9 +65,9 @@ A.eq(D.rowsForRun(runRows, 'missing', '').length, 0, 'a missing run never falls 
   A.eq(D.outsideNote(ws, 'C:\\work\\acme', 'ULTRON', ''), 'saved in ULTRON workspace, not in acme', 'a relative workspace file of a project item: the workspace note');
   const desk = loc('/api/file?agent=nova&path=' + encodeURIComponent('C:\\Users\\me\\Desktop\\report.md'), 'C:\\work\\my-app');
   A.eq(D.outsideNote(desk, 'C:\\work\\my-app', 'NOVA', ''), 'saved outside my-app', 'a granted Desktop file is said as outside the project, never as the workspace (no root known yet)');
-  A.eq(D.outsideNote(desk, 'C:\\work\\my-app', 'NOVA', 'C:\\Users\\me\\StarNet\\workspaces\\nova\\'), 'saved outside my-app', '…nor once the real workspace root is known and does not hold it');
-  const outp = loc('/api/file?agent=nova&path=' + encodeURIComponent('C:\\Users\\me\\StarNet\\workspaces\\nova\\.output\\r.md'), 'C:\\work\\my-app');
-  A.eq(D.outsideNote(outp, 'C:\\work\\my-app', 'NOVA', 'C:\\Users\\me\\StarNet\\workspaces\\nova\\'), 'saved in NOVA workspace, not in my-app', 'an absolute .output/ file inside the real workspace root keeps the workspace note');
+  A.eq(D.outsideNote(desk, 'C:\\work\\my-app', 'NOVA', 'C:\\Users\\me\\Vultron\\workspaces\\nova\\'), 'saved outside my-app', '…nor once the real workspace root is known and does not hold it');
+  const outp = loc('/api/file?agent=nova&path=' + encodeURIComponent('C:\\Users\\me\\Vultron\\workspaces\\nova\\.output\\r.md'), 'C:\\work\\my-app');
+  A.eq(D.outsideNote(outp, 'C:\\work\\my-app', 'NOVA', 'C:\\Users\\me\\Vultron\\workspaces\\nova\\'), 'saved in NOVA workspace, not in my-app', 'an absolute .output/ file inside the real workspace root keeps the workspace note');
   A.eq(D.outsideNote(pr, 'C:\\work\\acme', 'ULTRON', ''), '', 'a file inside the project carries no outside note');
   A.eq(D.outsideNote(nop, '', 'A', ''), '', 'an item with no project carries no outside note');
   A.eq(D.savedLocation({ agentId: 'a' }, { path: '', openUrl: '' }, ''), null, 'no path = no key');

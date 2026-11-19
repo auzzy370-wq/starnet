@@ -9,7 +9,7 @@ found: 2026-11-04
 lane: line-hold-finish-1104
 fix: a5a3797a4dbaaea17c1440889dc23e7a0731fe2f
 origin: customer
-report: https://github.com/androoAGI/starnet/issues/122
+report: https://github.com/YOUR-GITHUB-USER/vultron/issues/122
 affected: v0.14.x installed builds (the reporter's exact build is not recorded in this register; the issue was open against v0.14.2 at the 2026-11-01 triage)
 family: line-review-gate
 installer: unverified

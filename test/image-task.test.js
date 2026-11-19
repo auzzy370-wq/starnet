@@ -56,11 +56,11 @@ A.eq(directOpenAI, { ok: true, provider: 'openai', protocol: 'openai-images', ke
 const borrowed = ImageTask.resolveRoute({ providerId: 'gemini', runKey: 'gemini-key', stationOpenRouterKey: 'station-or-key' });
 A.eq(borrowed.key, 'station-or-key', 'a non-OpenRouter run uses the separately connected station OpenRouter key');
 A.eq(borrowed.keySource, 'station', 'the route never relabels the configured provider key');
-const managedInput = { providerId: 'starnet', runKey: 'untrusted-request-key', providerBaseUrl: 'https://wrong.example/v1', managedKey: 'device-token', managedBaseUrl: 'https://account.starnetos.com/v1/' };
+const managedInput = { providerId: 'vultron', runKey: 'untrusted-request-key', providerBaseUrl: 'https://wrong.example/v1', managedKey: 'device-token', managedBaseUrl: 'https://account.vultron.vercel.app/v1/' };
 const managed = ImageTask.resolveRoute(managedInput);
-A.eq(managed, { ok: true, provider: 'starnet', protocol: 'openrouter-chat', key: 'device-token', baseUrl: 'https://account.starnetos.com/v1', keySource: 'managed' }, 'credits-only route keeps the linked credential and endpoint together');
+A.eq(managed, { ok: true, provider: 'vultron', protocol: 'openrouter-chat', key: 'device-token', baseUrl: 'https://account.vultron.vercel.app/v1', keySource: 'managed' }, 'credits-only route keeps the linked credential and endpoint together');
 for (const providerId of ['gemini', 'codex', 'custom', 'anthropic']) {
-  A.eq(ImageTask.resolveRoute({ ...managedInput, providerId }).provider, 'starnet', providerId + ' conversation can generate using linked credits');
+  A.eq(ImageTask.resolveRoute({ ...managedInput, providerId }).provider, 'vultron', providerId + ' conversation can generate using linked credits');
 }
 A.eq(ImageTask.resolveRoute({ ...managedInput, managedBaseUrl: '', stationOpenRouterKey: 'byok' }).ok, false, 'missing managed endpoint cannot leak device token or silently spend BYOK');
 A.eq(ImageTask.resolveRoute({ ...managedInput, managedKey: '' }).ok, false, 'missing managed credential fails closed');
@@ -73,12 +73,12 @@ A.eq(borrowedOpenAI.provider, 'openai', 'a text run can use a separately connect
 A.eq(borrowedOpenAI.protocol, 'openai-images', 'the station OpenAI route selects the dedicated Images API');
 
 // The ChatGPT sign-in is a keyless STUDIO route: first for a run on the plan, last resort for any other text run,
-// never for a StarNet-credits run.
+// never for a Vultron-credits run.
 const planRoute = { ok: true, provider: 'codex', protocol: 'codex-responses', key: '', baseUrl: '', keySource: 'plan' };
 A.eq(ImageTask.resolveRoute({ providerId: 'codex', codexSignedIn: true }), planRoute, 'a Codex run renders on its own ChatGPT plan');
 A.eq(ImageTask.resolveRoute({ ...managedInput, providerId: 'codex', codexSignedIn: true }).provider, 'codex', 'a Codex run uses the plan before spending linked credits');
 // decision 1: the station's OpenRouter credential is placed by its RANK (credential-store.js credentialFor). 'primary' (the desktop
-// keychain's key, the branded STARNET_/SKYNET_OPENROUTER_KEY) comes before the station's OpenAI key, as the alias always did; 'gap'
+// keychain's key, the branded VULTRON_/SKYNET_OPENROUTER_KEY) comes before the station's OpenAI key, as the alias always did; 'gap'
 // (a key a page saved, a bare OPENROUTER_API_KEY) comes after every other route, so a route that already rendered keeps billing
 // where it did (#146). Either way it goes to the endpoint saved with it.
 {
@@ -92,14 +92,14 @@ A.eq(ImageTask.resolveRoute({ ...managedInput, providerId: 'codex', codexSignedI
   A.eq(ImageTask.resolveRoute({ ...noOpenAI, codexSignedIn: true }).provider, 'codex', 'a gap credential never displaces the ChatGPT sign-in either');
   const filled = ImageTask.resolveRoute(noOpenAI);
   A.eq([filled.ok, filled.provider, filled.key, filled.baseUrl], [true, 'openrouter', 'or', 'http://proxy.test/v1'], 'a gap credential fills the gap, at the endpoint saved with it');
-  A.eq(ImageTask.resolveRoute({ ...noOpenAI, providerId: 'starnet' }).ok, false, 'a gap credential never reaches a StarNet-credits run');
-  A.eq(ImageTask.resolveRoute({ ...noOpenAI, stationOpenRouterRank: 'primary', providerId: 'starnet' }).ok, false, '...and neither does a primary one');
-  A.eq(ImageTask.resolveRoute({ ...noOpenAI, managedKey: 'dev', managedBaseUrl: 'https://cloud.test/v1' }).provider, 'starnet', 'the linked account outranks a gap credential');
+  A.eq(ImageTask.resolveRoute({ ...noOpenAI, providerId: 'vultron' }).ok, false, 'a gap credential never reaches a Vultron-credits run');
+  A.eq(ImageTask.resolveRoute({ ...noOpenAI, stationOpenRouterRank: 'primary', providerId: 'vultron' }).ok, false, '...and neither does a primary one');
+  A.eq(ImageTask.resolveRoute({ ...noOpenAI, managedKey: 'dev', managedBaseUrl: 'https://cloud.test/v1' }).provider, 'vultron', 'the linked account outranks a gap credential');
   A.eq(ImageTask.resolveRoute({ ...noOpenAI, providerId: 'openrouter', runKey: 'run', providerBaseUrl: 'http://run.test/v1' }).key, 'run', 'a run on OpenRouter uses its own key, never the station credential');
 }
 A.eq(ImageTask.resolveRoute({ providerId: 'anthropic', runKey: 'k', stationOpenRouterKey: 'or', codexSignedIn: true }).provider, 'openrouter', 'a connected OpenRouter key still wins for a non-Codex run');
 A.eq(ImageTask.resolveRoute({ providerId: 'anthropic', runKey: 'k', codexSignedIn: true }), planRoute, 'a keyless non-Codex run falls back to the ChatGPT sign-in');
-A.eq(ImageTask.resolveRoute({ providerId: 'starnet', codexSignedIn: true }).ok, false, 'a StarNet-credits run never moves onto the ChatGPT account');
+A.eq(ImageTask.resolveRoute({ providerId: 'vultron', codexSignedIn: true }).ok, false, 'a Vultron-credits run never moves onto the ChatGPT account');
 A.eq(ImageTask.resolveRoute({ providerId: 'codex', codexSignedIn: false }).code, 'media-route-required', 'a dead or missing sign-in is no route');
 A.ok(/sign in to ChatGPT/.test(ImageTask.admissionBlocker({ hasStudio: true, studioEnabled: true, route: { ok: false }, providerId: 'codex', model: 'gpt-5.5' })), 'the blocker names the ChatGPT sign-in as a fix');
 
@@ -151,8 +151,8 @@ A.ok(/reason: taskQuestionAsked \? 'clarifying' : \(\(result && result\.reason\)
 
 
 const byokRecovery = ImageTask.admissionBlocker({ hasStudio: true, studioEnabled: true, providerId: 'custom', model: 'local-model', route: { ok: false } });
-A.ok(/OpenAI or OpenRouter API key/.test(byokRecovery) && /StarNet account/.test(byokRecovery), 'BYOK media recovery exposes all supported routes');
-const managedRecovery = ImageTask.admissionBlocker({ hasStudio: true, studioEnabled: true, providerId: 'starnet', route: { ok: false } });
+A.ok(/OpenAI or OpenRouter API key/.test(byokRecovery) && /Vultron account/.test(byokRecovery), 'BYOK media recovery exposes all supported routes');
+const managedRecovery = ImageTask.admissionBlocker({ hasStudio: true, studioEnabled: true, providerId: 'vultron', route: { ok: false } });
 A.ok(/relink/.test(managedRecovery) && !/OpenRouter/.test(managedRecovery), 'managed failure stays on the linked-account route');
 
 A.report('image-task.test');

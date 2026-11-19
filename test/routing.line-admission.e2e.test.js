@@ -49,12 +49,12 @@ async function startSseCollector(url) {
   await new Promise(r => server.listen(0, '127.0.0.1', r));
   const base = 'http://127.0.0.1:' + server.address().port;
   const fixture = SidecarFixture.create({ timeoutMs: 30000, env: {
-    STARNET_OPENROUTER_KEY: 'fixture', SKYNET_OPENROUTER_KEY: 'fixture',
-    STARNET_OPENROUTER_BASE: base + '/v1', SKYNET_OPENROUTER_BASE: base + '/v1',
-    STARNET_DEFAULT_MODEL: 'test/model', SKYNET_DEFAULT_MODEL: 'test/model',
-    STARNET_DEV: '1', SKYNET_DEV: '1',
-    STARNET_CRON_TICK_MS: '100', SKYNET_CRON_TICK_MS: '100',
-    STARNET_FULL_ACCESS: '0', SKYNET_FULL_ACCESS: '0', SKYNET_AUX_BUDGET: '0', STARNET_AUX_BUDGET: '0'
+    VULTRON_OPENROUTER_KEY: 'fixture', SKYNET_OPENROUTER_KEY: 'fixture',
+    VULTRON_OPENROUTER_BASE: base + '/v1', SKYNET_OPENROUTER_BASE: base + '/v1',
+    VULTRON_DEFAULT_MODEL: 'test/model', SKYNET_DEFAULT_MODEL: 'test/model',
+    VULTRON_DEV: '1', SKYNET_DEV: '1',
+    VULTRON_CRON_TICK_MS: '100', SKYNET_CRON_TICK_MS: '100',
+    VULTRON_FULL_ACCESS: '0', SKYNET_FULL_ACCESS: '0', SKYNET_AUX_BUDGET: '0', VULTRON_AUX_BUDGET: '0'
   } });
   const geometry = { props: [
     { id: 'iA', t: 'intake', x: 0, y: 0, w: 1, h: 1, limits: { maxUsdPerDay: 1 } },

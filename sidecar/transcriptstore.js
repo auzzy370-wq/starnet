@@ -185,7 +185,7 @@
       if (!state) { out.push(row); if (pageClosedLine(run)) closedAfter.set(id, out.length); continue; } // pre-envelope history keeps its exact existing shape
       if (state === 'internal') continue;
       const final = finals.get(id);
-      // A run StarNet stopped before it finished was never finalized and never will be. Show its directive and one
+      // A run Vultron stopped before it finished was never finalized and never will be. Show its directive and one
       // plain interrupted line, so the thread is not silently empty; its raw partial output stays hidden. A run whose
       // record still says pending may be mid-finalize, so it stays hidden until its accepted answer lands.
       // The line is the station's, re-sent on every read: transcriptPending tells the desk and phone merges
@@ -196,8 +196,8 @@
           out.push(row); prompts.add(id);
           out.push({ streamId: row.streamId, agentId: row.agentId, role: 'assistant', sys: true, error: true, transcriptPending: true, sourceRunId: id,
             dispatchState: 'interrupted', ts: row.ts, content: str(run.error) || (run.continuedRunId
-              ? 'interrupted: StarNet stopped before this delegated run finished; it was continued as another run'
-              : 'interrupted: StarNet stopped before this delegated run finished; no result was accepted') });
+              ? 'interrupted: Vultron stopped before this delegated run finished; it was continued as another run'
+              : 'interrupted: Vultron stopped before this delegated run finished; no result was accepted') });
         }
         continue;
       }
@@ -1329,8 +1329,8 @@
       const list = window.concat(around.extra).sort(byRowId), wanted = new Set(window.map(row => row.rowId));
       const projected = projectView('display', list, { streamId: want }, projectionContext(list)), shownRows = projected.filter(row => wanted.has(row.rowId));
       // the quote rule's affirmative drop proof (TurnView.FORGOTTEN, by its registry key) rides the page, for this window's rows only
-      const marker = projected[Symbol.for('starnet.transcript.forgotten')];
-      if (marker) Object.defineProperty(shownRows, Symbol.for('starnet.transcript.forgotten'), { enumerable: false,
+      const marker = projected[Symbol.for('vultron.transcript.forgotten')];
+      if (marker) Object.defineProperty(shownRows, Symbol.for('vultron.transcript.forgotten'), { enumerable: false,
         value: { keys: (marker.keys || []).filter(k => wanted.has(k[1])), runIds: marker.runIds || [] } });
       return { rows: shownRows, last: window[window.length - 1].rowId, more };
     }

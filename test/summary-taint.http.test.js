@@ -83,13 +83,13 @@ function startMock() {
 (async () => {
   const mock = await startMock();
   const fixture = SidecarFixture.create({ prefix: 'summary-taint-', timeoutMs: 30000, env: {
-    SKYNET_OPENROUTER_BASE: mock.base, STARNET_OPENROUTER_BASE: mock.base, SKYNET_OPENROUTER_KEY: 'fixture', STARNET_OPENROUTER_KEY: 'fixture',
-    SKYNET_DEFAULT_MODEL: 'test/model', STARNET_DEFAULT_MODEL: 'test/model', STARNET_COMPACT_CHUNK_CHARS: '2000000',
-    SKYNET_SKILL_CURATOR: '0', SKYNET_SCOUT: '0', SKYNET_QUEST_REFRESH: '0', SKYNET_CRON_ENABLED: '0', STARNET_CRON_ENABLED: '0'
+    SKYNET_OPENROUTER_BASE: mock.base, VULTRON_OPENROUTER_BASE: mock.base, SKYNET_OPENROUTER_KEY: 'fixture', VULTRON_OPENROUTER_KEY: 'fixture',
+    SKYNET_DEFAULT_MODEL: 'test/model', VULTRON_DEFAULT_MODEL: 'test/model', VULTRON_COMPACT_CHUNK_CHARS: '2000000',
+    SKYNET_SKILL_CURATOR: '0', SKYNET_SCOUT: '0', SKYNET_QUEST_REFRESH: '0', SKYNET_CRON_ENABLED: '0', VULTRON_CRON_ENABLED: '0'
   } });
   try {
     await fixture.start();
-    const B = fixture.baseUrl, H = { 'Content-Type': 'application/json', 'X-StarNet-Token': fixture.token, Origin: B };
+    const B = fixture.baseUrl, H = { 'Content-Type': 'application/json', 'X-Vultron-Token': fixture.token, Origin: B };
     const get = async route => (await fetch(B + route, { headers: H })).json();
     const upload = async (name, text) => {
       const up = await (await fetch(B + '/api/attachments', { method: 'POST', headers: H, body: JSON.stringify({ agent: AGENT, name, dataUrl: 'data:text/plain;base64,' + Buffer.from(text).toString('base64') }) })).json();

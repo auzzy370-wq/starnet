@@ -1,7 +1,7 @@
 /* sidecar/tools/builtin/keys.js — `keys.save`: a key the Commander pastes into chat becomes a KEYS entry.
 
    WHY THIS EXISTS (user report 2026-10-25, Saleshandy + Etsy). Every other harness lets an agent spend an API key the
-   user pastes into the conversation. StarNet's only route was the KEYS panel (now CONNECT › ABILITIES › CONNECTED ›
+   user pastes into the conversation. Vultron's only route was the KEYS panel (now CONNECT › ABILITIES › CONNECTED ›
    API KEYS), and three of its own rules
    stacked against a paste: web_request told the model a key is never to be taken from the user, redact() scrubbed a
    vendor-SHAPED key out of the saved chat (so the next turn read `[redacted-secret]`), and a SHAPELESS key (a 40-char

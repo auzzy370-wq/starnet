@@ -113,12 +113,12 @@ function makeSavedFloorProjection(read) {
     const w = source.wrapper, doc = w && w.doc;
     if (!w || Array.isArray(w) || typeof w !== 'object' || w.agentId !== read.agentId) return held('invalid');
     if (w.version !== 1) return held(typeof w.version === 'number' && w.version > 1 ? 'future' : 'invalid');
-    if (!doc || typeof doc !== 'object' || Array.isArray(doc) || !['starnet.save', 'skynet.save'].includes(doc.schema)) return held('invalid');
+    if (!doc || typeof doc !== 'object' || Array.isArray(doc) || !['vultron.save', 'skynet.save'].includes(doc.schema)) return held('invalid');
     if (doc.version !== Save.CURRENT) return held(typeof doc.version === 'number' && doc.version > Save.CURRENT ? 'future' : 'migration-required');
     if (!Number.isSafeInteger(w.revision) || w.revision < 1 || doc._saveRevision !== w.revision) return held('invalid');
     if (!source.head || source.head.revision !== w.revision || source.head.client !== w.client || w.client !== doc._saveClient) return held('unvouched');
     const raw = doc.station;
-    if (!raw || typeof raw !== 'object' || Array.isArray(raw) || raw.schema !== 'starnet.station') return held('invalid');
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw) || raw.schema !== 'vultron.station') return held('invalid');
     // v2 is the existing WorldModel link format. Earlier documents must first
     // complete its normal durable migration; future formats are never normalized.
     if (raw.version !== 2) return held(typeof raw.version === 'number' && raw.version > 2 ? 'future' : 'migration-required');
@@ -198,7 +198,7 @@ function makeStationStore(o) {
 
   function validateStationDoc(nextDoc) {
     if (!nextDoc || typeof nextDoc !== 'object' || Array.isArray(nextDoc)) return { ok: false, error: 'station document required' };
-    if (nextDoc.schema && nextDoc.schema !== 'starnet.station') return { ok: false, error: 'unsupported station schema' };
+    if (nextDoc.schema && nextDoc.schema !== 'vultron.station') return { ok: false, error: 'unsupported station schema' };
     if (!nextDoc.rooms || typeof nextDoc.rooms !== 'object' || Array.isArray(nextDoc.rooms)) return { ok: false, error: 'station rooms required' };
     if (!Array.isArray(nextDoc.order) || nextDoc.order.length < 1) return { ok: false, error: 'station must contain at least one room' };
     if (!Array.isArray(nextDoc.props)) return { ok: false, error: 'station props must be an array' };

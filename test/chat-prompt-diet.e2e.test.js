@@ -84,7 +84,7 @@ function boot(port, env, attemptsLeft) {
   const B = 'http://' + HOST + ':' + port;
   try {
     const token = await bootToken(B, B);
-    const hdr = { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: B };
+    const hdr = { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: B };
     const r0 = await fetch(B + '/api/roster', { method: 'POST', headers: hdr, body: JSON.stringify({ agents: [
       { agentId: 'agent', system: 'lead', name: 'NOVA', role: 'overseer', track: '' },
       { agentId: 'rookie', system: 'you research', name: 'ROOKIE', role: 'researcher', track: '' }
@@ -116,7 +116,7 @@ function boot(port, env, attemptsLeft) {
 
     /* ---- the greeting is on a diet ---- */
     A.eq(chat.tools, 0, 'a non-task turn puts no tool schemas on the wire (unchanged contract)');
-    A.ok(chat.system.indexOf('<starnet_operator_manual>') < 0, 'greeting: no operator manual');
+    A.ok(chat.system.indexOf('<vultron_operator_manual>') < 0, 'greeting: no operator manual');
     A.ok(chat.system.indexOf('[ORCHESTRATION]') < 0, 'greeting: no delegation briefing (it names tools the turn does not have)');
     A.ok(chat.system.indexOf('[HARNESS]') < 0, 'greeting: no tool note (unchanged contract)');
     const skillHeads = (task.system.match(/^### .+ -- /gm) || []);
@@ -131,7 +131,7 @@ function boot(port, env, attemptsLeft) {
 
     /* ---- real work is never starved ---- */
     A.ok(task.tools > 0, 'the task turn still puts tool schemas on the wire');
-    A.ok(task.system.indexOf('<starnet_operator_manual>') >= 0, 'task: operator manual present');
+    A.ok(task.system.indexOf('<vultron_operator_manual>') >= 0, 'task: operator manual present');
     A.ok(task.system.indexOf('[ORCHESTRATION]') >= 0, 'task: delegation briefing present');
     A.ok(task.system.indexOf('[HARNESS]') >= 0, 'task: tool note present');
     A.ok(task.system.indexOf('<capabilities_ground_truth>') >= 0, 'task: capabilities ground truth present');

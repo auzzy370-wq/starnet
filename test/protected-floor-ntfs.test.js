@@ -35,7 +35,7 @@ for (const p of ['.env', '.env.local', 'a/.git/config', '.git']) A.ok(!!floor(p)
 for (const p of ['.envrc', 'notes.env.md', 'my.git.txt', '.github/workflows/ci.yml', 'C:\\proj\\src\\main.js']) A.ok(!floor(p), 'broker floor leaves ' + p + ' alone');
 
 (async () => {
-  const ROOT = path.join(os.tmpdir(), 'starnet-floor-ntfs-' + process.pid);
+  const ROOT = path.join(os.tmpdir(), 'vultron-floor-ntfs-' + process.pid);
   const proj = path.join(ROOT, 'proj');
   await fsp.mkdir(path.join(proj, 'src'), { recursive: true });
   await fsp.writeFile(path.join(proj, 'src', 'main.js'), '1\n');

@@ -307,7 +307,7 @@
  "whys": [
   "this is an unattended run (nobody is watching to approve a command)",
   "this is an unattended routine run and the routine has no terminal grant",
-  "you are a worker delegated by leadagent, and in ASK mode StarNet withholds command execution (shell_exec, shell_bg_write, terminal_start, terminal_write, verify_run and code_run) from delegated workers even when a WORKBENCH is placed: a command needs the Commander's approval in a watched conversation, and a delegated run is not one"
+  "you are a worker delegated by leadagent, and in ASK mode Vultron withholds command execution (shell_exec, shell_bg_write, terminal_start, terminal_write, verify_run and code_run) from delegated workers even when a WORKBENCH is placed: a command needs the Commander's approval in a watched conversation, and a delegated run is not one"
  ],
  "scenarios": {
   "api.v1@ask": {

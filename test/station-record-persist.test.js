@@ -5,7 +5,7 @@ const os = require('node:os');
 const path = require('node:path');
 const A = require('./_assert.js');
 const SR = require('../sidecar/station-record.js');
-const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-record-persist-'));
+const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-record-persist-'));
 try {
   for (const mode of ['race', 'unlink-refused']) {
     const ws = path.join(scratch, mode); fs.mkdirSync(ws);

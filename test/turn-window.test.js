@@ -11,7 +11,7 @@ const View = require('../sidecar/turn-view.js');
 const T = 'window_current_0001', OLD = 'window_older_0001';
 let mode = 'shadow';
 const notes = [], records = [], identities = [];
-const dual = Dual.make({ now: () => 1000000, hash: x => x, env: key => key === 'STARNET_TURNID_WINDOW' ? mode : undefined });
+const dual = Dual.make({ now: () => 1000000, hash: x => x, env: key => key === 'VULTRON_TURNID_WINDOW' ? mode : undefined });
 const recordOwner = dual.record; dual.record = (surface, event) => { records.push({ surface, event }); recordOwner(surface, event); };
 const store = Store.makeTranscriptStore({ io: makeMemoryTranscriptIo(), clock: { now: () => 1000000 }, pick: (...args) => dual.pick(...args) });
 const first = store.appendStrict({ streamId: 's', agentId: 'a', role: 'user', content: 'OLD_OWNER', turnId: OLD, directive: true });

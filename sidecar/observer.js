@@ -1,4 +1,4 @@
-/* sidecar/observer.js — the station's LIVE FEED for a watching client (the `starnet` terminal dashboard).
+/* sidecar/observer.js — the station's LIVE FEED for a watching client (the `vultron` terminal dashboard).
 
    Why it exists: a run the page starts (POST /api/run) writes its events only down its own NDJSON response, and the
    SSE bus (/api/channels/events) carries only server-initiated runs, name-only. So nothing outside the page that
@@ -6,7 +6,7 @@
    feed tees EVERY non-internal run's events (any surface: COMMS, routines, lines, channels, workers, groups) plus the
    approvals they ask, to whoever is subscribed at GET /api/observe.
 
-   Trust: the feed is behind the same x-starnet-token gate as every /api route, and a token holder can already read
+   Trust: the feed is behind the same x-vultron-token gate as every /api route, and a token holder can already read
    every conversation (/api/transcript) and start runs. It still ships a bounded VIEW, not the raw payload: tool
    arguments and results are clipped to a line, and every view passes the injected redact() (key-shaped secrets
    scrubbed) before it leaves. A separate hub from the page's SSE bus on purpose: the page never subscribes here, so

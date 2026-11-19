@@ -5,7 +5,7 @@
   else root.SteeringMessage = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
-  const PREFIX = '@starnet-message-v1:';
+  const PREFIX = '@vultron-message-v1:';
   const MAX_TEXT = 100000;
   function normalize(value) {
     if (!value || typeof value !== 'object' || typeof value.text !== 'string' || value.text.length > MAX_TEXT) return null;

@@ -10,7 +10,7 @@ lane: installed-integrity-and-engine-floor-1103
 fix:
 origin: customer
 report: support-intel-dmg-signature-intake
-affected: Reported StarNet 0.12.5 on Intel Mac, macOS 15.7.5; exact affected artifact trust verdict unverified
+affected: Reported Vultron 0.12.5 on Intel Mac, macOS 15.7.5; exact affected artifact trust verdict unverified
 family: release-dmg-trust
 installer: unverified
 recovery: unconfirmed

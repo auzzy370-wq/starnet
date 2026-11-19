@@ -31,7 +31,7 @@ const { hostNotes } = require('./helpers/host-notes.js');
 const { makeMemoryStore } = require('../sidecar/memory-store.js');
 const { writeFileDurable } = require('../sidecar/durable-write.js');
 const root = path.resolve(__dirname, '..');
-const workspace = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-fold-memory-'));
+const workspace = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-fold-memory-'));
 const SUMMARIES = path.join(workspace, '.summaries');
 const WINDOW = 32000;
 const STREAM = 'ws_memory_chat_3', CONTROL = 'ws_unplaced_memory_5';
@@ -76,9 +76,9 @@ async function boot() {
   const socket = http.createServer(); socket.listen(0, '127.0.0.1'); await once(socket, 'listening'); const port = socket.address().port; await new Promise(r => socket.close(r));
   base = 'http://127.0.0.1:' + port;
   child = spawn(process.execPath, ['sidecar/index.js'], { cwd: root, env: { ...process.env, SKYNET_WORKSPACES: workspace, SKYNET_PORT: String(port), SKYNET_OPENROUTER_BASE: 'http://127.0.0.1:' + mock.address().port + '/api/v1', SKYNET_OPENROUTER_KEY: 'sk-or-v1-fold-memory-fixture',
-    STARNET_COMPACT_CHUNK_CHARS: '2000000', SKYNET_EDGE_TTS: '0', SKYNET_REFLECT: '0', SKYNET_SKILL_REVIEW: '0' }, stdio: ['ignore', 'pipe', 'pipe'] });
+    VULTRON_COMPACT_CHUNK_CHARS: '2000000', SKYNET_EDGE_TTS: '0', SKYNET_REFLECT: '0', SKYNET_SKILL_REVIEW: '0' }, stdio: ['ignore', 'pipe', 'pipe'] });
   await new Promise((resolve, reject) => { let out = ''; const timer = setTimeout(() => reject(new Error('boot timeout: ' + out.slice(-1200))), 45000); const read = d => { out += d; if (out.includes('Open in your browser:')) { clearTimeout(timer); resolve(); } }; child.stdout.on('data', read); child.stderr.on('data', read); child.once('exit', c => { clearTimeout(timer); reject(new Error('boot exit ' + c + out.slice(-1200))); }); });
-  headers = { 'Content-Type': 'application/json', 'X-StarNet-Token': await bootToken(base, base), Origin: base };
+  headers = { 'Content-Type': 'application/json', 'X-Vultron-Token': await bootToken(base, base), Origin: base };
 }
 async function stop() { if (child && child.exitCode === null) { const exit = once(child, 'exit'); child.kill(); await exit; } }
 // one send, the way the page does it: the history it holds + the new message

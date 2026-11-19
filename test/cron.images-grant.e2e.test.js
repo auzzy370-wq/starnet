@@ -65,12 +65,12 @@ async function startModel() {
 (async () => {
   const model = await startModel();
   const sidecar = SidecarFixture.create({
-    prefix: 'starnet-cron-images-grant-',
+    prefix: 'vultron-cron-images-grant-',
     env: {
-      SKYNET_OPENROUTER_BASE: model.base, STARNET_OPENROUTER_BASE: model.base,
-      SKYNET_OPENROUTER_KEY: 'sk-or-v1-images-grant-fake', STARNET_OPENROUTER_KEY: 'sk-or-v1-images-grant-fake',
+      SKYNET_OPENROUTER_BASE: model.base, VULTRON_OPENROUTER_BASE: model.base,
+      SKYNET_OPENROUTER_KEY: 'sk-or-v1-images-grant-fake', VULTRON_OPENROUTER_KEY: 'sk-or-v1-images-grant-fake',
       SKYNET_DEFAULT_MODEL: 'test/model', SKYNET_AUX_BUDGET: '0',
-      SKYNET_FULL_ACCESS: '', STARNET_FULL_ACCESS: ''
+      SKYNET_FULL_ACCESS: '', VULTRON_FULL_ACCESS: ''
     }
   });
   try {
@@ -146,7 +146,7 @@ async function startModel() {
     await runNow(tainted);
     A.eq(model.imageRequests.length, before, 'a run that starts on another routine\'s output generates nothing');
     const lifted = toolResultFor('IMG_TAINT');
-    A.ok(/switched off for the rest of THIS run because it read content from outside StarNet/.test(lifted), 'the refusal says the grant was lifted for this run (got: ' + lifted.slice(0, 200) + ')');
+    A.ok(/switched off for the rest of THIS run because it read content from outside Vultron/.test(lifted), 'the refusal says the grant was lifted for this run (got: ' + lifted.slice(0, 200) + ')');
   } catch (error) {
     error.message += '\nSidecar output (tail):\n' + sidecar.output().slice(-6000);
     throw error;

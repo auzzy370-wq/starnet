@@ -111,7 +111,7 @@ function fakeDriver() {
       A.eq(picked.headless, false, 'the preferred browser retains the full browser surface');
     }
     const pwFull = T.CHROME_CANDIDATES.find(c => !c.headless && /ms-playwright/.test(c.path));
-    const installed = T.CHROME_CANDIDATES.find(c => !c.headless && !/ms-playwright|STARNET|SKYNET/.test(c.path) && T.CHROME_CANDIDATES.indexOf(c) > T.CHROME_CANDIDATES.indexOf(pwFull));
+    const installed = T.CHROME_CANDIDATES.find(c => !c.headless && !/ms-playwright|VULTRON|SKYNET/.test(c.path) && T.CHROME_CANDIDATES.indexOf(c) > T.CHROME_CANDIDATES.indexOf(pwFull));
     if (pwFull && installed) {
       const both = p => p === pwFull.path || p === installed.path;
       A.eq(T.resolveChrome(true, both).path, installed.path, 'a WINDOW the Commander uses is their installed Chrome/Edge, not a Playwright test build');
@@ -508,7 +508,7 @@ function fakeDriver() {
     A.ok(sent.some(m => m.method === 'Page.navigate' && m.params.url === 'about:blank'), 'failed isolation navigates away from the unshimmed page');
     await refused.close();
 
-    const privateProfile = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-cdp-owner-'));
+    const privateProfile = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-cdp-owner-'));
     const fetched = [], privateLaunches = [];
     isolationReady = true; currentUrl = 'about:blank'; sent.length = 0;
     const privatePort = T.makeCdpDriver({
@@ -1587,10 +1587,10 @@ function fakeDriver() {
   {
     // real-pathed (macOS tmpdir is /var -> /private/var). The browser is handed a STAGED COPY of the proven bytes in a
     // STATION-OWNED root OUTSIDE the jail (review round 5: <stagingRoot>/<agent>/<rand>/<name>), never the path as written
-    const ws = fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-upload-')));
+    const ws = fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-upload-')));
     // TEST HYGIENE (polish review round 1): this stages in-process, so its per-user staging base is a scratch folder of its
-    // own, never the user's real %LOCALAPPDATA%\StarNet or TEMP (test/helpers/staging-base.js)
-    const baseScratch = fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-upload-base-')));
+    // own, never the user's real %LOCALAPPDATA%\Vultron or TEMP (test/helpers/staging-base.js)
+    const baseScratch = fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-upload-base-')));
     const perUser = require('./helpers/staging-base.js').hermeticStagingBase(baseScratch);
     const stagingRoot = require('../sidecar/egress-files.js').defaultStagingRoot(path, ws);
     A.ok(path.resolve(stagingRoot).toLowerCase().startsWith(perUser.base.toLowerCase() + path.sep), 'test hygiene: the upload stages inside scratch, never the user\'s real per-user base: ' + stagingRoot);
@@ -1641,7 +1641,7 @@ function fakeDriver() {
   // screenshot() had exactly ONE consumer - vision() - which handed the base64 to a model and
   // returned a BYTE COUNT. The user could never see what the agent saw, and the frame was dropped.
   {
-    const ws = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-shots-'));
+    const ws = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-shots-'));
     try {
       const fsp = require('node:fs/promises');
       const emitted = [];
@@ -1822,7 +1822,7 @@ function fakeDriver() {
     // 2. ENV-PINNED HEADLESS REFUSES before any consent ask or window.
     {
       const seam = mkSeam();
-      const B2 = makeBrowserTools({ makeDriver: seam.makeDriver, env: { STARNET_BROWSER_HEADLESS: '1' }, attendedLogin: { prompt: async () => 'once' } });
+      const B2 = makeBrowserTools({ makeDriver: seam.makeDriver, env: { VULTRON_BROWSER_HEADLESS: '1' }, attendedLogin: { prompt: async () => 'once' } });
       await rejects(B2.tools.find(t => t.name === 'browser.login').run({ url: 'https://erank.com' }, {}),
         /pins the browser headless/i, 'env headless pin refuses a login window');
       A.eq(seam.made.length, 0, 'env-pinned headless never launches a headed browser');

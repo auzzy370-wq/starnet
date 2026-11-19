@@ -94,7 +94,7 @@ const CLEAR_TIMEOUT_MS = 5000;           // emptying the inputs of a busy page n
 const UPLOAD_MAX_LIVE = 32;              // staged copies one browser keeps at once (oldest out first)
 const UPLOAD_MAX_LIVE_BYTES = 1024 * 1024 * 1024;   // ...and their bytes on disk at once
 const NOTES_MAX = 6;
-const STAGE_MARK = Symbol.for('starnet.uploadStage');
+const STAGE_MARK = Symbol.for('vultron.uploadStage');
 const SEVERAL = Symbol('several agents');   // a note about more than one agent's copies: the station log only
 
 function isUploadStage(s) { return !!(s && typeof s === 'object' && s[STAGE_MARK] === true); }
@@ -134,7 +134,7 @@ function makeUploadStage(deps) {
   const mb = n => Math.round(n / 1048576) + ' MB';
   // the one refusal for a selection over the bound (browser.upload says it before staging when it can)
   function boundRefusal(n, bytes) {
-    return 'a browser upload takes at most ' + maxLive + ' files and ' + mb(maxLiveBytes) + ' at once (StarNet keeps no more staged copies than that per browser); this selection is '
+    return 'a browser upload takes at most ' + maxLive + ' files and ' + mb(maxLiveBytes) + ' at once (Vultron keeps no more staged copies than that per browser); this selection is '
       + (n > maxLive ? n + ' files' : 'over ' + mb(maxLiveBytes)) + ', so nothing was selected or uploaded. Select fewer or smaller files';
   }
   const named = cs => cs.map(c => '"' + c.shown + '"').join(', ');
@@ -253,7 +253,7 @@ function makeUploadStage(deps) {
         if (copies.indexOf(old) >= 0 || !live.has(old)) continue;
         const r = await cancelOne(old);
         for (const g of r.group) bytes -= Number(g.size) || 0;
-        note('The staged upload copy of ' + named(r.group) + ' was dropped: StarNet keeps at most ' + maxLive + ' staged uploads (' + Math.round(maxLiveBytes / 1048576) + ' MB) at once, oldest out first; '
+        note('The staged upload copy of ' + named(r.group) + ' was dropped: Vultron keeps at most ' + maxLive + ' staged uploads (' + Math.round(maxLiveBytes / 1048576) + ' MB) at once, oldest out first; '
           + inputSaid(r, 'the file input holding it was emptied: select it again before that form is submitted.'), ownerOf(r.group));
       }
     },

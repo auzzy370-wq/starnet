@@ -2,13 +2,13 @@
    groups and on every channel (2026-10-18: "custom commands cannot be created for botted groups").
 
    Five breaks, each reproduced against the real adapter + hub + slash registry before the fix:
-     1. '/standup@starnetbot' — the form Telegram autocompletes in a group — answered "Unknown command.": the hub
+     1. '/standup@vultronbot' — the form Telegram autocompletes in a group — answered "Unknown command.": the hub
         handed the raw text to the registry, which refuses an '@'. The built-ins had always stripped it.
      2. The Telegram "/" menu listed none of them (setMyCommands published only the hub's own table).
      3. A dashed name ('/disk-usage') was dropped by the group mention gate before the hub saw it — and Telegram's
         command grammar has no '-', so it could never be listed or tapped either. '/disk_usage' now runs it.
      4. Discord / Slack / Matrix / Signal hubs were never given the registry, so '/standup' went to the MODEL.
-     5. A shell command typed in a group was refused with "only run in the StarNet desktop app" — false: the
+     5. A shell command typed in a group was refused with "only run in the Vultron desktop app" — false: the
         owner's Telegram DM runs them. Groups still refuse them (the output would post to the room); the reply now
         says where they DO run.
    Fakes only: no network, no sidecar boot (requiring sidecar/index.js would boot a real one). */
@@ -64,11 +64,11 @@ const settle = () => new Promise(r => setTimeout(r, 10));
 (async () => {
   // ---- 1. parseUserCommand: the two forms a messenger produces, and what must stay a message ----
   {
-    A.eq(parseUserCommand('/standup@starnetbot', NAMES), { name: 'standup', line: '/standup' }, '@bot suffix is stripped');
-    A.eq(parseUserCommand('/standup@starnetbot  today please', NAMES), { name: 'standup', line: '/standup today please' }, 'arguments survive the strip');
+    A.eq(parseUserCommand('/standup@vultronbot', NAMES), { name: 'standup', line: '/standup' }, '@bot suffix is stripped');
+    A.eq(parseUserCommand('/standup@vultronbot  today please', NAMES), { name: 'standup', line: '/standup today please' }, 'arguments survive the strip');
     A.eq(parseUserCommand('/StandUp', NAMES), { name: 'standup', line: '/standup' }, 'case-insensitive like the registry');
     A.eq(parseUserCommand('/disk_usage', NAMES), { name: 'disk-usage', line: '/disk-usage' }, "'_' reads back as the dashed name Telegram cannot list");
-    A.eq(parseUserCommand('/disk_usage@starnetbot', NAMES), { name: 'disk-usage', line: '/disk-usage' }, 'both forms together');
+    A.eq(parseUserCommand('/disk_usage@vultronbot', NAMES), { name: 'disk-usage', line: '/disk-usage' }, 'both forms together');
     A.eq(parseUserCommand('/disk_usage', ['disk_usage', 'disk-usage']), { name: 'disk_usage', line: '/disk_usage' }, 'an exact name always wins over the dash reading');
     A.eq(parseUserCommand('/standup/notes.md', NAMES), null, 'a path that starts with a command name is still a message');
     A.eq(parseUserCommand('/nope', NAMES), null, 'an unknown name is not a command');
@@ -78,9 +78,9 @@ const settle = () => new Promise(r => setTimeout(r, 10));
   // ---- 2. through the REAL hub + registry, as the paired owner in a GROUP ----
   {
     const t = build();
-    await t.hub.onInbound(msg('boss', '/standup@starnetbot', 'group'));
+    await t.hub.onInbound(msg('boss', '/standup@vultronbot', 'group'));
     await settle();
-    A.eq(t.slashCalls[0] && t.slashCalls[0].input, '/standup', 'the registry gets the canonical line, not "/standup@starnetbot"');
+    A.eq(t.slashCalls[0] && t.slashCalls[0].input, '/standup', 'the registry gets the canonical line, not "/standup@vultronbot"');
     A.ok(/ran routine/.test(t.sends[0] || ''), '/standup@bot runs the alias in a group (was "Unknown command.")');
     A.eq(t.runs.length, 0, 'no model run');
   }
@@ -99,7 +99,7 @@ const settle = () => new Promise(r => setTimeout(r, 10));
     A.eq(ctx && ctx.ownerTrusted, false, 'a group is never owner-trusted: shell commands stay refused there');
     A.eq(ctx && ctx.ownerDmExec, true, 'a hub that mints ownerTrusted has an owner DM where they run');
     A.ok(/never run in a group/.test(t.sends[0] || '') && /DM/.test(t.sends[0] || ''), 'the refusal says why, and to use the DM');
-    A.ok(!/only run in the StarNet desktop app, not over messaging/.test(t.sends[0] || ''), 'the false "desktop only" line is gone');
+    A.ok(!/only run in the Vultron desktop app, not over messaging/.test(t.sends[0] || ''), 'the false "desktop only" line is gone');
   }
   {
     const t = build();
@@ -109,7 +109,7 @@ const settle = () => new Promise(r => setTimeout(r, 10));
   }
   {
     const t = build();
-    await t.hub.onInbound(msg('stranger', '/standup@starnetbot', 'group'));
+    await t.hub.onInbound(msg('stranger', '/standup@vultronbot', 'group'));
     await t.hub.onInbound(msg('stranger', '/disk_usage', 'group'));
     await settle();
     A.ok(t.sends.length === 2 && t.sends.every(s => /owner-only/.test(s)), 'a group member is still refused both new forms');
@@ -131,7 +131,7 @@ const settle = () => new Promise(r => setTimeout(r, 10));
     const ad = makeChannelAdapter({
       transport: { getUpdates: async () => [], send: async () => ({ ok: true }) },
       normalize: (r) => r, name: 'telegram', clock: { now: () => 1 },
-      allowedChats: ['-1001'], ownerUserId: 'boss', botUsername: 'starnetbot',
+      allowedChats: ['-1001'], ownerUserId: 'boss', botUsername: 'vultronbot',
       onInbound: (im) => got.push(im)
     });
     const g = (text) => ({ offset: 1, message: { chatId: -1001, chatType: 'group', userId: 'boss', userName: 'andro', text, messageId: String(Math.random()) } });

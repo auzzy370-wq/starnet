@@ -1,6 +1,6 @@
 /* node test/community-maps.test.js — the community maps gallery (2026-10-18).
 
-   Players share a station LAYOUT from build mode; a person approves it on account.starnetos.com; the publisher's PC
+   Players share a station LAYOUT from build mode; a person approves it on account.vultron.vercel.app; the publisher's PC
    re-cleans it with the app's own BuildShare cleaner and signs the gallery; stations read it back. Pinned here:
      1. the pull takes only what the reviewer approved (digest), re-cleaned (a build carrying crew, instructions or
         made props is skipped), never a name another author holds, and an author's update is a new version;
@@ -79,12 +79,12 @@ function sub(over) {
   A.eq(P.plainCredit('**Ada** [me](https://x.example) <b>'), 'Ada mex.example b', 'a credit is plain text even if the cloud missed something');
 
   // ---- 2. the gallery build, in a scratch tree with a test key ----
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-maps-'));
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-maps-'));
   const kp = signing.generateKeyPair();
   fs.writeFileSync(path.join(tmp, 'test.key'), kp.privateKeyPem);
   const env = Object.assign({}, process.env, {
-    STARNET_MAPS_SRC: path.join(tmp, 'src'), STARNET_MAPS_OUT: path.join(tmp, 'site'),
-    STARNET_SKILL_MARKET_KEY: path.join(tmp, 'test.key'), STARNET_MAPS_TEST_KEYS: JSON.stringify([{ id: 'test-maps', publicKey: kp.publicKey }])
+    VULTRON_MAPS_SRC: path.join(tmp, 'src'), VULTRON_MAPS_OUT: path.join(tmp, 'site'),
+    VULTRON_SKILL_MARKET_KEY: path.join(tmp, 'test.key'), VULTRON_MAPS_TEST_KEYS: JSON.stringify([{ id: 'test-maps', publicKey: kp.publicKey }])
   });
   const build = (args) => spawnSync(process.execPath, [path.join(ROOT, 'scripts', 'build-map-catalog.mjs')].concat(args || []), { encoding: 'utf8', env });
   const dir = path.join(tmp, 'src', p.slug);
@@ -96,9 +96,9 @@ function sub(over) {
   A.eq(r.status, 1, 'check fails before the first build');
   r = build();
   A.eq(r.status, 0, 'the gallery builds: ' + (r.stderr || r.stdout).trim());
-  const indexBytes = fs.readFileSync(path.join(tmp, 'site', '.well-known', 'starnet-maps.json'));
+  const indexBytes = fs.readFileSync(path.join(tmp, 'site', '.well-known', 'vultron-maps.json'));
   const keys = [{ id: 'test-maps', publicKey: kp.publicKey }];
-  A.eq(signing.verify(indexBytes, fs.readFileSync(path.join(tmp, 'site', '.well-known', 'starnet-maps.json.sig'), 'utf8'), keys), 'test-maps', 'and is signed');
+  A.eq(signing.verify(indexBytes, fs.readFileSync(path.join(tmp, 'site', '.well-known', 'vultron-maps.json.sig'), 'utf8'), keys), 'test-maps', 'and is signed');
   const cat = fmt.readCatalog(JSON.parse(indexBytes));
   A.eq([cat.serial, cat.maps.length, cat.maps[0].slug, cat.maps[0].version], [1, 1, 'night-shift-foundry', 1], 'listing the map at serial 1');
   const pinned = fs.readFileSync(path.join(tmp, 'site', ...cat.maps[0].build.path.split('/')));
@@ -109,7 +109,7 @@ function sub(over) {
   r = build();
   A.ok(r.status === 1 && /still carries/.test(r.stderr) && /nothing written/.test(r.stderr), 'a source with instructions in it is refused, and nothing is written: ' + r.stderr.trim());
   fs.writeFileSync(path.join(dir, fmt.BUILD_FILE), p.buildText);
-  fs.writeFileSync(path.join(tmp, 'site', '.well-known', 'starnet-maps.json.sig'), signing.sign(Buffer.from('other bytes'), kp.privateKeyPem, keys));
+  fs.writeFileSync(path.join(tmp, 'site', '.well-known', 'vultron-maps.json.sig'), signing.sign(Buffer.from('other bytes'), kp.privateKeyPem, keys));
   r = build(['--check']);
   A.ok(r.status === 1 && /does not verify/.test(r.stderr), 'check fails on a signature that does not match');
   A.eq(build().status, 0, 'and a build re-signs it');
@@ -129,7 +129,7 @@ function sub(over) {
   let clock = 1e6;
   const cm = (over) => makeCommunityMaps(Object.assign({
     fetchDocument, signing, trustedKeys: signing.TRUSTED_KEYS.concat(keys),
-    catalogUrl: () => 'https://starnetos.com/.well-known/starnet-maps.json',
+    catalogUrl: () => 'https://vultron.vercel.app/.well-known/vultron-maps.json',
     cloud: () => ({}), fetch: async () => { throw new Error('no network in this test'); }, now: () => clock
   }, over || {}));
   let station = cm();
@@ -145,7 +145,7 @@ function sub(over) {
   served = { ['/' + cat.maps[0].build.path]: Buffer.from(p.buildText.replace('"Night Shift Foundry"', '"Night Shift Foundrz"')) };
   err = ''; try { await station.file('night-shift-foundry', 1, 'build'); } catch (e) { err = e.message; }
   A.ok(/does not match the gallery/.test(err), 'a build file that differs from the pinned hash is refused');
-  served = { '/.well-known/starnet-maps.json': Buffer.from(indexBytes.toString('utf8').replace('"Ada"', '"Eve"')) };
+  served = { '/.well-known/vultron-maps.json': Buffer.from(indexBytes.toString('utf8').replace('"Ada"', '"Eve"')) };
   err = ''; try { await cm().catalog({}); } catch (e) { err = e.message; }
   A.ok(/signature does not match/.test(err), 'a gallery changed under its real signature is refused');
   served = {};
@@ -154,18 +154,18 @@ function sub(over) {
   // a replayed older gallery, after this station read a newer one
   const newer = JSON.parse(indexBytes); newer.serial = 5;
   const newerBytes = Buffer.from(JSON.stringify(newer, null, 2) + '\n');
-  served = { '/.well-known/starnet-maps.json': newerBytes, '/.well-known/starnet-maps.json.sig': Buffer.from(signing.sign(newerBytes, kp.privateKeyPem, keys)) };
+  served = { '/.well-known/vultron-maps.json': newerBytes, '/.well-known/vultron-maps.json.sig': Buffer.from(signing.sign(newerBytes, kp.privateKeyPem, keys)) };
   station = cm();
   A.eq((await station.catalog({})).serial, 5, 'a newer signed gallery is read');
   served = {};
   err = ''; try { await station.catalog({ refresh: true }); } catch (e) { err = e.message; }
   A.ok(/older than one this station already read/.test(err), 'then an older signed gallery is refused');
-  A.eq((await cm({ catalogUrl: () => '' }).catalog({})).off, true, 'STARNET_MAPS_URL=off switches the gallery off');
+  A.eq((await cm({ catalogUrl: () => '' }).catalog({})).off, true, 'VULTRON_MAPS_URL=off switches the gallery off');
   // the highest serial survives a restart (kept on disk, like the Skill Market's)
   let saved = null;
-  served = { '/.well-known/starnet-maps.json': newerBytes, '/.well-known/starnet-maps.json.sig': Buffer.from(signing.sign(newerBytes, kp.privateKeyPem, keys)) };
+  served = { '/.well-known/vultron-maps.json': newerBytes, '/.well-known/vultron-maps.json.sig': Buffer.from(signing.sign(newerBytes, kp.privateKeyPem, keys)) };
   await cm({ saveState: (v) => { saved = JSON.parse(JSON.stringify(v)); } }).catalog({});
-  A.eq(saved, { serials: { 'https://starnetos.com/.well-known/starnet-maps.json': 5 } }, 'the serial is saved per gallery');
+  A.eq(saved, { serials: { 'https://vultron.vercel.app/.well-known/vultron-maps.json': 5 } }, 'the serial is saved per gallery');
   served = {};
   err = ''; try { await cm({ loadState: () => saved }).catalog({}); } catch (e) { err = e.message; }
   A.ok(/older than one this station already read/.test(err), 'a restarted station still refuses the older gallery');
@@ -213,7 +213,7 @@ function sub(over) {
   fs.rmSync(tmp, { recursive: true, force: true });
 
   // ---- the repo's own gallery is exactly what its sources build, and its signature verifies with the app's keys ----
-  const repoEnv = Object.assign({}, process.env); for (const k of ['STARNET_MAPS_SRC', 'STARNET_MAPS_OUT', 'STARNET_MAPS_TEST_KEYS', 'STARNET_SKILL_MARKET_KEYS']) delete repoEnv[k];
+  const repoEnv = Object.assign({}, process.env); for (const k of ['VULTRON_MAPS_SRC', 'VULTRON_MAPS_OUT', 'VULTRON_MAPS_TEST_KEYS', 'VULTRON_SKILL_MARKET_KEYS']) delete repoEnv[k];
   const live = spawnSync(process.execPath, [path.join(ROOT, 'scripts', 'build-map-catalog.mjs'), '--check'], { encoding: 'utf8', env: repoEnv });
   A.eq(live.status, 0, 'website/ holds exactly the gallery maps-catalog/ builds: ' + (live.stderr || live.stdout).trim());
 

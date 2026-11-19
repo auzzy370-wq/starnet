@@ -2,7 +2,7 @@
 /* scripts/pull-map-submissions.mjs — bring APPROVED community maps into the gallery (2026-10-18).
 
    Players share a station layout from build mode on a linked station; the operator approves or sends each back in
-   account.starnetos.com/admin/maps. Approving publishes nothing: the gallery is signed on this PC, so approved maps
+   account.vultron.vercel.app/admin/maps. Approving publishes nothing: the gallery is signed on this PC, so approved maps
    come here.
 
      node scripts/pull-map-submissions.mjs              pull every approved map into maps-catalog/maps/<slug>/, then
@@ -17,8 +17,8 @@
    carries crew, instructions or made props is skipped. Refused, never overwritten: a name another author's map holds
    (the cloud's owner key must match the folder's). An update to an author's own map is a new version.
 
-   Config: SKILL_REVIEW_TOKEN (or ~/.starnet-keys/skill-review.token — the same review token as skills),
-   STARNET_CLOUD_URL (default https://account.starnetos.com), STARNET_MAPS_URL (default the live gallery index). */
+   Config: SKILL_REVIEW_TOKEN (or ~/.vultron-keys/skill-review.token — the same review token as skills),
+   VULTRON_CLOUD_URL (default https://account.vultron.vercel.app), VULTRON_MAPS_URL (default the live gallery index). */
 import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, statSync, rmSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { homedir } from 'node:os';
@@ -31,10 +31,10 @@ const require = createRequire(import.meta.url);
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const fmt = require(join(ROOT, 'sidecar/maps/maps-format.js'));
 
-const CLOUD = String(process.env.STARNET_CLOUD_URL || 'https://account.starnetos.com').replace(/\/+$/, '');
-const LIVE_INDEX = process.env.STARNET_MAPS_URL || 'https://starnetos.com/.well-known/starnet-maps.json';
-const TOKEN_FILE = join(homedir(), '.starnet-keys', 'skill-review.token');
-const MAPS_DIR = process.env.STARNET_MAPS_SRC || join(ROOT, 'maps-catalog', 'maps');
+const CLOUD = String(process.env.VULTRON_CLOUD_URL || 'https://account.vultron.vercel.app').replace(/\/+$/, '');
+const LIVE_INDEX = process.env.VULTRON_MAPS_URL || 'https://vultron.vercel.app/.well-known/vultron-maps.json';
+const TOKEN_FILE = join(homedir(), '.vultron-keys', 'skill-review.token');
+const MAPS_DIR = process.env.VULTRON_MAPS_SRC || join(ROOT, 'maps-catalog', 'maps');
 
 const str = (v) => (v == null ? '' : String(v));
 // a credit as it may appear on a card: plain text only (the cloud already refuses markup; this is the second lock)
@@ -72,7 +72,7 @@ export function planPull(submissions, ctx) {
     const version = (versions.length ? Math.max(...versions) : 0) + 1;
     const meta = {
       slug, version, title: fmt.cleanText(s.title, fmt.LIMITS.title), description: fmt.cleanText(s.description, fmt.LIMITS.description),
-      credit: plainCredit(s.credit) || 'StarNet player', license: fmt.LICENSE, stats: c.stats,
+      credit: plainCredit(s.credit) || 'Vultron player', license: fmt.LICENSE, stats: c.stats,
       submission: { id: s.id, owner: s.owner, digest: s.digest }
     };
     try { fmt.buildEntry(meta, Buffer.from(c.text, 'utf8'), still); } catch (e) { skip(str(e && e.message)); continue; }

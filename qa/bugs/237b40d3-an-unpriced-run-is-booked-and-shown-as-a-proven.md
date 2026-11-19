@@ -15,7 +15,7 @@ origin: audit
 
 ## Symptom
 
-After a run on a model StarNet has no price for (no provider-reported cost, no catalog rate), every durable surface treats it as a run that provably cost $0: Insights counts it as a metered run at $0 and `/insights` prints the model at "$0.00". The loop itself knew the run was unpriced.
+After a run on a model Vultron has no price for (no provider-reported cost, no catalog rate), every durable surface treats it as a run that provably cost $0: Insights counts it as a metered run at $0 and `/insights` prints the model at "$0.00". The loop itself knew the run was unpriced.
 
 ## Repro
 

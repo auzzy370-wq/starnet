@@ -185,7 +185,7 @@ const GroupChat = (() => {
       if (refused ? (refused.staleSession || refused.tokenWithheld) : (r.status === 401 || r.status === 403)) {
         throw new Error(refused && refused.tokenWithheld ? refused.tokenWithheld : 'Reconnect to this station by refreshing the page. Your conversation is saved.');
       }
-      if (r.status === 404 && !body && !query) throw new Error('Group chat is unavailable on this server. Run the current StarNet backend, then try again.');
+      if (r.status === 404 && !body && !query) throw new Error('Group chat is unavailable on this server. Run the current Vultron backend, then try again.');
       let out;
       try { out = await r.json(); } catch (_) { if (deadline && deadline.signal.aborted) throw timedOut(); throw new Error('The server could not load group chat. Try again.'); }
       if (!r.ok || !out?.ok) throw new Error(out?.error || 'Group request failed'); return out.result;
@@ -903,7 +903,7 @@ const GroupChat = (() => {
     };
   }
   // the shared shelf's fold, remembered per group (closed until the Commander opens it — the files are one click away)
-  const filesKey = id => 'starnet.gc.filesOpen.' + id;
+  const filesKey = id => 'vultron.gc.filesOpen.' + id;
   function filesOpen() { try { return !!(active && localStorage.getItem(filesKey(active.id)) === '1'); } catch (_) { return false; } }
   function paintFilesToggle(n) {
     const tog = $('gc-files-tog'), open = filesOpen(); if (!tog) return;

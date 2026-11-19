@@ -1,9 +1,9 @@
 /* A live proof against an already-installed language server (clangd, else rust-analyzer), on test/http.list.
    It is a machine receipt, so it has three honest outcomes:
-   - PASS: a real installed server confirmed a planted diagnostic through StarNet's LSP manager;
+   - PASS: a real installed server confirmed a planted diagnostic through Vultron's LSP manager;
    - SKIP: no supported server is on PATH, or the one on PATH cannot run on this machine at all — its own
      `--version` fails too (a rustup proxy with no rust-analyzer component, a toolchain this step's environment
-     cannot reach, a broken install). That says nothing about StarNet;
+     cannot reach, a broken install). That says nothing about Vultron;
    - FAIL: the server runs on its own here, but the manager could not start it or confirm the diagnostic.
    rust-analyzer executes the project (lsp-manager.js starts it only for a watched run); the project here is this
    test's own throwaway crate in a fresh temp dir, so the test starts it the way a watched run does
@@ -16,7 +16,7 @@ const os = require('node:os');
 const { spawn, spawnSync } = require('node:child_process');
 const { makeLspManager, DEFAULT_SERVERS } = require('../sidecar/lsp-manager.js');
 
-// Does the located server run at all, outside StarNet? (spawn error, non-zero exit or a hang = it does not.)
+// Does the located server run at all, outside Vultron? (spawn error, non-zero exit or a hang = it does not.)
 function runsOnItsOwn(command) {
   try {
     const r = spawnSync(command, ['--version'], { encoding: 'utf8', timeout: 20000, windowsHide: true });
@@ -25,7 +25,7 @@ function runsOnItsOwn(command) {
 }
 
 (async () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-lsp-live-'));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-lsp-live-'));
   const manager = makeLspManager({ spawn, fs, fsp, pathMod: path, env: process.env,
     limits: { requestTimeoutMs: 15000, diagnosticTimeoutMs: 15000, idleMs: 30000 } });
   try {

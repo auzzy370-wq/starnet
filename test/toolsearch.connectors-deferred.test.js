@@ -132,14 +132,14 @@ function mockModel() {
 function cleanEnv(extra) {
   const env = {};
   for (const k of Object.keys(process.env)) {
-    if (/^(OPENROUTER|ANTHROPIC|OPENAI|GEMINI|GOOGLE_API|XAI|GROQ|MISTRAL|DEEPSEEK|TOGETHER|FIREWORKS|PERPLEXITY|CEREBRAS|KIMI|ELEVENLABS|STARNET_|SKYNET_)/i.test(k)) env[k] = '';
+    if (/^(OPENROUTER|ANTHROPIC|OPENAI|GEMINI|GOOGLE_API|XAI|GROQ|MISTRAL|DEEPSEEK|TOGETHER|FIREWORKS|PERPLEXITY|CEREBRAS|KIMI|ELEVENLABS|VULTRON_|SKYNET_)/i.test(k)) env[k] = '';
   }
   return Object.assign(env, {
-    SKYNET_FULL_ACCESS: '1', STARNET_FULL_ACCESS: '1', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0', SKYNET_THREAD_MINE: '0',
-    STARNET_CREDITS_URL: '', SKYNET_CREDITS_URL: '', STARNET_LIVE_PRICES: '0',
+    SKYNET_FULL_ACCESS: '1', VULTRON_FULL_ACCESS: '1', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0', SKYNET_THREAD_MINE: '0',
+    VULTRON_CREDITS_URL: '', SKYNET_CREDITS_URL: '', VULTRON_LIVE_PRICES: '0',
     // The [RUNTIME] block names the harness build; unpinned, each boot runs its own 2s `git describe --dirty`, and
     // on a loaded box one boot timed out to the package version — the byte-identity check then failed on that line.
-    STARNET_BUILD_DESCRIBE: 'connector-defer-fixture'
+    VULTRON_BUILD_DESCRIBE: 'connector-defer-fixture'
   }, extra || {});
 }
 
@@ -149,7 +149,7 @@ const toolNames = body => (body.tools || []).map(t => t.function.name);
 (async () => {
   const mcp = await mockMcp();
   const llm = await mockModel();
-  const fixture = SidecarFixture.create({ prefix: 'starnet-connector-defer-', timeoutMs: 20000, env: cleanEnv() });
+  const fixture = SidecarFixture.create({ prefix: 'vultron-connector-defer-', timeoutMs: 20000, env: cleanEnv() });
   // No streamId: an explicit stream would be seeded from its durable transcript on the second pass and the two
   // "identical" requests would differ by history rather than by footprint.
   async function run(scenario) {
@@ -212,7 +212,7 @@ const toolNames = body => (body.tools || []).map(t => t.function.name);
     A.ok(systemOf(b1).indexOf('Connector tools not loaded yet') < 0, 'below threshold: no index line');
 
     // Same station with connector deferral switched OFF (both axes 0): the first request must be identical.
-    await fixture.restart({ SKYNET_CONNECTOR_DEFER_BYTES: '0', SKYNET_CONNECTOR_DEFER_TOOLS: '0', STARNET_CONNECTOR_DEFER_BYTES: '0', STARNET_CONNECTOR_DEFER_TOOLS: '0' });
+    await fixture.restart({ SKYNET_CONNECTOR_DEFER_BYTES: '0', SKYNET_CONNECTOR_DEFER_TOOLS: '0', VULTRON_CONNECTOR_DEFER_BYTES: '0', VULTRON_CONNECTOR_DEFER_TOOLS: '0' });
     A.ok(await connectorsUp(['small']), 'the small connector is back after restart');
     const off = await run('plain');
     A.eq(off.reason, 'done', 'deferral-off run completes');

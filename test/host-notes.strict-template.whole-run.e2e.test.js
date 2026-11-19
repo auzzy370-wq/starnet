@@ -47,10 +47,10 @@ const PROFILES = [
 function hermeticEnv() {
   const env = {};
   for (const k of Object.keys(process.env)) {
-    if (/^(OPENROUTER|ANTHROPIC|OPENAI|GEMINI|GOOGLE_API|XAI|GROQ|MISTRAL|DEEPSEEK|TOGETHER|FIREWORKS|PERPLEXITY|CEREBRAS|KIMI|ELEVENLABS|OLLAMA|STARNET_|SKYNET_)/i.test(k)) env[k] = '';
+    if (/^(OPENROUTER|ANTHROPIC|OPENAI|GEMINI|GOOGLE_API|XAI|GROQ|MISTRAL|DEEPSEEK|TOGETHER|FIREWORKS|PERPLEXITY|CEREBRAS|KIMI|ELEVENLABS|OLLAMA|VULTRON_|SKYNET_)/i.test(k)) env[k] = '';
   }
-  return Object.assign(env, { SKYNET_FULL_ACCESS: '1', STARNET_FULL_ACCESS: '1', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0',
-    SKYNET_THREAD_MINE: '0', SKYNET_REFLECT: '0', STARNET_LIVE_PRICES: '0', STARNET_CREDITS_URL: '', SKYNET_CREDITS_URL: '', STARNET_BUILD_DESCRIBE: 'v0.14.1-strict-whole-run' });
+  return Object.assign(env, { SKYNET_FULL_ACCESS: '1', VULTRON_FULL_ACCESS: '1', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0',
+    SKYNET_THREAD_MINE: '0', SKYNET_REFLECT: '0', VULTRON_LIVE_PRICES: '0', VULTRON_CREDITS_URL: '', SKYNET_CREDITS_URL: '', VULTRON_BUILD_DESCRIBE: 'v0.14.1-strict-whole-run' });
 }
 const textOf = S.textOf;
 // the run a request belongs to: the profile label the test put in its system prompt (aux calls carry no mark). Read from
@@ -100,7 +100,7 @@ async function run(fixture, body) {
   await new Promise(r => jinja.listen(0, '127.0.0.1', r));
   const jinjaBase = 'http://127.0.0.1:' + jinja.address().port + '/v1';
 
-  const fixture = SidecarFixture.create({ prefix: 'starnet-strict-whole-run-', timeoutMs: 45000, env: hermeticEnv() });
+  const fixture = SidecarFixture.create({ prefix: 'vultron-strict-whole-run-', timeoutMs: 45000, env: hermeticEnv() });
   const receipts = [];
   try {
     await fixture.start();

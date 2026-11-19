@@ -15,7 +15,7 @@ origin: audit
 
 ## Symptom
 
-After StarNet remembers an available update and restarts, a failed native check repeats every second despite a stored exponential retry deadline. Restarting repeats the requests again.
+After Vultron remembers an available update and restarts, a failed native check repeats every second despite a stored exponential retry deadline. Restarting repeats the requests again.
 
 ## Repro
 

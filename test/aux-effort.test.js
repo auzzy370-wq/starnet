@@ -49,7 +49,7 @@ A.eq(G.effortAsRan(null, ['low']), null, 'no pick: nothing to record');
 const idx = readSidecarSource();
 const fnSrc = A.fnBody(idx, 'function auxPassEffort(');
 A.ok(/AUX_EFFORT/.test(fnSrc) && /resolveAuxModel\(\)/.test(fnSrc) && /return auxReasoningEffort\(provider, model\)/.test(fnSrc),
-  'auxPassEffort: a configured aux tier (STARNET_AUX_EFFORT / STARNET_AUX_MODEL) keeps exactly auxReasoningEffort');
+  'auxPassEffort: a configured aux tier (VULTRON_AUX_EFFORT / VULTRON_AUX_MODEL) keeps exactly auxReasoningEffort');
 A.ok(/providerEfforts\(provider, model\)/.test(fnSrc) && /AuxGovernor\.pickAuxEffort\(/.test(fnSrc) && /provider\.reasoningEfforts\(model\)/.test(A.fnBody(idx, 'function providerEfforts(')),
   'auxPassEffort: unconfigured, it picks from the levels the provider lists for that model');
 A.ok(/const _auxEffort = _auxDone \? auxPassEffort\(provider, _auxModel\) : null;/.test(idx), 'reflection · study · thread-mine · scout ride auxPassEffort');

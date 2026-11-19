@@ -15,7 +15,7 @@ origin: audit
 
 ## Symptom
 
-A Telegram message to the station bot on a station whose channel config carries no synced system prompt (env-token / headless boot, or before the desktop page has pushed /api/channels/telegram/sync) runs with a system prompt that begins with the literal characters "() => p" instead of the channel persona ("You are the Commander's AI agent aboard the STARNET station, reachable over Telegram. Address the user as "Commander"…"). The agent loses its channel identity and the "keep replies concise and chat-friendly / you have REAL tools" guidance on every such run, while the sidecar log says the run "proceeds on the station persona".
+A Telegram message to the station bot on a station whose channel config carries no synced system prompt (env-token / headless boot, or before the desktop page has pushed /api/channels/telegram/sync) runs with a system prompt that begins with the literal characters "() => p" instead of the channel persona ("You are the Commander's AI agent aboard the VULTRON station, reachable over Telegram. Address the user as "Commander"…"). The agent loses its channel identity and the "keep replies concise and chat-friendly / you have REAL tools" guidance on every such run, while the sidecar log says the run "proceeds on the station persona".
 
 ## Repro
 
@@ -32,4 +32,4 @@ Booted sidecar :9721 (SKYNET_TELEGRAM_TOKEN + SKYNET_TELEGRAM_API_BASE -> mock B
 
 ## Verdict
 
-Fixed: the fallback factory is invoked, so a string (or absent) persona is the run's persona. Live re-check on the wire: the next station-bot request (req-270) opened "You are the Commander's AI agent aboard the STARNET station, reachable over Telegram. Address the user as \"Commander\"…". Fix: `9e15c999e`.
+Fixed: the fallback factory is invoked, so a string (or absent) persona is the run's persona. Live re-check on the wire: the next station-bot request (req-270) opened "You are the Commander's AI agent aboard the VULTRON station, reachable over Telegram. Address the user as \"Commander\"…". Fix: `9e15c999e`.

@@ -9,7 +9,7 @@
    2. CACHE-STABLE PREFIX. The per-run block ([RUNTIME], the Task Brief, quests …) rides a <run_context> note placed
       with the newest user message, so the leading system prompt + tools are byte-identical across a conversation's
       messages and its tool iterations, and the request still ends on the user turn.
-   3. KILL SWITCHES. STARNET_LEAN_CREW=0 + STARNET_STABLE_PREFIX=0 restore the old request exactly in shape.
+   3. KILL SWITCHES. VULTRON_LEAN_CREW=0 + VULTRON_STABLE_PREFIX=0 restore the old request exactly in shape.
    No external inference: a mock Chat Completions upstream records every body. */
 'use strict';
 const A = require('./_assert.js');
@@ -64,10 +64,10 @@ function startUpstream() {
 function hermeticEnv(extra) {
   const env = {};
   for (const k of Object.keys(process.env)) {
-    if (/^(OPENROUTER|ANTHROPIC|OPENAI|GEMINI|GOOGLE_API|XAI|GROQ|MISTRAL|DEEPSEEK|TOGETHER|FIREWORKS|PERPLEXITY|CEREBRAS|KIMI|ELEVENLABS|STARNET_|SKYNET_)/i.test(k)) env[k] = '';
+    if (/^(OPENROUTER|ANTHROPIC|OPENAI|GEMINI|GOOGLE_API|XAI|GROQ|MISTRAL|DEEPSEEK|TOGETHER|FIREWORKS|PERPLEXITY|CEREBRAS|KIMI|ELEVENLABS|VULTRON_|SKYNET_)/i.test(k)) env[k] = '';
   }
-  return Object.assign(env, { SKYNET_FULL_ACCESS: '1', STARNET_FULL_ACCESS: '1', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0',
-    SKYNET_THREAD_MINE: '0', STARNET_LIVE_PRICES: '0', STARNET_CREDITS_URL: '', SKYNET_CREDITS_URL: '', STARNET_BUILD_DESCRIBE: 'v0.13.2-lean-prompt' }, extra || {});
+  return Object.assign(env, { SKYNET_FULL_ACCESS: '1', VULTRON_FULL_ACCESS: '1', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0',
+    SKYNET_THREAD_MINE: '0', VULTRON_LIVE_PRICES: '0', VULTRON_CREDITS_URL: '', SKYNET_CREDITS_URL: '', VULTRON_BUILD_DESCRIBE: 'v0.13.2-lean-prompt' }, extra || {});
 }
 
 // One /api/run, read as a stream so a summon can be acked mid-run exactly as the station page would.
@@ -101,7 +101,7 @@ async function run(fixture, up, stream, messages) {
 
 (async () => {
   const up = await startUpstream();
-  let fixture = SidecarFixture.create({ prefix: 'starnet-lean-prompt-', timeoutMs: 30000, env: hermeticEnv() });
+  let fixture = SidecarFixture.create({ prefix: 'vultron-lean-prompt-', timeoutMs: 30000, env: hermeticEnv() });
   try {
     await fixture.start();
     // ---- 1 + 2: zero crew, two messages of one conversation ----
@@ -201,16 +201,16 @@ async function run(fixture, up, stream, messages) {
     await fixture.dispose();
 
     // ---- 3: kill switches restore the old request shape ----
-    fixture = SidecarFixture.create({ prefix: 'starnet-lean-prompt-off-', timeoutMs: 30000, env: hermeticEnv({ STARNET_LEAN_CREW: '0', STARNET_STABLE_PREFIX: '0' }) });
+    fixture = SidecarFixture.create({ prefix: 'vultron-lean-prompt-off-', timeoutMs: 30000, env: hermeticEnv({ VULTRON_LEAN_CREW: '0', VULTRON_STABLE_PREFIX: '0' }) });
     await fixture.start();
     const k1 = await run(fixture, up, 'off', m1);
     const k2 = await run(fixture, up, 'off', m2);
     const [o1, o2] = [k1.bodies[0], k2.bodies[0]];
-    for (const n of CREW_KIT) A.ok(toolNames(o1).indexOf(n) >= 0, 'STARNET_LEAN_CREW=0: ' + n + ' advertised with zero crew');
-    A.ok(leadingSystem(o1).indexOf('You have no crew yet') < 0 && leadingSystem(o1).indexOf('SPAWN temporary') >= 0, 'STARNET_LEAN_CREW=0: the full briefing');
-    A.ok(leadingSystem(o1).indexOf('Run id:') >= 0, 'STARNET_STABLE_PREFIX=0: the runtime block is back in the system prompt');
-    A.ok(leadingSystem(o1) !== leadingSystem(o2), 'STARNET_STABLE_PREFIX=0: the system prompt differs per message again (the old behaviour)');
-    A.eq(hostNotes(o1.messages, 'run_context').length, 0, 'STARNET_STABLE_PREFIX=0: no run-context note');
+    for (const n of CREW_KIT) A.ok(toolNames(o1).indexOf(n) >= 0, 'VULTRON_LEAN_CREW=0: ' + n + ' advertised with zero crew');
+    A.ok(leadingSystem(o1).indexOf('You have no crew yet') < 0 && leadingSystem(o1).indexOf('SPAWN temporary') >= 0, 'VULTRON_LEAN_CREW=0: the full briefing');
+    A.ok(leadingSystem(o1).indexOf('Run id:') >= 0, 'VULTRON_STABLE_PREFIX=0: the runtime block is back in the system prompt');
+    A.ok(leadingSystem(o1) !== leadingSystem(o2), 'VULTRON_STABLE_PREFIX=0: the system prompt differs per message again (the old behaviour)');
+    A.eq(hostNotes(o1.messages, 'run_context').length, 0, 'VULTRON_STABLE_PREFIX=0: no run-context note');
   } finally {
     await fixture.dispose();
     await new Promise(r => up.server.close(r));

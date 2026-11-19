@@ -128,7 +128,7 @@ const handleSetKey = new Function('ipcTokenOk', 'readBody', 'setProviderRuntimeC
     A.eq(removed.json && [removed.code, removed.json.configured, removed.json.credentialSource, removed.json.envName], [200, true, 'environment', 'ANTHROPIC_API_KEY'],
       'a REMOVE that leaves the user\'s env key serving answers configured, from the environment, and names the variable: ' + JSON.stringify(removed.json));
     A.eq(both.warns.length, 1, 'the store says it in one log line');
-    A.ok(/ANTHROPIC_API_KEY still holds one/.test(both.warns[0] || '') && /unset it in the environment that starts StarNet/.test(both.warns[0] || ''), '...naming the variable and the exit: ' + both.warns[0]);
+    A.ok(/ANTHROPIC_API_KEY still holds one/.test(both.warns[0] || '') && /unset it in the environment that starts Vultron/.test(both.warns[0] || ''), '...naming the variable and the exit: ' + both.warns[0]);
     A.ok(![JSON.stringify(removed.json)].concat(both.warns).some(t => t.includes(KC) || t.includes(OS)), 'neither the answer nor the log carries a key');
     // a station with no env key: the REMOVE leaves nothing, and says so
     const alone = station({});

@@ -42,7 +42,7 @@ failedSettlement.beforeRun({ runId: 'cannot-save' });
 assert.throws(() => failedSettlement.onRun({ runId: 'cannot-save', result: { usd: 0.01, tokens: 3 } }), /disk full/);
 assert.equal(failedSettlement.canContinue(), false);
 for(const reason of ['error','cancelled']) { const f=makeEvaluationAccounting({ledger}); f.beforeRun({runId:reason}); assert.throws(()=>f.onRun({runId:reason,result:{reason,usd:0,tokens:0}}),/incomplete/); assert.equal(pending.has(reason),true); }
-// The dispatch receipt records the billing source the host knew (StarNet credits or the Commander's own key), so an
+// The dispatch receipt records the billing source the host knew (Vultron credits or the Commander's own key), so an
 // unsettled evaluation is never shown as BILLING SOURCE UNKNOWN (security-storage-07). Absent stays unknown.
 for (const managed of [true, false, undefined]) {
   const metas = [];

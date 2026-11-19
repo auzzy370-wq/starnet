@@ -1,10 +1,10 @@
-/* A stand-in for `skynet-desktop --starnet-verify-install --out FILE` (src-tauri/src/install_manifest.rs
+/* A stand-in for `skynet-desktop --vultron-verify-install --out FILE` (src-tauri/src/install_manifest.rs
    verify_install_main), the one edge the installed-acceptance tests fake: test/release-train-macos-trust.test.js runs
    scripts/verify-macos-installed-integrity.sh against it, test/installer-upgrade-resilience.test.js the Windows
    published-upgrade proof's Assert-InstalledIntegrity.
 
    A wrapper at the executable's path starts it with STUB_EXE set to that path. Like the exe it takes its install root
-   from there (root_candidates: the exe's folder, then ../Resources, then ../lib/StarNet, the first holding a sidecar
+   from there (root_candidates: the exe's folder, then ../Resources, then ../lib/Vultron, the first holding a sidecar
    folder), checks the files a fixture manifest lists (STUB_MANIFEST: [{path, size}]) for missing / not a file / empty /
    wrong size, and answers in the exe's own stdout lines, receipt fields and exit codes (0 verified, 3 damaged,
    4 not checked), which test/release-train-macos-trust.test.js pins against the Rust source.
@@ -17,8 +17,8 @@ const fs = require('fs');
 const path = require('path');
 
 const argv = process.argv.slice(2);
-if (argv.length !== 3 || argv[0] !== '--starnet-verify-install' || argv[1] !== '--out') {
-  console.error('usage: --starnet-verify-install --out FILE (all the installed proofs pass)');
+if (argv.length !== 3 || argv[0] !== '--vultron-verify-install' || argv[1] !== '--out') {
+  console.error('usage: --vultron-verify-install --out FILE (all the installed proofs pass)');
   process.exit(2);
 }
 const out = argv[2];
@@ -28,7 +28,7 @@ if (mode === 'no-receipt') process.exit(0);
 
 const exeDir = path.dirname(path.resolve(process.env.STUB_EXE || '.'));
 const isDir = (p) => { try { return fs.statSync(p).isDirectory(); } catch { return false; } };
-const root = [exeDir, path.join(exeDir, '..', 'Resources'), path.join(exeDir, '..', 'lib', 'StarNet')]
+const root = [exeDir, path.join(exeDir, '..', 'Resources'), path.join(exeDir, '..', 'lib', 'Vultron')]
   .map((p) => path.resolve(p))
   .find((p) => isDir(path.join(p, 'sidecar')));
 const grouped = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -72,7 +72,7 @@ const receipt = state === 'not-checked'
   ? { state, reason: summary.slice('not checked ('.length, -1) }
   : { state, files, ...(state === 'damaged' ? { damaged: findings.length, hashed: true, named: findings.slice(0, 5).map((f) => f.text) } : {}) };
 Object.assign(receipt, {
-  schema: 'starnet.install-verify/1',
+  schema: 'vultron.install-verify/1',
   exitCode,
   root: mode === 'elsewhere' ? path.join(path.dirname(root || exeDir), 'another-install') : (root || ''),
   findings

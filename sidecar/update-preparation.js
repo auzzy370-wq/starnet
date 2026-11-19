@@ -14,21 +14,21 @@ const SNAPSHOT_BUDGET_BYTES = 256 * 1024 * 1024;
 /* PRE-UPDATE RECOVERY POINTS ARE PRUNED (bug 31db37b0). Every INSTALL UPDATE attempt — retries and failed installs too —
    wrote another whole-station bundle into update-snapshots and nothing ever removed one (670 MB in 7 bundles on one
    station). After a verified prepare and once at boot, the newest KEEP_SNAPSHOTS bundles (+ their receipts) stay and
-   the older ones go. Only `pre-*.starnet-backup.json` files this module wrote and their `.receipt.json` are ever touched;
+   the older ones go. Only `pre-*.vultron-backup.json` files this module wrote and their `.receipt.json` are ever touched;
    the bundle a prepare just verified (`protect`) is never removed. They are read-only (0o400), so each is made writable
    first. A file that cannot be removed is reported and left; pruning never fails the update. */
 const KEEP_SNAPSHOTS = 3;
-const SNAPSHOT_BUNDLE = /^pre-.+\.starnet-backup\.json$/i;
+const SNAPSHOT_BUNDLE = /^pre-.+\.vultron-backup\.json$/i;
 
 /* NOTHING TO PROTECT, NOTHING WRITTEN (the gh#123 family). Every build's onboarding gate reads a bundle in update-snapshots
    as a prior install, so an update prepared BEFORE onboarding (an empty workspace) trapped the next boot in Recovery Mode.
    The bundle is skipped only when there is nothing for it to recover, which takes BOTH: the workspace holds no station
    data (the host's holdsStationData(): no founded station, no save or roster, nothing the frozen fallback calls station
-   state) AND the page's browser store holds no station-save journal (a starnet.save* key with a value: the page's own
+   state) AND the page's browser store holds no station-save journal (a vultron.save* key with a value: the page's own
    copy of a station the workspace may not have yet). Then no bundle and no receipt file are written, and the receipt
    lives in memory: { station: 'none', snapshot: null }. The barrier (freeze, drain, quiescence) is unchanged. A host
    that injects no holdsStationData, or a check that cannot answer, always captures. */
-const SAVE_JOURNAL = /^(?:starnet|skynet)\.save(?:\.|$)/i;   // the window journals, their merge notes, the pre-migrate backup
+const SAVE_JOURNAL = /^(?:vultron|skynet)\.save(?:\.|$)/i;   // the window journals, their merge notes, the pre-migrate backup
 function holdsSaveJournal(store) {
   return Object.keys(store).some(key => SAVE_JOURNAL.test(key) && store[key] != null && String(store[key]).length > 0);
 }
@@ -72,7 +72,7 @@ function pruneSnapshots(o) {
 
 /* A process stopped mid-write leaves <bundle>.tmp-<pid>-<nonce> beside where the bundle was going: a whole station in readable
    text, in Downloads, that nobody knows about. At boot the ones this feature names, and only those, go. A live writer's stays. */
-const BACKUP_TEMP = /^starnet-recovery-[0-9-]+\.starnet-recovery\.json\.tmp-(\d+)-[A-Za-z0-9]+$/;
+const BACKUP_TEMP = /^vultron-recovery-[0-9-]+\.vultron-recovery\.json\.tmp-(\d+)-[A-Za-z0-9]+$/;
 function sweepBackupTemps(o) {
   const fs = o.fs, path = o.path, dir = o.dir;
   const alive = typeof o.pidAlive === 'function' ? o.pidAlive : pid => { try { process.kill(pid, 0); return true; } catch (e) { return !!(e && e.code === 'EPERM'); } };
@@ -201,7 +201,7 @@ function makeUpdatePreparation(deps) {
       const id = String(createdAt) + '-' + String(newId()).replace(/[^A-Za-z0-9_-]+/g, '').slice(0, 80);
       const browserStore = o.browserStore && typeof o.browserStore === 'object' ? o.browserStore : {};
       const receiptHead = () => ({
-        schema: 'starnet.update-preparation', version: 1, id: id,
+        schema: 'vultron.update-preparation', version: 1, id: id,
         createdAt: createdAt, fromVersion: String(appVersion() || 'unknown'), targetVersion: String(o.targetVersion || ''),
         frozen: true, activeMutations: activeMutations, liveRuns: Number(liveRuns()),
         completedMutation: 'http:' + completedMutations
@@ -212,7 +212,7 @@ function makeUpdatePreparation(deps) {
         return { ok: true, frozen: true, receipt: receipt, pruned: 0 };
       }
       const dir = path.join(path.dirname(workspaceRoot), 'update-snapshots');
-      const bundleFile = path.join(dir, 'pre-' + safeTarget(o.targetVersion) + '-' + id + '.starnet-backup.json');
+      const bundleFile = path.join(dir, 'pre-' + safeTarget(o.targetVersion) + '-' + id + '.vultron-backup.json');
       let bundle = recovery.capture({
         workspaceRoot: workspaceRoot,
         browserStore: browserStore,
@@ -302,9 +302,9 @@ function makeUpdatePreparation(deps) {
         throw Object.assign(new Error('a recovery bundle cannot be saved inside the station it backs up'), { code: 'BACKUP_FOLDER_INSIDE_STATION' });
       }
       const createdAt = Number(now());
-      const base = 'starnet-recovery-' + new Date(createdAt).toISOString().slice(0, 19).replace(/[-:]/g, '').replace('T', '-');
+      const base = 'vultron-recovery-' + new Date(createdAt).toISOString().slice(0, 19).replace(/[-:]/g, '').replace('T', '-');
       for (let i = 1; i <= 99 && !file; i++) {
-        const candidate = path.join(dir, base + (i === 1 ? '' : '-' + i) + '.starnet-recovery.json');
+        const candidate = path.join(dir, base + (i === 1 ? '' : '-' + i) + '.vultron-recovery.json');
         if (!fs.existsSync(candidate)) file = candidate;
       }
       if (!file) throw Object.assign(new Error('too many bundles with the same name in ' + dir), { code: 'BACKUP_NAME_TAKEN' });

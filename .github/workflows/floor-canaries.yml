@@ -1,4 +1,4 @@
-# floor-canaries — LIVE checks of the external floors a StarNet station stands on.
+# floor-canaries — LIVE checks of the external floors a Vultron station stands on.
 # The existing voice job retains its policy. The floor table adds search, direct page reading, model catalog,
 # prices, publisher Google registration, GitHub/ChatGPT device-start and the published update host. New floors
 # fail schedule/dispatch after one retry; reusable release calls report only. An unavailable Google registration
@@ -106,7 +106,7 @@ jobs:
           FLOOR: ${{ matrix.floor }}
           # A reusable workflow retains its caller's event name. Use its typed input, not an event-name guess.
           REPORT_ONLY: ${{ inputs.floors_report_only == true }}
-          STARNET_GOOGLE_DESKTOP_CLIENT_JSON: ${{ matrix.floor == 'google-signin' && inputs.floors_report_only != true && secrets.STARNET_GOOGLE_DESKTOP_CLIENT_JSON || '' }}
+          VULTRON_GOOGLE_DESKTOP_CLIENT_JSON: ${{ matrix.floor == 'google-signin' && inputs.floors_report_only != true && secrets.VULTRON_GOOGLE_DESKTOP_CLIENT_JSON || '' }}
         run: |
           set -euo pipefail
           mkdir -p canary

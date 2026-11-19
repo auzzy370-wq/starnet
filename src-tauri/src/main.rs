@@ -1,4 +1,4 @@
-// StarNet — native desktop shell (Tauri v2).
+// Vultron — native desktop shell (Tauri v2).
 //
 // Wraps the existing browser app: spawns the zero-dependency Node sidecar on a
 // private loopback port, waits for it to listen, then opens that URL in a native
@@ -97,7 +97,7 @@ struct AppState {
     // respawning the sidecar during an intentional quit.
     shutting_down: AtomicBool,
     // Crash-loop memory for the guardian (see spawn_guardian): consecutive unexpected sidecar exits,
-    // the backoff in force, and the HALTED verdict the frontend reads via starnet_sidecar_status.
+    // the backoff in force, and the HALTED verdict the frontend reads via vultron_sidecar_status.
     guardian: Mutex<GuardianStatus>,
     // WebView2 crash recovery (webview_recovery.rs): true while a dead main window is being
     // destroyed and rebuilt, so the momentary zero-window state is not taken as an app exit.
@@ -106,20 +106,20 @@ struct AppState {
     // Set once setup has built the main window. Before that a second launch must not treat the
     // missing window as a dead instance (see webview_recovery::second_launch_action).
     main_window_built: AtomicBool,
-    // This instance was started by `starnet` (the terminal) with `--background`: its window starts parked and
+    // This instance was started by `vultron` (the terminal) with `--background`: its window starts parked and
     // it runs while the terminal sessions do; their end decides whether it keeps running (terminal_sessions_over,
     // which leaves an open window alone). Cleared once that decision is made, or by a window close with no
     // session left alive.
     launched_for_terminal: AtomicBool,
-    // The `starnet` processes it runs for (the one that started it and any that joined), checked by
+    // The `vultron` processes it runs for (the one that started it and any that joined), checked by
     // watch_terminal_sessions. Read and changed together with launched_for_terminal, under this lock.
     terminal_pids: Mutex<Vec<u32>>,
-    // Its terminal sessions ended and the close decision is under way: a `starnet` arriving now is told so
-    // (join_terminal_session) and starts StarNet again once this one has quit. Cleared if it stays resident.
+    // Its terminal sessions ended and the close decision is under way: a `vultron` arriving now is told so
+    // (join_terminal_session) and starts Vultron again once this one has quit. Cleared if it stays resident.
     terminal_closing: AtomicBool,
 }
 
-// `starnet` sessions that asked to join before setup had its state to put them in (the single-instance callback
+// `vultron` sessions that asked to join before setup had its state to put them in (the single-instance callback
 // can run inside the startup-failure dialog's message loop): moved into terminal_pids once the state is managed.
 static EARLY_TERMINAL_JOINS: Mutex<Vec<u32>> = Mutex::new(Vec::new());
 
@@ -349,7 +349,7 @@ impl KeepAwakeHandle {
         };
 
         let mut reason: Vec<u16> =
-            "StarNet scheduled tasks are allowed to run while the app is open"
+            "Vultron scheduled tasks are allowed to run while the app is open"
                 .encode_utf16()
                 .chain(std::iter::once(0))
                 .collect();
@@ -578,7 +578,7 @@ fn legacy_workspace_paths(root: &Path, current: &Path) -> Vec<PathBuf> {
         .collect::<Vec<_>>();
     if let Some(home) = std::env::var_os("HOME").map(PathBuf::from) {
         // Tauri's live macOS root is ~/Library/Application Support/<bundle-id>, while old/manual Node
-        // sidecars used ~/.local/share/{StarNet,Skynet}. Both are migration sources; the current root is
+        // sidecars used ~/.local/share/{Vultron,Skynet}. Both are migration sources; the current root is
         // filtered below. Linux receives the same POSIX fallback that sidecar/workspace-safety.js protects.
         if cfg!(target_os = "macos") {
             appdata_bases.push(home.join("Library").join("Application Support"));
@@ -586,7 +586,7 @@ fn legacy_workspace_paths(root: &Path, current: &Path) -> Vec<PathBuf> {
         appdata_bases.push(home.join(".local").join("share"));
     }
     for base in appdata_bases {
-        push_unique_path(&mut out, base.join("StarNet").join("workspaces"));
+        push_unique_path(&mut out, base.join("Vultron").join("workspaces"));
         push_unique_path(&mut out, base.join("Skynet").join("workspaces"));
         push_unique_path(&mut out, base.join("ai.skynet.harness").join("workspaces"));
     }
@@ -691,7 +691,7 @@ fn hash_file(path: &Path) -> std::io::Result<(u64, String)> {
 }
 
 /// A legacy root becomes an automatic station source only when its canonical save is readable and proves the
-/// StarNet save contract. This is intentionally stronger than "some JSON object": migration may carry other
+/// Vultron save contract. This is intentionally stronger than "some JSON object": migration may carry other
 /// durable stores, but it must never choose between two different stations by directory enumeration order.
 fn valid_station_save_hash(root: &Path) -> Option<String> {
     for name in ["agent.save.json", "agent.save.json.bak"] {
@@ -703,7 +703,7 @@ fn valid_station_save_hash(root: &Path) -> Option<String> {
             continue;
         };
         let doc = value.get("doc").unwrap_or(&value);
-        if doc.get("schema").and_then(|v| v.as_str()) != Some("starnet.save")
+        if doc.get("schema").and_then(|v| v.as_str()) != Some("vultron.save")
             || !doc.get("agent").map(|v| v.is_object()).unwrap_or(false)
         {
             continue;
@@ -839,7 +839,7 @@ fn workspace_has_content(current: &Path) -> bool {
 /// One-time import of data from legacy workspace roots into the live one. THIS RUNS ONCE, EVER.
 ///
 /// Bug it fixes (audit 0.1): running unconditionally every boot means `copy_missing_dir` re-copies
-/// any file present in a stale legacy root (e.g. %LOCALAPPDATA%\StarNet\workspaces) but absent in
+/// any file present in a stale legacy root (e.g. %LOCALAPPDATA%\Vultron\workspaces) but absent in
 /// the live root — so agents/prospects/sessions the user DELETED silently reappear on the next
 /// launch. Guard rails, checked before any copy:
 ///   1. If the `.migrated` marker exists in the live root, skip entirely (the definitive signal).
@@ -1102,7 +1102,7 @@ mod workspace_migration_tests {
 
     fn temp_dir(name: &str) -> PathBuf {
         std::env::temp_dir().join(format!(
-            "starnet-workspace-migration-{}-{}-{name}",
+            "vultron-workspace-migration-{}-{}-{name}",
             std::process::id(),
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
@@ -1232,7 +1232,7 @@ mod workspace_migration_tests {
         serde_json::to_vec(&serde_json::json!({
             "version": 1,
             "doc": {
-                "schema": "starnet.save",
+                "schema": "vultron.save",
                 "version": 5,
                 "updatedAt": updated_at,
                 "agent": { "id": "agent", "name": name }
@@ -1315,7 +1315,7 @@ fn log_startup(path: &Option<PathBuf>, message: impl AsRef<str>) {
 // candidates are routinely rebuilt and reinstalled under the same semver, which left the old
 // voice controller running after the fixed 0.8.0 installer was installed. Key the marker to the
 // exact executable bytes and purge on every packaged-build change while PRESERVING user state
-// (Local Storage holds the world save under `starnet.save`).
+// (Local Storage holds the world save under `vultron.save`).
 
 /// Pure decision: given the previously-recorded marker (if any) and the running build identity,
 /// should we purge the stale webview caches? Purge on first run (no marker) or on any change.
@@ -1337,9 +1337,9 @@ fn webview_build_identity(current_version: &str) -> String {
     } else {
         format!(
             "source:{}:{}:{}",
-            env!("STARNET_BUILD_SHA"),
-            env!("STARNET_BUILD_TREE"),
-            env!("STARNET_BUILD_DESCRIBE")
+            env!("VULTRON_BUILD_SHA"),
+            env!("VULTRON_BUILD_TREE"),
+            env!("VULTRON_BUILD_DESCRIBE")
         )
     };
     format!("{}|{}", current_version.trim(), artifact)
@@ -1663,8 +1663,8 @@ fn is_reapable_node_path(node: &Path) -> bool {
 
 /// Terminate the ORPHANS among the processes running EXACTLY `node` — the bundled runtime this shell spawns its
 /// sidecar from (never a generic "node.exe" name match). The image only nominates; sidecar_reap decides: a process
-/// whose parent is alive (the `starnet` CLI runs on this very node, and so does a station it booted) or that `keep`
-/// names (the terminal sessions this StarNet runs for) is never touched. Returns how many were reaped. Fail-open by
+/// whose parent is alive (the `vultron` CLI runs on this very node, and so does a station it booted) or that `keep`
+/// names (the terminal sessions this Vultron runs for) is never touched. Returns how many were reaped. Fail-open by
 /// design: any enumeration/open/query/terminate error skips that process and never blocks startup.
 #[cfg(windows)]
 fn reap_orphan_sidecars(node: &Path, keep: &[u32], startup_log: &Option<PathBuf>) -> usize {
@@ -1796,7 +1796,7 @@ fn mac_process_image_path(pid: i32) -> Option<PathBuf> {
 /// macOS backstop for a desktop process that exits without running its managed-state Drop hook.
 /// Enumerate every PID, nominate only those libproc reports at the exact bundled Node image path,
 /// and let sidecar_reap pick the ORPHANS among them (launchd adopted them: ppid 1; `/bin/ps` says the
-/// parent) — the `starnet` CLI runs on this very node, and a process whose parent lives or that `keep`
+/// parent) — the `vultron` CLI runs on this very node, and a process whose parent lives or that `keep`
 /// names is never touched. Ask each orphan to shut down gracefully, then force only that same
 /// verified image if needed.
 #[cfg(target_os = "macos")]
@@ -1944,15 +1944,15 @@ fn reap_orphan_sidecars(node: &Path, keep: &[u32], startup_log: &Option<PathBuf>
     0
 }
 
-/// The sidecar accepts both the canonical STARNET_* names and legacy SKYNET_* aliases. Replace both
+/// The sidecar accepts both the canonical VULTRON_* names and legacy SKYNET_* aliases. Replace both
 /// spellings for every shell-owned value so an inherited stale variable cannot split the WebView from
 /// its sidecar or override a per-launch credential.
 fn set_sidecar_branded_env<V: AsRef<OsStr>>(cmd: &mut Command, legacy_name: &str, value: V) {
     let value = value.as_ref();
     cmd.env(legacy_name, value);
     if let Some(suffix) = legacy_name.strip_prefix("SKYNET_") {
-        cmd.env(format!("STARNET_{suffix}"), value);
-    } else if let Some(suffix) = legacy_name.strip_prefix("STARNET_") {
+        cmd.env(format!("VULTRON_{suffix}"), value);
+    } else if let Some(suffix) = legacy_name.strip_prefix("VULTRON_") {
         cmd.env(format!("SKYNET_{suffix}"), value);
     }
 }
@@ -1962,52 +1962,52 @@ fn sidecar_command(state: &AppState, entry: &Path, node: &Path) -> Command {
     // Clear inherited material: only this OS account's verified keychain entry
     // may unlock connector credentials. Sealed data without its key stays locked; with
     // nothing sealed yet, the sidecar runs unencrypted and says so (connector-vault.js).
-    cmd.env_remove("STARNET_CONNECTOR_ENCRYPTION_KEY");
-    cmd.env_remove("STARNET_CONNECTOR_KEY_ERROR");
+    cmd.env_remove("VULTRON_CONNECTOR_ENCRYPTION_KEY");
+    cmd.env_remove("VULTRON_CONNECTOR_KEY_ERROR");
     match credentials::connector_encryption_key() {
         Ok(key) => {
-            cmd.env("STARNET_CONNECTOR_ENCRYPTION_KEY", key);
+            cmd.env("VULTRON_CONNECTOR_ENCRYPTION_KEY", key);
         }
         Err(error) => {
             // The reason is non-secret; the sidecar shows it in Connectors so the user (and support)
             // can see WHY sign-ins are unencrypted or locked instead of a bare "locked".
             eprintln!("[connectors] {error}");
-            cmd.env("STARNET_CONNECTOR_KEY_ERROR", &error);
+            cmd.env("VULTRON_CONNECTOR_KEY_ERROR", &error);
         }
     }
     cmd.arg(entry)
         // The sidecar can load the native Windows desktop driver, but that alone grants nothing:
         // only a locally paired Telegram owner receives the per-run remote-owner lease. Ordinary
         // agent runs remain synthetic/headless by policy in the sidecar.
-        .env("STARNET_DESKTOP_SHELL", "1")
+        .env("VULTRON_DESKTOP_SHELL", "1")
         // Only the app removes its own unfinished recovery bundles from Downloads at boot.
-        .env("STARNET_SWEEP_BACKUP_TEMPS", "1")
-        .env("STARNET_COMPUTER_DRIVER", "1")
-        // Do NOT pin STARNET_BROWSER_HEADLESS on the whole sidecar. runOnce gives ordinary
+        .env("VULTRON_SWEEP_BACKUP_TEMPS", "1")
+        .env("VULTRON_COMPUTER_DRIVER", "1")
+        // Do NOT pin VULTRON_BROWSER_HEADLESS on the whole sidecar. runOnce gives ordinary
         // model-driven browsing forceHeadless + syntheticInputOnly directly, while the watched
         // browser.login tool is a separately consented, human-driven headed exception. A process-
         // wide env pin disables that exception before its consent flow can run and leaves users
         // with the unsafe/hostile "start Chrome with a debugging port" workaround.
-        .env("STARNET_USER_CONTROL_MODE", "preserve")
-        .env("STARNET_MCP_STDIO", "0")
+        .env("VULTRON_USER_CONTROL_MODE", "preserve")
+        .env("VULTRON_MCP_STDIO", "0")
         // The packaged build's true version — computeVersionSurface() reads this first, so
         // /api/diagnostics reports the real build instead of "unknown" (the bundled sidecar
         // has no src-tauri/tauri.conf.json to fall back to). Use the same resolved
         // package version as BuildInfo and the updater, including canary overlays.
-        .env("STARNET_APP_VERSION", &state.app_version)
+        .env("VULTRON_APP_VERSION", &state.app_version)
         // The exact source this desktop was compiled from (build.rs → `git describe --always --dirty --tags`,
         // e.g. "v0.4.1" clean or "v0.4.1-32-g8b5aae04-dirty"). Exported so the bundled sidecar can surface the
         // real build provenance at /api/version — a packaged app has no .git to derive it from at runtime.
-        .env("STARNET_BUILD_DESCRIBE", env!("STARNET_BUILD_DESCRIBE"))
+        .env("VULTRON_BUILD_DESCRIBE", env!("VULTRON_BUILD_DESCRIBE"))
         // Full immutable source identity for installed-smoke/release receipts. Keep this separate from the
-        // short human-facing commit exposed by starnet_build_info.
-        .env("STARNET_BUILD_SHA", env!("STARNET_BUILD_SHA"))
-        .env("STARNET_BUILD_TREE", env!("STARNET_BUILD_TREE"))
+        // short human-facing commit exposed by vultron_build_info.
+        .env("VULTRON_BUILD_SHA", env!("VULTRON_BUILD_SHA"))
+        .env("VULTRON_BUILD_TREE", env!("VULTRON_BUILD_TREE"))
         .env(
-            "STARNET_BUILD_PROVENANCE_KIND",
-            env!("STARNET_BUILD_PROVENANCE_KIND"),
+            "VULTRON_BUILD_PROVENANCE_KIND",
+            env!("VULTRON_BUILD_PROVENANCE_KIND"),
         )
-        .env("STARNET_BUILD_DIRTY", env!("STARNET_BUILD_DIRTY"))
+        .env("VULTRON_BUILD_DIRTY", env!("VULTRON_BUILD_DIRTY"))
         // The windows-subsystem build has no console to inherit, so a boot crash's text was lost.
         // spawn_sidecar drains both pipes on their own threads into sidecar.log (sidecar_output.rs).
         .stdout(Stdio::piped())
@@ -2021,12 +2021,12 @@ fn sidecar_command(state: &AppState, entry: &Path, node: &Path) -> Command {
     // (sidecar/parent-watch.js) — the belt to the Windows job's braces, and the only guard on macOS and Linux.
     set_sidecar_branded_env(&mut cmd, "SKYNET_PARENT_PID", std::process::id().to_string());
     // How the station opens an app FOR the person so it is never the station's: this exe, run as
-    // `--starnet-breakaway` (process_job.rs; sidecar/breakaway.js builds the call). Windows only: no jobs elsewhere.
+    // `--vultron-breakaway` (process_job.rs; sidecar/breakaway.js builds the call). Windows only: no jobs elsewhere.
     match std::env::current_exe() {
         Ok(exe) if cfg!(windows) => set_sidecar_branded_env(&mut cmd, "SKYNET_BREAKAWAY_EXE", exe.as_os_str()),
         _ => {
             cmd.env_remove("SKYNET_BREAKAWAY_EXE");
-            cmd.env_remove("STARNET_BREAKAWAY_EXE");
+            cmd.env_remove("VULTRON_BREAKAWAY_EXE");
         }
     }
     if let Some(key) = read_key() {
@@ -2059,11 +2059,11 @@ fn sidecar_command(state: &AppState, entry: &Path, node: &Path) -> Command {
             set_sidecar_branded_env(&mut cmd, "SKYNET_TELEGRAM_BOT_TOKENS", encoded);
         }
     }
-    // StarNet Cloud device token, same path. Because EVERY sidecar spawn goes through this builder,
+    // Vultron Cloud device token, same path. Because EVERY sidecar spawn goes through this builder,
     // a sidecar restarted after adoption still comes up linked even though the token is no longer
     // in credits.json — the file keeps the non-secret fields and this supplies the secret.
     if let Some(token) = read_credits_token() {
-        cmd.env("STARNET_CREDITS_TOKEN", token);
+        cmd.env("VULTRON_CREDITS_TOKEN", token);
     }
     #[cfg(windows)]
     {
@@ -2149,7 +2149,7 @@ fn spawn_sidecar(state: &AppState) -> bool {
             }
             Err(e) => {
                 log_startup(&state.startup_log, format!("spawn_sidecar failed: {e}"));
-                eprintln!("[starnet] failed to spawn node sidecar: {e}");
+                eprintln!("[vultron] failed to spawn node sidecar: {e}");
                 return false;
             }
         }
@@ -2283,7 +2283,7 @@ mod startup_failure_text_tests {
     fn a_damaged_install_leads_the_failure_text() {
         let tail: Vec<String> = [
             "uncaughtException: TypeError: makeShellTool is not a function",
-            "    at Object.<anonymous> (C:\\Users\\a\\AppData\\Local\\StarNet\\sidecar\\index.js:5892:24)",
+            "    at Object.<anonymous> (C:\\Users\\a\\AppData\\Local\\Vultron\\sidecar\\index.js:5892:24)",
             "    at Module._compile (node:internal/modules/cjs/loader:1781:14)",
             "    at Object..js (node:internal/modules/cjs/loader:1913:10)",
             "    at Module.load (node:internal/modules/cjs/loader:1505:32)",
@@ -2293,7 +2293,7 @@ mod startup_failure_text_tests {
         .map(|line| line.to_string())
         .collect();
         // the verdict the presence pass gives before the spawn, over a real install with shell.js zeroed
-        let dir = std::env::temp_dir().join(format!("starnet-failure-text-{}-{}", std::process::id(), now_ms()));
+        let dir = std::env::temp_dir().join(format!("vultron-failure-text-{}-{}", std::process::id(), now_ms()));
         let shell = dir.join("sidecar").join("tools").join("builtin").join("shell.js");
         std::fs::create_dir_all(shell.parent().unwrap()).unwrap();
         std::fs::write(&shell, "module.exports = { makeShellTool() {} };\n".repeat(2000)).unwrap();
@@ -2306,11 +2306,11 @@ mod startup_failure_text_tests {
         let startup = Some(PathBuf::from("C:/data/startup.log"));
         let text = startup_failure_details(&startup, Some(Path::new("C:/data/sidecar.log")), &tail, &verdict);
         let lead = format!(
-            "StarNet's installation is damaged: sidecar/tools/builtin/shell.js is empty (0 of {} bytes).",
+            "Vultron's installation is damaged: sidecar/tools/builtin/shell.js is empty (0 of {} bytes).",
             install_manifest::grouped(size)
         );
         assert!(text.starts_with(&lead), "{text}");
-        assert!(text.contains("restore it from that program's quarantine, or reinstall StarNet from starnetos.com"), "{text}");
+        assert!(text.contains("restore it from that program's quarantine, or reinstall Vultron from vultron.vercel.app"), "{text}");
         assert!(text.contains("Your station, agents and keys are kept."), "{text}");
         let named = text.find("sidecar/tools/builtin/shell.js").unwrap();
         let engine = text.find("TypeError: makeShellTool is not a function").expect("the engine's own lines still follow");
@@ -2339,13 +2339,13 @@ fn show_startup_failure_dialog(_app: &AppHandle, state: &AppState) -> bool {
         &state.install.verdict_for_failure(install_manifest::FAILURE_WAIT),
     );
     let body = format!(
-        "StarNet could not start its local engine.\n\n\
+        "Vultron could not start its local engine.\n\n\
          {details}\n\n\
-         Click Retry to try starting the engine again, or Cancel to close StarNet."
+         Click Retry to try starting the engine again, or Cancel to close Vultron."
     );
     let to_wide = |s: &str| -> Vec<u16> { s.encode_utf16().chain(std::iter::once(0)).collect() };
     let text = to_wide(&body);
-    let caption = to_wide("StarNet — startup failed");
+    let caption = to_wide("Vultron — startup failed");
     // SYSTEMMODAL + SETFOREGROUND so the box is seen even though the main window isn't up yet.
     let result = unsafe {
         MessageBoxW(
@@ -2367,12 +2367,12 @@ fn show_startup_failure_dialog(app: &AppHandle, state: &AppState) -> bool {
         &state.startup_log,
         "startup failed: sidecar did not come up; showing a non-blocking notice",
     );
-    eprintln!("[starnet] startup failed: sidecar did not come up (see startup.log)");
+    eprintln!("[vultron] startup failed: sidecar did not come up (see startup.log)");
     show_nonblocking_startup_notice(
         app,
-        "StarNet — local engine not ready",
+        "Vultron — local engine not ready",
         format!(
-            "StarNet could not start its local engine yet. It will keep retrying in the background, \
+            "Vultron could not start its local engine yet. It will keep retrying in the background, \
              but the station may stay unreachable until it does.\n\n{}",
             startup_failure_details(
                 &state.startup_log,
@@ -2430,8 +2430,8 @@ fn report_window_startup_failure(
             .unwrap_or_else(|| "unavailable".into());
         show_nonblocking_startup_notice(
             app,
-            "StarNet — window startup",
-            format!("StarNet's window could not finish starting.\n\n{detail}\n\nQuit StarNet and reopen it. If this persists, include startup.log in your bug report:\n{path}"),
+            "Vultron — window startup",
+            format!("Vultron's window could not finish starting.\n\n{detail}\n\nQuit Vultron and reopen it. If this persists, include startup.log in your bug report:\n{path}"),
             on_dismiss,
         );
     }
@@ -2444,9 +2444,9 @@ fn report_window_startup_failure(
             .as_ref()
             .map(|p| p.display().to_string())
             .unwrap_or_else(|| "unavailable".into());
-        let text: Vec<u16> = format!("StarNet's window could not finish starting.\n\n{detail}\n\nQuit StarNet from its tray icon and reopen it. If this persists, include startup.log in your bug report:\n{path}")
+        let text: Vec<u16> = format!("Vultron's window could not finish starting.\n\n{detail}\n\nQuit Vultron from its tray icon and reopen it. If this persists, include startup.log in your bug report:\n{path}")
             .encode_utf16().chain(std::iter::once(0)).collect();
-        let title: Vec<u16> = "StarNet — window startup"
+        let title: Vec<u16> = "Vultron — window startup"
             .encode_utf16()
             .chain(std::iter::once(0))
             .collect();
@@ -2525,9 +2525,9 @@ fn spawn_guardian(app: AppHandle) {
         // window only ever said "unreachable". Now each UNEXPECTED exit inside GUARDIAN_CRASH_WINDOW is
         // counted, respawns back off exponentially (1s,2s,4s,…,30s), and after
         // GUARDIAN_MAX_CONSECUTIVE_CRASHES the guardian HALTS: it stops respawning, writes one clear line
-        // to startup.log and records the verdict in AppState.guardian (read by starnet_sidecar_status)
+        // to startup.log and records the verdict in AppState.guardian (read by vultron_sidecar_status)
         // so the frontend can say so. Intentional exits (0 graceful, 75 recovery/START FRESH) never count.
-        // A user RESTART (starnet_restart_sidecar) clears the halt. The sidecar's own breaker
+        // A user RESTART (vultron_restart_sidecar) clears the halt. The sidecar's own breaker
         // (sidecar/crash-ledger.js) normally trips first — at the 3rd fault in 10m it holds itself
         // alive DEGRADED — so this cap is the backstop for exits the sidecar cannot ledger (a throw
         // before its handler is installed, a bad node binary).
@@ -2603,7 +2603,7 @@ fn spawn_guardian(app: AppHandle) {
                 }
                 // (a) classify the exit exactly once per child.
                 if let Some((pid, code)) = exited {
-                    // A user restart (starnet_restart_sidecar) clears the shared halt/count; mirror that
+                    // A user restart (vultron_restart_sidecar) clears the shared halt/count; mirror that
                     // into the thread-local crash window so the next crash starts a fresh count.
                     let (halted, shared_count) = st
                         .guardian
@@ -2644,14 +2644,14 @@ fn spawn_guardian(app: AppHandle) {
                             if count >= GUARDIAN_MAX_CONSECUTIVE_CRASHES {
                                 // led by a damaged install's named file, when there is one (install_manifest.rs)
                                 let reason = install_manifest::with_install_lead(&st.install.verdict(), format!(
-                                    "crash-loop: the station service exited {count} times in {} minutes (last exit code {code:?}); the guardian stopped restarting it. Use RESTART STATION SERVICE to try again, or quit StarNet fully and reopen it.",
+                                    "crash-loop: the station service exited {count} times in {} minutes (last exit code {code:?}); the guardian stopped restarting it. Use RESTART STATION SERVICE to try again, or quit Vultron fully and reopen it.",
                                     GUARDIAN_CRASH_WINDOW.as_secs() / 60
                                 ));
                                 log_startup(
                                     &st.startup_log,
                                     format!("watchdog: HALTED — {reason} (see the sidecar lines above for the fault)"),
                                 );
-                                eprintln!("[starnet] watchdog halted: {reason}");
+                                eprintln!("[vultron] watchdog halted: {reason}");
                                 if let Ok(mut g) = st.guardian.lock() {
                                     g.halted = true;
                                     g.consecutive_crashes = count;
@@ -2976,7 +2976,7 @@ fn parse_lifecycle_response(text: &str) -> Option<LifecycleArmed> {
 }
 
 /// Blocking poll of GET /api/lifecycle/armed, classified per LifecycleProbe. Uses the per-launch API token as
-/// the X-StarNet-Token header (the same gate the frontend fetches use); no Origin header (absent Origin is
+/// the X-Vultron-Token header (the same gate the frontend fetches use); no Origin header (absent Origin is
 /// allowed for loopback callers).
 fn probe_lifecycle_armed(port: u16, api_token: &str, timeout: Duration) -> LifecycleProbe {
     use std::io::{Read, Write};
@@ -2986,7 +2986,7 @@ fn probe_lifecycle_armed(port: u16, api_token: &str, timeout: Duration) -> Lifec
     let _ = stream.set_read_timeout(Some(timeout));
     let _ = stream.set_write_timeout(Some(timeout));
     let head = format!(
-        "GET /api/lifecycle/armed HTTP/1.1\r\nHost: 127.0.0.1\r\nX-StarNet-Token: {api_token}\r\nConnection: close\r\n\r\n"
+        "GET /api/lifecycle/armed HTTP/1.1\r\nHost: 127.0.0.1\r\nX-Vultron-Token: {api_token}\r\nConnection: close\r\n\r\n"
     );
     if stream.write_all(head.as_bytes()).is_err() || stream.flush().is_err() {
         return LifecycleProbe::Ambiguous; // connected, then failed — alive but unwell
@@ -3016,7 +3016,7 @@ fn post_sidecar_halt(state: &AppState, timeout: Duration) {
     use std::io::{Read, Write};
     let body = "{}";
     let head = format!(
-        "POST /api/halt HTTP/1.1\r\nHost: 127.0.0.1\r\nX-StarNet-Token: {}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
+        "POST /api/halt HTTP/1.1\r\nHost: 127.0.0.1\r\nX-Vultron-Token: {}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
         state.api_token,
         body.len()
     );
@@ -3040,7 +3040,7 @@ fn post_sidecar_quit(state: &AppState, timeout: Duration) -> bool {
     use std::io::{Read, Write};
     let body = "{}";
     let head = format!(
-        "POST /api/lifecycle/quit HTTP/1.1\r\nHost: 127.0.0.1\r\nX-StarNet-Token: {}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
+        "POST /api/lifecycle/quit HTTP/1.1\r\nHost: 127.0.0.1\r\nX-Vultron-Token: {}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
         state.api_token,
         body.len()
     );
@@ -3076,7 +3076,7 @@ enum StopHow {
     Now,
 }
 
-/// THE way StarNet stops a station it owns. Every stop goes through here: Quit, window close, tray Quit, the updater,
+/// THE way Vultron stops a station it owns. Every stop goes through here: Quit, window close, tray Quit, the updater,
 /// RESTART STATION SERVICE, START FRESH, ERASE, a cancelled start, app teardown (a timed-out boot attempt goes through
 /// sidecar_startup::stop_timed_out, the same last two steps). In order:
 ///   1. ask (StopHow::Ask): POST /api/lifecycle/quit; when the sidecar accepts, wait up to 3.5 s for it to run its own
@@ -3156,7 +3156,7 @@ fn drain_and_kill_sidecar(state: &AppState) {
 fn stay_resident_or_quit(app: &AppHandle, st: &AppState, why: &str) {
     st.close_exit_pending.store(false, Ordering::SeqCst);
     if app.get_webview_window("main").is_some() {
-        // it stays: a `starnet` arriving from now on simply attaches (no longer told StarNet is closing)
+        // it stays: a `vultron` arriving from now on simply attaches (no longer told Vultron is closing)
         st.terminal_closing.store(false, Ordering::SeqCst);
         log_startup(
             &st.startup_log,
@@ -3173,7 +3173,7 @@ fn stay_resident_or_quit(app: &AppHandle, st: &AppState, why: &str) {
 }
 
 /// What a window close decides once the window is hidden (Lane 4D), as one function so the end of the terminal
-/// sessions a StarNet ran for (terminal_sessions_over) decides exactly the same way: the close-to-tray preference
+/// sessions a Vultron ran for (terminal_sessions_over) decides exactly the same way: the close-to-tray preference
 /// or REAL armed work keeps the supervised station resident in the tray; nothing armed (or no sidecar listening)
 /// is a full quit; a live but unreadable sidecar fails OPEN (killing it could destroy armed work). No hidden
 /// daemon, no claim the harness can't prove.
@@ -3211,8 +3211,8 @@ fn decide_close(app: &AppHandle, st: &AppState) {
     }
 }
 
-/// Started for the terminal (terminal_session.rs): every 2 s, drop the `starnet` sessions that have exited. When none
-/// is left on two ticks running, decide once (terminal_sessions_over) — the extra tick is the grace a `starnet`
+/// Started for the terminal (terminal_session.rs): every 2 s, drop the `vultron` sessions that have exited. When none
+/// is left on two ticks running, decide once (terminal_sessions_over) — the extra tick is the grace a `vultron`
 /// started right after the last one ended needs to join (a script's next line; ctrl+c and run it again). A crashed
 /// or closed terminal counts as ended — the app watches the process and never waits for a goodbye. Stops once that
 /// decision is made, or a window close found no session left.
@@ -3242,8 +3242,8 @@ fn watch_terminal_sessions(app: AppHandle) {
                 } else {
                     quiet_ticks = 0;
                 }
-                // one decision: from here this StarNet is no longer the terminal's. A `starnet` that arrives while it
-                // closes is told so (terminal_closing) and starts StarNet again once this one has quit.
+                // one decision: from here this Vultron is no longer the terminal's. A `vultron` that arrives while it
+                // closes is told so (terminal_closing) and starts Vultron again once this one has quit.
                 let decide = quiet_ticks >= 2 && st.launched_for_terminal.swap(false, Ordering::SeqCst);
                 if decide {
                     st.terminal_closing.store(true, Ordering::SeqCst);
@@ -3258,7 +3258,7 @@ fn watch_terminal_sessions(app: AppHandle) {
     });
 }
 
-/// Is a `starnet` session this StarNet runs for still alive? (The ones that have exited are dropped.)
+/// Is a `vultron` session this Vultron runs for still alive? (The ones that have exited are dropped.)
 fn terminal_sessions_live(st: &AppState) -> bool {
     let mut pids = st
         .terminal_pids
@@ -3271,7 +3271,7 @@ fn terminal_sessions_live(st: &AppState) -> bool {
     !pids.is_empty()
 }
 
-/// Every `starnet` session this StarNet ran for has ended. If nobody has opened the window meanwhile, decide exactly
+/// Every `vultron` session this Vultron ran for has ended. If nobody has opened the window meanwhile, decide exactly
 /// as a window close does — a station with routines armed (or the close-to-tray preference) stays in the tray and an
 /// idle one quits, leaving nothing running unseen. A window that is open is a person's: the terminal never closes it.
 fn terminal_sessions_over(app: &AppHandle, st: &AppState) {
@@ -3283,22 +3283,22 @@ fn terminal_sessions_over(app: &AppHandle, st: &AppState) {
         st.terminal_closing.store(false, Ordering::SeqCst);
         log_startup(
             &st.startup_log,
-            "terminal-done: the starnet sessions ended, but StarNet was opened meanwhile; it stays as it is",
+            "terminal-done: the vultron sessions ended, but Vultron was opened meanwhile; it stays as it is",
         );
         return;
     }
     st.startup_reveal.cancel();
     log_startup(
         &st.startup_log,
-        "terminal-done: every starnet session it ran for has ended; deciding as a window close",
+        "terminal-done: every vultron session it ran for has ended; deciding as a window close",
     );
     decide_close(app, st);
 }
 
-/// A second launch with the terminal's flags: another `starnet` session attaching to the running station. A StarNet
+/// A second launch with the terminal's flags: another `vultron` session attaching to the running station. A Vultron
 /// the terminal started runs for this session too, so the first one ending never closes the station under it; a
-/// StarNet a person started (or one that stays in the tray) is theirs and only notes it. Never a window, either way.
-/// Every outcome is logged with the session's pid — bin/starnet.js reads it to confirm its join (review 0.14.1, F7).
+/// Vultron a person started (or one that stays in the tray) is theirs and only notes it. Never a window, either way.
+/// Every outcome is logged with the session's pid — bin/vultron.js reads it to confirm its join (review 0.14.1, F7).
 fn join_terminal_session(app: &AppHandle, pid: u32) {
     enum Join {
         Joined,
@@ -3308,7 +3308,7 @@ fn join_terminal_session(app: &AppHandle, pid: u32) {
     }
     let outcome = match app.try_state::<AppState>() {
         // setup has not managed its state yet (it may be waiting on the startup-failure dialog): keep the pid until
-        // it has, so this session is tracked like the one that started StarNet (review 0.14.1, F6)
+        // it has, so this session is tracked like the one that started Vultron (review 0.14.1, F6)
         None => {
             if pid > 0 {
                 EARLY_TERMINAL_JOINS
@@ -3339,10 +3339,10 @@ fn join_terminal_session(app: &AppHandle, pid: u32) {
     log_startup(
         &startup_log_path(app),
         match outcome {
-            Join::Joined => format!("second-launch --background: starnet session pid {pid} joins the station the terminal started"),
-            Join::Starting => format!("second-launch --background: starnet session pid {pid} joins once StarNet has started"),
-            Join::Closing => format!("second-launch --background: starnet session pid {pid} arrived while StarNet is closing (its starnet sessions ended); start StarNet again once it has quit"),
-            Join::NotTracked => format!("second-launch --background: starnet session pid {pid}: this StarNet is a person's or stays in the tray; a terminal ending never closes it"),
+            Join::Joined => format!("second-launch --background: vultron session pid {pid} joins the station the terminal started"),
+            Join::Starting => format!("second-launch --background: vultron session pid {pid} joins once Vultron has started"),
+            Join::Closing => format!("second-launch --background: vultron session pid {pid} arrived while Vultron is closing (its vultron sessions ended); start Vultron again once it has quit"),
+            Join::NotTracked => format!("second-launch --background: vultron session pid {pid}: this Vultron is a person's or stays in the tray; a terminal ending never closes it"),
         },
     );
 }
@@ -3357,13 +3357,13 @@ fn webview_init_script(port: u16, api_token: &str) -> String {
     // a page that ever loads in this window (a dropped link, a stray navigation) never receives
     // it. The on_navigation guard in build_main_window is the primary control; this is the second layer.
     let init = format!(
-        "if(location.protocol==='tauri:'||location.hostname==='tauri.localhost'){{window.__STARNET_API__='http://127.0.0.1:{port}';window.__STARNET_API_TOKEN__='{api_token}';var _sf=window.fetch;window.fetch=function(u,o){{if(typeof u==='string'&&u.indexOf('/api/')===0)u=window.__STARNET_API__+u;return _sf(u,o)}};}}"
+        "if(location.protocol==='tauri:'||location.hostname==='tauri.localhost'){{window.__VULTRON_API__='http://127.0.0.1:{port}';window.__VULTRON_API_TOKEN__='{api_token}';var _sf=window.fetch;window.fetch=function(u,o){{if(typeof u==='string'&&u.indexOf('/api/')===0)u=window.__VULTRON_API__+u;return _sf(u,o)}};}}"
     );
     // Windows runs WITHOUT native decorations (see the window builder below): this flag
     // tells the frontend (app/titlebar.js) to render its own themed titlebar with
     // MIN/MAX/CLOSE riding the Commander's phosphor theme. macOS/browser never set it.
     #[cfg(windows)]
-    let init = format!("{init}window.__STARNET_CUSTOM_CHROME__=1;");
+    let init = format!("{init}window.__VULTRON_CUSTOM_CHROME__=1;");
     init
 }
 
@@ -3397,7 +3397,7 @@ fn build_main_window(
         // Let HTML5 file drops reach COMMS and the existing attachment uploader.
         // Tauri's native handler otherwise intercepts them on Windows.
         .disable_drag_drop_handler()
-        .title("StarNet")
+        .title("Vultron")
         .inner_size(1280.0, 832.0)
         .min_inner_size(960.0, 600.0)
         .initialization_script(&init)
@@ -3435,7 +3435,7 @@ fn build_main_window(
             }
         });
     // Windows: drop the stock titlebar/border — the frontend draws its own themed
-    // chrome (titlebar.js, gated on __STARNET_CUSTOM_CHROME__ above). shadow(true)
+    // chrome (titlebar.js, gated on __VULTRON_CUSTOM_CHROME__ above). shadow(true)
     // keeps the DWM drop shadow, and Tauri's undecorated-resize handling keeps the
     // edge-drag resize grips working. macOS keeps native decorations until a mac
     // pass is designed (unverified there — do not blind-apply).
@@ -3512,11 +3512,11 @@ fn build_main_window(
                         return;
                     };
                     let st = state.inner();
-                    // closed while a `starnet` session it runs for is still alive: it keeps running for that
+                    // closed while a `vultron` session it runs for is still alive: it keeps running for that
                     // session, and the session's end decides exactly as this close would have — never a
                     // station closed under a terminal that is still using it
                     if terminal_sessions_live(st) {
-                        stay_resident_or_quit(&app2, st, "a starnet session still uses this station");
+                        stay_resident_or_quit(&app2, st, "a vultron session still uses this station");
                         return;
                     }
                     st.launched_for_terminal.store(false, Ordering::SeqCst);
@@ -3620,7 +3620,7 @@ fn on_webview_process_failed(
     if !state.webview_recovery.try_spend(Instant::now()) {
         log_startup(
             &log,
-            format!("webview-recovery: {name}; recovery budget spent (3 in 10 min), leaving the window as-is; restart StarNet to recover"),
+            format!("webview-recovery: {name}; recovery budget spent (3 in 10 min), leaving the window as-is; restart Vultron to recover"),
         );
         return;
     }
@@ -3825,7 +3825,7 @@ fn update_lifecycle_preferences(
 /// a multi-second drain there would freeze the app (review m1).
 fn on_tray_menu(app: &AppHandle, id: &str) {
     match id {
-        // Open StarNet means the full station: a HUD that is up hands the window back first.
+        // Open Vultron means the full station: a HUD that is up hands the window back first.
         "lifecycle_open" => {
             hud_mode::request(app, false);
             show_main_window(app);
@@ -3880,30 +3880,30 @@ fn spawn_tray_updater(app: AppHandle) {
                         l.reasons.join(", ")
                     };
                     (
-                        format!("StarNet — {summary}"),
+                        format!("Vultron — {summary}"),
                         format!("Background: {summary}"),
                     )
                 }
                 LifecycleProbe::Armed(_) if close_to_tray => (
-                    "StarNet — idle in tray".to_string(),
-                    "Background: idle — close keeps StarNet running".to_string(),
+                    "Vultron — idle in tray".to_string(),
+                    "Background: idle — close keeps Vultron running".to_string(),
                 ),
                 LifecycleProbe::NotRunning if close_to_tray => (
-                    "StarNet — engine offline (kept in tray)".to_string(),
-                    "Background: engine offline — close keeps StarNet running".to_string(),
+                    "Vultron — engine offline (kept in tray)".to_string(),
+                    "Background: engine offline — close keeps Vultron running".to_string(),
                 ),
                 LifecycleProbe::Armed(_) | LifecycleProbe::NotRunning => (
                     // Nothing armed (or no engine at all): closing quits — the same rule the close path applies.
-                    "StarNet — idle (closing quits)".to_string(),
+                    "Vultron — idle (closing quits)".to_string(),
                     "Background: idle — closing quits".to_string(),
                 ),
                 LifecycleProbe::Ambiguous => (
                     // Alive but the poll failed — honest "unknown", mirroring the close path's fail-open.
-                    "StarNet — status unavailable (close keeps it running)".to_string(),
+                    "Vultron — status unavailable (close keeps it running)".to_string(),
                     "Background: status unavailable — close keeps it running".to_string(),
                 ),
             };
-            if let Some(tray) = app.tray_by_id("starnet-tray") {
+            if let Some(tray) = app.tray_by_id("vultron-tray") {
                 let _ = tray.set_tooltip(Some(tooltip.as_str()));
             }
             if let Some(handles) = app.try_state::<TrayHandles>() {
@@ -3957,25 +3957,25 @@ fn harness_store_provider_key(
         format!("\"{shown}\" is not a provider this app knows, so nothing was stored")
     })?;
     let key_trimmed = key.as_ref().map(|k| k.trim().to_string());
-    // starnet's bearer is the station's device link (its own credits entry), never a key the window hands over: refused
+    // vultron's bearer is the station's device link (its own credits entry), never a key the window hands over: refused
     // here, so it is not pushed into the sidecar's runtime key table either
-    if provider_id == "starnet" && matches!(key_trimmed.as_deref(), Some(k) if !k.is_empty()) {
+    if provider_id == "vultron" && matches!(key_trimmed.as_deref(), Some(k) if !k.is_empty()) {
         return Err(
-            "StarNet runs on this station's account link, not an API key, so nothing was stored"
+            "Vultron runs on this station's account link, not an API key, so nothing was stored"
                 .to_string(),
         );
     }
     let mut rollback: Option<(keyring::Entry, Option<String>)> = None;
     if let Some(ref key_value) = key_trimmed {
         // codex + the device-OAuth providers (grok/kimi) authenticate by OAuth token (sidecar-owned), not a
-        // keychain API key; ollama and claude-cli (the local CLI's own sign-in) are keyless; starnet's bearer is the
+        // keychain API key; ollama and claude-cli (the local CLI's own sign-in) are keyless; vultron's bearer is the
         // station's device link (its own credits entry). None of them get a keychain entry.
         if provider_id != "codex"
             && provider_id != "ollama"
             && provider_id != "claude-cli"
             && provider_id != "grok"
             && provider_id != "kimi"
-            && provider_id != "starnet"
+            && provider_id != "vultron"
         {
             let entry = keychain_entry_for(provider_id).map_err(|e| e.to_string())?;
             let previous = entry.get_password().ok().filter(|v| !v.trim().is_empty());
@@ -4358,7 +4358,7 @@ fn confirm_host_launch(app: &tauri::AppHandle, title: &str, body: &str, verb: &s
 /// path — renderer clicks are not host gestures, and the answer is never cached.
 /// `async` so the blocking dialog runs on the async runtime, not the main thread.
 #[tauri::command]
-async fn starnet_open_artifact(
+async fn vultron_open_artifact(
     path: String,
     agent_id: Option<String>,
     app: tauri::AppHandle,
@@ -4375,7 +4375,7 @@ async fn starnet_open_artifact(
         "Open this file with its system default app?\n\n{}",
         artifact.display()
     );
-    if !confirm_host_launch(&app, "StarNet — open file", &body, "Open") {
+    if !confirm_host_launch(&app, "Vultron — open file", &body, "Open") {
         return Err(format!("open {HOST_GESTURE_DECLINED}"));
     }
 
@@ -4403,10 +4403,10 @@ async fn starnet_open_artifact(
 
 /// Reveal a proven deliverable in Explorer/Finder (or open its containing directory on
 /// Linux). Directories are opened directly so the existing Workshop "open folder" action
-/// uses the same constrained command. Same host-gesture gate as `starnet_open_artifact`:
+/// uses the same constrained command. Same host-gesture gate as `vultron_open_artifact`:
 /// a blocking native dialog names the exact resolved path before anything spawns.
 #[tauri::command]
-async fn starnet_reveal_path(
+async fn vultron_reveal_path(
     path: String,
     agent_id: Option<String>,
     app: tauri::AppHandle,
@@ -4423,7 +4423,7 @@ async fn starnet_reveal_path(
         },
         artifact.display()
     );
-    if !confirm_host_launch(&app, "StarNet — reveal in folder", &body, "Reveal") {
+    if !confirm_host_launch(&app, "Vultron — reveal in folder", &body, "Reveal") {
         return Err(format!("reveal {HOST_GESTURE_DECLINED}"));
     }
 
@@ -4475,7 +4475,7 @@ mod artifact_open_tests {
 
     fn temp_root() -> std::path::PathBuf {
         std::env::temp_dir().join(format!(
-            "starnet-artifact-open-{}-{}",
+            "vultron-artifact-open-{}-{}",
             std::process::id(),
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
@@ -4728,9 +4728,9 @@ fn open_external_url(state: State<AppState>, url: String) -> Result<(), String> 
 /// exit restores it.
 static FS_RESTORE_MAXIMIZE: AtomicBool = AtomicBool::new(false);
 
-/// Toggle the main StarNet desktop window between windowed and fullscreen mode.
+/// Toggle the main Vultron desktop window between windowed and fullscreen mode.
 #[tauri::command]
-fn starnet_toggle_fullscreen(app: AppHandle) -> Result<bool, String> {
+fn vultron_toggle_fullscreen(app: AppHandle) -> Result<bool, String> {
     // HUD mode owns the window as a pinned corner panel; F11 there would blow the HUD up over the
     // game it floats above. The window is not fullscreen, so that is the honest answer.
     if hud_mode::is_active(&app) {
@@ -4754,10 +4754,10 @@ fn starnet_toggle_fullscreen(app: AppHandle) -> Result<bool, String> {
     Ok(next)
 }
 
-/// Prevent idle system sleep while StarNet is open. This does not force the
+/// Prevent idle system sleep while Vultron is open. This does not force the
 /// display to stay on; it only keeps scheduled tasks from being paused by OS sleep.
 #[tauri::command]
-fn starnet_set_keep_awake(
+fn vultron_set_keep_awake(
     enabled: bool,
     state: State<AppState>,
 ) -> Result<KeepAwakeStatus, String> {
@@ -4770,7 +4770,7 @@ fn starnet_set_keep_awake(
 
 /// Read the current native keep-awake state without changing the OS assertion.
 #[tauri::command]
-fn starnet_keep_awake_status(state: State<AppState>) -> Result<KeepAwakeStatus, String> {
+fn vultron_keep_awake_status(state: State<AppState>) -> Result<KeepAwakeStatus, String> {
     Ok(state
         .keep_awake
         .lock()
@@ -4781,7 +4781,7 @@ fn starnet_keep_awake_status(state: State<AppState>) -> Result<KeepAwakeStatus, 
 /// Desktop updater status without hitting the network. The frontend uses this to
 /// render the Update Center immediately and decide whether native updates exist.
 #[tauri::command]
-fn starnet_update_status(
+fn vultron_update_status(
     app: AppHandle,
     pending_update: State<PendingUpdate>,
 ) -> Result<UpdateStatus, String> {
@@ -4802,7 +4802,7 @@ fn starnet_update_status(
 /// Check the signed release manifest and cache the verified update object if a
 /// newer build exists. No install happens until the user asks for it.
 #[tauri::command]
-async fn starnet_update_check(
+async fn vultron_update_check(
     app: AppHandle,
     pending_update: State<'_, PendingUpdate>,
 ) -> Result<UpdateCheck, String> {
@@ -4849,7 +4849,7 @@ async fn starnet_update_check(
 /// the app as the installer starts; on other desktop platforms we restart after a
 /// successful install so the user lands on the new version.
 #[tauri::command]
-async fn starnet_update_install(
+async fn vultron_update_install(
     app: AppHandle,
     pending_update: State<'_, PendingUpdate>,
     on_event: Channel<UpdateInstallEvent>,
@@ -4959,7 +4959,7 @@ mod executable_identity_tests {
 
     fn temp_file(name: &str) -> std::path::PathBuf {
         std::env::temp_dir().join(format!(
-            "starnet-executable-identity-{}-{}-{name}",
+            "vultron-executable-identity-{}-{}-{name}",
             std::process::id(),
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
@@ -4996,16 +4996,16 @@ mod executable_identity_tests {
 }
 
 #[tauri::command]
-fn starnet_build_info(app: AppHandle) -> BuildInfo {
+fn vultron_build_info(app: AppHandle) -> BuildInfo {
     let (executable_sha256, executable_size) = runtime_executable_identity();
     BuildInfo {
         version: app.package_info().version.to_string(),
-        commit: env!("STARNET_BUILD_COMMIT").to_string(),
-        sha: env!("STARNET_BUILD_SHA").to_string(),
-        source_tree: env!("STARNET_BUILD_TREE").to_string(),
-        provenance_kind: env!("STARNET_BUILD_PROVENANCE_KIND").to_string(),
-        describe: env!("STARNET_BUILD_DESCRIBE").to_string(),
-        dirty: env!("STARNET_BUILD_DIRTY") == "1",
+        commit: env!("VULTRON_BUILD_COMMIT").to_string(),
+        sha: env!("VULTRON_BUILD_SHA").to_string(),
+        source_tree: env!("VULTRON_BUILD_TREE").to_string(),
+        provenance_kind: env!("VULTRON_BUILD_PROVENANCE_KIND").to_string(),
+        describe: env!("VULTRON_BUILD_DESCRIBE").to_string(),
+        dirty: env!("VULTRON_BUILD_DIRTY") == "1",
         executable_sha256,
         executable_size,
         install_integrity: app
@@ -5019,7 +5019,7 @@ fn starnet_build_info(app: AppHandle) -> BuildInfo {
 /// Lane 4D: is launch-at-login currently registered? OPT-IN, default OFF — this only reports the real OS state
 /// (Windows Run key / macOS LaunchAgent / Linux autostart .desktop) so the Settings toggle never lies.
 #[tauri::command]
-fn starnet_autostart_status(app: AppHandle) -> Result<AutostartStatus, String> {
+fn vultron_autostart_status(app: AppHandle) -> Result<AutostartStatus, String> {
     use tauri_plugin_autostart::ManagerExt;
     let enabled = app.autolaunch().is_enabled().map_err(|e| e.to_string())?;
     Ok(AutostartStatus {
@@ -5031,7 +5031,7 @@ fn starnet_autostart_status(app: AppHandle) -> Result<AutostartStatus, String> {
 /// Enable/disable launch-at-login and report the resulting REAL state (read back, not assumed). The single-
 /// instance plugin guarantees a login launch focuses the running app rather than starting a 2nd sidecar.
 #[tauri::command]
-fn starnet_set_autostart(app: AppHandle, enabled: bool) -> Result<AutostartStatus, String> {
+fn vultron_set_autostart(app: AppHandle, enabled: bool) -> Result<AutostartStatus, String> {
     use tauri_plugin_autostart::ManagerExt;
     let manager = app.autolaunch();
     if enabled {
@@ -5065,10 +5065,10 @@ struct LifecycleView {
 /// claim refusal) leaves the page polling a dead port forever. This kills whatever child exists, spawns a
 /// fresh one on the same port, and reports truthfully whether it came up listening. Never touches user data.
 #[tauri::command]
-fn starnet_restart_sidecar(state: State<AppState>) -> Result<bool, String> {
+fn vultron_restart_sidecar(state: State<AppState>) -> Result<bool, String> {
     let st: &AppState = state.inner();
     if st.shutting_down.load(Ordering::SeqCst) {
-        return Err("StarNet is shutting down".to_string());
+        return Err("Vultron is shutting down".to_string());
     }
     let _recovery = begin_recovery(st)?;
     log_startup(
@@ -5120,13 +5120,13 @@ struct FreshStartView {
 /// re-migration, and respawns with the same OS-keychain credentials. Purchased credits therefore
 /// remain account-bound and are re-injected into the clean sidecar; this command never clears them.
 #[tauri::command]
-fn starnet_start_fresh(
+fn vultron_start_fresh(
     window: tauri::WebviewWindow,
     state: State<AppState>,
 ) -> Result<FreshStartView, String> {
     let st: &AppState = state.inner();
     if st.shutting_down.load(Ordering::SeqCst) {
-        return Err("StarNet is shutting down".to_string());
+        return Err("Vultron is shutting down".to_string());
     }
     let _recovery = begin_recovery(st)?;
     log_startup(
@@ -5154,10 +5154,10 @@ fn starnet_start_fresh(
         }
     };
 
-    // The reset deliberately preserves only the protected StarNet credit-account link record.
+    // The reset deliberately preserves only the protected Vultron credit-account link record.
     // Adopt a transient plaintext token into the OS keychain before the new sidecar starts, matching boot.
     migrate_credits_token_from_plaintext(&st.workspaces);
-    // The packaged origin belongs only to StarNet. Clearing it natively removes localStorage,
+    // The packaged origin belongs only to Vultron. Clearing it natively removes localStorage,
     // IndexedDB, cookies, service workers and caches on both WebView2 and WKWebView. JS repeats the
     // namespaced localStorage clear as a fallback, and will refuse to reload if neither layer proves it.
     let browser_data_cleared = match window.clear_all_browsing_data() {
@@ -5215,13 +5215,13 @@ struct EraseFailure {
 /// #65 ERASE EVERYTHING (Settings > APP & BACKUP). The full "start over from scratch": stop every run and the
 /// sidecar (its graceful quit closes the station browser and reaps its children), swap in a sealed empty station
 /// (fresh_start::set_aside_for_erase; a failed move changes NOTHING), then DELETE the old station, every other entry
-/// of the app-data folder, older StarNet data roots and both voice-model caches (erase_all.rs: StarNet-owned paths
+/// of the app-data folder, older Vultron data roots and both voice-model caches (erase_all.rs: Vultron-owned paths
 /// only, links never followed), remove every keychain credential this shell can have created, turn launch-at-login
 /// off, clear the WebView's own storage, and start a clean sidecar. The receipt lists what was removed and what
 /// could not be, so the UI never claims an erase that did not happen. Project folders the user trusted are
 /// recorded by path and are never inside the station data; they are not touched.
 #[tauri::command]
-fn starnet_erase_everything(
+fn vultron_erase_everything(
     app: AppHandle,
     window: tauri::WebviewWindow,
     state: State<AppState>,
@@ -5232,7 +5232,7 @@ fn starnet_erase_everything(
     }
     let st: &AppState = state.inner();
     if st.shutting_down.load(Ordering::SeqCst) {
-        return Err("StarNet is shutting down - nothing was erased".to_string());
+        return Err("Vultron is shutting down - nothing was erased".to_string());
     }
     let _recovery = begin_recovery(st)?;
     log_startup(
@@ -5271,7 +5271,7 @@ fn starnet_erase_everything(
                 format!("erase: refused before any deletion ({error}); station respawn listening={listening}"),
             );
             return Err(format!(
-                "nothing was erased - {error}. Close any other StarNet window or browser and try again."
+                "nothing was erased - {error}. Close any other Vultron window or browser and try again."
             ));
         }
     };
@@ -5371,7 +5371,7 @@ fn starnet_erase_everything(
 /// Pure read of AppState.guardian — no probe, no side effect — so a HALTED crash loop is shown as
 /// exactly that instead of a generic "not answering".
 #[tauri::command]
-fn starnet_sidecar_status(state: State<AppState>) -> GuardianStatus {
+fn vultron_sidecar_status(state: State<AppState>) -> GuardianStatus {
     state
         .inner()
         .guardian
@@ -5385,14 +5385,14 @@ fn starnet_sidecar_status(state: State<AppState>) -> GuardianStatus {
 /// its one `page-boot:` line to startup.log, at most boot_report::MAX_LINES per process. Diagnostic only: it answers
 /// nothing and refuses nothing.
 #[tauri::command]
-fn starnet_boot_report(report: serde_json::Value, state: State<AppState>) {
+fn vultron_boot_report(report: serde_json::Value, state: State<AppState>) {
     if let Some(line) = boot_report::accept(&report, &boot_report::BUDGET) {
         log_startup(&state.inner().startup_log, line);
     }
 }
 
 #[tauri::command]
-fn starnet_lifecycle_status(state: State<AppState>) -> LifecycleView {
+fn vultron_lifecycle_status(state: State<AppState>) -> LifecycleView {
     let preferences = lifecycle_preferences_snapshot(state.inner());
     match query_lifecycle_armed(state.port, &state.api_token, Duration::from_millis(1500)) {
         Some(l) => LifecycleView {
@@ -5413,7 +5413,7 @@ fn starnet_lifecycle_status(state: State<AppState>) -> LifecycleView {
 }
 
 #[tauri::command]
-fn starnet_set_start_minimized(
+fn vultron_set_start_minimized(
     state: State<AppState>,
     enabled: bool,
 ) -> Result<LifecyclePreferences, String> {
@@ -5421,7 +5421,7 @@ fn starnet_set_start_minimized(
 }
 
 #[tauri::command]
-fn starnet_set_close_to_tray(
+fn vultron_set_close_to_tray(
     state: State<AppState>,
     enabled: bool,
 ) -> Result<LifecyclePreferences, String> {
@@ -5429,12 +5429,12 @@ fn starnet_set_close_to_tray(
 }
 
 fn main() {
-    // `--starnet-breakaway <spec>`: the station opening an app for the person outside its job (process_job.rs). Runs
+    // `--vultron-breakaway <spec>`: the station opening an app for the person outside its job (process_job.rs). Runs
     // that one program and exits — before Tauri, the single-instance check or anything else of the app starts.
     if let Some(code) = process_job::breakaway_main() {
         std::process::exit(code);
     }
-    // `--starnet-verify-install [--root DIR] [--out FILE]`: the install manifest's verdict over this exe's install,
+    // `--vultron-verify-install [--root DIR] [--out FILE]`: the install manifest's verdict over this exe's install,
     // headless, for the CI installed proofs and support (install_manifest.rs). Exits 0 verified, 3 damaged, 4 not
     // checked, before Tauri or the single-instance check start.
     if let Some(code) = install_manifest::verify_install_main(std::env::args_os(), INSTALL_MANIFEST) {
@@ -5451,13 +5451,13 @@ fn main() {
         // A second launch should focus the running window, not spin up a 2nd sidecar. Registered FIRST per
         // Tauri guidance (n1): single-instance must run before other plugins so a second process bails early.
         .plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
-            // The terminal's own launch never reveals the window: `--background` is a `starnet` session attaching to
+            // The terminal's own launch never reveals the window: `--background` is a `vultron` session attaching to
             // the station that is already running (terminal_session.rs).
             if let terminal_session::TerminalLaunch::Background { pid } = terminal_session::parse(argv.iter()) {
                 join_terminal_session(app, pid);
                 return;
             }
-            // a person opening StarNet: revealed as always. The terminal sessions it runs for stay tracked — their end
+            // a person opening Vultron: revealed as always. The terminal sessions it runs for stay tracked — their end
             // never closes a window that is open, and a close while one is alive waits for it (terminal_sessions_live)
             let win = app.get_webview_window("main");
             // No managed state yet = setup is still booting the sidecar: this instance is starting.
@@ -5478,7 +5478,7 @@ fn main() {
                 let _ = win.set_focus();
             } else if action == webview_recovery::SecondLaunch::Wait {
                 // Starting up (a slow boot under memory pressure) or rebuilding after a WebView2
-                // crash: NOT a zombie. Quitting here killed a still-booting StarNet on 2026-09-23.
+                // crash: NOT a zombie. Quitting here killed a still-booting Vultron on 2026-09-23.
                 log_startup(
                     &startup_log_path(app),
                     "second-launch: main window not built yet (starting or rebuilding); leaving this instance running",
@@ -5524,33 +5524,33 @@ fn main() {
             harness_adopt_credits_token,
             harness_has_credits_token,
             harness_clear_credits_token,
-            starnet_open_artifact,
-            starnet_reveal_path,
+            vultron_open_artifact,
+            vultron_reveal_path,
             open_external_url,
-            starnet_toggle_fullscreen,
-            starnet_set_keep_awake,
-            starnet_keep_awake_status,
-            starnet_update_status,
-            starnet_update_check,
-            starnet_update_install,
-            starnet_build_info,
-            starnet_autostart_status,
-            starnet_set_autostart,
-            starnet_lifecycle_status,
-            starnet_sidecar_status,
-            starnet_boot_report,
-            starnet_restart_sidecar,
-            starnet_start_fresh,
-            starnet_erase_everything,
-            starnet_set_start_minimized,
-            starnet_set_close_to_tray,
-            hud_mode::starnet_hud_status,
-            hud_mode::starnet_hud_set,
-            hud_mode::starnet_hud_pin,
-            hud_mode::starnet_hud_fold
+            vultron_toggle_fullscreen,
+            vultron_set_keep_awake,
+            vultron_keep_awake_status,
+            vultron_update_status,
+            vultron_update_check,
+            vultron_update_install,
+            vultron_build_info,
+            vultron_autostart_status,
+            vultron_set_autostart,
+            vultron_lifecycle_status,
+            vultron_sidecar_status,
+            vultron_boot_report,
+            vultron_restart_sidecar,
+            vultron_start_fresh,
+            vultron_erase_everything,
+            vultron_set_start_minimized,
+            vultron_set_close_to_tray,
+            hud_mode::vultron_hud_status,
+            hud_mode::vultron_hud_set,
+            hud_mode::vultron_hud_pin,
+            hud_mode::vultron_hud_fold
         ])
         .setup(move |app| {
-            // Started by `starnet` (bin/starnet.js) with the app closed: the window stays parked and this StarNet runs
+            // Started by `vultron` (bin/vultron.js) with the app closed: the window stays parked and this Vultron runs
             // for that terminal session (terminal_session.rs, watch_terminal_sessions). A terminal that has already
             // exited (the relaunch after an in-app update keeps the old arguments) makes this a person's launch.
             let parsed_launch = terminal_session::parse(std::env::args());
@@ -5596,7 +5596,7 @@ fn main() {
             if let Some(pid) = terminal_pid {
                 log_startup(
                     &startup_log,
-                    format!("startup: started by starnet (--background, terminal pid {pid}) — the station runs with the app's keys; the window stays parked until someone opens StarNet"),
+                    format!("startup: started by vultron (--background, terminal pid {pid}) — the station runs with the app's keys; the window stays parked until someone opens Vultron"),
                 );
             }
             // One-time: lift any plaintext channel bot tokens into the keychain and strip them from the file,
@@ -5638,8 +5638,8 @@ fn main() {
             // hard-killed previous shell (Drop/ExitRequested never ran there). Multiple live
             // sidecars on one WORKSPACES dir violate the one-sidecar invariant and burn each
             // other's rotating Codex OAuth refresh tokens. Scoped strictly to ORPHANS whose image
-            // path IS our bundled node runtime — never the `starnet` terminal that started this
-            // StarNet (it runs on that same node), nor anything with a live parent; fail-open,
+            // path IS our bundled node runtime — never the `vultron` terminal that started this
+            // Vultron (it runs on that same node), nor anything with a live parent; fail-open,
             // never blocks startup.
             let keep = state
                 .terminal_pids
@@ -5656,8 +5656,8 @@ fn main() {
             // the owned state and child, before a guardian or hidden window can be created.
             // A setup Err becomes a panic in Tauri, and release builds use panic = "abort" — a user
             // pressing Cancel used to "crash" with 0xC0000409. Stop the child ourselves and exit cleanly.
-            // A terminal start that is cancelled exits EXIT_START_CANCELLED instead: `starnet` waits on this process,
-            // and a 0 reads as a hand-off to a StarNet already starting (review 0.14.1, F5).
+            // A terminal start that is cancelled exits EXIT_START_CANCELLED instead: `vultron` waits on this process,
+            // and a 0 reads as a hand-off to a Vultron already starting (review 0.14.1, F5).
             if !spawn_sidecar_with_retry(app.handle(), &state) {
                 state.shutting_down.store(true, Ordering::SeqCst);
                 state.kill_sidecar();
@@ -5674,8 +5674,8 @@ fn main() {
 
             // Respawn the sidecar if it crashes while the window is open (see spawn_guardian).
             spawn_guardian(app.handle().clone());
-            // `starnet` sessions that asked to join while setup was still starting are tracked now, like the one that
-            // started this StarNet (review 0.14.1, F6)
+            // `vultron` sessions that asked to join while setup was still starting are tracked now, like the one that
+            // started this Vultron (review 0.14.1, F6)
             let watch_terminals = {
                 let st = app.state::<AppState>();
                 let early = std::mem::take(
@@ -5696,13 +5696,13 @@ fn main() {
                     log_startup(
                         &st.startup_log,
                         format!(
-                            "terminal: starnet session(s) {early:?} that asked while StarNet was starting are tracked now"
+                            "terminal: vultron session(s) {early:?} that asked while Vultron was starting are tracked now"
                         ),
                     );
                 }
                 st.launched_for_terminal.load(Ordering::SeqCst) && !pids.is_empty()
             };
-            // Started for a terminal session: StarNet runs while it does (a launch that named no pid stays parked
+            // Started for a terminal session: Vultron runs while it does (a launch that named no pid stays parked
             // until someone opens it or quits it from the tray).
             if watch_terminals {
                 watch_terminal_sessions(app.handle().clone());
@@ -5714,7 +5714,7 @@ fn main() {
             // the E-STOP (reaches background work even with the window closed); Quit drains + kills the sidecar
             // and exits. Built here so it exists before the window, so a close-to-tray has somewhere to live.
             {
-                let open_item = MenuItem::with_id(app, "lifecycle_open", "Open StarNet", true, None::<&str>)?;
+                let open_item = MenuItem::with_id(app, "lifecycle_open", "Open Vultron", true, None::<&str>)?;
                 let hud_item = MenuItem::with_id(app, "lifecycle_hud", "HUD Mode", true, None::<&str>)?;
                 let status_item = MenuItem::with_id(
                     app,
@@ -5726,11 +5726,11 @@ fn main() {
                     None::<&str>,
                 )?;
                 let pause_item = MenuItem::with_id(app, "lifecycle_pause", "Pause Automation (E-STOP)", true, None::<&str>)?;
-                let quit_item = MenuItem::with_id(app, "lifecycle_quit", "Quit StarNet", true, None::<&str>)?;
+                let quit_item = MenuItem::with_id(app, "lifecycle_quit", "Quit Vultron", true, None::<&str>)?;
                 let sep = PredefinedMenuItem::separator(app)?;
                 let menu = Menu::with_items(app, &[&open_item, &hud_item, &status_item, &sep, &pause_item, &quit_item])?;
-                let mut tray_builder = TrayIconBuilder::with_id("starnet-tray")
-                    .tooltip("StarNet")
+                let mut tray_builder = TrayIconBuilder::with_id("vultron-tray")
+                    .tooltip("Vultron")
                     .menu(&menu)
                     .show_menu_on_left_click(false)
                     .on_menu_event(|app, event| on_tray_menu(app, event.id.as_ref()))
@@ -5792,7 +5792,7 @@ fn main() {
                 // (0xC0000409). The sidecar is already stopped; tell the user, then exit(1).
                 // Windows blocks in the native box, then exits. Elsewhere the notice is
                 // non-blocking, so setup returns Ok and the process exits when it is dismissed.
-                let _ = app.remove_tray_by_id("starnet-tray");
+                let _ = app.remove_tray_by_id("vultron-tray");
                 report_window_startup_failure(
                     app.handle(),
                     &startup_log_path(app.handle()),
@@ -5808,11 +5808,11 @@ fn main() {
             Ok(())
         })
         .build(context)
-        .expect("failed to build the StarNet desktop shell")
+        .expect("failed to build the Vultron desktop shell")
         .run(|app, event| {
-            // macOS, NOT built or tested here: opening a running StarNet from the Dock or Finder arrives as
-            // RunEvent::Reopen, not as a second launch, so a window parked by `starnet` (or by close-to-tray /
-            // start-minimized) stays hidden until the menu-bar icon's Open StarNet. A Reopen arm that calls
+            // macOS, NOT built or tested here: opening a running Vultron from the Dock or Finder arrives as
+            // RunEvent::Reopen, not as a second launch, so a window parked by `vultron` (or by close-to-tray /
+            // start-minimized) stays hidden until the menu-bar icon's Open Vultron. A Reopen arm that calls
             // show_main_window would let the Dock reveal it — owed, with a Mac to prove it on (review 0.14.1, F8).
             if let RunEvent::ExitRequested { api, code, .. } = event {
                 // WebView2 crash recovery destroys the dead main window before building its
@@ -5862,25 +5862,25 @@ mod sidecar_reap_tests {
         }
 
         let mut command = Command::new("node");
-        command.env("STARNET_PORT", "poisoned-parent-value");
+        command.env("VULTRON_PORT", "poisoned-parent-value");
         set_sidecar_branded_env(&mut command, "SKYNET_PORT", "60874");
         assert_eq!(
             explicit_env(&command, "SKYNET_PORT").as_deref(),
             Some("60874")
         );
         assert_eq!(
-            explicit_env(&command, "STARNET_PORT").as_deref(),
+            explicit_env(&command, "VULTRON_PORT").as_deref(),
             Some("60874")
         );
 
         command.env("SKYNET_API_TOKEN", "stale-legacy-value");
-        set_sidecar_branded_env(&mut command, "STARNET_API_TOKEN", "fresh-launch-token");
+        set_sidecar_branded_env(&mut command, "VULTRON_API_TOKEN", "fresh-launch-token");
         assert_eq!(
             explicit_env(&command, "SKYNET_API_TOKEN").as_deref(),
             Some("fresh-launch-token")
         );
         assert_eq!(
-            explicit_env(&command, "STARNET_API_TOKEN").as_deref(),
+            explicit_env(&command, "VULTRON_API_TOKEN").as_deref(),
             Some("fresh-launch-token")
         );
     }
@@ -5898,20 +5898,20 @@ mod sidecar_reap_tests {
     #[test]
     fn bundled_absolute_path_is_reapable() {
         assert!(is_reapable_node_path(Path::new(
-            r"C:\Program Files\StarNet\node.exe"
+            r"C:\Program Files\Vultron\node.exe"
         )));
     }
 
     #[cfg(not(windows))]
     #[test]
     fn bundled_absolute_path_is_reapable() {
-        assert!(is_reapable_node_path(Path::new("/opt/starnet/node")));
+        assert!(is_reapable_node_path(Path::new("/opt/vultron/node")));
     }
 
     /// Ambient end-to-end proof (spawns and terminates REAL processes) — excluded from the
     /// default test run; execute explicitly with `cargo test -- --ignored`. Copies node.exe to
     /// a unique temp "bundled" path and starts three processes: an ORPHAN from it (its parent
-    /// exits at once), one from it with a LIVE parent (this test, standing in for the `starnet`
+    /// exits at once), one from it with a LIVE parent (this test, standing in for the `vultron`
     /// CLI, which runs on the bundled node), and a bystander from the system node. The reap must
     /// kill exactly the orphan.
     #[cfg(windows)]
@@ -5928,7 +5928,7 @@ mod sidecar_reap_tests {
             return;
         };
         let dir = std::env::temp_dir().join(format!(
-            "starnet-reap-test-{}-{}",
+            "vultron-reap-test-{}-{}",
             std::process::id(),
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
@@ -5964,7 +5964,7 @@ mod sidecar_reap_tests {
         );
         assert!(
             matches!(owned.try_wait(), Ok(None)),
-            "a bundled-node process with a live parent (the starnet CLI) must never be touched"
+            "a bundled-node process with a live parent (the vultron CLI) must never be touched"
         );
         assert!(
             matches!(bystander.try_wait(), Ok(None)),
@@ -5984,12 +5984,12 @@ mod sidecar_reap_tests {
         // QueryFullProcessImageNameW may report different casing than our resolved path;
         // same_path must still match — while a DIFFERENT node install must not.
         assert!(same_path(
-            Path::new(r"C:\PROGRAM FILES\StarNet\NODE.EXE"),
-            Path::new(r"C:\Program Files\StarNet\node.exe"),
+            Path::new(r"C:\PROGRAM FILES\Vultron\NODE.EXE"),
+            Path::new(r"C:\Program Files\Vultron\node.exe"),
         ));
         assert!(!same_path(
             Path::new(r"C:\Program Files\nodejs\node.exe"),
-            Path::new(r"C:\Program Files\StarNet\node.exe"),
+            Path::new(r"C:\Program Files\Vultron\node.exe"),
         ));
     }
 }
@@ -6228,7 +6228,7 @@ mod webview_cache_purge_tests {
 
         // Build a fake EBWebView\Default tree in a unique temp dir.
         let base = std::env::temp_dir().join(format!(
-            "starnet-wvpurge-test-{}-{}",
+            "vultron-wvpurge-test-{}-{}",
             std::process::id(),
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
@@ -6251,7 +6251,7 @@ mod webview_cache_purge_tests {
             let d = default_dir.join(name);
             std::fs::create_dir_all(&d).unwrap();
             let mut f = std::fs::File::create(d.join("keep.bin")).unwrap();
-            f.write_all(b"starnet.save").unwrap();
+            f.write_all(b"vultron.save").unwrap();
         }
         let cookies = default_dir.join("Cookies");
         std::fs::write(&cookies, b"cookie-jar").unwrap();
@@ -6284,7 +6284,7 @@ mod webview_cache_purge_tests {
     fn purge_is_soft_when_default_dir_absent() {
         // Missing user-data dir must not panic and must remove nothing.
         let base = std::env::temp_dir().join(format!(
-            "starnet-wvpurge-absent-{}-{}",
+            "vultron-wvpurge-absent-{}-{}",
             std::process::id(),
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)

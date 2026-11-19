@@ -21,7 +21,7 @@ const SHIPPED_INPUTS: &[&str] = &[
     "frontend-embed",
     "../sidecar",
     "../shared",
-    // the `starnet` terminal command (bin/starnet.js, its launchers and bin/lib) ships as a resource beside the app
+    // the `vultron` terminal command (bin/vultron.js, its launchers and bin/lib) ships as a resource beside the app
     "../bin",
     "src",
     "capabilities",
@@ -50,7 +50,7 @@ const SHIPPED_GIT_ROOTS: &[&str] = &["frontend", "sidecar", "shared", "bin", "sr
 /// `c160d905-dirty` (uncommitted working tree — the exact hazard the audit flagged: locally-built installers with
 /// bumped-then-reverted versions and no tag). Git missing / not a repo → "unknown" (never fail the build).
 ///
-/// The values are exposed to the Rust code as compile-time env via `env!("STARNET_BUILD_COMMIT")` etc. They land in
+/// The values are exposed to the Rust code as compile-time env via `env!("VULTRON_BUILD_COMMIT")` etc. They land in
 /// the binary's read-only string data (survives `strip = true`, which only drops debug symbols) so the release
 /// train can grep the built exe for the expected commit.
 fn git_output(args: &[&str]) -> Option<String> {
@@ -118,7 +118,7 @@ fn emit_git_rerun_path(name: &str) {
 }
 
 fn emit_rerun_inputs() {
-    println!("cargo:rerun-if-env-changed=STARNET_BUILD_PROVENANCE_KIND");
+    println!("cargo:rerun-if-env-changed=VULTRON_BUILD_PROVENANCE_KIND");
     for path in SHIPPED_INPUTS {
         println!("cargo:rerun-if-changed={path}");
     }
@@ -144,7 +144,7 @@ fn build_provenance_kind(dirty: bool, commit: &str, source_tree: &str) -> &'stat
     if dirty || !exact_git_oid(commit) || !exact_git_oid(source_tree) {
         return "dirty-dev";
     }
-    match env::var("STARNET_BUILD_PROVENANCE_KIND")
+    match env::var("VULTRON_BUILD_PROVENANCE_KIND")
         .unwrap_or_default()
         .trim()
         .to_ascii_lowercase()
@@ -206,16 +206,16 @@ fn main() {
         git_output(&["rev-parse", "HEAD^{tree}"]).unwrap_or_else(|| "unknown".to_string());
     let provenance_kind = build_provenance_kind(dirty, &full_sha, &source_tree);
 
-    println!("cargo:rustc-env=STARNET_BUILD_COMMIT={}", commit);
-    println!("cargo:rustc-env=STARNET_BUILD_SHA={}", full_sha);
-    println!("cargo:rustc-env=STARNET_BUILD_TREE={}", source_tree);
+    println!("cargo:rustc-env=VULTRON_BUILD_COMMIT={}", commit);
+    println!("cargo:rustc-env=VULTRON_BUILD_SHA={}", full_sha);
+    println!("cargo:rustc-env=VULTRON_BUILD_TREE={}", source_tree);
     println!(
-        "cargo:rustc-env=STARNET_BUILD_PROVENANCE_KIND={}",
+        "cargo:rustc-env=VULTRON_BUILD_PROVENANCE_KIND={}",
         provenance_kind
     );
-    println!("cargo:rustc-env=STARNET_BUILD_DESCRIBE={}", describe);
+    println!("cargo:rustc-env=VULTRON_BUILD_DESCRIBE={}", describe);
     println!(
-        "cargo:rustc-env=STARNET_BUILD_DIRTY={}",
+        "cargo:rustc-env=VULTRON_BUILD_DIRTY={}",
         if dirty { "1" } else { "0" }
     );
 

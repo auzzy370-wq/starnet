@@ -43,7 +43,7 @@ function readFileEvidence(file) {
 function selectedPath(value) {
   // Explicit application files only; no arbitrary profile/config files or traversal.
   const rel = String(value).replace(/\\/g, '/');
-  if (!/^(?:node(?:\.exe)?|StarNet\.exe|skynet-desktop(?:\.exe)?|sidecar\/(?:[A-Za-z0-9_-]+\/)*[A-Za-z0-9_.-]+\.(?:js|cjs|mjs))$/.test(rel)) {
+  if (!/^(?:node(?:\.exe)?|Vultron\.exe|skynet-desktop(?:\.exe)?|sidecar\/(?:[A-Za-z0-9_-]+\/)*[A-Za-z0-9_.-]+\.(?:js|cjs|mjs))$/.test(rel)) {
     throw new Error('Unsupported application file: ' + value);
   }
   return rel;
@@ -60,9 +60,9 @@ function signatureEvidence(file) {
   if (process.platform !== 'win32') return { state: 'unverified', reason: 'Authenticode is available only on Windows' };
   // Literal path comes through an environment value, never interpolated shell code.
   const shell = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32/WindowsPowerShell/v1.0/powershell.exe');
-  const command = "$ErrorActionPreference='Stop'; $s=Get-AuthenticodeSignature -LiteralPath $env:STARNET_INTEGRITY_INSTALLER; [pscustomobject]@{status=[string]$s.Status; signatureType=[string]$s.SignatureType; signerSubject=$s.SignerCertificate.Subject; signerThumbprint=$s.SignerCertificate.Thumbprint; timestampSubject=$s.TimeStamperCertificate.Subject} | ConvertTo-Json -Compress";
+  const command = "$ErrorActionPreference='Stop'; $s=Get-AuthenticodeSignature -LiteralPath $env:VULTRON_INTEGRITY_INSTALLER; [pscustomobject]@{status=[string]$s.Status; signatureType=[string]$s.SignatureType; signerSubject=$s.SignerCertificate.Subject; signerThumbprint=$s.SignerCertificate.Thumbprint; timestampSubject=$s.TimeStamperCertificate.Subject} | ConvertTo-Json -Compress";
   const result = spawnSync(shell, ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', command], {
-    env: { ...process.env, PSModulePath: path.join(path.dirname(shell), 'Modules'), STARNET_INTEGRITY_INSTALLER: file }, encoding: 'utf8', windowsHide: true, timeout: 15000, maxBuffer: 65536
+    env: { ...process.env, PSModulePath: path.join(path.dirname(shell), 'Modules'), VULTRON_INTEGRITY_INSTALLER: file }, encoding: 'utf8', windowsHide: true, timeout: 15000, maxBuffer: 65536
   });
   if (result.error || result.status !== 0) return { state: 'unverified', error: result.error?.code || 'SIGNATURE_QUERY_FAILED' };
   try { return { state: 'observed', ...JSON.parse(result.stdout.trim()) }; }
@@ -98,7 +98,7 @@ function inspect({ installation, reference, installer, signature = false, files 
     packageEvidence = { path: file, ...evidence, signature: sig };
   }
   return {
-    schema: 'starnet.installation-integrity.v1', observedAt: new Date().toISOString(), installation: root, reference: ref,
+    schema: 'vultron.installation-integrity.v1', observedAt: new Date().toISOString(), installation: root, reference: ref,
     scope: 'Selected files only; exact bytes from an explicitly extracted reference. No modules executed, profiles searched, repair attempted, or root cause inferred. This is not a full-tree or atomic snapshot.',
     files: rows, disk, installer: packageEvidence,
     summary: rows.reduce((counts, row) => { counts[row.comparison] = (counts[row.comparison] || 0) + 1; return counts; }, {})

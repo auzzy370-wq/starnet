@@ -53,7 +53,7 @@ const { makeSubagentManager } = require('../sidecar/subagents.js');
     assert.ok(/transcriptStore\.view\('recall', w\.id,/.test(block) && /readSessionTurns\(rows\)/.test(block) && !/w\.history|speaker: m\.role/.test(block),
       'overseerStation formats the canonical recall projection without a saved-history fallback');
   }
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-overseer-'));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-overseer-'));
   let serial = 0;
   const saved = { generalId: 'home', workstreams: [{ id: 'home', title: null, agentId: 'agent' }], deletedIds: [] };
   const deps = { fs, path, file: path.join(root, 'overseer.json'), now: () => ++serial,

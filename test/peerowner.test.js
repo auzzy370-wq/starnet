@@ -152,7 +152,7 @@ const Q = { remoteAddress: '127.0.0.1', remotePort: 52345, localAddress: '127.0.
     'win32: a same-port socket to another server address is not the peer');
 
   A.eq((await P.makePeerOwnerCheck({ platform: 'sunos' })(Q)).ok, false, 'unknown platform → fail closed');
-  A.eq((await P.makePeerOwnerCheck({ platform: 'sunos', trustAll: true })(Q)).ok, true, 'STARNET_TRUST_LOCAL_PEERS escape hatch');
+  A.eq((await P.makePeerOwnerCheck({ platform: 'sunos', trustAll: true })(Q)).ok, true, 'VULTRON_TRUST_LOCAL_PEERS escape hatch');
   A.eq((await winSame({ remoteAddress: '127.0.0.1' })).ok, false, 'no ports on the socket → fail closed');
 
   // ---- REAL round trip on this OS: our own loopback client is recognised as the owner ----

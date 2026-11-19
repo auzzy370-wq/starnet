@@ -47,9 +47,9 @@ function startProvider() {
 (async () => {
   const provider = await startProvider();
   const sidecar = SidecarFixture.create({
-    prefix: 'starnet-unpriced-label-',
+    prefix: 'vultron-unpriced-label-',
     env: { OPENROUTER_KEY: '', OPENROUTER_API_KEY: '', SKYNET_OPENROUTER_KEY: 'sk-or-v1-unpriced-e2e', SKYNET_OPENROUTER_BASE: provider.base,
-      STARNET_OPENROUTER_BASE: provider.base, SKYNET_EDGE_TTS: '0', STARNET_EDGE_TTS: '0', SKYNET_AUX_BUDGET: '0' }
+      VULTRON_OPENROUTER_BASE: provider.base, SKYNET_EDGE_TTS: '0', VULTRON_EDGE_TTS: '0', SKYNET_AUX_BUDGET: '0' }
   });
   await sidecar.start();
   const runOnce = async (model, agentId) => {

@@ -1,5 +1,5 @@
 'use strict';
-/* test/cli-dashboard-drive.test.js — the REAL `starnet` dashboard (bin/lib/dashboard.js runDashboard) driven by typed keys
+/* test/cli-dashboard-drive.test.js — the REAL `vultron` dashboard (bin/lib/dashboard.js runDashboard) driven by typed keys
    against a FAKE station: an in-process HTTP server on an ephemeral 127.0.0.1 port (never a real station, no spend). It
    locks what the 0.14.0 re-cut review proved broken in the app commands the terminal runs (review 10-24):
      1. /goal: a pause during a step, then resume, sends the next step (it used to wedge for good)
@@ -140,7 +140,7 @@ async function boot(opts) {
   let raw = ''; out.on('data', d => { raw += d; });
   const inp = new PassThrough(); inp.isTTY = true;
   const exited = runDashboard({ mode: 'attached', workspace: '', child: null, client: clientFor(st.port) }, { stdout: out, stdin: inp, themeFile: (opts && opts.themeFile) || '',
-    env: Object.assign({ STARNET_LOGO: 'plain', NO_COLOR: '1', STARNET_STILL: '1', STARNET_MOUSE: '0' }, opts && opts.env) });
+    env: Object.assign({ VULTRON_LOGO: 'plain', NO_COLOR: '1', VULTRON_STILL: '1', VULTRON_MOUSE: '0' }, opts && opts.env) });
   await sleep(1200);
   const keys = async (s, gap) => { for (const ch of s) { inp.write(ch); await sleep(12); } await sleep(gap == null ? 200 : gap); };
   const key = async (seq, gap) => { inp.write(seq); await sleep(gap == null ? 150 : gap); };
@@ -426,7 +426,7 @@ const UP = '\x1b[A', DOWN = '\x1b[B', ESC = '\x1b';
     const d = await boot({ approval: (b, roster) => {
       if (mode === 'unconfirmed') {   // the page applied it (its roster push landed) but did not confirm within the 6 s
         roster.agents[0].approvalMode = 'full';
-        return { status: 409, body: { error: 'the StarNet app did not confirm in time — it may still be applying the change', pageOpen: true, unanswered: true, station: { approvalMode: 'full' } } };
+        return { status: 409, body: { error: 'the Vultron app did not confirm in time — it may still be applying the change', pageOpen: true, unanswered: true, station: { approvalMode: 'full' } } };
       }
       roster.agents[0].approvalMode = b.mode;
       return { status: 200, body: { ok: true, agentId: b.agentId, mode: b.mode, via: 'roster', save: 'not-saved', saveError: 'the station save is damaged' } };
@@ -434,7 +434,7 @@ const UP = '\x1b[A', DOWN = '\x1b[B', ESC = '\x1b';
     const at = d.mark();
     await d.keys('/yolo\r', 600);
     const said = d.since(at).replace(/\s+/g, ' ');
-    A.ok(/did not confirm in time/.test(said) && /The station's roster says ULTRON will run without prompts right now/.test(said), 'yolo: unconfirmed, it says what the station holds now: ' + (said.match(/The StarNet app.{0,200}/) || [''])[0]);
+    A.ok(/did not confirm in time/.test(said) && /The station's roster says ULTRON will run without prompts right now/.test(said), 'yolo: unconfirmed, it says what the station holds now: ' + (said.match(/The Vultron app.{0,200}/) || [''])[0]);
     A.ok(!/still will ask first/.test(said), 'yolo: never "still will ask first" while the roster says full');
     mode = 'roster';
     const at2 = d.mark();
@@ -445,10 +445,10 @@ const UP = '\x1b[A', DOWN = '\x1b[B', ESC = '\x1b';
   }
 
   /* 14. /theme: lists the themes, recolors the whole screen at once, keeps the pick (cli.json, its other keys kept), and
-     the next starnet starts in it; an unknown name changes nothing */
+     the next vultron starts in it; an unknown name changes nothing */
   {
     const tui = require('../bin/lib/tui.js');
-    const dir = require('fs').mkdtempSync(require('path').join(os.tmpdir(), 'starnet-theme-drive-'));
+    const dir = require('fs').mkdtempSync(require('path').join(os.tmpdir(), 'vultron-theme-drive-'));
     const themeFile = require('path').join(dir, 'cli.json');
     require('fs').writeFileSync(themeFile, JSON.stringify({ keep: 'me' }));
     const color = { NO_COLOR: '', COLORTERM: 'truecolor' };
@@ -462,7 +462,7 @@ const UP = '\x1b[A', DOWN = '\x1b[B', ESC = '\x1b';
     at = d.mark();
     await d.keys('/theme amber\r', 600);
     said = d.since(at).replace(/\s+/g, ' ');
-    A.ok(/Theme: amber, classic amber — kept for the next starnet/.test(said), 'theme: /theme amber says it took and is kept');
+    A.ok(/Theme: amber, classic amber — kept for the next vultron/.test(said), 'theme: /theme amber says it took and is kept');
     A.ok(d.raw().slice(at).includes('\x1b[2J'), 'theme: the whole screen is redrawn');
     const typed = d.mark();   // (the paints while "/theme amber" was being typed were still red)
     await d.keys('x\x7f', 300);
@@ -474,7 +474,7 @@ const UP = '\x1b[A', DOWN = '\x1b[B', ESC = '\x1b';
     A.ok(/No theme named neon/.test(d.since(at).replace(/\s+/g, ' ')) && JSON.parse(require('fs').readFileSync(themeFile, 'utf8')).theme === 'amber', 'theme: an unknown name changes nothing');
     await d.done();
     const d2 = await boot({ env: color, themeFile });
-    A.ok(d2.raw().includes(amberSgr), 'theme: the next starnet starts in amber');
+    A.ok(d2.raw().includes(amberSgr), 'theme: the next vultron starts in amber');
     await d2.keys('/theme red\r', 600);
     A.eq(tui.PALETTE.ph[0], '#ff3b4e', 'theme: /theme red puts the neon red back');
     await d2.done();
@@ -493,7 +493,7 @@ const UP = '\x1b[A', DOWN = '\x1b[B', ESC = '\x1b';
     await d.keys('/connect\r', 900);
     let said = d.since(at).replace(/\s+/g, ' ');
     A.ok(/CONNECT · AI & MODELS/.test(said), 'connect: /connect opens the list');
-    A.ok(['A SUBSCRIPTION YOU HAVE', 'AN API KEY', 'YOUR OWN MODELS'].every(g => said.includes(g)) && !said.includes('STARNET MANAGED'), 'connect: the app\'s groups; STARNET MANAGED only where a StarNet account can link');
+    A.ok(['A SUBSCRIPTION YOU HAVE', 'AN API KEY', 'YOUR OWN MODELS'].every(g => said.includes(g)) && !said.includes('VULTRON MANAGED'), 'connect: the app\'s groups; VULTRON MANAGED only where a Vultron account can link');
     A.ok(['OPENROUTER', 'CHATGPT (CODEX)', 'GROK (XAI)', 'KIMI FOR CODING', 'CLAUDE CODE', 'ANTHROPIC', 'GEMINI', 'CEREBRAS', 'OLLAMA', 'CUSTOM'].every(n => said.includes(n)), 'connect: every provider the app lists, by the app\'s name');
     A.ok(/OPENROUTER\s+one key · 300\+ models\s+● KEY SAVED/.test(said) && /CHATGPT \(CODEX\)\s+ChatGPT subscription\s+● SIGNED IN/.test(said) && /ANTHROPIC\s+Claude native API\s+○ NO KEY/.test(said) && /CLAUDE CODE\s+your Claude subscription\s+○ NOT SIGNED IN/.test(said),
       'connect: each row says what it needs and what the station proves: ' + (said.match(/OPENROUTER.{0,80}/) || [''])[0]);

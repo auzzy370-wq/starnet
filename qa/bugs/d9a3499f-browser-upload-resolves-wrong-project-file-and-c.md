@@ -9,7 +9,7 @@ found: 2026-10-11
 lane: ux-triage-1011
 fix: 61117661631fb4e2be6450d100354f8a4cb05c72
 origin: customer
-report: https://github.com/androoAGI/starnet/issues/104
+report: https://github.com/YOUR-GITHUB-USER/vultron/issues/104
 affected: Windows v0.13.2; trusted-project upload to Etsy listing photo control
 family: browser-upload-selection-truth
 installer: unverified

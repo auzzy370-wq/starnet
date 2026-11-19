@@ -23,7 +23,7 @@
    refused, the owner check through an injected stat), a staged copy carries the sha256 of the bytes written and
    verifyStaged re-hashes, unstage re-proves its folder before each unlink (rr6-dropstaged-race.js A), and the boot sweep
    runs once per root at host start.
-   run-paths-polish (round-7 minors), section 9: m6 the Windows staging root is per-user (%LOCALAPPDATA%\StarNet, no
+   run-paths-polish (round-7 minors), section 9: m6 the Windows staging root is per-user (%LOCALAPPDATA%\Vultron, no
    longer a TEMP other accounts may share), both staging folders are locked owner-only and their security descriptors
    READ (owner this user, no other writer; a descriptor that cannot be read refuses), proven once per folder identity;
    the 0.14.x root in os.tmpdir() is swept at boot. m7 every staging refusal says what the person can do and names the
@@ -48,7 +48,7 @@ const { makeEgressReader, sweepUploadStaging } = require('../sidecar/egress-file
 const RoutineMedia = require('../sidecar/routine-media.js');
 
 const isWin = process.platform === 'win32';
-const BASE = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-egress-')));
+const BASE = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-egress-')));
 const WS = path.join(BASE, 'workspaces'), PA = path.join(BASE, 'projA'), PB = path.join(BASE, 'projB'), HOME = path.join(BASE, 'home');
 const JAIL = path.join(WS, 'alpha');
 for (const d of [path.join(JAIL, 'shots'), path.join(JAIL, 'repo', '.git'), path.join(WS, 'gamma'), path.join(WS, 'beta'), path.join(PA, '.git'), PB, path.join(HOME, '.ssh')]) fs.mkdirSync(d, { recursive: true });
@@ -334,7 +334,7 @@ function plant(linkAt, target) {
       const warn0 = console.warn;
       // a share's real path is spelled with \ on any host (path.relative gives / on Linux, which the console line would carry)
       const unc = rel => rel.split(/[\\/]/).join('\\');
-      const onShare = (p) => { const r = path.relative(WS, p); return r && !r.startsWith('..') && !path.isAbsolute(r) ? '\\\\nas01\\starnet-data\\workspaces\\' + unc(r) : null; };
+      const onShare = (p) => { const r = path.relative(WS, p); return r && !r.startsWith('..') && !path.isAbsolute(r) ? '\\\\nas01\\vultron-data\\workspaces\\' + unc(r) : null; };
       const nasFsp = Object.assign({}, fsp, { realpath: async (p) => { const r = await fsp.realpath(p); return onShare(r) || r; } });
       const nas = makeEgressReader({ fsp: nasFsp, pathMod: path, workspaces: WS, guard: (abs, o2) => core.guard(abs, o2) });
       console.warn = (...a) => { warned.push(a.join(' ')); };
@@ -342,8 +342,8 @@ function plant(linkAt, target) {
       try { got = await nas.read(unscoped.paths, 'shots/x.png'); } finally { console.warn = warn0; }
       A.ok(!got.ok && /this station's workspaces live on a network share/.test(got.error) && /files on network shares never leave the station/.test(got.error), 'workspaces on a share: the refusal says so (' + (got.ok ? 'SENT' : got.error) + ')');
       A.ok(!got.ok && !/protected file/.test(got.error), 'and no longer calls it a protected file');
-      A.ok(!got.ok && got.error.indexOf('nas01') < 0 && got.error.indexOf('starnet-data') < 0 && noHostPath(got), 'the chat-facing refusal names neither the server nor any host path: ' + (got.error || ''));
-      A.ok(warned.some(w => w.indexOf('\\\\nas01\\starnet-data\\workspaces\\alpha\\shots\\x.png') >= 0), 'the full path goes to the console: ' + JSON.stringify(warned));
+      A.ok(!got.ok && got.error.indexOf('nas01') < 0 && got.error.indexOf('vultron-data') < 0 && noHostPath(got), 'the chat-facing refusal names neither the server nor any host path: ' + (got.error || ''));
+      A.ok(warned.some(w => w.indexOf('\\\\nas01\\vultron-data\\workspaces\\alpha\\shots\\x.png') >= 0), 'the full path goes to the console: ' + JSON.stringify(warned));
       const probe = await nas.read(unscoped.paths, 'shots/x.png', { probe: true });
       A.ok(!probe.ok && /network share/.test(probe.error), 'a probe (browser.upload) says the same');
       // a project folder on a share, and a link out to one, are refused with the same true reason
@@ -440,7 +440,7 @@ function plant(linkAt, target) {
         try {
           const { got: g, said } = await quiet(() => stage(r6reader()));
           A.ok(!g.ok && /upload staging folder is a link to somewhere else/.test(g.error) && noHostPath(g), 'R6 squat: a staging ROOT that is a link is refused (' + (g.ok ? 'STAGED into ' + g.abs : g.error) + ')');
-          A.ok(!g.ok && /Remove that link and try again; StarNet then makes a private folder in its place/.test(g.error), 'm7: the linked-root refusal says what to do: ' + (g.ok ? '' : g.error));
+          A.ok(!g.ok && /Remove that link and try again; Vultron then makes a private folder in its place/.test(g.error), 'm7: the linked-root refusal says what to do: ' + (g.ok ? '' : g.error));
           A.eq(fs.readdirSync(elsewhere), [], 'R6 squat: nothing was written through the linked root');
           A.ok(said.some(w => w.indexOf(SR) >= 0), 'R6 squat: the host path goes to the console only');
         } finally { unlinkDir(SR); }
@@ -594,17 +594,17 @@ function plant(linkAt, target) {
       for (const [label, sddl, want] of rows) A.eq(W.winAclProblem(sddl, ME_SID), want, 'm6 descriptor: ' + label);
       A.eq(W.winAclProblem(acl('LA', ['A;OICI;FA;;;LA']), 'S-1-5-21-1-2-3-500'), null, 'm6 descriptor: the built-in Administrator account under its SDDL alias is this user');
 
-      // where the root lives: per-user on Windows (%LOCALAPPDATA%\StarNet), os.tmpdir() on POSIX; the leaf is the station's
+      // where the root lives: per-user on Windows (%LOCALAPPDATA%\Vultron), os.tmpdir() on POSIX; the leaf is the station's
       const root = E.defaultStagingRoot(path, WS);
       if (isWin) {
         const lad = process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local');
-        A.eq(path.dirname(root).toLowerCase(), path.join(lad, 'StarNet').toLowerCase(), 'm6: the Windows staging root is in %LOCALAPPDATA%\\StarNet, inside the user\'s own profile (was: os.tmpdir())');
+        A.eq(path.dirname(root).toLowerCase(), path.join(lad, 'Vultron').toLowerCase(), 'm6: the Windows staging root is in %LOCALAPPDATA%\\Vultron, inside the user\'s own profile (was: os.tmpdir())');
         A.ok(E.legacyStagingRoot(path, WS).toLowerCase() === path.join(os.tmpdir(), path.basename(root)).toLowerCase(), 'm6: the 0.14.x root in os.tmpdir() is known, for the boot sweep only');
       } else {
         A.eq(path.dirname(root), os.tmpdir(), 'm6: POSIX keeps os.tmpdir() (its squat-safe owner checks)');
         A.eq(E.legacyStagingRoot(path, WS), null, 'm6: POSIX has no legacy root');
       }
-      A.ok(/^starnet-upload-staging-[0-9a-f]{16}$/.test(path.basename(root)), 'm6: the root is still named for this station');
+      A.ok(/^vultron-upload-staging-[0-9a-f]{16}$/.test(path.basename(root)), 'm6: the root is still named for this station');
 
       // the reader, with an injected descriptor reader: both folders are locked, then read; once per folder identity
       const ctx9 = runCtx({ agentId: 'alpha' });
@@ -665,7 +665,7 @@ function plant(linkAt, target) {
       // THE BOOT SWEEP takes the 0.14.x Windows root's crash leftovers too (never through a link), once that root is
       // proven ours (Codex A3-STAGE-02: here it is locked owner-only first, as a private per-user TEMP leaves it); POSIX
       // has none. TEST HYGIENE: os.tmpdir() and %LOCALAPPDATA% point inside this test's scratch while it runs, so nothing
-      // is made in the user's real TEMP or StarNet folder
+      // is made in the user's real TEMP or Vultron folder
       if (isWin) {
         const env0 = { TEMP: process.env.TEMP, TMP: process.env.TMP, LOCALAPPDATA: process.env.LOCALAPPDATA };
         const fakeTemp = path.join(BASE, 'fake-temp'), fakeLad = path.join(BASE, 'fake-localappdata');
@@ -695,7 +695,7 @@ function plant(linkAt, target) {
       const ME_SID = 'S-1-5-21-1-2-3-1003', OTHER = 'S-1-5-21-1-2-3-1004';
       const sd = (aces, owner) => 'O:' + (owner || ME_SID) + 'G:' + (owner || ME_SID) + 'D:P' + aces;
       const own = '(A;OICI;FA;;;' + ME_SID + ')';
-      const CANNOT = 'has a permission entry StarNet cannot check';
+      const CANNOT = 'has a permission entry Vultron cannot check';
       // A3-STAGE-01: Codex's descriptor (a3-stage-acl-native-parse.json: Windows' own parser accepts it, its second entry
       // an AccessAllowedCallback for Everyone, mask 0x1f01ff), and the forms around it
       const rows = [
@@ -724,7 +724,7 @@ function plant(linkAt, target) {
         'A3-STAGE-01: a staging folder with a conditional foreign write grant is refused (was: staged, sha256-proven): ' + (c1.ok ? 'STAGED ' + c1.abs : c1.error));
       fs.rmSync(SR10, { recursive: true, force: true });
       const { got: c2 } = await stageWith(sd(own + 'junk'));
-      A.ok(!c2.ok && /upload staging folder has a permission entry StarNet cannot check \(r10-staging\), so nothing was uploaded\. Remove that folder and try again/.test(c2.error),
+      A.ok(!c2.ok && /upload staging folder has a permission entry Vultron cannot check \(r10-staging\), so nothing was uploaded\. Remove that folder and try again/.test(c2.error),
         'A3-STAGE-01: one whose descriptor holds text the parser cannot place is refused too: ' + (c2.ok ? 'STAGED' : c2.error));
       fs.rmSync(SR10, { recursive: true, force: true });
       const { got: c3 } = await stageWith(sd(own + '(XA;OICI;FR;;;WD;(Member_of {SID(BU)}))'));

@@ -236,7 +236,7 @@ for (let i = 0; i < 8; i++) LONG.push({ role: 'assistant', content: 'progress no
   try { CS = require('../sidecar/credential-store.js'); G = require('./helpers/credential-store-sandbox.js'); }
   catch (e) { A.ok(false, 'B: sidecar/credential-store.js loads (' + ((e && e.message) || e).split('\n')[0] + ')'); }
   if (CS && G && typeof (CS.makeCredentialStore && G.sandboxStore) === 'function') {
-    // the env readers index.js uses (envFirst reads the bare name, then STARNET_, then SKYNET_), over a fixed environment
+    // the env readers index.js uses (envFirst reads the bare name, then VULTRON_, then SKYNET_), over a fixed environment
     const envReaders = env => {
       const text = readSidecarSource();
       const body = ['ENV', 'envFirstName', 'envFirst'].map(n => functionSourceIn(text, n)).join('\n');
@@ -244,7 +244,7 @@ for (let i = 0; i < 8; i++) LONG.push({ role: 'assistant', content: 'progress no
     };
     // a station: the desktop keychain (pushed), the operator's environment, and the browser page's copy, the real one
     const station = () => {
-      const env = { ANTHROPIC_API_KEY: 'en-ant', STARNET_KEY_POOL_ANTHROPIC: 'en-pool-1,en-pool-2', OPENROUTER_API_KEY: 'en-or' };
+      const env = { ANTHROPIC_API_KEY: 'en-ant', VULTRON_KEY_POOL_ANTHROPIC: 'en-pool-1,en-pool-2', OPENROUTER_API_KEY: 'en-or' };
       const engineKeys = EC.makeEngineKeys({ load: () => ({ version: 1, providers: {
         custom: { key: 'pg-cu', keyPool: ['pg-cu-pool'], baseUrl: 'http://u.test/v1', rev: 'r1' }, mistral: { key: 'pg-mis', rev: 'r1' } } }),
         persist: () => true, verify: () => true, newRev: () => 'r2' });
@@ -266,11 +266,11 @@ for (let i = 0; i < 8; i++) LONG.push({ role: 'assistant', content: 'progress no
       const H = (p, k) => store.holds(p, k);
       A.eq([H('anthropic', 'kc-ant'), H('anthropic', 'kc-pool'), H('anthropic', 'en-ant'), H('anthropic', 'en-pool-2'), H('custom', 'pg-cu'), H('custom', 'pg-cu-pool'), H('claude', 'kc-ant')],
         [true, true, true, true, true, true, true], '10: the keychain\'s, the environment\'s and the page copy\'s keys and pool entries are held (an alias names its provider)');
-      A.eq([H('openai', 'kc-ant'), H('custom', 'en-ant'), H('nonesuch', 'kc-ant'), H('starnet', 'linked-token'), H('codex', 'kc-ant'), H('grok', 'kc-ant'), H('anthropic', ''), H('anthropic', 'stranger')],
+      A.eq([H('openai', 'kc-ant'), H('custom', 'en-ant'), H('nonesuch', 'kc-ant'), H('vultron', 'linked-token'), H('codex', 'kc-ant'), H('grok', 'kc-ant'), H('anthropic', ''), H('anthropic', 'stranger')],
         [false, false, false, false, false, false, false, false], '10: never another provider\'s key, an unknown provider\'s, the linked token, a sign-in\'s, an empty key or a stranger\'s');
-      for (const id of ['starnet', 'codex', 'grok']) store.push(id, { key: 'kc-' + id });
-      A.eq([H('starnet', 'kc-starnet'), H('codex', 'kc-codex'), H('grok', 'kc-grok')], [false, false, false],
-        '10: a key pushed under StarNet\'s or a sign-in\'s name is never one a run sends (the linked account and the sign-ins resolve their own), so never held');
+      for (const id of ['vultron', 'codex', 'grok']) store.push(id, { key: 'kc-' + id });
+      A.eq([H('vultron', 'kc-vultron'), H('codex', 'kc-codex'), H('grok', 'kc-grok')], [false, false, false],
+        '10: a key pushed under Vultron\'s or a sign-in\'s name is never one a run sends (the linked account and the sign-ins resolve their own), so never held');
       store.push('openrouter', { key: 'kc-or' });
       A.eq([H('openrouter', 'kc-or'), H('openrouter', 'en-or')], [true, true], '10: a keychain push never hides the environment\'s own key (the variable is still set)');
       store.push('anthropic', { key: 'kc-ant-2' });
@@ -297,7 +297,7 @@ for (let i = 0; i < 8; i++) LONG.push({ role: 'assistant', content: 'progress no
       tools: [], dispatch: (c, ctx) => reg.dispatch(c, ctx), capCtx: openCtx(), clock: { now: () => Date.now() }, limits: { maxIters: 5 }, credentialGone: goneVia(w), sleep: async () => {} }, extra || {}))
       .then(res => ({ res, seq: s.seq })); };
     const sentence = id => { const p = Reg.getProviderProfile(id); return EC.credentialError({ id, label: p.label, kind: 'removed', what: 'this run', env: (p.keyEnv || []).find(n => /_API_KEY$/.test(n)) || (p.keyEnv || [])[0] || '' }); };
-    A.ok(/^the CUSTOM key this run started on was removed or replaced on this station, so it stopped before its next model call — run it again to use the key the station holds now, or add one under SETTINGS → AI & MODELS, or set CUSTOM_OPENAI_KEY in the environment that starts StarNet$/.test(sentence('custom')),
+    A.ok(/^the CUSTOM key this run started on was removed or replaced on this station, so it stopped before its next model call — run it again to use the key the station holds now, or add one under SETTINGS → AI & MODELS, or set CUSTOM_OPENAI_KEY in the environment that starts Vultron$/.test(sentence('custom')),
       '11: the in-flight sentence names the provider, why, and both exits: ' + sentence('custom'));
     const rows = [
       ['a page REMOVE', 'custom', 'pg-cu', {}, (s, e) => e.put('custom', {}), true],

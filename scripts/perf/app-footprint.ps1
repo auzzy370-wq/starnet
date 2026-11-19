@@ -1,8 +1,8 @@
 # app-footprint.ps1 - OBSERVE-ONLY whole-app footprint sampler (2026-10-20, piece 3 of the "eats my PC" plan).
-# StarNet's idle cost has four payers: the Tauri host, the WebView2 tree (browser / GPU / renderer / utilities) and
+# Vultron's idle cost has four payers: the Tauri host, the WebView2 tree (browser / GPU / renderer / utilities) and
 # the node sidecar. This reads all of them from the OS, attributed by walking ParentProcessId from the app's OWN pid.
 # It never focuses, resizes, clicks or kills anything, and it never selects a process by name below the root:
-# on the reference box 13 msedgewebview2.exe belonged to SearchHost and GoogleDriveFS, none to StarNet.
+# on the reference box 13 msedgewebview2.exe belonged to SearchHost and GoogleDriveFS, none to Vultron.
 #
 #   Andrew's installed app (observe only):
 #     powershell -NoProfile -File scripts/perf/app-footprint.ps1 -RootName skynet-desktop -Seconds 120

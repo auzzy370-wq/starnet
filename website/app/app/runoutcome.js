@@ -1,4 +1,4 @@
-/* STARNET — runoutcome.js : HOW A RUN ENDED, as ONE code every surface reads (typed-outcomes lane, 2026-10-29).
+/* VULTRON — runoutcome.js : HOW A RUN ENDED, as ONE code every surface reads (typed-outcomes lane, 2026-10-29).
 
    THE FAMILY. COMMS, a channel reply, a routine's history, /v1, ACP, the terminal, the Live Doctor, the phone, the run
    history and the notifications each decided on its own, from the end reason and the error's WORDS, whether a run
@@ -48,7 +48,7 @@
   const REFUSAL_CODES = new Set(['content_policy_blocked', 'model_refusal']);
   /* The provider classifier's reasons (sidecar/providers/errorClass.js REASONS — test/outcome-roundtrip.table.test.js
      keeps the two in step) and the loop's own provider stops. A code here means the MODEL PROVIDER failed the call, not
-     StarNet: an ACP editor or a phone must never read "the run failed inside StarNet" for a provider's rate limit. */
+     Vultron: an ACP editor or a phone must never read "the run failed inside Vultron" for a provider's rate limit. */
   const PROVIDER_CODES = new Set(['auth', 'billing', 'rate_limit', 'quota_exhausted', 'overloaded', 'server_error', 'timeout',
     'context_overflow', 'output_cap', 'call_too_expensive', 'model_not_found', 'content_policy_blocked', 'format_error',
     'tls_certificate', 'local_error', 'local_memory', 'local_timeout', 'endpoint_mismatch', 'template_refusal', 'unreachable',
@@ -126,7 +126,7 @@
      review r7 — a reason a reader resolves back to 'stopped') — and an end with no reason at all is 'error', never 'done'.
      Any other reason is its own WHILE it names the outcome the end proves. Review 9.2: an END-ONLY refusal ends 'error' stamped
      'refused' (or carrying a refusal code), and every reader keyed on this word (the HUD deck, the logbook, the desk screen, a recipe's
-     last run, `starnet watch`, the MCP bridge, a routine's fire reason) said it as a failure. A word the end's outcome contradicts reads
+     last run, `vultron watch`, the MCP bridge, a routine's fire reason) said it as a failure. A word the end's outcome contradicts reads
      that outcome's own end word (END_WORD: a refusal 'refusal'); a word outside the end vocabulary on a record with no stamp proves
      nothing more (a fire's 'blocked', an older reader's 'cut_short') and stays as it is. */
   const END_WORD = Object.freeze({
@@ -188,7 +188,7 @@
   const PHRASE = Object.freeze({
     succeeded: 'finished', asked: 'asked a question', cut_short: 'the reply was cut short', failed: 'failed',
     refused: 'the model declined the request', stopped: 'stopped before it finished', out_of_budget: 'hit a spending limit',
-    step_limit: 'reached the step limit', empty: 'the model sent back an empty reply', interrupted: 'interrupted when StarNet stopped',
+    step_limit: 'reached the step limit', empty: 'the model sent back an empty reply', interrupted: 'interrupted when Vultron stopped',
     blocked: 'held: the work was not accepted'
   });
   function line(o) {
@@ -251,7 +251,7 @@
        partial_join / joiner_lost          a JOINER sent the job on without every branch / lost the branches it waited for
        stopped / station_fault             someone stopped it (STOP, E-STOP) / the station's own fault containment did
        blocked                             a reviewer's VERDICT: blocked held the work at a gate
-       not_steppable / refused / restart   the step-through test cannot carry it / refused before it ran / StarNet restarted mid-step
+       not_steppable / refused / restart   the step-through test cannot carry it / refused before it ran / Vultron restarted mid-step
      LINE_OUTCOMES — the job's end: running · paused (a step-through test waiting on you) · delivered (an OUTBOX reached, no stop) ·
      stopped_short · stopped · blocked · failed (it never ran) · interrupted.
        lineOutcomeOf(x)  a stop code -> the outcome it ends a job with (no code = delivered: the walk reached its OUTBOX); a job

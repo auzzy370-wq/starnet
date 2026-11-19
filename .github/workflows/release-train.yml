@@ -1,7 +1,7 @@
 # Release train — the ONE path from a version tag to a staged draft release.
 #
 # This workflow replaces release.yml's publish role. It NEVER publishes: it produces a
-# DRAFT release on androoAGI/starnet-releases with every supported platform's signed
+# DRAFT release on YOUR-GITHUB-USER/vultron-releases with every supported platform's signed
 # installer + updater artifact + a multi-platform latest.json attached. The only publish is a
 # human clicking "Publish" on GitHub after reviewing the verify summary. Until that click,
 # zero users can receive anything.
@@ -10,19 +10,19 @@
 #       assemble (one multi-platform latest.json + local verify) → stage-draft (draft only).
 #
 # Required repo secrets:
-#   TAURI_SIGNING_PRIVATE_KEY          — contents of ~/.tauri/starnet-updater.key (whole file).
+#   TAURI_SIGNING_PRIVATE_KEY          — contents of ~/.tauri/vultron-updater.key (whole file).
 #                                        UNLIKE desktop-build, this is REQUIRED: the build fails
 #                                        fast if absent. There is NO createUpdaterArtifacts:false
 #                                        fallback here — an unsigned release train is not a thing.
 #   TAURI_SIGNING_PRIVATE_KEY_PASSWORD — empty string (key encrypted with an empty password).
 #   RELEASES_TOKEN                     — fine-grained PAT with Contents:write on
-#                                        androoAGI/starnet-releases.
+#                                        YOUR-GITHUB-USER/vultron-releases.
 #   APPLE_* (required for macOS)       — codesign/notarize the mac DMG. The release train
 #                                        fails closed when any Apple credential is absent;
 #                                        public releases must never stage an unsigned Mac build.
 #   AZURE_TENANT_ID + AZURE_CLIENT_ID + AZURE_CLIENT_SECRET (required for Windows) —
 #                                        Authenticode-sign the Windows exe + NSIS installer via
-#                                        Azure Artifact Signing (account starnet-signing / eastus).
+#                                        Azure Artifact Signing (account vultron-signing / eastus).
 #                                        The bundled Node runtime retains its valid upstream
 #                                        OpenJS signature. Missing/invalid trust fails the train.
 #                                        Operator setup for both signing tiers: docs/CODE_SIGNING.md.
@@ -79,7 +79,7 @@ jobs:
             echo "::error::no Chrome/Chromium binary on this runner — the e2e gate tests cannot run. Install one or set SKYNET_CHROME."
             exit 1
           fi
-          WRAP=/usr/local/bin/starnet-ci-chrome
+          WRAP=/usr/local/bin/vultron-ci-chrome
           printf '#!/bin/sh\nexec %s --no-sandbox --disable-dev-shm-usage "$@"\n' "$CHROME" | sudo tee "$WRAP" > /dev/null
           sudo chmod +x "$WRAP"
           echo "SKYNET_CHROME=$WRAP" >> "$GITHUB_ENV"
@@ -164,7 +164,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       # fetch-depth: 0 = full history + ALL tags. REQUIRED here: the provenance gate below (and build.rs's
-      # STARNET_BUILD_DESCRIBE stamp) run `git describe --tags`, which needs the tag ref present locally. The
+      # VULTRON_BUILD_DESCRIBE stamp) run `git describe --tags`, which needs the tag ref present locally. The
       # default shallow checkout (fetch-depth 1, no tags) makes describe fall back to the bare short SHA, so the
       # gate's `describe == tag` check fails and the train produces ZERO artifacts (what stalled v0.4.0). Do NOT
       # shrink this back to a shallow checkout — it feeds the gate real git data, it does not weaken the gate.
@@ -202,9 +202,9 @@ jobs:
         shell: bash
         run: bash scripts/hydrate-sharp-macos-x64.sh
 
-      - name: Stage StarNet Google sign-in registration
+      - name: Stage Vultron Google sign-in registration
         env:
-          STARNET_GOOGLE_DESKTOP_CLIENT_JSON: ${{ secrets.STARNET_GOOGLE_DESKTOP_CLIENT_JSON }}
+          VULTRON_GOOGLE_DESKTOP_CLIENT_JSON: ${{ secrets.VULTRON_GOOGLE_DESKTOP_CLIENT_JSON }}
         run: node scripts/stage-google-client.mjs
 
       - name: Stage bundled Node sidecar runtime
@@ -222,7 +222,7 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
         run: |
           if [ -z "$TAURI_SIGNING_PRIVATE_KEY" ]; then
-            echo "::error::TAURI_SIGNING_PRIVATE_KEY secret is empty. The release train REQUIRES updater signing — refusing to build unsigned artifacts. Set the secret (contents of ~/.tauri/starnet-updater.key) and re-run."
+            echo "::error::TAURI_SIGNING_PRIVATE_KEY secret is empty. The release train REQUIRES updater signing — refusing to build unsigned artifacts. Set the secret (contents of ~/.tauri/vultron-updater.key) and re-run."
             exit 1
           fi
 
@@ -239,11 +239,11 @@ jobs:
           KEY="$TAURI_SIGNING_PRIVATE_KEY"
           echo "key length: ${#KEY}"
           if printf '%s' "$KEY" | grep -q '[- ]'; then
-            echo "::error::signing key contains a dash or space — that is NOT a Tauri updater key (looks like a PEM/SSH key or a swapped secret). It must be the pure-base64 contents of ~/.tauri/starnet-updater.key (starts with dW50)."
+            echo "::error::signing key contains a dash or space — that is NOT a Tauri updater key (looks like a PEM/SSH key or a swapped secret). It must be the pure-base64 contents of ~/.tauri/vultron-updater.key (starts with dW50)."
             exit 1
           fi
           if ! printf '%s' "$KEY" | base64 -d >/dev/null 2>&1; then
-            echo "::error::signing key is not valid base64 — re-copy the exact contents of ~/.tauri/starnet-updater.key into the secret."
+            echo "::error::signing key is not valid base64 — re-copy the exact contents of ~/.tauri/vultron-updater.key into the secret."
             exit 1
           fi
           if ! printf '%s' "$KEY" | base64 -d 2>/dev/null | grep -qi 'rsign\|minisign'; then
@@ -341,15 +341,15 @@ jobs:
           # step. Exposing them here makes Tauri block inside notarytool --wait, which can
           # outlive GitHub's six-hour runner limit and discard a valid signed build.
           # Windows Authenticode tier: the credential gate above makes Azure Artifact Signing
-          # mandatory for public releases. Tauri signs StarNet.exe, NSIS components, and the
+          # mandatory for public releases. Tauri signs Vultron.exe, NSIS components, and the
           # final installer. The bundled official Node runtime already carries a valid OpenJS
           # Foundation Authenticode signature; the post-build trust proof checks all three.
           # Injected via --config so keyless/local builds never try to reach Azure.
           SIGN_CFG=""
           if [ "$RUNNER_OS" = "Windows" ]; then
             cargo install trusted-signing-cli --locked
-            SIGN_CFG='{"bundle":{"windows":{"signCommand":"trusted-signing-cli -e https://eus.codesigning.azure.net -a starnet-signing -c starnet-public %1"}}}'
-            echo "::notice::Windows Authenticode signing ENABLED (Azure Artifact Signing: starnet-signing/starnet-public)"
+            SIGN_CFG='{"bundle":{"windows":{"signCommand":"trusted-signing-cli -e https://eus.codesigning.azure.net -a vultron-signing -c vultron-public %1"}}}'
+            echo "::notice::Windows Authenticode signing ENABLED (Azure Artifact Signing: vultron-signing/vultron-public)"
           fi
           npm run tauri -- build --bundles ${{ matrix.bundles }} ${RUST_TARGET:+--target $RUST_TARGET} ${SIGN_CFG:+--config "$SIGN_CFG"}
 
@@ -439,10 +439,10 @@ jobs:
           # file the bundle ships, with size and sha256, so the installed app names a damaged or quarantined file at
           # startup (85f602c4 / E62). complete:false means a bundle.resources tree was absent or unreadable when cargo
           # built this exe: the installed app would then check nothing.
-          if ! grep -aqF -- '"schema":"starnet.install-manifest/1","complete":true' "$bin"; then
-            if grep -aqF -- '"schema":"starnet.install-manifest/1"' "$bin"; then
+          if ! grep -aqF -- '"schema":"vultron.install-manifest/1","complete":true' "$bin"; then
+            if grep -aqF -- '"schema":"vultron.install-manifest/1"' "$bin"; then
               echo "::error::[$TARGET] the built binary's install manifest is INCOMPLETE, so the installed app could not name a damaged file. Its gaps:"
-              grep -aoE -- '"schema":"starnet\.install-manifest/1","complete":false,"gaps":\[[^]]*\]' "$bin" | head -c 2000 || true
+              grep -aoE -- '"schema":"vultron\.install-manifest/1","complete":false,"gaps":\[[^]]*\]' "$bin" | head -c 2000 || true
               echo "::error::[$TARGET] stage every bundle.resources tree (stage-voice-deps, stage-frontend-dist) before tauri build, from a clean tagged tree; refusing to stage."
             else
               echo "::error::[$TARGET] the built binary carries NO install manifest — build.rs did not embed it; refusing to stage."
@@ -537,7 +537,7 @@ jobs:
           # embeds those signed bytes, then restores the raw build output. Verifying that
           # restored file produces a false NotSigned verdict. Install the exact candidate
           # silently into the ephemeral runner and verify what users will actually execute.
-          $installRoot = Join-Path $env:RUNNER_TEMP 'starnet-authenticode-install'
+          $installRoot = Join-Path $env:RUNNER_TEMP 'vultron-authenticode-install'
           if (Test-Path -LiteralPath $installRoot) {
             $resolvedTemp = [IO.Path]::GetFullPath($env:RUNNER_TEMP).TrimEnd('\\') + '\\'
             $resolvedInstall = [IO.Path]::GetFullPath($installRoot).TrimEnd('\\') + '\\'
@@ -563,8 +563,8 @@ jobs:
           if ($null -eq $uninstaller) { throw "[$env:TARGET] installed payload has no uninstall.exe" }
 
           Assert-Authenticode -Label 'NSIS installer' -Path $installer.FullName -PublisherPattern 'CN=Andrew Sims(?:,|$)'
-          Assert-Authenticode -Label 'installed StarNet executable' -Path $app.FullName -PublisherPattern 'CN=Andrew Sims(?:,|$)'
-          Assert-Authenticode -Label 'installed StarNet uninstaller' -Path $uninstaller.FullName -PublisherPattern 'CN=Andrew Sims(?:,|$)'
+          Assert-Authenticode -Label 'installed Vultron executable' -Path $app.FullName -PublisherPattern 'CN=Andrew Sims(?:,|$)'
+          Assert-Authenticode -Label 'installed Vultron uninstaller' -Path $uninstaller.FullName -PublisherPattern 'CN=Andrew Sims(?:,|$)'
           Assert-Authenticode -Label 'installed bundled Node runtime' -Path $node.FullName -PublisherPattern 'CN=OpenJS Foundation(?:,|$)'
           $expectedNodeVersion = (& node -e "import('./scripts/prepare-node.mjs').then(m => console.log(m.NODE_VERSION))").Trim()
           $actualNodeVersion = (& $node.FullName --version).Trim()
@@ -768,7 +768,7 @@ jobs:
         if: runner.os == 'Windows'
         uses: actions/upload-artifact@v4
         with:
-          name: starnet-${{ matrix.target }}
+          name: vultron-${{ matrix.target }}
           if-no-files-found: error
           # ** matches zero segments: covers target/release (host builds) AND
           # target/<triple>/release (mac legs built with an explicit --target)
@@ -811,7 +811,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: starnet-${{ matrix.target }}
+          name: vultron-${{ matrix.target }}
           if-no-files-found: error
           path: |
             notarization-input/**/*.dmg
@@ -833,13 +833,13 @@ jobs:
       - name: Download notarized Intel macOS distributable
         uses: actions/download-artifact@v4
         with:
-          name: starnet-darwin-x64
+          name: vultron-darwin-x64
           path: intel-distributable
 
       - name: Install, Finder-launch, and recover v0.9.0 station
         shell: bash
         env:
-          STARNET_REQUIRE_NOTARIZED: "true"
+          VULTRON_REQUIRE_NOTARIZED: "true"
         run: |
           dmg=$(find intel-distributable -type f -name '*_x64.dmg' -print -quit)
           test -n "${dmg:-}"
@@ -888,7 +888,7 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          pattern: starnet-*
+          pattern: vultron-*
           path: dist
           merge-multiple: true
 
@@ -900,7 +900,7 @@ jobs:
           node scripts/release-assemble-manifest.mjs \
             --dist dist \
             --version "${{ steps.ver.outputs.version }}" \
-            --repo androoAGI/starnet-releases \
+            --repo YOUR-GITHUB-USER/vultron-releases \
             --tag "${{ steps.ver.outputs.tag }}" \
             --notes-file RELEASE_NOTES.md \
             --allow-missing linux-x86_64,linux-x86_64-deb
@@ -945,7 +945,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
-      REPO: androoAGI/starnet-releases
+      REPO: YOUR-GITHUB-USER/vultron-releases
     steps:
       - uses: actions/checkout@v4
         with:
@@ -962,7 +962,7 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          pattern: starnet-*
+          pattern: vultron-*
           path: dist
           merge-multiple: true
 
@@ -1029,7 +1029,7 @@ jobs:
             gh release create "$TAG" \
               --repo "$REPO" \
               --draft \
-              --title "StarNet $VERSION" \
+              --title "Vultron $VERSION" \
               --notes-file RELEASE_NOTES.md \
               staged/*
           fi

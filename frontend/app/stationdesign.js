@@ -1,6 +1,6 @@
 /* frontend/app/stationdesign.js — HOW A ROOM IS COMPOSED, AND HOW A DESIGN IS JUDGED (2026-11-01).
 
-   Andrew: "better judgement of building, better design capability … prompt gorgeous amazing starnet stations". The renders of
+   Andrew: "better judgement of building, better design capability … prompt gorgeous amazing vultron stations". The renders of
    the older dresser showed the art was never the problem: every room stood a feature wall and one centred cluster on a big
    empty floor, pieces floated alone, papers lay on bare deck, and the only light was the ceiling's.
 

@@ -245,7 +245,7 @@ const PropRemaster = (() => {
       // Silhouette, picking and lighting consumers must stop using pre-loss
       // canvas caches too. One notification per bounded repair batch.
       try{if(typeof PropSprites!=='undefined'&&PropSprites.userArtChanged)PropSprites.userArtChanged();}catch(_){}
-      try{if(typeof window!=='undefined'&&typeof CustomEvent!=='undefined')window.dispatchEvent(new CustomEvent('starnet:prop-art-ready',{detail:{revision}}));}catch(_){}
+      try{if(typeof window!=='undefined'&&typeof CustomEvent!=='undefined')window.dispatchEvent(new CustomEvent('vultron:prop-art-ready',{detail:{revision}}));}catch(_){}
     }
     while(repairWaiters.length)repairWaiters.shift()();
   }

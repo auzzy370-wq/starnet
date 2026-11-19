@@ -9,7 +9,7 @@ found: 2026-10-11
 lane: issue-triage-1011
 fix: 7680f00da
 origin: customer
-report: https://github.com/androoAGI/starnet/issues/107
+report: https://github.com/YOUR-GITHUB-USER/vultron/issues/107
 affected: v0.13.2 macOS Apple Silicon
 family: checkpoint-maintenance
 installer: unverified

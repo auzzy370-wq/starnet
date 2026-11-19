@@ -1,6 +1,6 @@
-# StarNet: the first useful-work loop
+# Vultron: the first useful-work loop
 
-Implemented in the isolated `agent/value-loop-0904` integration lane. This delivers the five audit priorities as one usable path. It is not a claim that the full StarNet vision or release certification is complete.
+Implemented in the isolated `agent/value-loop-0904` integration lane. This delivers the five audit priorities as one usable path. It is not a claim that the full Vultron vision or release certification is complete.
 
 ## What changed
 

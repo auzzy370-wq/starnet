@@ -110,18 +110,18 @@ function packageOnDisk(name) {
     assert.equal(localVoice.edgeVoiceFor('not-a-voice'), def, 'an unknown pick maps through the default voice');
   }
 
-  /* ---- the kill-switch: STARNET_LOCAL_VOICE=0 forces the installed-build shape on a dev checkout --------
+  /* ---- the kill-switch: VULTRON_LOCAL_VOICE=0 forces the installed-build shape on a dev checkout --------
      This is how tests (and users opting out of on-disk models) reproduce the environment the keyed-
      fallthrough bug only showed on. Dynamic, so a spawned server's env always wins. */
   {
-    const before = process.env.STARNET_LOCAL_VOICE;
-    process.env.STARNET_LOCAL_VOICE = '0';
+    const before = process.env.VULTRON_LOCAL_VOICE;
+    process.env.VULTRON_LOCAL_VOICE = '0';
     try {
       const off = localVoice.status();
-      assert.equal(off.available, false, 'STARNET_LOCAL_VOICE=0 forces the engine unavailable');
+      assert.equal(off.available, false, 'VULTRON_LOCAL_VOICE=0 forces the engine unavailable');
       await assert.rejects(() => localVoice.synthesize('hello'), error => error && error.unavailable === true, 'synthesis refuses under the kill-switch');
     } finally {
-      if (before === undefined) delete process.env.STARNET_LOCAL_VOICE; else process.env.STARNET_LOCAL_VOICE = before;
+      if (before === undefined) delete process.env.VULTRON_LOCAL_VOICE; else process.env.VULTRON_LOCAL_VOICE = before;
     }
     assert.equal(localVoice.status().available, expected, 'clearing the switch restores the probed truth');
   }
@@ -171,10 +171,10 @@ function packageOnDisk(name) {
     await localVoice._renderSpeech(stub, 'hello', { voice: 'not-a-voice' });
     assert.equal(calls[0].opts.voice, 'am_onyx', 'an unknown voice id speaks in the default voice');
 
-    const before = process.env.STARNET_KOKORO_DTYPE;
-    delete process.env.STARNET_KOKORO_DTYPE;
+    const before = process.env.VULTRON_KOKORO_DTYPE;
+    delete process.env.VULTRON_KOKORO_DTYPE;
     // a throwaway model cache, never the real per-user one (that may hold either copy on a dev machine)
-    const cache = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'starnet-kokoro-cache-'));
+    const cache = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'vultron-kokoro-cache-'));
     const onnx = path.join(cache, 'transformers-kokoro', 'onnx-community', 'Kokoro-82M-v1.0-ONNX', 'onnx');
     try {
       assert.deepEqual(localVoice._kokoroDtypes(cache), ['fp32', 'q4'], 'full precision first, q4 only as the fallback');
@@ -186,13 +186,13 @@ function packageOnDisk(name) {
       fs.writeFileSync(path.join(onnx, 'model.onnx'), 'fp32');
       assert.deepEqual(localVoice._kokoroDtypes(cache), ['fp32', 'q4'], 'once fp32 is on disk it is preferred again');
       assert.equal(localVoice._kokoroCached(cache), true, 'fp32 on disk counts as cached');
-      process.env.STARNET_KOKORO_DTYPE = 'q4';
-      assert.deepEqual(localVoice._kokoroDtypes(cache), ['q4'], 'STARNET_KOKORO_DTYPE pins one precision');
-      process.env.STARNET_KOKORO_DTYPE = 'q8';
+      process.env.VULTRON_KOKORO_DTYPE = 'q4';
+      assert.deepEqual(localVoice._kokoroDtypes(cache), ['q4'], 'VULTRON_KOKORO_DTYPE pins one precision');
+      process.env.VULTRON_KOKORO_DTYPE = 'q8';
       assert.equal(localVoice._kokoroCached(cache), false, 'a pinned precision with no file of its own is a download');
       assert.equal(typeof localVoice.ttsCached(), 'boolean', 'the station voice can ask without a root');
     } finally {
-      if (before === undefined) delete process.env.STARNET_KOKORO_DTYPE; else process.env.STARNET_KOKORO_DTYPE = before;
+      if (before === undefined) delete process.env.VULTRON_KOKORO_DTYPE; else process.env.VULTRON_KOKORO_DTYPE = before;
       fs.rmSync(cache, { recursive: true, force: true });
     }
     assert.equal(localVoice.status().ttsPrecision, '', 'no precision is reported before one has actually loaded');

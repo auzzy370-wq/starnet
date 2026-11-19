@@ -83,7 +83,7 @@ exports.webkit = { async launch(opts) {
     const gone = floor.postFloorApis(table).filter(f => kind(f.path) !== 'undefined').map(f => f.path);
     const kept = floor.floorApis(table).filter(f => kind(f.path) !== 'function').map(f => f.path);
     A.eq([gone, kept], [[], []], 'W1: the shim deletes every API newer than the floor (' + floor.postFloorApis(table).length + ') and keeps every floor API');
-    const report = vm.runInContext('globalThis.__STARNET_FLOOR_SHIM__', ctx);
+    const report = vm.runInContext('globalThis.__VULTRON_FLOOR_SHIM__', ctx);
     A.eq([report.floor, report.removed.length, report.kept.length], [table.safari, floor.postFloorApis(table).length, 0], 'W1: and says what it removed');
     const src = fs.readFileSync(SCRIPT, 'utf8');
     A.ok(/shimSource\(table\)/.test(src) && /addInitScript\(\{ content: shim \}\)/.test(src), 'W1: the harness hands the browser the table\'s shim as an init script');
@@ -122,7 +122,7 @@ exports.webkit = { async launch(opts) {
   }
 
   /* ---- W3 the real script ---- */
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-webkit-floor-test-'));
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-webkit-floor-test-'));
   try {
     const empty = path.join(tmp, 'empty');
     fs.mkdirSync(empty);
@@ -145,7 +145,7 @@ exports.webkit = { async launch(opts) {
       "http.createServer((req, res) => {",
       "  if (req.url === '/api/health') { res.writeHead(200); return res.end('ok'); }",
       "  res.writeHead(secrets.length ? 500 : 200, { 'Content-Type': 'text/html' }); res.end('<html>stub station</html>');",
-      "}).listen(Number(process.env.STARNET_PORT), '127.0.0.1');"
+      "}).listen(Number(process.env.VULTRON_PORT), '127.0.0.1');"
     ].join('\n'));
     const fakeEnv = (mode, log) => Object.assign({}, process.env, { PLAYWRIGHT_MODULE_DIR: path.join(tmp, 'pw'), FAKE_PW_MODE: mode, FAKE_PW_LOG: log, OPENROUTER_API_KEY: 'sk-or-v1-LEAK' });
     const readLog = f => fs.readFileSync(f, 'utf8').trim().split('\n').map(l => JSON.parse(l));

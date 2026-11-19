@@ -1,7 +1,7 @@
 'use strict';
 
 // Evaluation-only adapter. Not registered in the shipping sidecar. The caller must
-// already hold StarNet's Full Power authority; production consent is not replaced.
+// already hold Vultron's Full Power authority; production consent is not replaced.
 const { spawn, execFile } = require('node:child_process');
 const { randomUUID } = require('node:crypto');
 const { makeMcpClient } = require('../../sidecar/mcp/client.js');
@@ -22,8 +22,8 @@ async function connect({ binary: requested, fullPower, timeoutMs = 20000 }) {
   const binary = driverBinary(requested);
   const env = childEnv();
   const cwd = driverCwd();
-  const socket = process.platform === 'win32' ? '\\\\.\\pipe\\starnet-cua-eval-' + randomUUID() : require('node:path').join(require('node:os').tmpdir(), 'sn-' + randomUUID() + '.sock');
-  const session = 'starnet-eval-' + randomUUID();
+  const socket = process.platform === 'win32' ? '\\\\.\\pipe\\vultron-cua-eval-' + randomUUID() : require('node:path').join(require('node:os').tmpdir(), 'sn-' + randomUUID() + '.sock');
+  const session = 'vultron-eval-' + randomUUID();
   const errors = [];
   const start = (args) => {
     const child = spawn(binary, args, { env, cwd, windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] });

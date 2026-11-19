@@ -3,7 +3,7 @@
  */
 'use strict';
 (() => {
-  if (!window.__STARNET_DEV__ || !new URLSearchParams(location.search).has('worldlab')) return;
+  if (!window.__VULTRON_DEV__ || !new URLSearchParams(location.search).has('worldlab')) return;
   const boot = () => {
     const host = document.createElement('details');
     host.id = 'world-lab';

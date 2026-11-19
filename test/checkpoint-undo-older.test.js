@@ -48,7 +48,7 @@ const { runGit, gitRun, launchSpawn, runRows } = require('./helpers/checkpoint-r
 const isWin = process.platform === 'win32';
 const foldsCase = isWin || process.platform === 'darwin';
 
-const BASE = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-ckpt-older-')));
+const BASE = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-ckpt-older-')));
 const ROOT = path.join(BASE, 'ws');
 const links = [];
 function link(target, at) {
@@ -517,7 +517,7 @@ const flatName = (i) => 'sample_' + String(i).padStart(4, '0') + '_with_a_long_d
           const s = await st.snapshot(aid, { runId: 'r', turn: 2 + i, label: 'capture ' + i });
           A.ok(!!(s && s.created), 'atbig: capture ' + i + ' on the older shadow repo is taken (' + JSON.stringify(st.health(aid) && st.health(aid).lastFailure) + ')');
         }
-        A.eq([state.timedOut, state.long.length > 0, fs.existsSync(path.join(gitDirOf(aid), 'starnet-reread-due'))], [0, true, false], 'atbig: the read of every tracked file ran once, under the maintenance bound, and is done');
+        A.eq([state.timedOut, state.long.length > 0, fs.existsSync(path.join(gitDirOf(aid), 'vultron-reread-due'))], [0, true, false], 'atbig: the read of every tracked file ran once, under the maintenance bound, and is done');
         put(path.join(wt, 'app.js'), 'v9, no snapshot took this\n');
         await twoCalls(st, aid, wt, t.id, 'atbig, a rewind on that repo');
       });
@@ -537,7 +537,7 @@ const flatName = (i) => 'sample_' + String(i).padStart(4, '0') + '_with_a_long_d
         A.eq(await st.snapshot(aid, { runId: 'r', turn: 1, label: 'past both bounds' }), null, 'atbig2: a capture past the maintenance bound too is skipped');
         A.ok(/within its time limit/.test(st.health(aid).lastFailure.reason), 'atbig2: and health says why (' + JSON.stringify(st.health(aid).lastFailure) + ')');
         await refusedClean(st, aid, wt, t.id, 'pre_restore_failed', /within its time limit/, 'atbig2, a rewind past the maintenance bound too');
-        A.eq(fs.existsSync(path.join(gitDirOf(aid), 'starnet-reread-due')), true, 'atbig2: the read is still due');
+        A.eq(fs.existsSync(path.join(gitDirOf(aid), 'vultron-reread-due')), true, 'atbig2: the read is still due');
         state.refuseLong = false;
         const { r } = await twoCalls(st, aid, wt, t.id, 'atbig2, the next try');
         A.eq(r && r.preRestoreId ? await blobIn(aid, r.preRestoreId, 'app.js') : null, mixed, 'atbig2: the undo row\'s blob is the person\'s bytes');
@@ -739,7 +739,7 @@ const flatName = (i) => 'sample_' + String(i).padStart(4, '0') + '_with_a_long_d
         await older(aid, wt, 'S1, under no pin');
         put(path.join(wt, 'app.js'), 'v2, no snapshot took this\n');
         const { mid, r } = await twoCalls(store, aid, wt, t, aid + ', a rewind to a row an older store wrote' + (attrs ? ', under rules that convert nothing' : ', no rule anywhere'));
-        A.eq([mid['a.txt'], !!(r && r.preRestoreId) && /starnet: every file stored as it is/.test(await gitRun(['--git-dir', gitDirOf(aid), 'cat-file', 'commit', String(r.preRestoreId)]))], [mixed, true], aid + ': the rewound file is T\'s bytes, and the undo row says it stores them as they are');
+        A.eq([mid['a.txt'], !!(r && r.preRestoreId) && /vultron: every file stored as it is/.test(await gitRun(['--git-dir', gitDirOf(aid), 'cat-file', 'commit', String(r.preRestoreId)]))], [mixed, true], aid + ': the rewound file is T\'s bytes, and the undo row says it stores them as they are');
       });
       row('olds', async ({ twoCalls }) => {
         const aid = 'olds', wt = path.join(ROOT, aid);

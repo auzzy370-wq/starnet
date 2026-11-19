@@ -38,13 +38,13 @@
       hands its text down the line only when its run SUCCEEDED (a cut, limited, asking or endless entry bought every stage on its
       partial answer); the Telegram / dev-channel host delivers a crate only on the hub's proof (an unsettled message — no model, an
       E-STOP, a throw — rode to the OUTBOX); the trigger and SEND TO runners' run rows (index.js runsFor) and a hand-off's job record
-      keep each row's outcome; the recipe run cache keeps the row's outcome for that helper, and the desk screen's idle view reads it; `starnet watch` prints
+      keep each row's outcome; the recipe run cache keeps the row's outcome for that helper, and the desk screen's idle view reads it; `vultron watch` prints
       the outcome-aware reason, and /api/observe carries the stamped outcome it reads.
       Since 4.3 (the REPORT copies, each driven with a cut and an error-outranked row): the MCP bridge's conversations_list /
       conversation_get carry the row's outcome and an outcome-aware reason; station.test_line labels each step by its run's outcome;
       line-stats' bay docks (station.layout / station.map's last run, and the bay lamp's seed after a reload) keep the outcome-aware
       reason and the outcome; the diagnostics bundle's last run; a background worker's settled record (the DELEGATED card's "failed ·
-      done", /api/overseer, the subagent_stop hook); the `starnet run` receipt's headline; and ONE crate rule for a work line that
+      done", /api/overseer, the subagent_stop hook); the `vultron run` receipt's headline; and ONE crate rule for a work line that
       stopped short or joined partial (routing/line-fire.js lineDelivered: the channel hub's crate rode to the OUTBOX for it, while the
       trigger / SEND TO runners and chain.js's own receipt refused it — the routine paths are held by the invariant table).
       Since 5.1 (the REASON a routine's fire hands on, which no line-regex saw: a local, a function argument, a `.lastReason`): a cut,
@@ -114,7 +114,7 @@
    compatibility fallback derived through RunOutcome). Review 7.3 found stationIO.chat resolving a stalled or end-less reply as a finished one
    (the census rows above that leaned on it were false), the Workshop's BUILD NOW toasting a stop as a failure, the task board filing a
    question under STOPPED and the terminal's crew card folding every unsuccessful end into one red "■ stopped"; the r8 sweep found the same
-   folds across the terminal (the /goal pause, the floor, the FLOWS lamps, `starnet watch`, `starnet flow run`'s exit, the exit-code help),
+   folds across the terminal (the /goal pause, the floor, the FLOWS lamps, `vultron watch`, `vultron flow run`'s exit, the exit-code help),
    the page (the board, COMMS' presence card and stop toast, the delegated card, the routine session and NEEDS YOU, the HUD's routine toast,
    the ROUTINES card and RUN NOW, a loop pass, the build quest, a group turn, the desk screen, a recommendation's score, the summon link, the
    FINISH card and the step words) and the sidecar (the away briefing, a slash-command routine's hand-emitted 'done'). The census reads
@@ -156,7 +156,7 @@
    REVIEW 9.2 (2026-10-30; the 9.1 findings). A failed run's stop line and toast said it "stopped on an error" (Friendly.stopLine and
    stop-reason.js stopSentence, in step), and fold r9.4 deleted the failed case before law(): it is under the law again. RunOutcome.reasonOf
    kept any reason but 'done' as it was, so an END-ONLY refusal (reason 'error', stamped 'refused') reached every reason-keyed reader as
-   'error' — the HUD deck helper's FAULT, the logbook's "✕ error", the desk screen's FAILED lamp, the recipe helper's "errored", `starnet watch`, the MCP
+   'error' — the HUD deck helper's FAULT, the logbook's "✕ error", the desk screen's FAILED lamp, the recipe helper's "errored", `vultron watch`, the MCP
    bridge, the bay docks, a routine's fire reason and runOnceCore's lead word (sidecar/lead-outcome.js); reasonOf reads the end's outcome
    now (a word the outcome contradicts reads the outcome's own end word), fold r9.6 drives the readers, r8.19 the desk screen and the
    recipe fixture its last run. The HUD deck helper's END_WORDS was still allowlisted with the reason 9.1 struck from FINISH ("one alarm colour":
@@ -179,7 +179,7 @@
    end (its outcome's mark now, live and replayed: r9.14); and the phone painted every unfinished run the failure red off the relay's state
    (the station sends RunOutcome.look's tone: r9.15, and the census walk reads relay/app). STATUS_DONE reads a negated test with a failure
    else branch again (B3-2C594-01).
-   NOT CLOSED HERE: GitHub androoAGI/starnet-releases#9 (rel#9: a Deny should end the run 'denied' or 'stopped by user'). This lane
+   NOT CLOSED HERE: GitHub YOUR-GITHUB-USER/vultron-releases#9 (rel#9: a Deny should end the run 'denied' or 'stopped by user'). This lane
    adds no 'denied' outcome; rel#9 is deferred to the follow-up lane denied-outcome, which waits on the per-surface semantics
    (learning-eligibility.js's 'denied' kind moves with it; its base kind reads the outcome since the unpark). */
 'use strict';
@@ -245,7 +245,7 @@ function replyGateIn(text) {
   A.ok(!!relayed && relayed.test('if (wireRes && !wireRes.error) go();') && relayed.test('if (late.error || !late.text) return;') && relayed.test('if (call.error || x) return;')
     && !relayed.test("const why = String((late && (late.error || late.text)) || 'no reply');"),
     'review 7.2: the reply-gate census follows a chat reply relayed through Promise.race / until to its last receiver and reads a bare `if (X.error ||` gate; an error message read off a reply is no gate');
-  A.ok(REPLY_GATE.test("if (res.error || !String(res.text || '').trim()) return { ok: false };") && !REPLY_GATE.test("return (res.error || 'StarNet refused it.') + ' Nothing was shared.';"),
+  A.ok(REPLY_GATE.test("if (res.error || !String(res.text || '').trim()) return { ok: false };") && !REPLY_GATE.test("return (res.error || 'Vultron refused it.') + ' Nothing was shared.';"),
     'review 7.2: REPLY_GATE reads a bare `if (res.error ||` gate, never an error message read off a route result');
 }
 // review 8.2, DONE_OVER: a run's OWN end word swapped for the literal 'done' before it is reported (COMMS' presence card took `taskQuestion ?
@@ -403,7 +403,7 @@ const ALLOWED = {
     ["!VOICE_ROUTE_REASONS[vr.reason]", "not a run's end reason (why the voice route was not used)"],
     ["' not used — ' + VOICE_ROUTE_REASONS[vr.reason]", "not a run's end reason (why the voice route was not used)"]
   ],
-  'bin/lib/cli-core.js': [["if (reason === 'done') return EXIT.OK;", "exitCodeForReason's legacy fallback when the caller passes no outcome (bin/starnet.js passes it)"]],
+  'bin/lib/cli-core.js': [["if (reason === 'done') return EXIT.OK;", "exitCodeForReason's legacy fallback when the caller passes no outcome (bin/vultron.js passes it)"]],
   // (review r8: the /goal step's pause read "the step stopped (<raw reason>)" off `if (reason && reason !== 'done')`; it words the step's outcome now —
   // goalStallOf, FOLD r8.6)
   'bin/lib/dashboard.js': [["raw = res && !res.error ? String(res.text || '') : '';", "the /goal judge over stationIO.chat, which resolves every reply whose run did not SUCCEED as { error, text, outcome } — an unfinished end (review r7) and, since review r8, a reply with NO end at all: a stall after some text, a stream that ended or closed before agent.run.end (no_terminal_outcome; FOLD r8.1). So !res.error is a succeeded verdict"]],
@@ -424,7 +424,7 @@ const ALLOWED = {
 
 /* review 4.3, the REPORT family: file -> [[a substring of the line, why handing that reason on reports no run's outcome (or why it is
    parked)]]. The lines review 4.3 fixed are gone from here: the MCP bridge's projection, station.test_line's steps, station.layout's
-   last run, line-stats' docks, the diagnostics bundle's last run, a background worker's settled reason and the `starnet run` receipt
+   last run, line-stats' docks, the diagnostics bundle's last run, a background worker's settled reason and the `vultron run` receipt
    all read RunOutcome now (FOLDS below). */
 const NR = what => "not a run's end reason (" + what + ')';
 const REPORTED = {
@@ -526,7 +526,7 @@ const REPORTED = {
   'sidecar/media-service.js': [
     ["lastReason = engine + ': ' + result.reason;", NR("a transcription provider's failure")]
   ],
-  'sidecar/observer.js': [["reason: str(p.reason), turns: num(p.turns)", "the observer view of agent.run.end: it carries the stamped outcome / failureCode a few lines below (review 4.2); `starnet watch` reads RunOutcome.reasonOf off it"]],
+  'sidecar/observer.js': [["reason: str(p.reason), turns: num(p.turns)", "the observer view of agent.run.end: it carries the stamped outcome / failureCode a few lines below (review 4.2); `vultron watch` reads RunOutcome.reasonOf off it"]],
   'sidecar/openai-compat.js': [["(s.reason ? { reason: s.reason } : null)", "an end built for RunOutcome.ofEnd on the next line (statusOf)"]],
   'sidecar/outcomes.js': [["' (top failure: ' + p.topFail.reason", "the track record's top failure: its tally is keyed on the outcome RunOutcome.ofRow re-decided (a cut 'done' counts as cut_short)"]],
   'sidecar/process-identity.js': [["return { verdict: 'unknown', reason: String(p.reason || 'unknown') };", NR("why a process's identity could not be read")]],
@@ -641,11 +641,11 @@ const REPORTED = {
   ],
   'bin/lib/dashboard.js': [["'the folder was not trusted: ' + ((r.json && r.json.reason)", NR('why the trust route refused a folder')]],
   'bin/lib/cli-core.js': [["    reason: s.reason,", "jsonResult: the raw end word, with the run's outcome / failureCode on the next line and the exit code read from the outcome"]],
-  'bin/starnet.js': [
+  'bin/vultron.js': [
     ["lastVerified: p.lastVerified || null, reason: p.reason || 'unverified'", NR("provider readiness status")],
     ["out.providerReadiness.filter(p =>", NR("provider readiness status")],
     ["' — reported as ' + summary.reason + ' (nothing proves the run finished)'", "an UNPROVEN run: the CLI's own fallback reason ('error' / 'cancelled'), said beside 'nothing proves the run finished'"],
-    ["log('starnet: ' + ws + ' — ' + r.reason)", NR('why `starnet init` wrote no workspace')]
+    ["log('vultron: ' + ws + ' — ' + r.reason)", NR('why `vultron init` wrote no workspace')]
   ]
 };
 
@@ -1403,15 +1403,15 @@ const RAISED = { agentId: 'agent', runId: 'r-raised', reason: 'done', outcome: '
       A.ok(read(okRow).state === 'done' && read(okRow).word === 'IDLE', 'the desk screen: a last run that succeeded reads IDLE (done)');
     }
 
-    // `starnet watch` (bin/lib/station-commands.js) prints a run's end off GET /api/observe: a cut reply printed '■ done'
+    // `vultron watch` (bin/lib/station-commands.js) prints a run's end off GET /api/observe: a cut reply printed '■ done'
     {
       const { observerView } = require('../sidecar/observer.js');
       const { makeWatchFormatter } = require('../bin/lib/station-commands.js');
       const fmt = makeWatchFormatter({ agent: 'NOVA' });
       const printed = end => fmt({ name: 'agent.run.end', payload: observerView('agent.run.end', end, {}) }, 0).join(' ');
-      A.ok(!/■ done/.test(printed(CUT)) && /cut_short/.test(printed(CUT)), '`starnet watch`: a provider-cut end never prints "■ done" (got ' + printed(CUT) + ')');
-      A.ok(!/■ done/.test(printed(RAISED)), '`starnet watch`: a \'done\' end its own error outranked never prints "■ done" (got ' + printed(RAISED) + ')');
-      A.ok(/■ done/.test(printed(DONE)), '`starnet watch`: a succeeded end prints "■ done"');
+      A.ok(!/■ done/.test(printed(CUT)) && /cut_short/.test(printed(CUT)), '`vultron watch`: a provider-cut end never prints "■ done" (got ' + printed(CUT) + ')');
+      A.ok(!/■ done/.test(printed(RAISED)), '`vultron watch`: a \'done\' end its own error outranked never prints "■ done" (got ' + printed(RAISED) + ')');
+      A.ok(/■ done/.test(printed(DONE)), '`vultron watch`: a succeeded end prints "■ done"');
     }
   }
 
@@ -1511,15 +1511,15 @@ const RAISED = { agentId: 'agent', runId: 'r-raised', reason: 'done', outcome: '
       } finally { fs.rmSync(root43, { recursive: true, force: true }); }
     }
 
-    // the `starnet run` receipt (bin/starnet.js, its line lifted): a cut run printed "■ done · the reply was cut short"
+    // the `vultron run` receipt (bin/vultron.js, its line lifted): a cut run printed "■ done · the reply was cut short"
     {
-      const m = /if \(summary\.proven\) log\((.+)\);\s*$/m.exec(fs.readFileSync(path.join(ROOT, 'bin/starnet.js'), 'utf8'));
-      A.ok(!!m, 'fixture: the `starnet run` receipt line is lifted from bin/starnet.js');
+      const m = /if \(summary\.proven\) log\((.+)\);\s*$/m.exec(fs.readFileSync(path.join(ROOT, 'bin/vultron.js'), 'utf8'));
+      A.ok(!!m, 'fixture: the `vultron run` receipt line is lifted from bin/vultron.js');
       const receipt = s => (m ? new Function('summary', 'said', 'spend', 'RO', 'return ' + m[1] + ';')(s, s.outcome ? ' · ' + RunOutcome.line(s) : '', '', RunOutcome) : '');
       const sum = o => Object.assign({ proven: true, turns: 1, toolCalls: [], runId: 'r' }, o);
       const cutSaid = receipt(sum({ reason: 'done', finishReason: 'length', outcome: 'cut_short' })), raisedSaid = receipt(sum({ reason: 'done', outcome: 'failed', failureCode: 'run_failure' }));
-      A.ok(/^■ cut_short/.test(cutSaid) && /^■ error/.test(raisedSaid), '`starnet run`: a cut or error-outranked run\'s receipt never leads with "■ done" (got ' + JSON.stringify([cutSaid, raisedSaid]) + ')');
-      A.ok(/^■ done/.test(receipt(sum({ reason: 'done', outcome: 'succeeded' }))), '`starnet run`: a succeeded run\'s receipt reads "■ done"');
+      A.ok(/^■ cut_short/.test(cutSaid) && /^■ error/.test(raisedSaid), '`vultron run`: a cut or error-outranked run\'s receipt never leads with "■ done" (got ' + JSON.stringify([cutSaid, raisedSaid]) + ')');
+      A.ok(/^■ done/.test(receipt(sum({ reason: 'done', outcome: 'succeeded' }))), '`vultron run`: a succeeded run\'s receipt reads "■ done"');
     }
 
     // a SEND TO hand-off's shared result and a line job's stored step (linejobs normRun) keep
@@ -1983,7 +1983,7 @@ const RAISED = { agentId: 'agent', runId: 'r-raised', reason: 'done', outcome: '
         const got = { awayBlock: view('awayblock'), awayUnfire: view('awayunfire'), busyBlock: view('busyheld'), awayInterrupted: view('awayint') };
         A.ok(['awayBlock', 'awayUnfire', 'busyBlock'].every(k => got[k].ok == null && got[k].marker === HELD_MARK && !got[k].busy),
           'a held fire stays "' + HELD_MARK + '" after its routine is config-blocked or marked unfireable — after a closed-page backfill and a busy reconcile (its entry run\'s row reads \'succeeded\'; the fire\'s receipt keeps the hold) (got ' + JSON.stringify(got) + ')');
-        A.ok(got.awayInterrupted.ok == null && got.awayInterrupted.marker === '⚠ Routine did not finish — interrupted when StarNet stopped',
+        A.ok(got.awayInterrupted.ok == null && got.awayInterrupted.marker === '⚠ Routine did not finish — interrupted when Vultron stopped',
           'an interrupted fire stays "⚠ Routine failed — interrupted" after its routine is config-blocked, never ok from its row (got ' + JSON.stringify(got.awayInterrupted) + ')');
       } finally {
         if (AutoSessions && AutoSessions.reset) AutoSessions.reset();
@@ -2381,7 +2381,7 @@ const RAISED = { agentId: 'agent', runId: 'r-raised', reason: 'done', outcome: '
       // the real detector over a habit asked for three times, two days apart, its middle run stopped after three tool calls
       const W = require('../sidecar/workflow-takeover.js');
       const DAY = 86400000, now = Date.parse('2026-10-30T12:00:00Z');
-      const text = 'Summarize the open pull requests in the starnet repo and post the summary to the team notes file';
+      const text = 'Summarize the open pull requests in the vultron repo and post the summary to the team notes file';
       const occasion = (i, stopped) => {
         const at = now - (10 - i * 2) * DAY;
         return { b: { id: 'tb' + i, runId: 'r' + i, agentId: 'a1', source: 'interactive', originalDirective: text, status: stopped ? 'active' : 'done', completedAt: stopped ? undefined : at, updatedAt: at },
@@ -2579,9 +2579,9 @@ const RAISED = { agentId: 'agent', runId: 'r-raised', reason: 'done', outcome: '
       try {
         const { AutopilotStore } = require('../frontend/app/autopilotstore.js');
         const at = 1e6;
-        const beliefs = { goals: [{ text: 'ship the StarNet beta to 100 users', updatedAt: at }], pain: [{ text: 'manual release notes eat my fridays', updatedAt: at }],
+        const beliefs = { goals: [{ text: 'ship the Vultron beta to 100 users', updatedAt: at }], pain: [{ text: 'manual release notes eat my fridays', updatedAt: at }],
           stack: [{ text: 'node and plain js', updatedAt: at }], identity: [{ text: 'andro, solo builder', updatedAt: at }] };
-        const PROPOSE = 'JOB: Beta launch checklist\nKIND: advance-goal\nGROUNDS: ship the StarNet beta to 100 users\nCONFIDENCE: high\nSPEC: a pre-launch checklist';
+        const PROPOSE = 'JOB: Beta launch checklist\nKIND: advance-goal\nGROUNDS: ship the Vultron beta to 100 users\nCONFIDENCE: high\nSPEC: a pre-launch checklist';
         const chatWith = (doReply, reviewReply) => async ({ messages }) => {
           const c = messages[0].content;
           if (/Propose up to/.test(c)) return { text: PROPOSE, outcome: 'succeeded' };
@@ -2902,8 +2902,8 @@ const RAISED = { agentId: 'agent', runId: 'r-raised', reason: 'done', outcome: '
       if (stall) law('the terminal /goal pause', said);
     }
 
-    // r8.7 THE TERMINAL'S RECEIPTS (bin/lib/station-commands.js + cli-core.js): `starnet flow run` on a job someone STOPPED printed "did not deliver"
-    //      and exited 1 ("1 run failed"); `starnet watch` printed "■ error" with no code where `starnet -p` says "failed (rate_limit)"; the help
+    // r8.7 THE TERMINAL'S RECEIPTS (bin/lib/station-commands.js + cli-core.js): `vultron flow run` on a job someone STOPPED printed "did not deliver"
+    //      and exited 1 ("1 run failed"); `vultron watch` printed "■ error" with no code where `vultron -p` says "failed (rate_limit)"; the help
     //      called code 5 "stopped early" while a stop exits 4
     {
       const { flowCommand, makeWatchFormatter } = require('../bin/lib/station-commands.js');
@@ -2918,7 +2918,7 @@ const RAISED = { agentId: 'agent', runId: 'r-raised', reason: 'done', outcome: '
       const watched = fmt({ name: 'agent.run.end', payload: { runId: 'r', agentId: 'nova', reason: 'error', outcome: 'failed', failureCode: 'rate_limit' } }, 0).join(' ');
       A.ok(code === core.EXIT.CANCELLED && /was stopped/.test(err.join('')) && !/did not deliver/.test(err.join('')) && /failed \(rate_limit\)/.test(watched)
         && /4 stopped/.test(core.USAGE) && /5 did not finish/.test(core.USAGE) && !/stopped early/.test(core.USAGE),
-        'review r8: a stopped line job exits as a stop and says so; `starnet watch` words a failed end as `starnet -p` does; the help never calls an unfinished run "stopped early" (got ' + JSON.stringify({ code, err, watched }) + ')');
+        'review r8: a stopped line job exits as a stop and says so; `vultron watch` words a failed end as `vultron -p` does; the help never calls an unfinished run "stopped early" (got ' + JSON.stringify({ code, err, watched }) + ')');
       const dash = read8('bin/lib/dashboard.js');
       const fs8 = functionSourceIn(dash, 'flowStopped');
       A.ok(!!fs8 && new Function(fs8 + '\nreturn flowStopped;')()({ json: { ok: false, stopped: true } }) === true && /else if \(flowStopped\(r\)\) flash\('■ '/.test(dash),
@@ -3802,7 +3802,7 @@ const RAISED = { agentId: 'agent', runId: 'r-raised', reason: 'done', outcome: '
     }
     // r9.6 AN END-ONLY REFUSAL AT EVERY READER OF RunOutcome.reasonOf (review 9.2 majors): reasonOf kept any reason but 'done' as it was, so an end-only
     //      refusal (agent.run.end reason 'error', stamped 'refused') reached every reason-keyed reader as 'error' — the HUD deck's FAULT, the logbook's
-    //      "✕ error", `starnet watch`'s "■ error", the MCP bridge's and the bay docks' 'error' (the desk screen: r8.19; a recipe's last run: its fixture
+    //      "✕ error", `vultron watch`'s "■ error", the MCP bridge's and the bay docks' 'error' (the desk screen: r8.19; a recipe's last run: its fixture
     //      above; a routine's fire reason: the round-trip table's policy row) — while COMMS said ■ REFUSED and the board filed the refusal
     {
       const REFUSED_END = { reason: 'error', outcome: 'refused', failureCode: 'content_policy_blocked' };
@@ -3819,7 +3819,7 @@ const RAISED = { agentId: 'agent', runId: 'r-raised', reason: 'done', outcome: '
       const lb = read8('frontend/app/windows/logbook.js').split(/\r?\n/);
       const lbSrc = [/^\s*const LB_REASON = \{/, /^\s*const rk = .*RunOutcome\.reasonOf\(r\)/, /^\s*const rl = LB_REASON\[rk\]/].map(re => (lb.find(l => re.test(l)) || '').trim());
       const logbook = r => (lbSrc.every(Boolean) ? new Function('RunOutcome', 'esc', 'r', lbSrc.join('\n') + '\nreturn rl;')(RunOutcome, s => String(s), r) : '(no slice)');
-      // `starnet watch` (bin/lib/station-commands.js, off /api/observe's view of the end)
+      // `vultron watch` (bin/lib/station-commands.js, off /api/observe's view of the end)
       const { observerView } = require('../sidecar/observer.js');
       const { makeWatchFormatter } = require('../bin/lib/station-commands.js');
       const watch = end => makeWatchFormatter({ agent: 'NOVA' })({ name: 'agent.run.end', payload: observerView('agent.run.end', Object.assign({ runId: 'r', agentId: 'agent' }, end), {}) }, 0).join(' ');
@@ -3838,7 +3838,7 @@ const RAISED = { agentId: 'agent', runId: 'r-raised', reason: 'done', outcome: '
       const got = { endOnly: at('endOnly', REFUSED_END), refused: at('refused', ENDS.refused), failed: at('failed', ENDS.failed) };
       const wrong = Object.keys(got.endOnly).filter(s => !got.endOnly[s] || got.endOnly[s] !== got.refused[s] || got.endOnly[s] === got.failed[s]);
       A.ok(!wrong.length && /■ refusal/.test(got.endOnly.watch) && got.endOnly.deck === 'REFUSED' && got.endOnly.bridge === 'refusal' && got.endOnly.dock === 'refusal',
-        'review 9.2: every reader of RunOutcome.reasonOf says an end-only refusal as the refused run, never as the failed one — the HUD deck helper, the logbook, `starnet watch`, the MCP bridge, the bay docks and the insights tally (wrong: ' + JSON.stringify(wrong) + '; got ' + JSON.stringify(got) + ')');
+        'review 9.2: every reader of RunOutcome.reasonOf says an end-only refusal as the refused run, never as the failed one — the HUD deck helper, the logbook, `vultron watch`, the MCP bridge, the bay docks and the insights tally (wrong: ' + JSON.stringify(wrong) + '; got ' + JSON.stringify(got) + ')');
     }
     // r9.7 THE HUD DECK HELPER's RECENT ROW (frontend/app/hudmode.js onRunEnd + view, the real module; no page mounts view; review 9.2 major): END_WORDS gave a spend cap, a turn
     //      limit, a refusal, an empty and a cut reply the failure's 'bad' tone ("one alarm colour", allowlisted with the reason 9.1 struck from FINISH),

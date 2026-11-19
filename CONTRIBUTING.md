@@ -1,6 +1,6 @@
-# Contributing to StarNet
+# Contributing to Vultron
 
-Thanks for helping improve StarNet. Bug fixes, tests, documentation, accessibility work, and
+Thanks for helping improve Vultron. Bug fixes, tests, documentation, accessibility work, and
 carefully scoped features are welcome.
 
 ## Before you start
@@ -17,8 +17,8 @@ carefully scoped features are welcome.
 Node.js 22 is recommended because it matches CI and the release train.
 
 ```bash
-git clone https://github.com/androoAGI/starnet.git
-cd starnet
+git clone https://github.com/YOUR-GITHUB-USER/vultron.git
+cd vultron
 npm ci
 npm run test:fast
 ```

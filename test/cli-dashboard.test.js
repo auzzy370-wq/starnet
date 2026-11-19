@@ -1,6 +1,6 @@
-/* node test/cli-dashboard.test.js — the `starnet` dashboard, ls, approve and watch: their PURE parts, no I/O.
+/* node test/cli-dashboard.test.js — the `vultron` dashboard, ls, approve and watch: their PURE parts, no I/O.
 
-   Locks: the new commands parse (and a bare `starnet` opens the dashboard only at a terminal) · task-vs-talk rides
+   Locks: the new commands parse (and a bare `vultron` opens the dashboard only at a terminal) · task-vs-talk rides
    every run body (a run without isTask is offered no tools) · the station model says only what the station proved
    (working while a run is live, needs-you while an ask waits, done only after run.end{done}, a run that vanished
    unseen is never "done", unknown spend is never $0) · the screen fits the terminal, shows the open ask as a card,
@@ -14,8 +14,8 @@ const sc = require('../bin/lib/station-commands.js');
 
 // ---- argv ---------------------------------------------------------------------------------------------------
 {
-  A.eq(core.parseArgs([], {}, { tty: true }).cmd, 'dash', 'a bare `starnet` at a terminal opens the dashboard');
-  A.ok(core.parseArgs([], {}, { tty: false }).help, 'a bare `starnet` in a pipe prints the usage, never a screen');
+  A.eq(core.parseArgs([], {}, { tty: true }).cmd, 'dash', 'a bare `vultron` at a terminal opens the dashboard');
+  A.ok(core.parseArgs([], {}, { tty: false }).help, 'a bare `vultron` in a pipe prints the usage, never a screen');
   A.ok(core.parseArgs([], {}).help, 'no context → usage (the old contract)');
   A.eq(core.parseArgs(['ls', '--json'], {}).cmd + ':' + core.parseArgs(['ls', '--json'], {}).json, 'ls:true', 'ls --json');
   const ap = core.parseArgs(['approve', 'cypher', '--session'], {});
@@ -27,7 +27,7 @@ const sc = require('../bin/lib/station-commands.js');
   throws(['flow', 'run', 'release'], /needs a workflow and the job text/, 'flow run without text is a usage error');
   throws(['approve', 'a', 'b'], /at most one agent/, 'approve takes one agent');
   A.eq(core.parseArgs(['watch'], {}).cmd, 'watch', 'watch');
-  A.ok(/starnet ls/.test(core.USAGE) && /6 nothing to answer/.test(core.USAGE), 'the usage names the new commands and exit code');
+  A.ok(/vultron ls/.test(core.USAGE) && /6 nothing to answer/.test(core.USAGE), 'the usage names the new commands and exit code');
 }
 
 // ---- small pure helpers ---------------------------------------------------------------------------------------
@@ -40,7 +40,7 @@ const sc = require('../bin/lib/station-commands.js');
   A.ok(core.isTaskText('write the release notes'), 'an instruction is a task (tools offered)');
   A.ok(!core.isTaskText('thanks!'), 'a pleasantry is talk');
   A.ok(core.isTaskText('yes', 'Want me to draft it?'), 'a yes to an offer to act is the task');
-  A.eq(core.buildRunBody({ model: 'm', provider: 'p', agentId: 'agent' }, 'fix the build', {}).isTask, true, 'starnet -p marks a task (without it the station offers no tools)');
+  A.eq(core.buildRunBody({ model: 'm', provider: 'p', agentId: 'agent' }, 'fix the build', {}).isTask, true, 'vultron -p marks a task (without it the station offers no tools)');
   A.eq(core.buildRunBody({ model: 'm', provider: 'p', agentId: 'agent' }, 'hello', {}).isTask, false, '…and talk as talk');
   A.eq([toolName('fs_write'), toolName('fs.write'), toolName('web')], ['fs.write', 'fs.write', 'web'], 'tool names as the station says them');
   A.eq(oneLine('{\n  "a": "x\\ny"\n}', 100), '{ "a": "x y" }', 'pretty JSON reads as one line');
@@ -58,7 +58,7 @@ function crew() {
 }
 // THE PAIR ITS RUNS REALLY USE (run-wire-resolver lane): GET /api/runtime/agent's rows carry each agent's resolved `wire`.
 // An unpinned agent's raw row has no model (it follows the station default) and may carry an older page's stale provider
-// stamp: the dashboard refused it ("has no model set"), sent the raw half, and `starnet ls` / `status` said "no model".
+// stamp: the dashboard refused it ("has no model set"), sent the raw half, and `vultron ls` / `status` said "no model".
 {
   const rt = { agents: [
     { agentId: 'agent', name: 'Nova', model: 'gpt-5.5', provider: 'codex', reasoningEffort: 'high', wire: { provider: 'codex', model: 'gpt-5.5', source: 'agent', followsStation: false, reasoningEffort: 'high' } },
@@ -74,12 +74,12 @@ function crew() {
     'an unpinned agent holds the pair and effort its runs use (the station default), never the raw empty model + stale stamp');
   A.eq([m.state.agents.get('old').model, m.state.agents.get('old').provider], ['m/o', 'openrouter'], 'an older station without `wire` keeps the raw row');
   const ls = sc.lsRows(m, T0).find(r => r.agentId === 'scout');
-  A.eq([ls.model, ls.provider], ['gpt-5.5', 'codex'], '`starnet ls` lists the pair the agent runs');
+  A.eq([ls.model, ls.provider], ['gpt-5.5', 'codex'], '`vultron ls` lists the pair the agent runs');
   const { runPairOf } = require('../bin/lib/station-model.js');
   A.eq(runPairOf(rt.agents[1]), { model: 'gpt-5.5', provider: 'codex', followsStation: true, source: 'station', wire: rt.agents[1].wire }, 'runPairOf reads the resolved wire');
   A.eq(runPairOf({ model: 'x', provider: 'p', wire: { model: '', provider: '' } }).model, 'x', '...and the raw row when the wire names no model');
-  const starnetJs = require('fs').readFileSync(require('path').join(__dirname, '..', 'bin', 'starnet.js'), 'utf8');
-  A.ok(/agents: Array\.isArray\(r\.agents\) \? r\.agents\.map\(a => \{ const p = runPairOf\(a\);/.test(starnetJs), '`starnet status` lists each agent by runPairOf too');
+  const vultronJs = require('fs').readFileSync(require('path').join(__dirname, '..', 'bin', 'vultron.js'), 'utf8');
+  A.ok(/agents: Array\.isArray\(r\.agents\) \? r\.agents\.map\(a => \{ const p = runPairOf\(a\);/.test(vultronJs), '`vultron status` lists each agent by runPairOf too');
   // /reasoning and /fast on a FOLLOWER: its model is the station default it runs, so saving an effort through
   // /api/agent/model (which takes a model) would PIN that model on it — refused, with the two ways out. A pinned agent saves.
   // (setEffort's refusal and its POST both happen before its first await, so they are read synchronously.)
@@ -247,7 +247,7 @@ function screen(m, ui, cols, rows, now) { return tui.render(m, Object.assign({ f
   A.ok(text.slice(0, 1).some(l => /1 needs you/.test(l)), 'the counts sit on the top row');
   const ascii = screen(m, { logo: 'ascii' }, 110, 34, T0 + 3000);
   const starCell = ascii.slice(0, 4).flat().find(([t]) => t.indexOf('✦') >= 0);
-  A.ok(logo.word.every((l, i) => tui.toPlain(ascii[i]).indexOf(l.trim()) >= 0) && starCell && /logohi/.test(starCell[1]), 'STARNET_LOGO=ascii draws the drawn-letter version, the star in its A glinting');
+  A.ok(logo.word.every((l, i) => tui.toPlain(ascii[i]).indexOf(l.trim()) >= 0) && starCell && /logohi/.test(starCell[1]), 'VULTRON_LOGO=ascii draws the drawn-letter version, the star in its A glinting');
   // THE PIP-BOY CHROME (Andrew's pick 10-22): a tab rule under the logo names the places once, the one you are in hanging
   // from it; the frames under it carry no titles; CREW is grouped by kind under strips; a stat bar runs along the foot
   A.ok(/^── STAT ─── CREW 3 ─── FLOOR ───┘ COMMS ▸ ASTRA └─── WORK ─── SKILLS ─+$/.test(text[3]), 'the tab rule under the logo: CREW 3, FLOOR, and COMMS ▸ ASTRA hanging from it as the place you are in: ' + text[3]);
@@ -302,7 +302,7 @@ function screen(m, ui, cols, rows, now) { return tui.render(m, Object.assign({ f
   const compact = screen(m, {}, 70, 20, T0 + 3000).map(tui.toPlain);
   const cTop = compact.findIndex(l => /^╭─ COMMS ▸ ASTRA /.test(l));
   A.ok(/S T A R N E T/.test(compact[0]) && /1 needs you/.test(compact[0]) && cTop > 0 && cTop <= 3 && /2\/3 ─╮$/.test(compact[cTop].trimEnd()) && !compact.some(l => /CREW/.test(l)), 'a small terminal gets the one-line mark with the counts, and COMMS full width, saying which agent of how many: ' + compact[cTop]);
-  A.ok(!screen(m, { logo: 'plain' }, 110, 34, T0).map(tui.toPlain).some(l => l.indexOf(logo.word[1].trim()) >= 0), 'STARNET_LOGO=plain keeps to the one-line mark');
+  A.ok(!screen(m, { logo: 'plain' }, 110, 34, T0).map(tui.toPlain).some(l => l.indexOf(logo.word[1].trim()) >= 0), 'VULTRON_LOGO=plain keeps to the one-line mark');
   A.ok(text.some(l => /ASTRA ASKS/.test(l)) && text.some(l => /\[Y\] ALLOW ONCE/.test(l)), 'the open ask is a card with its keys');
   A.ok(text.some(l => /evil {2}text|evil text/.test(l)), 'model text is shown…');
   A.ok(!rows.some(r => r.some(([t]) => /\x1b|\x07/.test(t))), '…with every escape sequence stripped before it reaches a cell');
@@ -323,12 +323,12 @@ function screen(m, ui, cols, rows, now) { return tui.render(m, Object.assign({ f
     // MARKDOWN: an agent's reply reads as formatted text, never raw ** ` ``` markers
     const m6 = crew();
     m6.apply('agent.run.start', { runId: 'md', agentId: 'astra', trigger: 'directive', surface: 'interactive', prompt: 'how?' }, T0);
-    m6.apply('agent.token', { runId: 'md', agentId: 'astra', delta: '## Steps\nDo it **here**, with `/model`:\n- first *thing*\n2. second [docs](https://starnetos.com/d)\n```\nstarnet ls\n```' }, T0 + 1);
+    m6.apply('agent.token', { runId: 'md', agentId: 'astra', delta: '## Steps\nDo it **here**, with `/model`:\n- first *thing*\n2. second [docs](https://vultron.vercel.app/d)\n```\nvultron ls\n```' }, T0 + 1);
     m6.apply('agent.run.end', { runId: 'md', agentId: 'astra', reason: 'done' }, T0 + 2);
     const segs = screen(m6, {}, 110, 34, T0 + 5);
     const t6 = segs.map(tui.toPlain);
     A.ok(t6.some(l => /│ ASTRA +Steps +│|ASTRA {3,}Steps/.test(l)) && !t6.some(l => /\*\*|```|`\/model`|## /.test(l)), 'markdown markers never reach the screen');
-    A.ok(t6.some(l => /Do it here, with \/model:/.test(l)) && t6.some(l => /• first thing/.test(l)) && t6.some(l => /2\. second docs \(https:\/\/starnetos\.com\/d\)/.test(l)) && t6.some(l => /│ starnet ls/.test(l)), 'bold, code, bullets, numbered items, links and code blocks read as a terminal shows them');
+    A.ok(t6.some(l => /Do it here, with \/model:/.test(l)) && t6.some(l => /• first thing/.test(l)) && t6.some(l => /2\. second docs \(https:\/\/vultronos\.com\/d\)/.test(l)) && t6.some(l => /│ vultron ls/.test(l)), 'bold, code, bullets, numbered items, links and code blocks read as a terminal shows them');
     const bold = segs.flat().find(([t, s]) => t === 'here' && /hi b/.test(s)), code = segs.flat().find(([t, s]) => t === '/model' && /\bam\b/.test(s));
     A.ok(!!bold && !!code, 'bold is bold white, inline code is amber');
     // the PICKER (/model, /resume): filter by every typed word, the current item marked, the selection on the bar
@@ -392,7 +392,7 @@ function screen(m, ui, cols, rows, now) { return tui.render(m, Object.assign({ f
   A.eq(fmt({ name: 'agent.token', payload: { runId: 'r', agentId: 'astra', delta: 'there.\nNext' } }, at), ['12:04:31  ASTRA       Hello there.'], 'a finished line prints');
   A.eq(fmt({ name: 'agent.run.end', payload: { runId: 'r', agentId: 'astra', reason: 'done', usd: 0.0012 } }, at), ['12:04:31  ASTRA       Next', '12:04:31  ASTRA       ■ done · $0.0012'], 'the rest flushes at the end');
   const ask = fmt({ name: 'permission.prompt', payload: { agentId: 'astra', tool: 'fs_write', argsSummary: '{\n "path": "a"\n}' } }, at)[0];
-  A.ok(/▲ needs you · fs\.write a\s+\(starnet approve astra\)/.test(ask), 'watch: an ask on one line, with the command that answers it: ' + ask);
+  A.ok(/▲ needs you · fs\.write a\s+\(vultron approve astra\)/.test(ask), 'watch: an ask on one line, with the command that answers it: ' + ask);
   {
     const { askGlance, askInspect } = require('../bin/lib/station-model.js');
     const w = JSON.stringify({ path: 'auth-fix.md', content: '# Fix\n\nKeep ?next= through.\n' }, null, 2);
@@ -460,7 +460,7 @@ function screen(m, ui, cols, rows, now) { return tui.render(m, Object.assign({ f
   const f0 = feed.frame('nova', 'idle', T0, false, box);
   const d0 = sx.decodeSixel(f0.sixel);
   A.ok(d0.width === 260 && d0.height === 160, 'one frame fills the card exactly: 26 × 8 cells of 10 × 20 px = ' + d0.width + '×' + d0.height);
-  A.ok(d0.px.every(v => v >= 0 && v < cf.PALETTE.length), 'every pixel is one of StarNet\'s palette colours');
+  A.ok(d0.px.every(v => v >= 0 && v < cf.PALETTE.length), 'every pixel is one of Vultron\'s palette colours');
   // its walk follows its state
   const sim = (key, from, ms) => { let f; for (let t = from; t <= from + ms; t += 100) f = feed.frame('nova', key, T0 + t, false, box); return { f, s: feed.sim('nova', key, T0 + from + ms) }; };
   const idleA = feed.sim('nova', 'idle', T0 + 50);
@@ -500,11 +500,11 @@ function screen(m, ui, cols, rows, now) { return tui.render(m, Object.assign({ f
   A.eq(tui.sliceSegs([['abcdef', 'x'], ['gh', 'y']], 2, 5), [['cde', 'x']], 'a row beside the image is written either side of it');
 }
 
-// ---- the folder: the trusted project `starnet` was started in, or the card asking to trust it ------------------------
+// ---- the folder: the trusted project `vultron` was started in, or the card asking to trust it ------------------------
 {
   const fs = require('fs'), os = require('os'), path = require('path');
   const folder = require('../bin/lib/folder.js');
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-folder-'));
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-folder-'));
   const proj = path.join(tmp, 'proj'), deep = path.join(proj, 'src', 'lib'), loose = path.join(tmp, 'notes'), wt = path.join(tmp, 'tree');
   fs.mkdirSync(path.join(proj, '.git'), { recursive: true }); fs.mkdirSync(deep, { recursive: true }); fs.mkdirSync(loose); fs.mkdirSync(wt);
   fs.writeFileSync(path.join(wt, '.git'), 'gitdir: elsewhere');
@@ -517,7 +517,7 @@ function screen(m, ui, cols, rows, now) { return tui.render(m, Object.assign({ f
   A.eq(folder.skipReason('c:\\users\\YOU', W), 'home', '…in any case');
   A.eq(folder.skipReason('C:\\', W), 'root', 'nor a drive root');
   A.eq(folder.skipReason('C:\\Windows\\System32', W), 'system', 'nor the OS (an admin shell opens in System32)');
-  A.eq(folder.skipReason('C:\\Users\\you\\AppData\\Roaming\\ai.skynet.harness\\workspaces\\agent', Object.assign({ stationDirs: ['C:\\Users\\you\\AppData\\Roaming\\ai.skynet.harness\\workspaces'] }, W)), 'station', "nor StarNet's own workspaces");
+  A.eq(folder.skipReason('C:\\Users\\you\\AppData\\Roaming\\ai.skynet.harness\\workspaces\\agent', Object.assign({ stationDirs: ['C:\\Users\\you\\AppData\\Roaming\\ai.skynet.harness\\workspaces'] }, W)), 'station', "nor Vultron's own workspaces");
   A.eq(folder.skipReason('C:\\Users\\you\\Desktop\\gen', W), '', 'a project in your home is');
   A.eq(folder.skipReason('/', { platform: 'linux', path: path.posix, env: {}, home: '/home/you' }), 'root', 'the filesystem root');
   A.eq(folder.skipReason('/home/you/code/app', { platform: 'linux', path: path.posix, env: {}, home: '/home/you' }), '', 'a linux project is offered');
@@ -615,7 +615,7 @@ const am = require('../bin/lib/app-modules.js');
   const a = { id: 'agent', name: 'VEGA', role: 'orchestrator', personaId: 'blunt', approvalMode: 'full', purpose: null };
   M.composer.docs(a);
   const p = M.composer.compose(a, { dossierBlock: '' });
-  A.ok(/^You are VEGA, an AI agent operating from a workstation aboard the STARNET station/.test(p) && /OVERSEER/.test(p) && /YOUR CREW: none yet/.test(p) && /YOUR FOUNDATION/.test(p) && /PERSONALITY — Blunt/.test(p) && /AUTHORITY — FULL POWER/.test(p) && /not yet been given a purpose/.test(p), 'the composed prompt is the app\'s: identity, crew, foundation, personality, authority, the missing purpose');
+  A.ok(/^You are VEGA, an AI agent operating from a workstation aboard the VULTRON station/.test(p) && /OVERSEER/.test(p) && /YOUR CREW: none yet/.test(p) && /YOUR FOUNDATION/.test(p) && /PERSONALITY — Blunt/.test(p) && /AUTHORITY — FULL POWER/.test(p) && /not yet been given a purpose/.test(p), 'the composed prompt is the app\'s: identity, crew, foundation, personality, authority, the missing purpose');
   A.eq(M.Personas.list().map(x => x.id), ['composed', 'warm', 'blunt', 'dry', 'unhinged', 'upbeat'], 'the personalities are the app\'s own six');
 }
 async function awakenRun(o) {
@@ -821,7 +821,7 @@ const awakenTests = (async () => {
   ] });
   const s = r.save(), ag = s.agent;
   A.ok(r.res.ok && ag.onboarded === true && ag.name === 'VEGA' && ag.personaId === 'blunt' && ag.approvalMode === 'full' && ag.executionProfile === 'this-computer' && ag.provider === 'openrouter' && ag.model === 'm/one', 'the awakening ends onboarded: VEGA, blunt, full power on this computer, openrouter · m/one');
-  A.ok(r.said.some(l => /API keys are added in the StarNet desktop app — SETTINGS › AI & MODELS/.test(l)) && r.said.some(l => /set it \(for example OPENROUTER_API_KEY/.test(l)), 'an API key is answered honestly (the desktop app, or this private station\'s environment)');
+  A.ok(r.said.some(l => /API keys are added in the Vultron desktop app — SETTINGS › AI & MODELS/.test(l)) && r.said.some(l => /set it \(for example OPENROUTER_API_KEY/.test(l)), 'an API key is answered honestly (the desktop app, or this private station\'s environment)');
   A.ok(r.calls.indexOf('CHAT Reply with exactly: OK') >= 0 && r.calls.indexOf('CHAT Reply with exactly: OK') < r.calls.findIndex(c => /^POST \/api\/save/.test(c)), 'the wire is tested before anything is written');
   const firstSave = r.calls.findIndex(c => /^POST \/api\/save onboarded=false/.test(c)), journey = r.calls.indexOf('POST /api/journey'), revoke = r.calls.indexOf('POST /api/permissions/revoke cabinet:write');
   A.ok(firstSave >= 0 && journey > firstSave && revoke > firstSave && r.calls.indexOf('POST /api/memory/reset') > firstSave, 'the agent is saved (not onboarded) BEFORE the resets, which then run: grants revoked, journey and memory reset');
@@ -848,12 +848,12 @@ const awakenTests = (async () => {
   A.ok(r3.said.some(l => /…and we’re back\./.test(l)) && !r3.calls.some(c => /YOU ARE BEING SWITCHED ON|Reply with exactly/.test(c)), 'resumed: "…and we’re back", no second birth and no second wire test');
   A.ok(r3.said.some(l => /^\[GET ACQUAINTED · 1 of 3 · Your direction\]$/.test(l)) && r3.save().agent.onboarded === true && r3.save().agent.docs.purpose === 'Run tasks, ops, and the day-to-day work.', 'quick setup counts what it asks, and the resumed agent ends onboarded');
   // the bootstrap a headless run writes is marked, so the dashboard gives it the awakening
-  A.eq(core.bootstrapDocs({ name: 'ATLAS', model: 'm', provider: 'openrouter', now: 1 }).save.doc.agent.bootstrappedBy, 'starnet-cli', 'a headless bootstrap marks its agent as never met by a person');
+  A.eq(core.bootstrapDocs({ name: 'ATLAS', model: 'm', provider: 'openrouter', now: 1 }).save.doc.agent.bootstrappedBy, 'vultron-cli', 'a headless bootstrap marks its agent as never met by a person');
   // the screen
   const tm = crew();
-  const wakeUi = { focus: 'agent', input: '', scroll: 0, still: true, stationLabel: 'private station · port 1', wake: { log: [{ who: 'STARNET', text: 'what should it be called?', first: true, full: true }, { who: 'YOU', text: 'Vega', full: true, you: true }], ask: { options: [{ label: 'Give it a station codename', value: '', skip: true }], custom: true, customLabel: 'its name', optional: true }, stage: { title: 'CREATE YOUR OVERSEER', detail: 'Who it is' }, speaker: 'STARNET' } };
+  const wakeUi = { focus: 'agent', input: '', scroll: 0, still: true, stationLabel: 'private station · port 1', wake: { log: [{ who: 'VULTRON', text: 'what should it be called?', first: true, full: true }, { who: 'YOU', text: 'Vega', full: true, you: true }], ask: { options: [{ label: 'Give it a station codename', value: '', skip: true }], custom: true, customLabel: 'its name', optional: true }, stage: { title: 'CREATE YOUR OVERSEER', detail: 'Who it is' }, speaker: 'VULTRON' } };
   const ws = tui.render(tm, wakeUi, { cols: 120, rows: 34 }, T0).map(tui.toPlain);
-  A.ok(/^──┘ CREATE YOUR OVERSEER └ Who it is ─/.test(ws[3]) && ws.some(l => /│ STARNET +what should it be called\?/.test(l)) && ws.some(l => /│ YOU +Vega/.test(l)), 'the awakening owns COMMS: its stage on the frame, who said each line');
+  A.ok(/^──┘ CREATE YOUR OVERSEER └ Who it is ─/.test(ws[3]) && ws.some(l => /│ VULTRON +what should it be called\?/.test(l)) && ws.some(l => /│ YOU +Vega/.test(l)), 'the awakening owns COMMS: its stage on the frame, who said each line');
   A.ok(ws.some(l => /┌─ ▲ YOUR CHOICE ─/.test(l)) && ws.some(l => /│ 1  Give it a station codename/.test(l)) && ws.some(l => /› +or type its name and press enter/.test(l)) && ws.some(l => /└─ \[1-1\] PICK {3}\[ENTER\] SEND WHAT YOU TYPED ─/.test(l)), 'its choice is a card: numbered options and the typed answer');
   A.ok(/^you ▸/.test(ws[31]) && /^1-1 pick · or type your own \+ enter · ctrl\+c pauses setup/.test(ws[32]) && !ws.some(l => /CREW/.test(l)) && /^ {2}SPEND UNKNOWN +\d\d:\d\d $/.test(ws[33]), 'the prompt is yours, the key line says how to answer, and there is no crew before the agent exists');
   wakeUi.wake.crew = true; wakeUi.wake.feedKey = 'stopped'; wakeUi.images = true; wakeUi.wake.ask = null;

@@ -2,8 +2,8 @@
 /* node test/breakaway.test.js — an app the station opens FOR the person is never the station's (sidecar/breakaway.js).
 
    On Windows the desktop shell holds the station's whole tree in a kill-on-close Job Object, so a station's children
-   end with StarNet even when it is killed hard. An app opened for the person on their screen must not: the shell's own
-   exe, run as `--starnet-breakaway <hex spec>`, starts it outside the job (its Rust tests prove that with real
+   end with Vultron even when it is killed hard. An app opened for the person on their screen must not: the shell's own
+   exe, run as `--vultron-breakaway <hex spec>`, starts it outside the job (its Rust tests prove that with real
    processes). This file proves the sidecar side:
      1. wrap(): with no launcher named (macOS, Linux, `npm start`, a terminal-started station) every call passes through
         untouched; with one, the call becomes the launcher with a spec holding exactly what Node would have run —
@@ -20,8 +20,8 @@ const { EventEmitter } = require('events');
 const A = require('./_assert.js');
 const { makeBreakaway, decodeSpec, FLAG } = require('../sidecar/breakaway.js');
 
-const LAUNCHER = 'C:\\Program Files\\StarNet\\skynet-desktop.exe';
-const winEnv = { STARNET_BREAKAWAY_EXE: LAUNCHER, ComSpec: 'C:\\Windows\\system32\\cmd.exe' };
+const LAUNCHER = 'C:\\Program Files\\Vultron\\skynet-desktop.exe';
+const winEnv = { VULTRON_BREAKAWAY_EXE: LAUNCHER, ComSpec: 'C:\\Windows\\system32\\cmd.exe' };
 
 function fakeChild(out, code) {
   const c = new EventEmitter();
@@ -35,7 +35,7 @@ function fakeChild(out, code) {
 (async () => {
   // ---- 1. wrap ----
   {
-    const off = makeBreakaway({ env: { STARNET_BREAKAWAY_EXE: LAUNCHER }, platform: 'darwin' });
+    const off = makeBreakaway({ env: { VULTRON_BREAKAWAY_EXE: LAUNCHER }, platform: 'darwin' });
     A.eq(off.available, false, 'no launcher off Windows');
     const same = off.wrap('open', ['-a', 'Resolve'], { detached: true });
     A.eq([same.file, same.args, same.options, same.brokered], ['open', ['-a', 'Resolve'], { detached: true }, false], 'a pass-through, untouched');
@@ -73,15 +73,15 @@ function fakeChild(out, code) {
       execFile: (file, args, opts, cb) => { ran.push({ file, args, opts }); setImmediate(() => cb(null, '', '')); } });
     // an app name that exists nowhere: should this wiring ever regress to a real launch, nothing opens on the screen
     let got = null;
-    try { got = await opener({ kind: 'app', target: 'starnet-breakaway-test-no-such-app' }); } catch (e) { got = 'threw: ' + e.message; }
+    try { got = await opener({ kind: 'app', target: 'vultron-breakaway-test-no-such-app' }); } catch (e) { got = 'threw: ' + e.message; }
     A.eq(got, 'launched', 'the opener still reports its launch');
     A.eq(ran.length, 1, 'one process');
     A.eq(ran[0] && ran[0].file, LAUNCHER, 'desktop.open runs through the breakaway launcher on Windows');
-    A.ok(ran[0] && /Start-Process -FilePath 'starnet-breakaway-test-no-such-app'/.test(decodeSpec(ran[0].args).args.join(' ')), 'running the same Start-Process it always did');
+    A.ok(ran[0] && /Start-Process -FilePath 'vultron-breakaway-test-no-such-app'/.test(decodeSpec(ran[0].args).args.join(' ')), 'running the same Start-Process it always did');
     const direct = [];
     const mac = T.makeShellOpener({ platform: 'darwin', breakaway: makeBreakaway({ env: winEnv, platform: 'darwin' }),
       execFile: (file, args, opts, cb) => { direct.push(file); setImmediate(() => cb(null, '', '')); } });
-    try { await mac({ kind: 'app', target: 'starnet-breakaway-test-no-such-app' }); } catch (_) {}
+    try { await mac({ kind: 'app', target: 'vultron-breakaway-test-no-such-app' }); } catch (_) {}
     A.eq(direct, ['open'], 'macOS: the plain `open`, untouched');
   }
 
@@ -89,7 +89,7 @@ function fakeChild(out, code) {
   {
     const { makeShellTool } = require('../sidecar/tools/builtin/shell.js');
     const os = require('os');
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-breakaway-shell-'));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-breakaway-shell-'));
     try {
       const spawned = [];
       // the fake prints the marker a real shell would: with THIS call's nonce, read back off the marked command it was

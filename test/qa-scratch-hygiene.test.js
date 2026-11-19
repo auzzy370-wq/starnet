@@ -94,8 +94,8 @@ function undisposedScratch(src) {
   };
   for (const [k, src] of Object.entries(bad)) { assert.ok(scratchOffences('scripts/qa/x.mjs', src).length > 0, 'S2 catches ' + k); checks++; }
   const good = [
-    "const p = mkdtempSync(join(tmpdir(), 'starnet-x-'));",
-    "const p = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-x-'));",
+    "const p = mkdtempSync(join(tmpdir(), 'vultron-x-'));",
+    "const p = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-x-'));",
     "launchChrome({ profileDir: join(tmpdir(), 'p-' + process.pid + '-' + Date.now()) });",
     "launchChrome({ profileDir: scratch.dir('profile') });"
   ];

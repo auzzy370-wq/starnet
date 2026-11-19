@@ -288,7 +288,7 @@ function retryable(t, opts) {
     const copyBtn = (function find(el) { if (el.tagName === 'BUTTON' && /COPY/.test(el.textContent)) return el; for (const c of el.children) { const r = find(c); if (r) return r; } return null; })(b);
     copyBtn.onclick();
     await new Promise(r => setTimeout(r, 10));
-    A.ok(copied.includes('STARNET BOOT GUARD') && copied.includes('Chat (app/chat.js)') && copied.endsWith('SIDECAR REPORT'), 'copy = page-side boot report + the sidecar report via Diag');
+    A.ok(copied.includes('VULTRON BOOT GUARD') && copied.includes('Chat (app/chat.js)') && copied.endsWith('SIDECAR REPORT'), 'copy = page-side boot report + the sidecar report via Diag');
     A.eq(copyBtn.textContent, '✓ DIAGNOSTICS COPIED', 'button confirms the copy');
   }
   {
@@ -357,7 +357,7 @@ function retryable(t, opts) {
       g.__TAURI__ = { core: { invoke(cmd, args) {
         calls.push({ cmd, args: JSON.parse(JSON.stringify(args)) });
         if (opts.shell === 'throws') throw new Error('no ipc');
-        return opts.shell === 'older' ? Promise.reject(new Error('command starnet_boot_report not found')) : Promise.resolve(null);
+        return opts.shell === 'older' ? Promise.reject(new Error('command vultron_boot_report not found')) : Promise.resolve(null);
       } } };
     }
     const els = PAGE.map(src => Object.assign(fakeEl('script'), { src: 'tauri://localhost/' + src }));
@@ -379,7 +379,7 @@ function retryable(t, opts) {
     }
     (opts.afterLoad || []).forEach(e => t.fire('error', e));
     t.ready();
-    return Object.assign(t, { els, calls, report: () => (calls.find(c => c.cmd === 'starnet_boot_report') || { args: {} }).args.report });
+    return Object.assign(t, { els, calls, report: () => (calls.find(c => c.cmd === 'vultron_boot_report') || { args: {} }).args.report });
   }
   const STATION = PAGE.slice(1);
   // the verdict, or what a guard without per-script accounting amounts to (the commit before had none)
@@ -390,7 +390,7 @@ function retryable(t, opts) {
     A.eq([v.verdict, v.listed, v.total, v.ran, v.seen, v.notRun.length], ['passed', true, PAGE.length, PAGE.length, PAGE.length, 0], 'healthy page: every station script ran, each seen by its own load event');
     A.ok(t.guard.report().includes('boot check:     passed') && t.guard.report().includes('scripts:        ' + PAGE.length + ' of ' + PAGE.length + ' station scripts ran'), 'the report says passed and counts every script');
     A.eq(t.guard.summaryLine(), 'none recorded since page load', 'the copied diagnostics stay a real zero');
-    A.eq(t.calls.length, 1, 'ONE starnet_boot_report per page load');
+    A.eq(t.calls.length, 1, 'ONE vultron_boot_report per page load');
     A.eq(t.report(), { total: PAGE.length, ran: PAGE.length, notRun: [], missing: [], belowFloor: false }, 'the shell gets the counts, nothing else');
     t.ready(); t.guard.verify();
     A.eq(t.calls.length, 1, 'a second check sends nothing more');

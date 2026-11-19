@@ -20,7 +20,7 @@ const {hostText,userWords,text:wireText} = require('./helpers/host-notes.js');
   });
   await new Promise(r => server.listen(0,'127.0.0.1',r));
   const providerBase='http://127.0.0.1:'+server.address().port;
-  const fixture=SidecarFixture.create({prefix:'crew-call-proof-',env:{SKYNET_OPENROUTER_BASE:providerBase,STARNET_OPENROUTER_BASE:providerBase,SKYNET_OPENROUTER_KEY:'synthetic-crew-key',SKYNET_AUX_BUDGET:'0',SKYNET_FULL_ACCESS:'1',STARNET_FULL_ACCESS:'1'}});
+  const fixture=SidecarFixture.create({prefix:'crew-call-proof-',env:{SKYNET_OPENROUTER_BASE:providerBase,VULTRON_OPENROUTER_BASE:providerBase,SKYNET_OPENROUTER_KEY:'synthetic-crew-key',SKYNET_AUX_BUDGET:'0',SKYNET_FULL_ACCESS:'1',VULTRON_FULL_ACCESS:'1'}});
   try {
     await fixture.start();
     A.eq((await fixture.json('POST','/api/roster',{agents:[{agentId:'agent',name:'Lead',provider:'openrouter',model:'crew-fixture'},{agentId:'researcher',name:'Ada',provider:'openrouter',model:'crew-fixture'},{agentId:'writer',name:'Quill',provider:'openrouter',model:'crew-fixture'},{agentId:'ada-aux',name:'Ada-Aux',provider:'openrouter',model:'crew-fixture'}]})).status,200,'crew roster saved');

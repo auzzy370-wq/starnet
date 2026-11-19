@@ -1,4 +1,4 @@
-/* sidecar/routing/handoff-runner.js — SEND TO at run time (2026-10-10, Andrew: "fully polish and integrate this into starnet").
+/* sidecar/routing/handoff-runner.js — SEND TO at run time (2026-10-10, Andrew: "fully polish and integrate this into vultron").
 
    A line whose OUTBOX sends on (worldmodel setSendTo → plan.sendTo, outside the hash) hands every job it finishes CLEAN to the
    target line's INBOX. The chain runner tells this module when a job left its line clean (chain.js onShipped — every return

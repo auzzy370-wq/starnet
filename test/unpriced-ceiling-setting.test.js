@@ -1,6 +1,6 @@
-/* node test/unpriced-ceiling-setting.test.js — issue #135: a model StarNet has no price for (a custom provider's
+/* node test/unpriced-ceiling-setting.test.js — issue #135: a model Vultron has no price for (a custom provider's
    deepseek-ai/deepseek-v4.1-flash-1107) stopped every run at a hardcoded 2,000,000 tokens. The only override was the
-   STARNET_MAX_UNPRICED_TOKENS environment variable; the Runtime limits row a user found (CLAUDE CODE TOKEN CEILING, now
+   VULTRON_MAX_UNPRICED_TOKENS environment variable; the Runtime limits row a user found (CLAUDE CODE TOKEN CEILING, now
    SIGN-IN TOKEN CEILING) is the sign-in plans' ceiling and never touched it, so setting it to 5M or 0 changed nothing.
 
    GENUINE (the real sidecar/index.js knob code, run in a vm against a temp runtime.knobs.json — never the sidecar):

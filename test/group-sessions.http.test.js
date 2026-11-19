@@ -42,8 +42,8 @@ const server = http.createServer((req, res) => {
   await new Promise(r => server.listen(0, '127.0.0.1', r));
   const base = 'http://127.0.0.1:' + server.address().port + '/api/v1';
   const fixture = SidecarFixture.create({ prefix: 'group-http-', timeoutMs: 20000,
-    env: { SKYNET_OPENROUTER_BASE: base, STARNET_OPENROUTER_BASE: base,
-      SKYNET_OPENROUTER_KEY: 'sk-or-v1-group-test', STARNET_OPENROUTER_KEY: 'sk-or-v1-group-test', SKYNET_DEFAULT_MODEL: 'test/model', STARNET_DEFAULT_MODEL: 'test/model' } });
+    env: { SKYNET_OPENROUTER_BASE: base, VULTRON_OPENROUTER_BASE: base,
+      SKYNET_OPENROUTER_KEY: 'sk-or-v1-group-test', VULTRON_OPENROUTER_KEY: 'sk-or-v1-group-test', SKYNET_DEFAULT_MODEL: 'test/model', VULTRON_DEFAULT_MODEL: 'test/model' } });
   try {
     await fixture.start();
     const request = async (method, query, b) => {
@@ -58,7 +58,7 @@ const server = http.createServer((req, res) => {
     const WM = require('../frontend/app/worldmodel.js');
     const { canonical } = require('./helpers/saved-floor.js');
     const rev = ((await fixture.json('GET', '/api/save?agent=agent')).body.save || {})._saveRevision || 0;
-    const floor = await fixture.json('POST', '/api/save', { schema: 'starnet.save', version: require('../frontend/app/save.js').CURRENT, _saveRevision: rev, _saveClient: 'group-http-page', updatedAt: Date.now(), agent: { id: 'agent' }, station: canonical(WM.starterDoc()) });
+    const floor = await fixture.json('POST', '/api/save', { schema: 'vultron.save', version: require('../frontend/app/save.js').CURRENT, _saveRevision: rev, _saveClient: 'group-http-page', updatedAt: Date.now(), agent: { id: 'agent' }, station: canonical(WM.starterDoc()) });
     assert.ok(floor.body && floor.body.ok, 'the starter floor is saved: ' + floor.text);
     const g = await request('POST', '', { op: 'create', members: ['agent', 'qa'], title: 'Integration group' });
     await request('POST', '', { op: 'send', id: g.id, key: 'origin', text: 'Build a report and ask QA to review the exact artifact. Our key for later: ' + COMMANDER_KEY });

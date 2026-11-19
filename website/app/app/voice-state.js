@@ -1,4 +1,4 @@
-/* STARNET — voice-state.js : what a spoken reply and the speaker ARE, as data (no audio, no DOM, no timers).
+/* VULTRON — voice-state.js : what a spoken reply and the speaker ARE, as data (no audio, no DOM, no timers).
 
    A spoken reply is a HANDLE from the moment a turn is sent to the moment its last sentence ends. voice.js used to name
    the reply by a global counter that every teardown bumped, so ANY stop between a send and its first chunk dropped the

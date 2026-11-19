@@ -17,13 +17,13 @@
    REAL sidecars and a recording upstream that answers 401 to the keys a row refuses and streams an answer to every other
    key, at one path per endpoint, so each request's endpoint is on record beside its key. Rows:
      1. headless (no marker; the page's copies saved through /api/providers/engine-key, as a browser page saves them):
-        a. R1: the operator's STARNET_KEY_POOL_CUSTOM (no env key) beside the page's CUSTOM {K, U}; U refuses K; Run Now. U
+        a. R1: the operator's VULTRON_KEY_POOL_CUSTOM (no env key) beside the page's CUSTOM {K, U}; U refuses K; Run Now. U
            sees K only, and the run ends error (RED at trunk: K, then the env pool key at U, and the run ended done).
-        b. the environment's own pool: MISTRAL_API_KEY, MISTRAL_BASE_URL and STARNET_KEY_POOL_MISTRAL. The env key, refused,
+        b. the environment's own pool: MISTRAL_API_KEY, MISTRAL_BASE_URL and VULTRON_KEY_POOL_MISTRAL. The env key, refused,
            rotates onto the env pool at the env endpoint, and the run ends done.
         c. the page's own pool: the page's GROQ {Kg, [Kg2], Ug}. Kg, refused, rotates onto Kg2 at Ug.
         d. a pool sent with a body key: /api/run DEEPSEEK {Kd, [Kd2], Ud}. Kd, refused, rotates onto Kd2 at Ud.
-        e. a body key sent with no pool and no endpoint, beside the operator's STARNET_KEY_POOL_DEEPSEEK and DEEPSEEK_BASE_URL
+        e. a body key sent with no pool and no endpoint, beside the operator's VULTRON_KEY_POOL_DEEPSEEK and DEEPSEEK_BASE_URL
            (no env key), so the run goes to the station's own endpoint for it: refused, it never rotates onto the env pool (RED
            at trunk: the env pool key went out after it, to the same endpoint). A body that names its OWN endpoint was kept off
            the station's pool at trunk already, by runOnceCore's guard (the station's pool never rotates onto an endpoint the
@@ -96,16 +96,16 @@ const AMBIENT = ['ANTHROPIC_API_KEY', 'OPENROUTER_KEY', 'OPENROUTER_API_KEY', 'C
   'DEEPSEEK_API_KEY', 'OPENAI_API_KEY', 'GEMINI_API_KEY', 'OPENROUTER_BASE', 'MISTRAL_BASE_URL', 'GROQ_BASE_URL', 'DEEPSEEK_BASE_URL', 'CUSTOM_OPENAI_BASE_URL',
   'OPENAI_COMPATIBLE_BASE_URL', 'KEY_POOL_CUSTOM', 'KEY_POOL_MISTRAL', 'KEY_POOL_GROQ', 'KEY_POOL_DEEPSEEK', 'KEY_POOL_OPENROUTER', 'DESKTOP_SHELL', 'IPC_TOKEN',
   'FALLBACK_MODELS', 'DEFAULT_MODEL'];
-const pair = (name, value) => ({ ['SKYNET_' + name]: value, ['STARNET_' + name]: value });
+const pair = (name, value) => ({ ['SKYNET_' + name]: value, ['VULTRON_' + name]: value });
 function station(label, env) {
   const blank = {};
-  for (const n of AMBIENT) { blank[n] = ''; blank['STARNET_' + n] = ''; blank['SKYNET_' + n] = ''; }
+  for (const n of AMBIENT) { blank[n] = ''; blank['VULTRON_' + n] = ''; blank['SKYNET_' + n] = ''; }
   const fx = SidecarFixture.create({ prefix: 'cs-pool-binding-' + label + '-', timeoutMs: 45000, env: Object.assign(blank, {
-    STARNET_FULL_ACCESS: '1', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0', SKYNET_THREAD_MINE: '0', STARNET_CREDITS_URL: '', SKYNET_CREDITS_URL: ''
+    VULTRON_FULL_ACCESS: '1', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0', SKYNET_THREAD_MINE: '0', VULTRON_CREDITS_URL: '', SKYNET_CREDITS_URL: ''
   }, env) });
   return {
     fx,
-    push: body => fx.request('/api/key', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-StarNet-Token': IPC }, body: JSON.stringify(body) })
+    push: body => fx.request('/api/key', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Vultron-Token': IPC }, body: JSON.stringify(body) })
       .then(async r => ({ status: r.status, body: await r.json().catch(() => null) })),
     engineKey: body => fx.json('POST', '/api/providers/engine-key', body),
     async routine(agentId, provider, marker) {
@@ -132,9 +132,9 @@ const show = list => JSON.stringify(list.map(([p, k]) => p + who(k)));
     /* ================= 1. headless: no marker ================= */
     {
       const s = station('headless', {
-        STARNET_KEY_POOL_CUSTOM: K.envPool,                                                           // 1a: an env pool with no env key
-        MISTRAL_API_KEY: K.mis, MISTRAL_BASE_URL: up.base + '/m/v1', STARNET_KEY_POOL_MISTRAL: K.misPool,   // 1b: the env layer's own pool
-        STARNET_KEY_POOL_DEEPSEEK: K.dsEnvPool, DEEPSEEK_BASE_URL: up.base + '/d/v1'                  // 1e: an env pool beside a body key
+        VULTRON_KEY_POOL_CUSTOM: K.envPool,                                                           // 1a: an env pool with no env key
+        MISTRAL_API_KEY: K.mis, MISTRAL_BASE_URL: up.base + '/m/v1', VULTRON_KEY_POOL_MISTRAL: K.misPool,   // 1b: the env layer's own pool
+        VULTRON_KEY_POOL_DEEPSEEK: K.dsEnvPool, DEEPSEEK_BASE_URL: up.base + '/d/v1'                  // 1e: an env pool beside a body key
       });
       stations.push(s);
       await s.fx.start();
@@ -169,7 +169,7 @@ const show = list => JSON.stringify(list.map(([p, k]) => p + who(k)));
 
     /* ================= 2. desktop: the shell's marker ================= */
     {
-      const s = station('desktop', { STARNET_DESKTOP_SHELL: '1', ...pair('IPC_TOKEN', IPC), ...pair('OPENROUTER_KEY', K.or), STARNET_OPENROUTER_BASE: up.base + '/or/api/v1' });
+      const s = station('desktop', { VULTRON_DESKTOP_SHELL: '1', ...pair('IPC_TOKEN', IPC), ...pair('OPENROUTER_KEY', K.or), VULTRON_OPENROUTER_BASE: up.base + '/or/api/v1' });
       stations.push(s);
       await s.fx.start();
       await s.fx.json('POST', '/api/cron/arm', { enabled: false });

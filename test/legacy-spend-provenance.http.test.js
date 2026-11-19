@@ -4,7 +4,7 @@ const {SidecarFixture}=require('./helpers/sidecar-fixture.js');
 (async()=>{
  const f=new SidecarFixture({prefix:'legacy-spend-provenance-',timeoutMs:20000,env:{SKYNET_BUDGET_PER_DAY:'10',SKYNET_AUX_BUDGET:'0'}});
  const dir=path.join(f.workspace,'.spend-pending');fs.mkdirSync(dir,{recursive:true});
- const rows=[{runId:'legacy-origin',agentId:'agent'},{runId:'provider-only',agentId:'agent',provider:'starnet'},{runId:'known-managed',agentId:'agent',managed:true,provider:'starnet'},{runId:'known-byok',agentId:'agent',managed:false,provider:'openrouter'}];
+ const rows=[{runId:'legacy-origin',agentId:'agent'},{runId:'provider-only',agentId:'agent',provider:'vultron'},{runId:'known-managed',agentId:'agent',managed:true,provider:'vultron'},{runId:'known-byok',agentId:'agent',managed:false,provider:'openrouter'}];
  const ledger=path.join(f.workspace,'ledger.jsonl'),original=JSON.stringify({runId:'prior',agentId:'agent',usd:1,ts:Date.now()})+'\n';fs.writeFileSync(ledger,original);
  for(const r of rows)fs.writeFileSync(path.join(dir,crypto.createHash('sha256').update(r.runId).digest('hex')+'.json'),JSON.stringify(r));
  try {

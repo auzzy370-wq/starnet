@@ -28,16 +28,16 @@ function boot(port, workspaces, attemptsLeft, extraEnv) {
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, [INDEX], {
       env: Object.assign({}, process.env, {
-        SKYNET_PORT: String(port), STARNET_PORT: String(port),
-        SKYNET_WORKSPACES: workspaces, STARNET_WORKSPACES: workspaces,
+        SKYNET_PORT: String(port), VULTRON_PORT: String(port),
+        SKYNET_WORKSPACES: workspaces, VULTRON_WORKSPACES: workspaces,
         // clear every provider key so no route can reach the network (determinism + zero spend).
-        OPENROUTER_KEY: '', STARNET_OPENROUTER_KEY: '', SKYNET_OPENROUTER_KEY: '',
-        OPENROUTER_API_KEY: '', STARNET_OPENROUTER_API_KEY: '', SKYNET_OPENROUTER_API_KEY: '',
-        ANTHROPIC_API_KEY: '', STARNET_ANTHROPIC_API_KEY: '', SKYNET_ANTHROPIC_API_KEY: '',
-        GEMINI_API_KEY: '', STARNET_GEMINI_API_KEY: '', SKYNET_GEMINI_API_KEY: '',
+        OPENROUTER_KEY: '', VULTRON_OPENROUTER_KEY: '', SKYNET_OPENROUTER_KEY: '',
+        OPENROUTER_API_KEY: '', VULTRON_OPENROUTER_API_KEY: '', SKYNET_OPENROUTER_API_KEY: '',
+        ANTHROPIC_API_KEY: '', VULTRON_ANTHROPIC_API_KEY: '', SKYNET_ANTHROPIC_API_KEY: '',
+        GEMINI_API_KEY: '', VULTRON_GEMINI_API_KEY: '', SKYNET_GEMINI_API_KEY: '',
         // keep DEV off by default so POST /api/dev/inbound proves its 404 gate deterministically.
-        STARNET_DEV: '', SKYNET_DEV: '',
-        STARNET_APP_VERSION: '9.9.9-routes-test'
+        VULTRON_DEV: '', SKYNET_DEV: '',
+        VULTRON_APP_VERSION: '9.9.9-routes-test'
       }, extraEnv || {}),
       stdio: ['ignore', 'pipe', 'pipe']
     });
@@ -67,11 +67,11 @@ function boot(port, workspaces, attemptsLeft, extraEnv) {
   let apiToken = '';
   const j = async (m, p, body) => {
     const headers = { 'Content-Type': 'application/json' };
-    if (apiToken) headers['X-StarNet-Token'] = apiToken;
+    if (apiToken) headers['X-Vultron-Token'] = apiToken;
     if (apiToken) headers['Origin'] = B;
     const r = await fetch(B + p, { method: m, headers, body: body === undefined ? undefined : JSON.stringify(body) });
     const t = await r.text(); let v; try { v = JSON.parse(t); } catch (_) { v = t; }
-    return { status: r.status, body: v, code: r.headers.get('x-starnet-code') };
+    return { status: r.status, body: v, code: r.headers.get('x-vultron-code') };
   };
   // a raw (tokenless) call to prove the auth seam gates a route.
   const raw = (m, p, body) => fetch(B + p, { method: m, headers: body ? { 'Content-Type': 'application/json' } : undefined, body: body ? JSON.stringify(body) : undefined });
@@ -118,7 +118,7 @@ function boot(port, workspaces, attemptsLeft, extraEnv) {
     A.eq(mint.body.ok, true, 'mint reports ok:true');
     A.ok(mint.body.id && typeof mint.body.id === 'string', 'mint returns the new quest id');
     const questId = mint.body.id;
-    const mintBad = await fetch(B + '/api/quests/mint', { method: 'POST', headers: { 'X-StarNet-Token': apiToken, Origin: B }, body: '{not json' });
+    const mintBad = await fetch(B + '/api/quests/mint', { method: 'POST', headers: { 'X-Vultron-Token': apiToken, Origin: B }, body: '{not json' });
     A.eq(mintBad.status, 400, 'POST /api/quests/mint with malformed JSON -> 400');
     // the minted quest is now visible in the ledger read (the store round-trip is real)
     const quests1 = await j('GET', '/api/quests');
@@ -180,7 +180,7 @@ function boot(port, workspaces, attemptsLeft, extraEnv) {
 
     // ---- (8) POST /api/dev/inbound — dev-gated: on a NON-dev boot the route 404s (the gate holds) ----
     const devInbound = await j('POST', '/api/dev/inbound', { text: 'ping' });
-    A.eq(devInbound.status, 404, 'POST /api/dev/inbound on a non-dev boot -> 404 (STARNET_DEV gate holds)');
+    A.eq(devInbound.status, 404, 'POST /api/dev/inbound on a non-dev boot -> 404 (VULTRON_DEV gate holds)');
     A.eq(devInbound.body.error, 'not found', 'the dev-gate 404 is honest');
 
     // ---- (9) POST /api/workshop/remove — no-such-idea -> 404; bad agentId -> 400 ----
@@ -238,8 +238,8 @@ function boot(port, workspaces, attemptsLeft, extraEnv) {
     const study = await j('GET', '/api/study/proposals?agent=agent&run=nope');
     A.eq(study.status, 200, 'GET /api/study/proposals -> 200');
     A.ok(Array.isArray(study.body.proposals), 'study proposals returns a proposals array (empty on a fresh workspace)');
-    const studyBad = await fetch(B + '/api/study/proposals?agent=' + encodeURIComponent('../evil'), { headers: { 'X-StarNet-Token': apiToken, Origin: B } });
-    A.eq([studyBad.status, studyBad.headers.get('x-starnet-code'), (await studyBad.json()).code], [400, 'bad_agent_id', 'bad_agent_id'], 'GET /api/study/proposals refuses the malformed agent id before path resolution');
+    const studyBad = await fetch(B + '/api/study/proposals?agent=' + encodeURIComponent('../evil'), { headers: { 'X-Vultron-Token': apiToken, Origin: B } });
+    A.eq([studyBad.status, studyBad.headers.get('x-vultron-code'), (await studyBad.json()).code], [400, 'bad_agent_id', 'bad_agent_id'], 'GET /api/study/proposals refuses the malformed agent id before path resolution');
 
     // ---- (17) GET /api/toolsets — the placeable-capability catalog ----
     const ts = await j('GET', '/api/toolsets');
@@ -257,8 +257,8 @@ function boot(port, workspaces, attemptsLeft, extraEnv) {
     A.eq(wdir.status, 200, 'GET /api/workspace/dir?agent=agent -> 200');
     A.ok(typeof wdir.body.dir === 'string' && wdir.body.dir.length > 0, 'workspace/dir returns an absolute jailed path');
     A.ok(wdir.body.dir.indexOf(ws) >= 0, 'the returned dir is jailed under the WORKSPACES root');
-    const wdirEscape = await fetch(B + '/api/workspace/dir?agent=' + encodeURIComponent('../../etc'), { headers: { 'X-StarNet-Token': apiToken, Origin: B } });
-    A.eq([wdirEscape.status, wdirEscape.headers.get('x-starnet-code'), (await wdirEscape.json()).code], [400, 'bad_agent_id', 'bad_agent_id'], 'GET /api/workspace/dir refuses the malformed agent id before path resolution');
+    const wdirEscape = await fetch(B + '/api/workspace/dir?agent=' + encodeURIComponent('../../etc'), { headers: { 'X-Vultron-Token': apiToken, Origin: B } });
+    A.eq([wdirEscape.status, wdirEscape.headers.get('x-vultron-code'), (await wdirEscape.json()).code], [400, 'bad_agent_id', 'bad_agent_id'], 'GET /api/workspace/dir refuses the malformed agent id before path resolution');
 
   } finally {
     try { child.kill(); } catch (_) {}

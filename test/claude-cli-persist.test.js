@@ -2,8 +2,8 @@
 
    Before: every model turn spawned a fresh `claude -p` and re-sent the whole history as one text block (CLI start-up
    on every turn; a block that grows never hits the previous turn's prompt cache). Now an agent-loop turn rides one
-   persistent `--input-format stream-json` child and sends only what StarNet added since the last turn — and falls back
-   to a fresh child with the full history whenever what the child holds is not provably StarNet's history.
+   persistent `--input-format stream-json` child and sends only what Vultron added since the last turn — and falls back
+   to a fresh child with the full history whenever what the child holds is not provably Vultron's history.
    A fake CLI stands in for `claude` (no real process is spawned); it speaks the stream-json protocol the real CLI
    2.1.284 was observed to speak (scratchpad cli-persist/exp-*.log): one `result` line per user line, usage per turn,
    total_cost_usd as a running total, exit when stdin closes. */
@@ -195,10 +195,10 @@ const tick = ms => new Promise(r => setTimeout(r, ms || 0));
     A.eq(p.persistStats().closed.overrun, 1, 'stats: closed for overrun');
     A.ok(spawns.length === 2 && spawns[1].inputs.length === 0 && spawns[1].child.exitCode == null && p.persistStats().prewarmed === 1,
       'a WARM replacement is started at once, idle while the loop runs the tool');
-    A.eq(spawns[1].args.filter(a => !/starnet-claude-cli-/.test(a)), spawns[0].args.filter(a => !/starnet-claude-cli-/.test(a)), 'with the same flags (its own system prompt file)');
+    A.eq(spawns[1].args.filter(a => !/vultron-claude-cli-/.test(a)), spawns[0].args.filter(a => !/vultron-claude-cli-/.test(a)), 'with the same flags (its own system prompt file)');
     const r1 = reply(t1); msgs.push(r1, ...results(r1, 'real contents'));
     await collect(p, req(msgs));
-    A.ok(spawns.length === 2 && textIn(spawns[1].inputs[0]).startsWith('<user>\nRead a.txt.') && textIn(spawns[1].inputs[0]).includes('real contents'), 'the next turn starts on the warm child, from StarNet\'s whole history');
+    A.ok(spawns.length === 2 && textIn(spawns[1].inputs[0]).startsWith('<user>\nRead a.txt.') && textIn(spawns[1].inputs[0]).includes('real contents'), 'the next turn starts on the warm child, from Vultron\'s whole history');
     A.eq(p.persistStats().fresh.warm, 1, 'stats: the warm child was used');
     p.release('run-3');
     A.ok(spawns[1].treeKilled, 'run end kills it like any child');
@@ -301,20 +301,20 @@ const tick = ms => new Promise(r => setTimeout(r, ms || 0));
     p.release('run-7');
   }
 
-  // 8. IDLE: a parked child that nobody uses again is closed after STARNET_CLAUDE_CLI_PERSIST_IDLE_MS.
+  // 8. IDLE: a parked child that nobody uses again is closed after VULTRON_CLAUDE_CLI_PERSIST_IDLE_MS.
   {
-    const { p, spawns } = make(reader, { env: { PATH: '', STARNET_CLAUDE_CLI_PERSIST_IDLE_MS: '30' } });
+    const { p, spawns } = make(reader, { env: { PATH: '', VULTRON_CLAUDE_CLI_PERSIST_IDLE_MS: '30' } });
     await collect(p, { model: 'sonnet', tools: TOOLS, messages: [SYS, { role: 'user', content: 'Read a.txt and b.txt.' }], runId: 'run-8', signal: new AbortController().signal });
     await tick(80);
     A.ok(spawns[0].treeKilled && p.persistStats().closed.idle === 1, 'the idle timeout closes a parked child');
   }
 
-  // 9. KILL SWITCH: STARNET_CLAUDE_CLI_PERSIST=0 is today's behaviour, one `claude -p` per turn with the whole history.
+  // 9. KILL SWITCH: VULTRON_CLAUDE_CLI_PERSIST=0 is today's behaviour, one `claude -p` per turn with the whole history.
   {
     const { p, spawns } = make((rec, n, msg) => {
       const text = /alpha/.test(msg.text || '') ? 'done' : block('a.txt');
       return { lines: [init(), delta(text), result(text)] };
-    }, { env: { PATH: '', STARNET_CLAUDE_CLI_PERSIST: '0' } });
+    }, { env: { PATH: '', VULTRON_CLAUDE_CLI_PERSIST: '0' } });
     const ac = new AbortController();
     const msgs = [SYS, { role: 'user', content: 'Read a.txt.' }];
     const r1 = reply(await collect(p, { model: 'sonnet', tools: TOOLS, messages: msgs.slice(), runId: 'run-9', signal: ac.signal }));
@@ -417,13 +417,13 @@ const tick = ms => new Promise(r => setTimeout(r, ms || 0));
     p.release('run-13');
   }
 
-  // 14. DIAGNOSTICS: STARNET_CLAUDE_CLI_PERSIST_LOG=1 also prints each turn's usage (what the prompt cache read vs wrote),
+  // 14. DIAGNOSTICS: VULTRON_CLAUDE_CLI_PERSIST_LOG=1 also prints each turn's usage (what the prompt cache read vs wrote),
   //     on either path — the live proof's per-turn cache numbers. Off by default: nothing is printed.
   {
     const lines = [], log = console.log;
     console.log = (...a) => { const s = a.join(' '); if (/\[claude-cli persist\]/.test(s)) lines.push(s); else log(...a); };
     try {
-      for (const env of [{ PATH: '', STARNET_CLAUDE_CLI_PERSIST_LOG: '1' }, { PATH: '', STARNET_CLAUDE_CLI_PERSIST_LOG: '1', STARNET_CLAUDE_CLI_PERSIST: '0' }, { PATH: '' }]) {
+      for (const env of [{ PATH: '', VULTRON_CLAUDE_CLI_PERSIST_LOG: '1' }, { PATH: '', VULTRON_CLAUDE_CLI_PERSIST_LOG: '1', VULTRON_CLAUDE_CLI_PERSIST: '0' }, { PATH: '' }]) {
         const { p } = make(reader, { env });
         await collect(p, { model: 'sonnet', tools: TOOLS, messages: [SYS, { role: 'user', content: 'Read a.txt and b.txt.' }], runId: 'run-14', signal: new AbortController().signal });
         p.release('run-14');

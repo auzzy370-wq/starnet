@@ -1,7 +1,7 @@
 'use strict';
 // free-path-ollama.test.js — the zero-key path is a real, honest choice (GitHub issue #6).
 //
-// A user who unlinked their StarNet account (hero provider still `starnet`) was shown "no STARNET key — ADD IN
+// A user who unlinked their Vultron account (hero provider still `vultron`) was shown "no VULTRON key — ADD IN
 // SETTINGS": a key that does not exist, for a provider they no longer wanted, with no way to pick another brain
 // or the free local one. This locks:
 //   1. KeyCTA names the REAL gap (unlinked vs no key) and offers three doors: fix it · switch provider · run
@@ -23,16 +23,16 @@ const eq = (a, b, m) => { assert.strictEqual(a, b, m); n++; };
 // keycta.js is a browser IIFE that only touches globals lazily — stub the seams it reads.
 const calls = { openTerm: [], setProv: [], probes: 0, notify: [] };
 let probeResult = { reachable: false };
-let starnetConfigured = false;
+let vultronConfigured = false;
 let stored = Object.create(null);
-let prov = 'starnet';
+let prov = 'vultron';
 global.SK = { providers: { registry: require('../sidecar/providers/registry.js') } };
 global.document = { getElementById: () => null, querySelector: () => null };
 global.App = { currentAgent: () => ({ name: 'NOVA', onboarded: true }) };
 global.Harness = {
   getProv: () => prov,
   setProv: p => { calls.setProv.push(p); prov = p; },
-  configured: p => (p === 'starnet' ? starnetConfigured : true),
+  configured: p => (p === 'vultron' ? vultronConfigured : true),
   hasStoredCredential: p => !!stored[p],
   probeProvider: () => { calls.probes++; return Promise.resolve(probeResult); }
 };
@@ -41,11 +41,11 @@ global.ModelDock = { reconcile: () => Promise.resolve(), reflect: () => {} };
 
 const KeyCTA = require('../frontend/app/keycta.js');
 
-// 1. an UNLINKED starnet station is a LINK gap, never a "key" gap
-prov = 'starnet'; starnetConfigured = false;
-eq(KeyCTA.gapOf() && KeyCTA.gapOf().kind, 'unlinked', 'starnet + not linked → gap kind is unlinked (there is no STARNET key to add)');
-starnetConfigured = true;
-eq(KeyCTA.gapOf(), null, 'starnet + linked → no gap');
+// 1. an UNLINKED vultron station is a LINK gap, never a "key" gap
+prov = 'vultron'; vultronConfigured = false;
+eq(KeyCTA.gapOf() && KeyCTA.gapOf().kind, 'unlinked', 'vultron + not linked → gap kind is unlinked (there is no VULTRON key to add)');
+vultronConfigured = true;
+eq(KeyCTA.gapOf(), null, 'vultron + linked → no gap');
 // 2. a keyed provider without a stored credential is a key gap
 prov = 'gemini'; stored = Object.create(null);
 eq(KeyCTA.gapOf() && KeyCTA.gapOf().kind, 'nokey', 'gemini with nothing stored → nokey gap');
@@ -55,20 +55,20 @@ eq(KeyCTA.gapOf(), null, 'gemini with a stored key → no gap');
 // 3. keyless-by-design providers never trip it
 for (const p of ['ollama', 'custom', 'codex', 'grok', 'kimi']) { prov = p; eq(KeyCTA.gapOf(), null, p + ' never trips the CTA'); }
 // 4. a hero that hasn't landed yet is silent
-prov = 'starnet'; starnetConfigured = false;
+prov = 'vultron'; vultronConfigured = false;
 global.App.currentAgent = () => ({ name: 'NOVA', onboarded: false });
 eq(KeyCTA.gapOf(), null, 'no gap before the awakening lands');
 global.App.currentAgent = () => ({ name: 'NOVA', onboarded: true });
 
 (async () => {
   // 5. the Ollama door with Ollama OFFLINE: never switches, routes to SETTINGS ▸ PROVIDERS with the honest reason
-  prov = 'starnet'; probeResult = { reachable: false };
+  prov = 'vultron'; probeResult = { reachable: false };
   const off = await KeyCTA.useOllama();
   eq(off, false, 'offline ollama → the door reports false');
   eq(calls.setProv.length, 0, 'offline ollama → provider NOT switched (never select a dead endpoint)');
   ok(calls.openTerm.some(([k, s]) => k === 'settings' && s === 'providers'), 'offline ollama → opens SETTINGS ▸ PROVIDERS (the setup entry)');
   ok(calls.notify.some(([m, k]) => k === 'bad' && /ollama/i.test(m) && /ollama\.com/.test(m)), 'offline ollama → says so, with the install pointer');
-  eq(prov, 'starnet', 'the active provider is untouched');
+  eq(prov, 'vultron', 'the active provider is untouched');
 
   // 6. the Ollama door with Ollama REACHABLE (sidecar-proven): switches the brain, and the gap closes
   probeResult = { reachable: true };
@@ -86,7 +86,7 @@ global.App.currentAgent = () => ({ name: 'NOVA', onboarded: true });
   ok(/RUN FREE LOCALLY \(OLLAMA\)/.test(keycta) && /SET UP OLLAMA/.test(keycta), 'the free door has a proven label and an honest unproven label');
   ok(/ollamaReady \? '◇ RUN FREE LOCALLY/.test(keycta), 'the "run free" label is gated on the sidecar probe verdict (truthful telemetry)');
   ok(/Harness\.probeProvider\('ollama'\)/.test(keycta), 'the verdict comes from the sidecar probe route, not a local guess');
-  ok(/LINK STARNET/.test(keycta), 'an unlinked starnet station is offered a LINK, not a key');
+  ok(/LINK VULTRON/.test(keycta), 'an unlinked vultron station is offered a LINK, not a key');
   ok(/openTerm\('settings', 'providers'\)/.test(keycta), 'every door lands on the PROVIDERS section of settings');
 
   const index = read('frontend/index.html');
@@ -96,7 +96,7 @@ global.App.currentAgent = () => ({ name: 'NOVA', onboarded: true });
   ok(/ollama\.com/.test(index) && /ollama pull/.test(index), 'the ollama block points at the install + pull steps');
   ok(/local models are smaller than the cloud ones/.test(index), 'the ollama block carries the honest quality caveat');
   // existing chips untouched (no reorder / no removal)
-  for (const p of ['starnet', 'grok', 'kimi', 'openrouter', 'openai', 'anthropic', 'gemini', 'custom']) ok(new RegExp('data-prov="' + p + '"').test(index), 'chip ' + p + ' still present');
+  for (const p of ['vultron', 'grok', 'kimi', 'openrouter', 'openai', 'anthropic', 'gemini', 'custom']) ok(new RegExp('data-prov="' + p + '"').test(index), 'chip ' + p + ' still present');
 
   const app = read('frontend/app/app.js');
   ok(/const isOllama = pickedProvider === 'ollama';/.test(app) && /el\('ollama-block'\)[\s\S]{0,80}toggle\('hidden', !isOllama\)/.test(app), 'selectProviderUI shows the ollama block only while OLLAMA is picked');

@@ -91,19 +91,19 @@ async function eventsOf(response) {
 (async () => {
   const provider = await startProvider();
   const sidecar = SidecarFixture.create({
-    prefix: 'starnet-price-tier-',
+    prefix: 'vultron-price-tier-',
     env: {
       // the station holds the loopback credential too, so its own /api/models route can list the wire's catalog (the runs below
       // still send the same key and endpoint in their bodies)
       OPENROUTER_KEY: '', OPENROUTER_API_KEY: '', ANTHROPIC_API_KEY: KEY, ANTHROPIC_BASE_URL: provider.baseUrl,
       SKYNET_BUDGET_PER_RUN: '10', SKYNET_BUDGET_PER_AGENT: '0', SKYNET_BUDGET_PER_DAY: '0', SKYNET_BUDGET_GLOBAL: '0',
-      SKYNET_EDGE_TTS: '0', STARNET_EDGE_TTS: '0'
+      SKYNET_EDGE_TTS: '0', VULTRON_EDGE_TTS: '0'
     }
   });
   await sidecar.start();
   const api = async (method, route, body) => fetch(sidecar.baseUrl + route, {
     method,
-    headers: Object.assign({ 'Content-Type': 'application/json' }, sidecar.token ? { 'X-StarNet-Token': sidecar.token } : {}),
+    headers: Object.assign({ 'Content-Type': 'application/json' }, sidecar.token ? { 'X-Vultron-Token': sidecar.token } : {}),
     body: body === undefined ? undefined : JSON.stringify(body)
   });
   const runOn = async (model) => {

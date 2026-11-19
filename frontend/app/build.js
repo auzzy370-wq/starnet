@@ -1,4 +1,4 @@
-/* STARNET — build.js : the diegetic full-screen BUILD MODE (build) mode.
+/* VULTRON — build.js : the diegetic full-screen BUILD MODE (build) mode.
 
    Toggled from the dock. Dims the live sim and drops the Commander into an in-fiction
    station-editor over the SAME procedural art: pan/zoom camera, phosphor build grid,
@@ -87,7 +87,7 @@ const Build = (() => {
     });
   }
 
-  const SEEN_KEY = 'starnet.refit.seen';
+  const SEEN_KEY = 'vultron.refit.seen';
   const PREVIEW_LABEL = '▶ TEST';   // 2026-09-28: ONE test control (the name kept: the guide and Field Manual quote it) — it opens the line's TEST view (WATCH IT free · STEP THROUGH · SEND A REAL JOB) and plays the free walkthrough   // the top-bar preview button — the guide and Field Manual name it by this constant
   // machines the BELT tool connects with two clicks (mirrors worldmodel CONNECTABLE)
   const CONNECT_TYPES = { intake: 1, bay: 1, outbox: 1, filter: 1, splitter: 1, merger: 1, joiner: 1, loop: 1 };
@@ -189,7 +189,7 @@ const Build = (() => {
      Commander who was building a line last time comes back to the Conveyors tab instead of the furniture catalog. Only that
      tab is remembered: every other session still starts on Props, where the tutorial expects it. */
   let pendingGroup = null;
-  const LAST_GROUP_KEY = 'starnet.refit.lastGroup';
+  const LAST_GROUP_KEY = 'vultron.refit.lastGroup';
   const readLastGroup = () => { try { return localStorage.getItem(LAST_GROUP_KEY) === 'workflow' ? 'workflow' : null; } catch (e) { return null; } };
   const writeLastGroup = g => { try { localStorage.setItem(LAST_GROUP_KEY, g === 'workflow' ? 'workflow' : 'props'); } catch (e) {} };
   const propShelfScroll = new Map();
@@ -652,8 +652,8 @@ const Build = (() => {
     if (f) f.focus();
   }
 
-  /* MAKE A PROP (player-made props, userprops.js): type any object, StarNet draws it in the station's style on
-     StarNet credits, and it joins the catalog under MADE BY YOU as decoration. The status line reads ONLY the job
+  /* MAKE A PROP (player-made props, userprops.js): type any object, Vultron draws it in the station's style on
+     Vultron credits, and it joins the catalog under MADE BY YOU as decoration. The status line reads ONLY the job
      state the station reports (step, try n of 3, the cost the cloud actually billed); the job keeps running in
      the station if BUILD MODE closes, and this panel picks it back up on reopen. */
   let makeJob = null, makeMsg = null, makeWatching = '';
@@ -665,8 +665,8 @@ const Build = (() => {
     if (makeMsg) return makeMsg;
     if (!makeJob) {
       const bal = makeCredits && makeCredits.linked ? makeCredits.balanceUsd : null;
-      if (bal != null && bal > 0 && bal < MAKE_PRICE) return { text: 'StarNet credits \u00b7 $' + bal.toFixed(2) + ' left \u00b7 not enough to make a prop (about $0.35)', tone: 'bad', door: true };
-      return { text: (bal != null && bal > 0 ? 'StarNet credits \u00b7 $' + bal.toFixed(2) + ' left' : 'StarNet credits') + ' \u00b7 preview first (about 5\u00a2), then make it (about $0.35; a side view about $0.30)', tone: '' };
+      if (bal != null && bal > 0 && bal < MAKE_PRICE) return { text: 'Vultron credits \u00b7 $' + bal.toFixed(2) + ' left \u00b7 not enough to make a prop (about $0.35)', tone: 'bad', door: true };
+      return { text: (bal != null && bal > 0 ? 'Vultron credits \u00b7 $' + bal.toFixed(2) + ' left' : 'Vultron credits') + ' \u00b7 preview first (about 5\u00a2), then make it (about $0.35; a side view about $0.30)', tone: '' };
     }
     const j = makeJob, spent = j.costUsd > 0 ? ' \u00b7 $' + j.costUsd.toFixed(2) + ' so far' : '';
     if (j.status === 'done' && j.kind === 'side') return { text: 'Side view made \u00b7 cost $' + (Number(j.costUsd) || 0).toFixed(2) + (j.costPending ? ' (final cost settling)' : '') + ' \u00b7 press R to turn it', tone: 'ok' };
@@ -696,8 +696,8 @@ const Build = (() => {
     if (cta) {
       cta.hidden = !need;
       if (need) {
-        cta.querySelector('span').textContent = need === 'link' ? 'Props are made with StarNet credits: about 5\u00a2 to preview, 35\u00a2 to make.' : 'You\u2019re out of StarNet credits. A prop is about 35\u00a2.';
-        cta.querySelector('button').textContent = need === 'link' ? 'GET STARNET CREDITS' : 'TOP UP CREDITS';
+        cta.querySelector('span').textContent = need === 'link' ? 'Props are made with Vultron credits: about 5\u00a2 to preview, 35\u00a2 to make.' : 'You\u2019re out of Vultron credits. A prop is about 35\u00a2.';
+        cta.querySelector('button').textContent = need === 'link' ? 'GET VULTRON CREDITS' : 'TOP UP CREDITS';
       }
     }
     if (door) door.hidden = !!need || !((makeMsg && makeMsg.door) || (!makeMsg && st.door));   // the card above already carries the door
@@ -859,10 +859,10 @@ const Build = (() => {
     const door = typeof Friendly !== 'undefined' && Friendly.actionButton && Friendly.actionButton({ action: 'store' });
     if (!door || !door.run) return;
     door.run();
-    // land ON the StarNet card (PROVIDERS opens at the top of a long list); it renders after its own credits read
+    // land ON the Vultron card (PROVIDERS opens at the top of a long list); it renders after its own credits read
     let tries = 0;
     const seek = () => {
-      const card = document.querySelector('.prov-card[data-provider="starnet"]');
+      const card = document.querySelector('.prov-card[data-provider="vultron"]');
       if (card && card.offsetParent) { try { card.scrollIntoView({ block: 'center' }); } catch (_) {} return; }
       if (++tries < 12) setTimeout(seek, 250);
     };
@@ -877,11 +877,11 @@ const Build = (() => {
       if (j && !makeJob) watchMakeJob(j);
       else if (!makeJob && !makeMsg && r && Array.isArray(r.recent)) {
         let seen = [];
-        try { seen = JSON.parse(localStorage.getItem('starnet.userprops.seen') || '[]'); } catch (_) { seen = []; }
+        try { seen = JSON.parse(localStorage.getItem('vultron.userprops.seen') || '[]'); } catch (_) { seen = []; }
         const miss = r.recent.find((x) => x && x.status === 'failed' && !seen.includes(x.id));
         if (miss) {
           makeMsg = { text: 'While BUILD MODE was closed: ' + (miss.noun || 'a prop') + ' \u2014 ' + ((miss.error && miss.error.message) || 'it could not be made.'), tone: 'bad' };
-          try { localStorage.setItem('starnet.userprops.seen', JSON.stringify(seen.concat(r.recent.map((x) => x.id)).slice(-50))); } catch (_) { /* per-viewer convenience only */ }
+          try { localStorage.setItem('vultron.userprops.seen', JSON.stringify(seen.concat(r.recent.map((x) => x.id)).slice(-50))); } catch (_) { /* per-viewer convenience only */ }
         }
       }
       paintMakeStatus();
@@ -939,13 +939,13 @@ const Build = (() => {
   }
   function makePropPanel() {
     const box = document.createElement('section'); box.className = 'refit-makeprop'; box.setAttribute('aria-label', 'Make a prop');
-    box.innerHTML = '<div class="refit-makeprop-head"><b>MAKE A PROP</b><small>Type any object. StarNet draws it in the station\u2019s style.</small></div>' +
+    box.innerHTML = '<div class="refit-makeprop-head"><b>MAKE A PROP</b><small>Type any object. Vultron draws it in the station\u2019s style.</small></div>' +
       '<div class="refit-makeprop-cta" id="refit-makeprop-cta" hidden><span></span><button type="button" class="bb sm" id="refit-makeprop-cta-go"></button></div>' +
       '<div class="refit-makeprop-row"><input type="text" class="refit-input refit-searchfield" id="refit-makeprop-input" maxlength="60" spellcheck="false" autocomplete="off" aria-label="Object to make" placeholder="e.g. a grandfather clock">' +
       '<button type="button" class="bb sm" id="refit-makeprop-go">PREVIEW</button></div>' +
       '<div class="refit-makeprop-preview" id="refit-makeprop-preview" hidden></div>' +
       '<div class="refit-makeprop-foot"><span class="refit-makeprop-status" id="refit-makeprop-status" role="status" aria-live="polite"></span>' +
-      '<button type="button" class="bb sm" id="refit-makeprop-door" hidden>\u25b8 STARNET CREDITS</button></div>' +
+      '<button type="button" class="bb sm" id="refit-makeprop-door" hidden>\u25b8 VULTRON CREDITS</button></div>' +
       '<div class="refit-makeprop-size" id="refit-makeprop-size" hidden><span class="refit-makeprop-sizelbl">SIZE</span><button type="button" class="bb sm" data-size="-1" aria-label="Smaller">\u2212</button><b class="refit-makeprop-sizeval">100%</b><button type="button" class="bb sm" data-size="1" aria-label="Bigger">+</button></div>' +
       '<div class="refit-makeprop-actions"><button type="button" class="bb sm refit-makeprop-sidebtn" id="refit-makeprop-side" hidden>\u21bb MAKE SIDE VIEW</button>' +
       '<button type="button" class="bb sm" id="refit-makeprop-del" hidden>\u2715 DELETE</button></div>';
@@ -1220,7 +1220,7 @@ const Build = (() => {
     if (head) {
       head.setAttribute('role', 'button'); head.tabIndex = 0;
       head.setAttribute('aria-expanded', String(open));
-      head.dataset.tip = open ? 'Close MAKE A PROP' : 'Make your own prop: type any object, StarNet draws it in the station\u2019s style (StarNet credits)';
+      head.dataset.tip = open ? 'Close MAKE A PROP' : 'Make your own prop: type any object, Vultron draws it in the station\u2019s style (Vultron credits)';
       const toggle = () => {
         if (busy) return;   // a running job, a preview or a message keeps it open
         makeOpen = !box.classList.contains('is-compact') ? false : true;
@@ -1358,7 +1358,7 @@ const Build = (() => {
       if (propSection === 'decoration' && typeof UserProps !== 'undefined') browser.append(makePropMount());
       else if (typeof UserProps !== 'undefined') {   // the door to MAKE A PROP from the other shelves: one click to FURNITURE with the field focused
         const door = document.createElement('button'); door.type = 'button'; door.className = 'bb sm refit-makeprop-door';
-        door.innerHTML = '<b>MAKE A PROP</b><small>Type any object. StarNet draws it in the station\u2019s style.</small>';
+        door.innerHTML = '<b>MAKE A PROP</b><small>Type any object. Vultron draws it in the station\u2019s style.</small>';
         door.onclick = () => { makeOpen = true; chooseLibrarySection('decoration'); setTimeout(() => { const f = root && root.querySelector('#refit-makeprop-input'); if (f) f.focus(); }, 0); sfx('click'); };
         browser.append(door);
       }
@@ -1769,7 +1769,7 @@ const Build = (() => {
     });
     setHint();
   }
-  /* ---------- THE HAND (2026-10-10 — Andrew: "fully polish and integrate this into starnet", from his build-mode prototype) ----------
+  /* ---------- THE HAND (2026-10-10 — Andrew: "fully polish and integrate this into vultron", from his build-mode prototype) ----------
      Building a line is DRAGGING now, the way the prototype (scratchpad proto/build-mode-proto.html) feels: drag a machine and a belt
      follows the pointer to wherever you let go; drag the middle of a belt and it branches; let go on empty floor and the dock offers
      the pieces that fit there. What you HOLD is a sub-state of SELECT — never an eleventh tool: `hand` is the piece the next click
@@ -2432,7 +2432,7 @@ const Build = (() => {
       const c = Pipeline.lineComponents(st.projectGeometry()).find(x => x.props.indexOf(propId) >= 0);
       if (!c) return null;
       let text = '';
-      try { const o = JSON.parse(localStorage.getItem('starnet.refit.wftests.' + stationKeyOf(st)) || '{}'); const j = o && o.__jobs && o.__jobs[c.key]; if (typeof j === 'string') text = j.trim().slice(0, 2000); } catch (e) {}
+      try { const o = JSON.parse(localStorage.getItem('vultron.refit.wftests.' + stationKeyOf(st)) || '{}'); const j = o && o.__jobs && o.__jobs[c.key]; if (typeof j === 'string') text = j.trim().slice(0, 2000); } catch (e) {}
       return { line: c.key, text };
     } catch (e) { return null; }
   }
@@ -2925,7 +2925,7 @@ const Build = (() => {
       const setup = document.createElement('button'); setup.className='bb'; setup.textContent='SET UP ' + String(current.title).toUpperCase();
       setup.onclick=openPresetExample; g.querySelector('.station-build-actions').prepend(setup);
     }
-    const backupKey = 'starnet.layoutBackup.' + station.doc().meta.createdAt;
+    const backupKey = 'vultron.layoutBackup.' + station.doc().meta.createdAt;
     let selected = null, armed = false, openSeq = 0;
     /* community pictures paint when their card is near the visible part of the sheet: a geometry check on a short timer
        (layout is always current; an observer or scroll event needs the page's render steps, which a hidden window skips) */
@@ -3038,13 +3038,13 @@ const Build = (() => {
      What it says next follows what is actually known: the cloud took it, the cloud refused it (nothing was stored),
      or no answer came back (it may have arrived: check before sending again). A result that lands after the sheet was
      closed still reaches the Commander, as a station notice. */
-  const MAP_CREDIT_KEY = 'starnet.communityMapCredit';
+  const MAP_CREDIT_KEY = 'vultron.communityMapCredit';
   function shareOutcomeText(res, what) {
     if (res.ok) return '';
-    if (res.outcome === 'unknown') return (res.error ? res.error + ' ' : '') + 'This station cannot tell whether the ' + what + ' arrived. Check your account page on account.starnetos.com before you send it again.';
-    if (res.linked === false) return 'Link this station to your StarNet account first (STORE › LINK STATION). A free account works. Nothing was shared.';
+    if (res.outcome === 'unknown') return (res.error ? res.error + ' ' : '') + 'This station cannot tell whether the ' + what + ' arrived. Check your account page on account.vultron.vercel.app before you send it again.';
+    if (res.linked === false) return 'Link this station to your Vultron account first (STORE › LINK STATION). A free account works. Nothing was shared.';
     if (res.code === 'token_rejected') return res.error;
-    return (res.error || 'StarNet refused it.') + ' Nothing was shared.';
+    return (res.error || 'Vultron refused it.') + ' Nothing was shared.';
   }
   function openShareToCommunity(g, status, shareKey) {
     const section = g.querySelector('[data-build-section="shared"]');
@@ -3087,13 +3087,13 @@ const Build = (() => {
       const shown = panel.isConnected && g.isConnected;
       if (res.ok && res.submission) {
         const name = res.submission.title || fields.title;
-        if (!shown) { if (typeof StationUI !== 'undefined' && StationUI.notify) StationUI.notify('Sent ' + name + ' for review. Your Maps tab on account.starnetos.com shows where it stands.', 'good'); return; }
+        if (!shown) { if (typeof StationUI !== 'undefined' && StationUI.notify) StationUI.notify('Sent ' + name + ' for review. Your Maps tab on account.vultron.vercel.app shows where it stands.', 'good'); return; }
         close();
-        status.innerHTML = '<span>Sent for review: <b>' + esc(name) + '</b>.</span><span class="station-build-need">A person looks at it next. Once it is approved it appears in the community gallery with your name on it. Your Maps tab on account.starnetos.com shows where it stands.</span>';
+        status.innerHTML = '<span>Sent for review: <b>' + esc(name) + '</b>.</span><span class="station-build-need">A person looks at it next. Once it is approved it appears in the community gallery with your name on it. Your Maps tab on account.vultron.vercel.app shows where it stands.</span>';
         sfx('click');
         return;
       }
-      const text = shareOutcomeText(res.ok ? { ok: false, outcome: 'unknown', error: 'StarNet gave no readable answer.' } : res, 'map');
+      const text = shareOutcomeText(res.ok ? { ok: false, outcome: 'unknown', error: 'Vultron gave no readable answer.' } : res, 'map');
       if (!shown) { if (typeof StationUI !== 'undefined' && StationUI.notify) StationUI.notify(fields.title + ': ' + text, 'warn'); return; }
       send.textContent = 'SEND FOR REVIEW';
       send.disabled = unlinked || res.linked === false;
@@ -3108,7 +3108,7 @@ const Build = (() => {
       if (!c || c.linked !== false || !panel.isConnected) return;
       unlinked = true; send.disabled = true;
       const p = document.createElement('p'); p.className = 'sbs-travel sbs-link';
-      p.textContent = 'This station is not linked to a StarNet account yet. Link it first: STORE › LINK STATION (a free account works), then open SHARE TO COMMUNITY again.';
+      p.textContent = 'This station is not linked to a Vultron account yet. Link it first: STORE › LINK STATION (a free account works), then open SHARE TO COMMUNITY again.';
       panel.querySelector('.sbs-keys').before(p);
     });
   }
@@ -4384,7 +4384,7 @@ const Build = (() => {
     try { const d = st && st.doc && st.doc(); if (d && d.meta && d.meta.createdAt) k = String(d.meta.createdAt); } catch (e) {}
     return k;
   }
-  const RIDE_KEY = () => 'starnet.refit.firstride.' + stationKeyOf(station);
+  const RIDE_KEY = () => 'vultron.refit.firstride.' + stationKeyOf(station);
   function rideSeen() { try { return !!localStorage.getItem(RIDE_KEY()); } catch (e) { return true; } }   // broken storage → never risk a repeat
   function markRide() { try { localStorage.setItem(RIDE_KEY(), '1'); } catch (e) {} }
   let ridePending = false, rideTimer = 0, rideAgentId = null, ridePrevReach = null;
@@ -4483,12 +4483,12 @@ const Build = (() => {
      its card, ② in view, until a real start or a SEND TO into it exists (2026-10-12).
      Line identity + membership come from Pipeline.lineComponents (key = smallest member prop id,
      stable in the save); shipped/dismissal persist in localStorage beside the first-ride flag. */
-  const FIN_KEY = st => 'starnet.refit.finline.' + stationKeyOf(st || station);
+  const FIN_KEY = st => 'vultron.refit.finline.' + stationKeyOf(st || station);
   /* UPGRADE, ONCE PER STATION (2026-10-12): older builds marked a line `done` when a product crate sank at its chute, and the old
      FIRST SHIP and the card's retirement both answered to it. A line an older build already delivered on has had its moment, so
      its `done` is read once as `shipped` — FIRST SHIP spent, never a second gold toast after the upgrade. The marker keeps a `done`
      written later from ever being honoured (nothing here writes one any more: a crate proves no shipment). */
-  const FIN_MIG = st => 'starnet.refit.finline.v2.' + stationKeyOf(st || station);
+  const FIN_MIG = st => 'vultron.refit.finline.v2.' + stationKeyOf(st || station);
   const finMigrated = new Set();
   function finRead(st) {
     let o;
@@ -4522,7 +4522,7 @@ const Build = (() => {
      probe is forbidden: when the seam exists a POST IS the paid sample dispatch. Fails SAFE: on any
      doubt the button renders disabled ("coming online soon") and no request can spend anything. */
   let finSample = null;   // null = unprobed/in flight · false = absent · true = present
-  const finApi = p => ((typeof window !== 'undefined' && window.__STARNET_API__) ? window.__STARNET_API__ : '') + p;
+  const finApi = p => ((typeof window !== 'undefined' && window.__VULTRON_API__) ? window.__VULTRON_API__ : '') + p;
   function probeSampleSeam() {
     if (finSample !== null || typeof fetch === 'undefined') return;
     try {
@@ -4613,7 +4613,7 @@ const Build = (() => {
      brings it back; ✕ still dismisses it forever for Commanders who know the drill. */
   // PER STATION, like every other one-shot here (stationKeyOf) — this shipped with no suffix at all, so
   // dismissing the card on one station silently dismissed it on every station the Commander ever builds.
-  const ORDERS_KEY = () => 'starnet.refit.orders.dis.' + stationKeyOf(station);
+  const ORDERS_KEY = () => 'vultron.refit.orders.dis.' + stationKeyOf(station);
   const ordersDismissed = () => { try { return !!localStorage.getItem(ORDERS_KEY()); } catch (e) { return false; } };
   let ordersSeenDone = null;   // which steps were already done last render (so a NEW completion can chime)
 
@@ -5916,7 +5916,7 @@ const Build = (() => {
     if (groupIds.length < 2 && !beltSel()) return false;
     return duplicateClip(ev);
   }
-  /* ---------- THE HAND, part 2 (2026-10-11 — Andrew: "fully polish and integrate this into starnet", from his prototype) ----------
+  /* ---------- THE HAND, part 2 (2026-10-11 — Andrew: "fully polish and integrate this into vultron", from his prototype) ----------
      BELTS IN THE BOX: a box takes the belts it crosses as well as the machines it touches — every link with a tile inside it,
      every loose belt tile, and every link whose two ends it took — and they are part of the selection: drawn gold, gone with
      DELETE (whole, every tile no other link rides), carried by COPY. A WHOLE LINE: a double-click (a double-tap, or the card's
@@ -9671,7 +9671,7 @@ const Build = (() => {
 
   function sfx(n) { if (typeof SFX !== 'undefined' && SFX[n]) SFX[n](); }
 
-  // DEV-ONLY test hook (gated on window.__STARNET_DEV__) — lets the audit harness prove the
+  // DEV-ONLY test hook (gated on window.__VULTRON_DEV__) — lets the audit harness prove the
   // object=capability moat (place a dish → web cap appears) by placing through the REAL
   // station.addProp path at a validated tile, instead of simulating fragile canvas-drag pixel
   // coordinates. Never attached in a shipped build (the dev flag is never set there).
@@ -9911,11 +9911,11 @@ const Build = (() => {
   // preview and thumbnails; selection, orientation and station data stay intact.
   if (typeof window !== 'undefined' && window.addEventListener) {
     // a made prop joined (or its art arrived): repaint the catalog so MADE BY YOU and its tile appear
-    window.addEventListener('starnet:userprops-changed', () => {
+    window.addEventListener('vultron:userprops-changed', () => {
       if (!root || !(tool === 'prop' || (tool === 'select' && buildGroup === 'props'))) return;
       renderPalette();
     });
-    window.addEventListener('starnet:prop-art-ready', () => {
+    window.addEventListener('vultron:prop-art-ready', () => {
       mountOrder = null; // Loaded support geometry can change host-relative sorting without an edit.
       if (!root) return;
       const host = root.querySelector('#refit-selected-prop');
@@ -9958,7 +9958,7 @@ const Build = (() => {
     // (org P18) the shelf's FOR YOUR GOAL line, for WORKFLOWS › NEW WORKFLOW to lead with (null when no belief names a shape)
     goalLine: () => { const g = goalLine(); return g ? { id: g.bp.id, why: g.why, quote: g.quote } : null; },
     nagWhy: valWhy };   // nagLabel: the floor's own nag copy for a compiler code (ROUTINES RUN NOW refusal reads it); nagWhy: the full fix sentence the hover card + Workflow panel say (station.layout reads it)
-  if (typeof window !== 'undefined' && window.__STARNET_DEV__) api.__test__ = __test__;
+  if (typeof window !== 'undefined' && window.__VULTRON_DEV__) api.__test__ = __test__;
   return api;
 })();
 

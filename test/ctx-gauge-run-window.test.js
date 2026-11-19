@@ -120,8 +120,8 @@ function gauge(cs) {
 
   // THE CARD PICKED ON THIS SCREEN decides the route, not the station's stored provider. The REAL harness lookups
   // (catalogModel prefers getProv(), which selectProviderUI never sets: only WAKE does) answer for the STATION's
-  // route. StarNet credits and OpenRouter list the same id, but the sidecar's /api/models gives them different
-  // runWindow: starnet is metered (the 200k tier), openrouter books the billed cost (BILLED_COST_ROUTES, the whole
+  // route. Vultron credits and OpenRouter list the same id, but the sidecar's /api/models gives them different
+  // runWindow: vultron is metered (the 200k tier), openrouter books the billed cost (BILLED_COST_ROUTES, the whole
   // window). genesisModels is what Harness.listModels(pickedProvider) returned (normalized rows carry runWindow).
   const harness = read('frontend/app/harness.js');
   const lookups = ['  function catalogModel(id) {', '  function contextLimitOf(id) {', '  function runWindowOf(id) {', '  function priceOf(id) {']
@@ -129,7 +129,7 @@ function gauge(cs) {
   const OR_ID = 'google/gemini-2.5-pro';
   const ROWS = {
     openrouter: [{ id: OR_ID, name: OR_ID, context_length: 1048576, runWindow: 1048576, pricing: null }],
-    starnet: [{ id: OR_ID, name: OR_ID, context_length: 1048576, runWindow: 200000, pricing: null }]
+    vultron: [{ id: OR_ID, name: OR_ID, context_length: 1048576, runWindow: 200000, pricing: null }]
   };
   function routedHint(stationProv, picked) {
     const modelsByProv = {};
@@ -145,11 +145,11 @@ function gauge(cs) {
   }
   const TIER = 'remembers up to 200k tokens of chat (the model can hold 1M, but it bills a higher rate for a prompt over 200k)';
   const WHOLE = 'remembers up to 1M tokens of chat';
-  A.eq(routedHint('starnet', 'openrouter'), WHOLE,
-    'a StarNet-credits station picking the OPENROUTER card: an OpenRouter run keeps the whole window, so no 200k tier is named');
-  A.eq(routedHint('openrouter', 'starnet'), TIER,
-    'an OpenRouter station (the default) picking the STARNET card: a StarNet run works in 200k, so the hint names it');
-  A.eq([routedHint('starnet', 'starnet'), routedHint('openrouter', 'openrouter')], [TIER, WHOLE], 'the station and the card agree: unchanged');
+  A.eq(routedHint('vultron', 'openrouter'), WHOLE,
+    'a Vultron-credits station picking the OPENROUTER card: an OpenRouter run keeps the whole window, so no 200k tier is named');
+  A.eq(routedHint('openrouter', 'vultron'), TIER,
+    'an OpenRouter station (the default) picking the VULTRON card: a Vultron run works in 200k, so the hint names it');
+  A.eq([routedHint('vultron', 'vultron'), routedHint('openrouter', 'openrouter')], [TIER, WHOLE], 'the station and the card agree: unchanged');
   // a picked catalog row with no runWindow (the codex sign-in list on the OPENAI card: rows are { id, name }) names no
   // tier from ANOTHER route's catalog (illustrative numbers: the rule, not a real gpt-5.5 tier)
   {

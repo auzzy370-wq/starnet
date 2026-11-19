@@ -28,6 +28,6 @@ const tick=()=>new Promise(r=>setImmediate(r));
  degraded=reason;el('btn-unreachable-retry').onclick();await tick();await tick();el('btn-unreachable-report').onclick();assert.match(report.kind,new RegExp(code));assert.equal(report.error,reason,'copy receives exact measured reason');A.ok(!el('unreachable-code').innerHTML.includes('<probe>'),'reason is not interpreted as markup');A.ok(el('unreachable-code').innerHTML.includes(shown),'HTML entities remain literal');
  }
  degraded='';el('btn-unreachable-retry').onclick();await tick();await tick();assert.match(el('unreachable-code').innerHTML,/SAVE-READ/,'cleared degradation reveals latest save result');el('btn-unreachable-report').onclick();assert.match(report.kind,/SAVE-READ/,'copy clears prior degraded diagnosis');
- next={schema:'starnet.save'};el('btn-unreachable-retry').onclick();await tick();assert.equal(reloads,1,'definitive recovered save reloads once');
+ next={schema:'vultron.save'};el('btn-unreachable-retry').onclick();await tick();assert.equal(reloads,1,'definitive recovered save reloads once');
  A.report('save recovery diagnosis: retry codes, report context, degraded precedence and successful recovery');
 })().catch(e=>{console.error(e);process.exitCode=1});

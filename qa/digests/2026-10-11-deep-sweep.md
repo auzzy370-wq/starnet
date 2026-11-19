@@ -1,4 +1,4 @@
-# Deep sweep since StarNet 0.13.2 — 11 October 2026
+# Deep sweep since Vultron 0.13.2 — 11 October 2026
 
 All 48 open GitHub issues were reconciled against current source, existing Claude work and the repository behavior contract. This sweep adds repairs for ten independently recorded defects; it does not close all 48 issues or establish customer recovery.
 
@@ -42,11 +42,11 @@ Machine readiness: NOT READY. NOT PRODUCT PERFECT.
 
 ## Remaining work
 
-- Installed data preservation and erase/restart acceptance, macOS checkpoint soak, and the native security matrix. Issues [#107](https://github.com/androoAGI/starnet/issues/107), [#101](https://github.com/androoAGI/starnet/issues/101), [#91](https://github.com/androoAGI/starnet/issues/91).
-- Exact sanitized financial/provider incident reproduction; no refund or customer-recovery claim from source fixes alone. Issues [#53](https://github.com/androoAGI/starnet/issues/53), [#106](https://github.com/androoAGI/starnet/issues/106), [#98](https://github.com/androoAGI/starnet/issues/98), [#99](https://github.com/androoAGI/starnet/issues/99).
-- Original Etsy attachment and Telegram/delegation/Drive receipt chains. Issues [#104](https://github.com/androoAGI/starnet/issues/104), [#57](https://github.com/androoAGI/starnet/issues/57), [#28](https://github.com/androoAGI/starnet/issues/28).
-- Measured provider/CLI efficiency, PR103 reconciliation before duplication, and installed overnight WebView2 soak. Issues [#105](https://github.com/androoAGI/starnet/issues/105), [#68](https://github.com/androoAGI/starnet/issues/68), [#69](https://github.com/androoAGI/starnet/issues/69).
-- Durable webhook lifecycle and explicit remaining feature/product decisions. Issues [#97](https://github.com/androoAGI/starnet/issues/97), [#77](https://github.com/androoAGI/starnet/issues/77), [#46](https://github.com/androoAGI/starnet/issues/46).
+- Installed data preservation and erase/restart acceptance, macOS checkpoint soak, and the native security matrix. Issues [#107](https://github.com/YOUR-GITHUB-USER/vultron/issues/107), [#101](https://github.com/YOUR-GITHUB-USER/vultron/issues/101), [#91](https://github.com/YOUR-GITHUB-USER/vultron/issues/91).
+- Exact sanitized financial/provider incident reproduction; no refund or customer-recovery claim from source fixes alone. Issues [#53](https://github.com/YOUR-GITHUB-USER/vultron/issues/53), [#106](https://github.com/YOUR-GITHUB-USER/vultron/issues/106), [#98](https://github.com/YOUR-GITHUB-USER/vultron/issues/98), [#99](https://github.com/YOUR-GITHUB-USER/vultron/issues/99).
+- Original Etsy attachment and Telegram/delegation/Drive receipt chains. Issues [#104](https://github.com/YOUR-GITHUB-USER/vultron/issues/104), [#57](https://github.com/YOUR-GITHUB-USER/vultron/issues/57), [#28](https://github.com/YOUR-GITHUB-USER/vultron/issues/28).
+- Measured provider/CLI efficiency, PR103 reconciliation before duplication, and installed overnight WebView2 soak. Issues [#105](https://github.com/YOUR-GITHUB-USER/vultron/issues/105), [#68](https://github.com/YOUR-GITHUB-USER/vultron/issues/68), [#69](https://github.com/YOUR-GITHUB-USER/vultron/issues/69).
+- Durable webhook lifecycle and explicit remaining feature/product decisions. Issues [#97](https://github.com/YOUR-GITHUB-USER/vultron/issues/97), [#77](https://github.com/YOUR-GITHUB-USER/vultron/issues/77), [#46](https://github.com/YOUR-GITHUB-USER/vultron/issues/46).
 
 Native Linux/macOS ownership, actual Windows foreign-user/PID-reuse scenarios, a new signed installer and upgrade, Qwen/WSL, overnight WebView2 performance, original customer accounts and reporter recovery remain unverified. Windows native owner checks passed; adversarial ownership cases were injected. No real subscription cost measurements or customer refund conclusions are claimed.
 

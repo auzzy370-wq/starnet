@@ -19,7 +19,7 @@ const cp = require('child_process');
 const { makePluginRuntime } = require('../sidecar/plugin-runtime.js');
 const { makePluginToolDefs, pluginToolName } = require('../sidecar/plugin-tools.js');
 
-const DIR = path.join(os.tmpdir(), 'starnet-plugin-runtime-' + process.pid);
+const DIR = path.join(os.tmpdir(), 'vultron-plugin-runtime-' + process.pid);
 const WORKER = path.resolve(__dirname, '..', 'sidecar', 'plugin-worker.js');
 
 async function plugin(id, source) {
@@ -624,7 +624,7 @@ async function plugin(id, source) {
     A.eq(d.capability, 'plugin:pr-radar', 'granted by the plugin capability only');
     A.eq(d.impact, 'external-unknown', 'unknown external effects: fail closed like a connector');
     A.ok(d.requiresConsent === true && d.network === true, 'consent-gated and network-classified');
-    A.ok(/^\[PR Radar plugin tool; written by that plugin, not by StarNet\]/.test(d.description), 'the description says who wrote it first');
+    A.ok(/^\[PR Radar plugin tool; written by that plugin, not by Vultron\]/.test(d.description), 'the description says who wrote it first');
     const r = await d.run({}, { agentId: 'nova', runId: 'r1' });
     A.ok(/BEGIN EXTERNAL|EXTERNAL/.test(r.content) && /ignore previous instructions/.test(r.content), 'the result is fenced as external content');
     const bad = makePluginToolDefs({ pluginId: 'p', pluginName: 'P', tools: [{ name: 'fail' }], call: async () => { throw new Error('nope <script>'); } })[0];

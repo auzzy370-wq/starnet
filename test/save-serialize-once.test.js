@@ -63,7 +63,7 @@ function station({ keepPosted = true, big = BIG, workstreams = null } = {}) {
   ].join('\n'), ctx, { filename: 'app.js#persist' });
   return { Save: ctx.Save, CloudSave: ctx.CloudSave, cache, posted: () => posted, setAck: a => { ack = a; },
     // App.persist as the app runs it; returns the string the cache was given (Save.write's own)
-    persist: c => { convs = c; const ok = ctx.persist(); return ok ? cache.get('starnet.save') : null; },
+    persist: c => { convs = c; const ok = ctx.persist(); return ok ? cache.get('vultron.save') : null; },
     counts: () => ({ stringify: bigStringify, parse: bigParse }), reset: () => { bigStringify = 0; bigParse = 0; } };
 }
 // a ~1 MB save shaped like a real one (the workstreams carry the bulk); `text` lets a test make it two-byte
@@ -95,8 +95,8 @@ function oldAck(cachedRaw, sentDoc, revision, body) {
     const c = s.counts();
     A.ok(c.stringify <= 3, 'one App.persist burst stringifies the whole save at most 3 times (was 6, and 6 again if persist stops handing over the string Save.write made): ' + c.stringify);
     A.ok(c.parse <= 1, 'and parses it at most once (was 2): ' + c.parse);
-    A.eq(s.cache.get('starnet.save'), expected, 'the cache bytes after the ACK are EXACTLY what the old compare path wrote');
-    const landed = JSON.parse(s.cache.get('starnet.save'));
+    A.eq(s.cache.get('vultron.save'), expected, 'the cache bytes after the ACK are EXACTLY what the old compare path wrote');
+    const landed = JSON.parse(s.cache.get('vultron.save'));
     A.ok(landed._saveDirty === false && landed._saveRevision === 7 && landed.updatedAt === 1760000000123, 'the cached save is clean, at the acknowledged revision and time');
     A.eq(JSON.stringify({ ...JSON.parse(s.posted()), _saveClient: undefined, _saveRevision: undefined }), JSON.stringify({ ...JSON.parse(raw), _saveClient: undefined, _saveRevision: undefined }), 'the POSTed save is the same save');
   }
@@ -109,7 +109,7 @@ function oldAck(cachedRaw, sentDoc, revision, body) {
     const sent = JSON.parse(raw); sent._saveRevision = 0; sent._saveClient = 'client-1';
     const expected = oldAck(raw, sent, 3, {});
     await s.CloudSave.flush({ force: true });
-    A.eq(s.cache.get('starnet.save'), expected, 'no updatedAt in the ACK: the same bytes the old path wrote');
+    A.eq(s.cache.get('vultron.save'), expected, 'no updatedAt in the ACK: the same bytes the old path wrote');
   }
 
   /* the cache moved on (another window / a later write) before the ACK: the compare path decides, as before */
@@ -118,10 +118,10 @@ function oldAck(cachedRaw, sentDoc, revision, body) {
     const raw = s.persist(bigConvs());
     const other = JSON.parse(raw); other.workstreams[0].title = 'edited elsewhere';
     const otherRaw = JSON.stringify(other);
-    s.cache.set('starnet.save', otherRaw);
+    s.cache.set('vultron.save', otherRaw);
     s.reset();
     await s.CloudSave.flush({ force: true });
-    A.eq(s.cache.get('starnet.save'), otherRaw, 'a cache that holds a different save is left alone (the old compare path)');
+    A.eq(s.cache.get('vultron.save'), otherRaw, 'a cache that holds a different save is left alone (the old compare path)');
     A.ok(s.counts().parse >= 1, 'that case still parses and compares, exactly as before');
   }
 
@@ -130,12 +130,12 @@ function oldAck(cachedRaw, sentDoc, revision, body) {
     const s = station();
     const envelope = s.Save.envelope(Object.assign({ agent: { id: 'agent' } }, bigConvs()));
     const doc = s.Save.write(envelope); s.Save.takeWriteRaw();
-    const raw = s.cache.get('starnet.save');
+    const raw = s.cache.get('vultron.save');
     s.CloudSave.push(doc, { cacheFailed: false });
     const sent = JSON.parse(raw); sent._saveRevision = 0; sent._saveClient = 'client-1';
     const expected = oldAck(raw, sent, 7, { updatedAt: 1760000000123 });
     await s.CloudSave.flush({ force: true });
-    A.eq(s.cache.get('starnet.save'), expected, 'without raw: the old path, the same bytes');
+    A.eq(s.cache.get('vultron.save'), expected, 'without raw: the old path, the same bytes');
   }
 
   /* a queued newer save while one is in flight: only the newest becomes clean (the existing rule) */
@@ -146,9 +146,9 @@ function oldAck(cachedRaw, sentDoc, revision, body) {
     const c2 = bigConvs(); c2.workstreams[1].title = 'newer';
     const raw2 = s.persist(c2);
     await first;
-    A.eq(s.cache.get('starnet.save'), raw2, 'an ACK for an older save never touches the newer cached save');
+    A.eq(s.cache.get('vultron.save'), raw2, 'an ACK for an older save never touches the newer cached save');
     await s.CloudSave.flush({ force: true });
-    const landed = JSON.parse(s.cache.get('starnet.save'));
+    const landed = JSON.parse(s.cache.get('vultron.save'));
     A.ok(landed._saveDirty === false && landed.workstreams[1].title === 'newer', 'the newest save becomes clean on its own ACK');
   }
 
@@ -164,7 +164,7 @@ function oldAck(cachedRaw, sentDoc, revision, body) {
     s.reset();
     A.eq(await s.CloudSave.flush({ force: true }), true, 'the retry is acknowledged');
     A.ok(s.counts().parse >= 1, 'the retried doc no longer holds its string: the ACK compares the old way (a parse)');
-    A.eq(s.cache.get('starnet.save'), expected, '…writing the same bytes the old path wrote');
+    A.eq(s.cache.get('vultron.save'), expected, '…writing the same bytes the old path wrote');
   }
 
   /* Save.write keeps its contract: the doc (or null), the same bytes in the cache */
@@ -172,8 +172,8 @@ function oldAck(cachedRaw, sentDoc, revision, body) {
     const s = station();
     const env = s.Save.envelope({ agent: { id: 'agent' } });
     const doc = s.Save.write(env);
-    A.eq(s.cache.get('starnet.save'), JSON.stringify(doc), 'Save.write caches JSON.stringify(doc), as before');
-    A.eq(s.Save.takeWriteRaw(), s.cache.get('starnet.save'), 'takeWriteRaw is that same string');
+    A.eq(s.cache.get('vultron.save'), JSON.stringify(doc), 'Save.write caches JSON.stringify(doc), as before');
+    A.eq(s.Save.takeWriteRaw(), s.cache.get('vultron.save'), 'takeWriteRaw is that same string');
     A.eq(s.Save.takeWriteRaw(), null, '…handed over once');
   }
 

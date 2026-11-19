@@ -237,7 +237,7 @@ A.eq(runTeeView('agent.reasoning', { agentId: 'a1', runId: 'r1', on: true }), nu
     const apiUrl = x => x, fetchSnapshot = () => { snapshots++; readyOrder.push('snapshot'); };
     // FIRST SHIP's own reset (world.js forgetShipBase) — the one collaborator the bridge's replay completion calls besides the snapshot
     const forgetShipBase = () => { readyOrder.push('forget-ship-base'); };
-    const window = { __STARNET_API_TOKEN__: '' };
+    const window = { __VULTRON_API_TOKEN__: '' };
     const ApiTicket = { sseUrl: q => '/api/channels/events?' + q + '&ticket=T' + (++minted) };   // app/apiticket.js stand-in
     let minted = 0;
     const performance = { now: () => 0 };

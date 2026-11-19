@@ -58,10 +58,10 @@ const textText = c => typeof c === 'string' ? c : (Array.isArray(c) ? c.map(p =>
   await new Promise(r => llm.listen(0, HOST, r));
   const env = {};
   for (const k of Object.keys(process.env)) {
-    if (/^(OPENROUTER|ANTHROPIC|OPENAI|GEMINI|GOOGLE_API|XAI|GROQ|MISTRAL|DEEPSEEK|TOGETHER|FIREWORKS|PERPLEXITY|CEREBRAS|KIMI|ELEVENLABS|STARNET_|SKYNET_)/i.test(k)) env[k] = '';
+    if (/^(OPENROUTER|ANTHROPIC|OPENAI|GEMINI|GOOGLE_API|XAI|GROQ|MISTRAL|DEEPSEEK|TOGETHER|FIREWORKS|PERPLEXITY|CEREBRAS|KIMI|ELEVENLABS|VULTRON_|SKYNET_)/i.test(k)) env[k] = '';
   }
-  Object.assign(env, { SKYNET_FULL_ACCESS: '0', STARNET_FULL_ACCESS: '0', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0', SKYNET_THREAD_MINE: '0', STARNET_LIVE_PRICES: '0' });
-  const fixture = SidecarFixture.create({ prefix: 'starnet-prompt-on-demand-', timeoutMs: 20000, env });
+  Object.assign(env, { SKYNET_FULL_ACCESS: '0', VULTRON_FULL_ACCESS: '0', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0', SKYNET_THREAD_MINE: '0', VULTRON_LIVE_PRICES: '0' });
+  const fixture = SidecarFixture.create({ prefix: 'vultron-prompt-on-demand-', timeoutMs: 20000, env });
   const starter = [];
   for (const p of WM.starterDoc().props) { const c = WM.capForProp(p.t); if (c && c !== 'computer' && c !== 'connector' && starter.indexOf(c) < 0) starter.push(c); }
   async function run(placed, scripted) {
@@ -90,12 +90,12 @@ const textText = c => typeof c === 'string' ? c : (Array.isArray(c) ? c.map(p =>
       A.ok(sys.indexOf('- ' + s.name + ' [library:' + s.slug + '] -- ' + s.description) >= 0, s.slug + ': indexed');
       A.ok(sys.indexOf(s.body) < 0, s.slug + ': body NOT in the system prompt');
     }
-    A.ok(sys.indexOf(M.starnetManualIndex()) >= 0, 'the manual rides in its TOC form (rules inline)');
+    A.ok(sys.indexOf(M.vultronManualIndex()) >= 0, 'the manual rides in its TOC form (rules inline)');
     A.ok(sys.indexOf(M.manualSection('navigation')) < 0 && sys.indexOf(M.manualSection('troubleshooting')) < 0 && sys.indexOf(M.manualSection('props')) < 0,
       'no manual reference section body is in the system prompt');
     A.ok(sys.indexOf('<capabilities_ground_truth>') >= 0, 'the capability ground truth stays');
     const host = hostText(first.messages);   // the per-run id rides the run-context note, after the system prompt
-    A.ok(host.lastIndexOf('Run id:') > host.indexOf('## INSTALLED SKILLS') && host.lastIndexOf('Run id:') > host.indexOf('</starnet_operator_manual>'),
+    A.ok(host.lastIndexOf('Run id:') > host.indexOf('## INSTALLED SKILLS') && host.lastIndexOf('Run id:') > host.indexOf('</vultron_operator_manual>'),
       'the per-run id still rides after the byte-stable blocks (prefix cache)');
     console.log('[on-demand] default-floor system prompt: ' + sys.length + ' chars');
 
@@ -114,7 +114,7 @@ const textText = c => typeof c === 'string' ? c : (Array.isArray(c) ? c.map(p =>
     A.ok(toolNames(b.requests[0] || {}).indexOf('skill_view') < 0, 'precondition: skill_view is NOT on this run\'s wire');
     A.ok(bsys.indexOf('[library:') < 0, 'no library: index line where skill.view cannot be called');
     A.ok(bsys.indexOf('### ' + PLAN.name + ' -- ' + PLAN.description + '\n' + PLAN.body) >= 0, 'the recipe body stays INLINE on that run');
-    A.ok(toolNames(b.requests[0] || {}).indexOf('manual_read') >= 0 && bsys.indexOf(M.starnetManualIndex()) >= 0, 'manual_read rides the computer, so the manual TOC form holds there too');
+    A.ok(toolNames(b.requests[0] || {}).indexOf('manual_read') >= 0 && bsys.indexOf(M.vultronManualIndex()) >= 0, 'manual_read rides the computer, so the manual TOC form holds there too');
   } finally {
     await fixture.dispose();
     await new Promise(r => llm.close(r));

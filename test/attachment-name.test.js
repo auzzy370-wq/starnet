@@ -180,7 +180,7 @@ const branches = {
 };
 
 (async () => {
-  const BASE = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-attachment-name-'));
+  const BASE = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-attachment-name-'));
   const worlds = [];
   try {
     for (const [label, produce] of Object.entries(branches)) await line('expansion: ' + label, name => produce(name));

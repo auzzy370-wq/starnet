@@ -395,7 +395,7 @@
     // sizing follow one rule set; only the transport differs.
     const isCodex = protocol === 'codex-responses';
     const gptImageRoute = protocol === 'openai-images' || isCodex;
-    const providerLabel = or.provider === 'starnet' ? 'StarNet' : (or.provider === 'openai' ? 'OpenAI' : (isCodex ? 'ChatGPT' : 'OpenRouter'));
+    const providerLabel = or.provider === 'vultron' ? 'Vultron' : (or.provider === 'openai' ? 'OpenAI' : (isCodex ? 'ChatGPT' : 'OpenRouter'));
     const getCodexToken = typeof or.getToken === 'function' ? or.getToken : null;
     const renewCodexToken = typeof or.renewToken === 'function' ? or.renewToken : null;
     // #118: the run host's view of the image host (see codexHostOrder). codexHostModels: async () => the ids the SAME
@@ -432,7 +432,7 @@
       ? (gptImageSlug.test(configuredImageModel) ? configuredImageModel : OPENAI_IMAGE_MODEL)
       : (configuredImageModel || DEFAULT_IMAGE_MODEL);
     /* The vision model is the RUN's own model (or.model) by default — but never one the run's catalog calls text-only
-       (2026-10-23, StarNet Cloud logs: image_analyze / browser.vision sent the picture to the run's text-only model on the
+       (2026-10-23, Vultron Cloud logs: image_analyze / browser.vision sent the picture to the run's text-only model on the
        studio route and got 404 "No endpoints found that support image input", every call). deps.runModelSeesImages(runModel)
        is the run's primary provider's supportsImages (the catalog this model came from, not a fallback provider's) about THIS model (the one posted below; the host's live model can move on after
        this route was built, and a check of that one judged a model this route never posts): false = the catalog says
@@ -492,11 +492,11 @@
     }
     async function orPost(body, timeoutMs, parentSignal) {
       checkCancelled(parentSignal);
-      if (!apiKey) throw new Error('STUDIO image generation is unavailable: no media connection is configured. Open SETTINGS and connect an OpenRouter API key for image generation, or link this station to your StarNet account, then retry; no image was produced.');
+      if (!apiKey) throw new Error('STUDIO image generation is unavailable: no media connection is configured. Open SETTINGS and connect an OpenRouter API key for image generation, or link this station to your Vultron account, then retry; no image was produced.');
       keyStillHeld();
       const res = await withTimeout(signal => doFetch(orUrl, {
         method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json', 'HTTP-Referer': 'https://starnet.local', 'X-Title': 'STARNET' },
+        headers: { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json', 'HTTP-Referer': 'https://vultron.local', 'X-Title': 'VULTRON' },
         body: JSON.stringify(body),
         signal
       }).then(async r => {
@@ -515,7 +515,7 @@
 
     async function openAIImagePost(body, timeoutMs, parentSignal) {
       checkCancelled(parentSignal);
-      if (!apiKey) throw new Error('STUDIO image generation is unavailable: no media connection is configured. Open SETTINGS and connect an OpenAI or OpenRouter API key for image generation, or link this station to your StarNet account, then retry; no image was produced.');
+      if (!apiKey) throw new Error('STUDIO image generation is unavailable: no media connection is configured. Open SETTINGS and connect an OpenAI or OpenRouter API key for image generation, or link this station to your Vultron account, then retry; no image was produced.');
       keyStillHeld();
       const res = await withTimeout(signal => doFetch(openAIImageUrl, {
         method: 'POST',
@@ -538,7 +538,7 @@
     // A non-2xx carries its status on the error so the caller can tell "this connection has no edits endpoint" apart.
     async function openAIEditPost(fields, ref, timeoutMs, parentSignal) {
       checkCancelled(parentSignal);
-      if (!apiKey) throw new Error('STUDIO image generation is unavailable: no media connection is configured. Open SETTINGS and connect an OpenAI or OpenRouter API key for image generation, or link this station to your StarNet account, then retry; no image was produced.');
+      if (!apiKey) throw new Error('STUDIO image generation is unavailable: no media connection is configured. Open SETTINGS and connect an OpenAI or OpenRouter API key for image generation, or link this station to your Vultron account, then retry; no image was produced.');
       keyStillHeld();
       const res = await withTimeout(signal => {
         const form = new FormData();
@@ -577,7 +577,7 @@
       const send = (token) => {
         const headers = {
           'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', 'Accept': 'text/event-stream',
-          'originator': 'codex_cli_rs', 'User-Agent': 'codex_cli_rs/0.0.0 (StarNet)'
+          'originator': 'codex_cli_rs', 'User-Agent': 'codex_cli_rs/0.0.0 (Vultron)'
         };
         const account = jwtAccountId(token);
         if (account) headers['ChatGPT-Account-ID'] = account;
@@ -892,9 +892,9 @@
         const billed = thisCall ? thisCall.charges : [], knownUsd = billed.reduce((t, c) => t + (Number(c.usd) || 0), 0);
         const costNote = !billed.length ? ''
           : billed.some(c => c.unpriced)
-            ? '\nCost: UNKNOWN' + (knownUsd > 0 ? ' (at least $' + knownUsd.toFixed(4) + ')' : '') + '. ' + providerLabel + ' reported no cost for this image and StarNet has no price for ' + model
+            ? '\nCost: UNKNOWN' + (knownUsd > 0 ? ' (at least $' + knownUsd.toFixed(4) + ')' : '') + '. ' + providerLabel + ' reported no cost for this image and Vultron has no price for ' + model
               + (knownUsd > 0 ? ', so only that $' + knownUsd.toFixed(4) + ' counts toward the spending limits' : ', so it adds nothing to the spending limits')
-              + ', and they cannot stop images like this one' + (spendStop && spendStop.unknownCap ? ' (StarNet stops a run at ' + spendStop.unknownCap + ' of them' + (spendStop.dayLimit ? ', and every run at ' + spendStop.dayLimit + ' in any 24 hours' : '') + ')' : '') + '. Do not describe it as free; the provider\'s own dashboard has the figure.'
+              + ', and they cannot stop images like this one' + (spendStop && spendStop.unknownCap ? ' (Vultron stops a run at ' + spendStop.unknownCap + ' of them' + (spendStop.dayLimit ? ', and every run at ' + spendStop.dayLimit + ' in any 24 hours' : '') + ')' : '') + '. Do not describe it as free; the provider\'s own dashboard has the figure.'
             : '\nCost: $' + knownUsd.toFixed(4) + ' (the provider\'s figure), counted toward the spending limits.';
         return {
           content: 'Generated and saved ' + rel + ' (' + kb + ', ' + mime + ', model ' + model + shapeNote + sizeNote + ').' +

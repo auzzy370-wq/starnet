@@ -44,13 +44,13 @@ B after reload: {"rev":46,"C":true,"Ctitle":"Charlie From Stale Tab","B":"Bravo 
 ```
 
 Cause: `frontend/app/cloudsave.js:346`, the reconcile branch `if (isSave(local) && local._saveDirty)`, boots any dirty
-local snapshot as this window's offline edits. The cache key `starnet.save` is shared by every window, so another
+local snapshot as this window's offline edits. The cache key `vultron.save` is shared by every window, so another
 live window's stale snapshot can't be told apart from this window's own offline work. `_saveClient` is per page load
 and is not compared.
 
 ## Verdict
 
-Fixed in source on the wave-1 candidate. 923f03a98 (save-latch-kill): each window's browser copy is its own crash journal ('starnet.save' for the first window, 'starnet.save.w.<window>' for another live tab), and cloudsave.js openJournal() picks it first at boot (frontend/app/app.js). A reload continues its own journal (sessionStorage) and never takes a live window's, so the newer window boots its own confirmed state, never the stale window's snapshot. A dead window's dirty journal is merged into the station (POST /api/save/adopt) before boot, which keeps offline edits across a restart, the other side of the fork the Notes named. c28d7ed0d and 7cffe0352 make the behind window merge three-way instead of latching a conflict. Regression tests green on the merged tree: save-interleave.seeded (81, including its named 27bae3d6 block: two tabs of one browser, B reloads, continues its own journal, holds both tabs' work, shows no merge notice) and save-journal (42). Not live-proven in two real browser tabs; not released.
+Fixed in source on the wave-1 candidate. 923f03a98 (save-latch-kill): each window's browser copy is its own crash journal ('vultron.save' for the first window, 'vultron.save.w.<window>' for another live tab), and cloudsave.js openJournal() picks it first at boot (frontend/app/app.js). A reload continues its own journal (sessionStorage) and never takes a live window's, so the newer window boots its own confirmed state, never the stale window's snapshot. A dead window's dirty journal is merged into the station (POST /api/save/adopt) before boot, which keeps offline edits across a restart, the other side of the fork the Notes named. c28d7ed0d and 7cffe0352 make the behind window merge three-way instead of latching a conflict. Regression tests green on the merged tree: save-interleave.seeded (81, including its named 27bae3d6 block: two tabs of one browser, B reloads, continues its own journal, holds both tabs' work, shows no merge notice) and save-journal (42). Not live-proven in two real browser tabs; not released.
 
 ## Notes
 

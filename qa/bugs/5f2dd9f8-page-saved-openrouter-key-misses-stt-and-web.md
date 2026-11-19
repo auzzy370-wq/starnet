@@ -21,7 +21,7 @@ Each station-side consumer of an OpenRouter credential read whichever source its
 - With an OpenRouter key saved in a browser page, /api/providers said configured:true while /api/stt/status said cloud:false, and a voice note with no page header had no OpenRouter leg.
 - web_search's paid OpenRouter rung armed only on the run's own OpenRouter key or the legacy `runtimeKey` alias, so a page key or a bare OPENROUTER_API_KEY never reached it.
 - Where the alias did arm it on a run on another provider, it sent that run's model id, which OpenRouter does not have.
-- It armed on StarNet-credits runs too, spending a BYOK key on a run the image route keeps off every BYOK key.
+- It armed on Vultron-credits runs too, spending a BYOK key on a run the image route keeps off every BYOK key.
 
 This is gh#146's web half and the station-consumer half of gh#89. Doing it with one credential is the lane's second doneMeans.
 
@@ -30,7 +30,7 @@ This is gh#146's web half and the station-consumer half of gh#89. Doing it with 
 1. Check out a3af8dafd (or any trunk before this fix) and copy `test/credential-store.openrouter-consumers.e2e.test.js` and `test/helpers/outbound-edge.js` from this lane into it. Run `node test/credential-store.openrouter-consumers.e2e.test.js`. The file boots every station through the preload, which answers anything that is not loopback with 503 and records it, and it stops if the edge did not come up. Never run it without that helper: the voice legs and the rung would reach the real openrouter.ai, Mojeek and DuckDuckGo.
 2. Row "page": a browser-mode sidecar, POST /api/providers/engine-key {provider:'openrouter', key:K, baseUrl:U}, then GET /api/stt/status, a CUSTOM /api/run whose model calls web_search, POST /api/stt with no page header. Status says cloud:false, U sees no web-plugin call, and /api/stt answers with no text.
 3. Row "headless": OPENROUTER_API_KEY=K, OPENROUTER_BASE=U. The same three failures.
-4. Row "credits": a desktop-shaped sidecar with a keychain OpenRouter key K and a linked StarNet account (.secrets/credits.json); a `starnet` /api/run whose model calls web_search. K goes to `openrouter.ai/api/v1/chat/completions`, recorded at the edge.
+4. Row "credits": a desktop-shaped sidecar with a keychain OpenRouter key K and a linked Vultron account (.secrets/credits.json); a `vultron` /api/run whose model calls web_search. K goes to `openrouter.ai/api/v1/chat/completions`, recorded at the edge.
 
 ## Evidence
 
@@ -54,9 +54,9 @@ Fixed by eadd2da4b on agent/credential-store-1031 (credential-store lane, step S
 
 The web rung arms on every BYOK run from the station's credential, any source. It stays last in its chain, and sends OpenRouter's search model (`openai/gpt-4o-mini`) on a run on another provider.
 
-Rank (decision 1) keeps billing where it was. `rank` is 'primary' for the keychain layer and the branded STARNET_/SKYNET_OPENROUTER_KEY, which is what the alias held, and 'gap' for a bare OPENROUTER_KEY or OPENROUTER_API_KEY and the page copy. A 'gap' credential comes last in the image route and after the local engine in the STT ladder, and never changes /api/stt/status.preferred. `cloud` and `available` are reported for every source: a station whose only engine is that key can transcribe, so they now say so. `preferred` staying as it was means a desk on the browser's own recognition keeps it.
+Rank (decision 1) keeps billing where it was. `rank` is 'primary' for the keychain layer and the branded VULTRON_/SKYNET_OPENROUTER_KEY, which is what the alias held, and 'gap' for a bare OPENROUTER_KEY or OPENROUTER_API_KEY and the page copy. A 'gap' credential comes last in the image route and after the local engine in the STT ladder, and never changes /api/stt/status.preferred. `cloud` and `available` are reported for every source: a station whose only engine is that key can transcribe, so they now say so. `preferred` staying as it was means a desk on the browser's own recognition keeps it.
 
 States it now refuses, each with its exit:
-- A StarNet-credits run never arms the BYOK web rung (decision 2). Desktop credits users lose the rung the alias armed for them; the free engines still serve. Exit: run the agent on OpenRouter.
+- A Vultron-credits run never arms the BYOK web rung (decision 2). Desktop credits users lose the rung the alias armed for them; the free engines still serve. Exit: run the agent on OpenRouter.
 
 Billing: the paid rung now arms on non-OpenRouter BYOK runs for every key source. Its spend stays unmetered, as it was; metering it belongs to the auxiliary-spend lane. Image and STT billing do not move.

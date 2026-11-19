@@ -26,7 +26,7 @@ const KEY_SHAPED = 'sk-' + 'proj-' + 'Ab3dEf6hIj9kLm2nOp5qRs8tUv1wXy4zAb7cDe0f';
 const recall = (query, then) => ctx => ctx.made('recall_conversation') === 0 ? { tool: 'recall_conversation', args: { query, scope: 'all' } } : then(ctx);
 
 (async () => {
-  const rig = await station('forget-quotes-timing-', { env: { SKYNET_MAX_CONCURRENT_AGENTS: '6', STARNET_MAX_CONCURRENT_AGENTS: '6' } });   // leg 3 holds three runs open at once
+  const rig = await station('forget-quotes-timing-', { env: { SKYNET_MAX_CONCURRENT_AGENTS: '6', VULTRON_MAX_CONCURRENT_AGENTS: '6' } });   // leg 3 holds three runs open at once
   const { up } = rig;
   const failed = [];
   const leg = async (name, fn) => { if (process.env.FQ_ONLY && !process.env.FQ_ONLY.split(',').includes(name)) return; if (process.env.FQ_TRACE) console.log('[leg] ' + name); try { await fn(); } catch (e) { failed.push(name); console.error('LEG ' + name + ' THREW', e && e.stack || e); A.ok(false, 'leg ' + name + ' ran to its end (' + ((e && e.message) || e) + ')'); } };

@@ -24,7 +24,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const SIDECAR = path.resolve(__dirname, '..', '..', 'sidecar');
-const WORKSPACE = process.env.SKYNET_WORKSPACES || process.env.STARNET_WORKSPACES || '.';
+const WORKSPACE = process.env.SKYNET_WORKSPACES || process.env.VULTRON_WORKSPACES || '.';
 const control = path.join(WORKSPACE, 'run-fault.json');
 function armed() { try { return JSON.parse(fs.readFileSync(control, 'utf8')) || {}; } catch (_) { return {}; } }
 const picked = new Set();   // marks whose run was already picked: one run per mark

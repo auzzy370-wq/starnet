@@ -47,7 +47,7 @@ for (const [what, needle] of [
   ['verified exits 0', 'pub const EXIT_VERIFIED: i32 = 0;'],
   ['damaged exits 3', 'pub const EXIT_DAMAGED: i32 = 3;'],
   ['not checked exits 4', 'pub const EXIT_NOT_CHECKED: i32 = 4;'],
-  ['--out writes the starnet.install-verify/1 receipt', 'serde_json::json!("starnet.install-verify/1")'],
+  ['--out writes the vultron.install-verify/1 receipt', 'serde_json::json!("vultron.install-verify/1")'],
   ['the receipt names each finding by path, damage kind and text', '"path": f.path, "damage": f.damage.kind(), "expected": expected, "actual": actual,'],
   ['the install root is the exe folder, then ../Resources, then ../lib/<product>', 'dir.join("..").join("Resources")'],
   ['a sidecar folder is preferred when it survives', 'candidates.iter().find(|c| c.join("sidecar").is_dir())'],
@@ -76,7 +76,7 @@ if (!bashUsable) {
     const bin = path.join(itmp, 'bin');
     fs.mkdirSync(bin);
     fs.writeFileSync(path.join(bin, 'ditto'), '#!/usr/bin/env bash\nexec cp -R "$1" "$2"\n', { mode: 0o755 });
-    const app = path.join(itmp, 'Applications', 'StarNet.app');
+    const app = path.join(itmp, 'Applications', 'Vultron.app');
     const exe = path.join(app, 'Contents', 'MacOS', 'skynet-desktop');
     const resources = path.join(app, 'Contents', 'Resources');
     const listed = {

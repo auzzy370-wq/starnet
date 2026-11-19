@@ -25,14 +25,14 @@ function exportSaveName(name, ext) {
   base = base.replace(/[\x00-\x1f\x7f<>:"/\\|?*]/g, '-').trim();
   if (base.toLowerCase().endsWith('.' + ext)) base = base.slice(0, -(ext.length + 1));
   base = base.replace(/^[. ]+|[. ]+$/g, '').slice(0, 100).replace(/[. ]+$/g, '');
-  if (!base) base = 'starnet-export';
-  if (/^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(base)) base = 'starnet-' + base;
+  if (!base) base = 'vultron-export';
+  if (/^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(base)) base = 'vultron-' + base;
   return base;
 }
 
 // the file name of a station backup made on the given day (the same name the page hands a browser download)
 function stationBackupBase(now) {
-  return 'starnet-station-' + new Date(Number(now)).toISOString().slice(0, 10);
+  return 'vultron-station-' + new Date(Number(now)).toISOString().slice(0, 10);
 }
 
 // Downloads when it is a real folder, else the home dir itself (a minimal Linux account has no Downloads)
@@ -72,7 +72,7 @@ function saveExportFile(text, opts) {
   const dir = String(o.dir || '');
   const ext = o.ext === undefined ? 'json' : o.ext;
   if (!EXPORT_EXTENSIONS.includes(ext)) return { ok: false, error: 'choose a json, txt or md export', dir };
-  const base = exportSaveName(o.base || 'starnet-station', ext);
+  const base = exportSaveName(o.base || 'vultron-station', ext);
   const body = String(text == null ? '' : text);
   if (!dir) return { ok: false, error: 'no folder to save into', dir };
   for (let i = 1; i <= MAX_SUFFIX; i++) {

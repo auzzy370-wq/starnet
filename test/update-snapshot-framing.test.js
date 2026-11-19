@@ -66,7 +66,7 @@ function memFs(root) {
   };
 }
 
-const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-snapshot-framing-'));
+const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-snapshot-framing-'));
 const ws = path.join(sandbox, 'workspaces');
 fs.mkdirSync(ws, { recursive: true });
 const mem = memFs(ws);
@@ -94,7 +94,7 @@ const maxChars = 2000000;
 (async () => {
   try {
     // ---- 1. the whole bundle text stays under maxChars, though every small file's BYTES would fit
-    const b = R.capture({ workspaceRoot: ws, fs: mem.fs, now: 1, maxBytes, maxChars, browserStore: { 'starnet.save': JSON.stringify({ version: 5 }) } });
+    const b = R.capture({ workspaceRoot: ws, fs: mem.fs, now: 1, maxBytes, maxChars, browserStore: { 'vultron.save': JSON.stringify({ version: 5 }) } });
     const text = JSON.stringify(b, null, 2) + '\n';
     A.ok(text.length <= maxChars, 'the bundle text (' + text.length + ' chars) stays within maxChars ' + maxChars);
     A.ok(text.length >= maxChars * 0.6, 'and the limit is used, not wasted on a loose estimate (' + text.length + ' chars)');
@@ -130,7 +130,7 @@ const maxChars = 2000000;
 
     // ---- 4. it validates, writes and reads back verified
     A.eq(R.validate(b).ok, true, 'the bounded bundle validates');
-    const file = path.join(sandbox, 'out', 'framing.starnet-backup.json');
+    const file = path.join(sandbox, 'out', 'framing.vultron-backup.json');
     const written = R.writeBundleAtomic({ bundle: b, file, allowIncomplete: true });
     A.ok(written.bytes <= maxChars, 'the file written is within the limit (' + written.bytes + ' bytes, all ASCII)');
     A.eq(R.readBundle(file).manifestSha256, written.manifestSha256, 'and reads back verified');

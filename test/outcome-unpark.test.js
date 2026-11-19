@@ -6,7 +6,7 @@
    (reason 'done', finishReason 'length') COMPLETED its run-bound quest and its Task Brief, graded postconditions
    completed_verified, and reached a user's on_session_end hook as 'done'; a 'done' end the run's own late error outranked was
    reflected on as a success and never failure-reviewed; a Commander's `miss` on a cut reply found no verdict-review packet; and
-   every up-front host refusal (a routine's pre-check script, too many agents at once, an empty StarNet wallet, a model that cannot
+   every up-front host refusal (a routine's pre-check script, too many agents at once, an empty Vultron wallet, a model that cannot
    call tools, an expired sign-in, a full disk) and the image task's late error left the outcome sink to stamp 'run_failure'.
 
    THE ORDERING (Codex B3): the Task Brief settle, the postconditions and the hook decide while the lead's 'done' end is still
@@ -91,7 +91,7 @@ const QUESTION = 'I can write that.\nTASK_QUESTION: who is the launch post for? 
 async function postLoop(kind, opts) {
   const x = opts || {};
   const runId = 'r-' + kind, agentId = 'agent';
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-unpark-brief-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-unpark-brief-'));
   try {
     const store = makeTaskBriefStore({ fs, path, workspaces: dir });
     const brief = x.brief === false ? null : await store.prepare({ key: 'k', text: 'write the launch post', runId, source: 'interactive' }, 1);
@@ -353,7 +353,7 @@ async function postLoop(kind, opts) {
     A.eq(v.kind, kind, 'refusal ' + what + ': COMMS words it as ' + kind + ' (got ' + v.kind + ': ' + String(v.userMessage).slice(0, 80) + ')');
   }
   A.ok(RunOutcome.isProviderCode('auth') && !RunOutcome.isProviderCode('concurrency_limit') && !RunOutcome.isProviderCode('model_no_tools'),
-    'refusals: a sign-in refusal is the provider\'s (auth); a host refusal is StarNet\'s own, by name');
+    'refusals: a sign-in refusal is the provider\'s (auth); a host refusal is Vultron\'s own, by name');
 
   A.report('outcome-unpark.test');
 })().catch(e => { console.log('FAIL: threw ' + (e && e.stack || e)); A.ok(false, 'outcome-unpark threw'); A.report('outcome-unpark.test'); });

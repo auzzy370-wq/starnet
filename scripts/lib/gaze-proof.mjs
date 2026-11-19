@@ -17,7 +17,7 @@ export function instrumentGaze(source) {
       if (before !== gazeMovement()) gazeProof.violations.push({ observer:self_?.id, other:otherBody?.id });
     }
   }
-  window.__STARNET_GAZE_PROOF__ = {
+  window.__VULTRON_GAZE_PROOF__ = {
     read: () => JSON.parse(JSON.stringify(gazeProof)),
     exercise: () => {
       const list = allBodies().filter(b => !b.unplaced);

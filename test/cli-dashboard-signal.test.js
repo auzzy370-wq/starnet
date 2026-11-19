@@ -1,5 +1,5 @@
 'use strict';
-/* test/cli-dashboard-signal.test.js — the `starnet` dashboard gives the terminal back when it is told to stop.
+/* test/cli-dashboard-signal.test.js — the `vultron` dashboard gives the terminal back when it is told to stop.
 
    The dashboard takes the terminal over: the alternate screen, a hidden cursor, bracketed paste and mouse reporting.
    It used to undo that only on process 'exit', which a SIGTERM (the desktop app's boot reaper on macOS, a `kill`, an
@@ -30,7 +30,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   for (const sig of ['SIGTERM', 'SIGHUP']) {
     const t = fakeTerminal();
     const before = process.listenerCount(sig);
-    const exited = runDashboard(station, { stdout: t.out, stdin: t.inp, env: { STARNET_LOGO: 'plain', NO_COLOR: '1' } });
+    const exited = runDashboard(station, { stdout: t.out, stdin: t.inp, env: { VULTRON_LOGO: 'plain', NO_COLOR: '1' } });
     await sleep(150);
     A.ok(t.text().indexOf('\x1b[?1049h') >= 0 && t.text().indexOf(mouse.ENABLE) >= 0, sig + ': the dashboard took the screen (alternate screen, mouse reporting)');
     A.ok(process.listenerCount(sig) > before, sig + ': the dashboard listens for ' + sig + ' while its screen is up');
@@ -72,7 +72,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     let calls = 0, stoppedAt = -1;
     const late = { mode: 'attached', workspace: '', child: null, client: { base: 'http://127.0.0.1:1', host: '127.0.0.1', port: 1, token: () => 't',
       request: () => { calls++; return calls === 1 ? sleep(200).then(() => ({ ok: true, status: 200, json: { agents: [{ agentId: 'agent', name: 'ULTRON' }] } })) : never(); } } };
-    const exited = runDashboard(late, { stdout: t.out, stdin: t.inp, env: { STARNET_LOGO: 'plain', NO_COLOR: '1' } });
+    const exited = runDashboard(late, { stdout: t.out, stdin: t.inp, env: { VULTRON_LOGO: 'plain', NO_COLOR: '1' } });
     await sleep(50);
     A.eq(calls, 1, 'late roster: the dashboard is waiting on its first read of the station');
     process.emit('SIGTERM', 'SIGTERM');

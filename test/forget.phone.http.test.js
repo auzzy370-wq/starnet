@@ -38,7 +38,7 @@ const textOf = rows => (Array.isArray(rows) ? rows : []).map(r => String(r && r.
     // the desk's save holds its own cached copies of the reply: a keyed one (what the page keeps) and an id-less provisional one of the same run, and an id-less user row of that run
     let save = (await fx.json('GET', '/api/save?agent=agent')).save;
     const saveWith = async (workstreams, extra) => {
-      const body = await fx.json('POST', '/api/save', Object.assign({ schema: 'starnet.save', version: 6, _saveRevision: save._saveRevision, updatedAt: Math.max(Date.now(), save.updatedAt + 1),
+      const body = await fx.json('POST', '/api/save', Object.assign({ schema: 'vultron.save', version: 6, _saveRevision: save._saveRevision, updatedAt: Math.max(Date.now(), save.updatedAt + 1),
         agent: { id: 'agent', createdAt: 1, name: 'TURN' }, workstreams }, extra || null));
       save = (await fx.json('GET', '/api/save?agent=agent')).save;
       return body;

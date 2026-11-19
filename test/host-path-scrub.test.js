@@ -24,7 +24,7 @@
    the placeholder is [workspace] (Slack reads <…> as a control sequence).
 
    TODO (follow-up, owner rule 3, no code in this lane): these surfaces also show text to someone off the station and are
-   NOT behind this scrub yet: StarNet Remote push notifications, the phone feed, the /v1 API, ACP, the MCP messaging
+   NOT behind this scrub yet: Vultron Remote push notifications, the phone feed, the /v1 API, ACP, the MCP messaging
    tools, and web_request posting to a chat webhook (Slack / Discord incoming webhooks). */
 'use strict';
 const A = require('./_assert.js');
@@ -38,7 +38,7 @@ const { makeChannelOutbound } = require('../sidecar/channels/outbound.js');
 const { makeDeliveryLedger, memoryIo } = require('../sidecar/channels/delivery-ledger.js');
 const { readSidecarIndex, functionSourceIn, sidecarSourceFiles } = require('./helpers/source');
 
-const WS = 'C:\\Users\\andro\\AppData\\Roaming\\StarNet\\workspaces';
+const WS = 'C:\\Users\\andro\\AppData\\Roaming\\Vultron\\workspaces';
 const leaks = (s) => /AppData|andro|Roaming/i.test(String(s));
 const scrub = makeHostPathScrub({ fixed: [WS] });
 
@@ -70,20 +70,20 @@ function linearRun(f, unit, count) {
   // ---- 1. the scrub itself ----
   const bypass = [
     ['backslash', 'Saved at ' + WS + '\\alpha\\shots\\x.png.', 'Saved at [workspace]\\alpha\\shots\\x.png.'],
-    ['forward slash', 'Saved at C:/Users/andro/AppData/Roaming/StarNet/workspaces/alpha/shots/x.png', 'Saved at [workspace]/alpha/shots/x.png'],
-    ['lower case', 'saved at c:\\users\\andro\\appdata\\roaming\\starnet\\workspaces\\alpha\\x.png', 'saved at [workspace]\\alpha\\x.png'],
-    ['JSON-escaped', '{"path":"C:\\\\Users\\\\andro\\\\AppData\\\\Roaming\\\\StarNet\\\\workspaces\\\\alpha\\\\x.png"}', '{"path":"[workspace]\\\\alpha\\\\x.png"}'],
-    ['file URL', 'open file:///C:/Users/andro/AppData/Roaming/StarNet/workspaces/alpha/x.png', 'open file:///[workspace]/alpha/x.png'],
-    ['URL-encoded (was: sent as written)', 'C%3A%5CUsers%5Candro%5CAppData%5CRoaming%5CStarNet%5Cworkspaces%5Calpha%5Cx.png', '[workspace]%5Calpha%5Cx.png'],
-    ['partly URL-encoded (was: sent)', 'file:///C:/Users/andro/AppData/Roaming/StarNet/work%73paces/alpha/x.png', 'file:///[workspace]/alpha/x.png'],
-    ['lower-case hex, + for a space', 'c%3a%5cusers%5candro%5cappdata%5croaming%5cstarnet%5cworkspaces%2falpha', '[workspace]%2falpha'],
-    ['8.3 short form (was: sent)', 'C:\\Users\\andro\\AppData\\Roaming\\StarNet\\WORKSP~1\\alpha\\x.png', '[workspace]\\alpha\\x.png'],
-    ['8.3 hashed form (was: sent)', 'C:\\Users\\andro\\AppData\\Roaming\\StarNet\\WO3F2A~1\\alpha\\x.png', '[workspace]\\alpha\\x.png'],
-    ['\\\\?\\ prefix', '\\\\?\\C:\\Users\\andro\\AppData\\Roaming\\StarNet\\workspaces\\alpha\\x.png', '\\\\?\\[workspace]\\alpha\\x.png'],
-    ['WSL form (was: sent)', '/mnt/c/Users/andro/AppData/Roaming/StarNet/workspaces/alpha/x.png', '[workspace]/alpha/x.png'],
-    ['Git Bash form (was: sent)', 'cd /c/Users/andro/AppData/Roaming/StarNet/workspaces/alpha', 'cd [workspace]/alpha'],
-    ['Cygwin form', '/cygdrive/c/Users/andro/AppData/Roaming/StarNet/workspaces/alpha/x', '[workspace]/alpha/x'],
-    ['mixed separators', 'C:\\Users//andro\\\\AppData/Roaming\\StarNet/workspaces\\alpha/x.png', '[workspace]\\alpha/x.png'],
+    ['forward slash', 'Saved at C:/Users/andro/AppData/Roaming/Vultron/workspaces/alpha/shots/x.png', 'Saved at [workspace]/alpha/shots/x.png'],
+    ['lower case', 'saved at c:\\users\\andro\\appdata\\roaming\\vultron\\workspaces\\alpha\\x.png', 'saved at [workspace]\\alpha\\x.png'],
+    ['JSON-escaped', '{"path":"C:\\\\Users\\\\andro\\\\AppData\\\\Roaming\\\\Vultron\\\\workspaces\\\\alpha\\\\x.png"}', '{"path":"[workspace]\\\\alpha\\\\x.png"}'],
+    ['file URL', 'open file:///C:/Users/andro/AppData/Roaming/Vultron/workspaces/alpha/x.png', 'open file:///[workspace]/alpha/x.png'],
+    ['URL-encoded (was: sent as written)', 'C%3A%5CUsers%5Candro%5CAppData%5CRoaming%5CVultron%5Cworkspaces%5Calpha%5Cx.png', '[workspace]%5Calpha%5Cx.png'],
+    ['partly URL-encoded (was: sent)', 'file:///C:/Users/andro/AppData/Roaming/Vultron/work%73paces/alpha/x.png', 'file:///[workspace]/alpha/x.png'],
+    ['lower-case hex, + for a space', 'c%3a%5cusers%5candro%5cappdata%5croaming%5cvultron%5cworkspaces%2falpha', '[workspace]%2falpha'],
+    ['8.3 short form (was: sent)', 'C:\\Users\\andro\\AppData\\Roaming\\Vultron\\WORKSP~1\\alpha\\x.png', '[workspace]\\alpha\\x.png'],
+    ['8.3 hashed form (was: sent)', 'C:\\Users\\andro\\AppData\\Roaming\\Vultron\\WO3F2A~1\\alpha\\x.png', '[workspace]\\alpha\\x.png'],
+    ['\\\\?\\ prefix', '\\\\?\\C:\\Users\\andro\\AppData\\Roaming\\Vultron\\workspaces\\alpha\\x.png', '\\\\?\\[workspace]\\alpha\\x.png'],
+    ['WSL form (was: sent)', '/mnt/c/Users/andro/AppData/Roaming/Vultron/workspaces/alpha/x.png', '[workspace]/alpha/x.png'],
+    ['Git Bash form (was: sent)', 'cd /c/Users/andro/AppData/Roaming/Vultron/workspaces/alpha', 'cd [workspace]/alpha'],
+    ['Cygwin form', '/cygdrive/c/Users/andro/AppData/Roaming/Vultron/workspaces/alpha/x', '[workspace]/alpha/x'],
+    ['mixed separators', 'C:\\Users//andro\\\\AppData/Roaming\\Vultron/workspaces\\alpha/x.png', '[workspace]\\alpha/x.png'],
     ['legible, not deleted (was: `cd  && npm test`)', '`cd ' + WS + '\\alpha && npm test`', '`cd [workspace]\\alpha && npm test`'],
     ['the root then a full stop (was: sent)', 'Your workspaces live in ' + WS + '.', 'Your workspaces live in [workspace].'],
     ['the root then an agent id and a full stop', 'see ' + WS + '\\alpha.', 'see [workspace]\\alpha.']
@@ -109,20 +109,20 @@ function linearRun(f, unit, count) {
     A.eq(scrub(t), t, 'scrubbing the placeholder is a no-op: ' + JSON.stringify(t));
   }
   {
-    const posix = makeHostPathScrub({ fixed: ['/home/me/.config/StarNet/workspaces'] });
-    A.eq(posix('wrote /home/me/.config/StarNet/workspaces/alpha/x.md and /home/me/.config/StarNet/workspaces.bak/y'), 'wrote [workspace]/alpha/x.md and /home/me/.config/StarNet/workspaces.bak/y', 'a POSIX root is scrubbed the same way');
+    const posix = makeHostPathScrub({ fixed: ['/home/me/.config/Vultron/workspaces'] });
+    A.eq(posix('wrote /home/me/.config/Vultron/workspaces/alpha/x.md and /home/me/.config/Vultron/workspaces.bak/y'), 'wrote [workspace]/alpha/x.md and /home/me/.config/Vultron/workspaces.bak/y', 'a POSIX root is scrubbed the same way');
   }
   {
     // the real path (a junctioned data folder) by every spelling, and FAIL CLOSED
-    const forms = hostPathForms(WS, { realpath: () => 'D:\\Data\\StarNet\\ws' });
-    A.ok(forms.indexOf('D:\\Data\\StarNet\\ws') >= 0 && forms.indexOf('/d/Data/StarNet/ws') >= 0 && forms.indexOf('/mnt/c/Users/andro/AppData/Roaming/StarNet/workspaces') >= 0, 'hostPathForms: the root, its real path, and their shell forms (' + forms.join(' | ') + ')');
-    const live = makeHostPathScrub({ fixed: [WS], prefixes: () => hostPathForms(WS, { realpath: () => 'D:\\Data\\StarNet\\ws' }) });
-    A.eq(live('at D:\\Data\\StarNet\\ws\\alpha\\x and /d/Data/StarNet/ws/alpha'), 'at [workspace]\\alpha\\x and [workspace]/alpha', 'the real path is scrubbed too');
+    const forms = hostPathForms(WS, { realpath: () => 'D:\\Data\\Vultron\\ws' });
+    A.ok(forms.indexOf('D:\\Data\\Vultron\\ws') >= 0 && forms.indexOf('/d/Data/Vultron/ws') >= 0 && forms.indexOf('/mnt/c/Users/andro/AppData/Roaming/Vultron/workspaces') >= 0, 'hostPathForms: the root, its real path, and their shell forms (' + forms.join(' | ') + ')');
+    const live = makeHostPathScrub({ fixed: [WS], prefixes: () => hostPathForms(WS, { realpath: () => 'D:\\Data\\Vultron\\ws' }) });
+    A.eq(live('at D:\\Data\\Vultron\\ws\\alpha\\x and /d/Data/Vultron/ws/alpha'), 'at [workspace]\\alpha\\x and [workspace]/alpha', 'the real path is scrubbed too');
     const throwing = makeHostPathScrub({ fixed: [WS], prefixes: () => { throw new Error('realpath exploded'); } });
     A.eq(throwing('at ' + WS + '\\alpha\\x'), 'at [workspace]\\alpha\\x', 'fail closed: a throwing prefix list still scrubs the configured root');
     const badReal = hostPathForms(WS, { realpath: () => { const e = new Error('EPERM'); e.code = 'EPERM'; throw e; }, env: {} });
-    A.eq(badReal, [WS, '/c/Users/andro/AppData/Roaming/StarNet/workspaces', '/mnt/c/Users/andro/AppData/Roaming/StarNet/workspaces', '/cygdrive/c/Users/andro/AppData/Roaming/StarNet/workspaces',
-      '//localhost/c:/Users/andro/AppData/Roaming/StarNet/workspaces', '//127.0.0.1/c:/Users/andro/AppData/Roaming/StarNet/workspaces'], 'hostPathForms: a realpath that throws still returns the root\'s spellings');
+    A.eq(badReal, [WS, '/c/Users/andro/AppData/Roaming/Vultron/workspaces', '/mnt/c/Users/andro/AppData/Roaming/Vultron/workspaces', '/cygdrive/c/Users/andro/AppData/Roaming/Vultron/workspaces',
+      '//localhost/c:/Users/andro/AppData/Roaming/Vultron/workspaces', '//127.0.0.1/c:/Users/andro/AppData/Roaming/Vultron/workspaces'], 'hostPathForms: a realpath that throws still returns the root\'s spellings');
   }
 
   // ---- 1b. LINEAR TIME (review round 4, MAJOR-1; scratchpad rr4-redos.js, rr4-redos-big.js) ----
@@ -140,20 +140,20 @@ function linearRun(f, unit, count) {
     // the bypass samples come out exactly as before the lookbehind (rr4-redos-fix.js), and so do the separator-led forms
     for (const [label, text] of bypass) A.eq(built(text), scrub(text), 'linear-time pattern, same answer: ' + label);
     for (const [text, want] of [
-      ['/c/Users/andro/AppData/Roaming/StarNet/workspaces/alpha', '[workspace]/alpha'],
-      ['//c/Users/andro/AppData/Roaming/StarNet/workspaces/a', '[workspace]/a'],
-      ['x//c/Users/andro/AppData/Roaming/StarNet/workspaces//alpha', 'x[workspace]//alpha'],
-      ['/mnt/c/Users/andro/AppData/Roaming/StarNet/workspaces/', '[workspace]/'],
-      ['file:///C:/Users/andro/AppData/Roaming/StarNet/workspaces/a', 'file:///[workspace]/a'],
-      ['C%3A%5CUsers%5Candro%5CAppData%5CRoaming%5CStarNet%5Cworkspaces%5Ca', '[workspace]%5Ca'],
+      ['/c/Users/andro/AppData/Roaming/Vultron/workspaces/alpha', '[workspace]/alpha'],
+      ['//c/Users/andro/AppData/Roaming/Vultron/workspaces/a', '[workspace]/a'],
+      ['x//c/Users/andro/AppData/Roaming/Vultron/workspaces//alpha', 'x[workspace]//alpha'],
+      ['/mnt/c/Users/andro/AppData/Roaming/Vultron/workspaces/', '[workspace]/'],
+      ['file:///C:/Users/andro/AppData/Roaming/Vultron/workspaces/a', 'file:///[workspace]/a'],
+      ['C%3A%5CUsers%5Candro%5CAppData%5CRoaming%5CVultron%5Cworkspaces%5Ca', '[workspace]%5Ca'],
       ['\\\\' + WS + '\\a', '\\\\[workspace]\\a'],
       // the separators after the root are no longer swallowed, so a second spelling right behind it is cut too
-      [WS + '/c/Users/andro/AppData/Roaming/StarNet/workspaces/b', '[workspace][workspace]/b']
+      [WS + '/c/Users/andro/AppData/Roaming/Vultron/workspaces/b', '[workspace][workspace]/b']
     ]) A.eq(built(text), want, 'separator-led and drive forms: ' + JSON.stringify(text));
     // the length guard: a text longer than the long-text bound is scrubbed in windows that overlap by the longest
     // spelling, so a path across a window's edge is still cut whole and another folder there is still left alone
     const small = makeHostPathScrub({ fixed: [WS], prefixes: () => hostPathForms(WS, { realpath: (p) => p }), longText: 1000, chunk: 300 });
-    const rows = [WS + '\\alpha\\x.png', WS + '-old\\alpha', WS + '.bak', 'c%3a%5cusers%5candro%5cappdata%5croaming%5cstarnet%5cworkspaces%2fa', '/c/Users/andro/AppData/Roaming/StarNet/workspaces', WS + '/'.repeat(40) + 'c/Users/andro'];
+    const rows = [WS + '\\alpha\\x.png', WS + '-old\\alpha', WS + '.bak', 'c%3a%5cusers%5candro%5cappdata%5croaming%5cvultron%5cworkspaces%2fa', '/c/Users/andro/AppData/Roaming/Vultron/workspaces', WS + '/'.repeat(40) + 'c/Users/andro'];
     const differ = [];
     for (const row of rows) {
       for (let at = 200; at < 340; at++) {
@@ -179,7 +179,7 @@ function linearRun(f, unit, count) {
       HOME: '/c/Users/andro', SystemDrive: 'C:', HOMEDRIVE: 'C:', HOMEPATH: '\\Users\\andro', COMPUTERNAME: 'DESKTOP-7Q2K', TEMP: 'C:\\Users\\andro\\AppData\\Local\\Temp',
       ProgramData: 'C:\\ProgramData', Path: 'C:\\Windows;C:\\Users\\andro\\AppData\\Roaming', 'ProgramFiles(x86)': 'C:\\Program Files (x86)', '=C:': 'C:\\Users\\andro' };
     const sc = makeHostPathScrub({ fixed: [WS], prefixes: () => hostPathForms(WS, { realpath: (p) => p, env }), env });
-    const segs = ['C:', 'Users', 'andro', 'AppData', 'Roaming', 'StarNet', 'workspaces'];
+    const segs = ['C:', 'Users', 'andro', 'AppData', 'Roaming', 'Vultron', 'workspaces'];
     const j = (...a) => a.join('\\');
     const rows = [];
     // the separators a localized Windows SHOWS for '\' (the yen sign on a Japanese code page, the won sign on a Korean
@@ -189,27 +189,27 @@ function linearRun(f, unit, count) {
     }
     rows.push(
       // the machine's own admin share, and the drive segment as ':' / '$' / '|' (written or encoded)
-      ['admin share \\\\localhost\\c$', j('', '', 'localhost', 'c$', 'Users', 'andro', 'AppData', 'Roaming', 'StarNet', 'workspaces', 'alpha', 'x.png'), '[workspace]\\alpha\\x.png'],
-      ['admin share \\\\127.0.0.1\\C$', j('', '', '127.0.0.1', 'C$', 'Users', 'andro', 'AppData', 'Roaming', 'StarNet', 'workspaces', 'alpha'), '[workspace]\\alpha'],
-      ['admin share by the machine name', j('', '', 'desktop-7q2k', 'c$', 'Users', 'andro', 'AppData', 'Roaming', 'StarNet', 'workspaces', 'a'), '[workspace]\\a'],
-      ['\\\\?\\UNC\\localhost\\c$', j('', '', '?', 'UNC', 'localhost', 'c$', 'Users', 'andro', 'AppData', 'Roaming', 'StarNet', 'workspaces', 'a'), '\\\\?\\UNC[workspace]\\a'],
-      ['admin share, percent-encoded $', '%5C%5Clocalhost%5Cc%24%5CUsers%5Candro%5CAppData%5CRoaming%5CStarNet%5Cworkspaces%5Ca', '[workspace]%5Ca'],
-      ['file:///C| (the legacy pipe)', 'file:///C|/Users/andro/AppData/Roaming/StarNet/workspaces/a', 'file:///[workspace]/a'],
-      ['file:///C%7C', 'file:///C%7C/Users/andro/AppData/Roaming/StarNet/workspaces/a', 'file:///[workspace]/a'],
-      ['file:///%43: (an encoded drive letter)', 'file:///%43:/Users/andro/AppData/Roaming/StarNet/workspaces/a', 'file:///[workspace]/a'],
+      ['admin share \\\\localhost\\c$', j('', '', 'localhost', 'c$', 'Users', 'andro', 'AppData', 'Roaming', 'Vultron', 'workspaces', 'alpha', 'x.png'), '[workspace]\\alpha\\x.png'],
+      ['admin share \\\\127.0.0.1\\C$', j('', '', '127.0.0.1', 'C$', 'Users', 'andro', 'AppData', 'Roaming', 'Vultron', 'workspaces', 'alpha'), '[workspace]\\alpha'],
+      ['admin share by the machine name', j('', '', 'desktop-7q2k', 'c$', 'Users', 'andro', 'AppData', 'Roaming', 'Vultron', 'workspaces', 'a'), '[workspace]\\a'],
+      ['\\\\?\\UNC\\localhost\\c$', j('', '', '?', 'UNC', 'localhost', 'c$', 'Users', 'andro', 'AppData', 'Roaming', 'Vultron', 'workspaces', 'a'), '\\\\?\\UNC[workspace]\\a'],
+      ['admin share, percent-encoded $', '%5C%5Clocalhost%5Cc%24%5CUsers%5Candro%5CAppData%5CRoaming%5CVultron%5Cworkspaces%5Ca', '[workspace]%5Ca'],
+      ['file:///C| (the legacy pipe)', 'file:///C|/Users/andro/AppData/Roaming/Vultron/workspaces/a', 'file:///[workspace]/a'],
+      ['file:///C%7C', 'file:///C%7C/Users/andro/AppData/Roaming/Vultron/workspaces/a', 'file:///[workspace]/a'],
+      ['file:///%43: (an encoded drive letter)', 'file:///%43:/Users/andro/AppData/Roaming/Vultron/workspaces/a', 'file:///[workspace]/a'],
       // the environment-variable and tilde forms of the variables that really prefix the root
-      ['%APPDATA%', j('%APPDATA%', 'StarNet', 'workspaces', 'alpha', 'x.png'), '[workspace]\\alpha\\x.png'],
-      ['$env:APPDATA', j('$env:APPDATA', 'StarNet', 'workspaces', 'alpha'), '[workspace]\\alpha'],
-      ['${env:APPDATA}', j('${env:APPDATA}', 'StarNet', 'workspaces'), '[workspace]'],
-      ['$APPDATA (a POSIX shell)', '$APPDATA/StarNet/workspaces/alpha', '[workspace]/alpha'],
-      ['%USERPROFILE%', j('%USERPROFILE%', 'AppData', 'Roaming', 'StarNet', 'workspaces', 'a'), '[workspace]\\a'],
-      ['%userprofile% in lower case', j('%userprofile%', 'appdata', 'roaming', 'starnet', 'workspaces', 'a'), '[workspace]\\a'],
-      ['$HOME (Git Bash: /c/Users/andro)', '$HOME/AppData/Roaming/StarNet/workspaces/alpha', '[workspace]/alpha'],
-      ['%HOMEDRIVE%%HOMEPATH%', j('%HOMEDRIVE%%HOMEPATH%', 'AppData', 'Roaming', 'StarNet', 'workspaces', 'a'), '[workspace]\\a'],
-      ['%HOMEPATH% (drive-relative)', j('%HOMEPATH%', 'AppData', 'Roaming', 'StarNet', 'workspaces', 'a'), '[workspace]\\a'],
-      ['%SystemDrive%', j('%SystemDrive%', 'Users', 'andro', 'AppData', 'Roaming', 'StarNet', 'workspaces', 'a'), '[workspace]\\a'],
-      ['~/ (the home folder)', 'Saved under ~/AppData/Roaming/StarNet/workspaces/alpha/x.png', 'Saved under [workspace]/alpha/x.png'],
-      ['~\\ (the home folder)', j('~', 'AppData', 'Roaming', 'StarNet', 'workspaces'), '[workspace]']
+      ['%APPDATA%', j('%APPDATA%', 'Vultron', 'workspaces', 'alpha', 'x.png'), '[workspace]\\alpha\\x.png'],
+      ['$env:APPDATA', j('$env:APPDATA', 'Vultron', 'workspaces', 'alpha'), '[workspace]\\alpha'],
+      ['${env:APPDATA}', j('${env:APPDATA}', 'Vultron', 'workspaces'), '[workspace]'],
+      ['$APPDATA (a POSIX shell)', '$APPDATA/Vultron/workspaces/alpha', '[workspace]/alpha'],
+      ['%USERPROFILE%', j('%USERPROFILE%', 'AppData', 'Roaming', 'Vultron', 'workspaces', 'a'), '[workspace]\\a'],
+      ['%userprofile% in lower case', j('%userprofile%', 'appdata', 'roaming', 'vultron', 'workspaces', 'a'), '[workspace]\\a'],
+      ['$HOME (Git Bash: /c/Users/andro)', '$HOME/AppData/Roaming/Vultron/workspaces/alpha', '[workspace]/alpha'],
+      ['%HOMEDRIVE%%HOMEPATH%', j('%HOMEDRIVE%%HOMEPATH%', 'AppData', 'Roaming', 'Vultron', 'workspaces', 'a'), '[workspace]\\a'],
+      ['%HOMEPATH% (drive-relative)', j('%HOMEPATH%', 'AppData', 'Roaming', 'Vultron', 'workspaces', 'a'), '[workspace]\\a'],
+      ['%SystemDrive%', j('%SystemDrive%', 'Users', 'andro', 'AppData', 'Roaming', 'Vultron', 'workspaces', 'a'), '[workspace]\\a'],
+      ['~/ (the home folder)', 'Saved under ~/AppData/Roaming/Vultron/workspaces/alpha/x.png', 'Saved under [workspace]/alpha/x.png'],
+      ['~\\ (the home folder)', j('~', 'AppData', 'Roaming', 'Vultron', 'workspaces'), '[workspace]']
     );
     for (const [label, text, want] of rows) {
       const got = sc(text);
@@ -218,7 +218,7 @@ function linearRun(f, unit, count) {
     }
     // only the variables that really prefix the root become spellings
     const forms = hostPathForms(WS, { env });
-    A.ok(forms.indexOf('%APPDATA%/StarNet/workspaces') >= 0 && forms.indexOf('~/AppData/Roaming/StarNet/workspaces') >= 0 && forms.indexOf('//localhost/c:/Users/andro/AppData/Roaming/StarNet/workspaces') >= 0, 'hostPathForms: the env, tilde and admin-share forms (' + forms.length + ')');
+    A.ok(forms.indexOf('%APPDATA%/Vultron/workspaces') >= 0 && forms.indexOf('~/AppData/Roaming/Vultron/workspaces') >= 0 && forms.indexOf('//localhost/c:/Users/andro/AppData/Roaming/Vultron/workspaces') >= 0, 'hostPathForms: the env, tilde and admin-share forms (' + forms.length + ')');
     A.ok(!forms.some(f => /LOCALAPPDATA|TEMP|ProgramData|ProgramFiles|=C|[%:{$]Path[%}/]/.test(f)), 'hostPathForms: no form from a variable that does not prefix the root (' + forms.filter(f => /LOCALAPPDATA|TEMP|ProgramData|ProgramFiles|=C|[%:{$]Path[%}/]/.test(f)).join(' | ') + ')');
     A.eq(hostPathForms(WS, { env: {} }).filter(f => /[%$~]/.test(f)), [], 'hostPathForms with an empty environment: no env forms');
     // the round-3 legitimate content is left alone by every new form, and so is prose with the new separator characters
@@ -232,9 +232,9 @@ function linearRun(f, unit, count) {
       ['a URL with workspaces', 'https://github.com/org/repo/tree/main/workspaces/alpha and https://app.slack.com/workspaces'],
       ['yarn workspaces', 'run `yarn workspaces foreach run build`'],
       ['a relative path', 'see workspaces/alpha/x.png'],
-      ['another user', j('C:', 'Users', 'bob', 'AppData', 'Roaming', 'StarNet', 'workspaces', 'a')],
-      ['another variable', j('%LOCALAPPDATA%', 'StarNet', 'workspaces', 'alpha') + ' and ~/AppData/Local/StarNet/workspaces'],
-      ['another share', j('', '', 'localhost', 'd$', 'Users', 'andro', 'AppData', 'Roaming', 'StarNet', 'workspaces')],
+      ['another user', j('C:', 'Users', 'bob', 'AppData', 'Roaming', 'Vultron', 'workspaces', 'a')],
+      ['another variable', j('%LOCALAPPDATA%', 'Vultron', 'workspaces', 'alpha') + ' and ~/AppData/Local/Vultron/workspaces'],
+      ['another share', j('', '', 'localhost', 'd$', 'Users', 'andro', 'AppData', 'Roaming', 'Vultron', 'workspaces')],
       ['a price in yen and won', 'it costs ¥500 (₩6,000), and C:¥Users is a Japanese drive'],
       ['$env and tilde prose', 'set $env:Path, then cd ~/projects and run it; 50% of %USERPROFILE% users']
     ]) A.eq(sc(text), text, 'minor-3 forms leave alone: ' + label);
@@ -290,7 +290,7 @@ function linearRun(f, unit, count) {
     const hub = hubWith({ hostPathPrefixes: () => [WS], editMessage: (c, m, t) => { edits.push(t); return Promise.resolve({ ok: true }); }, deleteMessage: () => Promise.resolve({ ok: true }) }, sent);
     await hub._internals.deliver('chat1', atEdge, 'r2', 'done');
     A.ok(sent.length >= 1 && !sent.some(leaks), 'hub with a rig\'s hostPathPrefixes: the same whole-text scrub');
-    await hub._internals.deliver('chat1', 'final at /c/Users/andro/AppData/Roaming/StarNet/workspaces/alpha/x', 'r3', 'done', '', null, 'seed-1');
+    await hub._internals.deliver('chat1', 'final at /c/Users/andro/AppData/Roaming/Vultron/workspaces/alpha/x', 'r3', 'done', '', null, 'seed-1');
     A.ok(edits.length === 1 && !leaks(edits[0]) && edits[0].indexOf(PLACEHOLDER + '/alpha/x') >= 0, 'hub editMessage (a streamed reply replaced in place) is scrubbed: ' + JSON.stringify(edits));
   }
 
@@ -330,7 +330,7 @@ function linearRun(f, unit, count) {
       ['editMessage: an inline keyboard label', () => tg.editMessage('1', '7', 'pick', kb())],
       ['editMessage: a keyboard sent as a JSON string', () => tg.editMessage('1', '7', 'pick', { reply_markup: JSON.stringify(kb().reply_markup) })],
       ['sendMedia: the caption', () => tg.sendMedia('1', { kind: 'document', buffer: Buffer.from('x'), filename: 'x.txt', caption: 'saved ' + P })],
-      ['sendMedia: the file name', () => tg.sendMedia('1', { kind: 'document', buffer: Buffer.from('x'), filename: 'C%3A%5CUsers%5Candro%5CAppData%5CRoaming%5CStarNet%5Cworkspaces%5Cx.txt', caption: '' })],
+      ['sendMedia: the file name', () => tg.sendMedia('1', { kind: 'document', buffer: Buffer.from('x'), filename: 'C%3A%5CUsers%5Candro%5CAppData%5CRoaming%5CVultron%5Cworkspaces%5Cx.txt', caption: '' })],
       ['sendMedia: a keyboard under the file', () => tg.sendMedia('1', { kind: 'document', buffer: Buffer.from('x'), filename: 'x.txt' }, kb())],
       ['sendMediaGroup: the captions and file names', () => tg.sendMediaGroup('1', [{ kind: 'photo', buffer: Buffer.from('x'), filename: 'a.png', caption: 'saved ' + P }, { kind: 'photo', buffer: Buffer.from('y'), filename: WS + '\\b.png' }])],
       ['setShortDescription: the bot\'s status line', () => tg.setShortDescription('status ' + P)]

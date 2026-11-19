@@ -83,7 +83,7 @@ A.eq(pick(resolveRunWire({ agentId: '', hero, env })), [true, 'codex', 'gpt-5.5'
   const unknown = resolveRunWire({ agentId: 'scout', agent: { model: 'm', provider: 'not-a-provider' }, hero, env, normalizeProvider: norm });
   A.eq([unknown.provider, unknown.providerSource], ['codex', 'station'], 'an unknown provider id on a roster row is no provider: the next level lends one');
   A.eq(unknown.ignored, [{ source: 'agent', provider: 'not-a-provider', reason: 'unknown provider' }], '...and the id it did not know is reported, never silent');
-  // an EXPLICIT model on a provider the host does not know (a typo'd STARNET_V1_PROVIDER, a routine saved on a dropped
+  // an EXPLICIT model on a provider the host does not know (a typo'd VULTRON_V1_PROVIDER, a routine saved on a dropped
   // provider, a caller's run option) is refused: borrowing would send it, and another provider's credential, elsewhere
   for (const source of ['env', 'routine', 'explicit']) {
     const typo = resolveRunWire({ agentId: 'api-x', explicit: { source, provider: 'olama', model: 'llama3' }, agent: null, hero, env, normalizeProvider: norm });
@@ -116,7 +116,7 @@ A.eq(pick(resolveRunWire({ agentId: '', hero, env })), [true, 'codex', 'gpt-5.5'
   // a bare saved model FOLLOWS a station provider switch, as it did before the lane
   const ranOn = h => { const w = resolveRunWire({ agentId: 'scout', explicit: { source: 'routine', provider: '', model: 'r/model' }, agent: {}, hero: h, env }); return [w.provider, w.model]; };
   A.eq(ranOn({ model: 'gpt-5.5', provider: 'codex' }), ['codex', 'r/model'], 'the bare routine model runs on the station provider');
-  A.eq(ranOn({ model: 'gpt-5.5', provider: 'starnet' }), ['starnet', 'r/model'], '...and on the new one after the station switches provider');
+  A.eq(ranOn({ model: 'gpt-5.5', provider: 'vultron' }), ['vultron', 'r/model'], '...and on the new one after the station switches provider');
 }
 
 // ---- 7. THE ONE REASONING-EFFORT RULE ----

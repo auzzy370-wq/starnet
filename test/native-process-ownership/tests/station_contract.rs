@@ -14,7 +14,7 @@
 //! (.github/workflows/fast-gate.yml).
 
 use serde_json::Value;
-use starnet_process_ownership_rules::fresh_start::{quarantine_and_prepare, set_aside_for_erase};
+use vultron_process_ownership_rules::fresh_start::{quarantine_and_prepare, set_aside_for_erase};
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -26,9 +26,9 @@ fn fixture() -> Value {
 
 fn scratch(name: &str) -> PathBuf {
     let dir = std::env::temp_dir().join(format!(
-        "starnet-station-contract-{name}-{}-{}",
+        "vultron-station-contract-{name}-{}-{}",
         std::process::id(),
-        starnet_process_ownership_rules::now_ms()
+        vultron_process_ownership_rules::now_ms()
     ));
     fs::create_dir_all(&dir).unwrap();
     dir

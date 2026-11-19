@@ -27,13 +27,13 @@ const { SidecarFixture } = require('./helpers/sidecar-fixture.js');
   const fixture = SidecarFixture.create({ timeoutMs: 20000, env: {
     SKYNET_SCOUT: '0', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0', SKYNET_THREAD_MINE: '0',
     OPENROUTER_KEY: key, OPENROUTER_API_KEY: key, SKYNET_OPENROUTER_BASE: base + '/router',
-    SKYNET_FALLBACK_MODELS: 'gpt-5.4', SKYNET_FULL_ACCESS: '0', STARNET_FULL_ACCESS: '0', STARNET_IPC_TOKEN: IPC
+    SKYNET_FALLBACK_MODELS: 'gpt-5.4', SKYNET_FULL_ACCESS: '0', VULTRON_FULL_ACCESS: '0', VULTRON_IPC_TOKEN: IPC
   } });
   /* The Codex mock reaches the station the way the desktop hands it an endpoint: the token-gated runtime push. A per-run
      endpoint never redirects a sign-in (providerRuntimeBaseUrl), and a sign-in's endpoint is not kept across a restart
      (keptEndpointProvider), so every boot pushes it again — no step of this test can dial chatgpt.com. */
   async function pushCodexEndpoint() {
-    const r = await fixture.request('/api/key', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-StarNet-Token': IPC }, body: JSON.stringify({ provider: 'codex', baseUrl: base + '/codex' }) });
+    const r = await fixture.request('/api/key', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Vultron-Token': IPC }, body: JSON.stringify({ provider: 'codex', baseUrl: base + '/codex' }) });
     assert.equal(r.status, 200, await r.text());
   }
   async function restart() { await fixture.restart(); await pushCodexEndpoint(); }

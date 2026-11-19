@@ -8,7 +8,7 @@
    rotation left the old key in the environment too, and a bare OS export of the same provider (ANTHROPIC_API_KEY set for
    another tool) outranked the Settings key because the env layer reads the bare name first (probe R5).
 
-   THE RULE. Under the shell's marker (STARNET_DESKTOP_SHELL=1, which every spawn sets) index.js's first statements after
+   THE RULE. Under the shell's marker (VULTRON_DESKTOP_SHELL=1, which every spawn sets) index.js's first statements after
    the connector key hand process.env to credential-store.js adoptSpawnCredentials, which takes each pair the shell could
    have written — both spellings, one value: set_sidecar_branded_env — into the keychain layer and deletes both spellings.
    One spelling, two values and a bare name are the user's own exports and stay. Without the marker nothing moves.
@@ -57,15 +57,15 @@ A.eq(POOL_PROVIDERS.length, Number((/; (\d+)\] = \[/.exec(poolTable) || [])[1]),
 A.ok(SHELL_KEYS.length >= 12 && POOL_PROVIDERS.includes('openrouter') && POOL_PROVIDERS.includes('custom'), 'fixture: the tables are the ones the shell spawns with');
 
 const branded = block(main, 'fn set_sidecar_branded_env<V: AsRef<OsStr>>(cmd: &mut Command, legacy_name: &str, value: V) {', 'main.rs set_sidecar_branded_env');
-A.ok(/\n    cmd\.env\(legacy_name, value\);\n    if let Some\(suffix\) = legacy_name\.strip_prefix\("SKYNET_"\) \{\n        cmd\.env\(format!\("STARNET_\{suffix\}"\), value\);/.test(branded),
-  'set_sidecar_branded_env writes the SKYNET_ name and its STARNET_ spelling with the SAME value (what adoption looks for)');
+A.ok(/\n    cmd\.env\(legacy_name, value\);\n    if let Some\(suffix\) = legacy_name\.strip_prefix\("SKYNET_"\) \{\n        cmd\.env\(format!\("VULTRON_\{suffix\}"\), value\);/.test(branded),
+  'set_sidecar_branded_env writes the SKYNET_ name and its VULTRON_ spelling with the SAME value (what adoption looks for)');
 const spawnCmd = block(main, 'fn sidecar_command(state: &AppState, entry: &Path, node: &Path) -> Command {', 'main.rs sidecar_command');
-A.ok(/\.env\("STARNET_DESKTOP_SHELL", "1"\)/.test(spawnCmd), 'every shell spawn sets STARNET_DESKTOP_SHELL=1 (the marker adoption keys on)');
+A.ok(/\.env\("VULTRON_DESKTOP_SHELL", "1"\)/.test(spawnCmd), 'every shell spawn sets VULTRON_DESKTOP_SHELL=1 (the marker adoption keys on)');
 A.ok(/if let Some\(key\) = read_key\(\) \{\n        set_sidecar_branded_env\(&mut cmd, "SKYNET_OPENROUTER_KEY", key\);/.test(spawnCmd), 'the shell writes the OpenRouter keychain key as SKYNET_OPENROUTER_KEY, in both spellings');
 A.ok(/for \(provider, env_name\) in SIDECAR_PROVIDER_KEY_ENVS \{\n        if let Some\(key\) = read_key_for\(provider\) \{\n            set_sidecar_branded_env\(&mut cmd, env_name, key\);/.test(spawnCmd), '...each SIDECAR_PROVIDER_KEY_ENVS key, in both spellings');
 A.ok(/for provider in KEYCHAIN_PROVIDERS \{[\s\S]*?"SKYNET_KEY_POOL_\{\}",\s*provider\.to_ascii_uppercase\(\)\.replace\('-', "_"\)[\s\S]*?set_sidecar_branded_env\(&mut cmd, &env_name, pool\.join\(","\)\);/.test(spawnCmd),
   '...and each KEYCHAIN_PROVIDERS pool as SKYNET_KEY_POOL_<ID>, comma-joined, in both spellings');
-A.ok(!/env_remove\("(?:SKYNET|STARNET)_[A-Z_]*(?:API_KEY|OPENROUTER_KEY|KEY_POOL)/.test(spawnCmd), 'fixture: the shell never removes an inherited branded key name (a user\'s single-spelling export reaches the sidecar)');
+A.ok(!/env_remove\("(?:SKYNET|VULTRON)_[A-Z_]*(?:API_KEY|OPENROUTER_KEY|KEY_POOL)/.test(spawnCmd), 'fixture: the shell never removes an inherited branded key name (a user\'s single-spelling export reaches the sidecar)');
 // each name the shell writes is one this store reads for that provider
 for (const { provider, name } of SHELL_KEYS.concat([{ provider: 'openrouter', name: 'SKYNET_OPENROUTER_KEY' }])) {
   A.ok(keyEnvOf(provider).includes(name.replace(/^SKYNET_/, '')), 'the shell\'s ' + name + ' is a ' + provider + ' keyEnv name in the registry');
@@ -75,8 +75,8 @@ for (const { provider, name } of SHELL_KEYS.concat([{ provider: 'openrouter', na
 {
   // the one place this test reads index.js as it stands: where the adoption sits is index.js's own structure
   const idx = readSidecarIndex();
-  const consumed = idx.indexOf('delete process.env.STARNET_CONNECTOR_KEY_ERROR;\n');
-  const stmt = "const SPAWN_CREDENTIALS = credentialStore.adoptSpawnCredentials(process.env, {\n  desktopShell: process.env.STARNET_DESKTOP_SHELL === '1',\n  profiles: require('./providers/registry.js').listProviderProfiles({ includeInactive: true, public: false })\n});\n";
+  const consumed = idx.indexOf('delete process.env.VULTRON_CONNECTOR_KEY_ERROR;\n');
+  const stmt = "const SPAWN_CREDENTIALS = credentialStore.adoptSpawnCredentials(process.env, {\n  desktopShell: process.env.VULTRON_DESKTOP_SHELL === '1',\n  profiles: require('./providers/registry.js').listProviderProfiles({ includeInactive: true, public: false })\n});\n";
   const at = idx.indexOf(stmt);
   A.ok(consumed > 0 && at > consumed, 'index.js adopts the shell\'s keys right after it consumes the connector key, with process.env itself and the shell\'s exact marker');
   const between = idx.slice(consumed, at + stmt.length);
@@ -93,7 +93,7 @@ for (const { provider, name } of SHELL_KEYS.concat([{ provider: 'openrouter', na
   for (const p of PROFILES) for (const n of p.keyEnv || []) names.add(n);
   const BLOCK = /\/\*[\s\S]*?\*\//g, LINE = /(^|[^:'"`\\])\/\/[^\n]*/g;
   const code = text => text.replace(BLOCK, m => m.replace(/[^\n]/g, ' ')).replace(LINE, '$1');
-  const nameRe = new RegExp('(?:^|[^A-Z0-9_])(?:(?:STARNET|SKYNET)_)?(?:' + Array.from(names).join('|') + ')(?![A-Z0-9_])|KEY_POOL');
+  const nameRe = new RegExp('(?:^|[^A-Z0-9_])(?:(?:VULTRON|SKYNET)_)?(?:' + Array.from(names).join('|') + ')(?![A-Z0-9_])|KEY_POOL');
   const hits = [];
   for (const f of sidecarSourceFiles()) {
     if (f.rel === 'sidecar/credential-store.js' || f.rel === 'sidecar/providers/registry.js') continue;   // the store; the names' table
@@ -139,8 +139,8 @@ if (CS) {
   const KEY = p => 'shell-key-for-' + p + '-0123456789';
   const POOL = p => ['pool-a-' + p, 'pool-b-' + p];
   function shellEnv() {
-    const env = { STARNET_DESKTOP_SHELL: '1', PATH: '/usr/bin' };
-    const put = (name, value) => { env[name] = value; env['STARNET_' + name.replace(/^SKYNET_/, '')] = value; };
+    const env = { VULTRON_DESKTOP_SHELL: '1', PATH: '/usr/bin' };
+    const put = (name, value) => { env[name] = value; env['VULTRON_' + name.replace(/^SKYNET_/, '')] = value; };
     put('SKYNET_OPENROUTER_KEY', KEY('openrouter'));
     for (const { provider, name } of SHELL_KEYS) put(name, KEY(provider));
     for (const p of POOL_PROVIDERS) put('SKYNET_KEY_POOL_' + p.toUpperCase().replace(/-/g, '_'), POOL(p).join(','));
@@ -148,32 +148,32 @@ if (CS) {
   }
   {
     const env = shellEnv();
-    const injected = Object.keys(env).filter(n => /^(?:STARNET|SKYNET)_/.test(n) && n !== 'STARNET_DESKTOP_SHELL').sort();
+    const injected = Object.keys(env).filter(n => /^(?:VULTRON|SKYNET)_/.test(n) && n !== 'VULTRON_DESKTOP_SHELL').sort();
     const got = adopt(env, true);
     A.eq(Object.keys(got.keys).sort(), Array.from(new Set(['openrouter'].concat(SHELL_KEYS.map(k => k.provider)))).sort(), 'under the marker every provider the shell injects a key for is adopted');
     for (const p of Object.keys(got.keys)) if (got.keys[p] !== KEY(p)) A.ok(false, p + ' is adopted with its own key, never another provider\'s: ' + got.keys[p]);
     A.eq(Object.keys(got.pools).sort(), POOL_PROVIDERS.slice().sort(), '...and every provider it injects a pool for');
     for (const p of POOL_PROVIDERS) A.eq(got.pools[p], POOL(p), p + '\'s pool is split as the shell joined it');
     A.eq(got.names.slice().sort(), injected, 'adoption deletes exactly the names the shell injected, both spellings');
-    A.eq(Object.keys(env).sort(), ['PATH', 'STARNET_DESKTOP_SHELL'], 'the environment holds none of them afterwards');
+    A.eq(Object.keys(env).sort(), ['PATH', 'VULTRON_DESKTOP_SHELL'], 'the environment holds none of them afterwards');
   }
   {
     const env = shellEnv();
-    delete env.STARNET_DESKTOP_SHELL;
+    delete env.VULTRON_DESKTOP_SHELL;
     const before = JSON.stringify(env);
     const got = adopt(env, false);
     A.eq([Object.keys(got.keys).length, Object.keys(got.pools).length, got.names.length, JSON.stringify(env) === before], [0, 0, 0, true],
-      'without the marker (bin/starnet.js, servers, CI) nothing is adopted and nothing is deleted');
+      'without the marker (bin/vultron.js, servers, CI) nothing is adopted and nothing is deleted');
   }
   {
     // a user's own exports are never adopted: one spelling, two values, a blank pair, padding that differs, a bare name
     const env = {
-      STARNET_ANTHROPIC_API_KEY: 'only-one-spelling-key-0123',
-      STARNET_MISTRAL_API_KEY: 'starnet-value-0123456789', SKYNET_MISTRAL_API_KEY: 'skynet-value-0123456789',
-      STARNET_GROQ_API_KEY: '', SKYNET_GROQ_API_KEY: '',
-      STARNET_OPENAI_API_KEY: ' padded-key-0123456789', SKYNET_OPENAI_API_KEY: 'padded-key-0123456789',
+      VULTRON_ANTHROPIC_API_KEY: 'only-one-spelling-key-0123',
+      VULTRON_MISTRAL_API_KEY: 'vultron-value-0123456789', SKYNET_MISTRAL_API_KEY: 'skynet-value-0123456789',
+      VULTRON_GROQ_API_KEY: '', SKYNET_GROQ_API_KEY: '',
+      VULTRON_OPENAI_API_KEY: ' padded-key-0123456789', SKYNET_OPENAI_API_KEY: 'padded-key-0123456789',
       DEEPSEEK_API_KEY: 'bare-export-0123456789', OPENROUTER_API_KEY: 'bare-openrouter-0123456789',
-      STARNET_KEY_POOL_ANTHROPIC: 'p1,p2'
+      VULTRON_KEY_POOL_ANTHROPIC: 'p1,p2'
     };
     const before = JSON.stringify(env);
     const got = adopt(env, true);
@@ -182,11 +182,11 @@ if (CS) {
   }
   {
     // a later keyEnv name of the same provider: the same value leaves with the adopted pair, another value stays
-    const same = { STARNET_GEMINI_API_KEY: 'gk-0123456789', SKYNET_GEMINI_API_KEY: 'gk-0123456789', STARNET_GOOGLE_API_KEY: 'gk-0123456789', SKYNET_GOOGLE_API_KEY: 'gk-0123456789' };
+    const same = { VULTRON_GEMINI_API_KEY: 'gk-0123456789', SKYNET_GEMINI_API_KEY: 'gk-0123456789', VULTRON_GOOGLE_API_KEY: 'gk-0123456789', SKYNET_GOOGLE_API_KEY: 'gk-0123456789' };
     A.eq([adopt(same, true).keys.gemini, Object.keys(same)], ['gk-0123456789', []], 'a second name holding the adopted value leaves env too (no copy of the key lingers)');
-    const other = { STARNET_GEMINI_API_KEY: 'gk-0123456789', SKYNET_GEMINI_API_KEY: 'gk-0123456789', STARNET_GOOGLE_API_KEY: 'other-9876543210', SKYNET_GOOGLE_API_KEY: 'other-9876543210' };
-    A.eq([adopt(other, true).keys.gemini, Object.keys(other).sort()], ['gk-0123456789', ['SKYNET_GOOGLE_API_KEY', 'STARNET_GOOGLE_API_KEY']], '...one holding another value stays (a user\'s export, read below the keychain key)');
-    const later = { STARNET_GOOGLE_AI_API_KEY: 'gai-0123456789', SKYNET_GOOGLE_AI_API_KEY: 'gai-0123456789' };
+    const other = { VULTRON_GEMINI_API_KEY: 'gk-0123456789', SKYNET_GEMINI_API_KEY: 'gk-0123456789', VULTRON_GOOGLE_API_KEY: 'other-9876543210', SKYNET_GOOGLE_API_KEY: 'other-9876543210' };
+    A.eq([adopt(other, true).keys.gemini, Object.keys(other).sort()], ['gk-0123456789', ['SKYNET_GOOGLE_API_KEY', 'VULTRON_GOOGLE_API_KEY']], '...one holding another value stays (a user\'s export, read below the keychain key)');
+    const later = { VULTRON_GOOGLE_AI_API_KEY: 'gai-0123456789', SKYNET_GOOGLE_AI_API_KEY: 'gai-0123456789' };
     A.eq(adopt(later, true).keys.gemini, 'gai-0123456789', 'a pair under any of the provider\'s names is the keychain key when it is the only one');
   }
 
@@ -209,24 +209,24 @@ if (CS) {
   }
   {
     // D1: the shell's key beside a bare OS export of the same provider (probe R5), and a single-spelling export
-    const api = station({ STARNET_DESKTOP_SHELL: '1', STARNET_ANTHROPIC_API_KEY: 'kc-0123456789', SKYNET_ANTHROPIC_API_KEY: 'kc-0123456789', ANTHROPIC_API_KEY: 'os-0123456789',
-      STARNET_MISTRAL_API_KEY: 'mine-0123456789' });
+    const api = station({ VULTRON_DESKTOP_SHELL: '1', VULTRON_ANTHROPIC_API_KEY: 'kc-0123456789', SKYNET_ANTHROPIC_API_KEY: 'kc-0123456789', ANTHROPIC_API_KEY: 'os-0123456789',
+      VULTRON_MISTRAL_API_KEY: 'mine-0123456789' });
     A.eq([api.key('anthropic', ''), src(api, 'anthropic')], ['kc-0123456789', 'keychain'], 'D1: the keychain key outranks the bare OS export');
-    A.eq(src(api, 'mistral'), 'environment:STARNET_MISTRAL_API_KEY', 'a single-spelling export is the env layer\'s, and the readout names it');
+    A.eq(src(api, 'mistral'), 'environment:VULTRON_MISTRAL_API_KEY', 'a single-spelling export is the env layer\'s, and the readout names it');
     api.push('anthropic', { key: '' });
     api.push('mistral', { key: '' });
     A.eq([api.key('anthropic', ''), src(api, 'anthropic')], ['os-0123456789', 'environment:ANTHROPIC_API_KEY'], 'after the REMOVE the user\'s own export serves, and the readout names it');
-    A.eq([api.key('mistral', ''), src(api, 'mistral')], ['mine-0123456789', 'environment:STARNET_MISTRAL_API_KEY'], '...and a single-spelling export survives a REMOVE');
+    A.eq([api.key('mistral', ''), src(api, 'mistral')], ['mine-0123456789', 'environment:VULTRON_MISTRAL_API_KEY'], '...and a single-spelling export survives a REMOVE');
     const lines = api.host.warns.filter(w => /^\[credentials\]/.test(w));
-    A.ok(lines.length === 2 && /ANTHROPIC_API_KEY still holds one/.test(lines[0]) && /STARNET_MISTRAL_API_KEY still holds one/.test(lines[1]), 'each REMOVE that leaves an env key serving says so in one line naming the variable: ' + JSON.stringify(lines));
+    A.ok(lines.length === 2 && /ANTHROPIC_API_KEY still holds one/.test(lines[0]) && /VULTRON_MISTRAL_API_KEY still holds one/.test(lines[1]), 'each REMOVE that leaves an env key serving says so in one line naming the variable: ' + JSON.stringify(lines));
     A.ok(!lines.join('\n').includes('0123456789'), '...and never a key');
   }
   {
     // headless: the same branded pair without the marker is an operator's export, untouched
-    const env = { STARNET_ANTHROPIC_API_KEY: 'hk-0123456789', SKYNET_ANTHROPIC_API_KEY: 'hk-0123456789', SKYNET_OPENROUTER_KEY: 'hor-0123456789' };
+    const env = { VULTRON_ANTHROPIC_API_KEY: 'hk-0123456789', SKYNET_ANTHROPIC_API_KEY: 'hk-0123456789', SKYNET_OPENROUTER_KEY: 'hor-0123456789' };
     const api = station(Object.assign({}, env));
-    A.eq(Object.keys(api.host.env).filter(n => n !== 'STARNET_IPC_TOKEN').sort(), Object.keys(env).sort(), 'headless: nothing is adopted or deleted');
-    A.eq([api.key('anthropic', ''), src(api, 'anthropic')], ['hk-0123456789', 'environment:STARNET_ANTHROPIC_API_KEY'], '...the env key serves, and the readout names its variable');
+    A.eq(Object.keys(api.host.env).filter(n => n !== 'VULTRON_IPC_TOKEN').sort(), Object.keys(env).sort(), 'headless: nothing is adopted or deleted');
+    A.eq([api.key('anthropic', ''), src(api, 'anthropic')], ['hk-0123456789', 'environment:VULTRON_ANTHROPIC_API_KEY'], '...the env key serves, and the readout names its variable');
     A.eq([api.key('openrouter', ''), src(api, 'openrouter')], ['hor-0123456789', 'environment:SKYNET_OPENROUTER_KEY'], '...the legacy OpenRouter alias is an environment variable, named, not a keychain');
     A.eq(api.presence('anthropic').keySource, 'environment', '...and the page still reads keySource environment');
     api.push('openrouter', { key: 'pushed-0123456789' });
@@ -236,7 +236,7 @@ if (CS) {
     // every other source the readout names
     const page = station({}, { page: { mistral: { key: 'page-0123456789', rev: 'r1' } } });
     A.eq(src(page, 'mistral'), 'page', 'a browser page copy reads page');
-    A.eq([src(station({}, { linked: { url: 'http://li.test', apiKey: 'li' } }), 'starnet'), src(station({}), 'starnet')], ['linked', 'none'], 'StarNet reads linked, or none unlinked');
+    A.eq([src(station({}, { linked: { url: 'http://li.test', apiKey: 'li' } }), 'vultron'), src(station({}), 'vultron')], ['linked', 'none'], 'Vultron reads linked, or none unlinked');
     A.eq(['codex', 'grok', 'kimi'].map(p => src(station({}), p)), ['sign-in', 'sign-in', 'sign-in'], 'the sign-ins read sign-in (their bearer is not a key this store holds)');
     A.eq(src(station({}), 'anthropic'), 'none', 'nothing anywhere reads none');
   }

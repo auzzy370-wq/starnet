@@ -16,7 +16,7 @@ const path = require('path');
 const os = require('os');
 const { makeFsTools } = require('../sidecar/tools/builtin/fs.js');
 
-const ROOT = path.join(os.tmpdir(), 'starnet-fs-read-large-' + process.pid);
+const ROOT = path.join(os.tmpdir(), 'vultron-fs-read-large-' + process.pid);
 const MiB = 1024 * 1024;
 
 (async () => {

@@ -250,7 +250,7 @@ function eight() {
 // ---- persistence: the reference survives a durable store reload ----
 {
   const { makeMemoryStore } = require('../sidecar/memory-store.js');
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-tasteref-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-tasteref-'));
   try {
     const mk = () => makeMemoryStore({ fs, path, workspaces: dir });
     const s1 = mk();

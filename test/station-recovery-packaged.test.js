@@ -18,7 +18,7 @@ const Backup = require('../frontend/app/backup.js');
 const CLI = path.join(__dirname, '..', 'bin', 'station-recovery.js');
 const KEY = 'ab'.repeat(32);
 const SECRET = 'SYNTHETIC_VAULT_SECRET';
-const root = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-recovery-packaged-'));
+const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-recovery-packaged-'));
 function run(args) { return cp.spawnSync(process.execPath, [CLI, ...args], { cwd: root, encoding: 'utf8' }); }
 function out(r) { return JSON.parse(r.stdout); }
 function seed(ws, connectors) {
@@ -47,8 +47,8 @@ function seed(ws, connectors) {
 /* ---- the encrypted store offline ---- */
 const vaultWs = path.join(root, 'vault', 'workspaces');
 seed(vaultWs, 'vault');
-A.ok(JSON.parse(fs.readFileSync(path.join(vaultWs, 'connectors', 'state.json'), 'utf8')).format.startsWith('starnet.connector-vault.'), 'the fixture is really encrypted');
-const vaultBundle = path.join(root, 'out', 'vault.starnet-recovery.json');
+A.ok(JSON.parse(fs.readFileSync(path.join(vaultWs, 'connectors', 'state.json'), 'utf8')).format.startsWith('vultron.connector-vault.'), 'the fixture is really encrypted');
+const vaultBundle = path.join(root, 'out', 'vault.vultron-recovery.json');
 const offline = run(['backup', '--workspace', vaultWs, '--output', vaultBundle]);
 A.eq(offline.status, 0, 'offline backup of an encrypted station does not crash: ' + offline.stderr);
 const offlineReport = out(offline);
@@ -76,7 +76,7 @@ A.eq(out(allowedRun).browserImport.importable, false, 'a bundle with no browser 
 /* a pre-update capture still fails closed: it is the running app's job to supply the callback */
 let threw = '';
 try { Recovery.capture({ workspaceRoot: vaultWs, now: 1 }); } catch (e) { threw = e.message; }
-A.ok(/requires the running StarNet app/.test(threw), 'a caller that does not ask for omission still fails closed');
+A.ok(/requires the running Vultron app/.test(threw), 'a caller that does not ask for omission still fails closed');
 
 /* ---- the running app's bundle keeps the list, without the credentials ---- */
 const online = Recovery.capture({ workspaceRoot: vaultWs, now: 2, omitUnavailableCredentialStores: true, readConnectorState: () => makeConnectorVault({ fs, path, keyHex: KEY }).load(path.join(vaultWs, 'connectors', 'state.json')) });
@@ -115,7 +115,7 @@ A.eq(Recovery.bundleIntegrity(old).tornChecked, false, 'and says why');
 const lying = JSON.parse(JSON.stringify(torn)); lying.report.integrity.verbatim = true;
 A.ok(Recovery.validate(lying).errors.some(e => /lists gaps/.test(e)), 'a report that claims exact over its own gaps is invalid');
 
-const inspectTorn = path.join(root, 'out', 'torn.starnet-recovery.json');
+const inspectTorn = path.join(root, 'out', 'torn.vultron-recovery.json');
 Recovery.writeBundleAtomic({ bundle: torn, file: inspectTorn });
 const seen = out(run(['inspect', '--bundle', inspectTorn]));
 A.ok(/^All required categories/.test(seen.verdict.categories), 'inspect says the categories answer in words');
@@ -125,7 +125,7 @@ A.ok(/^Not an exact copy: .*replaced from the last good \.bak.*torn store/.test(
 const thinWs = path.join(root, 'thin', 'workspaces');
 seed(thinWs, 'plain');
 fs.unlinkSync(path.join(thinWs, 'loops.json'));
-const thinOut = path.join(root, 'out', 'thin.starnet-recovery.json');
+const thinOut = path.join(root, 'out', 'thin.vultron-recovery.json');
 const thin = run(['backup', '--workspace', thinWs, '--output', thinOut]);
 A.eq(thin.status, 0, 'a category with nothing in it does not stop the write');
 A.eq(out(thin).complete, false, 'complete still says what it always said');
@@ -160,7 +160,7 @@ const held = cp.spawn(process.execPath, ['-e', `
     held.once('error', reject);
     held.once('exit', code => reject(new Error('fixture exited before taking the claim: ' + code)));
   });
-  const liveOut = path.join(root, 'out', 'live.starnet-recovery.json');
+  const liveOut = path.join(root, 'out', 'live.vultron-recovery.json');
   const liveBackup = run(['backup', '--workspace', liveWs, '--output', liveOut]);
   A.ok(liveBackup.status === 1 && /still running/.test(liveBackup.stderr), 'backup refuses a station a live process owns: ' + liveBackup.stderr);
   A.eq(fs.existsSync(liveOut), false, 'and writes nothing');
@@ -185,7 +185,7 @@ const held = cp.spawn(process.execPath, ['-e', `
     fs, path, workspaceRoot: preWs, writeDurable: writeFileDurable, now: () => 1760000000000, newId: () => 'id',
     recovery: Object.assign({}, Recovery, { capture: o => Recovery.capture(Object.assign({}, o, { readConnectorState: () => makeConnectorVault({ fs, path, keyHex: KEY }).load(path.join(preWs, 'connectors', 'state.json')) })) })
   });
-  const prepared = await prep.prepare({ targetVersion: '9.9.9', browserStore: { 'starnet.save.w.win1': JSON.stringify({ agent: { id: 'agent' } }), 'starnet.station.v1': '{}' } });
+  const prepared = await prep.prepare({ targetVersion: '9.9.9', browserStore: { 'vultron.save.w.win1': JSON.stringify({ agent: { id: 'agent' } }), 'vultron.station.v1': '{}' } });
   A.eq(prepared.ok, true, 'the pre-update path prepares: ' + prepared.error);
   const snapshot = prepared.receipt.snapshot.file;
   A.eq(out(run(['inspect', '--bundle', snapshot])).integrity.verbatim, true, 'inspect reads a pre-update snapshot');
@@ -195,7 +195,7 @@ const held = cp.spawn(process.execPath, ['-e', `
   A.eq(preRestore.status, 0, 'restore takes it: ' + preRestore.stderr);
   A.ok(JSON.parse(fs.readFileSync(path.join(preTarget, 'connectors', 'state.json'), 'utf8')).configs.some(x => x.id === 'notion'), 'with the connector list the app read');
   const browserFile = JSON.parse(fs.readFileSync(out(preRestore).browserImport.file, 'utf8'));
-  A.eq(typeof browserFile.store['starnet.save'], 'string', 'an extra window\'s journal lands under the key RESTORE BACKUP asks for');
+  A.eq(typeof browserFile.store['vultron.save'], 'string', 'an extra window\'s journal lands under the key RESTORE BACKUP asks for');
   A.eq(Object.keys(browserFile.store).some(k => /\.w\./.test(k)), false, 'and not under its own');
   A.eq(Backup.validate(browserFile), null, 'the import file passes the importer\'s own validation');
   prep.cancel();
@@ -218,14 +218,14 @@ const held = cp.spawn(process.execPath, ['-e', `
   runs = 0;
   const inside = await appPrep.createBackup({ dir: path.join(appWs, 'sub') });
   A.eq(inside.code, 'BACKUP_FOLDER_INSIDE_STATION', 'never inside the station it backs up');
-  const made = await appPrep.createBackup({ dir: dl, browserStore: { 'starnet.save': JSON.stringify({ agent: { id: 'agent' } }) } });
+  const made = await appPrep.createBackup({ dir: dl, browserStore: { 'vultron.save': JSON.stringify({ agent: { id: 'agent' } }) } });
   A.eq(made.ok, true, 'the in-app bundle is written: ' + made.error);
   A.ok(frozenWrites >= 1 && thawed >= 1 && appPrep.isFrozen() === false, 'writes froze for it and thawed after');
   const resumed = appPrep.beginRequest('POST', '/api/activity');
   A.ok(resumed.ok, 'mutations resume');
   resumed.release();
   A.eq(path.dirname(made.file), dl, 'it lands in the folder the host chose');
-  A.ok(/^starnet-recovery-\d{8}-\d{6}\.starnet-recovery\.json$/.test(path.basename(made.file)), 'under a clearly named file');
+  A.ok(/^vultron-recovery-\d{8}-\d{6}\.vultron-recovery\.json$/.test(path.basename(made.file)), 'under a clearly named file');
   A.eq(made.complete && made.integrity.verbatim, true, 'its receipt is complete and exact');
   const second = await appPrep.createBackup({ dir: dl });
   A.ok(second.ok && second.file !== made.file, 'a second one in the same second never overwrites the first');

@@ -21,7 +21,7 @@ const WIN_SYSTEM = {
   NUMBER_OF_PROCESSORS: '16', PROCESSOR_ARCHITECTURE: 'AMD64'
 };
 const SECRETS = {
-  OPENROUTER_API_KEY: 'sk-or-secret', STARNET_API_TOKEN: 'launch-token', SKYNET_IPC_TOKEN: 'ipc-token',
+  OPENROUTER_API_KEY: 'sk-or-secret', VULTRON_API_TOKEN: 'launch-token', SKYNET_IPC_TOKEN: 'ipc-token',
   OPENAI_API_KEY: 'sk-secret', GITHUB_TOKEN: 'ghp-secret', NODE_OPTIONS: '--require evil.js', MY_PRIVATE_VAR: 'user-data'
 };
 const SECRET_SHAPED = /(TOKEN|KEY|SECRET|PASSWORD|PASS|AUTH|BEARER|CREDENTIAL|COOKIE)/i;
@@ -49,10 +49,10 @@ test('on this host the real process env keeps ProgramData/SystemDrive (Windows o
 });
 
 test('driverCwd is a private folder under temp, never the sidecar cwd', () => {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-cua-cwd-'));
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-cua-cwd-'));
   try {
     const dir = driverCwd(tmp);
-    assert.equal(dir, path.join(tmp, 'starnet-cua'));
+    assert.equal(dir, path.join(tmp, 'vultron-cua'));
     assert.ok(fs.statSync(dir).isDirectory(), 'created');
     assert.equal(driverCwd(tmp), dir, 'stable across sessions');
     assert.notEqual(path.resolve(driverCwd()), path.resolve(process.cwd()));
@@ -60,10 +60,10 @@ test('driverCwd is a private folder under temp, never the sidecar cwd', () => {
 });
 
 // Review 2026-10-11: Windows resolves a RELATIVE spawn path against the CHILD's cwd, so the private cwd silently
-// broke a relative STARNET_CUA_BINARY / dev-eval argv path (ENOENT) while computer-control's installed()/check()
+// broke a relative VULTRON_CUA_BINARY / dev-eval argv path (ENOENT) while computer-control's installed()/check()
 // still found it from the sidecar cwd — status said installed, every action failed. The path is pinned first.
 test('driverBinary pins a relative driver path to the sidecar cwd and leaves PATH lookups alone', () => {
-  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-cua-bin-'));
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-cua-bin-'));
   try {
     const abs = path.join(base, 'drv', 'cua-driver.exe');
     assert.equal(driverBinary(abs, base), abs, 'absolute unchanged');
@@ -94,9 +94,9 @@ test('a relative executable still runs once the child gets the private cwd (real
 async function stubbedConnect(binary) {
   const calls = [];
   const orig = { spawn: cp.spawn, execFile: cp.execFile };
-  const planted = { OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY, STARNET_API_TOKEN: process.env.STARNET_API_TOKEN };
+  const planted = { OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY, VULTRON_API_TOKEN: process.env.VULTRON_API_TOKEN };
   process.env.OPENROUTER_API_KEY = 'sk-or-planted-secret';
-  process.env.STARNET_API_TOKEN = 'planted-launch-token';
+  process.env.VULTRON_API_TOKEN = 'planted-launch-token';
   cp.execFile = (file, args, opts, cb) => {
     calls.push({ kind: 'execFile', file, args: args.slice(), opts });
     setImmediate(() => args[0] === 'manifest' ? cb(null, JSON.stringify({ binary_version: '0.28.2' })) : cb(new Error('not running')));
@@ -136,7 +136,7 @@ test('connect() spawns and execs the driver with the allowlisted env and a priva
     assert.equal(c.opts.cwd, expected, c.kind + ' ' + c.args[0] + ' carries the private cwd');
     assert.notEqual(path.resolve(c.opts.cwd), path.resolve(process.cwd()), 'never the sidecar cwd');
     assert.equal(c.opts.env.OPENROUTER_API_KEY, undefined, 'provider key stays out');
-    assert.equal(c.opts.env.STARNET_API_TOKEN, undefined, 'launch token stays out');
+    assert.equal(c.opts.env.VULTRON_API_TOKEN, undefined, 'launch token stays out');
     if (process.platform === 'win32') assert.equal(c.opts.env.ProgramData, process.env.ProgramData, 'ProgramData reaches ' + c.args[0]);
   }
 });

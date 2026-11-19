@@ -66,7 +66,7 @@ A.eq(waitNoteText(null), '', 'no note -> empty line (the slot hides)');
   A.eq(waitNoteText(n), 'waiting for 1:50 (stream open) on aide-qwen3-8b:latest', 'a beat without a note shows none (never carried over)');
   A.eq(foldWaitNote(null, 'agent.waiting', { phase: 'connect', sinceMs: 1, note: 'n'.repeat(500) }).note.length, 240, 'the note is bounded');
 }
-/* THE WAIT'S LIMIT (local-runtime-profile lane, gap D, 2026-11-03). A local server StarNet waits on once (LOCAL SILENCE)
+/* THE WAIT'S LIMIT (local-runtime-profile lane, gap D, 2026-11-03). A local server Vultron waits on once (LOCAL SILENCE)
    states its ceiling on the beat: a connect ceiling counts down from the call going out (sinceMs), an idle ceiling is
    restated (only the adapter sees the bytes that reset it). A ladder's limit is the backoff its patience still allows,
    read off provider.retry (patienceMs − waitedMs − delayMs). Every number comes off an event; none is carried over. */

@@ -64,11 +64,11 @@ async function runScenario(name, env, turns, files, inspect) {
     return typeof entry === 'function' ? entry(tools) : (entry || null);
   });
   const fixture = SidecarFixture.create({
-    prefix: 'starnet-context-allowance-', timeoutMs: 60000,
+    prefix: 'vultron-context-allowance-', timeoutMs: 60000,
     env: Object.assign({
-      SKYNET_OPENROUTER_BASE: provider.baseUrl, STARNET_OPENROUTER_BASE: provider.baseUrl,
-      SKYNET_OPENROUTER_KEY: KEY, STARNET_OPENROUTER_KEY: KEY,
-      SKYNET_DEFAULT_MODEL: MODEL, STARNET_DEFAULT_MODEL: MODEL
+      SKYNET_OPENROUTER_BASE: provider.baseUrl, VULTRON_OPENROUTER_BASE: provider.baseUrl,
+      SKYNET_OPENROUTER_KEY: KEY, VULTRON_OPENROUTER_KEY: KEY,
+      SKYNET_DEFAULT_MODEL: MODEL, VULTRON_DEFAULT_MODEL: MODEL
     }, env)
   });
   try {
@@ -115,7 +115,7 @@ function floodFiles(turns) {
   // ---- 2. an explicit pin stays absolute, and even an exhausted budget still delivers what a receipt promises ----
   const small = 'TINY_FACT\n';
   let parkedPath = '', parkedBefore = -1;
-  await runScenario('pinned budget', { SKYNET_MAX_TOOL_BYTES: '120000', STARNET_MAX_TOOL_BYTES: '120000' }, [
+  await runScenario('pinned budget', { SKYNET_MAX_TOOL_BYTES: '120000', VULTRON_MAX_TOOL_BYTES: '120000' }, [
     floodTurn(0, 1), floodTurn(1, 1),
     [{ id: 'tiny', name: 'fs_read', args: { path: 'small.txt' } }],
     (tools) => {

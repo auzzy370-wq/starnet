@@ -3,7 +3,7 @@
 # the disk image before anything is mounted: a DMG whose embedded signature does not
 # match its bytes is refused on the user's Mac ("invalid signature (code or signature
 # have been modified)" / "internal error in Code Signing subsystem") even when the app
-# inside is notarized. That is the StarNet_0.13.5_aarch64.dmg field report; the train
+# inside is notarized. That is the Vultron_0.13.5_aarch64.dmg field report; the train
 # had only ever checked the .app.
 #   signed     before Apple submission: a valid, strict Developer ID signature.
 #   notarized  the shipped bytes: the above, a valid stapled ticket, and Gatekeeper's

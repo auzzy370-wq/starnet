@@ -17,7 +17,7 @@ Add-Type @'
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
-public static class StarNetNative {
+public static class VultronNative {
   [DllImport("user32.dll", SetLastError=true)] public static extern bool SetCursorPos(int X, int Y);
   [DllImport("user32.dll", SetLastError=true)] public static extern void mouse_event(uint flags, uint dx, uint dy, uint data, UIntPtr extraInfo);
   [DllImport("user32.dll", SetLastError=true)] public static extern IntPtr GetForegroundWindow();
@@ -33,14 +33,14 @@ public static class StarNetNative {
 }
 '@
 function Emit($value) { [Console]::Out.Write(($value | ConvertTo-Json -Compress -Depth 4)) }
-function Mouse($flag, $data) { [StarNetNative]::mouse_event([uint32]$flag, 0, 0, [uint32]$data, [UIntPtr]::Zero) }
+function Mouse($flag, $data) { [VultronNative]::mouse_event([uint32]$flag, 0, 0, [uint32]$data, [UIntPtr]::Zero) }
 # Avoid Move: PowerShell resolves its built-in Move-Item alias before a same-named function.
-function Set-StarNetCursorPosition($x, $y) { if (-not [StarNetNative]::SetCursorPos([int]$x, [int]$y)) { throw 'SetCursorPos failed' } }
+function Set-VultronCursorPosition($x, $y) { if (-not [VultronNative]::SetCursorPos([int]$x, [int]$y)) { throw 'SetCursorPos failed' } }
 function UnicodeText([string]$text) {
   foreach ($ch in $text.ToCharArray()) {
-    $down = New-Object StarNetNative+INPUT; $down.type = 1; $down.U.ki.wScan = [uint16][char]$ch; $down.U.ki.dwFlags = 0x0004
-    $up = New-Object StarNetNative+INPUT; $up.type = 1; $up.U.ki.wScan = [uint16][char]$ch; $up.U.ki.dwFlags = 0x0004 -bor 0x0002
-    if ([StarNetNative]::SendInput(2, @($down, $up), [Runtime.InteropServices.Marshal]::SizeOf([type][StarNetNative+INPUT])) -ne 2) { throw 'SendInput failed' }
+    $down = New-Object VultronNative+INPUT; $down.type = 1; $down.U.ki.wScan = [uint16][char]$ch; $down.U.ki.dwFlags = 0x0004
+    $up = New-Object VultronNative+INPUT; $up.type = 1; $up.U.ki.wScan = [uint16][char]$ch; $up.U.ki.dwFlags = 0x0004 -bor 0x0002
+    if ([VultronNative]::SendInput(2, @($down, $up), [Runtime.InteropServices.Marshal]::SizeOf([type][VultronNative+INPUT])) -ne 2) { throw 'SendInput failed' }
   }
 }
 function SendKey([string]$key) {
@@ -63,16 +63,16 @@ function SendHotkey($keys) {
   [System.Windows.Forms.SendKeys]::SendWait($prefix + $tail)
 }
 try {
-  $request = $env:STARNET_REMOTE_DESKTOP_REQUEST | ConvertFrom-Json
+  $request = $env:VULTRON_REMOTE_DESKTOP_REQUEST | ConvertFrom-Json
   if ($request.kind -eq 'foreground') {
-    $h = [StarNetNative]::GetForegroundWindow(); $title = New-Object Text.StringBuilder 1024; [void][StarNetNative]::GetWindowText($h, $title, $title.Capacity)
-    [uint32]$windowPid = 0; [void][StarNetNative]::GetWindowThreadProcessId($h, [ref]$windowPid); $proc = ''; try { $proc = (Get-Process -Id $windowPid -ErrorAction Stop).ProcessName } catch {}
+    $h = [VultronNative]::GetForegroundWindow(); $title = New-Object Text.StringBuilder 1024; [void][VultronNative]::GetWindowText($h, $title, $title.Capacity)
+    [uint32]$windowPid = 0; [void][VultronNative]::GetWindowThreadProcessId($h, [ref]$windowPid); $proc = ''; try { $proc = (Get-Process -Id $windowPid -ErrorAction Stop).ProcessName } catch {}
     Emit @{ title = $title.ToString(); process = $proc; pid = $windowPid }
   } elseif ($request.kind -eq 'windowAt') {
     # the TOP-LEVEL window a click at (x, y) lands in (GA_ROOT = 2), so a WebView child resolves to its app window
-    $pt = New-Object StarNetNative+POINT; $pt.X = [int]$request.x; $pt.Y = [int]$request.y
-    $h = [StarNetNative]::GetAncestor([StarNetNative]::WindowFromPoint($pt), 2); $title = New-Object Text.StringBuilder 1024; [void][StarNetNative]::GetWindowText($h, $title, $title.Capacity)
-    [uint32]$windowPid = 0; [void][StarNetNative]::GetWindowThreadProcessId($h, [ref]$windowPid); $proc = ''; try { $proc = (Get-Process -Id $windowPid -ErrorAction Stop).ProcessName } catch { $proc = '' }
+    $pt = New-Object VultronNative+POINT; $pt.X = [int]$request.x; $pt.Y = [int]$request.y
+    $h = [VultronNative]::GetAncestor([VultronNative]::WindowFromPoint($pt), 2); $title = New-Object Text.StringBuilder 1024; [void][VultronNative]::GetWindowText($h, $title, $title.Capacity)
+    [uint32]$windowPid = 0; [void][VultronNative]::GetWindowThreadProcessId($h, [ref]$windowPid); $proc = ''; try { $proc = (Get-Process -Id $windowPid -ErrorAction Stop).ProcessName } catch { $proc = '' }
     Emit @{ title = $title.ToString(); process = $proc; pid = $windowPid }
   } elseif ($request.kind -eq 'capture') {
     $vs = [System.Windows.Forms.SystemInformation]::VirtualScreen
@@ -82,9 +82,9 @@ try {
     Emit @{ width = $vs.Width; height = $vs.Height; data = [Convert]::ToBase64String($ms.ToArray()) }; $ms.Dispose()
   } elseif ($request.kind -eq 'perform') {
     $a = $request.action; $kind = [string]$a.action
-    if ($kind -eq 'move') { Set-StarNetCursorPosition $a.x $a.y }
-    elseif ($kind -eq 'click' -or $kind -eq 'double_click') { Set-StarNetCursorPosition $a.x $a.y; $count = if ($kind -eq 'double_click') { 2 } else { 1 }; for ($i = 0; $i -lt $count; $i++) { Mouse 0x0002 0; Mouse 0x0004 0 } }
-    elseif ($kind -eq 'drag') { Set-StarNetCursorPosition $a.x $a.y; Mouse 0x0002 0; Start-Sleep -Milliseconds 30; Set-StarNetCursorPosition ([int]$a.x + [int]$a.dx) ([int]$a.y + [int]$a.dy); Mouse 0x0004 0 }
+    if ($kind -eq 'move') { Set-VultronCursorPosition $a.x $a.y }
+    elseif ($kind -eq 'click' -or $kind -eq 'double_click') { Set-VultronCursorPosition $a.x $a.y; $count = if ($kind -eq 'double_click') { 2 } else { 1 }; for ($i = 0; $i -lt $count; $i++) { Mouse 0x0002 0; Mouse 0x0004 0 } }
+    elseif ($kind -eq 'drag') { Set-VultronCursorPosition $a.x $a.y; Mouse 0x0002 0; Start-Sleep -Milliseconds 30; Set-VultronCursorPosition ([int]$a.x + [int]$a.dx) ([int]$a.y + [int]$a.dy); Mouse 0x0004 0 }
     elseif ($kind -eq 'scroll') { if ($a.dy) { Mouse 0x0800 ([int]$a.dy) }; if ($a.dx) { Mouse 0x1000 ([int]$a.dx) } }
     elseif ($kind -eq 'type') { UnicodeText ([string]$a.text) }
     elseif ($kind -eq 'key') { SendKey ([string]$a.key) }
@@ -112,7 +112,7 @@ function makeWin32DesktopDriver(opts) {
   function invoke(payload) {
     return new Promise((resolve, reject) => {
       const envBase = baseEnv();
-      const env = Object.assign({}, envBase, { STARNET_REMOTE_DESKTOP_REQUEST: JSON.stringify(payload) });
+      const env = Object.assign({}, envBase, { VULTRON_REMOTE_DESKTOP_REQUEST: JSON.stringify(payload) });
       execFile(powershellPath(envBase), ['-NoProfile', '-NonInteractive', '-Command', POWERSHELL], {
         windowsHide: true, timeout: timeoutMs, maxBuffer: 40 * 1024 * 1024, env
       }, (err, stdout, stderr) => {

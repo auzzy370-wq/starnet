@@ -18,7 +18,7 @@ origin: audit
 In a session anchored to a project folder, a tool call whose output is too big for one turn is clamped and the
 note says "THE FULL OUTPUT WAS SAVED to .output/<file>.txt — read that file". Reading that exact path fails with
 "no such file", so the agent hunts for its own saved output (shell `Get-ChildItem` sweeps of the user profile)
-instead of working: the harness gauntlet `bigraw` scenario took ~720–770 s in StarNet vs ~30–90 s in Claude Code
+instead of working: the harness gauntlet `bigraw` scenario took ~720–770 s in Vultron vs ~30–90 s in Claude Code
 and Codex, reproduced 2/2.
 
 ## Repro
@@ -38,7 +38,7 @@ Automated: `node test/project-parked-output.e2e.test.js`.
   ERROR: tool fs.read failed: no such file: .output/shell.exec-b1b0a5b7-c575-4ce7-801b-d266a6d28c3b-0.txt`
   (4 problems, 7 ok).
 - Harness gauntlet receipts: `qa/audits/harness-gauntlet-2026-10-08/` on `agent/harness-gauntlet-1008`
-  (REPORT.md gap G1; `results/bigraw-starnet-r1.json`, `-r2.json`).
+  (REPORT.md gap G1; `results/bigraw-vultron-r1.json`, `-r2.json`).
 - Siblings carrying the same relative pointer: `sidecar/shellbg.js` (`outputPath`, shown by `shell.bg.status` /
   `shell.bg.read`), `sidecar/terminal-sessions.js` (shown by `terminal.read`), the worker spill in
   `sidecar/tools/builtin/orchestration.js` (parks via `ctx.parkOutput`). Related: `fs.search` on a single file
@@ -56,6 +56,6 @@ single file now searches that file (it threw ENOTDIR). Taint is unchanged: absol
 Proof: `test/project-parked-output.e2e.test.js` 11/11 (fs.read of the exact pointer, offset paging to the elided
 middle, fs.search on the file); `npm run test:fast` 1101/1101; `npm run test:http` 196/196 (step 50
 station-show.e2e failed once as a timing flake, then passed 2/2 on the branch and 2/2 on clean trunk). Live:
-the gauntlet `starnet bigraw` ran 104 s / 160 s / 147 s (all pass, zero Get-ChildItem hunts, the model opened the
+the gauntlet `vultron bigraw` ran 104 s / 160 s / 147 s (all pass, zero Get-ChildItem hunts, the model opened the
 absolute parked path directly) vs 772 s / 720 s before. The remaining gap to Claude Code (31 s) is per-turn
 `claude -p` latency, gauntlet gap G2 — not this bug.

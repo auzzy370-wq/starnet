@@ -32,8 +32,8 @@ const staleTokenRecovery = new Function(factorySrc + '\nreturn staleTokenRecover
 // producer so a format change there cannot silently blind the recovery.
 // The boot script now opens with a per-response CSP nonce (<script nonce="…">) and carries the token only for the
 // same-user owner (peerOwnerCheck); the recovery's TOKEN_RE matches the assignment itself, whatever the tag carries.
-A.ok(sidecar.includes("'window.__STARNET_API_TOKEN__=' + JSON.stringify(API_TOKEN) + ';'"),
-  'serveStatic still injects window.__STARNET_API_TOKEN__=<json>; into the page');
+A.ok(sidecar.includes("'window.__VULTRON_API_TOKEN__=' + JSON.stringify(API_TOKEN) + ';'"),
+  'serveStatic still injects window.__VULTRON_API_TOKEN__=<json>; into the page');
 A.ok(sidecar.includes("(scriptNonce ? '<script nonce=\"' + scriptNonce + '\">' : '<script>')"),
   'serveStatic opens the boot script with its per-response nonce');
 // The gate's token refusal keeps the exact body this recovery reads, and now names which refusal it was: the real
@@ -44,13 +44,13 @@ A.ok(sidecar.includes("(scriptNonce ? '<script nonce=\"' + scriptNonce + '\">' :
   const answer = headers => {
     const res = { writeHead(status, head) { this.status = status; this.head = head; }, end(body) { this.body = body; } };
     refuseAtGate({ method: 'GET', url: '/api/state', headers }, res, 'forbidden token');
-    return [res.status, res.body, res.head['X-StarNet-Code']];
+    return [res.status, res.body, res.head['X-Vultron-Code']];
   };
-  A.eq(answer({ 'x-starnet-token': 'old-launch-key' }), [403, 'forbidden token', 'token_stale'], "a stale key still gets the exact body 'forbidden token', named token_stale");
+  A.eq(answer({ 'x-vultron-token': 'old-launch-key' }), [403, 'forbidden token', 'token_stale'], "a stale key still gets the exact body 'forbidden token', named token_stale");
   A.eq(answer({}), [403, 'forbidden token', 'token_missing'], 'a page that carried no key gets the same body, named token_missing');
   A.ok(sidecar.includes("return refuseAtGate(req, res, 'forbidden token');"), 'the token gate answers through refuseAtGate');
 }
-const pageWith = tok => '<html><head><script>window.__STARNET_API_TOKEN__=' + JSON.stringify(tok) + ';</script>\n</head><body></body></html>';
+const pageWith = tok => '<html><head><script>window.__VULTRON_API_TOKEN__=' + JSON.stringify(tok) + ';</script>\n</head><body></body></html>';
 
 function rig(opts) {
   opts = opts || {};
@@ -103,21 +103,21 @@ const forbiddenToken = () => new Response('forbidden token', { status: 403 });
   }
   // 3b. the page the sidecar serves today: a nonce'd boot script — recovery reads the token all the same.
   {
-    const { st, rec, replay } = rig({ page: '<html><head><script nonce="b64Nonce+/==">window.__STARNET_API_TOKEN__=' + JSON.stringify('NEW') + ';</script>\n</head><body></body></html>' });
+    const { st, rec, replay } = rig({ page: '<html><head><script nonce="b64Nonce+/==">window.__VULTRON_API_TOKEN__=' + JSON.stringify('NEW') + ';</script>\n</head><body></body></html>' });
     const out = await rec.settle(forbiddenToken(), 'OLD', replay());
     A.eq(out.status, 200, 'a nonce-tagged boot script still yields the fresh token and one replay');
     A.eq(st.token, 'NEW', 'the fresh token is adopted from the nonce-tagged page');
   }
   // 3c. a page served to a different OS user withholds the token: nothing to adopt, the 403 stands.
   {
-    const { st, rec, replay } = rig({ page: '<html><head><script nonce="n">window.__STARNET_TOKEN_WITHHELD__="other-user";</script></head></html>' });
+    const { st, rec, replay } = rig({ page: '<html><head><script nonce="n">window.__VULTRON_TOKEN_WITHHELD__="other-user";</script></head></html>' });
     const res = forbiddenToken();
     const out = await rec.settle(res, 'OLD', replay());
     A.ok(out === res && st.replays.length === 0 && st.stale === 1, 'a withheld-token page is not a rotation: 403 stands, stale reported');
   }
   // 3d. A PAGE THE STATION KEPT ITS KEY FROM (review threads-backend-05 / sidecar-index-06). The sidecar serves the page
   // without its key when it cannot prove this browser runs as its own OS user, and says why in
-  // window.__STARNET_TOKEN_WITHHELD__. Every keyed call 403s like a stale page, but it is NOT a restarted station: the
+  // window.__VULTRON_TOKEN_WITHHELD__. Every keyed call 403s like a stale page, but it is NOT a restarted station: the
   // page must say WHY and name the owner's escape hatch, never "the station restarted". For a LASTING reason (another
   // account, no check on this platform) a re-read only re-runs the same failing check, so the page never offers one.
   // For a TRANSIENT reason (the lookup timed out or failed, the connection could not be traced — a loaded box, a race)
@@ -135,10 +135,10 @@ const forbiddenToken = () => new Response('forbidden token', { status: 403 });
     for (const reason of Object.keys(WHY)) {
       const t = tokenWithheldNotice(reason);
       A.ok(WHY[reason].test(t), 'the withheld notice names the reason in plain words (' + reason + '): ' + t);
-      A.ok(/STARNET_TRUST_LOCAL_PEERS=1/.test(t) && /won’t take commands from this page/.test(t), 'and says what it means + the owner\'s escape hatch');
+      A.ok(/VULTRON_TRUST_LOCAL_PEERS=1/.test(t) && /won’t take commands from this page/.test(t), 'and says what it means + the owner\'s escape hatch');
       A.ok(!/restarted/i.test(t), 'and never claims a restart (' + reason + ')');
       if (TRANSIENT.has(reason)) {
-        A.ok(/reload this page to run the check again/i.test(t) && t.search(/reload this page/i) < t.indexOf('STARNET_TRUST_LOCAL_PEERS'),
+        A.ok(/reload this page to run the check again/i.test(t) && t.search(/reload this page/i) < t.indexOf('VULTRON_TRUST_LOCAL_PEERS'),
           'a transient reason offers a reload (it re-runs the check) BEFORE the hatch that turns the check off: ' + t);
       } else {
         A.ok(!/reload/i.test(t), 'a lasting reason never offers a reload (it re-runs the same failing check): ' + t);
@@ -148,21 +148,21 @@ const forbiddenToken = () => new Response('forbidden token', { status: 403 });
 
     // the real wiring (lifted from harness.js), driven with the real factory and a fake clock
     const wiringStart = harness.indexOf('  let sessionStale = false;');
-    const wiringEnd = harness.indexOf("  if (typeof window !== 'undefined' && window.fetch && !window.__STARNET_FETCH_HARDENED__)");
+    const wiringEnd = harness.indexOf("  if (typeof window !== 'undefined' && window.fetch && !window.__VULTRON_FETCH_HARDENED__)");
     A.ok(wiringStart > 0 && wiringEnd > wiringStart, 'lifted the stale-token wiring');
     const wiringSrc = harness.slice(wiringStart, wiringEnd);
     const wire = (withheld, pages) => {
       const notes = [], settled = []; let reads = 0; const clock = { now: 1000 };
       const win = { fetch: () => { const page = typeof pages === 'function' ? pages() : pages; reads++; return Promise.resolve(new Response(page || '<html></html>', { status: 200 })); } };
-      if (!withheld) win.__STARNET_API_TOKEN__ = 'OLD';
+      if (!withheld) win.__VULTRON_API_TOKEN__ = 'OLD';
       const StationUI = { notify: (text, cls, category, opts) => notes.push({ text, cls, category, opts }), settleNotifs: key => settled.push(key) };
       const w = new Function('window', 'DESKTOP', 'StationUI', 'staleTokenRecovery', 'tokenWithheld', 'Date',
-        'let apiToken = window.__STARNET_API_TOKEN__ || "";\n' + wiringSrc +
+        'let apiToken = window.__VULTRON_API_TOKEN__ || "";\n' + wiringSrc +
         '\nreturn { staleToken, stale: () => sessionStale, note: noteTokenWithheld, boot: typeof bootNotices === "function" ? bootNotices : null, withheld: () => tokenWithheld, token: () => apiToken };')(
         win, false, StationUI, staleTokenRecovery, withheld, { now: () => clock.now });
       return { w, notes, settled, reads: () => reads, clock };
     };
-    const withheldPage = reason => '<html><script>window.__STARNET_TOKEN_WITHHELD__=' + JSON.stringify(reason) + ';</script></html>';
+    const withheldPage = reason => '<html><script>window.__VULTRON_TOKEN_WITHHELD__=' + JSON.stringify(reason) + ';</script></html>';
     // TRANSIENT: the check is re-run at most once a minute; once it passes the page takes its key in place
     {
       let passes = false;
@@ -259,7 +259,7 @@ const forbiddenToken = () => new Response('forbidden token', { status: 403 });
         '…and raises only what is true of this page (' + (withheld || 'keyed') + '): ' + JSON.stringify(notes.map(x => x.text)));
     }
     A.ok(/async function init\(\) \{[^}]*?\n\s*bootNotices\(\);/.test(harness), 'Harness.init runs that boot step');
-    A.ok(/let tokenWithheld = \(typeof window !== 'undefined' && !window\.__STARNET_API_TOKEN__ && window\.__STARNET_TOKEN_WITHHELD__\)/.test(harness),
+    A.ok(/let tokenWithheld = \(typeof window !== 'undefined' && !window\.__VULTRON_API_TOKEN__ && window\.__VULTRON_TOKEN_WITHHELD__\)/.test(harness),
       'harness reads the withheld reason only when the page carries no key (cleared when a retry adopts one)');
     A.ok(/async function init\(\) \{\s*(\/\/[^\n]*\n\s*)?bootNotices\(\);/.test(harness) && /function bootNotices\(\) \{\s*noteTokenWithheld\(\);/.test(harness),
       'boot shows the withheld notice before the first refused call');
@@ -322,11 +322,11 @@ const forbiddenToken = () => new Response('forbidden token', { status: 403 });
   }
 
   // ---- wiring (source locks) ----
-  const wrapper = harness.slice(harness.indexOf("if (typeof window !== 'undefined' && window.fetch && !window.__STARNET_FETCH_HARDENED__)"));
+  const wrapper = harness.slice(harness.indexOf("if (typeof window !== 'undefined' && window.fetch && !window.__VULTRON_FETCH_HARDENED__)"));
   A.ok(/staleToken\.settle\(res, t, replayable \?/.test(wrapper), 'the global /api fetch wrapper routes every response through staleToken.settle');
-  A.ok(/setToken: t => \{ apiToken = t; try \{ window\.__STARNET_API_TOKEN__ = t;/.test(harness),
-    'adopting a token updates BOTH the cached header token and window.__STARNET_API_TOKEN__ (apiticket.js mints SSE/file/save tickets from it)');
-  A.ok(/canRefresh: \(\) => !DESKTOP && !\(typeof window !== 'undefined' && window\.__STARNET_API__\) && \(!tokenWithheld \|\| withheldRetryDue\(\)\)/.test(harness),
+  A.ok(/setToken: t => \{ apiToken = t; try \{ window\.__VULTRON_API_TOKEN__ = t;/.test(harness),
+    'adopting a token updates BOTH the cached header token and window.__VULTRON_API_TOKEN__ (apiticket.js mints SSE/file/save tickets from it)');
+  A.ok(/canRefresh: \(\) => !DESKTOP && !\(typeof window !== 'undefined' && window\.__VULTRON_API__\) && \(!tokenWithheld \|\| withheldRetryDue\(\)\)/.test(harness),
     'desktop never reads the page for a token (the shell keeps one token across respawns); a page the station kept its key from only when a transient retry is due');
   A.ok(/if \(!inflight && !o\.canRefresh\(\)\) return Promise\.resolve\(''\);/.test(harness),
     'a refused call joins a page read already in flight without asking again (a rate-limited retry is shared, not refused)');
@@ -358,11 +358,11 @@ const forbiddenToken = () => new Response('forbidden token', { status: 403 });
     A.ok(lineSrc.length > 50 && lineSrc.length < 2000, 'app.js defines refusedPageLine()');
     const lineFor = (H) => new Function('Harness', lineSrc + '\nreturn refusedPageLine;')(H)();
     const withheld = lineFor({ tokenWithheld: () => 'other-user', tokenWithheldRetryable: () => false, sessionStale: () => true });
-    A.ok(/not verified as running under your own user account/.test(withheld) && /STARNET_TRUST_LOCAL_PEERS=1/.test(withheld) && !/restarted|reload/i.test(withheld),
+    A.ok(/not verified as running under your own user account/.test(withheld) && /VULTRON_TRUST_LOCAL_PEERS=1/.test(withheld) && !/restarted|reload/i.test(withheld),
       'a lasting withheld page says it was not verified + the escape hatch, never "restarted; reload": ' + withheld);
     const transient = lineFor({ tokenWithheld: () => 'peer-not-found', tokenWithheldRetryable: () => true, sessionStale: () => true });
     A.ok(/not verified as running under your own user account/.test(transient) && /reload this page to run the check again/.test(transient)
-      && transient.indexOf('reload') < transient.indexOf('STARNET_TRUST_LOCAL_PEERS=1') && !/restarted/i.test(transient),
+      && transient.indexOf('reload') < transient.indexOf('VULTRON_TRUST_LOCAL_PEERS=1') && !/restarted/i.test(transient),
       'a transient withheld page offers a reload to re-run the check before the hatch, never "restarted": ' + transient);
     A.ok(!/reload/i.test(lineFor({ tokenWithheld: () => 'peer-not-found', sessionStale: () => true })), 'an older Harness without the retry probe offers no reload');
     A.eq(lineFor({ tokenWithheld: () => '', sessionStale: () => true }), 'the station restarted; reload this page', 'a keyed page\'s stale session keeps the reload line');

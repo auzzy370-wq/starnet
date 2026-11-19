@@ -53,7 +53,7 @@ const hash = s => crypto.createHash('sha256').update(s).digest('hex');
 
 // ---------------- 2. the ledger's latestAt ----------------
 {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-forget-ledger-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-forget-ledger-'));
   try {
     let now = 1000;
     const t = makeSessionTombstones({ fs, path, file: path.join(dir, 'session-tombstones.json'), now: () => now });

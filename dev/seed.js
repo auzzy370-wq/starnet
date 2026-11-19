@@ -1,4 +1,4 @@
-/* dev/seed.js — the one-command dev launcher: boot a StarNet sidecar that is ALREADY onboarded.
+/* dev/seed.js — the one-command dev launcher: boot a Vultron sidecar that is ALREADY onboarded.
 
    Why this exists: every fresh sidecar launch (a new SKYNET_WORKSPACES dir + a new browser origin/port)
    used to drop you at the title screen → connect screen (paste key, pick model) → the WAKE ceremony,
@@ -106,9 +106,9 @@ function warnBox(lines) {
 // warmModelCatalogSet() returning null => skip the check). Returns a promise that always resolves.
 async function checkModelInCatalog(model) {
   if (typeof globalThis.fetch !== 'function') return;   // ancient node; sidecar warm will still run
-  // the catalog the sidecar will call: SKYNET_OPENROUTER_BASE (STARNET_ first, like the sidecar's ENV), so a preview
+  // the catalog the sidecar will call: SKYNET_OPENROUTER_BASE (VULTRON_ first, like the sidecar's ENV), so a preview
   // that aims the sidecar at a local mock is checked against that mock's /models, not the public catalog
-  const rawBase = ('STARNET_OPENROUTER_BASE' in process.env) ? process.env.STARNET_OPENROUTER_BASE : process.env.SKYNET_OPENROUTER_BASE;
+  const rawBase = ('VULTRON_OPENROUTER_BASE' in process.env) ? process.env.VULTRON_OPENROUTER_BASE : process.env.SKYNET_OPENROUTER_BASE;
   const base = String(rawBase || '').trim().replace(/\/+$/, '') || 'https://openrouter.ai/api/v1';
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 6000);
@@ -175,7 +175,7 @@ async function main() {
   const url = 'http://127.0.0.1:' + port;
   console.log('');
   console.log('  ╔══════════════════════════════════════════════════════════╗');
-  console.log('  ║  StarNet DEV SEED — booting a pre-onboarded station        ║');
+  console.log('  ║  Vultron DEV SEED — booting a pre-onboarded station        ║');
   console.log('  ╚══════════════════════════════════════════════════════════╝');
   console.log('   agent     : NOVA (seeded, no setup needed)');
   console.log('   model     : ' + model);

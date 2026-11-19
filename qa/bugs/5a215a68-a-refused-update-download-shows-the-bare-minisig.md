@@ -15,12 +15,12 @@ origin: audit
 
 ## Symptom
 
-When the native updater refuses a download, the Update Center toast and error card show only the library's Display text: "Update install failed - The signature verification failed", "The signature was created with a different key than the one provided", "Invalid symbol 45, offset 4.", or for a dropped connection "error decoding response body". Nothing tells a non-technical Commander that the refusal is the safety check working, that nothing was installed, or that their current StarNet is untouched.
+When the native updater refuses a download, the Update Center toast and error card show only the library's Display text: "Update install failed - The signature verification failed", "The signature was created with a different key than the one provided", "Invalid symbol 45, offset 4.", or for a dropped connection "error decoding response body". Nothing tells a non-technical Commander that the refusal is the safety check working, that nothing was installed, or that their current Vultron is untouched.
 
 ## Repro
 
 1. Desktop app with an update available; INSTALL UPDATE.
-2. The download is corrupted, signed by another key, or the connection drops (Tauri rejects `starnet_update_install` with `e.to_string()`, see `src-tauri/src/main.rs` starnet_update_install).
+2. The download is corrupted, signed by another key, or the connection drops (Tauri rejects `vultron_update_install` with `e.to_string()`, see `src-tauri/src/main.rs` vultron_update_install).
 3. Read the Update Center error card.
 
 ## Evidence
@@ -29,7 +29,7 @@ When the native updater refuses a download, the Update Center toast and error ca
 
 Probe (lane scratch `release/probes/sig-refusal-ui.cjs`: the real updates.js in a vm, invoke rejecting with the exact Display strings of tauri-plugin-updater 2.10.1 / minisign-verify 0.2.5 / reqwest 0.13.4). Before: errorCard `The signature verification failed`, `error decoding response body`, `Download request failed with status: 404 Not Found`. Fail-closed itself was correct (`thawCalls: 1`, phase back to `available`).
 
-After: `Update refused: the download did not match the signed StarNet release. Nothing was installed; your current StarNet is unchanged. (The signature verification failed)` and `The update download did not finish. Nothing was installed; your current StarNet is unchanged. Check the connection, then press INSTALL UPDATE again. (error decoding response body)`. Regression: `test/updates-install.test.js` (5 problems before the fix, `OK (43 assertions)` after; revert-and-watch red again).
+After: `Update refused: the download did not match the signed Vultron release. Nothing was installed; your current Vultron is unchanged. (The signature verification failed)` and `The update download did not finish. Nothing was installed; your current Vultron is unchanged. Check the connection, then press INSTALL UPDATE again. (error decoding response body)`. Regression: `test/updates-install.test.js` (5 problems before the fix, `OK (43 assertions)` after; revert-and-watch red again).
 
 _Found by the `sweep/release` lane, 2026-10-20._
 

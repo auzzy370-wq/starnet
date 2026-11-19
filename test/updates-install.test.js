@@ -11,7 +11,7 @@ const source = fs.readFileSync(path.join(__dirname, '../frontend/app/updates.js'
 function makeCase(opts) {
   const o = opts || {};
   const calls = [];
-  const store = new Map([['starnet.save', '{"version":5,"updatedAt":99}']].concat(o.store || []));
+  const store = new Map([['vultron.save', '{"version":5,"updatedAt":99}']].concat(o.store || []));
   let lastBundle = null;
   let installCalls = 0;
   let cancelCalls = 0;
@@ -23,9 +23,9 @@ function makeCase(opts) {
   const invoke = async (cmd, args) => {
     calls.push(cmd);
     if (cmd === 'open_external_url') { opened.push(args && args.url); return {}; }
-    if (cmd === 'starnet_update_status') return { desktop: true, currentVersion: '1.0.0', pending: null };
-    if (cmd === 'starnet_update_check') return { available: true, checkedAt: 10, update: { version: '2.0.0', body: '' } };
-    if (cmd === 'starnet_update_install') { installCalls++; if (o.installError) throw o.installError; if (o.installFails) throw new Error('native failed'); return {}; }
+    if (cmd === 'vultron_update_status') return { desktop: true, currentVersion: '1.0.0', pending: null };
+    if (cmd === 'vultron_update_check') return { available: true, checkedAt: 10, update: { version: '2.0.0', body: '' } };
+    if (cmd === 'vultron_update_install') { installCalls++; if (o.installError) throw o.installError; if (o.installFails) throw new Error('native failed'); return {}; }
     return {};
   };
   const fetch = async (url, init) => {
@@ -35,7 +35,7 @@ function makeCase(opts) {
       prepareCalls++;
       prepareForce.push(sent.force === true);
       lastBundle = sent.browserStore;
-      const own = o.journalKey || 'starnet.save';
+      const own = o.journalKey || 'vultron.save';
       A.eq(sent.browserStore[own], store.get(own), 'prepare carries browser-owned save bytes (this window’s journal)');
       if (o.prepareBody && !(o.prepareBodyOnce && prepareCalls > 1)) return { ok: false, status: 409, json: async () => o.prepareBody };
       if (o.prepareFails) return { ok: false, status: 409, json: async () => ({ ok: false, code: 'UPDATE_SNAPSHOT_FAILED' }) };
@@ -59,7 +59,7 @@ function makeCase(opts) {
       get length() { return store.size; }, key(i) { return Array.from(store.keys())[i] || null; },
       getItem(k) { return store.has(k) ? store.get(k) : null; }, setItem(k, v) { store.set(k, String(v)); }
     },
-    CloudSave: { flushForUpdate: async () => { calls.push('save'); return { ok: o.saveOk !== false }; }, journalKey: () => o.journalKey || 'starnet.save' },
+    CloudSave: { flushForUpdate: async () => { calls.push('save'); return { ok: o.saveOk !== false }; }, journalKey: () => o.journalKey || 'vultron.save' },
     App: { pushRoster: async () => { calls.push('roster'); return o.rosterOk !== false; } },
     Channels: { busyCount: () => 0 },
     fetch, console,
@@ -85,16 +85,16 @@ async function ready(c) { await c.updates.init(); await c.updates.check(true, 't
   // review 10-27: every window of a browser keeps its own whole-station journal (cloudsave.js); only THIS window's rides the
   // update bundle, or two journals of a big station overflow the 16 MiB the prepare route reads
   {
-    const c = makeCase({ store: [['starnet.save.w.other-tab', '{"version":6,"big":true}'], ['starnet.ui.rail', 'w400']] });
+    const c = makeCase({ store: [['vultron.save.w.other-tab', '{"version":6,"big":true}'], ['vultron.ui.rail', 'w400']] });
     await ready(c); await c.updates.install();
     const b = c.bundle() || {};
-    A.ok(b['starnet.save'] && !('starnet.save.w.other-tab' in b) && b['starnet.ui.rail'] === 'w400', 'update bundle: this window’s journal and the other station keys, never another window’s journal (' + Object.keys(b) + ')');
+    A.ok(b['vultron.save'] && !('vultron.save.w.other-tab' in b) && b['vultron.ui.rail'] === 'w400', 'update bundle: this window’s journal and the other station keys, never another window’s journal (' + Object.keys(b) + ')');
   }
   {
-    const c = makeCase({ journalKey: 'starnet.save.w.mine', store: [['starnet.save.w.mine', '{"version":6,"mine":true}']] });
+    const c = makeCase({ journalKey: 'vultron.save.w.mine', store: [['vultron.save.w.mine', '{"version":6,"mine":true}']] });
     await ready(c); await c.updates.install();
     const b = c.bundle() || {};
-    A.ok(b['starnet.save.w.mine'] && !('starnet.save' in b), 'update bundle: a second tab bundles its own journal, not the first window’s (' + Object.keys(b) + ')');
+    A.ok(b['vultron.save.w.mine'] && !('vultron.save' in b), 'update bundle: a second tab bundles its own journal, not the first window’s (' + Object.keys(b) + ')');
   }
   {
     const c = makeCase({ saveOk: false });
@@ -111,7 +111,7 @@ async function ready(c) { await c.updates.init(); await c.updates.check(true, 't
     const c = makeCase({});
     await ready(c); await c.updates.install();
     A.eq(c.installCalls(), 1, 'native installer runs after a verified receipt');
-    const order = ['save', 'roster', '/api/update/prepare', 'starnet_update_install'].map(x => c.calls.indexOf(x));
+    const order = ['save', 'roster', '/api/update/prepare', 'vultron_update_install'].map(x => c.calls.indexOf(x));
     A.ok(order.every((n, i) => n >= 0 && (i === 0 || n > order[i - 1])), 'drain, receipt, and native install occur in strict order');
   }
   {
@@ -180,8 +180,8 @@ async function ready(c) { await c.updates.init(); await c.updates.check(true, 't
     // (minisign-verify 0.2.5 / reqwest): the Commander must read that NOTHING was installed, not a crypto library error.
     const sig = makeCase({ installError: 'The signature verification failed' });
     await ready(sig); const refused = await sig.updates.install();
-    A.ok(/^Update refused: the download did not match the signed StarNet release\./.test(refused.error), 'a bad signature reads as a refusal: ' + refused.error);
-    A.ok(/Nothing was installed; your current StarNet is unchanged\./.test(refused.error), 'and says the current install is untouched');
+    A.ok(/^Update refused: the download did not match the signed Vultron release\./.test(refused.error), 'a bad signature reads as a refusal: ' + refused.error);
+    A.ok(/Nothing was installed; your current Vultron is unchanged\./.test(refused.error), 'and says the current install is untouched');
     A.ok(/\(The signature verification failed\)$/.test(refused.error), 'the raw updater text stays as the detail');
     const key = makeCase({ installError: 'The signature was created with a different key than the one provided' });
     await ready(key); A.ok(/^Update refused:/.test((await key.updates.install()).error), 'a wrong-key release is a refusal too');

@@ -1,6 +1,6 @@
-/* frontend/app/places.js — PLACES: every place in StarNet a Commander can be shown, in the words the UI itself uses.
+/* frontend/app/places.js — PLACES: every place in Vultron a Commander can be shown, in the words the UI itself uses.
 
-   WHY (Andrew 2026-10-04: "the agents [should] understand EVERYTHING about starnet … so it can basically use itself
+   WHY (Andrew 2026-10-04: "the agents [should] understand EVERYTHING about vultron … so it can basically use itself
    instead of the user having to navigate"): an agent could change ~45 settings from chat but could not put ONE window
    in front of the Commander — "where are my deliverables?" got a menu path to read and click through. This is the one
    list of where things are. The agent's station.show tool (sidecar/tools/builtin/station-show.js) takes its ids and
@@ -29,7 +29,7 @@
     P('to-review', 'MY WORK › DELIVERABLES › TO REVIEW', 'away runs and workflow jobs waiting for the Commander\'s rating (chats are rated in COMMS), at the top of DELIVERABLES', { term: 'outbox' }),
     P('recipes', 'MY WORK › RECIPES', 'ready-made jobs to start in one click', { fn: 'recipes' }),
     P('workflows', 'AUTOMATE › WORKFLOWS', 'conveyor lines of agents on the floor: send a job down a line, see each line\'s output', { term: 'workflows' }),
-    P('schedules', 'AUTOMATE › SCHEDULES', 'routines: any job on a schedule (StarNet\'s own scheduler, never OS cron)', { term: 'automation', section: 'routines' }),
+    P('schedules', 'AUTOMATE › SCHEDULES', 'routines: any job on a schedule (Vultron\'s own scheduler, never OS cron)', { term: 'automation', section: 'routines' }),
     P('new-schedule', 'AUTOMATE › SCHEDULES › NEW', 'the form for a new scheduled routine', { term: 'automation', section: 'routines-create' }),
     P('goal-loops', 'AUTOMATE › GOAL LOOPS', 'one objective repeated until it is done', { term: 'automation', section: 'loops' }),
     P('new-goal-loop', 'AUTOMATE › GOAL LOOPS › START', 'the form for a new goal loop', { term: 'automation', section: 'loops-start' }),
@@ -45,7 +45,7 @@
     P('api-connections', 'CONNECT › ABILITIES › CONNECTED › API KEYS', 'API keys for any platform, listed or not (the universal fallback)', { term: 'connectors', section: 'keys' }),
     P('built-in-abilities', 'CONNECT › ABILITIES › TOOLS', 'each built-in ability and its kill-switch', { term: 'connectors', section: 'toolsets' }),
     P('computer-control', 'CONNECT › ABILITIES › TOOLS › COMPUTER CONTROL', 'how agents drive native desktop apps', { term: 'connectors', section: 'computer' }),
-    P('skill-market', 'CONNECT › ABILITIES › SKILL MARKET', 'StarNet Originals and community skills to install', { term: 'connectors', section: 'market' }),
+    P('skill-market', 'CONNECT › ABILITIES › SKILL MARKET', 'Vultron Originals and community skills to install', { term: 'connectors', section: 'market' }),
     P('skill-library', 'CONNECT › ABILITIES › SKILLS', 'the procedures agents follow, installed on this station', { term: 'connectors', section: 'library' }),
     P('agent-skills', 'CONNECT › ABILITIES › SKILLS › LEARNED SKILLS', 'procedures agents created or learned themselves', { term: 'connectors', section: 'agent' }),
     P('skill-exchange', 'CONNECT › ABILITIES › SKILL MARKET › ADD FROM A LINK', 'inspect and install open SKILL.md procedures', { term: 'connectors', section: 'exchange' }),
@@ -65,7 +65,7 @@
     P('you', 'CREW › YOU', 'the Commander\'s own dossier: about you, aims, preferences, what agents are told', { term: 'commander' }),
     // ---- SYSTEM ----
     P('settings', 'SETTINGS', 'every station setting', { term: 'settings' }),
-    P('settings-ai', 'SETTINGS › AI & MODELS', 'AI providers, their keys and sign-ins, default and fallback models, StarNet credits (the STORE: balance, top up)', { term: 'settings', section: 'providers' }),
+    P('settings-ai', 'SETTINGS › AI & MODELS', 'AI providers, their keys and sign-ins, default and fallback models, Vultron credits (the STORE: balance, top up)', { term: 'settings', section: 'providers' }),
     P('settings-autonomy', 'SETTINGS › AUTONOMY', 'when agents work on their own, and what they did while you were away', { term: 'settings', section: 'autonomy' }),
     P('settings-permissions', 'SETTINGS › PERMISSIONS', 'access and approval rules for the station or one agent', { term: 'settings', section: 'permissions' }),
     P('settings-spending', 'SETTINGS › SPENDING LIMITS', 'spending caps, recorded usage, and interrupted runs to settle', { term: 'settings', section: 'budget' }),
@@ -76,8 +76,8 @@
     P('settings-app', 'SETTINGS › APP & BACKUP', 'startup, runtime limits, backups, updates, troubleshooting and ERASE EVERYTHING', { term: 'settings', section: 'system' }),
     P('needs-you', 'SESSIONS › NEEDS YOU', 'every approval, question and decision waiting on the Commander, at the top of SESSIONS (also NOTIFICATIONS › NEEDS YOU)', { fn: 'needs-you' }),
     P('notifications', 'NOTIFICATIONS', 'everything that happened and what is waiting on the Commander', { term: 'notifs' }),
-    P('updates', 'UPDATES', 'check for and install a StarNet update', { term: 'updates' }),
-    P('field-manual', 'FIELD MANUAL', 'the Commander\'s guide to StarNet', { term: 'manual' })
+    P('updates', 'UPDATES', 'check for and install a Vultron update', { term: 'updates' }),
+    P('field-manual', 'FIELD MANUAL', 'the Commander\'s guide to Vultron', { term: 'manual' })
   ]);
 
   const BY_ID = Object.create(null);

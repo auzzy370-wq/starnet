@@ -2,7 +2,7 @@
 /* sidecar/version-source.js — WHERE the harness build id comes from, resolved without blocking and never guessed.
 
    The chain, decided on the first read:
-     1. an env stamp (STARNET_BUILD_DESCRIBE, from the build/release pipeline) wins: harnessSource 'env';
+     1. an env stamp (VULTRON_BUILD_DESCRIBE, from the build/release pipeline) wins: harnessSource 'env';
      2. no <repo>/.git at all — a packaged app — is the package.json version at once: harnessSource 'pkg'. A .git
         directory and a .git FILE (a worktree's gitfile) both count as a checkout. Only a probe that says the entry
         is ABSENT (ENOENT, ENOTDIR) means no checkout; any other probe error (EACCES, EPERM, EBUSY, one with no code)
@@ -53,7 +53,7 @@
    retries go on in the background. That is why the wait is deliberately SHORTER than one attempt
    (attemptTimeoutMs is a background bound sized for a loaded box's index refresh): a caller only hopes to catch
    a first answer that is about to land, and never sits through a timeout or a retry. One caller waits:
-     apiWaitMs  GET /api/version: at most half the shortest CLI timeout on that route (bin/starnet.js attachClient
+     apiWaitMs  GET /api/version: at most half the shortest CLI timeout on that route (bin/vultron.js attachClient
                 probes it with timeoutMs 5000; test/version-source.test.js reads the bin and holds this).
    A RUN NEVER WAITS (VD-HANDOVER-01): a diagnostic never holds a run. Its [RUNTIME] block names runtimeHarness(),
    read at once: the answer once there is one, RESOLVING while a checkout's git is still being asked (the truth at

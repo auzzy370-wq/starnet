@@ -3,7 +3,7 @@
    Every INSTALL UPDATE attempt (retries and failed installs too) wrote another whole-station bundle into
    update-snapshots and nothing ever removed one: one station held 670 MB in 7 read-only bundles. After a VERIFIED
    prepare, and once at boot, the newest three bundles + their receipts stay and the older ones go. Only
-   `pre-*.starnet-backup.json` and its `.receipt.json` are ever touched, the bundle the prepare just verified (or the
+   `pre-*.vultron-backup.json` and its `.receipt.json` are ever touched, the bundle the prepare just verified (or the
    live receipt's) is never removed, read-only files are made writable first, and a file that cannot be removed is
    reported and left without failing the update. */
 'use strict';
@@ -15,7 +15,7 @@ const R = require('../sidecar/station-recovery.js');
 const { writeFileDurable } = require('../sidecar/durable-write.js');
 const Prep = require('../sidecar/update-preparation.js');
 
-const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-snapshot-prune-'));
+const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-snapshot-prune-'));
 const ws = path.join(sandbox, 'workspaces');
 const snaps = path.join(sandbox, 'update-snapshots');
 fs.mkdirSync(ws, { recursive: true });
@@ -26,9 +26,9 @@ const BASE = Date.parse('2026-01-01T00:00:00Z');
 // an old bundle + receipt, read-only like prepare leaves them, with an mtime `ageDays` after BASE
 function seed(version, ageDays, opts) {
   fs.mkdirSync(snaps, { recursive: true });
-  const name = 'pre-' + version + '-' + (BASE + ageDays * DAY) + '-old.starnet-backup.json';
+  const name = 'pre-' + version + '-' + (BASE + ageDays * DAY) + '-old.vultron-backup.json';
   const file = path.join(snaps, name);
-  fs.writeFileSync(file, '{"schema":"starnet.station-recovery"}');
+  fs.writeFileSync(file, '{"schema":"vultron.station-recovery"}');
   if (!(opts && opts.noReceipt)) fs.writeFileSync(file + '.receipt.json', '{}');
   const t = new Date(BASE + ageDays * DAY);
   for (const f of [file, file + '.receipt.json']) {
@@ -38,7 +38,7 @@ function seed(version, ageDays, opts) {
   }
   return name;
 }
-const bundlesNow = () => (fs.existsSync(snaps) ? fs.readdirSync(snaps) : []).filter(n => /^pre-.+\.starnet-backup\.json$/.test(n) && fs.statSync(path.join(snaps, n)).isFile()).sort();
+const bundlesNow = () => (fs.existsSync(snaps) ? fs.readdirSync(snaps) : []).filter(n => /^pre-.+\.vultron-backup\.json$/.test(n) && fs.statSync(path.join(snaps, n)).isFile()).sort();
 const exists = n => fs.existsSync(path.join(snaps, n));
 function reset() {
   if (fs.existsSync(snaps)) {
@@ -61,10 +61,10 @@ function makePrep(extra) {
     // ---- 1. the boot pass: 6 old bundles -> the newest 3 stay with their receipts; nothing else in the folder is touched
     const old = [seed('0.10.7', 1), seed('0.11.0', 2), seed('0.11.4', 3), seed('0.12.0', 4), seed('0.12.3', 5), seed('0.12.5', 6)];
     fs.writeFileSync(path.join(snaps, 'notes.txt'), 'mine');
-    fs.writeFileSync(path.join(snaps, 'pre-0.9.0-1-x.starnet-backup.json.tmp-123-abcd'), 'partial');
-    fs.writeFileSync(path.join(snaps, 'station.starnet-backup.json'), '{}');          // a user's own export, not a pre-update bundle
-    fs.writeFileSync(path.join(snaps, 'pre-gone.starnet-backup.json.receipt.json'), '{}');   // an orphan receipt
-    fs.mkdirSync(path.join(snaps, 'pre-folder.starnet-backup.json'));                 // a directory with a bundle's name
+    fs.writeFileSync(path.join(snaps, 'pre-0.9.0-1-x.vultron-backup.json.tmp-123-abcd'), 'partial');
+    fs.writeFileSync(path.join(snaps, 'station.vultron-backup.json'), '{}');          // a user's own export, not a pre-update bundle
+    fs.writeFileSync(path.join(snaps, 'pre-gone.vultron-backup.json.receipt.json'), '{}');   // an orphan receipt
+    fs.mkdirSync(path.join(snaps, 'pre-folder.vultron-backup.json'));                 // a directory with a bundle's name
     const boot = makePrep();
     const pass = boot.pruneSnapshots();
     A.eq(bundlesNow(), old.slice(3).sort(), 'the boot pass keeps exactly the three newest bundles');
@@ -75,7 +75,7 @@ function makePrep(extra) {
     for (const n of old.slice(3)) A.eq(exists(n + '.receipt.json'), true, 'a kept bundle keeps its receipt: ' + n);
     A.eq(pass.removed.length, 6, 'the pass reports the 3 bundles + 3 receipts it removed');
     A.eq(pass.errors, [], 'with no errors');
-    for (const n of ['notes.txt', 'pre-0.9.0-1-x.starnet-backup.json.tmp-123-abcd', 'station.starnet-backup.json', 'pre-gone.starnet-backup.json.receipt.json', 'pre-folder.starnet-backup.json']) {
+    for (const n of ['notes.txt', 'pre-0.9.0-1-x.vultron-backup.json.tmp-123-abcd', 'station.vultron-backup.json', 'pre-gone.vultron-backup.json.receipt.json', 'pre-folder.vultron-backup.json']) {
       A.eq(exists(n), true, 'nothing else in update-snapshots is touched: ' + n);
     }
     A.eq(makePrep().pruneSnapshots().removed, [], 'a second pass removes nothing');

@@ -6,10 +6,10 @@
 # in a copy of the app is named.
 set -euo pipefail
 
-dmg=${1:?usage: verify-macos-intel-installed.sh <StarNet_x64.dmg> [receipt.json]}
+dmg=${1:?usage: verify-macos-intel-installed.sh <Vultron_x64.dmg> [receipt.json]}
 receipt=${2:-intel-macos-installed-acceptance.json}
-require_notarized=${STARNET_REQUIRE_NOTARIZED:-true}
-fixture_root=${STARNET_V090_FIXTURE_ROOT:-test/fixtures/upgrade/v090-intel-mac}
+require_notarized=${VULTRON_REQUIRE_NOTARIZED:-true}
+fixture_root=${VULTRON_V090_FIXTURE_ROOT:-test/fixtures/upgrade/v090-intel-mac}
 
 fail() {
   echo "::error::$*"
@@ -21,20 +21,20 @@ fail() {
 [ -f "$fixture_root/agent.save.json" ] || fail "v0.9.0 save fixture is missing"
 [ -f "$fixture_root/recovery-canary.txt" ] || fail "v0.9.0 recovery canary is missing"
 
-legacy="$HOME/.local/share/StarNet/workspaces"
+legacy="$HOME/.local/share/Vultron/workspaces"
 desktop="$HOME/Library/Application Support/ai.skynet.harness/workspaces"
 app_data="$HOME/Library/Application Support/ai.skynet.harness"
 startup_log="$app_data/startup.log"
-installed="/Applications/StarNet.app"
-mount_point="$RUNNER_TEMP/starnet-intel-dmg"
-trust_log="$RUNNER_TEMP/starnet-intel-spctl.txt"
+installed="/Applications/Vultron.app"
+mount_point="$RUNNER_TEMP/vultron-intel-dmg"
+trust_log="$RUNNER_TEMP/vultron-intel-spctl.txt"
 source_hash_before=""
 source_hash_after=""
 launch_port=""
 launch_start=0
 first_launch_start=""
 integrity="$(dirname "$0")/verify-macos-installed-integrity.sh"
-integrity_dir="$RUNNER_TEMP/starnet-installed-integrity"
+integrity_dir="$RUNNER_TEMP/vultron-installed-integrity"
 [ -f "$integrity" ] || fail "installed-integrity proof is missing: $integrity"
 
 for target in "$legacy" "$desktop" "$installed"; do
@@ -49,7 +49,7 @@ source_hash_before=$(shasum -a 256 "$legacy/agent.save.json" | awk '{print $1}')
 mounted=false
 cleanup() {
   if pgrep -f "$installed/Contents/MacOS/skynet-desktop" >/dev/null 2>&1; then
-    osascript -e 'tell application "StarNet" to quit' >/dev/null 2>&1 || true
+    osascript -e 'tell application "Vultron" to quit' >/dev/null 2>&1 || true
     sleep 2
   fi
   if [ "$mounted" = true ]; then hdiutil detach "$mount_point" >/dev/null 2>&1 || true; fi
@@ -58,12 +58,12 @@ trap cleanup EXIT
 
 hdiutil attach "$dmg" -mountpoint "$mount_point" -nobrowse -readonly >/dev/null
 mounted=true
-source_app=$(find "$mount_point" -maxdepth 2 -type d -name 'StarNet.app' -print -quit)
-[ -n "${source_app:-}" ] || fail "Intel DMG contains no StarNet.app"
+source_app=$(find "$mount_point" -maxdepth 2 -type d -name 'Vultron.app' -print -quit)
+[ -n "${source_app:-}" ] || fail "Intel DMG contains no Vultron.app"
 
 sudo ditto "$source_app" "$installed"
 exe="$installed/Contents/MacOS/skynet-desktop"
-[ -x "$exe" ] || fail "installed StarNet executable is missing"
+[ -x "$exe" ] || fail "installed Vultron executable is missing"
 file "$exe" | grep -q 'x86_64' || fail "installed executable is not x86_64"
 codesign --verify --deep --strict --verbose=2 "$installed"
 
@@ -107,12 +107,12 @@ APPLESCRIPT
 }
 
 quit_cleanly() {
-  osascript -e 'tell application "StarNet" to quit'
+  osascript -e 'tell application "Vultron" to quit'
   for _ in $(seq 1 80); do
     if ! pgrep -f "$exe" >/dev/null 2>&1; then return 0; fi
     sleep 0.25
   done
-  fail "StarNet did not exit after the normal application Quit event"
+  fail "Vultron did not exit after the normal application Quit event"
 }
 
 launch_with_finder
@@ -129,7 +129,7 @@ save_path, receipt_path, legacy = sys.argv[1:]
 with open(save_path, encoding="utf-8") as handle:
     envelope = json.load(handle)
 doc = envelope.get("doc", envelope)
-assert doc.get("schema") == "starnet.save", doc.get("schema")
+assert doc.get("schema") == "vultron.save", doc.get("schema")
 assert doc.get("version") == 6, doc.get("version")
 assert doc.get("agent", {}).get("name") == "NOVA-090-INTEL"
 assert doc.get("workstreams", [{}])[0].get("history", [{}])[0].get("content") == "preserve this v0.9.0 conversation"
@@ -195,7 +195,7 @@ if zeroed.get("state") != "damaged" or zeroed.get("exitCode") != 3 or named != [
 if not page_boot:
     raise ValueError("no page-boot line was judged")
 value = {
-    "schema": "starnet.intel-macos-installed-acceptance.v1",
+    "schema": "vultron.intel-macos-installed-acceptance.v1",
     "generatedAt": datetime.datetime.now(datetime.timezone.utc).isoformat(),
     "machine": {"architecture": platform.machine(), "runner": "macos-15-intel"},
     "artifact": {"path": os.path.basename(dmg), "sha256": digest, "notarizedRequired": required == "true"},

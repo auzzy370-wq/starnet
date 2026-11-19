@@ -1,6 +1,6 @@
 /* node test/child-env.test.js — helper processes never inherit the station's secrets (audit 2026-09-25 #13).
 
-   Plants station secrets in THIS test process's env (the desktop-injected STARNET_/SKYNET_ names, a service key
+   Plants station secrets in THIS test process's env (the desktop-injected VULTRON_/SKYNET_ names, a service key
    the sidecar exported, a held secret value re-exported under an innocent name), then spawns REAL node children
    through the guarded child_process and asserts each child cannot see them while it still sees PATH, HOME and the
    user's own vars (including the user's own NPM_TOKEN — theirs, not the station's). Also pins the rule that every
@@ -16,11 +16,11 @@ const { sanitizeChildEnv } = require('../sidecar/environment.js');
 const HELD = 'held-provider-key-CANARY-0123456789';
 const PLANT = {
   SKYNET_API_TOKEN: 'api-token-CANARY-abcdef',
-  STARNET_API_TOKEN: 'api-token-CANARY-abcdef',
+  VULTRON_API_TOKEN: 'api-token-CANARY-abcdef',
   SKYNET_IPC_TOKEN: 'ipc-token-CANARY-abcdef',
   SKYNET_OPENAI_API_KEY: 'sk-desktop-injected-CANARY-1234',
   SKYNET_KEY_POOL_OPENROUTER: 'pool-a-CANARY-123,pool-b-CANARY-456',
-  STARNET_CREDITS_TOKEN: 'credits-CANARY-7890abcd',
+  VULTRON_CREDITS_TOKEN: 'credits-CANARY-7890abcd',
   SKYNET_TELEGRAM_TOKEN: '123456:telegram-CANARY-abcdefgh',
   ACME_API_KEY: 'service-key-CANARY-exported',     // a KEYS-tab service key the sidecar exported (owned name)
   INNOCENT_LOOKING: HELD,                            // a held secret value under a name that looks harmless
@@ -31,8 +31,8 @@ for (const k of Object.keys(PLANT)) process.env[k] = PLANT[k];
 if (!process.env.HOME && process.env.USERPROFILE) process.env.HOME = process.env.USERPROFILE;
 CE.setStationSecretSource({ names: () => ['ACME_API_KEY'], values: () => [HELD, 'short'] });
 
-const STRIPPED = ['SKYNET_API_TOKEN', 'STARNET_API_TOKEN', 'SKYNET_IPC_TOKEN', 'SKYNET_OPENAI_API_KEY', 'SKYNET_KEY_POOL_OPENROUTER',
-  'STARNET_CREDITS_TOKEN', 'SKYNET_TELEGRAM_TOKEN', 'ACME_API_KEY', 'INNOCENT_LOOKING'];
+const STRIPPED = ['SKYNET_API_TOKEN', 'VULTRON_API_TOKEN', 'SKYNET_IPC_TOKEN', 'SKYNET_OPENAI_API_KEY', 'SKYNET_KEY_POOL_OPENROUTER',
+  'VULTRON_CREDITS_TOKEN', 'SKYNET_TELEGRAM_TOKEN', 'ACME_API_KEY', 'INNOCENT_LOOKING'];
 function checkEnv(env, label) {
   const names = Object.keys(env).map(k => k.toUpperCase());
   for (const k of STRIPPED) A.ok(names.indexOf(k) < 0, label + ': ' + k + ' is stripped');
@@ -139,20 +139,20 @@ function checkEnv(env, label) {
       A.eq(h.cli.ANTHROPIC_API_KEY, USER, 'S5 headless: ...and still reaches the claude CLI\'s environment: a user\'s own export is theirs');
     }
     {
-      // headless: a user's OPENROUTER_API_KEY holding the branded STARNET_OPENROUTER_KEY value (the alias) is stripped, as at trunk
-      const h = helperEnv({ STARNET_OPENROUTER_KEY: BRANDED, OPENROUTER_API_KEY: BRANDED, OPENROUTER_KEY: '' });
-      A.ok(!('OPENROUTER_API_KEY' in h.cli) && !('STARNET_OPENROUTER_KEY' in h.cli), 'S5 headless: a user\'s OPENROUTER_API_KEY that holds the branded STARNET_OPENROUTER_KEY value is still stripped (the alias is held)');
+      // headless: a user's OPENROUTER_API_KEY holding the branded VULTRON_OPENROUTER_KEY value (the alias) is stripped, as at trunk
+      const h = helperEnv({ VULTRON_OPENROUTER_KEY: BRANDED, OPENROUTER_API_KEY: BRANDED, OPENROUTER_KEY: '' });
+      A.ok(!('OPENROUTER_API_KEY' in h.cli) && !('VULTRON_OPENROUTER_KEY' in h.cli), 'S5 headless: a user\'s OPENROUTER_API_KEY that holds the branded VULTRON_OPENROUTER_KEY value is still stripped (the alias is held)');
     }
     {
       // desktop (the named change, S2): the shell's spawn pair is a keychain key from boot, so a user's own variable holding the
       // VERY SAME key is stripped before any push (at trunk only once the shell pushed it); the claude CLI then uses its own sign-in
-      const shell = { STARNET_DESKTOP_SHELL: '1', STARNET_ANTHROPIC_API_KEY: SHELL_KEY, SKYNET_ANTHROPIC_API_KEY: SHELL_KEY };
+      const shell = { VULTRON_DESKTOP_SHELL: '1', VULTRON_ANTHROPIC_API_KEY: SHELL_KEY, SKYNET_ANTHROPIC_API_KEY: SHELL_KEY };
       const same = helperEnv(Object.assign({ ANTHROPIC_API_KEY: SHELL_KEY }, shell));
       A.eq(same.api.presence('anthropic').credentialSource, 'keychain', 'S5 desktop: the shell\'s pair is the keychain layer\'s key');
       A.ok(!('ANTHROPIC_API_KEY' in same.cli), 'S5 desktop: a user\'s ANTHROPIC_API_KEY holding the very key the shell handed over is stripped from boot');
       const other = helperEnv(Object.assign({ ANTHROPIC_API_KEY: USER }, shell));
       A.eq(other.cli.ANTHROPIC_API_KEY, USER, 'S5 desktop: a user\'s own different ANTHROPIC_API_KEY still reaches the claude CLI');
-      A.ok(!Object.keys(other.cli).some(k => /^(?:STARNET|SKYNET)_/.test(k)), 'S5 desktop: ...and no STARNET_/SKYNET_ name does');
+      A.ok(!Object.keys(other.cli).some(k => /^(?:VULTRON|SKYNET)_/.test(k)), 'S5 desktop: ...and no VULTRON_/SKYNET_ name does');
     }
     CE.setStationSecretSource({ names: () => ['ACME_API_KEY'], values: () => [HELD] });
   }

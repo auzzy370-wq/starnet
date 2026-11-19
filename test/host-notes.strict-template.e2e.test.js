@@ -62,10 +62,10 @@ function startUpstream() {
 function hermeticEnv() {
   const env = {};
   for (const k of Object.keys(process.env)) {
-    if (/^(OPENROUTER|ANTHROPIC|OPENAI|GEMINI|GOOGLE_API|XAI|GROQ|MISTRAL|DEEPSEEK|TOGETHER|FIREWORKS|PERPLEXITY|CEREBRAS|KIMI|ELEVENLABS|STARNET_|SKYNET_)/i.test(k)) env[k] = '';
+    if (/^(OPENROUTER|ANTHROPIC|OPENAI|GEMINI|GOOGLE_API|XAI|GROQ|MISTRAL|DEEPSEEK|TOGETHER|FIREWORKS|PERPLEXITY|CEREBRAS|KIMI|ELEVENLABS|VULTRON_|SKYNET_)/i.test(k)) env[k] = '';
   }
-  return Object.assign(env, { SKYNET_FULL_ACCESS: '1', STARNET_FULL_ACCESS: '1', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0',
-    SKYNET_THREAD_MINE: '0', SKYNET_REFLECT: '0', STARNET_LIVE_PRICES: '0', STARNET_CREDITS_URL: '', SKYNET_CREDITS_URL: '', STARNET_BUILD_DESCRIBE: 'v0.13.4-strict-template' });
+  return Object.assign(env, { SKYNET_FULL_ACCESS: '1', VULTRON_FULL_ACCESS: '1', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0',
+    SKYNET_THREAD_MINE: '0', SKYNET_REFLECT: '0', VULTRON_LIVE_PRICES: '0', VULTRON_CREDITS_URL: '', SKYNET_CREDITS_URL: '', VULTRON_BUILD_DESCRIBE: 'v0.13.4-strict-template' });
 }
 
 async function send(fixture, up, stream, history, ask) {
@@ -96,7 +96,7 @@ function checkCall(call, label) {
 
 (async () => {
   const up = await startUpstream();
-  const fixture = SidecarFixture.create({ prefix: 'starnet-strict-template-', timeoutMs: 30000, env: hermeticEnv() });
+  const fixture = SidecarFixture.create({ prefix: 'vultron-strict-template-', timeoutMs: 30000, env: hermeticEnv() });
   try {
     await fixture.start();
     // ---- messages 1 and 2 of one conversation ----

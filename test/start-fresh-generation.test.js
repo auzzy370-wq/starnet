@@ -36,7 +36,7 @@ const fixture = require('./fixtures/station-record-cases.json');
 
 const BUILD = '0.15.0-test';
 const T0 = Date.UTC(2026, 9, 31, 12, 0, 0);
-const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-fresh-generation-'));
+const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-fresh-generation-'));
 let sandboxes = 0;
 
 function write(file, body) { fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, typeof body === 'string' || Buffer.isBuffer(body) ? body : JSON.stringify(body)); }
@@ -59,7 +59,7 @@ function tree(dir) {
   const out = {};
   (function walk(d, rel) {
     for (const entry of fs.readdirSync(d, { withFileTypes: true })) {
-      if (entry.name === '.starnet-workspace-owner.json.generations') continue;
+      if (entry.name === '.vultron-workspace-owner.json.generations') continue;
       const r = rel ? rel + '/' + entry.name : entry.name, abs = path.join(d, entry.name);
       if (entry.isDirectory()) walk(abs, r);
       else out[r] = crypto.createHash('sha256').update(fs.readFileSync(abs)).digest('hex');
@@ -133,7 +133,7 @@ const LINK_BYTES = '{"url":"https://credits.example","accountId":"acct-7","linke
   write(path.join(t.ws, fixture.freshMarker), JSON.stringify(Object.assign({}, native.erase, { acknowledgedRoots: [legacy] }), null, 2));
   plant(t.ws, ['ledger.jsonl', 'agent/report.md']);
   write(path.join(other, 'agent.save.json'), '{"version":5}');
-  write(path.join(snapshots, 'pre-1.starnet-backup.json'), '{}');
+  write(path.join(snapshots, 'pre-1.vultron-backup.json'), '{}');
   bootRecord(t.ws);
   A.eq(ask(t.ws, { candidateRoots: [legacy, other], snapshotsRoot: snapshots }).ok, true, 'an erased generation takes a request');
   const applied = boot(t.ws);
@@ -144,7 +144,7 @@ const LINK_BYTES = '{"url":"https://credits.example","accountId":"acct-7","linke
   const mirror = JSON.parse(fs.readFileSync(path.join(t.ws, fixture.freshMarker), 'utf8'));
   A.eq([mirror.erased, mirror.at, typeof mirror.at], [true, String(T0 + 2000), 'string'], 'the mirror keeps it for an older build, at as epoch-ms text');
   const extra = path.join(t.root, 'extra', 'workspaces');
-  write(path.join(extra, 'agent.save.json'), JSON.stringify({ version: 1, agentId: 'agent', updatedAt: 1, savedAt: 1, doc: { schema: 'starnet.save', version: 5, updatedAt: 1, agent: { id: 'agent', name: 'EXTRA' } } }));
+  write(path.join(extra, 'agent.save.json'), JSON.stringify({ version: 1, agentId: 'agent', updatedAt: 1, savedAt: 1, doc: { schema: 'vultron.save', version: 5, updatedAt: 1, agent: { id: 'agent', name: 'EXTRA' } } }));
   const auto = boot(t.ws, { auto: true, scratchRoots: [], candidateRoots: [extra], now: () => T0 + 4000 });
   A.eq([auto.applied, auto.code], [false, 'AUTO_RECOVERY_ERASED'], 'and automatic recovery stays blocked against a root nothing acknowledged');
 }
@@ -205,7 +205,7 @@ const LINK_BYTES = '{"url":"https://credits.example","accountId":"acct-7","linke
 }
 
 /* ---- a record that cannot be read: START FRESH is the exit, and the bytes leave with the generation ---- */
-for (const [what, bytes] of [['torn', '{"schema":"starnet.station","vers'], ['a newer build\'s', JSON.stringify({ schema: 'starnet.station', version: 2, root: 'x', state: 'erased' })]]) {
+for (const [what, bytes] of [['torn', '{"schema":"vultron.station","vers'], ['a newer build\'s', JSON.stringify({ schema: 'vultron.station', version: 2, root: 'x', state: 'erased' })]]) {
   const t = sandbox();
   plant(t.ws, ['agent.roster.json', 'ledger.jsonl']);
   write(path.join(t.ws, fixture.recordFile), bytes);
@@ -299,7 +299,7 @@ for (const [what, bytes] of [['torn', '{"schema":"starnet.station","vers'], ['a 
   A.eq(r.quarantine ? tree(r.quarantine) : null, before, 'the generation is whole on the shelf, its profile with it');
 
   // the explicit recovery shares the activation
-  const save = name => ({ version: 1, agentId: 'agent', updatedAt: 5, savedAt: 5, doc: { schema: 'starnet.save', version: 5, updatedAt: 5, agent: { id: 'agent', name }, station: { rooms: [], props: [] }, workstreams: [] } });
+  const save = name => ({ version: 1, agentId: 'agent', updatedAt: 5, savedAt: 5, doc: { schema: 'vultron.save', version: 5, updatedAt: 5, agent: { id: 'agent', name }, station: { rooms: [], props: [] }, workstreams: [] } });
   const recoverable = box => {
     const legacy = path.join(box.root, 'legacy', 'workspaces');
     write(path.join(legacy, 'agent.save.json'), save('NOVA'));
@@ -317,7 +317,7 @@ for (const [what, bytes] of [['torn', '{"schema":"starnet.station","vers'], ['a 
   A.eq(fs.existsSync(path.join(t.ws, 'agent.save.json')) && JSON.parse(fs.readFileSync(path.join(t.ws, 'agent.save.json'), 'utf8')).doc.agent.name, 'NOVA', 'the chosen station is live');
   A.eq(left.ended, [4100], 'and the one process on the profile was ended');
 
-  // the bound runs out: a process StarNet cannot end (one started as administrator) still fails closed, with nothing moved
+  // the bound runs out: a process Vultron cannot end (one started as administrator) still fails closed, with nothing moved
   t = sandbox();
   plant(t.ws, ['agent.roster.json', 'ledger.jsonl', '.browser-profile/Default/Cookies']);
   bootRecord(t.ws);
@@ -330,7 +330,7 @@ for (const [what, bytes] of [['torn', '{"schema":"starnet.station","vers'], ['a 
   A.eq(tree(t.ws), before, 'nothing moved');
   A.eq([left.swept.length, left.moves], [1, 4], 'the sweep ran once, and the move was tried again within the bound');
   stranded(t, 'unending');
-  // a generation no station browser ever ran on has nothing of StarNet's to end: no listing, the same bounded tries
+  // a generation no station browser ever ran on has nothing of Vultron's to end: no listing, the same bounded tries
   t = sandbox();
   plant(t.ws, ['agent.roster.json', 'ledger.jsonl']);
   bootRecord(t.ws);
@@ -344,7 +344,7 @@ for (const [what, bytes] of [['torn', '{"schema":"starnet.station","vers'], ['a 
   plant(t.ws, ['ledger.jsonl', '.browser-profile/Default/Cookies']);
   bootRecord(t.ws);
   legacy = recoverable(t);
-  write(path.join(t.ws, '.starnet-workspace-owner.json'), { version: 1, pid: 424242, nonce: 'live-owner', startedAt: T0 });
+  write(path.join(t.ws, '.vultron-workspace-owner.json'), { version: 1, pid: 424242, nonce: 'live-owner', startedAt: T0 });
   left = leftover(t);
   r = boot(t.ws, { candidateRoots: [legacy], fs: left.fs, sweepProfile: left.sweepProfile, retryDelays: [0, 0, 0], lockPid: 7, lockPidAlive: pid => pid === 424242 });
   A.eq([r.ok, r.applied], [false, false], 'a generation with a live owner is not switched under it (' + JSON.stringify(r) + ')');
@@ -521,7 +521,7 @@ for (const [what, bytes] of [['torn', '{"schema":"starnet.station","vers'], ['a 
 
 /* ---- ONE AT A TIME ---- */
 {
-  const save = name => ({ version: 1, agentId: 'agent', updatedAt: 5, savedAt: 5, doc: { schema: 'starnet.save', version: 5, updatedAt: 5, agent: { id: 'agent', name }, station: { rooms: [], props: [] }, workstreams: [] } });
+  const save = name => ({ version: 1, agentId: 'agent', updatedAt: 5, savedAt: 5, doc: { schema: 'vultron.save', version: 5, updatedAt: 5, agent: { id: 'agent', name }, station: { rooms: [], props: [] }, workstreams: [] } });
   // a pending recovery wins, and the two never queue up
   let t = sandbox();
   plant(t.ws, ['ledger.jsonl']);
@@ -559,7 +559,7 @@ for (const [what, bytes] of [['torn', '{"schema":"starnet.station","vers'], ['a 
   plant(t.ws, ['agent.roster.json', 'ledger.jsonl']);
   bootRecord(t.ws);
   ask(t.ws);
-  write(path.join(t.ws, '.starnet-workspace-owner.json'), { version: 1, pid: 424242, nonce: 'live-owner', startedAt: T0 });
+  write(path.join(t.ws, '.vultron-workspace-owner.json'), { version: 1, pid: 424242, nonce: 'live-owner', startedAt: T0 });
   const before = tree(t.ws);
   const busy = boot(t.ws, { lockPid: 7, lockPidAlive: pid => pid === 424242 });
   A.eq([busy.kind, busy.applied, busy.pending, busy.code], ['fresh', false, true, 'FRESH_WORKSPACE_BUSY'], 'a generation with a live owner is left alone');
@@ -673,7 +673,7 @@ for (const [what, bytes] of [['torn', '{"schema":"starnet.station","vers'], ['a 
   t = sandbox();
   bootRecord(t.ws);
   const legacy = path.join(t.root, 'legacy', 'workspaces');
-  write(path.join(legacy, 'agent.save.json'), { version: 1, agentId: 'agent', updatedAt: 5, savedAt: 5, doc: { schema: 'starnet.save', version: 5, updatedAt: 5, agent: { id: 'agent', name: 'NOVA' }, station: { rooms: [], props: [] }, workstreams: [] } });
+  write(path.join(legacy, 'agent.save.json'), { version: 1, agentId: 'agent', updatedAt: 5, savedAt: 5, doc: { schema: 'vultron.save', version: 5, updatedAt: 5, agent: { id: 'agent', name: 'NOVA' }, station: { rooms: [], props: [] }, workstreams: [] } });
   const inspection = Recovery.inspectCandidates({ fs, path, platform: process.platform, home: t.root, workspaceRoot: t.ws, candidateRoots: [legacy] });
   g = routes(t, { candidateRoots: [legacy], inspection, readBody: async () => JSON.stringify({ candidateId: inspection.candidates[0].id }) });
   res = fakeRes();

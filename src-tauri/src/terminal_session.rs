@@ -1,21 +1,21 @@
-//! The terminal's own launches of StarNet (bin/starnet.js). `starnet` with the app closed starts it as
+//! The terminal's own launches of Vultron (bin/vultron.js). `vultron` with the app closed starts it as
 //! `--background --terminal-pid <pid>`: the app's own keychain read and keyed sidecar, exactly as when a person opens
-//! it, with the window parked (the tray shows it runs). A second `starnet` session that attaches sends the same flags
+//! it, with the window parked (the tray shows it runs). A second `vultron` session that attaches sends the same flags
 //! to the running app (single-instance), so it runs for every terminal session it was started or joined for. When the
 //! last of them has exited, main.rs decides as a window close does. Parsing and the "is that terminal still running"
 //! probe live here, pure enough to test.
 
-/// The exit code of a terminal-started StarNet whose engine failed and whose startup dialog was cancelled. `starnet`
-/// waits on that process, and a 0 reads as a hand-off to a StarNet already starting (bin/starnet.js
+/// The exit code of a terminal-started Vultron whose engine failed and whose startup dialog was cancelled. `vultron`
+/// waits on that process, and a 0 reads as a hand-off to a Vultron already starting (bin/vultron.js
 /// APP_EXIT_START_CANCELLED says the same number).
 pub const EXIT_START_CANCELLED: i32 = 3;
 
 /// What a launch's arguments say.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TerminalLaunch {
-    /// A person opening StarNet: no terminal flags.
+    /// A person opening Vultron: no terminal flags.
     Person,
-    /// A `starnet` session wants the station. `pid` is that terminal process (`--terminal-pid <n>`), 0 when not given.
+    /// A `vultron` session wants the station. `pid` is that terminal process (`--terminal-pid <n>`), 0 when not given.
     Background { pid: u32 },
 }
 
@@ -48,9 +48,9 @@ where
 }
 
 /// What this process's own launch arguments mean once it is up. A terminal launch whose terminal has already exited is
-/// a person opening StarNet: an in-app update relaunches the app with the arguments it was started with (the updater
-/// copies them, and app.restart() keeps them), and the installer has stopped that `starnet` (it runs on the bundled
-/// node.exe), so the relaunched StarNet would otherwise park its window and close itself as a terminal close.
+/// a person opening Vultron: an in-app update relaunches the app with the arguments it was started with (the updater
+/// copies them, and app.restart() keeps them), and the installer has stopped that `vultron` (it runs on the bundled
+/// node.exe), so the relaunched Vultron would otherwise park its window and close itself as a terminal close.
 pub fn at_startup(launch: TerminalLaunch, running: impl Fn(u32) -> bool) -> TerminalLaunch {
     match launch {
         TerminalLaunch::Background { pid } if pid > 0 && !running(pid) => TerminalLaunch::Person,
@@ -60,7 +60,7 @@ pub fn at_startup(launch: TerminalLaunch, running: impl Fn(u32) -> bool) -> Term
 
 /// Is the terminal process `pid` still running? Exact on purpose: on Windows an exited process whose handle someone
 /// still holds (a shell that has not collected it yet) is gone here, where a bare OpenProcess would say alive. A probe
-/// that cannot tell (access denied) says running: a wrong "running" only keeps StarNet in the tray, a wrong "gone"
+/// that cannot tell (access denied) says running: a wrong "running" only keeps Vultron in the tray, a wrong "gone"
 /// would close a station under a terminal still using it.
 #[cfg(windows)]
 pub fn terminal_running(pid: u32) -> bool {
@@ -109,7 +109,7 @@ mod tests {
     use super::{at_startup, parse, terminal_running, TerminalLaunch};
 
     #[test]
-    fn a_plain_launch_is_a_person_opening_starnet() {
+    fn a_plain_launch_is_a_person_opening_vultron() {
         assert_eq!(parse(["skynet-desktop.exe"]), TerminalLaunch::Person);
         assert_eq!(parse(Vec::<String>::new()), TerminalLaunch::Person);
         assert_eq!(parse(["x", "--terminal-pid", "42"]), TerminalLaunch::Person, "a pid alone is not a terminal launch");
@@ -131,8 +131,8 @@ mod tests {
     }
 
     #[test]
-    fn a_relaunch_for_a_terminal_that_has_exited_is_a_person_opening_starnet() {
-        // the in-app update case: the updater relaunches with the old --background --terminal-pid, that starnet is gone
+    fn a_relaunch_for_a_terminal_that_has_exited_is_a_person_opening_vultron() {
+        // the in-app update case: the updater relaunches with the old --background --terminal-pid, that vultron is gone
         let relaunch = parse(["x", "--background", "--terminal-pid", "4242"]);
         assert_eq!(at_startup(relaunch, |_| false), TerminalLaunch::Person);
         // a terminal still running keeps its launch

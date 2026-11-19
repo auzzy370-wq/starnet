@@ -14,7 +14,7 @@ function eq(a, b, why) { checks++; assert.deepEqual(a, b, why); }
 const response = (body, status = 200, headers = {}) => new Response(typeof body === 'string' ? body : JSON.stringify(body), { status, headers });
 const lookup = async () => [{ address: '93.184.216.34', family: 4 }];
 const google = JSON.stringify({ installed: { client_id: '123456-fixture.apps.googleusercontent.com', client_secret: 'fixture-never-print-me' } });
-const env = { STARNET_GOOGLE_DESKTOP_CLIENT_JSON: google };
+const env = { VULTRON_GOOGLE_DESKTOP_CLIENT_JSON: google };
 function healthy(url) {
   const u = new URL(String(url));
   if (u.hostname === 'www.mojeek.com') return response('<a class="title" href="https://example.com/">Example Domain</a><p class="s">Example</p>');
@@ -73,7 +73,7 @@ async function main() {
   ok(direct.requests.every(r => r.host !== 'r.jina.ai'), 'no unauthenticated Jina request invented by canary');
   const noGoogle = await probeFloor('google-signin', { ...opts, env: {} });
   ok(!noGoogle.ok && noGoogle.skipped && noGoogle.status === 'unconfigured' && noGoogle.requests.length === 0, 'missing registration is unconfigured, not verified');
-  const invalidGoogle = await probeFloor('google-signin', { ...opts, env: { STARNET_GOOGLE_DESKTOP_CLIENT_JSON: '{bad' } });
+  const invalidGoogle = await probeFloor('google-signin', { ...opts, env: { VULTRON_GOOGLE_DESKTOP_CLIENT_JSON: '{bad' } });
   ok(!invalidGoogle.ok && !invalidGoogle.skipped, 'malformed registration fails rather than silently skipping');
   for (const error of ['invalid_client', 'deleted_client', 'redirect_uri_mismatch', 'access_denied']) {
     const rejected = await probeFloor('google-signin', { ...opts, fetchImpl: async () => response('<input id="identifierId">' + error) });
@@ -92,7 +92,7 @@ async function main() {
   }
 
   // Run the existing update verifier itself. Only its global fetch is replaced, in an isolated child process.
-  const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-floor-canaries-'));
+  const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-floor-canaries-'));
   try {
     const preload = path.join(scratch, 'fetch.cjs');
     const version = JSON.parse(fs.readFileSync(path.join(ROOT, 'src-tauri/tauri.conf.json'), 'utf8')).version;
@@ -115,7 +115,7 @@ async function main() {
   ok(wf.includes("cron: '17 */6 * * *'") && wf.includes('fail-fast: false') && wf.includes('--retry 1'), 'six-hour checks retain other floor results and retry once');
   ok(/floors_report_only:\s+type: boolean\s+default: true/.test(wf), 'reusable callers default report-only');
   ok(wf.includes('REPORT_ONLY: ${{ inputs.floors_report_only == true }}'), 'call policy uses typed input rather than caller event name');
-  ok(wf.includes("matrix.floor == 'google-signin' && inputs.floors_report_only != true && secrets.STARNET_GOOGLE_DESKTOP_CLIENT_JSON"), 'publisher material is limited to its non-report leg');
+  ok(wf.includes("matrix.floor == 'google-signin' && inputs.floors_report_only != true && secrets.VULTRON_GOOGLE_DESKTOP_CLIENT_JSON"), 'publisher material is limited to its non-report leg');
   ok(wf.includes('ref: ${{ inputs.ref || github.ref }}') && wf.includes('path: .canary-tool'), 'canary and product refs stay separate');
   console.log('floor-canaries.test: OK (' + checks + ' assertions)');
 }

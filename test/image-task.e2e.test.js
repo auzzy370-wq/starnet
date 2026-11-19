@@ -87,7 +87,7 @@ function boot(port, env, attempts) {
 
 async function run(base, token, body) {
   const res = await fetch(base + '/api/run', {
-    method: 'POST', headers: { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: base }, body: JSON.stringify(body)
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: base }, body: JSON.stringify(body)
   });
   A.eq(res.status, 200, 'image task run streams');
   return (await res.text()).split('\n').map(s => s.trim()).filter(Boolean).map(s => { try { return JSON.parse(s); } catch (_) { return null; } }).filter(Boolean);
@@ -95,12 +95,12 @@ async function run(base, token, body) {
 
 (async () => {
   const provider = await startProvider();
-  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-image-task-e2e-'));
-  const noOpenRouterKey = { STARNET_OPENROUTER_KEY: '', SKYNET_OPENROUTER_KEY: '', OPENROUTER_KEY: '', OPENROUTER_API_KEY: '',
-    STARNET_OPENROUTER_API_KEY: '', SKYNET_OPENROUTER_API_KEY: '', OPENAI_API_KEY: '', STARNET_OPENAI_API_KEY: '', SKYNET_OPENAI_API_KEY: '' };
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-image-task-e2e-'));
+  const noOpenRouterKey = { VULTRON_OPENROUTER_KEY: '', SKYNET_OPENROUTER_KEY: '', OPENROUTER_KEY: '', OPENROUTER_API_KEY: '',
+    VULTRON_OPENROUTER_API_KEY: '', SKYNET_OPENROUTER_API_KEY: '', OPENAI_API_KEY: '', VULTRON_OPENAI_API_KEY: '', SKYNET_OPENAI_API_KEY: '' };
   const env = Object.assign({}, noOpenRouterKey, {
     SKYNET_WORKSPACES: workspace,
-    STARNET_OPENROUTER_BASE: provider.baseUrl,
+    VULTRON_OPENROUTER_BASE: provider.baseUrl,
     SKYNET_FULL_ACCESS: '1',
     SKYNET_AUX_BUDGET: '0'
   });
@@ -183,7 +183,7 @@ async function run(base, token, body) {
     // run on another provider make images — but only where no image route existed: a route that already worked (here a
     // station OpenAI key) keeps rendering and billing where it did.
     const engineKey = body => fetch(base + '/api/providers/engine-key', {
-      method: 'POST', headers: { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: base }, body: JSON.stringify(body)
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: base }, body: JSON.stringify(body)
     });
     A.eq((await engineKey({ provider: 'openai', key: 'page-saved-openai-key', baseUrl: provider.baseUrl })).status, 200, 'the page hands the station its OpenAI key');
     const saved = await engineKey({ provider: 'openrouter', key: 'page-saved-or-key' });

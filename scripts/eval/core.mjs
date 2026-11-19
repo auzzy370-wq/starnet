@@ -1,10 +1,10 @@
 import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
 
-export const TASK_SCHEMA = 'starnet.eval.task.v1';
-export const TRAJECTORY_SCHEMA = 'starnet.eval.trajectory.v1';
-export const REPORT_SCHEMA = 'starnet.eval.report.v1';
-export const BENCHMARK_VERSION = 'starnet-0.9.0-agent-quality-v1';
+export const TASK_SCHEMA = 'vultron.eval.task.v1';
+export const TRAJECTORY_SCHEMA = 'vultron.eval.trajectory.v1';
+export const REPORT_SCHEMA = 'vultron.eval.report.v1';
+export const BENCHMARK_VERSION = 'vultron-0.9.0-agent-quality-v1';
 
 const SECRET_KEY = /(?:api[_-]?key|access[_-]?token|refresh[_-]?token|authorization|password|secret|cookie|credential)/i;
 const REDACTED = '[REDACTED]';

@@ -98,7 +98,7 @@ function emptyFloor() { const doc = WM.defaultDoc(); doc.meta.createdAt = 1; ret
 function seedSavedFloor(workspace, station, opts) {
   const store = makeSaveStore({ fs, pathMod: path, root: workspace, clock: { now: () => Date.now() } });
   const rest = (opts && opts.save) ? Save.fromDoc(clone(opts.save)).doc : {};
-  const wrote = store.save('agent', Object.assign({ schema: 'starnet.save', version: Save.CURRENT, updatedAt: Date.now(), agent: { id: 'agent' } }, rest,
+  const wrote = store.save('agent', Object.assign({ schema: 'vultron.save', version: Save.CURRENT, updatedAt: Date.now(), agent: { id: 'agent' } }, rest,
     { _saveRevision: 0, _saveClient: (opts && opts.client) || 'saved-floor-helper', _saveDirty: true, station }), { compareRevision: true });
   if (!wrote || !wrote.ok) throw new Error('the saved floor could not be seeded: ' + JSON.stringify(wrote));
   return { file: savePath(workspace) };
@@ -137,7 +137,7 @@ async function publishFloor(api, station, opts) {
   // a page saves its whole station with the floor changed, so whatever else the save holds (its sessions, its agent...) is kept,
   // migrated to the current version the way the page migrates it on load; a workspace with no save yet gets a bare one
   const held = current.body && current.body.save && Save.fromDoc(current.body.save), rest = held && held.doc ? held.doc : {};
-  const wrote = await api.json('POST', '/api/save', Object.assign({ schema: 'starnet.save', version: Save.CURRENT, agent: { id: 'agent' } }, rest,
+  const wrote = await api.json('POST', '/api/save', Object.assign({ schema: 'vultron.save', version: Save.CURRENT, agent: { id: 'agent' } }, rest,
     { _saveRevision: Number(rest._saveRevision) || 0, updatedAt: Math.max(Date.now(), (Number(rest.updatedAt) || 0) + 1), _saveClient: o.client || 'e2e-page', station }));
   if (wrote.status !== 200 || !wrote.body || wrote.body.ok !== true) throw new Error(label + ' did not save: ' + wrote.status + ' ' + String(wrote.text).slice(0, 300));
   const hint = hintFor(station), want = o.expect || 200;

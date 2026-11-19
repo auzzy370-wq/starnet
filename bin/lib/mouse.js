@@ -1,4 +1,4 @@
-/* bin/lib/mouse.js — the mouse in the `starnet` dashboard: PURE parts (no I/O).
+/* bin/lib/mouse.js — the mouse in the `vultron` dashboard: PURE parts (no I/O).
 
    A terminal reports the mouse once the screen asks it to (ESC[?1000h: presses, releases and the wheel; ESC[?1006h: in SGR
    form, ESC[<b;x;yM on a press and …m on a release, x and y counted from 1). Node's keypress reader does not know the SGR

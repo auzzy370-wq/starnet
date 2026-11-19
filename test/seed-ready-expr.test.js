@@ -7,7 +7,7 @@ const A = require('./_assert.js');
   const { READY_EXPR, waitDevReady } = await import('../scripts/lib/seed.mjs');
   const page = (dev, active) => {
     const els = { 'screen-game': { classList: { contains: c => c === 'active' && active } }, bottombar: { offsetParent: {} } };
-    return new Function('window', 'document', 'return ' + READY_EXPR)({ __STARNET_DEV__: dev }, { getElementById: id => els[id] || null });
+    return new Function('window', 'document', 'return ' + READY_EXPR)({ __VULTRON_DEV__: dev }, { getElementById: id => els[id] || null });
   };
   A.eq(page({}, true), true, 'the game screen is active: ready');
   A.eq(page({}, false), false, 'a laid-out dock on a page whose game screen is not active is not ready');

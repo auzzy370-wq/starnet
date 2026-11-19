@@ -1,4 +1,4 @@
-/* STARNET quick model selector. Lives in COMMS beside voice controls; transport state stays in Harness. */
+/* VULTRON quick model selector. Lives in COMMS beside voice controls; transport state stays in Harness. */
 'use strict';
 
 const ModelDock = (() => {
@@ -61,19 +61,19 @@ const ModelDock = (() => {
   };
   // CLAUDE CODE sits with the other subscription sign-ins (2026-10-02): at 15.5 its handful of models sank under
   // OpenRouter's whole catalog, and only an exact "claude code" search found them.
-  const PROVIDER_RANK = { starnet: -1, codex: 0, grok: 1, kimi: 2, 'claude-cli': 2.5, openrouter: 3, openai: 4, anthropic: 5, gemini: 6, xai: 7, groq: 8, mistral: 9, deepseek: 10, together: 11, fireworks: 12, perplexity: 13, cerebras: 14, ollama: 15, custom: 16 };
-  // A linked station with an EMPTY wallet still led with STARNET, so its managed "Claude Opus" sat right above CLAUDE
+  const PROVIDER_RANK = { vultron: -1, codex: 0, grok: 1, kimi: 2, 'claude-cli': 2.5, openrouter: 3, openai: 4, anthropic: 5, gemini: 6, xai: 7, groq: 8, mistral: 9, deepseek: 10, together: 11, fireworks: 12, perplexity: 13, cerebras: 14, ollama: 15, custom: 16 };
+  // A linked station with an EMPTY wallet still led with VULTRON, so its managed "Claude Opus" sat right above CLAUDE
   // CODE's and one mis-pick sent every run into "Out of managed credit" (2026-10-21 user reports). A REPORTED balance
   // <= 0 sinks the group below every other provider and labels it NO CREDITS; an unknown balance (null) changes nothing.
-  let starnetBalanceUsd = null;
-  function starnetDry() { return typeof starnetBalanceUsd === 'number' && !(starnetBalanceUsd > 0); }
+  let vultronBalanceUsd = null;
+  function vultronDry() { return typeof vultronBalanceUsd === 'number' && !(vultronBalanceUsd > 0); }
   function providerRank(p) {
-    if (p === 'starnet' && starnetDry()) return 19;
+    if (p === 'vultron' && vultronDry()) return 19;
     return PROVIDER_RANK[p] == null ? 20 : PROVIDER_RANK[p];
   }
-  async function refreshStarnetBalance() {
+  async function refreshVultronBalance() {
     let bal = null;
-    if (providerEnabled('starnet')) {
+    if (providerEnabled('vultron')) {
       try {
         const r = await apiFetch('/api/credits?history=0', { cache: 'no-store' });
         const j = r.ok ? await r.json() : null;
@@ -81,7 +81,7 @@ const ModelDock = (() => {
         if (j && j.configured && typeof j.balanceUsd === 'number' && isFinite(j.balanceUsd)) bal = j.balanceUsd;
       } catch (_) { bal = null; }
     }
-    starnetBalanceUsd = bal;
+    vultronBalanceUsd = bal;
   }
 
   let opts = {};
@@ -105,9 +105,9 @@ const ModelDock = (() => {
   let advancedEffortsOpen = false;
   /* TIER BADGES (2026-09-29). The cloud's EDITORIAL tier list (GET /api/model-tiers → the linked cloud's
      /v1/tierlist) badges the rows it names: "S · agent", "A · cheap". Its ids are OpenRouter ids, so only rows
-     whose id space IS OpenRouter's (the managed starnet catalog and direct OpenRouter) are matched — a direct
+     whose id space IS OpenRouter's (the managed vultron catalog and direct OpenRouter) are matched — a direct
      vendor id is never guessed onto a board. No list (cloud down / unlinked) = no badges, never invented ones. */
-  const TIER_ID_SPACE = { starnet: true, openrouter: true };
+  const TIER_ID_SPACE = { vultron: true, openrouter: true };
   const TIER_REFRESH_MS = 10 * 60 * 1000;
   let tierIndex = new Map();
   let tierLoadedAt = 0, tierRequest = null;
@@ -157,7 +157,7 @@ const ModelDock = (() => {
   }
   function providerLabel(p) {
     p = normalizeProvider(p);
-    const map = { starnet: 'STARNET', codex: 'GPT / CODEX', grok: 'GROK OAUTH', kimi: 'KIMI OAUTH', openrouter: 'OPENROUTER', openai: 'OPENAI API', anthropic: 'ANTHROPIC', gemini: 'GEMINI', xai: 'XAI', groq: 'GROQ', mistral: 'MISTRAL', deepseek: 'DEEPSEEK', together: 'TOGETHER', fireworks: 'FIREWORKS', perplexity: 'PERPLEXITY', cerebras: 'CEREBRAS', ollama: 'OLLAMA', 'claude-cli': 'CLAUDE CODE', custom: 'CUSTOM' };
+    const map = { vultron: 'VULTRON', codex: 'GPT / CODEX', grok: 'GROK OAUTH', kimi: 'KIMI OAUTH', openrouter: 'OPENROUTER', openai: 'OPENAI API', anthropic: 'ANTHROPIC', gemini: 'GEMINI', xai: 'XAI', groq: 'GROQ', mistral: 'MISTRAL', deepseek: 'DEEPSEEK', together: 'TOGETHER', fireworks: 'FIREWORKS', perplexity: 'PERPLEXITY', cerebras: 'CEREBRAS', ollama: 'OLLAMA', 'claude-cli': 'CLAUDE CODE', custom: 'CUSTOM' };
     return map[p] || String(p || 'openrouter').toUpperCase();
   }
   function normalizeProvider(p) {
@@ -168,7 +168,7 @@ const ModelDock = (() => {
     const id = String((item && item.id) || '').trim();
     if (p === 'openai' && /^(?:gpt-image-|chatgpt-image-|dall-e-)/i.test(id)) return false;
     // an OpenRouter-catalog batch-only row ('<id>:batch') cannot run a chat turn (sidecar providers/provider.js isBatchOnlyModel)
-    return !((p === 'openrouter' || p === 'starnet') && /:batch$/i.test(id));
+    return !((p === 'openrouter' || p === 'vultron') && /:batch$/i.test(id));
   }
   function apiFetch(url, init) {
     return (typeof Harness !== 'undefined' && Harness.apiFetch) ? Harness.apiFetch(url, init) : fetch(url, init);
@@ -287,14 +287,14 @@ const ModelDock = (() => {
     const p = provider();
     // Preserve a saved current model only while the active catalog is unavailable. Once a successful catalog
     // says it is absent, reconcileCurrentModel() has either mapped it to a proven provider-native id or cleared
-    // it. Re-inserting it here was the stale-model bug: a bare Anthropic id appeared selectable under STARNET.
+    // it. Re-inserting it here was the stale-model bug: a bare Anthropic id appeared selectable under VULTRON.
     if (current && isAgentModel({ id: current, provider: p }) && !list.some(m => m.id === current && normalizeProvider(m.provider) === p) && !(catalogState[p] && catalogState[p].confirmed)) {
       list.unshift({ id: current, name: current, provider: p, fallback: true, unverifiedCurrent: true });
     }
     return list.filter(m => m && m.id && isAgentModel(m));
   }
 
-  // Return a catalog-confirmed equivalent for a model whose provider changed. Managed StarNet/OpenRouter ids
+  // Return a catalog-confirmed equivalent for a model whose provider changed. Managed Vultron/OpenRouter ids
   // are vendor/model; Anthropic's direct API uses the bare tail. Never invent a slug: a candidate is returned
   // only when that exact id is present in the successful catalog.
   function catalogEquivalent(current, p, list) {
@@ -305,8 +305,8 @@ const ModelDock = (() => {
     if (rows.some(m => m && m.id === id)) return id;
     let candidate = '';
     // a batch-only variant an older build saved ('<id>:batch', never offered now) runs as its base row when the catalog lists it
-    if ((p === 'starnet' || p === 'openrouter') && /:batch$/i.test(id)) candidate = id.replace(/:batch$/i, '');
-    else if ((p === 'starnet' || p === 'openrouter') && id.indexOf('/') < 0) {
+    if ((p === 'vultron' || p === 'openrouter') && /:batch$/i.test(id)) candidate = id.replace(/:batch$/i, '');
+    else if ((p === 'vultron' || p === 'openrouter') && id.indexOf('/') < 0) {
       candidate = 'anthropic/' + id;
       // #93: a bare vendor id ('gpt-5.5' — the default a managed setup used to save) names its routed row
       // 'openai/gpt-5.5'. Map it only when EXACTLY ONE catalog row is <vendor>/<id>: two vendors serving the
@@ -525,8 +525,8 @@ const ModelDock = (() => {
         try {
           // The catalog must describe the SAME endpoint this provider's runs hit: a per-provider base URL rides every
           // run body (harness.js chat), so listing the default endpoint instead showed models — and reasoning dials —
-          // for a host the runs never reach. starnet's endpoint is its link, never a page override.
-          const override = (p !== 'starnet' && typeof Harness !== 'undefined' && Harness.getBaseUrl) ? Harness.getBaseUrl(p) : '';
+          // for a host the runs never reach. vultron's endpoint is its link, never a page override.
+          const override = (p !== 'vultron' && typeof Harness !== 'undefined' && Harness.getBaseUrl) ? Harness.getBaseUrl(p) : '';
           const q = override ? ('?baseUrl=' + encodeURIComponent(override)) : '';
           const r = await apiFetch('/api/models/' + encodeURIComponent(p) + q, { cache: 'no-store' });
           if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -574,14 +574,14 @@ const ModelDock = (() => {
     renderList();
     // Tier badges ride beside the catalog, never gate it: a slow/unreachable cloud leaves the list badge-less.
     loadTiers(!!force).then(() => { if (!loading && generation === fetchGeneration) renderList(); }).catch(() => {});
-    // 'starnet' first: a linked station's own credits are the most direct way to run, and its catalog is
+    // 'vultron' first: a linked station's own credits are the most direct way to run, and its catalog is
     // the whole managed lineup. providerEnabled() keeps it out of the list when no credits are configured.
-    const ids = ['starnet', 'codex', 'grok', 'kimi', 'openrouter', 'openai', 'anthropic', 'gemini', 'xai', 'groq', 'mistral', 'deepseek', 'together', 'fireworks', 'perplexity', 'cerebras', 'ollama', 'claude-cli', 'custom'];
+    const ids = ['vultron', 'codex', 'grok', 'kimi', 'openrouter', 'openai', 'anthropic', 'gemini', 'xai', 'groq', 'mistral', 'deepseek', 'together', 'fireworks', 'perplexity', 'cerebras', 'ollama', 'claude-cli', 'custom'];
     const active = provider();
     if (ids.indexOf(active) < 0) ids.unshift(active);
     const pending = ids.map(p => fetchProviderModels(p, force));
     const activeRequest = catalogRequests[active];
-    const balance = refreshStarnetBalance().catch(() => {});
+    const balance = refreshVultronBalance().catch(() => {});
     const parts = await Promise.all(pending);
     await balance;
     const activeList = parts[ids.indexOf(active)] || [];
@@ -728,12 +728,12 @@ const ModelDock = (() => {
         // connect screen's "(catalog offline — type or pick a slug)" honesty.
         const groupFallback = list.some(x => groupOf(x) === g && x.fallback);
         head.textContent = group;
-        if (normalizeProvider(m.provider) === 'starnet' && starnetDry()) {
+        if (normalizeProvider(m.provider) === 'vultron' && vultronDry()) {
           const dry = document.createElement('i');
           dry.className = 'model-dock-group-offline';
           dry.textContent = ' · NO CREDITS';
           head.appendChild(dry);
-          head.title = 'your StarNet balance is ' + (starnetBalanceUsd < 0 ? '-$' : '$') + Math.abs(starnetBalanceUsd).toFixed(2) + ' — these models run on managed credits; pick one under your own sign-in or key, or add credits in the STORE';
+          head.title = 'your Vultron balance is ' + (vultronBalanceUsd < 0 ? '-$' : '$') + Math.abs(vultronBalanceUsd).toFixed(2) + ' — these models run on managed credits; pick one under your own sign-in or key, or add credits in the STORE';
         }
         if (groupFallback) {
           const off = document.createElement('i');
@@ -901,7 +901,7 @@ const ModelDock = (() => {
   }
   // first-run affordance: one subtle pulse so a new user notices the chip exists. Persisted
   // guard so it fires only until they've interacted (or seen it once).
-  const PULSE_KEY = 'starnet.modeldock.seen';
+  const PULSE_KEY = 'vultron.modeldock.seen';
   function clearPulse() {
     const toggle = el('model-dock-toggle');
     if (toggle) toggle.classList.remove('first-run');
@@ -949,7 +949,7 @@ const ModelDock = (() => {
     if (open) closeDock(); else openDock();
   }
 
-  // The model picker's account door always leads to StarNet. It does not change the
+  // The model picker's account door always leads to Vultron. It does not change the
   // active provider, promise a working model, or start a subscription transaction.
   function openSubscription(event) {
     const invoke = (typeof window !== 'undefined' && window.__TAURI__ && window.__TAURI__.core)
@@ -957,10 +957,10 @@ const ModelDock = (() => {
     if (!invoke) return; // Browser: the anchor's normal target=_blank navigation owns this.
     event.preventDefault();
     closeDock();
-    Promise.resolve().then(() => invoke('open_external_url', { url: 'https://www.starnetos.com/pricing' }))
+    Promise.resolve().then(() => invoke('open_external_url', { url: 'https://www.vultron.vercel.app/pricing' }))
       .catch(() => {
         if (typeof StationUI !== 'undefined' && StationUI.notify) {
-          StationUI.notify('Could not open your browser. Visit www.starnetos.com/pricing for your StarNet subscription.', 'warn');
+          StationUI.notify('Could not open your browser. Visit www.vultron.vercel.app/pricing for your Vultron subscription.', 'warn');
         }
       });
   }
@@ -1027,12 +1027,12 @@ const ModelDock = (() => {
   // `ensure: { id, provider }` guarantees a specific model (e.g. an agent's own pin) is present even if the
   // provider is unconfigured, so the picker can always show + preselect it. Returns [{ id, name, provider, … }].
   async function computeCatalog(force, ensure) {
-    // #93: 'starnet' leads here exactly as in the dock — without it a per-agent picker offered managed credits only
+    // #93: 'vultron' leads here exactly as in the dock — without it a per-agent picker offered managed credits only
     // while the FOCUSED agent already ran on them. providerEnabled() drops it (empty list) when the station is unlinked.
-    const ids = ['starnet', 'codex', 'grok', 'kimi', 'openrouter', 'openai', 'anthropic', 'gemini', 'xai', 'groq', 'mistral', 'deepseek', 'together', 'fireworks', 'perplexity', 'cerebras', 'ollama', 'claude-cli', 'custom'];
+    const ids = ['vultron', 'codex', 'grok', 'kimi', 'openrouter', 'openai', 'anthropic', 'gemini', 'xai', 'groq', 'mistral', 'deepseek', 'together', 'fireworks', 'perplexity', 'cerebras', 'ollama', 'claude-cli', 'custom'];
     const active = provider();
     if (ids.indexOf(active) < 0) ids.unshift(active);
-    const balance = refreshStarnetBalance().catch(() => {});
+    const balance = refreshVultronBalance().catch(() => {});
     const parts = await Promise.all(ids.map(p => fetchProviderModels(p, force).catch(() => [])));
     await balance;
     let list = parts.reduce((a, b) => a.concat(b), []).filter(m => m && m.id);
@@ -1063,7 +1063,7 @@ const ModelDock = (() => {
     normalizeEffort,
     // reuse surface for per-target pickers (bay / dossier) — pure data + label/effort helpers, no side effects
     catalog: (o) => computeCatalog(!!(o && o.force), o && o.ensure),
-    starnetDry,
+    vultronDry,
     labels: { model: modelLabel, provider: providerLabel, group: groupOf, short: shortModelName, normProvider: normalizeProvider, orGroup: openRouterGroupName },
     efforts: { optionsFor: effortOptionsFor, label: effortLabel, clamp: clampEffortForModel, list: () => EFFORTS.slice(), presetsFor: reasoningPresetsFor, presetFor: reasoningPresetFor, forPreset: effortForPreset },
     _internals: { tierIndexFrom, tiersFor, reasoningPresetsFor, reasoningPresetFor, effortForPreset, effortOptionsFor, clampEffortForModel, modelFamily, supportsReasoning, selectorLabel, catalogEquivalent, isAgentModel, asModel, dialLess, effortShown }

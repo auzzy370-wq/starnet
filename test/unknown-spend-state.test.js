@@ -64,7 +64,7 @@ for (const receipt of [{ runId: 'old-capped', agentId: 'agent', ts: NOW - 3 * DA
   assert.deepEqual(by('crashed-open').countAs, { usd: 3.75, source: 'assumed' }, '...but still a one-click figure');
   assert.deepEqual([by('crashed-open').agentId, by('crashed-open').ts, 'agentId' in by('damaged-a'), 'ts' in by('damaged-a')], ['agent', NOW - 60000, false, false], 'only what the receipt says');
   for (const i of items) assert.ok(i.countAs && i.countAs.usd > 0 && (!i.bound || i.bound.usd > 0), 'a counted item is never $0 and every item has a one-click exit: ' + JSON.stringify(i));
-  // the assumption's floor: STARNET_UNKNOWN_CHARGE_USD (default $2); a 0 or junk figure is the default, never $0
+  // the assumption's floor: VULTRON_UNKNOWN_CHARGE_USD (default $2); a 0 or junk figure is the default, never $0
   assert.deepEqual(ledgerWith([], [receipts[1]]).unknownItems()[0].bound, { usd: 2, source: 'assumed' });
   assert.equal(ledgerWith([prior], [receipts[1]], { unknownChargeUsd: 5 }).unknownItems()[0].bound.usd, 5);
   for (const bad of [0, -1, NaN, Infinity, '3', undefined]) assert.equal(ledgerWith([], [receipts[1]], { unknownChargeUsd: bad }).unknownItems()[0].bound.usd, 2, 'figure ' + String(bad));
@@ -129,12 +129,12 @@ for (const receipt of [{ runId: 'old-capped', agentId: 'agent', ts: NOW - 3 * DA
   const W = makeLedger({ clock, io: { readAll: () => [], append() { throw Object.assign(new Error('disk full'), { code: 'ENOSPC' }); } } });
   W.record({ runId: 'x', usd: 1 });
   const w = makeBudget({ caps: { day: 5 }, ledger: W, clock }).check('r', 'a', 0, NOW);
-  assert.deepEqual([w.unknown, w.cause, w.exit], [true, 'write', 'restart StarNet: it replays the spend it could not save']);
+  assert.deepEqual([w.unknown, w.cause, w.exit], [true, 'write', 'restart Vultron: it replays the spend it could not save']);
   const R = makeLedger({ clock, io: { readAll() { throw Object.assign(new Error('bad'), { code: 'EIO' }); }, append() {} } });
   const rb = makeBudget({ caps: { day: 5 }, ledger: R, clock });
   const r = rb.check('r', 'a', 0, NOW);
   assert.deepEqual([r.unknown, r.cause, r.scope], [true, 'read', 'day']);
-  assert.equal(r.exit, 'restart StarNet; if it stays, fix the spend files in your workspaces folder, or set PER DAY to 0 in SETTINGS › SPENDING LIMITS');
+  assert.equal(r.exit, 'restart Vultron; if it stays, fix the spend files in your workspaces folder, or set PER DAY to 0 in SETTINGS › SPENDING LIMITS');
   assert.deepEqual([rb.resume('day'), rb.status(NOW).day.usd, 'unknown' in rb.status(NOW)], [null, null, false], 'nothing to count: no resume, no figure, no unknown block');
 }
 
@@ -195,9 +195,9 @@ for (const receipt of [{ runId: 'old-capped', agentId: 'agent', ts: NOW - 3 * DA
   assert.match(headline.userMessage, /Press COUNT AS \$2\.00 or enter its charge in SETTINGS › SPENDING LIMITS, or set GLOBAL to 0\.$/, 'the chat headline keeps the exit word for word: ' + headline.userMessage);
 
   const unread = await loopUnder(makeBudget({ caps: { day: 5 }, ledger: makeLedger({ clock, io: { readAll() { throw Object.assign(new Error('bad'), { code: 'EIO' }); }, append() {} } }), clock }))('r-unread');
-  assert.match(unread.error.message, /^Spend history could not be read, so the spending limits you set can’t be checked\. Restart StarNet; if it stays, fix the spend files in your workspaces folder, or set PER DAY to 0 in SETTINGS › SPENDING LIMITS\.$/);
+  assert.match(unread.error.message, /^Spend history could not be read, so the spending limits you set can’t be checked\. Restart Vultron; if it stays, fix the spend files in your workspaces folder, or set PER DAY to 0 in SETTINGS › SPENDING LIMITS\.$/);
   assert.match(friendlyError(unread.error.message).userMessage, /set PER DAY to 0/, 'the headline keeps that exit too');
   const thrown = await loopUnder({ check() { throw new Error('ledger gone'); } })('r-thrown');
-  assert.match(thrown.error.message, /^The spending check failed, so the spending limits you set can’t be checked\. Restart StarNet; SETTINGS › SPENDING LIMITS shows what the spend record holds\.$/, 'a check that throws names its own exit: ' + thrown.error.message);
+  assert.match(thrown.error.message, /^The spending check failed, so the spending limits you set can’t be checked\. Restart Vultron; SETTINGS › SPENDING LIMITS shows what the spend record holds\.$/, 'a check that throws names its own exit: ' + thrown.error.message);
   console.log('unknown spend state: chosen caps stay strict, soft-only proceeds, estimates remain recovery information, explicit settlement clears uncertainty, write/read/check exits named PASS');
 })().catch(e => { console.error(e); process.exitCode = 1; });

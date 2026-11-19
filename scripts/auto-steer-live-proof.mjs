@@ -55,7 +55,7 @@ try{
  console.log('RELOADED ROWS',JSON.stringify(reloaded));
  assert.equal(reloaded.filter(t=>t==="How's it going?").length,1);
  assert.equal(reloaded.filter(t=>t.includes('Use this reference.'+String.fromCharCode(10)+'Keep the original report objective.')).length,1);
- assert(!reloaded.some(t=>t.includes('@starnet-message-v1:')));
+ assert(!reloaded.some(t=>t.includes('@vultron-message-v1:')));
  const nextContext=await evalJS(cdp,"Chat.contextRef().messages");
  assert(nextContext.some(m=>m.role==='user'&&m.content==="How's it going?"));
  assert(nextContext.some(m=>m.role==='user'&&m.content.includes('Keep the original report objective.')));

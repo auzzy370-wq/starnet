@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
- * egress-floor.mjs — the LIVE canary for StarNet's outbound boundary (sidecar/net/safe-egress.js).
+ * egress-floor.mjs — the LIVE canary for Vultron's outbound boundary (sidecar/net/safe-egress.js).
  *
  * WHY. Every outbound path whose destination a model or a remote server picks dials through the boundary's pinned
  * dispatcher: web_fetch and web_request, connector sign-in, the skill / market / community-map downloads and the owned
@@ -118,7 +118,7 @@ function throughProxy(proxy, u) {
       const t = tls.connect({ socket, servername: u.hostname });   // rejectUnauthorized: the certificate must verify for the host
       let data = '';
       t.on('secureConnect', () => {
-        t.write('GET ' + (u.pathname || '/') + u.search + ' HTTP/1.1\r\nHost: ' + u.host + '\r\nUser-Agent: StarNet-egress-canary\r\nConnection: close\r\n\r\n');
+        t.write('GET ' + (u.pathname || '/') + u.search + ' HTTP/1.1\r\nHost: ' + u.host + '\r\nUser-Agent: Vultron-egress-canary\r\nConnection: close\r\n\r\n');
       });
       t.on('data', d => { data += d; });
       t.on('end', () => {

@@ -31,13 +31,13 @@ const { meaningfulEntries } = require('../sidecar/station-record.js');
 const cases = require('./fixtures/station-record-cases.json');
 
 const ENV = {
-  STARNET_DEV: '0', SKYNET_DEV: '0', SKYNET_QUEST_REFRESH: '0', STARNET_QUEST_REFRESH: '0',
-  STARNET_CRON_ENABLED: '0', SKYNET_CRON_ENABLED: '0', STARNET_LOOP_ENABLED: '0', SKYNET_LOOP_ENABLED: '0',
-  SKYNET_LIVE_PRICES: '0', STARNET_LIVE_PRICES: '0', STARNET_EDGE_TTS: '0', SKYNET_EDGE_TTS: '0',
-  STARNET_CLOUD_URL: 'http://127.0.0.1:1', STARNET_CREDITS_URL: 'http://127.0.0.1:1', STARNET_DESKTOP_SHELL: '0',
-  SKYNET_OPENROUTER_BASE: 'http://127.0.0.1:1', STARNET_OPENROUTER_BASE: 'http://127.0.0.1:1',
-  OPENROUTER_API_KEY: '', SKYNET_OPENROUTER_KEY: '', STARNET_OPENROUTER_KEY: '', OPENAI_API_KEY: '', SKYNET_OPENAI_API_KEY: '', STARNET_OPENAI_API_KEY: '',
-  STARNET_APP_VERSION: '0.15.0-gate', SKYNET_APP_VERSION: ''
+  VULTRON_DEV: '0', SKYNET_DEV: '0', SKYNET_QUEST_REFRESH: '0', VULTRON_QUEST_REFRESH: '0',
+  VULTRON_CRON_ENABLED: '0', SKYNET_CRON_ENABLED: '0', VULTRON_LOOP_ENABLED: '0', SKYNET_LOOP_ENABLED: '0',
+  SKYNET_LIVE_PRICES: '0', VULTRON_LIVE_PRICES: '0', VULTRON_EDGE_TTS: '0', SKYNET_EDGE_TTS: '0',
+  VULTRON_CLOUD_URL: 'http://127.0.0.1:1', VULTRON_CREDITS_URL: 'http://127.0.0.1:1', VULTRON_DESKTOP_SHELL: '0',
+  SKYNET_OPENROUTER_BASE: 'http://127.0.0.1:1', VULTRON_OPENROUTER_BASE: 'http://127.0.0.1:1',
+  OPENROUTER_API_KEY: '', SKYNET_OPENROUTER_KEY: '', VULTRON_OPENROUTER_KEY: '', OPENAI_API_KEY: '', SKYNET_OPENAI_API_KEY: '', VULTRON_OPENAI_API_KEY: '',
+  VULTRON_APP_VERSION: '0.15.0-gate', SKYNET_APP_VERSION: ''
 };
 const LINK = cases.carryOnFresh.files[0];
 const LINK_BYTES = '{"url":"https://credits.example","accountId":"acct-7","linkedAt":7}';
@@ -51,7 +51,7 @@ function tree(dir) {
   const out = {};
   (function walk(d, rel) {
     for (const entry of fs.readdirSync(d, { withFileTypes: true })) {
-      if (entry.name === '.starnet-workspace-owner.json.generations') continue;   // the claims' ticket trail, never station state
+      if (entry.name === '.vultron-workspace-owner.json.generations') continue;   // the claims' ticket trail, never station state
       const r = rel ? rel + '/' + entry.name : entry.name, abs = path.join(d, entry.name);
       if (entry.isDirectory()) walk(abs, r);
       else out[r] = crypto.createHash('sha256').update(fs.readFileSync(abs)).digest('hex');
@@ -68,12 +68,12 @@ function exited(child, ms) {
   });
 }
 function doc(name, createdAt, rev, updatedAt, client) {
-  return { schema: 'starnet.save', version: 6, updatedAt, _saveRevision: rev, _saveDirty: true, _saveClient: client,
+  return { schema: 'vultron.save', version: 6, updatedAt, _saveRevision: rev, _saveDirty: true, _saveClient: client,
     agent: { id: 'agent', name, createdAt }, agents: [], workstreams: [{ id: 'general', history: [] }], activeId: 'general', generalId: 'general' };
 }
 
 (async () => {
-  const fixture = SidecarFixture.create({ prefix: 'starnet-fresh-http-', timeoutMs: 30000, env: ENV });
+  const fixture = SidecarFixture.create({ prefix: 'vultron-fresh-http-', timeoutMs: 30000, env: ENV });
   const root = fixture.workspace;
   fixture.workspace = path.join(root, 'workspaces');   // its own parent: the set-aside generation and the request live beside it
   const ws = fixture.workspace, shelf = path.join(root, cases.quarantineDir), requestFile = ws + '.fresh-request.json';
@@ -93,7 +93,7 @@ function doc(name, createdAt, rev, updatedAt, client) {
     return r.body || {};
   }
   try {
-    const legacy = path.join(fixture.profile, 'StarNet', 'workspaces');
+    const legacy = path.join(fixture.profile, 'Vultron', 'workspaces');
     const eraseAt = Date.UTC(2026, 9, 1, 12, 0, 0);
     for (const rel of LAYOUT) write(path.join(ws, ...rel.split('/')), 'bytes of ' + rel);
     write(path.join(ws, ...LINK.split('/')), LINK_BYTES);
@@ -121,7 +121,7 @@ function doc(name, createdAt, rev, updatedAt, client) {
 
     /* ---- STALE: another build boots: index.js wires the build version to both ends ---- */
     await press('STALE build');
-    fixture.env.STARNET_APP_VERSION = '0.15.1-gate';
+    fixture.env.VULTRON_APP_VERSION = '0.15.1-gate';
     await fixture.restart();
     line = await lineageOf();
     A.eq([lastOf(line).ok, lastOf(line).code], [false, 'FRESH_REQUEST_BUILD_CHANGED'], 'STALE: another build refuses a request it did not take (' + JSON.stringify(line.lastFresh) + ')');
@@ -203,7 +203,7 @@ function doc(name, createdAt, rev, updatedAt, client) {
   } finally {
     if (holder) { try { holder.kill(); } catch (_) {} }
     await fixture.dispose();
-    if (path.dirname(root) !== path.resolve(os.tmpdir()) || !path.basename(root).startsWith('starnet-fresh-http-')) throw new Error('unsafe fixture root cleanup');
+    if (path.dirname(root) !== path.resolve(os.tmpdir()) || !path.basename(root).startsWith('vultron-fresh-http-')) throw new Error('unsafe fixture root cleanup');
     fs.rmSync(root, { recursive: true, force: true });
   }
   A.report('start-fresh-generation.http.test');

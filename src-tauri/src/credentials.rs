@@ -115,7 +115,7 @@ pub(crate) fn known_provider(provider: &str) -> Option<&'static str> {
         "gemini" | "google" | "google-ai" | "google-gemini" => "gemini",
         "grok" | "grok-oauth" | "xai-oauth" | "supergrok" => "grok",
         "kimi" | "moonshot" | "kimi-code" | "kimi-oauth" | "kimi-for-coding" => "kimi",
-        "starnet" | "starnet-cloud" | "managed" => "starnet",
+        "vultron" | "vultron-cloud" | "managed" => "vultron",
         "xai" | "x-ai" => "xai",
         "groq" => "groq",
         "mistral" | "mistralai" => "mistral",
@@ -262,7 +262,7 @@ pub(crate) fn read_telegram_bot_tokens(workspaces: &Path) -> BTreeMap<String, St
         .collect()
 }
 
-// ---- StarNet Cloud device token (keychain account "credits:device") ----
+// ---- Vultron Cloud device token (keychain account "credits:device") ----
 //
 // The device token is a BEARER CREDENTIAL THAT SPENDS MONEY: anyone holding it can bill the
 // linked account until the balance runs out. It is minted by the sidecar (which polls the cloud),
@@ -276,7 +276,7 @@ pub(crate) fn credits_keychain_entry() -> keyring::Result<keyring::Entry> {
     keyring::Entry::new(KEYCHAIN_SERVICE, "credits:device")
 }
 
-/// The stored StarNet Cloud device token, or `None` if unset/empty.
+/// The stored Vultron Cloud device token, or `None` if unset/empty.
 pub(crate) fn read_credits_token() -> Option<String> {
     credits_keychain_entry()
         .ok()
@@ -555,7 +555,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "Requires an unlocked native OS credential store; creates the persistent StarNet connector key if absent"]
+    #[ignore = "Requires an unlocked native OS credential store; creates the persistent Vultron connector key if absent"]
     fn connector_keychain_roundtrip() {
         let first = connector_encryption_key().expect("native connector key available");
         let second = connector_encryption_key().expect("native connector key readable again");
@@ -578,8 +578,8 @@ mod tests {
             ("lmstudio", "custom"),
             ("supergrok", "grok"),
             ("kimi-for-coding", "kimi"),
-            ("starnet", "starnet"),
-            ("managed", "starnet"),
+            ("vultron", "vultron"),
+            ("managed", "vultron"),
             ("or", "openrouter"),
             ("unknown-provider", "openrouter"),
         ];
@@ -680,7 +680,7 @@ mod tests {
     impl TempWorkspace {
         fn new(name: &str, secrets: &serde_json::Value) -> Self {
             let dir = std::env::temp_dir().join(format!(
-                "starnet-channel-migrate-{}-{name}",
+                "vultron-channel-migrate-{}-{name}",
                 std::process::id()
             ));
             let _ = std::fs::remove_dir_all(&dir);

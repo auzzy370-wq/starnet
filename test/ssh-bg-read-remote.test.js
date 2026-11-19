@@ -30,9 +30,9 @@ if (isWin && !fs.existsSync(SH)) {
 }
 const posix = (p) => isWin ? '/' + p[0].toLowerCase() + p.slice(2).replace(/\\/g, '/') : p;
 
-const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-sshbg-'));
+const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-sshbg-'));
 const BG = 'sshbg_0123456789abcdef';
-const jobDir = path.join(tmp, '.starnet', 'jobs', BG);
+const jobDir = path.join(tmp, '.vultron', 'jobs', BG);
 fs.mkdirSync(jobDir, { recursive: true });
 
 // 200,000 lines (~12M chars — past the 8 Mi-char bounded capture), a FATAL at line 50,000, a lower-case one at
@@ -119,10 +119,10 @@ const env = makeEnvironmentManager({
       };
       const mk = (spawn) => makeEnvironmentManager({ spawn, fs, pathMod: path, root: tmp, env: {}, config: { backend: 'ssh', sshBin: 'ssh' },
         sshConfig: () => ({ configured: true, host: 'box', user: 'u', port: 22, remoteRoot: '/r' }) });
-      const awkDied = await mk(scripted('starnet-page 500 0 300\n', 46)).readBackground('agent', BG, {});
+      const awkDied = await mk(scripted('vultron-page 500 0 300\n', 46)).readBackground('agent', BG, {});
       A.eq(awkDied.ok, false, 'an awk failure after the header is not ok');
       A.ok(/awk failed, exit 46/.test(awkDied.error), 'and names the failed scan: ' + awkDied.error);
-      const dropped = await mk(scripted('starnet-page 500 0 300\n301\tpartial\n', 255)).readBackground('agent', BG, {});
+      const dropped = await mk(scripted('vultron-page 500 0 300\n301\tpartial\n', 255)).readBackground('agent', BG, {});
       A.eq(dropped.ok, false, 'an ssh drop after the header is not ok');
       A.ok(/ssh exit 255/.test(dropped.error), 'and names the ssh exit: ' + dropped.error);
     }

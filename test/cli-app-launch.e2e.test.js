@@ -1,4 +1,4 @@
-/* node test/cli-app-launch.e2e.test.js — `starnet` with the StarNet app CLOSED starts it in the background and
+/* node test/cli-app-launch.e2e.test.js — `vultron` with the Vultron app CLOSED starts it in the background and
    attaches to the station it brings up, end to end against a REAL sidecar.
 
    The app keeps the station's keys in the OS keychain and hands them only to the sidecar it spawns, so the terminal
@@ -10,7 +10,7 @@
    Hermetic profile throughout (APPDATA / XDG_DATA_HOME / HOME → a temp dir); a content-driven mock model, ZERO spend.
 
    Locks:
-     1. LAUNCH: app closed → `starnet -p` launches the app with --background --terminal-pid <its own pid>, says so,
+     1. LAUNCH: app closed → `vultron -p` launches the app with --background --terminal-pid <its own pid>, says so,
         attaches to the station it brings up, and the answer streams to stdout (exit 0). The terminal boots nothing.
      2. the app is not the terminal's child: the CLI exits at once after its run (detached, unref'd) and the app is
         left to see the terminal gone — the stand-in then stops, as the real app's watch_terminal_sessions does;
@@ -29,9 +29,9 @@ const http = require('http');
 const path = require('path');
 const { spawn } = require('child_process');
 const core = require('../bin/lib/cli-core.js');
-const { discoverDesktop } = require('../bin/starnet.js');
+const { discoverDesktop } = require('../bin/vultron.js');
 
-const BIN = path.resolve(__dirname, '..', 'bin', 'starnet.js');
+const BIN = path.resolve(__dirname, '..', 'bin', 'vultron.js');
 const FAKE_APP = path.resolve(__dirname, 'helpers', 'fake-desktop-app.js');
 const APP_KEY = 'sk-or-v1-from-the-app-keychain';
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -97,8 +97,8 @@ const tail = s => s.trim().split('\n').slice(-4).join(' | ');
 (async () => {
   if (await portAnswers(core.DEFAULT_PORT)) { console.log('cli-app-launch.e2e.test: something answers on 127.0.0.1:' + core.DEFAULT_PORT + ' (it would be attached first) — skipped'); process.exit(0); }
   const mock = await startMockModel();
-  const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-app-launch-'));
-  const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-app-launch-run-'));
+  const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-app-launch-'));
+  const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-app-launch-run-'));
   const appData = process.platform === 'darwin' ? path.join(profile, 'Library', 'Application Support', 'ai.skynet.harness') : path.join(profile, 'ai.skynet.harness');
   const ws = path.join(appData, 'workspaces');
   const cfgFile = path.join(scratch, 'app.json');
@@ -110,10 +110,10 @@ const tail = s => s.trim().split('\n').slice(-4).join(' | ');
   const writeCfg = extra => fs.writeFileSync(cfgFile, JSON.stringify(Object.assign({
     workspaces: ws, record, joinFile, lockFile, stateFile, logSpawn: true, closeMs: 0,
     // what the app injects from its keychain: the terminal's own env below carries none of it
-    keychain: { SKYNET_OPENROUTER_KEY: APP_KEY, STARNET_OPENROUTER_KEY: APP_KEY, SKYNET_OPENROUTER_BASE: mock.base, STARNET_OPENROUTER_BASE: mock.base, SKYNET_DEFAULT_MODEL: 'test/model', STARNET_DEFAULT_MODEL: 'test/model' }
+    keychain: { SKYNET_OPENROUTER_KEY: APP_KEY, VULTRON_OPENROUTER_KEY: APP_KEY, SKYNET_OPENROUTER_BASE: mock.base, VULTRON_OPENROUTER_BASE: mock.base, SKYNET_DEFAULT_MODEL: 'test/model', VULTRON_DEFAULT_MODEL: 'test/model' }
   }, extra || {})));
   const launches = () => { try { return fs.readFileSync(record, 'utf8').split('\n').filter(Boolean).map(l => JSON.parse(l)); } catch (_) { return []; } };
-  const ownerPid = () => { try { return Number(JSON.parse(fs.readFileSync(path.join(ws, '.starnet-workspace-owner.json'), 'utf8')).pid) || 0; } catch (_) { return 0; } };
+  const ownerPid = () => { try { return Number(JSON.parse(fs.readFileSync(path.join(ws, '.vultron-workspace-owner.json'), 'utf8')).pid) || 0; } catch (_) { return 0; } };
   const appRunning = () => fs.existsSync(lockFile);
   // a terminal session the test holds open (the one that "started" the app in 3 and 4)
   const terminal = () => { const t = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { stdio: 'ignore' }); terminals.push(t); return t; };
@@ -134,9 +134,9 @@ const tail = s => s.trim().split('\n').slice(-4).join(' | ');
   }
   const env = Object.assign({}, process.env, {
     APPDATA: profile, LOCALAPPDATA: profile, XDG_DATA_HOME: profile,
-    STARNET_PORT: '', SKYNET_PORT: '', STARNET_WORKSPACES: '', SKYNET_WORKSPACES: '', STARNET_TOKEN: '', STARNET_API_TOKEN: '', SKYNET_API_TOKEN: '',
-    STARNET_OPENROUTER_KEY: '', SKYNET_OPENROUTER_KEY: '', OPENAI_API_KEY: '', ANTHROPIC_API_KEY: '', STARNET_DEFAULT_MODEL: '', SKYNET_DEFAULT_MODEL: '',
-    STARNET_APP_EXE: FAKE_APP, FAKE_APP_CONFIG: cfgFile
+    VULTRON_PORT: '', SKYNET_PORT: '', VULTRON_WORKSPACES: '', SKYNET_WORKSPACES: '', VULTRON_TOKEN: '', VULTRON_API_TOKEN: '', SKYNET_API_TOKEN: '',
+    VULTRON_OPENROUTER_KEY: '', SKYNET_OPENROUTER_KEY: '', OPENAI_API_KEY: '', ANTHROPIC_API_KEY: '', VULTRON_DEFAULT_MODEL: '', SKYNET_DEFAULT_MODEL: '',
+    VULTRON_APP_EXE: FAKE_APP, FAKE_APP_CONFIG: cfgFile
   });
   if (process.platform !== 'win32') env.HOME = profile;
   try {
@@ -150,10 +150,10 @@ const tail = s => s.trim().split('\n').slice(-4).join(' | ');
 
     /* ---- 1 + 2. LAUNCH: the app is closed ---------------------------------------------------------------- */
     const r = await cli(['-p', 'say hello'], env, 150000);
-    A.eq(r.code, 0, 'app closed: `starnet -p` still runs, exit 0 (stderr: ' + tail(r.err) + ')');
+    A.eq(r.code, 0, 'app closed: `vultron -p` still runs, exit 0 (stderr: ' + tail(r.err) + ')');
     A.ok(r.out.indexOf('Hello from the app\'s station.') >= 0, 'the answer streamed to stdout: ' + JSON.stringify(r.out));
-    A.ok(/StarNet isn't running — starting it in the background/.test(r.err), 'it says it is starting StarNet in the background');
-    A.ok(!/booting a station/.test(r.err) && !/open the StarNet app/i.test(r.err), 'the terminal booted no station of its own, and never said to open the app');
+    A.ok(/Vultron isn't running — starting it in the background/.test(r.err), 'it says it is starting Vultron in the background');
+    A.ok(!/booting a station/.test(r.err) && !/open the Vultron app/i.test(r.err), 'the terminal booted no station of its own, and never said to open the app');
     A.ok(/▸ .*attached http:\/\/127\.0\.0\.1:/.test(r.err), 'it attached to the station the app brought up');
     const first = launches();
     A.eq(first.length, 1, 'the app was launched once');
@@ -171,7 +171,7 @@ const tail = s => s.trim().split('\n').slice(-4).join(' | ');
     const j = await cli(['-p', 'say hello'], env, 120000);
     A.eq(j.code, 0, 'a second terminal attaches and runs, exit 0 (stderr: ' + tail(j.err) + ')');
     A.ok(j.out.indexOf('Hello from the app\'s station.') >= 0, 'its answer streamed');
-    A.ok(!/starting it in the background/.test(j.err), 'it started nothing: StarNet was already running');
+    A.ok(!/starting it in the background/.test(j.err), 'it started nothing: Vultron was already running');
     const joined = launches().slice(before);
     A.eq(joined.length, 1, 'it told the app once that this terminal uses it too');
     A.eq(JSON.stringify(joined[0]), JSON.stringify(['--background', '--terminal-pid', String(j.pid)]), '…with its own pid: ' + JSON.stringify(joined[0]));
@@ -205,13 +205,13 @@ const tail = s => s.trim().split('\n').slice(-4).join(' | ');
     const z = await cli(['-p', 'say hello'], env, 150000);
     A.eq(z.code, 0, 'a terminal arriving while it closes still runs, exit 0 (stderr: ' + tail(z.err) + ')');
     A.ok(z.out.indexOf('Hello from the app\'s station.') >= 0, 'its answer streamed');
-    A.ok(/StarNet is closing \(its last starnet session just ended\) — starting it again/.test(z.err), 'it was told StarNet was closing and said it starts it again');
+    A.ok(/Vultron is closing \(its last vultron session just ended\) — starting it again/.test(z.err), 'it was told Vultron was closing and said it starts it again');
     const mine = launches().slice(before5).filter(l => l[2] === String(z.pid));
-    A.ok(mine.length >= 2, 'it joined, then launched StarNet again (' + mine.length + ' launches with its pid)');
+    A.ok(mine.length >= 2, 'it joined, then launched Vultron again (' + mine.length + ' launches with its pid)');
     A.ok(ownerPid() !== oldOwner, 'and ran on a NEW station, never the closing one');
-    A.ok(await waitFor(() => !appRunning(), 20000), 'cleanup: with that terminal gone too, the new StarNet stood down');
+    A.ok(await waitFor(() => !appRunning(), 20000), 'cleanup: with that terminal gone too, the new Vultron stood down');
 
-    /* ---- 6. CLOSING, station already down: the launch hands off to a StarNet on its way out, is told so, starts again - */
+    /* ---- 6. CLOSING, station already down: the launch hands off to a Vultron on its way out, is told so, starts again - */
     fs.writeFileSync(joinFile, '');
     writeCfg({ closeMs: 5000, dropStationOnClose: true });
     const t4 = terminal();
@@ -223,9 +223,9 @@ const tail = s => s.trim().split('\n').slice(-4).join(' | ');
     const y = await cli(['-p', 'say hello'], env, 150000);
     A.eq(y.code, 0, 'a terminal arriving then still runs, exit 0 (stderr: ' + tail(y.err) + ')');
     A.ok(y.out.indexOf('Hello from the app\'s station.') >= 0, 'its answer streamed');
-    A.ok(/StarNet isn't running — starting it in the background/.test(y.err), 'it found no station and started StarNet');
-    A.ok(launches().slice(before6).filter(l => l[2] === String(y.pid)).length >= 2, 'its first launch was handed to the closing StarNet and told so, so it launched again once that one had gone');
-    A.ok(await waitFor(() => !appRunning(), 20000), 'cleanup: the new StarNet stood down after it');
+    A.ok(/Vultron isn't running — starting it in the background/.test(y.err), 'it found no station and started Vultron');
+    A.ok(launches().slice(before6).filter(l => l[2] === String(y.pid)).length >= 2, 'its first launch was handed to the closing Vultron and told so, so it launched again once that one had gone');
+    A.ok(await waitFor(() => !appRunning(), 20000), 'cleanup: the new Vultron stood down after it');
   } catch (e) {
     A.ok(false, 'threw: ' + ((e && e.stack) || e));
   } finally {

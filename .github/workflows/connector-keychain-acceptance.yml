@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     env:
-      STARNET_DISPOSABLE_KEYCHAIN: '1'
+      VULTRON_DISPOSABLE_KEYCHAIN: '1'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -27,11 +27,11 @@ jobs:
           cargo test --locked --manifest-path test/native-connector-keychain/Cargo.toml acceptance_guards
       - name: Allocate unique synthetic entry
         shell: bash
-        run: echo "STARNET_ACCEPTANCE_RUN_ID=$(uuidgen | tr -d '-' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
+        run: echo "VULTRON_ACCEPTANCE_RUN_ID=$(uuidgen | tr -d '-' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
       - name: Configure disposable keychain
         shell: bash
         run: |
-          keychain="$RUNNER_TEMP/starnet-acceptance.keychain-db"
+          keychain="$RUNNER_TEMP/vultron-acceptance.keychain-db"
           security create-keychain -p synthetic-ci-only "$keychain"
           security set-keychain-settings -lut 21600 "$keychain"
           security list-keychains -d user -s "$keychain"
@@ -40,7 +40,7 @@ jobs:
       - name: Native migration and process restart recovery
         shell: bash
         run: |
-          binary=test/native-connector-keychain/target/debug/starnet-connector-keychain-acceptance
+          binary=test/native-connector-keychain/target/debug/vultron-connector-keychain-acceptance
           "$binary" migrate
           if "$binary" migrate; then
             echo 'Harness failed to refuse an existing synthetic entry'
@@ -52,8 +52,8 @@ jobs:
       - name: Locked keychain and recovery
         shell: bash
         run: |
-          binary=test/native-connector-keychain/target/debug/starnet-connector-keychain-acceptance
-          keychain="$RUNNER_TEMP/starnet-acceptance.keychain-db"
+          binary=test/native-connector-keychain/target/debug/vultron-connector-keychain-acceptance
+          keychain="$RUNNER_TEMP/vultron-acceptance.keychain-db"
           security lock-keychain "$keychain"
           "$binary" unavailable
           security unlock-keychain -p synthetic-ci-only "$keychain"
@@ -61,20 +61,20 @@ jobs:
       - name: Vault fault and removal regressions
         run: node test/connector-vault.test.js
       - name: Remove only the owned synthetic entry after successful acceptance
-        run: test/native-connector-keychain/target/debug/starnet-connector-keychain-acceptance cleanup
+        run: test/native-connector-keychain/target/debug/vultron-connector-keychain-acceptance cleanup
       - name: Preserve native component evidence, including failures
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: connector-keychain-${{ matrix.os }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/starnet-connector-keychain-${{ env.STARNET_ACCEPTANCE_RUN_ID }}/
+          path: ${{ runner.temp }}/vultron-connector-keychain-${{ env.VULTRON_ACCEPTANCE_RUN_ID }}/
           if-no-files-found: ignore
 
   windows-credential-manager:
     runs-on: windows-latest
     timeout-minutes: 20
     env:
-      STARNET_DISPOSABLE_KEYCHAIN: '1'
+      VULTRON_DISPOSABLE_KEYCHAIN: '1'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -93,12 +93,12 @@ jobs:
       - name: Allocate unique synthetic entry
         shell: pwsh
         run: |
-          "STARNET_ACCEPTANCE_RUN_ID=$([guid]::NewGuid().ToString('N'))" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "VULTRON_ACCEPTANCE_RUN_ID=$([guid]::NewGuid().ToString('N'))" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       - name: Refuse missing opt-in before credential access
         shell: pwsh
         run: |
-          $env:STARNET_DISPOSABLE_KEYCHAIN = '0'
-          & test/native-connector-keychain/target/debug/starnet-connector-keychain-acceptance.exe migrate
+          $env:VULTRON_DISPOSABLE_KEYCHAIN = '0'
+          & test/native-connector-keychain/target/debug/vultron-connector-keychain-acceptance.exe migrate
           $refused = $LASTEXITCODE
           if ($refused -eq 0) { throw 'Harness failed to refuse missing opt-in' }
           # Expected native failure above must not become the step's final exit status.
@@ -106,7 +106,7 @@ jobs:
       - name: Windows component persistence across distinct native processes
         shell: pwsh
         run: |
-          $binary = './test/native-connector-keychain/target/debug/starnet-connector-keychain-acceptance.exe'
+          $binary = './test/native-connector-keychain/target/debug/vultron-connector-keychain-acceptance.exe'
           foreach ($phase in @('migrate', 'recover', 'malformed', 'recover')) {
             & $binary $phase
             if ($LASTEXITCODE -ne 0) { throw "Native component phase failed: $phase; evidence retained" }
@@ -118,12 +118,12 @@ jobs:
       - name: Remove only the owned synthetic entry after successful acceptance
         shell: pwsh
         run: |
-          & test/native-connector-keychain/target/debug/starnet-connector-keychain-acceptance.exe cleanup
+          & test/native-connector-keychain/target/debug/vultron-connector-keychain-acceptance.exe cleanup
           if ($LASTEXITCODE -ne 0) { throw 'Owned synthetic entry cleanup failed; evidence retained' }
       - name: Preserve native component evidence, including failures
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: connector-keychain-windows-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/starnet-connector-keychain-${{ env.STARNET_ACCEPTANCE_RUN_ID }}/
+          path: ${{ runner.temp }}/vultron-connector-keychain-${{ env.VULTRON_ACCEPTANCE_RUN_ID }}/
           if-no-files-found: ignore

@@ -1,7 +1,7 @@
 /* node test/ollama-wait-truth.test.js — #99: an Ollama turn stuck on "Working…" must say WHY, early, and a cancel must
    record what it was waiting on.
 
-   Reported 2026-10-17 (Windows, qwen3 8B Q4 on a 6 GB GTX 1660, Ollama 0.33.3, StarNet 0.13.3): COMMS turns sat on
+   Reported 2026-10-17 (Windows, qwen3 8B Q4 on a 6 GB GTX 1660, Ollama 0.33.3, Vultron 0.13.3): COMMS turns sat on
    Working for 45-712 s until the user cancelled; the run rows said only `cancelled`; Ollama's log showed ~3.5k and
    ~26.7k-token prompts at a 32k window. Ollama's /api/chat sends NO response headers until its first token, so the
    whole model load + prompt read is one silent pending fetch. The adapter already knew where the model ran (/api/ps)
@@ -119,7 +119,7 @@ function mockOllama(opts) {
     await sleep(30);
     const it = turn.stream({ model: 'qwen3:8b', messages: [{ role: 'user', content: 'hello' }], isTask: false })[Symbol.asyncIterator]();
     const first = await Promise.race([it.next(), sleep(1500).then(() => ({ timedOut: true }))]);
-    A.ok(/ · 1 other StarNet call still open there \(background\)$/.test((first.value && first.value.note) || ''), 'the turn names the open background call: ' + (first.value && first.value.note));
+    A.ok(/ · 1 other Vultron call still open there \(background\)$/.test((first.value && first.value.note) || ''), 'the turn names the open background call: ' + (first.value && first.value.note));
     s.release();
     for (;;) { const n = await it.next(); if (n.done) break; }
     await bgRun;
@@ -127,7 +127,7 @@ function mockOllama(opts) {
     const lone = makeOpenAICompatibleProvider({ fetch: s2.fetch, baseUrl: base, nativeOllama: true, waitNoteMs: 20 });
     const it2 = lone.stream({ model: 'qwen3:8b', messages: [{ role: 'user', content: 'again' }], isTask: false })[Symbol.asyncIterator]();
     const again = await Promise.race([it2.next(), sleep(1500).then(() => ({ timedOut: true }))]);
-    A.ok(!/other StarNet call/.test((again.value && again.value.note) || 'x'), 'once those calls ended, nothing else is counted: ' + (again.value && again.value.note));
+    A.ok(!/other Vultron call/.test((again.value && again.value.note) || 'x'), 'once those calls ended, nothing else is counted: ' + (again.value && again.value.note));
     s2.release();
     for (;;) { const n = await it2.next(); if (n.done) break; }
   }

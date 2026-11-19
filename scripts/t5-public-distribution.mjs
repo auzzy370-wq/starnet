@@ -11,11 +11,11 @@ import { resolvePubkeyText, verifySignature } from './minisign-verify.mjs';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const rawArgs = process.argv.slice(2);
 const LOOP_ARG = rawArgs.find(a => /^--loop(=|$)/.test(a));
-const LOOP_MAX = LOOP_ARG ? Math.max(1, Number(LOOP_ARG.split('=')[1] || process.env.STARNET_T5_LOOPS || 3) || 3) : 1;
+const LOOP_MAX = LOOP_ARG ? Math.max(1, Number(LOOP_ARG.split('=')[1] || process.env.VULTRON_T5_LOOPS || 3) || 3) : 1;
 const STAMP = new Date().toISOString().replace(/[-:]/g, '').replace('T', '-').replace('.', '-').replace(/Z$/, '') + '-' + process.pid;
-const OUT = resolve(process.env.STARNET_T5_PUBLIC_DISTRIBUTION_DIR || join(ROOT, '.dogfood', 't5-public-distribution-' + STAMP));
-const LATEST = resolve(process.env.STARNET_T5_PUBLIC_DISTRIBUTION_LATEST_DIR || join(ROOT, '.dogfood', 't5-public-distribution-latest'));
-const PROOF_SCHEMA = 'starnet.t5-public-distribution-proof.v1';
+const OUT = resolve(process.env.VULTRON_T5_PUBLIC_DISTRIBUTION_DIR || join(ROOT, '.dogfood', 't5-public-distribution-' + STAMP));
+const LATEST = resolve(process.env.VULTRON_T5_PUBLIC_DISTRIBUTION_LATEST_DIR || join(ROOT, '.dogfood', 't5-public-distribution-latest'));
+const PROOF_SCHEMA = 'vultron.t5-public-distribution-proof.v1';
 const PLATFORM = 'windows-x86_64';
 
 function ensureDir(p) { mkdirSync(p, { recursive: true }); }
@@ -65,21 +65,21 @@ function argValue(name) {
   return idx >= 0 ? rawArgs[idx + 1] : '';
 }
 function installerPath() {
-  const raw = process.env.STARNET_T5_INSTALLER_EXE || process.env.STARNET_T4_INSTALLER_EXE || process.env.STARNET_T3_INSTALLER_EXE || '';
+  const raw = process.env.VULTRON_T5_INSTALLER_EXE || process.env.VULTRON_T4_INSTALLER_EXE || process.env.VULTRON_T3_INSTALLER_EXE || '';
   if (raw) return resolve(raw);
   return findCurrentNsisInstaller(ROOT);
 }
 function manifestPath() {
-  const raw = process.env.STARNET_T5_MANIFEST || argValue('--manifest') || '';
+  const raw = process.env.VULTRON_T5_MANIFEST || argValue('--manifest') || '';
   if (raw) return resolve(raw);
   return resolve(join(ROOT, 'release', 'latest.json'));
 }
 function distributionEvidencePath() {
-  const raw = process.env.STARNET_T5_DISTRIBUTION_EVIDENCE || argValue('--distribution-evidence') || '';
+  const raw = process.env.VULTRON_T5_DISTRIBUTION_EVIDENCE || argValue('--distribution-evidence') || '';
   return raw ? resolve(raw) : '';
 }
 function statusPath(label) {
-  const env = process.env['STARNET_T5_' + label + '_STATUS'];
+  const env = process.env['VULTRON_T5_' + label + '_STATUS'];
   if (env) return resolve(env);
   const map = {
     T0: join(ROOT, '.dogfood', 't0-clean-install-latest', 't0-clean-install-status.json'),
@@ -119,7 +119,7 @@ function readGate(label) {
   return { file, status: readJson(file) };
 }
 function checkPlan(loop) {
-  const file = join(ROOT, 'docs', 'STARNET_T5_PUBLIC_DISTRIBUTION.md');
+  const file = join(ROOT, 'docs', 'VULTRON_T5_PUBLIC_DISTRIBUTION.md');
   const text = readText(file).toLowerCase();
   const required = [PROOF_SCHEMA, 'publicdistributionready=true', 'authenticode', 'latest.json', 'single stable public channel', 'smartscreen'];
   const missing = required.filter(term => text.indexOf(term.toLowerCase()) < 0);
@@ -216,11 +216,11 @@ function validateManifest(file, installerInfo, sigFile) {
     if (sigText && String(platform.signature || '').trim() !== sigText) errors.push('manifest signature does not match installer .sig file');
   }
   // A text match proves the manifest carries the .sig, not that the .sig signs THESE bytes with the key every installed
-  // app trusts. Run the installed updater's own check (minisign over the installer, baked pubkey). STARNET_T5_PUBKEY is
+  // app trusts. Run the installed updater's own check (minisign over the installer, baked pubkey). VULTRON_T5_PUBKEY is
   // a test-only override of the tauri.conf.json key, and the step records which key it trusted.
   if (installerInfo && sigText) {
     try {
-      const v = verifySignature(readFileSync(installerInfo.path), sigText, resolvePubkeyText(process.env.STARNET_T5_PUBKEY || '', ROOT));
+      const v = verifySignature(readFileSync(installerInfo.path), sigText, resolvePubkeyText(process.env.VULTRON_T5_PUBKEY || '', ROOT));
       if (!v.ok) errors.push('installer .sig does not verify against the updater public key: ' + v.reason);
     } catch (e) { errors.push('installer .sig could not be verified against the updater public key: ' + ((e && e.message) || e)); }
   }
@@ -245,7 +245,7 @@ function checkArtifacts(loop) {
   writeJson(join(OUT, 'validated-latest-json.json'), validation.manifest || { errors: validation.errors });
   return step('t5.2-signed-updater-artifacts', 'T5.2', 'Signed updater artifacts and manifest are valid', validation.ok ? 'pass' : 'fail', validation.ok ? 'Installer .sig verifies against the updater public key and matches latest.json.' : validation.errors.join('; '), {
     loop,
-    artifacts: { installer, signature: sig, manifest: manifestInfo, endpoint: updaterEndpoint(), version: tauriVersion(), pubkeySource: process.env.STARNET_T5_PUBKEY ? 'STARNET_T5_PUBKEY override' : 'src-tauri/tauri.conf.json' },
+    artifacts: { installer, signature: sig, manifest: manifestInfo, endpoint: updaterEndpoint(), version: tauriVersion(), pubkeySource: process.env.VULTRON_T5_PUBKEY ? 'VULTRON_T5_PUBKEY override' : 'src-tauri/tauri.conf.json' },
     errors: validation.errors
   });
 }
@@ -317,7 +317,7 @@ function currentManifest() {
 }
 function checkHosting(loop, proofState) {
   if (proofState.missing) {
-    return step('t5.3-public-hosting-proof', 'T5.3', 'Public update host evidence is imported', 'blocked', proofState.reason || 'No public distribution evidence was provided. Set STARNET_T5_DISTRIBUTION_EVIDENCE or pass --distribution-evidence.', { loop, evidenceFile: proofState.file || '' });
+    return step('t5.3-public-hosting-proof', 'T5.3', 'Public update host evidence is imported', 'blocked', proofState.reason || 'No public distribution evidence was provided. Set VULTRON_T5_DISTRIBUTION_EVIDENCE or pass --distribution-evidence.', { loop, evidenceFile: proofState.file || '' });
   }
   const v = proofState.validation;
   return step('t5.3-public-hosting-proof', 'T5.3', 'Public update host evidence is imported', v.hostingReady ? 'pass' : 'fail', v.hostingReady ? 'Hosted latest.json and installer proof match the current release.' : v.hostingErrors.join('; '), { loop, evidenceFile: proofState.file, hosting: v.proof && v.proof.hosting, errors: v.hostingErrors });
@@ -387,7 +387,7 @@ function writeSummary(allResults, loopsRun, stableIterations) {
   const publicDistributionReady = fail === 0 && blocked === 0 && latest.length > 0 && latest.every(r => r.status === 'pass');
   const verdict = fail ? 'red' : (blocked ? 'blocked' : 'green');
   const status = {
-    schema: 'starnet.t5-public-distribution-status.v1',
+    schema: 'vultron.t5-public-distribution-status.v1',
     generatedAt: nowIso(),
     lane: 'T5-public-distribution',
     verdict,
@@ -402,7 +402,7 @@ function writeSummary(allResults, loopsRun, stableIterations) {
   };
   writeJson(join(OUT, 't5-public-distribution-status.json'), status);
 
-  let md = '# StarNet T5 Public Distribution Evidence\n\n';
+  let md = '# Vultron T5 Public Distribution Evidence\n\n';
   md += '- Generated: `' + status.generatedAt + '`\n';
   md += '- Verdict: `' + status.verdict + '`\n';
   md += '- Public distribution ready: `' + status.publicDistributionReady + '`\n';

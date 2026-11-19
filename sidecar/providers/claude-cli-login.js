@@ -1,8 +1,8 @@
 /* sidecar/providers/claude-cli-login.js — SIGN IN WITH CLAUDE for the claude-cli brain.
 
-   StarNet never holds a Claude subscription credential. This driver only runs the user's own Claude Code CLI:
+   Vultron never holds a Claude subscription credential. This driver only runs the user's own Claude Code CLI:
    `claude auth login --claudeai` opens the browser, completes the OAuth handshake itself and stores the token in
-   the CLI's own credential store. StarNet watches that child and asks `claude auth status` for the verdict.
+   the CLI's own credential store. Vultron watches that child and asks `claude auth status` for the verdict.
 
    The CLI offers two ways to finish (both proven on v2.1.284 with no terminal attached):
      1. automatic — the browser it opened calls back to the CLI, and the child exits 0.
@@ -30,9 +30,9 @@ function makeClaudeCliLogin(opts) {
   opts = opts || {};
   const host = opts.host || makeCliHost(opts);
   /* The CLI opens the person's BROWSER, which it starts when none is running. Inside the desktop shell's station job
-     that browser would be the station's — a StarNet crash would close it, a quit would end its helper processes. So the
+     that browser would be the station's — a Vultron crash would close it, a quit would end its helper processes. So the
      login runs TETHERED (sidecar/breakaway.js): outside the job, still ended with its launcher (cancel, TTL, sidecar
-     exit — end() kills the launcher's tree — and a hard kill of StarNet), while the browser it opens is in no job.
+     exit — end() kills the launcher's tree — and a hard kill of Vultron), while the browser it opens is in no job.
      No launcher named (macOS, Linux, `npm start`, a test host): a plain spawn, exactly as before. */
   const spawnLogin = makeBreakaway({ env: host.env || {}, platform: host.platform || process.platform }).spawnVia((f, a, o) => host.spawn(f, a, o), { tether: true });
   const ttlMs = opts.ttlMs || 10 * 60 * 1000;           // an abandoned sign-in is killed, never left listening

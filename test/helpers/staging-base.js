@@ -2,8 +2,8 @@
 /* test/helpers/staging-base.js — a test's browser.upload staging stays inside its own scratch (run-paths-polish A3,
    test hygiene; polish review round 1).
 
-   sidecar/egress-files.js stages under a PER-USER base unless a root is injected: %LOCALAPPDATA%\StarNet on Windows
-   (on a machine with StarNet installed, the desktop app's own folder: skynet-desktop.exe, sidecar\, workspaces\) and
+   sidecar/egress-files.js stages under a PER-USER base unless a root is injected: %LOCALAPPDATA%\Vultron on Windows
+   (on a machine with Vultron installed, the desktop app's own folder: skynet-desktop.exe, sidecar\, workspaces\) and
    os.tmpdir() on POSIX. The in-process tests that stage through that default (browser-upload, browser, path-coherence)
    made icacls-locked folders and planted junctions there; a killed run (RAM starvation, exit 3221225773) left them for
    good, because the station's boot sweep looks for its OWN id, never a test's.

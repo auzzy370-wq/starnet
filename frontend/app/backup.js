@@ -1,13 +1,13 @@
-/* STARNET — backup.js : export/import the whole local agent as one portable JSON file.
+/* VULTRON — backup.js : export/import the whole local agent as one portable JSON file.
 
    Browser localStorage is the FRAGILE store. A cache wipe, a different browser, or a different
    machine loses the agent the user built up — identity, XP/level/confidence, personalization
    (dossier docs + persona), workstreams (chat history) and the station layout all live in
-   localStorage under the `starnet.*` keys. This module is the safety net: one click bundles the
-   nonsecret starnet.* records plus a read-only snapshot of the agent's backend memory (notebook) into a
+   localStorage under the `vultron.*` keys. This module is the safety net: one click bundles the
+   nonsecret vultron.* records plus a read-only snapshot of the agent's backend memory (notebook) into a
    downloadable file, and import restores the local half on any browser. Back-compat: a backup
-   exported BEFORE the Skynet→StarNet rename holds `skynet.*` keys + a `skynet.backup` schema; both
-   import fine and are mapped forward to `starnet.*` on restore.
+   exported BEFORE the Skynet→Vultron rename holds `skynet.*` keys + a `skynet.backup` schema; both
+   import fine and are mapped forward to `vultron.*` on restore.
 
    Restore applies the browser-side state and asks the sidecar to merge the notebook. A refused
    notebook write reports a partial restore. Exports use U.saveFile: a confirmed desktop receipt
@@ -15,41 +15,41 @@
 'use strict';
 
 const Backup = (() => {
-  const SCHEMA = 'starnet.backup';
-  const LEGACY_SCHEMA = 'skynet.backup';   // backups exported before the Skynet→StarNet rename
+  const SCHEMA = 'vultron.backup';
+  const LEGACY_SCHEMA = 'skynet.backup';   // backups exported before the Skynet→Vultron rename
   const VERSION = 1;
 
-  // every key we own lives under this prefix (starnet.save, starnet.specialties.v1, starnet.refit.seen,
+  // every key we own lives under this prefix (vultron.save, vultron.specialties.v1, vultron.refit.seen,
   // theme/CRT prefs, ...). Capturing by prefix is future-proof: new keys ride along automatically
   // instead of needing this list kept in sync. LEGACY_PREFIX is the pre-rename name — still accepted on
   // IMPORT (an old backup file) and mapped forward, never written by a fresh export.
-  const PREFIX = 'starnet.';
+  const PREFIX = 'vultron.';
   const LEGACY_PREFIX = 'skynet.';
-  const SAVE_KEY = 'starnet.save';
+  const SAVE_KEY = 'vultron.save';
   /* THIS WINDOW'S SAVE (save-latch-kill: per-window crash journals, save.js key()). A backup carries the station under
-     SAVE_KEY as always, read from THIS window's journal; another window's journal ('starnet.save.w.<window>', or the legacy
+     SAVE_KEY as always, read from THIS window's journal; another window's journal ('vultron.save.w.<window>', or the legacy
      key while another window writes it) is never bundled as this one's station, and an import lands in this window's own
      journal, never over another live window's. */
-  const JOURNAL_RE = /^starnet\.save(?:\.w\.[A-Za-z0-9_-]{1,80})?$/;
+  const JOURNAL_RE = /^vultron\.save(?:\.w\.[A-Za-z0-9_-]{1,80})?$/;
   // a journal's merge description (cloudsave.js writeSide): this window's own unsent-save bookkeeping, never a backup's
-  const JOURNAL_SIDE_RE = /^starnet\.save(?:\.w\.[A-Za-z0-9_-]{1,80})?\.merge$/;
+  const JOURNAL_SIDE_RE = /^vultron\.save(?:\.w\.[A-Za-z0-9_-]{1,80})?\.merge$/;
   function saveKeyNow() { try { if (typeof Save !== 'undefined' && Save && typeof Save.key === 'function') return Save.key(); } catch (_) {} return SAVE_KEY; }
   const SECRET_POLICY = 'credentials-excluded';
   // BYOK is default-deny: only these known, nonsecret selections are portable. This keeps a future credential
   // field from silently entering a plaintext backup just because its storage key was added after this code.
   const SAFE_BYOK_KEYS = new Set([
-    'starnet.byok.model',
-    'starnet.byok.prov',
-    'starnet.byok.reasoningEffort'
+    'vultron.byok.model',
+    'vultron.byok.prov',
+    'vultron.byok.reasoningEffort'
   ]);
-  const SECRET_NAMESPACE_RE = /^starnet\.(?:channels?|oauth|auth|credentials?|secrets?)(?:[._:-]|$)/i;
+  const SECRET_NAMESPACE_RE = /^vultron\.(?:channels?|oauth|auth|credentials?|secrets?)(?:[._:-]|$)/i;
   const SECRET_SEGMENT_RE = /(?:^|[._:-])(?:api[-_]?key|apikey|key|keys|token|tokens|secret|secrets|credential|credentials|password|passwd|pwd|authorization|bearer)(?:$|[._:-])/i;
-  // map any captured key forward to its StarNet name (old backups hold skynet.* keys; new ones already starnet.*).
+  // map any captured key forward to its Vultron name (old backups hold skynet.* keys; new ones already vultron.*).
   function toCurrentKey(k) { return (k.indexOf(LEGACY_PREFIX) === 0) ? (PREFIX + k.slice(LEGACY_PREFIX.length)) : k; }
 
   function isCredentialKey(rawKey) {
     const key = toCurrentKey(String(rawKey || ''));
-    if (key.indexOf('starnet.byok.') === 0) return !SAFE_BYOK_KEYS.has(key);
+    if (key.indexOf('vultron.byok.') === 0) return !SAFE_BYOK_KEYS.has(key);
     return SECRET_NAMESPACE_RE.test(key) || SECRET_SEGMENT_RE.test(key);
   }
 
@@ -180,7 +180,7 @@ const Backup = (() => {
       store[SAVE_KEY] = made.raw;
     }
     return {
-      schema: SCHEMA, version: VERSION, app: 'starnet',
+      schema: SCHEMA, version: VERSION, app: 'vultron',
       exportedAt: Date.now(),
       agentName: agentName(saveRaw),
       secretsIncluded: false,
@@ -196,7 +196,7 @@ const Backup = (() => {
     let bundle;
     try { bundle = await build(); }
     catch (e) { if (e && e.code === 'EXPORT_PACKED_UNREADABLE') return { ok: false, line: e.message, sessions: e.sessions, records: 0, keys: 0 }; throw e; }
-    const file = 'starnet-' + slug(bundle.agentName) + '-' + stamp(new Date()) + '.json';
+    const file = 'vultron-' + slug(bundle.agentName) + '-' + stamp(new Date()) + '.json';
     const receipt = await utilities().saveFile({ name: file, ext: 'json', text: JSON.stringify(bundle, null, 2) });
     const records = Object.keys(bundle.store).length;
     return Object.assign({}, receipt, { records, keys: records, secretsIncluded: false, notes: bundle.notebook ? bundle.notebook.length : 0 });
@@ -207,14 +207,14 @@ const Backup = (() => {
      Downloads silently; a browser may rename or ask), so "✓ exported" was a delivery nobody could see.
        desktop: POST /api/config/export/save — the sidecar (same machine) writes the file, reads it back, and
                 returns its real path; the line names that path and nothing is handed to the WebView.
-       browser: POST /api/config/export, hand the envelope to the browser as starnet-station-<day>.json, and say
+       browser: POST /api/config/export, hand the envelope to the browser as vultron-station-<day>.json, and say
                 exactly that: the file name, and that it went to the browser's downloads.
      A desktop save the sidecar could not make (folder permission denied, an older sidecar) falls back to the browser
      hand-off and says why. U.saveFile owns the path validation, fallback and receipt line;
      the host still builds/redacts the station envelope. `post` is Harness.api.post ({ ok, status, j }). */
   const SECRETS_NOTE = 'secrets excluded, re-enter keys after importing';
   function stationFileName(now) {
-    return 'starnet-station-' + new Date(now == null ? Date.now() : Number(now)).toISOString().slice(0, 10) + '.json';
+    return 'vultron-station-' + new Date(now == null ? Date.now() : Number(now)).toISOString().slice(0, 10) + '.json';
   }
   async function exportStation(opts) {
     const o = opts || {};
@@ -226,7 +226,7 @@ const Backup = (() => {
         let r;
         try { r = await post('/api/config/export', body); }
         catch (_) { throw new Error('the station did not answer'); }
-        if (!r || !r.ok || !r.j || typeof r.j !== 'object' || r.j.starnetExport !== 1) {
+        if (!r || !r.ok || !r.j || typeof r.j !== 'object' || r.j.vultronExport !== 1) {
           throw new Error(r && r.j && r.j.error ? String(r.j.error) : 'the station did not confirm an export envelope');
         }
         return JSON.stringify(r.j, null, 2);
@@ -334,17 +334,17 @@ const Backup = (() => {
     if (!c || !c.restore) return '';
     const where = 'Run these in ' + String(info.shell || 'a terminal') + (info.bundleKnown ? '.' : ', with the path to your bundle in place of <path to the bundle>.');
     return [where, '', 'Check a bundle without touching any station:', String(c.rehearse), '',
-      'Restore it: quit StarNet completely (tray too), then run this. Restore only a bundle you made yourself: StarNet cannot prove who made a file. The folder it replaces is kept beside it as a .rollback- folder.', String(c.restore)].join('\n');
+      'Restore it: quit Vultron completely (tray too), then run this. Restore only a bundle you made yourself: Vultron cannot prove who made a file. The folder it replaces is kept beside it as a .rollback- folder.', String(c.restore)].join('\n');
   }
 
   // validate a parsed bundle WITHOUT mutating anything — callers decide whether to apply.
   function validate(doc) {
     if (!doc || typeof doc !== 'object') return 'not a JSON object';
-    if (doc.schema !== SCHEMA && doc.schema !== LEGACY_SCHEMA) return 'not a StarNet backup file';
+    if (doc.schema !== SCHEMA && doc.schema !== LEGACY_SCHEMA) return 'not a Vultron backup file';
     // FORWARD-VERSION GUARD (P0.3): a backup file whose envelope version is NEWER than this build understands
-    // was exported by a later StarNet. Its store may carry key shapes/save schemas this code can't restore
+    // was exported by a later Vultron. Its store may carry key shapes/save schemas this code can't restore
     // faithfully, so refuse rather than importing a half-understood bundle. The import UI surfaces this string.
-    if (Number(doc.version || 0) > VERSION) return 'backup was made by a newer StarNet (v' + Number(doc.version) + ') — update the app to import it';
+    if (Number(doc.version || 0) > VERSION) return 'backup was made by a newer Vultron (v' + Number(doc.version) + ') — update the app to import it';
     if (!doc.store || typeof doc.store !== 'object') return 'backup has no data';
     if (typeof doc.store[SAVE_KEY] !== 'string' && typeof doc.store['skynet.save'] !== 'string') return 'backup has no agent';
     return null;   // ok
@@ -365,7 +365,7 @@ const Backup = (() => {
         const to = toCurrentKey(k);
         if (to !== SAVE_KEY && JOURNAL_RE.test(to)) continue;                       // another window's journal: never written over
         if (JOURNAL_SIDE_RE.test(to)) continue;                                     // a journal's merge description: never imported
-        localStorage.setItem(to === SAVE_KEY ? saveKeyNow() : to, store[k]); n++;   // map skynet.* -> starnet.*; the station into THIS window's journal
+        localStorage.setItem(to === SAVE_KEY ? saveKeyNow() : to, store[k]); n++;   // map skynet.* -> vultron.*; the station into THIS window's journal
       }
     } catch (e) { return { ok: false, error: (e && e.message) || 'write failed' }; }
     return { ok: true, records: n, keys: n, agentName: doc.agentName || agentName(), memories: Array.isArray(doc.notebook) ? doc.notebook.length : 0 };
@@ -404,7 +404,7 @@ const Backup = (() => {
     if (res.ok) {
       // A portable backup is an explicit restore, unlike an ordinary page load.
       // Restore its autonomy through the durable writer before claiming success.
-      const posture = doc.store && (doc.store['starnet.autonomy.v1'] || doc.store['skynet.autonomy.v1']);
+      const posture = doc.store && (doc.store['vultron.autonomy.v1'] || doc.store['skynet.autonomy.v1']);
       if (posture && typeof AutonomyStore !== 'undefined' && AutonomyStore.importState) {
         try {
           const result = await AutonomyStore.importState(JSON.parse(posture));

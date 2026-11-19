@@ -37,8 +37,8 @@ export function parseArgs(argv) {
 }
 async function main(argv) {
   const args = parseArgs(argv);
-  const token = args.token || process.env.STARNET_API_TOKEN || process.env.SKYNET_API_TOKEN || '';
-  const response = await fetch(new URL('/api/turn-identity', args.base), { headers: token ? { 'X-StarNet-Token': token } : {}, signal: AbortSignal.timeout(10000) });
+  const token = args.token || process.env.VULTRON_API_TOKEN || process.env.SKYNET_API_TOKEN || '';
+  const response = await fetch(new URL('/api/turn-identity', args.base), { headers: token ? { 'X-Vultron-Token': token } : {}, signal: AbortSignal.timeout(10000) });
   if (!response.ok) throw new Error('turn identity GET returned HTTP ' + response.status);
   const checks = criteria((await response.json()).soak, args.release, args.includeReleases);
   console.log('Exact release selection: ' + JSON.stringify({ release: args.release, ownerDeclaredAdditionalReleases: args.includeReleases }));

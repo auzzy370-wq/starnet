@@ -8,7 +8,7 @@
    SAME id the page maps it to.
 
    Review r7 (m10): the DESKTOP SHELL has a table too (src-tauri/src/credentials.rs known_provider, behind normalize_provider),
-   and it filed every id it did not know under "openrouter": a 'supergrok', 'kimi-for-coding' or 'starnet' key push landed in
+   and it filed every id it did not know under "openrouter": a 'supergrok', 'kimi-for-coding' or 'vultron' key push landed in
    the OpenRouter keychain slot and went out as the OpenRouter key. The Rust table is read from its match arms and must agree
    with the registry both ways and with every page alias; harness_store_provider_key refuses an id it does not know. */
 'use strict';
@@ -71,11 +71,11 @@ const cmdAt = main.indexOf('fn harness_store_provider_key(');
 const cmd = cmdAt >= 0 ? main.slice(cmdAt, main.indexOf('\n}\n', cmdAt)) : '';
 A.ok(/let provider_id = known_provider\(&provider\)\s*\.ok_or_else\(/.test(cmd) && !/normalize_provider\(/.test(cmd),
   'harness_store_provider_key refuses a provider id it does not know (an error, never the OpenRouter slot)');
-A.ok(/provider_id != "starnet"/.test(cmd), "harness_store_provider_key writes no keychain key for starnet (its bearer is the station's device link)");
-// review r8: ...and REFUSES a starnet key before anything is pushed — it never lands in the sidecar's runtime key table
+A.ok(/provider_id != "vultron"/.test(cmd), "harness_store_provider_key writes no keychain key for vultron (its bearer is the station's device link)");
+// review r8: ...and REFUSES a vultron key before anything is pushed — it never lands in the sidecar's runtime key table
 {
-  const refuse = /\n    if provider_id == "starnet" && matches!\(key_trimmed\.as_deref\(\), Some\(k\) if !k\.is_empty\(\)\) \{\n        return Err\(/.exec(cmd);
-  A.ok(!!refuse && refuse.index < cmd.indexOf('push_provider_config('), 'harness_store_provider_key returns an error for a starnet key, before any push_provider_config');
+  const refuse = /\n    if provider_id == "vultron" && matches!\(key_trimmed\.as_deref\(\), Some\(k\) if !k\.is_empty\(\)\) \{\n        return Err\(/.exec(cmd);
+  A.ok(!!refuse && refuse.index < cmd.indexOf('push_provider_config('), 'harness_store_provider_key returns an error for a vultron key, before any push_provider_config');
 }
 const uses = (/\nuse credentials::\{([\s\S]*?)\};/.exec(main) || [])[1] || '';
 A.ok(/\bknown_provider\b/.test(uses), 'main.rs imports known_provider from credentials');

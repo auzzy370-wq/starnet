@@ -18,7 +18,7 @@ function loadShell() {
 
 function windowsRig(api) {
   if (process.platform !== 'win32') throw new Error('Windows transport rig requires Windows');
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-shell-guard-'));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-shell-guard-'));
   const marker = path.join(root, 'owned-marker.txt');
   const windows = process.env.SystemRoot || 'C:\\Windows';
   const system = path.join(windows, 'System32');
@@ -27,13 +27,13 @@ function windowsRig(api) {
   const src = path.join(root, 'marker.cs');
   const env = Object.assign({}, process.env, {
     PATH: [root, system, path.join(system, 'WindowsPowerShell', 'v1.0')].join(';'),
-    PATHEXT: '.COM;.EXE;.BAT;.CMD', STARNET_SHELL_MARKER: marker
+    PATHEXT: '.COM;.EXE;.BAT;.CMD', VULTRON_SHELL_MARKER: marker
   });
   // Windows environment names are case-insensitive; avoid two competing PATHs.
   for (const key of Object.keys(env)) if (key.toLowerCase() === 'path' && key !== 'PATH') delete env[key];
   for (const [name, target] of [['probe', 'winexe'], ['console-probe', 'exe']]) {
     const output = target === 'winexe' ? '' : ' Console.Out.WriteLine("owned-stdout"); Console.Error.WriteLine("owned-stderr");';
-    fs.writeFileSync(src, 'using System; using System.IO; class Marker { static void Main() { File.WriteAllText(Environment.GetEnvironmentVariable("STARNET_SHELL_MARKER"), "' + (target === 'winexe' ? 'gui' : 'console') + '");' + output + ' } }\n');
+    fs.writeFileSync(src, 'using System; using System.IO; class Marker { static void Main() { File.WriteAllText(Environment.GetEnvironmentVariable("VULTRON_SHELL_MARKER"), "' + (target === 'winexe' ? 'gui' : 'console') + '");' + output + ' } }\n');
     const r = cp.spawnSync(csc, ['/nologo', '/target:' + target, '/out:' + path.join(root, name + '.exe'), src], { cwd: root, env, windowsHide: true, encoding: 'utf8', timeout: 15000 });
     if (r.error || r.status !== 0) throw new Error('Harmless fixture compilation failed: ' + String(r.error || r.stderr || r.stdout));
   }

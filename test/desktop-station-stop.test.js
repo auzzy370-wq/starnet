@@ -1,6 +1,6 @@
 /* node test/desktop-station-stop.test.js — the desktop shell owns its station's whole process tree, and stops it ONE way.
 
-   What used to be true, each a way a station or its children outlived StarNet:
+   What used to be true, each a way a station or its children outlived Vultron:
      - the sidecar was a plain child: a hard-killed shell (crash, End Task, an installer stopping it) left it running,
        holding the workspace claim, until the next boot's reaper found it (#31: seven orphaned node.exe at once);
      - RESTART and START FRESH ended the sidecar with a bare TerminateProcess: no graceful ask, so the station browser and
@@ -9,9 +9,9 @@
      - five stop paths each had their own copy of "ask, wait, kill".
    Now: every attempt is placed in a kill-on-close Job Object (sidecar_startup.rs + process_job.rs; the real-process
    proofs are Rust unit tests there), every stop goes through stop_station (ask, end, then end what the station left in
-   its job, sparing a window on the user's screen), the sidecar is told who its owner is (STARNET_PARENT_PID, for its
-   parent watch) and how to open an app for the person outside the job (STARNET_BREAKAWAY_EXE, the shell's own
-   `--starnet-breakaway` mode, checked before anything else of the app starts). These are source locks, each sliced to
+   its job, sparing a window on the user's screen), the sidecar is told who its owner is (VULTRON_PARENT_PID, for its
+   parent watch) and how to open an app for the person outside the job (VULTRON_BREAKAWAY_EXE, the shell's own
+   `--vultron-breakaway` mode, checked before anything else of the app starts). These are source locks, each sliced to
    the one Rust function it is about; the Rust tests prove the behaviour. */
 'use strict';
 const fs = require('fs');
@@ -68,10 +68,10 @@ A.eq(terminateCalls, 1, 'nothing but stop_station ends the sidecar process direc
 A.ok(!/\.sidecar\.lock\(\)[^;]*\.take\(\)/.test(main.replace(stop, '')), 'no stop path takes the child out of the slot on its own');
 A.ok(/stop_station\(self, StopHow::Now/.test(rustFn(main, 'kill_sidecar')), 'kill_sidecar is the routine without the ask');
 A.ok(/stop_station\(state, StopHow::Ask/.test(rustFn(main, 'stop_sidecar_gracefully')), 'stop_sidecar_gracefully is the routine with the ask');
-A.ok(/stop_station\(st, StopHow::Ask, "restart"\)/.test(rustFn(main, 'starnet_restart_sidecar')), 'RESTART STATION SERVICE stops through the routine (graceful first)');
-A.ok(/let stopped_pid = stop_station\(st, StopHow::Ask, "fresh start"\)/.test(rustFn(main, 'starnet_start_fresh')), 'START FRESH stops through the routine and keeps the stopped pid for the claim check');
-A.ok(/stop_sidecar_gracefully\(st\)/.test(rustFn(main, 'starnet_erase_everything')), 'ERASE stops through the routine');
-const update = rustFn(main, 'starnet_update_check');
+A.ok(/stop_station\(st, StopHow::Ask, "restart"\)/.test(rustFn(main, 'vultron_restart_sidecar')), 'RESTART STATION SERVICE stops through the routine (graceful first)');
+A.ok(/let stopped_pid = stop_station\(st, StopHow::Ask, "fresh start"\)/.test(rustFn(main, 'vultron_start_fresh')), 'START FRESH stops through the routine and keeps the stopped pid for the claim check');
+A.ok(/stop_sidecar_gracefully\(st\)/.test(rustFn(main, 'vultron_erase_everything')), 'ERASE stops through the routine');
+const update = rustFn(main, 'vultron_update_check');
 A.ok(/on_before_exit\(move \|\| \{[\s\S]*?shutting_down\.store\(true[\s\S]*?stop_sidecar_gracefully\(state\.inner\(\)\)/.test(update), 'the updater stops the station through the routine before NSIS runs');
 A.ok(!/kill_sidecar\(\)/.test(update), 'and never with a bare kill');
 A.ok(/fn quit_was_accepted/.test(main) && /quit_was_accepted\(&buf\[\.\.n\]\)/.test(rustFn(main, 'post_sidecar_quit')), 'the ask only waits for a sidecar that accepted');
@@ -79,7 +79,7 @@ A.ok(/fn quit_was_accepted/.test(main) && /quit_was_accepted\(&buf\[\.\.n\]\)/.t
 // ---- the sidecar knows its owner and the breakaway door ----
 const command = rustFn(main, 'sidecar_command');
 A.ok(/set_sidecar_branded_env\(&mut cmd, "SKYNET_PARENT_PID", std::process::id\(\)\.to_string\(\)\)/.test(command), 'the sidecar is told the shell\'s pid (its parent watch)');
-A.ok(/"SKYNET_BREAKAWAY_EXE"/.test(command) && /env_remove\("STARNET_BREAKAWAY_EXE"\)/.test(command), 'the sidecar is told the breakaway launcher on Windows, and an inherited one is removed elsewhere');
+A.ok(/"SKYNET_BREAKAWAY_EXE"/.test(command) && /env_remove\("VULTRON_BREAKAWAY_EXE"\)/.test(command), 'the sidecar is told the breakaway launcher on Windows, and an inherited one is removed elsewhere');
 const mainFn = rustFn(main, 'main');
 A.ok(mainFn.indexOf('process_job::breakaway_main()') >= 0 && mainFn.indexOf('process_job::breakaway_main()') < mainFn.indexOf('tauri::generate_context!()'),
   'the breakaway launcher runs before Tauri, the single-instance check or anything else of the app');

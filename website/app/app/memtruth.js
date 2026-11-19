@@ -1,4 +1,4 @@
-/* STARNET — memtruth.js : ONE similarity and ONE subject key for every memory writer (memory-truth-1027).
+/* VULTRON — memtruth.js : ONE similarity and ONE subject key for every memory writer (memory-truth-1027).
    Pure + testable (UMD: a `MemTruth` global in the browser, module.exports under node; the sidecar requires it as
    ../frontend/app/memtruth.js like study.js and classify.js).
 

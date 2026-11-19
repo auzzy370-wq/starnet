@@ -14,23 +14,23 @@
                 spawn, adopted at boot (adoptSpawnCredentials, step S2; deps.spawn), then changed only by its push (POST
                 /api/key -> push). A branded OpenRouter key the shell did not write (a headless operator's export, or a
                 desktop user's own single-spelling one) still seeds its OpenRouter key at boot, as at trunk: the legacy alias
-                STARNET_/SKYNET_OPENROUTER_KEY (deps.alias, else read through deps.env), which the readout calls the
+                VULTRON_/SKYNET_OPENROUTER_KEY (deps.alias, else read through deps.env), which the readout calls the
                 environment. No host mirror of it remains (S6: index.js's runtimeKey is gone; every station-side OpenRouter
                 consumer asks credentialFor). Its endpoints are kept across restarts as URLs only
                 (.secrets/provider-endpoints.json v1) on a station whose shell pushes provider config (deps.keptEndpoints).
-     env        the operator's environment, read live through the host's envFirst (the bare name, then STARNET_/SKYNET_)
+     env        the operator's environment, read live through the host's envFirst (the bare name, then VULTRON_/SKYNET_)
                 and the branded KEY_POOL_<ID> (deps.env). Never written; only adoption at boot deletes the shell's pairs.
      page       the browser page's copy (engine-credential.js makeEngineKeys, injected as deps.page): one credential per
                 provider — its key, its backup keys and the endpoint it was saved with.
-     linked     starnet: the linked device token and cloud URL (deps.linked, the host's resolveCreditsConfig).
+     linked     vultron: the linked device token and cloud URL (deps.linked, the host's resolveCreditsConfig).
      channel    a chat channel's own credential, bound to its record and its provider (step S8, CHANNELS below). Outside the
                 order: it serves only that bot's runs on that provider, the way a key a caller hands one run does.
    KEY order: explicit > keychain > env (OpenRouter: the alias first) > page, the order layersOf holds, read past the first
-   key only for the complete pair below; starnet is linked only; a codex sign-in has no key here. Golden delta D1 (S2): under
+   key only for the complete pair below; vultron is linked only; a codex sign-in has no key here. Golden delta D1 (S2): under
    the desktop shell the keychain key outranks a bare OS export of the same provider (ANTHROPIC_API_KEY set for another
    tool), because the shell's key is adopted into the keychain layer; at trunk
    envFirst read the bare name before the shell's spelling, so the OS key won (probe R5; decision 4). ENDPOINT order
-   (baseUrl): starnet linked; a sign-in never takes an explicit endpoint; an explicit endpoint only with the caller's own
+   (baseUrl): vultron linked; a sign-in never takes an explicit endpoint; an explicit endpoint only with the caller's own
    key or a key sent in this request; the keychain endpoint; the page endpoint only with the page's own key; the env URL; a
    keyless page endpoint only for a keyless run; the profile default. POOLS (keyPool, step S4, golden delta D2): a pool
    rides only its own layer's key — the keychain pool the keychain key, the env KEY_POOL the env key, the page pool the
@@ -58,17 +58,17 @@
    went to the page's endpoint. PR #141 was read only as the users' spec; its rule sent E to U.
 
    ADOPTION (S2, doneMeans 1). The desktop shell (src-tauri main.rs sidecar_command) starts the sidecar with
-   STARNET_DESKTOP_SHELL=1 and hands it the OS keychain's provider keys and key pools as environment variables, each in BOTH
-   spellings with one value (set_sidecar_branded_env): SKYNET_/STARNET_<keyEnv> (credentials.rs SIDECAR_PROVIDER_KEY_ENVS,
-   and OPENROUTER_KEY) and SKYNET_/STARNET_KEY_POOL_<ID>. Left there, that copy outlived a removal in Settings: the shell
+   VULTRON_DESKTOP_SHELL=1 and hands it the OS keychain's provider keys and key pools as environment variables, each in BOTH
+   spellings with one value (set_sidecar_branded_env): SKYNET_/VULTRON_<keyEnv> (credentials.rs SIDECAR_PROVIDER_KEY_ENVS,
+   and OPENROUTER_KEY) and SKYNET_/VULTRON_KEY_POOL_<ID>. Left there, that copy outlived a removal in Settings: the shell
    deleted the keychain entry and pushed an empty key, and the environment went on serving the removed key to routines, to
    /api/providers and to every other reader. adoptSpawnCredentials moves each such pair into the keychain layer and deletes
    both spellings from the environment the host hands it (index.js: process.env, before anything else can copy it), so this
    store is the key's only holder and a push changes it everywhere at once. Only a pair the shell could have written is
    adopted: both spellings set to one non-empty value. One spelling, two different values, and a bare name are the user's
    own exports and stay in the env layer, where they survive a removal and the readout names them. Without the marker
-   (bin/starnet.js, servers, CI, tests) nothing is adopted or deleted, so a headless env key behaves exactly as at trunk.
-   Names alone cannot tell the two apart: STARNET_OPENROUTER_KEY is also the documented headless name.
+   (bin/vultron.js, servers, CI, tests) nothing is adopted or deleted, so a headless env key behaves exactly as at trunk.
+   Names alone cannot tell the two apart: VULTRON_OPENROUTER_KEY is also the documented headless name.
 
      adoptSpawnCredentials(env, { desktopShell, profiles }) -> { desktopShell, keys, pools, names }
                                       under the marker, takes the shell's pairs out of `env` (deleted there); `profiles` is
@@ -78,10 +78,10 @@
        deps.normalize(value)          canonical id, unknown -> 'openrouter' (index.js normalizeProvider)
        deps.normalizeId(value)        canonical id, unknown -> '' (the registry's normalizeProviderId(value, ''))
        deps.usesCodex(id)             the ChatGPT sign-in, whose bearer this store never holds
-       deps.linked()                  { url, apiKey } of the linked StarNet account
-       deps.envFirst(names)           the first set name's value, trimmed: the bare name, then STARNET_/SKYNET_; '' when none
+       deps.linked()                  { url, apiKey } of the linked Vultron account
+       deps.envFirst(names)           the first set name's value, trimmed: the bare name, then VULTRON_/SKYNET_; '' when none
        deps.envName(names)            the variable envFirst(names) reads, '' when none: a readout, never a value (optional)
-       deps.env(suffix)               STARNET_<suffix>, else SKYNET_<suffix> (index.js ENV)
+       deps.env(suffix)               VULTRON_<suffix>, else SKYNET_<suffix> (index.js ENV)
        deps.page                      the page layer: { get(id) -> { key?, keyPool?, baseUrl? } | null, secretValues()? -> every
                                       saved record's key and backups, for redaction }
        deps.spawn                     adoptSpawnCredentials' result: seeds the keychain layer's keys and pools at boot
@@ -188,7 +188,7 @@
    each takes its key, and the endpoint saved with that key, from this store:
      credentialFor(id)     the station's own choice (resolve(id)), the endpoint saved with it, and its RANK
                            (decision 1): 'primary' when the key is the keychain layer's — the desktop shell's key, a push,
-                           and the branded STARNET_/SKYNET_OPENROUTER_KEY export the alias seeded, exactly what trunk's
+                           and the branded VULTRON_/SKYNET_OPENROUTER_KEY export the alias seeded, exactly what trunk's
                            runtimeKey held — and 'gap' for any other layer (a bare OPENROUTER_KEY or OPENROUTER_API_KEY,
                            the page copy). A 'gap' credential only fills gaps: last in the image route, after the local
                            engine in the STT ladder, and never what /api/stt/status prefers, so nobody's image or speech
@@ -212,7 +212,7 @@
        webRung(run)        web_search's paid OpenRouter rung for one run ({ providerId, runKey, baseUrl, model }), or null:
                            on an OpenRouter run the run's own key and endpoint (and its model); on any other run
                            credentialFor('openrouter') with no model, so web.js sends OpenRouter's search model; never on a
-                           StarNet-credits run (decision 2: the image route's rule — a credits run never spends a BYOK key)
+                           Vultron-credits run (decision 2: the image route's rule — a credits run never spends a BYOK key)
 
    CHANNELS (step S8; family B1). A channel record kept its bot's provider key and endpoint, so a rotated key stayed in
    channels/secrets.json and its .bak and the bot went on spending it (probe-channel-key), a key a sync replaced lingered in the
@@ -294,7 +294,7 @@
    keychain's and the page copy's keys and pools, the values trunk held, and each channel's own key, which trunk held from
    its record (S8; a channel's endpoint parts join secretValues() only). The environment's keys, pools and URLs are the
    user's own exports (a variable holding one is theirs), so a host helper (git, the claude CLI) sees them as at trunk; the
-   OpenRouter alias an STARNET_/SKYNET_OPENROUTER_KEY export seeded is a keychain value here, so a user's OPENROUTER_API_KEY
+   OpenRouter alias an VULTRON_/SKYNET_OPENROUTER_KEY export seeded is a keychain value here, so a user's OPENROUTER_API_KEY
    holding it is still stripped, as at trunk. Named change (S2): an adopted keychain key is in that list from boot, where
    trunk listed it only once the shell had pushed it, so a user's own variable holding that very key is stripped as well.
 
@@ -310,7 +310,7 @@
   const SHAPES = ['name', 'token', 'credential'];
   const MASK = '[redacted-secret]';   // the marker context.js redact() writes over a known value
 
-  // a provider's key-pool variable, without its STARNET_/SKYNET_ prefix: KEY_POOL_<ID>, the id upper-cased with every other
+  // a provider's key-pool variable, without its VULTRON_/SKYNET_ prefix: KEY_POOL_<ID>, the id upper-cased with every other
   // character an underscore. The env layer reads it (layersOf) and the desktop shell writes it for each keychain
   // provider (main.rs sidecar_command), so adoption looks for the same name.
   function poolEnvName(id) { return 'KEY_POOL_' + String(id).toUpperCase().replace(/[^A-Z0-9]+/g, '_'); }
@@ -340,13 +340,13 @@
     if (!out.desktopShell || !env || typeof env !== 'object') return out;
     // the value both spellings hold, when the shell could have written them (set_sidecar_branded_env); '' otherwise
     const pairOf = name => {
-      const a = env['STARNET_' + name], b = env['SKYNET_' + name];
+      const a = env['VULTRON_' + name], b = env['SKYNET_' + name];
       return (typeof a === 'string' && a === b && a.trim()) ? a.trim() : '';
     };
     const take = name => {
-      delete env['STARNET_' + name];
+      delete env['VULTRON_' + name];
       delete env['SKYNET_' + name];
-      out.names.push('STARNET_' + name, 'SKYNET_' + name);
+      out.names.push('VULTRON_' + name, 'SKYNET_' + name);
     };
     for (const p of Array.isArray(o.profiles) ? o.profiles : []) {
       const id = String((p && p.id) || '');
@@ -390,7 +390,7 @@
     for (const id of Object.keys(spawn.keys || {})) keys[id] = String(spawn.keys[id]);
     for (const id of Object.keys(spawn.pools || {})) pools[id] = cleanPool(spawn.pools[id]);
 
-    // the legacy OpenRouter alias (STARNET_/SKYNET_OPENROUTER_KEY) is the keychain's OpenRouter key from boot, and every push
+    // the legacy OpenRouter alias (VULTRON_/SKYNET_OPENROUTER_KEY) is the keychain's OpenRouter key from boot, and every push
     // of an OpenRouter key replaces it (credentialFor ranks it 'primary', as trunk's runtimeKey ranked). A pair the shell
     // wrote was adopted above and has left the environment, so what seeds it here is an export the shell did not write (a
     // headless operator's, or a user's own on the desktop): still an environment variable, which the readout says while
@@ -415,9 +415,9 @@
       const id = normalize(provider);
       if (usesCodex(id)) return '';
 
-      // 'starnet' managed provider: the bearer is the linked device token, resolved from the credits config
+      // 'vultron' managed provider: the bearer is the linked device token, resolved from the credits config
       // (env CREDITS_* override or the linked .secrets/credits.json record) — never an env API key.
-      if (id === 'starnet') return String(linked().apiKey || '').trim();
+      if (id === 'vultron') return String(linked().apiKey || '').trim();
       return String(explicitKey || '').trim() || stationChoice(id).key;
     }
     /* THE STATION'S OWN CHOICE (the header's COMPLETE PAIRS): the first layer, in key order, whose key has a usable endpoint.
@@ -457,9 +457,9 @@
       return layer ? layer.pool : [];
     }
     /* each station layer's own credential for a provider, in key order: the keys it holds and its backup keys. The keychain
-       holds what the shell adopted or pushed; the OpenRouter alias an export seeded (STARNET_/SKYNET_OPENROUTER_KEY the
+       holds what the shell adopted or pushed; the OpenRouter alias an export seeded (VULTRON_/SKYNET_OPENROUTER_KEY the
        shell did not write: aliasFromEnv) is the environment's, as presence() names it. The environment holds the variable
-       envFirst reads and its KEY_POOL_<ID> (STARNET_, else SKYNET_). The page copy holds its key and its backups. */
+       envFirst reads and its KEY_POOL_<ID> (VULTRON_, else SKYNET_). The page copy holds its key and its backups. */
     function layersOf(id) {
       const profile = profileOf(id);
       const kc = String(keys[id] || '').trim();
@@ -491,9 +491,9 @@
     function endpoint(id, explicitBaseUrl, runKey, callerKey, inRequest) {
       const at = (url, source) => ({ url, source });
 
-      // 'starnet' managed provider: baseUrl = the linked cloud URL + '/v1' (the inference proxy lives there).
+      // 'vultron' managed provider: baseUrl = the linked cloud URL + '/v1' (the inference proxy lives there).
       // Resolved live so linking/unlinking a station reconfigures it with no restart (mirrors the credits adapter).
-      if (id === 'starnet') {
+      if (id === 'vultron') {
         const u = String(linked().url || '').trim().replace(/\/+$/, '');
         return u ? at(u + '/v1', 'linked') : at('', 'none');
       }
@@ -569,12 +569,12 @@
        Commander's own servers (CUSTOM, Ollama) and a cloud provider's override (an OpenRouter-compatible proxy, a corporate
        gateway) alike: the page sends no key on the desktop, so a per-run endpoint never rides the keychain key (baseUrl),
        and a cloud override held for this session only sent every chat after a respawn to the provider's default until the
-       window's hand-over landed. A sign-in (ChatGPT, Grok, Kimi) and StarNet's linked account resolve their own endpoints:
+       window's hand-over landed. A sign-in (ChatGPT, Grok, Kimi) and Vultron's linked account resolve their own endpoints:
        never kept. The host writes main AND .bak and reads both back: an endpoint the Commander replaced or cleared (a URL
        can carry a token in its query) must not survive in the recovery copy. */
     function keepsEndpoint(id) {
       const profile = profileOf(id);
-      return !!profile && id !== 'starnet' && profile.authType !== 'oauth_device_code';
+      return !!profile && id !== 'vultron' && profile.authType !== 'oauth_device_code';
     }
     // review r8: a desktop station that holds NO endpoint for this provider of its own — none pushed or kept, no env URL, no
     // page copy — so its only answer is the provider's default: a run naming one has outrun the window's hand-over (handleRun)
@@ -636,7 +636,7 @@
           const label = (profileOf(id) || {}).label || id;
           warn('[credentials] the ' + label + ' key was removed from this station\'s keychain, but ' +
             (after.envName ? 'the environment variable ' + after.envName : 'an environment variable') + ' still holds one, so ' + label +
-            ' keeps running on it — unset it in the environment that starts StarNet to stop that');
+            ' keeps running on it — unset it in the environment that starts Vultron to stop that');
         }
       }
       if (own(patch, 'baseUrl')) {
@@ -683,17 +683,17 @@
       };
     }
     // the ONE layer key(id, '') reads, named, and the variable when that is the environment (S2). A sign-in's bearer and
-    // StarNet's device token are not keys this store holds for a run: they read 'sign-in' and 'linked' (or 'none').
+    // Vultron's device token are not keys this store holds for a run: they read 'sign-in' and 'linked' (or 'none').
     function layerOf(id) {
       const profile = profileOf(id);
       const named = (credentialSource, name) => ({ credentialSource, envName: name || null });
       if (usesCodex(id) || (profile && profile.authType === 'oauth_device_code')) return named('sign-in');
-      if (id === 'starnet') return named(String(linked().apiKey || '').trim() ? 'linked' : 'none');
+      if (id === 'vultron') return named(String(linked().apiKey || '').trim() ? 'linked' : 'none');
       const from = stationChoice(id);
       if (from.layer !== 'environment') return named(from.layer || 'none');
-      // the alias an export seeded (no push has replaced it): STARNET_ when that spelling is set, else SKYNET_, as env() reads
+      // the alias an export seeded (no push has replaced it): VULTRON_ when that spelling is set, else SKYNET_, as env() reads
       const seeded = id === 'openrouter' && aliasFromEnv && from.key === String(keys[id] || '').trim();
-      return named('environment', envName(seeded ? ['STARNET_OPENROUTER_KEY', 'SKYNET_OPENROUTER_KEY'] : profile && profile.keyEnv));
+      return named('environment', envName(seeded ? ['VULTRON_OPENROUTER_KEY', 'SKYNET_OPENROUTER_KEY'] : profile && profile.keyEnv));
     }
     /* A BOT NEVER KEEPS THE STATION'S OWN KEY: a key the station holds — the keychain push, the operator's env key, the page copy —
        resolves live per message, never from a channel's credential (index.js channelConnectCredential; CHANNELS above). */
@@ -1120,10 +1120,10 @@
        key (the variable envFirst reads, so a keychain push never hides it) or the page copy's key, or a key in the pool of
        a layer that holds a key of its own (S4: a pool whose layer holds no key is unused, so a run that rotated onto it
        stops once its layer's key is removed). Never another provider's, never a provider this station does not know, and
-       never StarNet's linked token or a sign-in's bearer: those are not keys a layer here holds (layerOf). */
+       never Vultron's linked token or a sign-in's bearer: those are not keys a layer here holds (layerOf). */
     function holds(provider, k) {
       const id = normalizeId(provider), v = String(k || '').trim(), profile = profileOf(id);
-      if (!id || !v || id === 'starnet' || usesCodex(id) || (profile && profile.authType === 'oauth_device_code')) return false;
+      if (!id || !v || id === 'vultron' || usesCodex(id) || (profile && profile.authType === 'oauth_device_code')) return false;
       return layersOf(id).some(l => l.keys.includes(v) || (l.keys.length > 0 && l.pool.includes(v)));
     }
     /* KEYS A LAYER LET GO OF (review r1). handleRun on the desktop, the channel hubs, the workers and the scheduler resolve the
@@ -1248,7 +1248,7 @@
     function imageRoute() {
       const or = credentialFor('openrouter'), oa = credentialFor('openai');
       return {
-        managedKey: key('starnet', ''), managedBaseUrl: baseUrl('starnet', ''),
+        managedKey: key('vultron', ''), managedBaseUrl: baseUrl('vultron', ''),
         stationOpenRouterKey: or.key, stationOpenRouterBaseUrl: or.baseUrl, stationOpenRouterRank: or.rank,
         stationOpenAIKey: oa.key, stationOpenAIBaseUrl: oa.baseUrl
       };
@@ -1256,7 +1256,7 @@
     function webRung(run) {
       const r = run || {};
       const id = normalizeId(r.providerId);
-      if (id === 'starnet') return null;   // decision 2: a credits run never spends a BYOK key
+      if (id === 'vultron') return null;   // decision 2: a credits run never spends a BYOK key
       if (id === 'openrouter') {
         const k = String(r.runKey || '').trim();
         return k ? { apiKey: k, baseUrl: String(r.baseUrl || '').trim() || endpointFor(id, k), model: r.model } : null;

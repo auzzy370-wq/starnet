@@ -51,7 +51,7 @@
     // projected (agent.run.end budgetProjected): the run family's calls still in flight already took what was left, so
     // the run stopped BEFORE the cap — never say it hit one it did not reach (mirrors chat.js budgetStopLine)
     if (scope === 'run' && projected === true) {
-      if (atBalance === true) return '\n\n(' + (cap ? 'stopped before it would spend more than the ' + cap + 'left on your StarNet balance' : 'stopped before it would spend more than what is left on your StarNet balance') + ' — add credits in the app under SETTINGS → AI & MODELS.)';
+      if (atBalance === true) return '\n\n(' + (cap ? 'stopped before it would spend more than the ' + cap + 'left on your Vultron balance' : 'stopped before it would spend more than what is left on your Vultron balance') + ' — add credits in the app under SETTINGS → AI & MODELS.)';
       return '\n\n(stopped before it would pass the ' + cap + 'per-run spend cap — raise it in the app under SETTINGS › SPENDING LIMITS.)';
     }
     const what = scope === 'run' ? 'hit the ' + cap + 'per-run spend cap'
@@ -59,11 +59,11 @@
       : scope === 'day' ? 'hit the ' + cap + 'daily spend cap'
       : scope === 'global' ? 'hit the ' + cap + 'all-time spend cap'
       : 'hit a spend cap';
-    // a StarNet run whose ceiling admission clamped to the balance (agent.run.end budgetCapIsBalance) spent the wallet:
+    // a Vultron run whose ceiling admission clamped to the balance (agent.run.end budgetCapIsBalance) spent the wallet:
     // the door is the top-up, not a cap to raise (mirrors chat.js budgetStopLine)
-    if (scope === 'run' && atBalance === true) return '\n\n(' + (cap ? 'used the ' + cap + 'left on your StarNet balance' : 'used what was left on your StarNet balance') + ' — add credits in the app under SETTINGS → AI & MODELS.)';
+    if (scope === 'run' && atBalance === true) return '\n\n(' + (cap ? 'used the ' + cap + 'left on your Vultron balance' : 'used what was left on your Vultron balance') + ' — add credits in the app under SETTINGS → AI & MODELS.)';
     // the caps live in SETTINGS › SPENDING LIMITS (MISSION CONTROL is only a room label). A per-RUN stop says
-    // "raise", never "remove" — on StarNet credits PER RUN 0 still stops at the managed default (mirrors chat.js).
+    // "raise", never "remove" — on Vultron credits PER RUN 0 still stops at the managed default (mirrors chat.js).
     return '\n\n(' + what + (scope === 'run' ? ' — raise it' : ' — raise or remove it') + ' in the app under SETTINGS › SPENDING LIMITS.)';
   }
   // a follow-up that is itself a stop request never steers the running task — from the owner it IS /stop (onInbound);
@@ -92,7 +92,7 @@
     }
     // a /stop, a newer message or an E-STOP never reaches here (abandoned() owns those); what is left is a STOP by run
     // id from the station (the desk screen / HUD STOP → POST /api/cancel), so say so instead of going quiet.
-    if (reason === 'cancelled') return '\n\n(stopped from the StarNet app before it finished — nothing more will run for this message.)';
+    if (reason === 'cancelled') return '\n\n(stopped from the Vultron app before it finished — nothing more will run for this message.)';
     if (reason === 'clarifying') return '';   // a Task Brief question IS the reply — never a "(stopped: …)" note
     if (reason === 'refusal') return '';
     if (reason === 'done') {
@@ -121,7 +121,7 @@
   const TurnView = require('../turn-view.js');
   const TurnKinds = require('../../frontend/app/turnkinds.js');
   const DEFAULT_AGENT_PREFIX = 'tg_';
-  const HISTORY_HOLD_NOTE = '⚠ StarNet could not read this chat\'s history, so it did not answer this message (it never answers from another chat\'s history). Send it again in a moment.';
+  const HISTORY_HOLD_NOTE = '⚠ Vultron could not read this chat\'s history, so it did not answer this message (it never answers from another chat\'s history). Send it again in a moment.';
   // HOW A REPLY REACHES THE CHAT (channels/hub-delivery.js): one per hub, made in makeChannelHub.
   const { makeHubDelivery } = require('./hub-delivery.js');
 
@@ -245,7 +245,7 @@
 
      Two forms a messenger produces that the registry cannot read raw (2026-10-18 — custom commands did not work
      in a bot's groups):
-       '/standup@starnetbot'  Telegram appends the bot's @name when a command is picked in a group, and in privacy
+       '/standup@vultronbot'  Telegram appends the bot's @name when a command is picked in a group, and in privacy
                               mode it is often the only form the bot is sent at all. The registry refuses an '@', so
                               this answered "Unknown command." Stripped here exactly as parseCommand strips it for
                               the built-ins.
@@ -503,7 +503,7 @@
     const askConsent = typeof o.askConsent === 'function' ? o.askConsent : null;
     const resolveConsent = typeof o.resolveConsent === 'function' ? o.resolveConsent : null;
     //   consentOutcome(runId, promptId) -> how an already-settled prompt really ended ('once'|'session'|'always'|'full'|
-    //   'deny'|'timeout'|''): STARNET REMOTE answers the same waiter, so a lost race is not always an expiry (optional)
+    //   'deny'|'timeout'|''): VULTRON REMOTE answers the same waiter, so a lost race is not always an expiry (optional)
     const consentOutcome = typeof o.consentOutcome === 'function' ? o.consentOutcome : null;
     const buttonsOk = !!(prompts && answerCallback);   // the minimum to render a tappable keyboard at all
     // Telegram truncates long inline-button labels on narrow phones, so the FULL option text always stays in the
@@ -549,7 +549,7 @@
         // doesn't fit — a silent cut would ask for an approval of words the Commander never saw
         const ARGS_MAX = 3000;
         const args = String(f.argsSummary || '').trim();
-        const shown = args.length > ARGS_MAX ? args.slice(0, ARGS_MAX) + '\n… (' + (args.length - ARGS_MAX) + ' more characters: open StarNet to read the whole request before you allow it)' : args;
+        const shown = args.length > ARGS_MAX ? args.slice(0, ARGS_MAX) + '\n… (' + (args.length - ARGS_MAX) + ' more characters: open Vultron to read the whole request before you allow it)' : args;
         const body = '🔐 Permission needed\n\n' + String(f.tool || 'a tool')
           + (f.scope ? '  (' + f.scope + ')' : '')
           + (shown ? '\n' + shown : '')
@@ -572,7 +572,7 @@
       })().catch(function () {});
     }
     /* THE SETTLE STAMPS THE KEYBOARD (quick win 24). The broker's decision is the only truth about a permission ask, and it
-       can come from a tap here, from STARNET REMOTE answering the same finisher, from the fail-closed timer, or from the run
+       can come from a tap here, from VULTRON REMOTE answering the same finisher, from the fail-closed timer, or from the run
        ending (a superseding message, E-STOP — an abort settles as deny). Stamping only on a TAP left every other ending with
        four live-looking buttons under it, and a late tap then had to guess what had happened. So the hub .then()s the ask
        and edits the keyboard message ONCE with the decision the broker applied, stripping the buttons (an edit with no
@@ -585,7 +585,7 @@
     function consentStampLine(decision, tapped) {
       const d = String(decision || '');
       if (tapped) return '▸ ' + String(tapped);
-      if (/^(once|session|always|full)$/.test(d)) return '▸ already answered in StarNet — ALLOWED (' + d + ')';
+      if (/^(once|session|always|full)$/.test(d)) return '▸ already answered in Vultron — ALLOWED (' + d + ')';
       if (d === 'timeout') return '▸ ⌛ no answer in time — DENIED, the action did not run';
       return '▸ ❌ DENIED — the action did not run';
     }
@@ -721,7 +721,7 @@
           if (typeof o.onJobSettled === 'function') o.onJobSettled(settled);
         } catch (e) { failNote('channels.hub.jobOutcome', e); }
       }
-      await deliver(chatId, '⚠ StarNet did not run this message: ' + why + '.', '', 'error', agentId, undefined, '', answers);
+      await deliver(chatId, '⚠ Vultron did not run this message: ' + why + '.', '', 'error', agentId, undefined, '', answers);
     }
 
     /* ---- ROUTE: answer WHERE the question was asked (channels/routes.js) -----------------------------------------
@@ -923,7 +923,7 @@
       catch (_) { return false; }
     }
 
-    // '/version', '/v@starnetbot args' -> { name, line } when the injected registry check knows the name, else null
+    // '/version', '/v@vultronbot args' -> { name, line } when the injected registry check knows the name, else null
     // (the same head grammar parseUserCommand reads: "/tmp/notes.md" is a path, never a command)
     function parseDesktopCommand(text) {
       const s = String(text == null ? '' : text).trim();
@@ -993,7 +993,7 @@
         const me = (roster || []).find(x => String(x.agentId) === String(boundId));
         const who = me ? (me.name || me.agentId) : boundId;
         await deliver(chatId,
-          'STARNET online — you are talking to ' + who + '.\n\n'
+          'VULTRON online — you are talking to ' + who + '.\n\n'
           + 'Just say what you need in plain language and I will get on it. I can search and read the web, '
           + 'work with your files, remember things for you, and run scheduled work.\n\n'
           + helpText(), '', 'command');
@@ -1394,7 +1394,7 @@
           try { store.saveChatRecord(chatId, { interruptedAttempt: { runId: runId, tools: prior.tools, restart: prior.restart !== false } }); }
           catch (e) { failNote('channels.hub.interruptedAttempt.save', e); }
         }
-        await delivery.settleWithNotice(chatId, (prior.restart !== false ? '⚠ StarNet restarted while it was working on ' + what : '⚠ The attempt at ' + what + ' stopped on an error')
+        await delivery.settleWithNotice(chatId, (prior.restart !== false ? '⚠ Vultron restarted while it was working on ' + what : '⚠ The attempt at ' + what + ' stopped on an error')
           + '. That attempt had already begun ' + stepsWord(prior.tools) + ', so part of it may already be done. It was NOT run again, '
           + 'so nothing is done twice. Reply "continue" to finish what is left — the next run is told those steps already began.',
           runId, 'interrupted', 'interrupted', agentId, inboxIds);
@@ -1402,12 +1402,12 @@
       }
       // no step had begun, and it was already run a second time: it stopped twice, so it is settled and said, not run a third time
       await delivery.settleWithNotice(chatId, '⚠ ' + (ask ? '"' + ask + '"' : 'Your message') + ' was not finished: '
-        + (prior.restart !== false ? 'StarNet restarted' : 'it stopped on an error') + ' before it began any tool step, for the second time, '
+        + (prior.restart !== false ? 'Vultron restarted' : 'it stopped on an error') + ' before it began any tool step, for the second time, '
         + 'so it was NOT run again. Send it again if you still want it.', runId, 'unfinished', 'interrupted', agentId, inboxIds);
     }
     function interruptedAttemptNote(a) {
       const n = Math.max(0, Math.floor(Number(a && a.tools) || 0));
-      const how = (a && a.restart === false) ? 'An earlier request in this chat stopped on an error' : 'StarNet restarted while an earlier request in this chat was being worked on';
+      const how = (a && a.restart === false) ? 'An earlier request in this chat stopped on an error' : 'Vultron restarted while an earlier request in this chat was being worked on';
       return '\n\nHOST NOTE — AN EARLIER REQUEST WAS INTERRUPTED: ' + how + ', '
         + 'after that attempt had begun ' + stepsWord(n) + '. It was not run again. Any tool result of it in this conversation '
         + 'already happened. If the Commander asks to continue it, finish only what is still missing: never repeat a step whose result '
@@ -1660,7 +1660,7 @@
       /* A DESKTOP COMMAND typed here (bug 6cd531b1): "/version", "/q", "/retry" are the shared registry's own built-ins
          with no row in this hub's table, so they fell through to the model — a paid run whose answer was a guess at
          what the command does. The registry answers instead (for a desktop-only command: "That command only works in
-         the StarNet desktop app."), for free. Owner-only like the Commander's own commands: every one of them acts
+         the Vultron desktop app."), for free. Owner-only like the Commander's own commands: every one of them acts
          on the owner's station. Same provenance rule: a forwarded "/version" is a third party's words. */
       let deskCmd = (runSlashFn && desktopCommandFn && !carriesThirdPartyText(msg)) ? parseDesktopCommand(msg.text) : null;
       /* THE NOTE COMMANDS are the exception: the words after /steer, /queue (/q) and /background (/bg, /btw) are the
@@ -1906,7 +1906,7 @@
           try { intake.onSettled(Object.assign({ runId: '', ok: false, held: { status: String((error && error.status) || 'unreadable'), why } }, result ? { jobId: lineJob.id, result } : null)); }
           catch (e) { failNote('channels.hub.onSettled', e); }
         }
-        await deliver(chatId, '⚠ StarNet did not run this message: ' + why + '.', '', 'error', agentId, undefined, '', answers);
+        await deliver(chatId, '⚠ Vultron did not run this message: ' + why + '.', '', 'error', agentId, undefined, '', answers);
       };
       try {
       const resolvedInfo = { chatId: chatId, agentId: agentId, text: msg.text, isTask: isTask, lineId: lineId };
@@ -1927,7 +1927,7 @@
 
       if (!sec.model || (!usingCodex && !sec.configured && !sec.key)) {
         jobFacts.refusedSaid = sec.error || 'No provider/model is configured yet.';
-        await deliver(chatId, '⚠ ' + (sec.error || 'No provider/model is configured yet. Open the STARNET app → Messaging tab and connect.'), '', 'error', undefined, undefined, '', answers);
+        await deliver(chatId, '⚠ ' + (sec.error || 'No provider/model is configured yet. Open the VULTRON app → Messaging tab and connect.'), '', 'error', undefined, undefined, '', answers);
         return;
       }
       // an earlier run of this message began no tool step: running it again cannot do anything twice — but the chat is told
@@ -1935,7 +1935,7 @@
       if (priorAttempt) {
         const ask = clipAsk(msg.text);
         const what = ask ? '"' + ask + '"' : 'your message';
-        await deliver(chatId, (priorAttempt.restart !== false ? '↻ StarNet restarted while it was working on ' + what + '. It had not begun any tool step yet'
+        await deliver(chatId, (priorAttempt.restart !== false ? '↻ Vultron restarted while it was working on ' + what + '. It had not begun any tool step yet'
           : '↻ The first attempt at ' + what + ' stopped on an error before it began any tool step')
           + ', so nothing can happen twice — running it again now.', priorAttempt.runId, 'command', agentId);
       }
@@ -2575,7 +2575,7 @@
         // any await, so the stamp can never run first.
         if (done) entry.meta.tapped = String(opt.display || opt.value);
       }
-      // A lost race is not always a denial: the same ask may have been ALLOWED on another surface (STARNET REMOTE) a moment
+      // A lost race is not always a denial: the same ask may have been ALLOWED on another surface (VULTRON REMOTE) a moment
       // before this tap — stamping that "expired — DENIED" contradicted an action that ran (2026-10-20).
       let allowedAs = '';
       if (lostRace && consentOutcome) {

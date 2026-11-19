@@ -26,9 +26,9 @@ function makeCase(o) {
   class Channel { constructor(fn) { this.fn = fn; } }
   const invoke = async cmd => {
     calls.push(cmd);
-    if (cmd === 'starnet_update_status') return { desktop: true, currentVersion: '1.0.0', pending: null };
-    if (cmd === 'starnet_update_check') return { available: true, checkedAt: 10, update: { version: '2.0.0', body: '' } };
-    if (cmd === 'starnet_update_install') { installCalls++; return {}; }
+    if (cmd === 'vultron_update_status') return { desktop: true, currentVersion: '1.0.0', pending: null };
+    if (cmd === 'vultron_update_check') return { available: true, checkedAt: 10, update: { version: '2.0.0', body: '' } };
+    if (cmd === 'vultron_update_install') { installCalls++; return {}; }
     return {};
   };
   const fetch = async (url, init) => {
@@ -94,9 +94,9 @@ function makeCase(o) {
     A.eq(c.installCalls(), 0, 'an unconfirmed newest save blocks the native installer');
     A.eq(c.calls.includes('/api/update/prepare') || c.calls.includes('POST /api/update/prepare'), false, 'no recovery point is cut over an unconfirmed save');
     A.ok(/latest station changes are not confirmed in the station file/i.test(state.error), 'the refusal names the unconfirmed station changes (got: ' + state.error + ')');
-    A.ok(/StarNet stays open/.test(state.error), 'the refusal says StarNet stays open');
+    A.ok(/Vultron stays open/.test(state.error), 'the refusal says Vultron stays open');
     A.ok(c.notices.some(n => /not confirmed in the station file/.test(String(n[0]))), 'the notice names the unconfirmed save');
-    // starnet-releases#4: the refusal names WHY (the cause the save recorded) and the way past it (the full installer)
+    // vultron-releases#4: the refusal names WHY (the cause the save recorded) and the way past it (the full installer)
     A.ok(/did not answer/.test(state.error), 'the refusal names the cause: the station did not answer (got: ' + state.error + ')');
     A.ok(!/disk/i.test(state.error), 'an unanswered save is never blamed on the disk');
     A.ok(/DOWNLOAD LATEST MANUALLY/.test(state.error), 'the refusal points at the full installer the card offers');
@@ -131,7 +131,7 @@ function makeCase(o) {
     await c.updates.install();
     const posted = c.station.posted[c.station.posted.length - 1];
     A.eq(posted && posted.station && posted.station.floor, 'verdant', 'the station file received the live station, not an older cached one');
-    const order = ['persist', 'POST /api/save', 'POST /api/update/prepare', 'starnet_update_install'].map(x => c.calls.indexOf(x));
+    const order = ['persist', 'POST /api/save', 'POST /api/update/prepare', 'vultron_update_install'].map(x => c.calls.indexOf(x));
     A.ok(order.every((n, i) => n >= 0 && (i === 0 || n > order[i - 1])), 'persist, station-file confirmation, recovery point and install run in strict order (' + order.join(',') + ')');
     A.eq(c.installCalls(), 1, 'a confirmed newest save lets the install proceed');
   }

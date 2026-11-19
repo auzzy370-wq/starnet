@@ -7,7 +7,7 @@ const path = require('node:path');
 const { makeTerminalTools } = require('../sidecar/tools/builtin/terminal.js');
 
 (async () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-terminal-tools-'));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-terminal-tools-'));
   const workspace = path.join(root, 'a1'); fs.mkdirSync(workspace, { recursive: true });
   const calls = [];
   const manager = {
@@ -78,7 +78,7 @@ const { makeTerminalTools } = require('../sidecar/tools/builtin/terminal.js');
      spelled with a trailing separator is the same approved folder. */
   {
     const RunPaths = require('../sidecar/run-paths.js');
-    const ext = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-terminal-ext-'));   // beside the workspaces root, never in it
+    const ext = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-terminal-ext-'));   // beside the workspaces root, never in it
     const outside = path.join(ext, 'outside'), proj = path.join(ext, 'proj');
     fs.mkdirSync(outside, { recursive: true }); fs.mkdirSync(path.join(proj, 'src'), { recursive: true });
     let planted = false;

@@ -14,7 +14,7 @@
      W3 setup runs the bounded presence pass after the orphan reap and before the first spawn, the content pass starts
         after the first spawn returns, and the verdict reaches the failure text on both platforms, the guardian's halt
         reason and BuildInfo;
-     W4 --starnet-verify-install is handled right after the breakaway, before Tauri starts;
+     W4 --vultron-verify-install is handled right after the breakaway, before Tauri starts;
      W5 the rules crate compiles the module by path at src-tauri's pins, and fast-gate runs it and requires the class
         tests. (W6, the release train refusing an exe without a complete manifest, is in release-train-provenance.) */
 'use strict';
@@ -86,8 +86,8 @@ const ordered = (src, marks, msg) => {
   // ---- W4: the headless verify runs before Tauri ----
   const main = mainRs.slice(mainRs.indexOf('\nfn main() {'));
   ordered(main, ['process_job::breakaway_main()', 'install_manifest::verify_install_main(std::env::args_os(), INSTALL_MANIFEST)', 'tauri::generate_context!()'],
-    'main() handles --starnet-verify-install right after the breakaway, before Tauri or the single-instance check');
-  A.ok(/pub const VERIFY_FLAG: &str = "--starnet-verify-install";/.test(moduleRs) && /EXIT_DAMAGED: i32 = 3;/.test(moduleRs) && /EXIT_NOT_CHECKED: i32 = 4;/.test(moduleRs),
+    'main() handles --vultron-verify-install right after the breakaway, before Tauri or the single-instance check');
+  A.ok(/pub const VERIFY_FLAG: &str = "--vultron-verify-install";/.test(moduleRs) && /EXIT_DAMAGED: i32 = 3;/.test(moduleRs) && /EXIT_NOT_CHECKED: i32 = 4;/.test(moduleRs),
     'the headless verify exits 0 verified, 3 damaged, 4 not checked');
 
   // ---- W5: the rules crate and the fast gate ----
@@ -102,7 +102,7 @@ const ordered = (src, marks, msg) => {
   const rulesLock = lockVersions(read('test/native-install-manifest/Cargo.lock').replace(/\r\n/g, '\n'));
   A.ok(rulesLock.size > 10, 'the rules crate is locked (' + rulesLock.size + ' packages)');
   for (const pkg of rulesLock.keys()) {
-    if (pkg.startsWith('starnet-install-manifest-rules@')) continue;
+    if (pkg.startsWith('vultron-install-manifest-rules@')) continue;
     A.ok(appLock.has(pkg), 'the rules crate builds ' + pkg + ', a version src-tauri/Cargo.lock pins');
   }
   const rulesToml = read('test/native-install-manifest/Cargo.toml');

@@ -45,7 +45,7 @@ const turnIdOf = n => 'tATTACHrows' + String(n).padStart(12, '0');
 const redact = s => String(s).replace(/sk-[A-Za-z0-9]{20,}/g, '[redacted-key]');
 const latestUserText = list => UserText.latest(list, UserText.DIRECTIVE);
 
-const BASE = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-attachment-rows-'));
+const BASE = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-attachment-rows-'));
 const worlds = [];
 
 /* A station in a temp dir: a real jail the attachments save into, and the real transcript store on the segmented disk io.

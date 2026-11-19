@@ -17,7 +17,7 @@ A.ok(/trayScroll\.append\(questions, states, preview\); tray\.append\(trayScroll
 A.ok(/root\.append\(transcript, tray, recipient/.test(gc), 'the transcript is followed by the tray, not three loose strips');
 A.ok(!/files\.append\([^)]*gc-preview/.test(gc), 'the preview is NOT inside the shelf (an attachment previews in a group with no shared files)');
 A.ok(/id: 'gc-files', hidden: ''/.test(gc), 'the shelf chips start folded');
-A.ok(/'starnet\.gc\.filesOpen\.' \+ id/.test(gc), 'the fold is remembered per group');
+A.ok(/'vultron\.gc\.filesOpen\.' \+ id/.test(gc), 'the fold is remembered per group');
 A.ok(/#gc-files\{[^}]*max-height:132px;overflow-y:auto/.test(gc), 'an opened shelf scrolls inside its own cap (no chips spilling under the composer)');
 A.ok(/gc-preview-head[\s\S]{0,400}button\('CLOSE FILE', closeFile\)/.test(gc), 'CLOSE FILE sits in the preview head, not after the whole file body');
 
@@ -43,7 +43,7 @@ A.ok(/The files stay on disk/.test(dlv), 'the copy says plainly that files are n
 A.ok(/<details class="dlv-clean-list">/.test(dlv) && /dl-clean-cancel/.test(dlv), 'the CLEAN OLD RECORDS preview folds its list and can be cancelled');
 
 /* ---- TO REVIEW: folds (remembered), shows a few until SHOW ALL, CLEAR ALL collects every crate ---- */
-A.ok(/FOLD_KEY = 'starnet\.dlv\.review\.open', FEW = 3/.test(outbox), 'TO REVIEW folds (remembered) and shows the first 3 rows');
+A.ok(/FOLD_KEY = 'vultron\.dlv\.review\.open', FEW = 3/.test(outbox), 'TO REVIEW folds (remembered) and shows the first 3 rows');
 A.ok(/r\.hidden = !showAll && i >= FEW/.test(outbox), 'rows past the first few wait behind SHOW ALL');
 A.ok(/RS\.resolveAll\(ids\)/.test(outbox) && /ArmConfirm\.wire\(clearAll,/.test(outbox), 'CLEAR ALL arms, then collects every crate in one go');
 // org pass 10-14 (P12): the key says what it does (files them unrated), and the dim line says what the list holds

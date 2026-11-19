@@ -30,7 +30,7 @@ const end = source.indexOf('    // ---------- START A LOOP:', start);
   assert.equal(notices.at(-1), 'could not record this review: the station hit an error (HTTP 500)', 'non-2xx without an error field cannot announce approval');
   assert.ok(buttons.every(b => !b.disabled));
   // a plain-text refusal (the gate's) is an answer in its own words, never "could not reach the station"
-  const third = handler(event); resolve(answer(403, 'forbidden token', { 'X-StarNet-Code': 'token_stale' })); await third;
+  const third = handler(event); resolve(answer(403, 'forbidden token', { 'X-Vultron-Code': 'token_stale' })); await third;
   assert.equal(notices.at(-1), 'could not record this review: the station restarted — reload the page to reconnect');
   // a 200 {ok:false} is a refusal too, never an approval
   const fourth = handler(event); resolve(answer(200, { ok: false, error: 'already reviewed' })); await fourth;

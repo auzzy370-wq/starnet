@@ -1,7 +1,7 @@
 /* sidecar/save-wire.js — what POST /api/save (and /api/save/adopt) answer when a save cannot be taken, by NAME.
 
    The page's save light and the update drain say why the newest save is not in the station file. They can only be honest
-   when the station says which failure it was (10-26 reliability audit, B3 station saves; gh#121, starnet-releases#4):
+   when the station says which failure it was (10-26 reliability audit, B3 station saves; gh#121, vultron-releases#4):
      • a body over the station file's 16 MiB cap was answered 400 'bad json' — the page called it a failed disk;
      • every failed write was answered 400 with the error text, and the page told the user to "check disk space" for all
        of them, on machines with plenty of disk.

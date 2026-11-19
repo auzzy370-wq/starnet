@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 
 use crate::process_identity::{self, OwnerClaim};
 
-const OWNER_FILE: &str = ".starnet-workspace-owner.json";
+const OWNER_FILE: &str = ".vultron-workspace-owner.json";
 const MIGRATION_MARKER: &str = ".migrated";
 const FRESH_MARKER: &str = ".fresh-start.json";
 const CREDITS_LINK: &str = ".secrets/credits.json";
@@ -189,7 +189,7 @@ fn prepare_with_mode(
     if let Some(claim) = valid_owner_claim(workspaces) {
         if Some(claim.pid) != stopped_child_pid && owner_holds(&claim) {
             return Err(format!(
-                "another StarNet process still owns this station (PID {}); quit it before starting fresh",
+                "another Vultron process still owns this station (PID {}); quit it before starting fresh",
                 claim.pid
             ));
         }
@@ -298,7 +298,7 @@ mod tests {
 
     fn scratch(name: &str) -> PathBuf {
         std::env::temp_dir().join(format!(
-            "starnet-{name}-{}-{}",
+            "vultron-{name}-{}-{}",
             std::process::id(),
             crate::now_ms()
         ))
@@ -389,7 +389,7 @@ mod tests {
         let error =
             quarantine_and_prepare_with(&workspaces, &[], Some(9002), 12345, &|c: &OwnerClaim| c.pid == 9001)
                 .unwrap_err();
-        assert!(error.contains("another StarNet process"));
+        assert!(error.contains("another Vultron process"));
         assert!(workspaces.exists());
         let _ = fs::remove_dir_all(root);
     }
@@ -462,7 +462,7 @@ mod tests {
         fs::create_dir_all(&workspaces).unwrap();
         fs::write(workspaces.join(OWNER_FILE), claim(now_ms, &start_ticks)).unwrap();
         let error = quarantine_and_prepare(&workspaces, &[], None, 12345).unwrap_err();
-        assert!(error.contains("another StarNet process"), "{error}");
+        assert!(error.contains("another Vultron process"), "{error}");
         assert!(workspaces.join(OWNER_FILE).exists(), "nothing moved");
         let _ = fs::remove_dir_all(root);
     }

@@ -18,7 +18,7 @@
      G. ONE attempt rule, whichever process left the attempt (channel-delivery-ledger S2; was: an attempt THIS process left
         replayed from the top, tool steps included — c1, r6): N tool steps get the interrupted notice and never re-run;
         0 steps re-run once, and a second failure is settled with a notice; the chat is told it stopped on an error, not
-        that StarNet restarted
+        that Vultron restarted
      H. a finished answer a v1 inbox held (the full outbox had refused it) becomes one delivery at the upgrade: sent once,
         never re-run (was: kept on the receipt and replayed)
    (the store's receipts and replies live in the delivery ledger, channels/delivery-ledger.js) */
@@ -264,7 +264,7 @@ const userCopies = (list, words) => (list || []).filter(m => m && m.role === 'us
     A.eq(p.sends.length, 1, 'the chat gets one notice');
     A.ok(/stopped on an error/.test(p.sends[0].text) && /already begun 2 tool steps/.test(p.sends[0].text) && /NOT run again/.test(p.sends[0].text),
       'it says the attempt stopped on an error (nothing restarted) after 2 steps, and that nothing was run again');
-    A.ok(!/restarted/i.test(p.sends[0].text), 'and never that StarNet restarted');
+    A.ok(!/restarted/i.test(p.sends[0].text), 'and never that Vultron restarted');
     await p.hub.onInbound({ chatId: '61', chatType: 'dm', userId: 'u1', text: 'continue', messageId: '611', ts: 2 });
     A.ok(/AN EARLIER REQUEST WAS INTERRUPTED: An earlier request in this chat stopped on an error/.test((p.runs[0] || {}).system || ''), 'the next run\'s note says it stopped on an error');
     p.hub.close();

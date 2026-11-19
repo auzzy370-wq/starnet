@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 
-export const RECEIPT_SCHEMA = 'starnet.update-canary-receipt.v1';
+export const RECEIPT_SCHEMA = 'vultron.update-canary-receipt.v1';
 
 // Legacy ordinary conversations gain these exact neutral defaults during hydration (frontend/app/workstreams.js make()):
 // parentStreamId/projectHome since 0.12.4, and projectRootAt/worker/lastRunReason/pendingJoin since 0.13.5 (a 0.13.3 save
@@ -97,7 +97,7 @@ export function fingerprint(value) {
 
 export function populatedFixture(nonce, updatedAt = Date.now()) {
   return {
-    schema: 'starnet.save', version: 6, updatedAt, prov: 'openrouter', reasoningEffort: 'none',
+    schema: 'vultron.save', version: 6, updatedAt, prov: 'openrouter', reasoningEffort: 'none',
     agent: { id: 'agent', name: 'CANARY NOVA', purpose: 'prove update continuity', canaryNonce: nonce, provider: 'openrouter', model: 'anthropic/claude-sonnet-4.6', reasoningEffort: 'none' },
     agents: [
       { id: 'agent', name: 'CANARY NOVA', provider: 'openrouter', model: 'anthropic/claude-sonnet-4.6', reasoningEffort: 'none' },

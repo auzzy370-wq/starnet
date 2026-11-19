@@ -74,14 +74,14 @@ async function loopScenario({ early = false, cancel = false, late = false } = {}
   const wire = Message.encode(original);
   assert(!wire.includes('\n')); assert.deepEqual(Message.decode(wire), original);
   assert.equal(Message.normalize({ text: 'x'.repeat(100001) }), null);
-  assert.equal(Message.decode('@starnet-message-v1:{bad'), null);
+  assert.equal(Message.decode('@vultron-message-v1:{bad'), null);
   const b = makeSteerBuffers();
   assert.equal(b.post('r', '', true, 'n1', original).status, 200);
   assert.equal(b.post('r', '', true, 'n1', original).body.duplicate, true);
   assert.equal(b.drain('r')[0].text, original.text);
   assert.equal(b.drain('r').length, 0);
   b.close('r'); assert.equal(b.post('r','',false,'n1',original).body.applied,true); assert.equal(b.post('r','',true,'n2',original).status,409);
-  assert(!joinReplyDelta('', '\n[steering] '+wire+'\n').includes('@starnet-message'));
+  assert(!joinReplyDelta('', '\n[steering] '+wire+'\n').includes('@vultron-message'));
   const rows = [], store = makeTranscriptStore({ io: { readAll: () => rows, append: e => rows.push(e) }, clock: { now: () => 5 } });
   store.appendNewStrict('s1','a',[{role:'user',content:original.text,steeringWire:wire}],{sourceRunId:'r'});
   assert.equal(store.history('s1')[0].steeringWire,wire);

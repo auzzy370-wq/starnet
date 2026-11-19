@@ -213,7 +213,7 @@
       description: 'List the station\'s INTEGRATIONS: MCP connectors and platform API keys already connected, and '
         + '(the part you cannot otherwise know) the vetted connectors and platform keys the '
         + 'Commander could add but has not (GitHub, Notion, Stripe, Google Workspace, Printify, Etsy and more). '
-        + 'Check this BEFORE telling the Commander that StarNet cannot reach a service: it usually can, and the '
+        + 'Check this BEFORE telling the Commander that Vultron cannot reach a service: it usually can, and the '
         + 'honest answer is "that service has a setup path in CONNECT › ABILITIES › APPS — I can walk you through '
         + 'it?". Read-only: you cannot install or authenticate anything, and you never see a key\'s value. '
         + 'Pass `goal` (the Commander\'s task) to get SUGGESTED: the not-yet-connected connector(s) it needs; the '

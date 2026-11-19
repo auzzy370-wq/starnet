@@ -25,7 +25,7 @@ const harness = read('frontend', 'app', 'harness.js');
 const slice = (src, from, to) => { const a = src.indexOf(from), b = src.indexOf(to, a + 1); A.ok(a >= 0 && b > a, 'harness.js still has ' + from.trim().slice(0, 40)); return src.slice(a, b); };
 const helpers = slice(harness, '  function normalizeProviderId(provider) {', '  function providerNeedsKey(provider) {');
 const keyFns = slice(harness, '  const setKey = (k, provider) => {', '  // #62: no provider key contains whitespace');
-const SYNC = 'starnet.byok.engineSync.';
+const SYNC = 'vultron.byok.engineSync.';
 const OK_BODY = { ok: true, provider: 'x', applied: true, persisted: true, keySource: 'station', unattendedReady: true, rev: 'rev1' };
 
 function sandbox(opts) {
@@ -39,7 +39,7 @@ function sandbox(opts) {
     SK: { providers: { registry: require('../sidecar/providers/registry.js') } },
     JSON, Promise, Set, Array, String, Number, Math, Object,
     DESKTOP: !!opts.desktop, DEVMODE: !!opts.dev, selectionRevision: 0,
-    LS: { key: 'starnet.byok.key', keyPool: 'starnet.byok.keyPool', model: 'starnet.byok.model', prov: 'starnet.byok.prov', baseUrl: 'starnet.byok.baseUrl', effort: 'starnet.byok.reasoningEffort' },
+    LS: { key: 'vultron.byok.key', keyPool: 'vultron.byok.keyPool', model: 'vultron.byok.model', prov: 'vultron.byok.prov', baseUrl: 'vultron.byok.baseUrl', effort: 'vultron.byok.reasoningEffort' },
     readinessCache: require('../frontend/app/provider-readiness.js').makeCache(), refreshProviderReadiness: async () => {}, _alternateCountByProvider: {},
     getProv: () => 'openrouter', getBaseUrl: () => '',
     invoke: () => Promise.resolve(true),
@@ -67,9 +67,9 @@ function sandbox(opts) {
 (async () => {
   /* ---- save: the full config rides to the station ---- */
   {
-    const s = sandbox({ storage: { 'starnet.byok.keyPool.openrouter': '["alt-1"]' } });
+    const s = sandbox({ storage: { 'vultron.byok.keyPool.openrouter': '["alt-1"]' } });
     const r = await s.api.setKey('sk-or-v1-page', 'openrouter');
-    A.eq(s.store.get('starnet.byok.key.openrouter'), 'sk-or-v1-page', 'the key is saved in this browser first (chat works either way)');
+    A.eq(s.store.get('vultron.byok.key.openrouter'), 'sk-or-v1-page', 'the key is saved in this browser first (chat works either way)');
     A.eq(s.posts.length, 1, 'one hand-over to the station');
     A.eq(s.posts[0].url, '/api/providers/engine-key', 'through the token-gated engine-key route (the page fetch wrapper adds the launch token)');
     A.eq(s.posts[0].body, { provider: 'openrouter', key: 'sk-or-v1-page', keyPool: ['alt-1'], baseUrl: '' }, 'the FULL config: key + backups + endpoint (an explicit save carries no boot mark)');
@@ -79,13 +79,13 @@ function sandbox(opts) {
   }
   /* ---- REMOVE: the empty config clears the station copy ---- */
   {
-    const s = sandbox({ storage: { 'starnet.byok.key.anthropic': 'sk-ant-old' } });
+    const s = sandbox({ storage: { 'vultron.byok.key.anthropic': 'sk-ant-old' } });
     await s.api.setKey('', 'anthropic');
     A.eq(s.posts[0].body, { provider: 'anthropic', key: '', keyPool: [], baseUrl: '' }, 'REMOVE hands over the empty config');
   }
   /* ---- backups and endpoints follow ---- */
   {
-    const s = sandbox({ storage: { 'starnet.byok.key.openrouter': 'sk-or-v1-page' } });
+    const s = sandbox({ storage: { 'vultron.byok.key.openrouter': 'sk-or-v1-page' } });
     const pool = await s.api.setKeyPool(['b1', 'b2'], 'openrouter');
     A.eq(pool && pool.count, 2, 'setKeyPool resolves the stored count…');
     A.eq(pool.engine && pool.engine.ok, true, '…and the station\'s answer, so SETTINGS can warn when routines lack the backups');
@@ -112,11 +112,11 @@ function sandbox(opts) {
     const REMOVE_500 = 'the station could not delete its copy of this OpenRouter connection (its log has the reason) — routines and other unattended runs will KEEP using it until a retry succeeds';
     let phase = 'fail';
     const s = sandbox({
-      storage: { 'starnet.byok.key.openrouter': 'sk-or-v1-leaked', [SYNC + 'openrouter']: JSON.stringify({ rev: 'r7', pending: false }) },
+      storage: { 'vultron.byok.key.openrouter': 'sk-or-v1-leaked', [SYNC + 'openrouter']: JSON.stringify({ rev: 'r7', pending: false }) },
       respond: () => phase === 'fail' ? { status: 500, body: { ok: false, removing: true, error: REMOVE_500 } } : { status: 200, body: Object.assign({}, OK_BODY, { rev: 'r8' }) }
     });
     const r = await s.api.setKey('', 'openrouter');
-    A.eq(s.store.get('starnet.byok.key.openrouter'), '', 'this browser forgot its key');
+    A.eq(s.store.get('vultron.byok.key.openrouter'), '', 'this browser forgot its key');
     A.ok(r.engine.ok === false && r.engine.error.indexOf(REMOVE_500) === 0, 'the warning is the station\'s REMOVE wording: ' + r.engine.error);
     A.ok(!/chat in this browser still works/.test(r.engine.error), 'never "chat still works" after a REMOVE (this browser has no key any more)');
     A.eq(s.sync('openrouter'), { rev: 'r7', pending: true }, 'the failed REMOVE is pending, with the revision it was meant to delete');
@@ -128,7 +128,7 @@ function sandbox(opts) {
     const before = s.posts.length;
     await s.api.syncEngineKeysOnBoot();
     A.eq(s.posts.length, before, 'once confirmed, a boot sends nothing for a provider this page holds nothing for');
-    const deadRm = sandbox({ fetchThrows: true, storage: { 'starnet.byok.key.openrouter': 'sk-or-v1-x' } });
+    const deadRm = sandbox({ fetchThrows: true, storage: { 'vultron.byok.key.openrouter': 'sk-or-v1-x' } });
     const dr = await deadRm.api.setKey('', 'openrouter');
     A.ok(/could not be reached to delete its copy/.test(dr.engine.error) && /keep using it/.test(dr.engine.error) && !/chat in this browser still works/.test(dr.engine.error), 'an unreachable station during REMOVE says routines keep the key: ' + dr.engine.error);
   }
@@ -137,23 +137,23 @@ function sandbox(opts) {
     const desk = sandbox({ desktop: true });
     await desk.api.syncEngineKey('openrouter');
     A.eq(desk.posts.length, 0, 'the desktop app keeps keys in the OS keychain: nothing is posted');
-    const dev = sandbox({ dev: true, storage: { 'starnet.byok.key.openrouter': 'k' } });
+    const dev = sandbox({ dev: true, storage: { 'vultron.byok.key.openrouter': 'k' } });
     await dev.api.syncEngineKeysOnBoot();
     A.eq(dev.posts.length, 0, 'dev mode holds the key server-side: nothing is posted');
     const oauth = sandbox();
-    for (const p of ['codex', 'grok', 'kimi', 'starnet', 'claude-cli']) await oauth.api.syncEngineKey(p);
+    for (const p of ['codex', 'grok', 'kimi', 'vultron', 'claude-cli']) await oauth.api.syncEngineKey(p);
     A.eq(oauth.posts.length, 0, 'sign-in / managed providers never send a key');
   }
   /* ---- page boot: a BOOT hand-over of what this browser holds; never an unasked REMOVE ---- */
   {
     const s = sandbox({ storage: {
-      'starnet.byok.key': 'sk-or-v1-legacy-slot',                    // the pre-scoped OpenRouter slot
-      'starnet.byok.key.anthropic': 'sk-ant-page',
+      'vultron.byok.key': 'sk-or-v1-legacy-slot',                    // the pre-scoped OpenRouter slot
+      'vultron.byok.key.anthropic': 'sk-ant-page',
       [SYNC + 'anthropic']: JSON.stringify({ rev: 'a3', pending: false }),
-      'starnet.byok.baseUrl.custom': 'http://127.0.0.1:1234/v1',      // a keyless endpoint
-      'starnet.byok.key.mistral': '',                                  // removed earlier (confirmed): nothing to hand over
+      'vultron.byok.baseUrl.custom': 'http://127.0.0.1:1234/v1',      // a keyless endpoint
+      'vultron.byok.key.mistral': '',                                  // removed earlier (confirmed): nothing to hand over
       [SYNC + 'mistral']: JSON.stringify({ rev: 'm2', pending: false }),
-      'starnet.byok.model': 'some/model'
+      'vultron.byok.model': 'some/model'
     } });
     await s.api.syncEngineKeysOnBoot();
     const by = Object.fromEntries(s.posts.map(p => [p.body.provider, p.body]));
@@ -166,7 +166,7 @@ function sandbox(opts) {
   /* ---- a stale answer: the station kept a newer change; this page never adopts its revision ---- */
   {
     const s = sandbox({
-      storage: { 'starnet.byok.key.openrouter': 'sk-or-v1-old-origin', [SYNC + 'openrouter']: JSON.stringify({ rev: 'r1', pending: true }) },
+      storage: { 'vultron.byok.key.openrouter': 'sk-or-v1-old-origin', [SYNC + 'openrouter']: JSON.stringify({ rev: 'r1', pending: true }) },
       respond: () => ({ status: 200, body: { ok: true, provider: 'openrouter', applied: false, stale: true, changed: false, keySource: 'station', unattendedReady: true } })
     });
     const [res] = await s.api.syncEngineKeysOnBoot();

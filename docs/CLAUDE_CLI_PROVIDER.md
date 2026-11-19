@@ -1,7 +1,7 @@
 # Claude Code provider (`claude-cli`)
 
-StarNet can use the **Claude Code CLI already installed on this computer** (`claude`) as an agent's brain,
-with whatever Claude account or API key that CLI is signed in with. No key is stored in StarNet.
+Vultron can use the **Claude Code CLI already installed on this computer** (`claude`) as an agent's brain,
+with whatever Claude account or API key that CLI is signed in with. No key is stored in Vultron.
 Implementation: `sidecar/providers/claude-cli.js` (adapter), a `claude-cli` profile in
 `sidecar/providers/registry.js`, one adapter case in `sidecar/providers/factory.js`; the Connect-a-brain tile and
 Settings card are labelled **CLAUDE CODE** and are keyless: the CLI's own sign-in is the credential.
@@ -13,11 +13,11 @@ Settings card are labelled **CLAUDE CODE** and are keyless: the CLI's own sign-i
   itself every 5 s so installing flips it without a restart.
 - Signed in — see **Sign in** below (or an `ANTHROPIC_API_KEY` the CLI can see).
 - The sidecar finds `claude` on `PATH`, then `%USERPROFILE%\.local\bin\claude.exe` on Windows. An npm
-  `claude.cmd` shim is run as `node <…>/@anthropic-ai/claude-code/cli.js`. Override with `STARNET_CLAUDE_BIN`.
+  `claude.cmd` shim is run as `node <…>/@anthropic-ai/claude-code/cli.js`. Override with `VULTRON_CLAUDE_BIN`.
 
 ## Sign in (SIGN IN WITH CLAUDE)
 
-StarNet never holds the Claude credential. `sidecar/providers/claude-cli-login.js` runs the user's own
+Vultron never holds the Claude credential. `sidecar/providers/claude-cli-login.js` runs the user's own
 `claude auth login --claudeai` (it works with no terminal attached): the CLI opens the browser, finishes OAuth and
 stores the token in its own credential store. Routes: `GET /api/auth/claude-cli/status`,
 `POST /api/auth/claude-cli/{start,poll,code,cancel}`.
@@ -81,7 +81,7 @@ holds what happened after the previous reply.
 Why, on top of the blocks:
 
 - **Speed.** A one-shot child pays the CLI's start-up and session setup on every model turn. Gauntlet n=1:
-  StarNet took 8.8–12.2 s per turn, Claude Code 3.9–6.2 s, on the same Opus model.
+  Vultron took 8.8–12.2 s per turn, Claude Code 3.9–6.2 s, on the same Opus model.
 - **Tool reveals.** A `tool_search` reveal changes the tool catalogue in the system prompt. Live, each one-shot turn
   after a 4-tool reveal read 0 from the cache and re-wrote the whole prompt. The persistent child announces the new
   tools in its next message instead, and kept reading its cache (live numbers below).
@@ -95,9 +95,9 @@ What the installed CLI (2.1.284) was proven to do:
 - A model normally ends its reply right after `</function_calls>` (`end_turn`, ~30–70 ms after the last delta),
   and the child then holds exactly the text that streamed.
 - A stream-json `interrupt` keeps the streamed text and also adds a `[Request interrupted by user]` turn to the
-  CLI's history. StarNet never uses it.
+  CLI's history. Vultron never uses it.
 
-**In sync or start fresh.** The child is reused only while what it holds is provably StarNet's history:
+**In sync or start fresh.** The child is reused only while what it holds is provably Vultron's history:
 
 - the same system prompt (persona, rules, brief), model, effort, run and Stop signal;
 - the same tools or more. A `tool_search` reveal is announced as a `<system_note>` at the end of that turn's
@@ -106,7 +106,7 @@ What the installed CLI (2.1.284) was proven to do:
 - the reply the child wrote recorded by the loop unedited (same text, same calls, same arguments);
 - nothing after that reply except new user, tool or system messages.
 
-Anything else closes the child, and the turn starts a fresh one from StarNet's whole history, exactly like a one-shot
+Anything else closes the child, and the turn starts a fresh one from Vultron's whole history, exactly like a one-shot
 turn. That covers compaction, an aged-out screenshot, a dropped or repaired call, a retry after a failed turn, a model
 switch, the CLI compacting its own history, and a reply that keeps writing after its call block (a guess at results
 the child would otherwise keep). When the child is closed at the end of a call turn, a replacement with the same flags
@@ -125,7 +125,7 @@ abort-before-usage every streaming adapter has); a subscription turn is $0 eithe
 - at the run's end (`loop.js` `end()` calls the adapter's `release(runId)`);
 - on **Stop**: the run signal kills it, even between turns;
 - on any turn that did not end cleanly (an error result, a crash, the idle watchdog);
-- after `STARNET_CLAUDE_CLI_PERSIST_IDLE_MS` (default 5 min) parked;
+- after `VULTRON_CLAUDE_CLI_PERSIST_IDLE_MS` (default 5 min) parked;
 - when the sidecar exits (the exit hook also deletes each live child's system-prompt file, one-shot children
   included);
 - when its root exits but a helper still holds its pipes (`exit` without `close`): after a 2 s drain the session is
@@ -141,8 +141,8 @@ escapes the job object, when its CLI dies on its own or the sidecar is hard-kill
 
 **Switches.**
 
-- `STARNET_CLAUDE_CLI_PERSIST=0` runs every turn one-shot, exactly as before the persistent child.
-- `STARNET_CLAUDE_CLI_PERSIST_LOG=1` prints one line per decision (reuse, fresh + why, closed + why) and one per
+- `VULTRON_CLAUDE_CLI_PERSIST=0` runs every turn one-shot, exactly as before the persistent child.
+- `VULTRON_CLAUDE_CLI_PERSIST_LOG=1` prints one line per decision (reuse, fresh + why, closed + why) and one per
   turn's usage (prompt tokens, cache read, cache written, output), on either path.
 
 Live, 2026-10-13, through the hermetic sidecar fixture, Haiku, the same 4-turn `tool_search` task. Each cell is cache
@@ -168,7 +168,7 @@ cache reuse within a run.
 
 Any other call is one child for one turn, with the whole transcript on stdin. That covers a toolless request (a
 summary, a vision call, a wire test), a second request while the persistent child is mid-turn, and every turn under
-`STARNET_CLAUDE_CLI_PERSIST=0`. Its arguments and system prompt are the same as before the persistent child was added
+`VULTRON_CLAUDE_CLI_PERSIST=0`. Its arguments and system prompt are the same as before the persistent child was added
 (checked byte for byte against the base adapter over 10 scripted turns); its stdin follows the positional note joins
 and inert tags above. When the CLI's error result has an empty `result`, a tagged failure keeps its plain words
 ("rate limited", "authentication failed"); only a generic failure names the CLI's subtype.
@@ -185,7 +185,7 @@ has its tree taken. The persistent path always ended its turns at `result`.
   events.
 - **Every CLI tool is off**: built-ins, MCP connectors, skills, settings and the session file. The CLI never acts
   on the machine by itself.
-- StarNet's own tools are described in the system prompt. The model asks for them with a
+- Vultron's own tools are described in the system prompt. The model asks for them with a
   `<function_calls><invoke name="…"><parameter name="…">…</parameter></invoke></function_calls>` block (the older
   `<tool_call>{json}</tool_call>` is still read). The adapter turns each call into `tool_start` / `tool_args` /
   `tool_done`, so `loop.js` runs it through the normal capability gate and consent broker.
@@ -215,7 +215,7 @@ has its tree taken. The persistent path always ended its turns at `result`.
 - Per-run budgets and caps apply unchanged: each turn reports its cost (below) to the loop.
 - A subscription turn books $0, so no $ cap ever sees it. Its tokens count toward a per-run ceiling instead
   (`maxSubscriptionTokens`, default 2,000,000; a cache re-read counts 1/10). SETTINGS > APP & BACKUP > Runtime limits,
-  or `STARNET_MAX_SUBSCRIPTION_TOKENS`.
+  or `VULTRON_MAX_SUBSCRIPTION_TOKENS`.
 
 ## Cost
 

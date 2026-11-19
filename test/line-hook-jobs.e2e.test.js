@@ -34,11 +34,11 @@ const MODEL = 'hook-job-fixture';
   await new Promise(resolve => upstream.listen(0, '127.0.0.1', resolve));
   const upstreamOrigin = 'http://127.0.0.1:' + upstream.address().port;
   const fixture = SidecarFixture.create({ prefix: 'line-hook-jobs-', env: {
-    STARNET_DEV: '1', STARNET_FULL_ACCESS: '1', STARNET_DEFAULT_PROVIDER: 'custom', STARNET_DEFAULT_MODEL: MODEL,
-    CUSTOM_OPENAI_KEY: 'hook-fixture-key', CUSTOM_OPENAI_BASE_URL: upstreamOrigin + '/v1', STARNET_MAX_ITERS: '8',
-    STARNET_BUDGET_PER_DAY: '0', STARNET_CREDITS_URL: '', STARNET_CLOUD_URL: '', STARNET_LIVE_PRICES: '0',
-    STARNET_REFLECTION: '0', STARNET_STUDY: '0', STARNET_FAILURE_REVIEW: '0', STARNET_SKILL_REVIEW: '0',
-    STARNET_SKILL_CURATOR: '0', STARNET_THREAD_MINE: '0', STARNET_SCOUT: '0', STARNET_QUEST_REFRESH: '0'
+    VULTRON_DEV: '1', VULTRON_FULL_ACCESS: '1', VULTRON_DEFAULT_PROVIDER: 'custom', VULTRON_DEFAULT_MODEL: MODEL,
+    CUSTOM_OPENAI_KEY: 'hook-fixture-key', CUSTOM_OPENAI_BASE_URL: upstreamOrigin + '/v1', VULTRON_MAX_ITERS: '8',
+    VULTRON_BUDGET_PER_DAY: '0', VULTRON_CREDITS_URL: '', VULTRON_CLOUD_URL: '', VULTRON_LIVE_PRICES: '0',
+    VULTRON_REFLECTION: '0', VULTRON_STUDY: '0', VULTRON_FAILURE_REVIEW: '0', VULTRON_SKILL_REVIEW: '0',
+    VULTRON_SKILL_CURATOR: '0', VULTRON_THREAD_MINE: '0', VULTRON_SCOUT: '0', VULTRON_QUEST_REFRESH: '0'
   } });
   const marker = path.join(fixture.workspace, 'response-fault.json'), ackMarker = path.join(fixture.workspace, 'lose-ack'), boot = path.join(fixture.workspace, 'hook-boot.cjs');
   // Inject a failure at the real response-ledger rename, after the job has been accepted. No product fault switches.
@@ -66,7 +66,7 @@ const MODEL = 'hook-job-fixture';
   const settled = id => until(async () => { const row = await job(id); return row && !['running', 'paused'].includes(row.status) ? row : null; }, 'settled job ' + id);
   const hook = async (trigger, key, body, secret) => {
     const result = await fixture.json('POST', '/api/hooks/' + trigger.trigger.id, body,
-      { headers: { 'X-StarNet-Hook-Key': secret == null ? trigger.secret : secret, 'Idempotency-Key': key } });
+      { headers: { 'X-Vultron-Hook-Key': secret == null ? trigger.secret : secret, 'Idempotency-Key': key } });
     receipts.push({ key, status: result.status, body: result.body });
     return result;
   };
@@ -78,7 +78,7 @@ const MODEL = 'hook-job-fixture';
       { id: 'editor', t: 'bay', x: 6, y: 0, w: 1, h: 1, agentId: 'editor', role: 'EDITOR' },
       { id: 'out', t: 'outbox', x: 9, y: 0, w: 1, h: 1 }];
     const floor = floorOf({ props, belts: [1, 2, 4, 5, 7, 8].map(x => ({ x, y: 0, dir: 'E' })) }, { equip: ['computer', 'workbench'] });
-    const save = await api('POST', '/api/save', { schema: 'starnet.save', version: require('../frontend/app/save.js').CURRENT, updatedAt: Date.now(), _saveRevision: 0, _saveDirty: true,
+    const save = await api('POST', '/api/save', { schema: 'vultron.save', version: require('../frontend/app/save.js').CURRENT, updatedAt: Date.now(), _saveRevision: 0, _saveDirty: true,
       _saveClient: 'hook-fixture', agent: { id: 'agent', name: 'Commander agent', createdAt: Date.now() }, agents: [],
       workstreams: [{ id: 'general', history: [] }], activeId: 'general', generalId: 'general' });
     assert.equal(save.ok, true);

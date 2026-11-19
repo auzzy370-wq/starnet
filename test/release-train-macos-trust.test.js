@@ -113,7 +113,7 @@ A.ok(/notarize-macos:[\s\S]*?needs: build[\s\S]*?timeout-minutes: 350/.test(yml)
   'notarization finalization is an independent bounded job');
 A.ok(/intel-macos-installed-acceptance:[\s\S]*?needs: \[build, notarize-macos\][\s\S]*?runs-on: macos-15-intel/.test(yml),
   'shipping train runs installed-app acceptance on actual Intel hardware');
-A.ok(/STARNET_REQUIRE_NOTARIZED: "true"[\s\S]*?verify-macos-intel-installed\.sh/.test(yml),
+A.ok(/VULTRON_REQUIRE_NOTARIZED: "true"[\s\S]*?verify-macos-intel-installed\.sh/.test(yml),
   'shipping Intel acceptance requires the notarized Developer ID verdict');
 A.ok(/assemble:[\s\S]*?needs: \[build, notarize-macos, intel-macos-installed-acceptance\]/.test(yml),
   'release assembly waits for notarized Mac artifacts and installed Intel acceptance');
@@ -174,7 +174,7 @@ exit "\${STUB_SPCTL_EXIT:-0}"`,
 for (const [name, body] of Object.entries(stubs)) {
   fs.writeFileSync(path.join(tmp, name), `#!/usr/bin/env bash\n${body}\n`, { mode: 0o755 });
 }
-const dmg = path.join(tmp, 'StarNet_0.0.0_aarch64.dmg');
+const dmg = path.join(tmp, 'Vultron_0.0.0_aarch64.dmg');
 fs.writeFileSync(dmg, 'fixture image bytes');
 const prove = (mode, env, team = 'TEAM123456') => spawnSync(bash, [posix(dmgScriptPath), mode, posix(dmg), team], {
   encoding: 'utf8',

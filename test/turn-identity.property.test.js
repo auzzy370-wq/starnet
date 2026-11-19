@@ -30,7 +30,7 @@ const FILE_SETS = [['report · v2.md', 'a · b.png'], ['clip.mp3', 'notes v1.txt
 const seedCount = Control.hasPrefix ? 1 : Math.max(1, Math.min(500, Number(process.env.TURNID_SEEDS) || 20));
 const stepCount = Control.steps(60);
 const initialSeed = Number(process.env.TURN_PROP_SEED) || 17429;
-const root = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-turn-property-'));
+const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-turn-property-'));
 let active = null, assertions = 0;
 (async () => {
   try {

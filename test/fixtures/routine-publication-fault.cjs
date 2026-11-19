@@ -2,7 +2,7 @@
 // Only this fixture-owned child uses this preload. The real transcript writer and
 // its rollback/readback still run; the one controlled fault happens before bytes land.
 const fs = require('node:fs'), path = require('node:path');
-const workspace = path.resolve(process.env.STARNET_WORKSPACES);
+const workspace = path.resolve(process.env.VULTRON_WORKSPACES);
 const history = path.join(workspace, 'transcript-history-v2');
 const arm = path.join(workspace, 'publication-fault.arm');
 const evidence = path.join(workspace, 'publication-fault-observed.jsonl');
@@ -24,5 +24,5 @@ fs.writeSync = function (fd, data, ...args) {
   return write.call(this, fd, data, ...args);
 };
 // Cross the real retry deadline on restart without modifying any persisted receipt.
-const advance = Number(process.env.STARNET_TEST_PUBLICATION_CLOCK_MS || 0);
+const advance = Number(process.env.VULTRON_TEST_PUBLICATION_CLOCK_MS || 0);
 if (advance === 61000) { const now = Date.now; Date.now = () => now() + advance; }

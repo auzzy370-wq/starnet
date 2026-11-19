@@ -1,6 +1,6 @@
-/* node test/call-too-expensive.test.js — the StarNet credit relay's per-call price ceiling (starnet-cloud
+/* node test/call-too-expensive.test.js — the Vultron credit relay's per-call price ceiling (vultron-cloud
    THE CREDIT RESERVATION, live 2026-10-27, GitHub #53 follow-up). The relay answers HTTP 400 code
-   `call_too_expensive` "This request could cost more than the $2.00 StarNet allows for one call. Send a shorter
+   `call_too_expensive` "This request could cost more than the $2.00 Vultron allows for one call. Send a shorter
    prompt or pick a cheaper model." when a prompt ALONE costs more than one call may. That fell through classify400
    to format_error, and COMMS read "Something went wrong on that turn — try again" with a RETRY the relay refuses
    identically. Locks both ladders: the sidecar classifier (node) and the browser's own text ladder (where
@@ -15,7 +15,7 @@ const P = require('../sidecar/recovery-policy.js');
 const FR = require('../sidecar/failreview.js');
 const { friendlyError } = require('../frontend/app/friendlyerror.js');
 
-const RELAY_TEXT = 'This request could cost more than the $2.00 StarNet allows for one call. Send a shorter prompt or pick a cheaper model.';
+const RELAY_TEXT = 'This request could cost more than the $2.00 Vultron allows for one call. Send a shorter prompt or pick a cheaper model.';
 // the shape sidecar/providers/openrouter.js throws for a non-OK answer: its own label + status, the body for the code
 function relayErr(text, extraBody) {
   const err = new Error('openrouter http 400 — ' + text);
@@ -41,7 +41,7 @@ function relayErr(text, extraBody) {
   const other = new Error('openrouter http 400 — this request costs more than expected'); other.status = 400;
   A.eq(classifyApiError(other, {}).reason, 'format_error', 'an unrelated 400 that mentions cost stays format_error');
   // a 402 (the balance hold) stays billing — that is the OTHER relay refusal, and the app self-heals it
-  const hold = new Error('openrouter http 402 — insufficient StarNet credits: this call holds up to $0.5761'); hold.status = 402;
+  const hold = new Error('openrouter http 402 — insufficient Vultron credits: this call holds up to $0.5761'); hold.status = 402;
   A.eq(classifyApiError(hold, {}).reason, 'billing', 'the 402 balance hold is not call_too_expensive');
   A.ok(REASONS.call_too_expensive && typeof REASONS.call_too_expensive.retryable === 'boolean', 'registered in REASONS');
 }
@@ -68,9 +68,9 @@ function relayErr(text, extraBody) {
   const v = friendlyError(relayErr(RELAY_TEXT));
   A.eq(v.kind, 'call_too_expensive', 'node ladder kind');
   A.eq(v.retryable, false, 'no ↻ Try again on a refusal a resend repeats');
-  A.ok(/\$2\.00 StarNet allows for one call/.test(v.userMessage), 'quotes the ceiling the relay named: ' + v.userMessage);
-  A.ok(/StarNet refused the call/.test(v.userMessage) && /fresh chat/.test(v.userMessage) && /cheaper model/.test(v.userMessage),
-    'says StarNet refused the call and names both fixes');
+  A.ok(/\$2\.00 Vultron allows for one call/.test(v.userMessage), 'quotes the ceiling the relay named: ' + v.userMessage);
+  A.ok(/Vultron refused the call/.test(v.userMessage) && /fresh chat/.test(v.userMessage) && /cheaper model/.test(v.userMessage),
+    'says Vultron refused the call and names both fixes');
   /* 0.14.2 review: it said "nothing was charged". The station knows only that the relay refused THIS call: the refused
      call can be a run's later one, after its earlier calls were billed. The copy claims nothing about what was spent. */
   A.ok(!/charged|free|no cost|cost nothing|credits are safe/i.test(v.userMessage), 'claims nothing about what the run cost: ' + v.userMessage);
@@ -91,10 +91,10 @@ function relayErr(text, extraBody) {
   const F = sandbox.__F;
   const v = F.friendlyError(new Error('openrouter http 400 — ' + RELAY_TEXT));
   A.eq(v.kind, 'call_too_expensive', 'browser ladder kind');
-  A.ok(/\$2\.00 StarNet allows for one call/.test(v.userMessage), 'browser copy quotes the ceiling');
+  A.ok(/\$2\.00 Vultron allows for one call/.test(v.userMessage), 'browser copy quotes the ceiling');
   const five = F.friendlyError(new Error('openrouter http 400 — ' + RELAY_TEXT.replace('$2.00', '$5.00')));
-  A.ok(/\$5\.00 StarNet allows/.test(five.userMessage), 'a raised ceiling is quoted as the relay said it, never as $2');
-  A.ok(/StarNet refused the call/.test(v.userMessage) && !/charged/i.test(v.userMessage) && !/charged/i.test(F.KINDS.call_too_expensive.msg),
+  A.ok(/\$5\.00 Vultron allows/.test(five.userMessage), 'a raised ceiling is quoted as the relay said it, never as $2');
+  A.ok(/Vultron refused the call/.test(v.userMessage) && !/charged/i.test(v.userMessage) && !/charged/i.test(F.KINDS.call_too_expensive.msg),
     'the browser copy and its fallback say the call was refused, never that nothing was charged: ' + v.userMessage);
   // no status in the text (an in-band relay message): the message ladder still finds it
   A.eq(F.friendlyError(new Error(RELAY_TEXT)).kind, 'call_too_expensive', 'browser ladder with no status');

@@ -90,7 +90,7 @@ function startMockOpenRouter(script) {
 function boot(port, env, attemptsLeft) {
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, [INDEX], {
-      env: Object.assign({}, process.env, env, { SKYNET_PORT: String(port), STARNET_PORT: String(port) }),
+      env: Object.assign({}, process.env, env, { SKYNET_PORT: String(port), VULTRON_PORT: String(port) }),
       stdio: ['ignore', 'pipe', 'pipe']
     });
     let out = '', settled = false;
@@ -162,7 +162,7 @@ const GEO = {
     'a prior stopped task in history does not make the latest request hang');
   const ws = fs.mkdtempSync(path.join(os.tmpdir(), 'sk-sample-stop-'));
   const env = {
-    SKYNET_WORKSPACES: ws, STARNET_WORKSPACES: ws, STARNET_DEV: '', SKYNET_DEV: '',
+    SKYNET_WORKSPACES: ws, VULTRON_WORKSPACES: ws, VULTRON_DEV: '', SKYNET_DEV: '',
     SKYNET_OPENROUTER_BASE: mock.base, SKYNET_OPENROUTER_KEY: 'sk-or-v1-sample-stop-fake', SKYNET_DEFAULT_MODEL: 'test/model'
   };
   const { child, port } = await boot(await allocatePort(), env, 20);
@@ -170,7 +170,7 @@ const GEO = {
   let sse = null;
   try {
     const token = await bootToken(B, B);
-    const headers = { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: B };
+    const headers = { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: B };
     const call = (route, body) => fetch(B + route, { method: 'POST', headers, body: JSON.stringify(body == null ? {} : body) })
       .then(r => r.json().then(j => ({ status: r.status, j })));
 

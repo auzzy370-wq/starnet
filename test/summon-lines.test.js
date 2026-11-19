@@ -48,7 +48,7 @@ const makeChildEmit = Function('FORWARD', A.fnBody(orch, 'function makeChildEmit
   t.feed({ name: 'agent.run.start', payload: { agentId: 'agent', runId: 'lead-1', model: 'm' } });
   t.feed({ name: 'agent.run.start', payload: { agentId: 'vega', runId: 'w-1', model: 'w' } });
   const acts = t.feed(step);
-  A.eq(acts.length + ':' + t.state.toolCalls.length, '0:0', '`starnet -p` / one-shot: a worker step is neither printed nor counted in the receipt (R19/R29)');
+  A.eq(acts.length + ':' + t.state.toolCalls.length, '0:0', '`vultron -p` / one-shot: a worker step is neither printed nor counted in the receipt (R19/R29)');
   A.eq(t.state.runId, 'lead-1', 'the CLI keeps the LEAD run as the one Ctrl-C / --timeout cancels (a worker run.start no longer overwrites it)');
   const { observerView } = require('../sidecar/observer.js');
   A.eq(observerView('crew.tool_step', step.payload, {}), null, '/api/observe never republishes a forwarded step (the worker\'s own tee already did: no doubled dashboard rows, R1/R25)');

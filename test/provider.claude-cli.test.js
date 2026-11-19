@@ -39,7 +39,7 @@ function fakeSpawn(script) {
 const fakeFs = { statSync() { return { isFile: () => true }; }, writeFileSync() {}, unlinkSync() {} };
 const make = (script, extra) => {
   const f = fakeSpawn(script);
-  const p = makeClaudeCliProvider(Object.assign({ spawn: f.spawn, fs: fakeFs, bin: 'claude.exe', env: { PATH: '', STARNET_CLAUDE_CLI_PERSIST: '0' }, platform: 'linux' }, extra || {}));
+  const p = makeClaudeCliProvider(Object.assign({ spawn: f.spawn, fs: fakeFs, bin: 'claude.exe', env: { PATH: '', VULTRON_CLAUDE_CLI_PERSIST: '0' }, platform: 'linux' }, extra || {}));
   return { p, calls: f.calls };
 };
 async function collect(p, req) { const out = []; for await (const e of p.stream(req)) out.push(e); return out; }
@@ -321,11 +321,11 @@ const result = (extra) => Object.assign({ type: 'result', subtype: 'success', is
 
   // J. the CLI child never inherits station secrets, and its own auto-memory stays out of the turn.
   {
-    const env = { PATH: '', STARNET_CREDITS_TOKEN: 'credits-secret', SKYNET_API_TOKEN: 'api-secret', CLAUDECODE: '1', HOME: '/h' };
+    const env = { PATH: '', VULTRON_CREDITS_TOKEN: 'credits-secret', SKYNET_API_TOKEN: 'api-secret', CLAUDECODE: '1', HOME: '/h' };
     const { p, calls } = make({ lines: [init('none'), result({ result: 'ok' })] }, { env });
     await collect(p, { model: 'sonnet', messages: [{ role: 'user', content: 'x' }] });
     const childEnv = calls[0].opts.env;
-    A.ok(childEnv && !Object.keys(childEnv).some(k => /^(STARNET|SKYNET)_/i.test(k)), 'no STARNET_/SKYNET_ variable reaches the CLI');
+    A.ok(childEnv && !Object.keys(childEnv).some(k => /^(VULTRON|SKYNET)_/i.test(k)), 'no VULTRON_/SKYNET_ variable reaches the CLI');
     A.eq([childEnv.CLAUDECODE, childEnv.HOME, childEnv.CLAUDE_CODE_DISABLE_AUTO_MEMORY], [undefined, '/h', '1'], 'not a nested session; user env kept; auto-memory off');
   }
 
@@ -532,7 +532,7 @@ const result = (extra) => Object.assign({ type: 'result', subtype: 'success', is
       const parts = split(persona);
       const written = [];
       const f = fakeSpawn({ lines: [init('none'), result({ result: 'ok' })] });
-      const p = makeClaudeCliProvider({ spawn: f.spawn, fs: Object.assign({}, fakeFs, { writeFileSync(file, text) { written.push(String(text)); } }), bin: 'claude.exe', env: { PATH: '', STARNET_CLAUDE_CLI_PERSIST: '0' }, platform: 'linux' });
+      const p = makeClaudeCliProvider({ spawn: f.spawn, fs: Object.assign({}, fakeFs, { writeFileSync(file, text) { written.push(String(text)); } }), bin: 'claude.exe', env: { PATH: '', VULTRON_CLAUDE_CLI_PERSIST: '0' }, platform: 'linux' });
       const prefix = parts.stable + '\n\nTOOL NOTES';
       await collect(p, { model: 'haiku', cacheSystemPrefix: prefix, messages: [{ role: 'system', content: prefix + parts.learned + '\n\nPER CONVERSATION' }, { role: 'user', content: 'x' }] });
       return written[0];

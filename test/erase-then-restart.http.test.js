@@ -2,9 +2,9 @@
    terminal, through the whole chain a user runs.
 
    THE SCENARIO (gh#101, gh#65, bug 5451970e). On a default Windows install the old station sits in
-   %LOCALAPPDATA%\StarNet\workspaces, inside the install folder, and ERASE EVERYTHING never deletes that folder. So "no prior
-   station" has to hold as an ANSWER: automatic recovery must not bring it back (fixed in 0.13.5), and `starnet` must not boot
-   it. The terminal used to: the app said the computer was clean while bin/starnet.js, asking only whether a save file
+   %LOCALAPPDATA%\Vultron\workspaces, inside the install folder, and ERASE EVERYTHING never deletes that folder. So "no prior
+   station" has to hold as an ANSWER: automatic recovery must not bring it back (fixed in 0.13.5), and `vultron` must not boot
+   it. The terminal used to: the app said the computer was clean while bin/vultron.js, asking only whether a save file
    existed, picked the old station's folder (qa/bugs/661cbfea).
    test/station-marker-matrix.test.js asks every reader, in one process, on a workspace no sidecar has booted;
    test/workspace-recovery-fresh-start.http.test.js boots the sidecar and never asks the terminal. This is the chain, in order:
@@ -18,8 +18,8 @@
       recovery says why it imported nothing. Between the two boots a window that still holds a copy from before the erase (a
       browser tab, an app window whose storage survived) saves and pushes its crew: the save is refused, the crew is held
       and never written, so the second boot gives the same answers from the record the first one persisted.
-   4. THE TERMINAL, AS A SHELL RUNS IT: the real bin/starnet.js with no --workspace, on the record those boots left. `-p` sets a
-      new station up on the app's workspace and runs it, and `starnet init` names the same workspace. The old station is
+   4. THE TERMINAL, AS A SHELL RUNS IT: the real bin/vultron.js with no --workspace, on the record those boots left. `-p` sets a
+      new station up on the app's workspace and runs it, and `vultron init` names the same workspace. The old station is
       never booted, and its bytes never change.
    5. BACK IN THE APP: the real sidecar serves the terminal's station. The erase keeps its authority under it, and the old
       station stays available to an explicit recovery only.
@@ -36,10 +36,10 @@ const A = require('./_assert.js');
 const { SidecarFixture } = require('./helpers/sidecar-fixture.js');
 const Save = require('../frontend/app/save.js');
 const Safety = require('../sidecar/workspace-safety.js');
-const cli = require('../bin/starnet.js');
+const cli = require('../bin/vultron.js');
 const contract = require('./fixtures/station-record-cases.json');
 
-const BIN = path.resolve(__dirname, '..', 'bin', 'starnet.js');
+const BIN = path.resolve(__dirname, '..', 'bin', 'vultron.js');
 const REPO = path.resolve(__dirname, '..');
 const DEAD = 'http://127.0.0.1:1';
 const OLD = 'SYNTHETIC-OLD-STATION', NEW = 'ATLAS';
@@ -94,16 +94,16 @@ function terminal(args, env) {
 (async () => {
   const mock = await startMockOpenRouter();
   const quiet = {
-    STARNET_DEV: '0', SKYNET_DEV: '0', STARNET_CRON_ENABLED: '0', SKYNET_CRON_ENABLED: '0',
-    STARNET_LOOP_ENABLED: '0', SKYNET_LOOP_ENABLED: '0', SKYNET_QUEST_REFRESH: '0', STARNET_QUEST_REFRESH: '0',
-    STARNET_EDGE_TTS: '0', SKYNET_EDGE_TTS: '0', SKYNET_LIVE_PRICES: '0', STARNET_LIVE_PRICES: '0',
-    STARNET_CLOUD_URL: DEAD, STARNET_CREDITS_URL: '', SKYNET_CREDITS_URL: '', STARNET_DESKTOP_SHELL: '0', STARNET_SCRATCH_ROOT: '', SKYNET_SCRATCH_ROOT: '',
-    SKYNET_OPENROUTER_BASE: mock.base, STARNET_OPENROUTER_BASE: mock.base,
-    SKYNET_OPENROUTER_KEY: 'sk-or-v1-erase-fake', STARNET_OPENROUTER_KEY: 'sk-or-v1-erase-fake', OPENROUTER_API_KEY: '',
-    OPENAI_API_KEY: '', SKYNET_OPENAI_API_KEY: '', STARNET_OPENAI_API_KEY: '',
-    SKYNET_DEFAULT_MODEL: 'test/model', STARNET_DEFAULT_MODEL: 'test/model'
+    VULTRON_DEV: '0', SKYNET_DEV: '0', VULTRON_CRON_ENABLED: '0', SKYNET_CRON_ENABLED: '0',
+    VULTRON_LOOP_ENABLED: '0', SKYNET_LOOP_ENABLED: '0', SKYNET_QUEST_REFRESH: '0', VULTRON_QUEST_REFRESH: '0',
+    VULTRON_EDGE_TTS: '0', SKYNET_EDGE_TTS: '0', SKYNET_LIVE_PRICES: '0', VULTRON_LIVE_PRICES: '0',
+    VULTRON_CLOUD_URL: DEAD, VULTRON_CREDITS_URL: '', SKYNET_CREDITS_URL: '', VULTRON_DESKTOP_SHELL: '0', VULTRON_SCRATCH_ROOT: '', SKYNET_SCRATCH_ROOT: '',
+    SKYNET_OPENROUTER_BASE: mock.base, VULTRON_OPENROUTER_BASE: mock.base,
+    SKYNET_OPENROUTER_KEY: 'sk-or-v1-erase-fake', VULTRON_OPENROUTER_KEY: 'sk-or-v1-erase-fake', OPENROUTER_API_KEY: '',
+    OPENAI_API_KEY: '', SKYNET_OPENAI_API_KEY: '', VULTRON_OPENAI_API_KEY: '',
+    SKYNET_DEFAULT_MODEL: 'test/model', VULTRON_DEFAULT_MODEL: 'test/model'
   };
-  const fixture = SidecarFixture.create({ prefix: 'starnet-erase-restart-', timeoutMs: 30000, env: quiet });
+  const fixture = SidecarFixture.create({ prefix: 'vultron-erase-restart-', timeoutMs: 30000, env: quiet });
   const fixtureRoot = fixture.workspace, profile = fixture.profile;
   const childTemp = path.join(profile, 'runtime-temp');
   fs.mkdirSync(childTemp);
@@ -114,14 +114,14 @@ function terminal(args, env) {
   const desktop = cli.desktopWorkspaces(profileEnv, process.platform);
   const bare = cli.bareWorkspaces(profileEnv, process.platform);
   // macOS: the bare sidecar's default IS the desktop root, so the old station lives in an ordinary legacy root
-  const legacy = same(bare, desktop) ? path.join(profile, '.local', 'share', 'StarNet', 'workspaces') : bare;
+  const legacy = same(bare, desktop) ? path.join(profile, '.local', 'share', 'Vultron', 'workspaces') : bare;
   fixture.workspace = desktop;
   fs.mkdirSync(desktop, { recursive: true });
   const recordFile = path.join(desktop, '.station.json'), markerFile = path.join(desktop, '.fresh-start.json');
   const oldSave = path.join(legacy, 'agent.save.json');
 
   write(oldSave, { version: 1, agentId: 'agent', updatedAt: 1000, savedAt: 1000, doc: {
-    schema: 'starnet.save', version: Save.CURRENT, updatedAt: 1000,
+    schema: 'vultron.save', version: Save.CURRENT, updatedAt: 1000,
     agent: { id: 'agent', name: OLD, provider: 'replay', model: 'test/replay', createdAt: 900 },
     station: { rooms: [{ id: 'old-command' }], props: [] }, workstreams: [], activeId: 'general', generalId: 'general'
   } });
@@ -180,7 +180,7 @@ function terminal(args, env) {
     A.eq(read(markerFile), markerBytes, 'the first boot leaves the native marker byte-identical');
     const recordBytes = read(recordFile);
     // a window from before the erase: resumeInto, enterGame's pushRoster and CloudSave's save, its revision its own
-    const stale = await fixture.json('POST', '/api/save', { schema: 'starnet.save', version: Save.CURRENT, updatedAt: 1500, _saveRevision: 23, _saveDirty: true, _saveClient: 'window-from-before',
+    const stale = await fixture.json('POST', '/api/save', { schema: 'vultron.save', version: Save.CURRENT, updatedAt: 1500, _saveRevision: 23, _saveDirty: true, _saveClient: 'window-from-before',
       agent: { id: 'agent', name: OLD, createdAt: 900 }, agents: [], workstreams: [{ id: 'general', history: [] }], activeId: 'general', generalId: 'general' });
     A.ok(stale.body && stale.body.ok === false && stale.body.reset === true, 'a window from before the erase has its save refused (' + JSON.stringify(stale.body) + ')');
     const staleCrew = await fixture.json('POST', '/api/roster', { agents: [{ agentId: 'agent', system: 'x', name: OLD, model: '', provider: 'openrouter' }], updatedAt: Date.now(),
@@ -192,21 +192,21 @@ function terminal(args, env) {
     A.eq(read(recordFile), recordBytes, 'the next boot reads the record the first one persisted, and rewrites nothing');
     await fixture.stop();
 
-    // ---- 4. THE TERMINAL, AS A SHELL RUNS IT, on the record those boots left: no --workspace, so `starnet` picks ----
-    const shell = Object.assign({}, process.env, quiet, profileEnv, { STARNET_PORT: '', SKYNET_PORT: '', STARNET_WORKSPACES: '', SKYNET_WORKSPACES: '',
-      STARNET_TOKEN: '', STARNET_API_TOKEN: '', SKYNET_API_TOKEN: '', STARNET_APP_EXE: '' });
+    // ---- 4. THE TERMINAL, AS A SHELL RUNS IT, on the record those boots left: no --workspace, so `vultron` picks ----
+    const shell = Object.assign({}, process.env, quiet, profileEnv, { VULTRON_PORT: '', SKYNET_PORT: '', VULTRON_WORKSPACES: '', SKYNET_WORKSPACES: '',
+      VULTRON_TOKEN: '', VULTRON_API_TOKEN: '', SKYNET_API_TOKEN: '', VULTRON_APP_EXE: '' });
     const run = await terminal(['--spawn', '--name', NEW, '-p', 'say hello', '--json'], shell);
-    A.eq(run.code, 0, '`starnet -p` runs (stderr: ' + run.err.slice(0, 800) + ')');
-    A.ok(run.err.indexOf('booting a station on ' + desktop) >= 0, '`starnet -p` boots the app\'s workspace, never the old station\'s folder: ' + run.err.slice(0, 400));
+    A.eq(run.code, 0, '`vultron -p` runs (stderr: ' + run.err.slice(0, 800) + ')');
+    A.ok(run.err.indexOf('booting a station on ' + desktop) >= 0, '`vultron -p` boots the app\'s workspace, never the old station\'s folder: ' + run.err.slice(0, 400));
     let receipt = null; try { receipt = JSON.parse(run.out.trim()); } catch (_) {}
     A.ok(!!receipt && receipt.ok === true, 'the run finished (' + run.out.slice(0, 300) + ')');
     A.ok(!!receipt && same(String(receipt.station && receipt.station.workspace), desktop), 'its receipt names the app\'s workspace');
     A.eq(receipt && receipt.agentName, NEW, 'and a new agent ran it, not the erased station\'s');
-    oldUntouched('`starnet -p`');
+    oldUntouched('`vultron -p`');
     const init = await terminal(['init'], shell);
-    A.eq(init.code, 0, '`starnet init` answers (' + init.err.trim() + ')');
-    A.ok(init.err.indexOf(desktop) >= 0 && init.err.indexOf(legacy) < 0, '`starnet init` names the app\'s workspace too: ' + init.err.trim());
-    oldUntouched('`starnet init`');
+    A.eq(init.code, 0, '`vultron init` answers (' + init.err.trim() + ')');
+    A.ok(init.err.indexOf(desktop) >= 0 && init.err.indexOf(legacy) < 0, '`vultron init` names the app\'s workspace too: ' + init.err.trim());
+    oldUntouched('`vultron init`');
 
     // ---- 5. BACK IN THE APP: the terminal's station, and the erase still has authority under it ----
     await fixture.start();
@@ -223,7 +223,7 @@ function terminal(args, env) {
 
   await fixture.dispose();
   await new Promise(resolve => mock.server.close(resolve));
-  if (path.dirname(fixtureRoot) !== path.resolve(os.tmpdir()) || !path.basename(fixtureRoot).startsWith('starnet-erase-restart-')) throw new Error('unsafe fixture root cleanup');
+  if (path.dirname(fixtureRoot) !== path.resolve(os.tmpdir()) || !path.basename(fixtureRoot).startsWith('vultron-erase-restart-')) throw new Error('unsafe fixture root cleanup');
   fs.rmSync(fixtureRoot, { recursive: true, force: true });
   if (failure) throw failure;
   A.report('erase-then-restart.http.test');

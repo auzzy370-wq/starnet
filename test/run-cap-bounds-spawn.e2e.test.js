@@ -69,12 +69,12 @@ function startMock() {
 
 (async () => {
   const mock = await startMock();
-  const fixture = SidecarFixture.create({ prefix: 'starnet-runcap-spawn-', timeoutMs: 30000, env: {
-    SKYNET_OPENROUTER_BASE: mock.base, STARNET_OPENROUTER_BASE: mock.base,
-    SKYNET_DEFAULT_MODEL: 'test/model', STARNET_DEFAULT_MODEL: 'test/model',
-    SKYNET_BUDGET_PER_RUN: String(CAP_USD), STARNET_BUDGET_PER_RUN: String(CAP_USD),
-    SKYNET_BUDGET_PER_WORKER: '', STARNET_BUDGET_PER_WORKER: '',
-    SKYNET_FULL_ACCESS: '1', STARNET_FULL_ACCESS: '1',   // team.spawn is consent-gated; this run is headless
+  const fixture = SidecarFixture.create({ prefix: 'vultron-runcap-spawn-', timeoutMs: 30000, env: {
+    SKYNET_OPENROUTER_BASE: mock.base, VULTRON_OPENROUTER_BASE: mock.base,
+    SKYNET_DEFAULT_MODEL: 'test/model', VULTRON_DEFAULT_MODEL: 'test/model',
+    SKYNET_BUDGET_PER_RUN: String(CAP_USD), VULTRON_BUDGET_PER_RUN: String(CAP_USD),
+    SKYNET_BUDGET_PER_WORKER: '', VULTRON_BUDGET_PER_WORKER: '',
+    SKYNET_FULL_ACCESS: '1', VULTRON_FULL_ACCESS: '1',   // team.spawn is consent-gated; this run is headless
     SKYNET_AUX_BUDGET: '0', SKYNET_QUEST_REFRESH: '0'
   } });
   // never let the sidecar resolve the real user profile (the fixture leaves USERPROFILE alone on Windows)

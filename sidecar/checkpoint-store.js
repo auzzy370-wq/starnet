@@ -132,7 +132,7 @@
   // a .gitignore line the walk may prune by: one plain name, optionally `/`-anchored or `**/`-prefixed, optionally `/`-ended
   // (a folder only)
   const PLAIN_IGNORE_RE = /^(\*\*\/)?(\/)?([A-Za-z0-9._-]+)(\/)?$/;
-  const EXCLUDE_HEADER = '# StarNet checkpoints: links (junctions, symbolic links, mount points) left out of restore points,\n'
+  const EXCLUDE_HEADER = '# Vultron checkpoints: links (junctions, symbolic links, mount points) left out of restore points,\n'
     + '# and, for a rewind\'s own capture, the folders only the restore point\'s .gitignore files exclude.\n'
     + '# Rewritten before every capture (sidecar/checkpoint-store.js prepareCapture).\n';
 
@@ -237,7 +237,7 @@
     const pinnedConfig = (gitDir) => ['-c', 'core.autocrlf=false', '-c', 'core.safecrlf=false',
       '-c', 'submodule.recurse=false', '-c', 'core.ignoreStat=false', '-c', 'core.fsmonitor=false', '-c', 'core.hooksPath=' + pathMod.join(gitDir, 'no-hooks'),
       '-c', 'gc.auto=0', '-c', 'maintenance.auto=false', '-c', 'gc.autoDetach=false',
-      '-c', 'user.email=starnet@local', '-c', 'user.name=starnet'].concat((personalConfig.get(gitDir) || { off: [] }).off);
+      '-c', 'user.email=vultron@local', '-c', 'user.name=vultron'].concat((personalConfig.get(gitDir) || { off: [] }).off);
     // the leading git args that pin the shadow git-dir + work-tree, then pinnedConfig
     function base(aid, scope) {
       return ['--git-dir', gitDirFor(aid, scope), '--work-tree', workTreeFor(aid, scope)].concat(pinnedConfig(gitDirFor(aid, scope)));
@@ -1856,7 +1856,7 @@
     // run `git <args> <pathspecs>`: on the command line while short, else from a NUL-separated file in the shadow git-dir
     async function gitWithPathspecs(runIn, gitDir, args, specs) {
       if (specs.join(' ').length < 6000 && !specs.some(function (s) { return /[\r\n]/.test(s); })) return runIn(args.concat(['--'], specs));
-      const file = pathMod.join(gitDir, 'starnet-capture.pathspec');
+      const file = pathMod.join(gitDir, 'vultron-capture.pathspec');
       fs.writeFileSync(file, specs.join('\0') + '\0');
       try { return await runIn(args.concat(['--pathspec-from-file=' + file, '--pathspec-file-nul'])); }
       finally { try { fs.unlinkSync(file); } catch (e) { failNote('checkpoint.links.pathspec', e); } }
@@ -2318,7 +2318,7 @@
        stored, so a rewind to one is refused where a conversion could have changed them (storedAsItIsRefusal).
          -> null | why it could not be */
     const ATTRIBUTES_PIN = '* -text -ident -filter !working-tree-encoding\n';
-    const REREAD_DUE = 'starnet-reread-due';
+    const REREAD_DUE = 'vultron-reread-due';
     async function pinAttributes(gitDir, runIn, runLong) {
       const file = pathMod.join(gitDir, 'info', 'attributes'), due = pathMod.join(gitDir, REREAD_DUE);
       let have = null;
@@ -2357,7 +2357,7 @@
        holding '=' cannot be said to -c, so such a repo captures nothing while it stands.
        attributesFile: core.attributesFile is set (storedAsItIsRefusal). -> null | why it could not be */
     async function readPersonalConfig(gitDir, runIn) {
-      const r = await runIn(['-c', 'starnet.asked=true', 'config', '-z', '--name-only', '--get-regexp', '^hook[.]|^starnet[.]asked$|^core[.]attributesfile$']);
+      const r = await runIn(['-c', 'vultron.asked=true', 'config', '-z', '--name-only', '--get-regexp', '^hook[.]|^vultron[.]asked$|^core[.]attributesfile$']);
       if (!r || r.code !== 0 || r.truncated) return 'Git could not say which hooks the person\'s Git config names, to keep them off the restore points';
       const keys = nulNames(r), names = new Set();
       for (const key of keys) { const m = /^hook\.(.*)\.[^.]+$/.exec(key); if (m) names.add(m[1]); }   // [hook ""] too: hook..command (undo review 9)
@@ -2374,7 +2374,7 @@
       return (await readPersonalConfig(gitDir, runIn)) || pinAttributes(gitDir, runIn, runLong);
     }
     // the body line of every commit this store writes since the bytes are pinned: a commit without it is a row an older store wrote (storedAsItIsRefusal)
-    const STORED_AS_IT_IS = 'starnet: every file stored as it is';
+    const STORED_AS_IT_IS = 'vultron: every file stored as it is';
     /* prepareCapture — THE one boundary every capture passes before Git reads the work tree (commitSnapshot for a snapshot
        and for restore's pre-restore capture; reinitFromCurrentTree for the size-ceiling baseline). With the walk's result:
        0. the person's hooks in config are switched off by name and the shadow repo's info/attributes turns every conversion off (readyShadowRepo: readPersonalConfig,

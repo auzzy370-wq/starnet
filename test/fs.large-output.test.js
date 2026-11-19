@@ -18,7 +18,7 @@ const os = require('os');
 const { makeFsTools } = require('../sidecar/tools/builtin/fs.js');
 const { makeRegistry } = require('../sidecar/tools/registry.js');
 
-const ROOT = path.join(os.tmpdir(), 'starnet-fs-large-' + process.pid);
+const ROOT = path.join(os.tmpdir(), 'vultron-fs-large-' + process.pid);
 const WS = path.join(ROOT, 'big');
 
 (async () => {

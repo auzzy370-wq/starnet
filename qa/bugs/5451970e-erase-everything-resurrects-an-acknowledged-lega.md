@@ -9,8 +9,8 @@ found: 2026-10-11
 lane: agent/runtime-triage-1011
 fix: 553cfa55d45afca1b588cb0b82219d6bb5673cab
 origin: customer
-report: https://github.com/androoAGI/starnet/issues/101
-affected: Windows 11 x64, official StarNet v0.13.2; source f2e1e91bb also reproduced
+report: https://github.com/YOUR-GITHUB-USER/vultron/issues/101
+affected: Windows 11 x64, official Vultron v0.13.2; source f2e1e91bb also reproduced
 family: erase-recovery-authority
 installer: unverified
 recovery: unconfirmed
@@ -24,7 +24,7 @@ After ERASE EVERYTHING, the next Windows boot can replace the clean generation w
 
 ## Repro
 
-1. Create a valid legacy station under a synthetic LocalAppData/StarNet/workspaces root.
+1. Create a valid legacy station under a synthetic LocalAppData/Vultron/workspaces root.
 2. Create an empty active generation with the native-shaped .fresh-start.json marker: version 1, erased true, and the legacy root acknowledged.
 3. Boot the production recovery path with one valid candidate.
 4. Before the repair, the candidate is copied into the active root and its older marker overwrites the erase choice. The source and rollback remain, but the app resumes the unwanted old station.

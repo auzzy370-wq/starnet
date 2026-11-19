@@ -1,4 +1,4 @@
-/* StarNet — dialogue.js : THE FOCUSED DIALOGUE MODE (Fallout-style first-run conversation).
+/* Vultron — dialogue.js : THE FOCUSED DIALOGUE MODE (Fallout-style first-run conversation).
 
    The first three minutes (the awakening's questions + the first-command tutorial) used to live as
    tappable chips in the COMMS scroll. That invited TYPING — and typed answers fell through or looped,
@@ -257,7 +257,7 @@ const Dialogue = (() => {
     panel = speakerEl = lineEl = optsEl = moreEl = inkEl = stageEl = host = null;
     stageTitle = stageDetail = '';
     // COMMS is uncovered again: a hint that points at COMMS (navdock's coach) waits for this (org P31 review fix).
-    if (wasOpen && typeof document !== 'undefined' && typeof CustomEvent === 'function') document.dispatchEvent(new CustomEvent('starnet:dialogue-closed'));
+    if (wasOpen && typeof document !== 'undefined' && typeof CustomEvent === 'function') document.dispatchEvent(new CustomEvent('vultron:dialogue-closed'));
   }
 
   /* THE INK STAMP — show one line landing in the operating file ("» filed · pain: …"). Non-blocking:

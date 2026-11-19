@@ -58,7 +58,7 @@ const ok = (label, s, cap) => { A.ok(!lone(s), label + ' has no lone surrogate: 
   global.fetch = async () => ({ ok: true, json: async () => ({ ok: true }) });
   const broken = at(280, '\u{1F3AF}').slice(0, 280);            // exactly what the old clip stored: ends on a lone high surrogate
   A.ok(lone(broken), 'fixture: the pre-rule save really ends on a lone surrogate');
-  mem['starnet.goals.v1'] = JSON.stringify({ v: 1, goals: [{ id: 'goal_1', text: broken, createdAt: 1, status: 'active', successCondition: at(500, '\u{1F680}').slice(0, 500),
+  mem['vultron.goals.v1'] = JSON.stringify({ v: 1, goals: [{ id: 'goal_1', text: broken, createdAt: 1, status: 'active', successCondition: at(500, '\u{1F680}').slice(0, 500),
     milestones: [{ id: 'goal_1:m1', text: at(140, '\u{1F680}').slice(0, 140), status: 'open' }] }], ideas: [], offered: {}, offeredOrder: [] });
   const { GoalStore } = require('../frontend/app/goalstore.js');
   GoalStore.init({ now: () => 5000, getSystem: () => '' });
@@ -72,7 +72,7 @@ const ok = (label, s, cap) => { A.ok(!lone(s), label + ' has no lone surrogate: 
     A.ok(added, 'addStep accepted a long step');
     const step = GoalStore.listGoals()[0].milestones.slice(-1)[0];
     ok('added step (140 cap)', step && step.text, 140);
-    const stored = JSON.parse(mem['starnet.goals.v1']);
+    const stored = JSON.parse(mem['vultron.goals.v1']);
     A.ok(!lone(JSON.stringify(stored.goals[0].text)) && !/\\ud8[0-9a-f]{2}(?!\\ud[c-f])/i.test(JSON.stringify(stored)), 'the re-saved localStorage copy carries no lone-surrogate escape');
   }
 

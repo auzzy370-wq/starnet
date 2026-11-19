@@ -48,7 +48,7 @@
       over a wiredImpl station (S5; see it below). refusalRows(impl) runs index.js's own refusal sentence
       (engineCredentialError) over every station of the tables that cannot run (S7; trunkImpl and wiredImpl lift it).
       goldenRows(impl, { only?, unmarked?, poolLineBefore? }) runs every table, or the ones `only` names; `unmarked` drops the
-      desktop shell's marker from the shell table's stations (STARNET_DESKTOP_SHELL), which is how its golden deltas are told
+      desktop shell's marker from the shell table's stations (VULTRON_DESKTOP_SHELL), which is how its golden deltas are told
       from trunk: trunk ignores the marker, and an unmarked station resolves exactly as trunk did. `poolLineBefore` resolves
       each run's pool with runOnceCore's key-pool line as it was before step S4, which with the store's binding undone gives
       the golden as it was before S4 (delta D2).
@@ -144,13 +144,13 @@ function hostOf(sc, root) {
     // the shapes index.js imports from secret-values.js and hands the store (S5); a tree before S5 has none and never reads them
     SECRET_SHAPES: req(root, 'sidecar/secret-values.js').SECRET_SHAPES,
     // the channel layer's host (S8): no file of its own here, so a wired station's channels live in memory
-    crypto: require('crypto'), DESKTOP_SHELL: (sc.env || {}).STARNET_DESKTOP_SHELL === '1', readResilient: () => ({ status: 'absent' }), bothCopiesHold: () => true, channelsFollowStation: () => true, channelCredential: null,
+    crypto: require('crypto'), DESKTOP_SHELL: (sc.env || {}).VULTRON_DESKTOP_SHELL === '1', readResilient: () => ({ status: 'absent' }), bothCopiesHold: () => true, channelsFollowStation: () => true, channelCredential: null,
     providerVerification: req(ROOT, 'sidecar/provider-readiness.js').makeProviderReadiness({ now: () => 1000, digest: text => require('crypto').createHash('sha256').update(text).digest('hex') })
   });
   host.loadResilient = (file, tag) => { host.loads++; return tag === 'desktop-endpoints' ? (kept.file === undefined ? undefined : JSON.parse(JSON.stringify(kept.file))) : undefined; };
   host.saveCredentialRemovalVerified = (file, value, proof, tag) => { host.saves.push(JSON.stringify(value)); return kept.saveOk !== false; };
   host.console = { warn: (...a) => host.warns.push(a.join(' ')), log() {}, error() {} };
-  if (kept.on) host.env.STARNET_IPC_TOKEN = 'ipc';   // the shell's per-launch token: a station whose shell pushes config
+  if (kept.on) host.env.VULTRON_IPC_TOKEN = 'ipc';   // the shell's per-launch token: a station whose shell pushes config
   return host;
 }
 
@@ -257,7 +257,7 @@ function channelStation(o) {
   const sharedPersist = text.includes("const { quarantineCorrupt, readResilient, loadResilient, saveResilient } = require('./persist/index.js').host(");
   const lifted = (sharedPersist ? ['saveCredentialRemovalVerified', 'bothCopiesHold'] : ['quarantineCorrupt', 'readResilient', 'loadResilient', 'saveResilient', 'saveCredentialRemovalVerified', 'bothCopiesHold']).map(n => lift(text, n)).join('\n');
   const views = ['channelCredential', 'channelKeyLostError', 'channelHubSecrets', 'isChannelTokenDurable', 'telegramBotRecords', 'saveTelegramBotRecord', 'providerLabelOf'].map(n => lift(text, n)).join('\n');
-  const sc = { env: Object.assign({}, o.env, o.desktop ? { STARNET_DESKTOP_SHELL: '1' } : {}), page: o.page };
+  const sc = { env: Object.assign({}, o.env, o.desktop ? { VULTRON_DESKTOP_SHELL: '1' } : {}), page: o.page };
   const host = Object.assign(hostOf(sc, ROOT), { credentialStore: req(ROOT, STORE_REL), WORKSPACES: o.dir, DESKTOP_SHELL: !!o.desktop });
   const DS = req(ROOT, 'sidecar/durable-store.js');
   const fsio = o.fs || require('fs');
@@ -285,7 +285,7 @@ function sandboxImpl() {
     const host = hostOf(sc, ROOT);
     const f = factory(sc, host);
     // what index.js does at its top: the desktop shell's pairs leave the station's env before the store is built
-    const spawn = req(ROOT, STORE_REL).adoptSpawnCredentials(host.env, { desktopShell: host.env.STARNET_DESKTOP_SHELL === '1',
+    const spawn = req(ROOT, STORE_REL).adoptSpawnCredentials(host.env, { desktopShell: host.env.VULTRON_DESKTOP_SHELL === '1',
       profiles: req(ROOT, 'sidecar/providers/registry.js').listProviderProfiles({ includeInactive: true, public: false }) });
     const store = sandboxStore(Object.assign({}, host, f, {
       SPAWN_CREDENTIALS: spawn,
@@ -363,7 +363,7 @@ function layersTable() {
       const env = {};
       if (en.includes('k')) env[keyEnv] = 'en';
       if (en.includes('u')) env[urlEnv] = U.en;
-      if (en.includes('p')) env['STARNET_KEY_POOL_' + p.toUpperCase()] = 'en.p';
+      if (en.includes('p')) env['VULTRON_KEY_POOL_' + p.toUpperCase()] = 'en.p';
       const patch = {};
       if (kc.includes('k')) patch.key = 'kc';
       if (kc.includes('u')) patch.baseUrl = U.kc;
@@ -378,17 +378,17 @@ function layersTable() {
   }
   return rows;
 }
-/* TABLE openrouter: the legacy alias (STARNET_/SKYNET_OPENROUTER_KEY seeds the keychain's OpenRouter key at boot on every
+/* TABLE openrouter: the legacy alias (VULTRON_/SKYNET_OPENROUTER_KEY seeds the keychain's OpenRouter key at boot on every
    station), the two bare names, a push, a removal, and the page copy */
 function openrouterTable() {
   const ENVS = [
     ['-', {}], ['bare', { OPENROUTER_KEY: 'en' }], ['bare2', { OPENROUTER_API_KEY: 'en2' }], ['bare+bare2', { OPENROUTER_KEY: 'en', OPENROUTER_API_KEY: 'en2' }],
-    ['STARNET', { STARNET_OPENROUTER_KEY: 'br' }], ['SKYNET', { SKYNET_OPENROUTER_KEY: 'sk' }], ['shell', { STARNET_OPENROUTER_KEY: 'br', SKYNET_OPENROUTER_KEY: 'br' }],
-    ['STARNET+SKYNET', { STARNET_OPENROUTER_KEY: 'br', SKYNET_OPENROUTER_KEY: 'sk' }], ['STARNET-empty+SKYNET', { STARNET_OPENROUTER_KEY: '', SKYNET_OPENROUTER_KEY: 'sk' }],
-    ['STARNET+bare', { STARNET_OPENROUTER_KEY: 'br', OPENROUTER_KEY: 'en' }], ['STARNET+bare2', { STARNET_OPENROUTER_KEY: 'br', OPENROUTER_API_KEY: 'en2' }],
-    ['shell+bare2', { STARNET_OPENROUTER_KEY: 'br', SKYNET_OPENROUTER_KEY: 'br', OPENROUTER_API_KEY: 'en2' }],
-    ['bare-url', { OPENROUTER_KEY: 'en', OPENROUTER_BASE: U.en }], ['STARNET-url', { STARNET_OPENROUTER_KEY: 'br', STARNET_OPENROUTER_BASE: U.br }],
-    ['pool', { STARNET_KEY_POOL_OPENROUTER: 'en.p' }], ['STARNET+pool', { STARNET_OPENROUTER_KEY: 'br', SKYNET_KEY_POOL_OPENROUTER: 'en.p' }]
+    ['VULTRON', { VULTRON_OPENROUTER_KEY: 'br' }], ['SKYNET', { SKYNET_OPENROUTER_KEY: 'sk' }], ['shell', { VULTRON_OPENROUTER_KEY: 'br', SKYNET_OPENROUTER_KEY: 'br' }],
+    ['VULTRON+SKYNET', { VULTRON_OPENROUTER_KEY: 'br', SKYNET_OPENROUTER_KEY: 'sk' }], ['VULTRON-empty+SKYNET', { VULTRON_OPENROUTER_KEY: '', SKYNET_OPENROUTER_KEY: 'sk' }],
+    ['VULTRON+bare', { VULTRON_OPENROUTER_KEY: 'br', OPENROUTER_KEY: 'en' }], ['VULTRON+bare2', { VULTRON_OPENROUTER_KEY: 'br', OPENROUTER_API_KEY: 'en2' }],
+    ['shell+bare2', { VULTRON_OPENROUTER_KEY: 'br', SKYNET_OPENROUTER_KEY: 'br', OPENROUTER_API_KEY: 'en2' }],
+    ['bare-url', { OPENROUTER_KEY: 'en', OPENROUTER_BASE: U.en }], ['VULTRON-url', { VULTRON_OPENROUTER_KEY: 'br', VULTRON_OPENROUTER_BASE: U.br }],
+    ['pool', { VULTRON_KEY_POOL_OPENROUTER: 'en.p' }], ['VULTRON+pool', { VULTRON_OPENROUTER_KEY: 'br', SKYNET_KEY_POOL_OPENROUTER: 'en.p' }]
   ];
   const PUSHES = [['-', []], ['set', [['openrouter', { key: 'kc' }]]], ['remove', [['openrouter', { key: '' }]]],
     ['set+remove', [['openrouter', { key: 'kc' }], ['openrouter', { key: '' }]]]];
@@ -400,8 +400,8 @@ function openrouterTable() {
   }
   return rows;
 }
-/* TABLE names: which spelling of a provider's own env names the env layer reads first (bare, then STARNET_, then SKYNET_,
-   name by name), a deliberately empty STARNET_ spelling, and the desktop shell's spawn shape beside an OS export (R5) */
+/* TABLE names: which spelling of a provider's own env names the env layer reads first (bare, then VULTRON_, then SKYNET_,
+   name by name), a deliberately empty VULTRON_ spelling, and the desktop shell's spawn shape beside an OS export (R5) */
 function namesTable() {
   const rows = [];
   for (const p of ['anthropic', 'gemini', 'custom']) {
@@ -409,7 +409,7 @@ function namesTable() {
     const prof = Reg.getProviderProfile(p);
     for (const [kind, names, vals] of [['key', prof.keyEnv, ['ka', 'kb', 'kc2']], ['url', prof.baseUrlEnv, [U.en, U.br, U.sk]]]) {
       const slots = [];
-      names.forEach((n, i) => { slots.push([n, i, 'bare'], ['STARNET_' + n, i, 'STARNET'], ['SKYNET_' + n, i, 'SKYNET']); });
+      names.forEach((n, i) => { slots.push([n, i, 'bare'], ['VULTRON_' + n, i, 'VULTRON'], ['SKYNET_' + n, i, 'SKYNET']); });
       const sets = slots.map(s => [[s]]);
       for (let a = 0; a < slots.length; a++) for (let b = a + 1; b < slots.length; b++) sets.push([[slots[a], slots[b]]]);
       for (const set of sets) {
@@ -418,34 +418,34 @@ function namesTable() {
         rows.push({ label: p + ' ' + kind + ' ' + set[0].map(s => s[0] + '=' + (kind === 'key' ? vals[set[0].indexOf(s)] : encUrl(vals[set[0].indexOf(s)]))).join(' '), p, names: true, sc: { env } });
       }
       names.forEach(n => {
-        rows.push({ label: p + ' ' + kind + ' STARNET_' + n + '=(empty) SKYNET_' + n + '=' + (kind === 'key' ? vals[0] : encUrl(vals[0])), p, names: true, sc: { env: { ['STARNET_' + n]: '', ['SKYNET_' + n]: vals[0] } } });
-        rows.push({ label: p + ' ' + kind + ' ' + n + '=(blank) STARNET_' + n + '=' + (kind === 'key' ? vals[0] : encUrl(vals[0])), p, names: true, sc: { env: { [n]: '   ', ['STARNET_' + n]: vals[0] } } });
+        rows.push({ label: p + ' ' + kind + ' VULTRON_' + n + '=(empty) SKYNET_' + n + '=' + (kind === 'key' ? vals[0] : encUrl(vals[0])), p, names: true, sc: { env: { ['VULTRON_' + n]: '', ['SKYNET_' + n]: vals[0] } } });
+        rows.push({ label: p + ' ' + kind + ' ' + n + '=(blank) VULTRON_' + n + '=' + (kind === 'key' ? vals[0] : encUrl(vals[0])), p, names: true, sc: { env: { [n]: '   ', ['VULTRON_' + n]: vals[0] } } });
       });
     }
   }
   // R5: the desktop shell writes both spellings of the keychain key; a bare OS export of the same name sits beside it
-  rows.push({ label: 'anthropic R5 shell STARNET_+SKYNET_=kc ANTHROPIC_API_KEY=os', p: 'anthropic', names: true,
-    sc: { env: { STARNET_ANTHROPIC_API_KEY: 'kc', SKYNET_ANTHROPIC_API_KEY: 'kc', ANTHROPIC_API_KEY: 'os' } } });
+  rows.push({ label: 'anthropic R5 shell VULTRON_+SKYNET_=kc ANTHROPIC_API_KEY=os', p: 'anthropic', names: true,
+    sc: { env: { VULTRON_ANTHROPIC_API_KEY: 'kc', SKYNET_ANTHROPIC_API_KEY: 'kc', ANTHROPIC_API_KEY: 'os' } } });
   rows.push({ label: 'anthropic R5 then the shell pushes REMOVE', p: 'anthropic', names: true,
-    sc: { env: { STARNET_ANTHROPIC_API_KEY: 'kc', SKYNET_ANTHROPIC_API_KEY: 'kc', ANTHROPIC_API_KEY: 'os' }, pushes: [['anthropic', { key: '' }]] } });
+    sc: { env: { VULTRON_ANTHROPIC_API_KEY: 'kc', SKYNET_ANTHROPIC_API_KEY: 'kc', ANTHROPIC_API_KEY: 'os' }, pushes: [['anthropic', { key: '' }]] } });
   rows.push({ label: 'anthropic shell spawn only, then the shell pushes REMOVE', p: 'anthropic', names: true,
-    sc: { env: { STARNET_ANTHROPIC_API_KEY: 'kc', SKYNET_ANTHROPIC_API_KEY: 'kc' }, pushes: [['anthropic', { key: '' }]] } });
+    sc: { env: { VULTRON_ANTHROPIC_API_KEY: 'kc', SKYNET_ANTHROPIC_API_KEY: 'kc' }, pushes: [['anthropic', { key: '' }]] } });
   // the env KEY_POOL: branded only, comma-separated, blanks dropped, deduplicated, at most 8
-  for (const [l, env] of [['STARNET', { STARNET_KEY_POOL_ANTHROPIC: 'p1,p2' }], ['SKYNET', { SKYNET_KEY_POOL_ANTHROPIC: 'p1' }], ['bare', { KEY_POOL_ANTHROPIC: 'p1' }],
-    ['STARNET-empty+SKYNET', { STARNET_KEY_POOL_ANTHROPIC: '', SKYNET_KEY_POOL_ANTHROPIC: 'p1' }], ['messy', { STARNET_KEY_POOL_ANTHROPIC: ' p1 , ,p2,p1,  ' }],
-    ['ten', { STARNET_KEY_POOL_ANTHROPIC: 'p1,p2,p3,p4,p5,p6,p7,p8,p9,p10' }], ['custom-alias', { STARNET_KEY_POOL_CUSTOM: 'p1' }]]) {
+  for (const [l, env] of [['VULTRON', { VULTRON_KEY_POOL_ANTHROPIC: 'p1,p2' }], ['SKYNET', { SKYNET_KEY_POOL_ANTHROPIC: 'p1' }], ['bare', { KEY_POOL_ANTHROPIC: 'p1' }],
+    ['VULTRON-empty+SKYNET', { VULTRON_KEY_POOL_ANTHROPIC: '', SKYNET_KEY_POOL_ANTHROPIC: 'p1' }], ['messy', { VULTRON_KEY_POOL_ANTHROPIC: ' p1 , ,p2,p1,  ' }],
+    ['ten', { VULTRON_KEY_POOL_ANTHROPIC: 'p1,p2,p3,p4,p5,p6,p7,p8,p9,p10' }], ['custom-alias', { VULTRON_KEY_POOL_CUSTOM: 'p1' }]]) {
     rows.push({ label: 'pool env ' + l, p: l === 'custom-alias' ? 'custom' : 'anthropic', names: true, sc: { env } });
   }
   return rows;
 }
-/* TABLE accounts: StarNet's linked account, the ChatGPT sign-in and the device sign-ins, beside junk in every other layer */
+/* TABLE accounts: Vultron's linked account, the ChatGPT sign-in and the device sign-ins, beside junk in every other layer */
 function accountsTable() {
   const rows = [];
   const JUNK = [['-', {}], ['push', { pushes: [['P', { key: 'kc', baseUrl: U.kc, keyPool: ['kc.p1'] }]] }], ['page', { page: { P: { key: 'pg', baseUrl: U.pg, keyPool: ['pg.p1'], rev: 'r1' } } }],
-    ['env-pool', { env: { STARNET_KEY_POOL_P: 'en.p1' } }], ['all', { pushes: [['P', { key: 'kc', baseUrl: U.kc }]], page: { P: { key: 'pg', baseUrl: U.pg, rev: 'r1' } }, env: { STARNET_KEY_POOL_P: 'en.p1' } }]];
-  for (const p of ['starnet', 'codex', 'grok', 'kimi']) {
+    ['env-pool', { env: { VULTRON_KEY_POOL_P: 'en.p1' } }], ['all', { pushes: [['P', { key: 'kc', baseUrl: U.kc }]], page: { P: { key: 'pg', baseUrl: U.pg, rev: 'r1' } }, env: { VULTRON_KEY_POOL_P: 'en.p1' } }]];
+  for (const p of ['vultron', 'codex', 'grok', 'kimi']) {
     for (const [ll, linked] of [['unlinked', undefined], ['linked', LINKED], ['linked-ws', { url: '  http://li.test  ', apiKey: '  li  ' }]]) {
-      if (p !== 'starnet' && ll !== 'unlinked') continue;
+      if (p !== 'vultron' && ll !== 'unlinked') continue;
       for (const [jl, junk] of JUNK) {
         const sub = JSON.parse(JSON.stringify(junk).split('"P"').join(JSON.stringify(p)).split('KEY_POOL_P').join('KEY_POOL_' + p.toUpperCase()));
         rows.push({ label: p + ' ' + ll + ' ' + jl, p, sc: Object.assign({ env: {}, pushes: [] }, sub, { linked }) });
@@ -459,7 +459,7 @@ function accountsTable() {
 function desktopTable() {
   const FILES = [
     ['none', undefined], ['valid', { version: 1, baseUrls: { custom: U.kc, openrouter: U.br } }],
-    ['every-kind', { version: 1, baseUrls: { custom: ' ' + U.kc + ' ', codex: U.br, kimi: U.br, starnet: U.br, nosuch: U.br, 'openai-compatible': U.sk, OLLAMA: U.en, groq: 7, anthropic: '  ' } }],
+    ['every-kind', { version: 1, baseUrls: { custom: ' ' + U.kc + ' ', codex: U.br, kimi: U.br, vultron: U.br, nosuch: U.br, 'openai-compatible': U.sk, OLLAMA: U.en, groq: 7, anthropic: '  ' } }],
     ['array', { version: 1, baseUrls: [U.kc] }], ['string', { version: 1, baseUrls: U.kc }], ['no-baseUrls', { version: 1 }], ['not-object', 'x']
   ];
   const STEPS = [
@@ -468,7 +468,7 @@ function desktopTable() {
     ['set-same-again', [['custom', { baseUrl: U.ex }], ['custom', { baseUrl: U.ex }]]],
     ['clear-custom', [['custom', { baseUrl: '' }]]],
     ['sign-in-endpoint', [['grok', { baseUrl: U.ex }], ['codex', { baseUrl: U.ex }]]],
-    ['starnet-endpoint', [['starnet', { baseUrl: U.ex }]]],
+    ['vultron-endpoint', [['vultron', { baseUrl: U.ex }]]],
     ['key-only', [['custom', { key: 'kc' }]]]
   ];
   const rows = [];
@@ -480,7 +480,7 @@ function desktopTable() {
   }
   // what else counts as an endpoint of the station's own: the operator's env URL, and the page copy's (keyless or keyed)
   for (const [l, extra] of [['env-url', { env: { CUSTOM_OPENAI_BASE_URL: U.en, OPENROUTER_BASE: U.en } }],
-    ['branded-env-url', { env: { STARNET_CUSTOM_OPENAI_BASE_URL: U.br } }],
+    ['branded-env-url', { env: { VULTRON_CUSTOM_OPENAI_BASE_URL: U.br } }],
     ['page-url', { page: { custom: { baseUrl: U.pg, rev: 'r1' }, openrouter: { key: 'pg', baseUrl: U.pg, rev: 'r1' } } }],
     ['page-key-only', { page: { custom: { key: 'pg', rev: 'r1' } } }]]) {
     rows.push({ label: 'desktop file:none ' + l, desktop: true, sc: Object.assign({ env: {}, kept: { on: true, file: undefined, saveOk: true }, pushes: [] }, extra) });
@@ -492,7 +492,7 @@ function pushTable() {
   const CASES = [
     ['unknown provider', [['nosuch', { key: 'kc' }]]], ['empty provider', [['', { key: 'kc' }]]], ['alias id or', [['or', { key: 'kc' }]]],
     ['alias id openai-compatible', [['openai-compatible', { key: 'kc', baseUrl: U.kc }]]], ['upper-case id', [['ANTHROPIC', { key: 'kc' }]]],
-    ['codex key', [['codex', { key: 'kc' }]]], ['starnet key', [['starnet', { key: 'kc', keyPool: ['kc.p1'] }]]],
+    ['codex key', [['codex', { key: 'kc' }]]], ['vultron key', [['vultron', { key: 'kc', keyPool: ['kc.p1'] }]]],
     ['padded key', [['anthropic', { key: '  kc  ' }]]], ['numeric key', [['anthropic', { key: 123 }]]], ['zero key', [['anthropic', { key: 'kc' }], ['anthropic', { key: 0 }]]],
     ['null patch', [['anthropic', null]]], ['empty patch', [['anthropic', {}]]], ['key then blank', [['anthropic', { key: 'kc' }], ['anthropic', { key: '   ' }]]],
     ['openrouter set', [['openrouter', { key: 'kc' }]]], ['openrouter set then other provider', [['openrouter', { key: 'kc' }], ['anthropic', { key: 'kc2' }]]],
@@ -504,7 +504,7 @@ function pushTable() {
   ];
   return CASES.map(([l, pushes]) => ({ label: l, pushTable: true, sc: { env: {}, pushes } }));
 }
-/* TABLE shell: the desktop shell's spawn shapes — STARNET_DESKTOP_SHELL=1 and the IPC token, each keychain key and key pool
+/* TABLE shell: the desktop shell's spawn shapes — VULTRON_DESKTOP_SHELL=1 and the IPC token, each keychain key and key pool
    written in both spellings with one value (main.rs sidecar_command, set_sidecar_branded_env) — beside a user's own exports
    (one spelling, two values, a bare name, a pair under another of the provider's names), then the shell's pushes: a REMOVE, a
    rotation, a cleared pool. Step S2 adopts the shell's pairs into the keychain layer and deletes them from the environment,
@@ -513,16 +513,16 @@ function pushTable() {
 function shellTable(o) {
   const Reg = req(ROOT, 'sidecar/providers/registry.js');
   const marked = !(o && o.unmarked);
-  const pair = (name, v) => ({ ['STARNET_' + name]: v, ['SKYNET_' + name]: v });
+  const pair = (name, v) => ({ ['VULTRON_' + name]: v, ['SKYNET_' + name]: v });
   const rows = [];
   for (const p of ['anthropic', 'openrouter', 'custom', 'gemini']) {
     const names = Reg.getProviderProfile(p).keyEnv;
     const n = names[0], last = names[names.length - 1], pool = 'KEY_POOL_' + p.toUpperCase();
     const ENVS = [
       ['pair', pair(n, 'kc')], ['pair+bare', Object.assign(pair(n, 'kc'), { [n]: 'os' })],
-      ['single STARNET_', { ['STARNET_' + n]: 'br' }], ['single SKYNET_', { ['SKYNET_' + n]: 'sk' }],
-      ['split', { ['STARNET_' + n]: 'br', ['SKYNET_' + n]: 'sk' }], ['blank pair', pair(n, '')], ['bare', { [n]: 'os' }],
-      ['pair+pool', Object.assign(pair(n, 'kc'), pair(pool, 'kc.p1,kc.p2'))], ['pair+single pool', Object.assign(pair(n, 'kc'), { ['STARNET_' + pool]: 'en.p1' })],
+      ['single VULTRON_', { ['VULTRON_' + n]: 'br' }], ['single SKYNET_', { ['SKYNET_' + n]: 'sk' }],
+      ['split', { ['VULTRON_' + n]: 'br', ['SKYNET_' + n]: 'sk' }], ['blank pair', pair(n, '')], ['bare', { [n]: 'os' }],
+      ['pair+pool', Object.assign(pair(n, 'kc'), pair(pool, 'kc.p1,kc.p2'))], ['pair+single pool', Object.assign(pair(n, 'kc'), { ['VULTRON_' + pool]: 'en.p1' })],
       ['pool pair only', pair(pool, 'kc.p1')]
     ];
     if (last !== n) {
@@ -531,7 +531,7 @@ function shellTable(o) {
     }
     const PUSHES = [['-', []], ['remove', [[p, { key: '' }]]], ['rotate', [[p, { key: 'kc2' }]]], ['pool cleared', [[p, { keyPool: [] }]]]];
     for (const [el, shape] of ENVS) for (const [pl, pushes] of PUSHES) {
-      const env = Object.assign({}, shape, p === 'custom' ? { CUSTOM_OPENAI_BASE_URL: U.en } : {}, marked ? { STARNET_DESKTOP_SHELL: '1' } : {});
+      const env = Object.assign({}, shape, p === 'custom' ? { CUSTOM_OPENAI_BASE_URL: U.en } : {}, marked ? { VULTRON_DESKTOP_SHELL: '1' } : {});
       rows.push({ label: p + ' ' + el + ' push:' + pl, p, shell: true, sc: { env, kept: { on: true }, pushes } });
     }
   }
@@ -544,7 +544,7 @@ function rowOf(impl, row, o) {
   const api = impl(row.sc);
   const pushed = applyPushes(api, row.sc.pushes);
   if (row.desktop) {
-    const ids = ['custom', 'openrouter', 'ollama', 'anthropic', 'groq', 'grok', 'codex', 'starnet'];
+    const ids = ['custom', 'openrouter', 'ollama', 'anthropic', 'groq', 'grok', 'codex', 'vultron'];
     return 'pushes=[' + pushed.join(',') + '] kept=' + JSON.stringify(api.keptEndpoints()) + ' loads=' + api.host.loads + ' saves=' + (api.host.saves.join('|') || '-') +
       ' warns=' + api.host.warns.length + ' notHandedOver=' + (ids.filter(id => api.endpointNotHandedOver(id)).join(',') || '-') +
       ' custom=' + encUrl(api.baseUrl('custom', '')) + ' openrouter=' + encUrl(api.baseUrl('openrouter', ''), 'https://openrouter.ai/api/v1') +
@@ -552,7 +552,7 @@ function rowOf(impl, row, o) {
   }
   if (row.pushTable) {
     const v = api.keychainValues();
-    const ids = ['anthropic', 'openrouter', 'custom', 'codex', 'starnet'];
+    const ids = ['anthropic', 'openrouter', 'custom', 'codex', 'vultron'];
     return 'pushes=[' + pushed.join(',') + '] alias=' + encKey(api.alias()) + ' keychain=' + JSON.stringify(v) + ' ' +
       ids.map(id => id + '=' + runOf(api, id, (api.host.getProviderProfile(id) || {}).baseUrl || '', { raw: true })).join(' ');
   }

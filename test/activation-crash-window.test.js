@@ -49,7 +49,7 @@ const bootOpts = (t, at, over) => Object.assign({ fs, path, platform: process.pl
 /* ---- THE CHILD: one boot, killed just before step `dieAt` ('landing' = the stage's own rename). Steps are the calls that move
    something on disk; the recovery lock and owner files are bookkeeping and are not counted. ---- */
 const STEPS = ['renameSync', 'rmSync', 'unlinkSync'];
-const BOOKKEEPING = /recovery-owner|recovery\.lock|starnet-workspace-owner/;
+const BOOKKEEPING = /recovery-owner|recovery\.lock|vultron-workspace-owner/;
 if (process.argv[2] === 'child') {
   const spec = JSON.parse(process.argv[3]), t = layout(spec.root);
   let step = 0;
@@ -72,18 +72,18 @@ console.warn = () => {};   // every boot here says why it imported nothing: that
 let SR = null;
 try { SR = require('../sidecar/station-record.js'); } catch (_) { SR = null; }   // a checkout from before the record still runs every row it can build
 
-const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-activation-crash-'));
+const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-activation-crash-'));
 let sandboxes = 0;
 const write = (file, body) => { fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, typeof body === 'string' ? body : JSON.stringify(body)); };
 const parsed = file => { try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch (_) { return null; } };
 const hash = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
-const station = name => ({ version: 1, agentId: 'agent', updatedAt: 5, savedAt: 5, doc: { schema: 'starnet.save', version: 5, updatedAt: 5, agent: { id: 'agent', name }, station: { rooms: [{ id: 'command' }], props: [] }, workstreams: [{ id: 'general', history: [] }] } });
+const station = name => ({ version: 1, agentId: 'agent', updatedAt: 5, savedAt: 5, doc: { schema: 'vultron.save', version: 5, updatedAt: 5, agent: { id: 'agent', name }, station: { rooms: [{ id: 'command' }], props: [] }, workstreams: [{ id: 'general', history: [] }] } });
 // every file under a folder with its hash; the owner check's own files are bookkeeping, never station state
 function tree(dir) {
   const out = {};
   (function walk(d, rel) {
     for (const entry of fs.readdirSync(d, { withFileTypes: true })) {
-      if (entry.name.startsWith('.starnet-workspace-owner.json')) continue;
+      if (entry.name.startsWith('.vultron-workspace-owner.json')) continue;
       const r = rel ? rel + '/' + entry.name : entry.name, abs = path.join(d, entry.name);
       if (entry.isDirectory()) walk(abs, r); else out[r] = hash(fs.readFileSync(abs));
     }

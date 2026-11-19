@@ -168,7 +168,7 @@ function wavToMono16kFloat32(buf) {
 
 function sttMultipartBody(audioBuf, filename, contentType, fields, randomBytes) {
   const rand = typeof randomBytes === 'function' ? randomBytes : crypto.randomBytes;
-  const boundary = '----StarNetSTT' + rand(16).toString('hex');
+  const boundary = '----VultronSTT' + rand(16).toString('hex');
   const parts = [];
   for (const k of Object.keys(fields || {})) {
     parts.push(Buffer.from('--' + boundary + '\r\nContent-Disposition: form-data; name="' + k + '"\r\n\r\n' + String(fields[k]) + '\r\n', 'utf8'));
@@ -223,7 +223,7 @@ function makeMediaService(options) {
     .split(',').map(s => s.trim()).filter(Boolean);
   // the endpoint a keyed leg dials: the one saved with the key it sends, without a trailing slash ('' = none)
   const legBase = (provider, key) => String(endpointFor(provider, key) || '').trim().replace(/\/+$/, '');
-  // STARNET_/SKYNET_GROQ_BASE and _OPENAI_BASE: the operator's own transcription endpoint, for STT alone. A deployment choice
+  // VULTRON_/SKYNET_GROQ_BASE and _OPENAI_BASE: the operator's own transcription endpoint, for STT alone. A deployment choice
   // ahead of the provider's endpoint, as at trunk: dropped, a station's speech would silently leave for the public host.
   const sttEnvBase = { groq: String(env('GROQ_BASE') || '').trim(), openai: String(env('OPENAI_BASE') || '').trim() };
   let ttsMissCount = 0;
@@ -346,7 +346,7 @@ function makeMediaService(options) {
     try {
       response = await fetchFn(base + '/audio/speech', callOpts({
         method: 'POST',
-        headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json', 'HTTP-Referer': 'https://localhost', 'X-Title': 'STARNET' },
+        headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json', 'HTTP-Referer': 'https://localhost', 'X-Title': 'VULTRON' },
         body: JSON.stringify(payload)
       }));
     } catch (error) { return thrown(error, 'network: '); }
@@ -787,7 +787,7 @@ function makeMediaService(options) {
   async function probeFloor(opts) {
     const o2 = opts || {};
     try {
-      const buf = await edgetts.synth(String(o2.text || 'StarNet voice check.'), { nowMs: now(), timeoutMs: o2.timeoutMs || EDGE_LEG_CAP_MS });
+      const buf = await edgetts.synth(String(o2.text || 'Vultron voice check.'), { nowMs: now(), timeoutMs: o2.timeoutMs || EDGE_LEG_CAP_MS });
       if (!buf || !buf.length) throw Object.assign(new Error('edge: empty audio'), { speechCode: 'empty_audio' });
       speechStatus.record(SO.success('edge'), 'self-probe');
       if (typeof logger.log === 'function') logger.log('  · voice floor: the free Edge voice answered its startup check (' + buf.length + ' bytes)');
@@ -894,7 +894,7 @@ function makeMediaService(options) {
         try {
           response = await fetchFn(base + '/chat/completions', voiceFetchOpts({
             method: 'POST',
-            headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json', 'HTTP-Referer': 'https://localhost', 'X-Title': 'STARNET' },
+            headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json', 'HTTP-Referer': 'https://localhost', 'X-Title': 'VULTRON' },
             body: JSON.stringify({ model, messages: [{ role: 'user', content: [
               { type: 'input_audio', input_audio: { data: audio, format } }, { type: 'text', text: STT_PROMPT }
             ] }] })

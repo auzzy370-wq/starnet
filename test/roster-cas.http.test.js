@@ -1,5 +1,5 @@
 /* test/roster-cas.http.test.js — the crew roster takes the station's revision order, a trailing save is folded forward, and
-   an over-cap save says it is too large (wave-1 save-latch-kill; 10-26 audit family B3; gh#121, starnet-releases#4).
+   an over-cap save says it is too large (wave-1 save-latch-kill; 10-26 audit family B3; gh#121, vultron-releases#4).
 
    Boots the REAL sidecar (test/helpers/sidecar-fixture.js: a temp workspace, a hermetic profile, a random port).
      a. GROWTH FOLD: a save whose rating watermark trails the ledger is not refused — the station applies the ratings it
@@ -22,7 +22,7 @@ const path = require('path');
 const { SidecarFixture } = require('./helpers/sidecar-fixture.js');
 
 const station = over => Object.assign({
-  schema: 'starnet.save', version: 6, updatedAt: Date.now(), _saveRevision: 0, _saveDirty: true,
+  schema: 'vultron.save', version: 6, updatedAt: Date.now(), _saveRevision: 0, _saveDirty: true,
   agent: { id: 'agent', name: 'NOVA', createdAt: 5000, stats: { xp: 0, level: 1, lifetimeXp: 0, confidence: 50, samples: 0, counters: {}, milestones: [], receipts: { runs: [], feedback: [] } } },
   agents: [], generalId: 'general', activeId: 'general', deletedIds: [],
   stationStats: { xp: 0, level: 1, lifetimeXp: 0, confidence: 50, samples: 0, counters: {}, milestones: [], receipts: { runs: [], feedback: [] }, ratingSyncAt: 0, ratingSyncVersion: 2 },
@@ -32,7 +32,7 @@ const roster = name => [{ agentId: 'agent', system: 'sys', name, provider: 'open
 const onDisk = ws => JSON.parse(fs.readFileSync(path.join(ws, 'agent.roster.json'), 'utf8'));
 
 (async () => {
-  const fixture = SidecarFixture.create({ prefix: 'sk-roster-cas-', env: { OPENROUTER_KEY: '', STARNET_OPENROUTER_KEY: '', SKYNET_OPENROUTER_KEY: '' } });
+  const fixture = SidecarFixture.create({ prefix: 'sk-roster-cas-', env: { OPENROUTER_KEY: '', VULTRON_OPENROUTER_KEY: '', SKYNET_OPENROUTER_KEY: '' } });
   const ws = fixture.workspace;
   // the rating ledger holds one acknowledged verdict for this station (epoch = its founding), newer than the save will know
   const ratedAt = 1_700_000_000_000;
@@ -110,7 +110,7 @@ const onDisk = ws => JSON.parse(fs.readFileSync(path.join(ws, 'agent.roster.json
     for (let i = 0; i < rowsN; i++) ledger += JSON.stringify({ epoch: 5000, runId: 'cut-' + i, verdict: 'great', ts: base + i, pad,
       entries: [{ agentId: 'agent', id: 'work:cut-' + i, runId: 'cut-' + i, delta: 1, reason: 'work_great', size: 'small' }] }) + '\n';
     fs.writeFileSync(path.join(ws, 'growth-ratings.jsonl'), ledger);
-    await fixture.restart({ STARNET_LOG_MAX_BYTES: String(1 << 20) });   // ENV('LOG_MAX_BYTES')
+    await fixture.restart({ VULTRON_LOG_MAX_BYTES: String(1 << 20) });   // ENV('LOG_MAX_BYTES')
     const head = stored().doc;
     const old = await j('POST', '/api/save', Object.assign({}, head, { _saveRevision: head._saveRevision, _saveClient: 'winE', updatedAt: Date.now() + 5e9,
       stationStats: Object.assign({}, head.stationStats, { ratingSyncAt: base + 1, ratingSyncVersion: 2 }) }));

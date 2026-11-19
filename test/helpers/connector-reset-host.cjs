@@ -1,8 +1,8 @@
 "use strict";
 // Test-only provider and manager probe; the fault host enforces an isolated temporary root.
 const fs = require('node:fs'), path = require('node:path'), os = require('node:os');
-const root = path.resolve(process.env.STARNET_WORKSPACES || '');
-if (path.dirname(root) !== path.resolve(os.tmpdir()) || !path.basename(root).startsWith('starnet-credential-recovery-')) throw Error('Requires isolated credential-recovery fixture');
+const root = path.resolve(process.env.VULTRON_WORKSPACES || '');
+if (path.dirname(root) !== path.resolve(os.tmpdir()) || !path.basename(root).startsWith('vultron-credential-recovery-')) throw Error('Requires isolated credential-recovery fixture');
 const marker = name => path.join(root, name);
 const dns = require('node:dns'), lookup = dns.promises.lookup;
 // github.com is faked too: the device-flow poll must never leave the machine (tests-03 — once 5 s passed under load,

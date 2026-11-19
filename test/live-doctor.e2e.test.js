@@ -94,10 +94,10 @@ test('real host proves selected model and effective execution backend without le
   const telegram = await telegramFixture();
   const secret = 'sk-or-v1-live-doctor-fixture-secret';
   const fixture = SidecarFixture.create({ prefix: 'sk-live-doctor-', timeoutMs: 20000, env: {
-    SKYNET_OPENROUTER_BASE: provider.baseUrl, STARNET_OPENROUTER_BASE: provider.baseUrl,
-    SKYNET_OPENROUTER_KEY: secret, STARNET_OPENROUTER_KEY: secret,
-    SKYNET_DEFAULT_MODEL: 'openai/gpt-5', STARNET_DEFAULT_MODEL: 'openai/gpt-5',
-    SKYNET_TELEGRAM_API_BASE: telegram.baseUrl, STARNET_TELEGRAM_API_BASE: telegram.baseUrl
+    SKYNET_OPENROUTER_BASE: provider.baseUrl, VULTRON_OPENROUTER_BASE: provider.baseUrl,
+    SKYNET_OPENROUTER_KEY: secret, VULTRON_OPENROUTER_KEY: secret,
+    SKYNET_DEFAULT_MODEL: 'openai/gpt-5', VULTRON_DEFAULT_MODEL: 'openai/gpt-5',
+    SKYNET_TELEGRAM_API_BASE: telegram.baseUrl, VULTRON_TELEGRAM_API_BASE: telegram.baseUrl
   } });
   try {
     await fixture.start();

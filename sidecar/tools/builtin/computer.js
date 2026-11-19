@@ -21,19 +21,19 @@
   const ACTIONS = ['screenshot', 'move', 'click', 'double_click', 'drag', 'scroll', 'type', 'key', 'hotkey', 'wait'];
   // Keyboard input lands in whatever window has FOCUS — these are the actions the focus-truth guard covers.
   const KEYBOARD_ACTIONS = ['type', 'key', 'hotkey'];
-  // The harness's own window (desktop shell exe or a browser tab titled STARNET). Typing into it is never the
+  // The harness's own window (desktop shell exe or a browser tab titled VULTRON). Typing into it is never the
   // intent — it means the target app lost focus (the 2026-07-08 "typed the song into its own chat box" incident).
-  const SELF_WINDOW_RE = /starnet/i;
-  /* STARNET IS NEVER DRIVEN THROUGH THE SCREEN (2026-10-13). Asked in a group chat to configure a conveyor, a lead with no
-     station tools spent 21 minutes clicking StarNet's own Workflow panel (~110 screenshot→click round trips) and then
-     scripted keystrokes at the StarNet window — while station.plan/build does the same job in the background behind one
-     card. So a click or keystroke that would land IN StarNet is refused and pointed at those tools. Structural: the
+  const SELF_WINDOW_RE = /vultron/i;
+  /* VULTRON IS NEVER DRIVEN THROUGH THE SCREEN (2026-10-13). Asked in a group chat to configure a conveyor, a lead with no
+     station tools spent 21 minutes clicking Vultron's own Workflow panel (~110 screenshot→click round trips) and then
+     scripted keystrokes at the Vultron window — while station.plan/build does the same job in the background behind one
+     card. So a click or keystroke that would land IN Vultron is refused and pointed at those tools. Structural: the
      top-level window under the point (or the focused one, for keys) is matched by its owning process — the desktop
-     shell that spawned this sidecar (selfPids) or its exe name — and, for StarNet open in a browser tab, its title. */
+     shell that spawned this sidecar (selfPids) or its exe name — and, for Vultron open in a browser tab, its title. */
   const POINTER_ACTIONS = ['click', 'double_click', 'drag'];
   const SELF_PROCESS_RE = /^skynet-desktop(.exe)?$/i;
-  const SELF_TITLE_RE = /^starnet(?![w.])/i;
-  const SELF_DRIVE_HELP = 'never operate StarNet through the screen: its own tools change it in the background while the Commander keeps working. '
+  const SELF_TITLE_RE = /^vultron(?![w.])/i;
+  const SELF_DRIVE_HELP = 'never operate Vultron through the screen: its own tools change it in the background while the Commander keeps working. '
     + 'Read assembly lines with station.layout; tool_search "station builder" for station.map, station.plan, station.build, station.test_line and station.start_line; '
     + 'tool_search "station settings" for settings. If those tools are not in your list, tell the Commander which change you need instead.';
   const DESTRUCTIVE_HOTKEYS = [
@@ -86,7 +86,7 @@
   }
   // FOCUS-TRUTH GUARD: keyboard input is only delivered when we can prove (or the driver cannot know) which
   // window will receive it. Returns a human-readable foreground note for the tool result; throws when input
-  // must NOT be sent: foreground is StarNet's own window, or it doesn't match the model's declared expectApp.
+  // must NOT be sent: foreground is Vultron's own window, or it doesn't match the model's declared expectApp.
   async function checkFocus(driver, action) {
     if (KEYBOARD_ACTIONS.indexOf(action.action) < 0) return '';
     if (typeof driver.foreground !== 'function') {
@@ -96,7 +96,7 @@
     const fg = (await driver.foreground()) || {};
     const title = String(fg.title || ''), proc = String(fg.process || '');
     if (SELF_WINDOW_RE.test(title) || SELF_WINDOW_RE.test(proc)) {
-      throw new Error('refused: the foreground window is StarNet itself ("' + (title || proc) + '") — the target app lost focus, so input was NOT sent; re-focus the target app (click it) before typing');
+      throw new Error('refused: the foreground window is Vultron itself ("' + (title || proc) + '") — the target app lost focus, so input was NOT sent; re-focus the target app (click it) before typing');
     }
     if (action.expectApp) {
       const want = action.expectApp.toLowerCase();
@@ -111,7 +111,7 @@
     const pid = Number(win.pid) || 0;
     return (pid > 0 && (selfPids || []).indexOf(pid) >= 0) || SELF_PROCESS_RE.test(String(win.process || '')) || SELF_TITLE_RE.test(String(win.title || ''));
   }
-  // Throws (input NOT sent) when the action would land in StarNet's own window. A paired remote owner is the user at the
+  // Throws (input NOT sent) when the action would land in Vultron's own window. A paired remote owner is the user at the
   // machine and keeps the whole desktop; a driver that cannot report windows (injected test drivers) is not checked.
   async function guardSelfTarget(driver, action, deps, ctx) {
     if (ctx && ctx.remoteDesktopAuthorized === true && ctx.ownerTrusted === true) return;
@@ -125,23 +125,23 @@
     for (const p of probes) {
       let win;
       try { win = await p.read(); }
-      catch (e) { throw new Error('refused: could not confirm ' + p.where + ' is not StarNet (' + String((e && e.message) || e).slice(0, 160) + ') — input was NOT sent'); }
-      if (isSelfWindow(win, selfPids)) throw new Error('refused: ' + p.where + ' is StarNet itself ("' + String((win && (win.title || win.process)) || 'StarNet') + '"), so input was NOT sent — ' + SELF_DRIVE_HELP);
+      catch (e) { throw new Error('refused: could not confirm ' + p.where + ' is not Vultron (' + String((e && e.message) || e).slice(0, 160) + ') — input was NOT sent'); }
+      if (isSelfWindow(win, selfPids)) throw new Error('refused: ' + p.where + ' is Vultron itself ("' + String((win && (win.title || win.process)) || 'Vultron') + '"), so input was NOT sent — ' + SELF_DRIVE_HELP);
     }
   }
   function win32DriverRequested(env) {
     env = env || process.env;
-    return /^(1|true|win32|windows)$/i.test(String(env.STARNET_COMPUTER_DRIVER || env.SKYNET_COMPUTER_DRIVER || ''));
+    return /^(1|true|win32|windows)$/i.test(String(env.VULTRON_COMPUTER_DRIVER || env.SKYNET_COMPUTER_DRIVER || ''));
   }
   // Was the driver explicitly DISABLED? Lets a desktop-shell run opt back out (e.g. QA)
   // without unsetting the shell marker.
   function win32DriverDisabled(env) {
     env = env || process.env;
-    return /^(0|false|off|none)$/i.test(String(env.STARNET_COMPUTER_DRIVER || env.SKYNET_COMPUTER_DRIVER || ''));
+    return /^(0|false|off|none)$/i.test(String(env.VULTRON_COMPUTER_DRIVER || env.SKYNET_COMPUTER_DRIVER || ''));
   }
   function underDesktopShell(env) {
     env = env || process.env;
-    return /^(1|true|yes|on)$/i.test(String(env.STARNET_DESKTOP_SHELL || env.SKYNET_DESKTOP_SHELL || ''));
+    return /^(1|true|yes|on)$/i.test(String(env.VULTRON_DESKTOP_SHELL || env.SKYNET_DESKTOP_SHELL || ''));
   }
   // Environment selection is only ONE half of the authority check. Presence under the
   // desktop shell used to auto-enable physical input for every task; that was unsafe.
@@ -156,7 +156,7 @@
     return d || makeInertDriver('computer-use unavailable: native desktop control needs Windows');
   }
 
-  // Fail-closed driver injected into every ordinary StarNet run. It throws instead of
+  // Fail-closed driver injected into every ordinary Vultron run. It throws instead of
   // returning success, so telemetry never claims an input action that policy prevented.
   function makeInertDriver(reason) {
     const why = reason || 'physical input is disabled for agent runs';

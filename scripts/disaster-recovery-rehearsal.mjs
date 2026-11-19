@@ -14,9 +14,9 @@ const { makeConnectorVault } = require('../sidecar/connector-vault.js');
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const stamp = new Date().toISOString().replace(/[:.]/g, '-');
-const out = path.resolve(process.env.STARNET_DISASTER_RECOVERY_DIR || path.join(ROOT, '.dogfood', 'disaster-recovery-' + stamp));
-const latest = path.resolve(process.env.STARNET_DISASTER_RECOVERY_LATEST_DIR || path.join(ROOT, '.dogfood', 'disaster-recovery-latest'));
-const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-dr-rehearsal-'));
+const out = path.resolve(process.env.VULTRON_DISASTER_RECOVERY_DIR || path.join(ROOT, '.dogfood', 'disaster-recovery-' + stamp));
+const latest = path.resolve(process.env.VULTRON_DISASTER_RECOVERY_LATEST_DIR || path.join(ROOT, '.dogfood', 'disaster-recovery-latest'));
+const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-dr-rehearsal-'));
 const source = path.join(scratch, 'damaged-machine', 'workspaces');
 const backupDir = path.join(scratch, 'offline-backups');
 const scenarios = [];
@@ -38,7 +38,7 @@ function assert(v, m) { if (!v) throw new Error(m); }
 function seed(root, mutation, taskDone = false) {
   ensure(root);
   write(root, 'agent.roster.json', { version: 1, agents: [{ agentId: 'agent', name: 'NOVA' }, { agentId: 'scribe', name: 'SCRIBE' }] });
-  write(root, 'agent.save.json', { version: 1, agentId: 'agent', updatedAt: mutation, savedAt: mutation, doc: { schema: 'starnet.save', version: Save.CURRENT, updatedAt: mutation, agent: { id: 'agent', name: 'NOVA' }, station: { rooms: [{ id: 'command' }, { id: 'lab' }], props: [{ id: 'terminal', roomId: 'command' }, { id: 'bench', roomId: 'lab' }] }, workstreams: [{ id: 'general', title: 'General', messages: [{ role: 'user', content: 'complete station rehearsal' }] }] } });
+  write(root, 'agent.save.json', { version: 1, agentId: 'agent', updatedAt: mutation, savedAt: mutation, doc: { schema: 'vultron.save', version: Save.CURRENT, updatedAt: mutation, agent: { id: 'agent', name: 'NOVA' }, station: { rooms: [{ id: 'command' }, { id: 'lab' }], props: [{ id: 'terminal', roomId: 'command' }, { id: 'bench', roomId: 'lab' }] }, workstreams: [{ id: 'general', title: 'General', messages: [{ role: 'user', content: 'complete station rehearsal' }] }] } });
   write(root, 'channels/agent.history.json', { version: 1, messages: [{ role: 'user', content: 'preserved channel conversation', ts: mutation }] });
   write(root, 'agent.notebook.json', { entries: [{ id: 'memory-1', title: 'Memory', body: 'preserve me' }] });
   write(root, '_commander.dossier.json', { block: 'Commander memory and preferences' });
@@ -62,10 +62,10 @@ function seed(root, mutation, taskDone = false) {
 
 ensure(out); ensure(backupDir); seed(source, 100, false);
 const browser100 = {
-  'starnet.save': JSON.stringify({ schema: 'starnet.save', version: Save.CURRENT, updatedAt: 100, agent: { id: 'agent', name: 'NOVA' }, station: { rooms: ['command', 'lab'], props: ['terminal', 'bench'] } }),
-  'starnet.station.v1': JSON.stringify({ selectedRoom: 'command', camera: { x: 3, y: 4 } }),
-  'starnet.queststate.v1': JSON.stringify({ seen: ['quest-1'] }),
-  'starnet.byok.key': 'DO_NOT_EXPORT'
+  'vultron.save': JSON.stringify({ schema: 'vultron.save', version: Save.CURRENT, updatedAt: 100, agent: { id: 'agent', name: 'NOVA' }, station: { rooms: ['command', 'lab'], props: ['terminal', 'bench'] } }),
+  'vultron.station.v1': JSON.stringify({ selectedRoom: 'command', camera: { x: 3, y: 4 } }),
+  'vultron.queststate.v1': JSON.stringify({ seen: ['quest-1'] }),
+  'vultron.byok.key': 'DO_NOT_EXPORT'
 };
 let bundle100, backup100, cleanReceipt, cleanFingerprint, cleanTarget, cleanBrowser;
 
@@ -73,7 +73,7 @@ record('dr.1-capture', 'Capture complete quiescent station', () => {
   bundle100 = Recovery.capture({ workspaceRoot: source, browserStore: browser100, now: 1000, appVersion: '0.9.0-rehearsal', lastCompletedMutation: 100 });
   assert(bundle100.report.complete, 'required category missing');
   assert(JSON.stringify(bundle100).indexOf('DO_NOT_EXPORT') < 0, 'credential leaked into bundle');
-  backup100 = path.join(backupDir, 'station-mutation-100.starnet-recovery.json');
+  backup100 = path.join(backupDir, 'station-mutation-100.vultron-recovery.json');
   const receipt = Recovery.writeBundleAtomic({ bundle: bundle100, file: backup100, nonce: 'm100' });
   return { receipt, requirements: bundle100.report.requirements, recoveryPoint: bundle100.recoveryPoint, reauthentication: bundle100.report.reauthentication, skipped: bundle100.report.skipped };
 });
@@ -138,7 +138,7 @@ record('dr.6-disk-full', 'Disk-full backup preserves previous verified recovery 
 let bundle101;
 record('dr.7-previous-version-rollback', 'Rollback to previous station version retains replaced generation', () => {
   seed(source, 101, true);
-  const browser101 = Object.assign({}, browser100, { 'starnet.station.v1': JSON.stringify({ selectedRoom: 'lab', camera: { x: 9, y: 9 } }) });
+  const browser101 = Object.assign({}, browser100, { 'vultron.station.v1': JSON.stringify({ selectedRoom: 'lab', camera: { x: 9, y: 9 } }) });
   bundle101 = Recovery.capture({ workspaceRoot: source, browserStore: browser101, now: 2000, appVersion: '0.9.1-rehearsal', lastCompletedMutation: 101 });
   const target = path.join(scratch, 'rollback-machine', 'workspaces');
   const browser = {};
@@ -147,7 +147,7 @@ record('dr.7-previous-version-rollback', 'Rollback to previous station version r
   assert(receipt.rollback && fs.existsSync(receipt.rollback), 'replaced generation not retained');
   assert(read(target, '.recovery-mutation.json').includes('100'), 'older generation not active');
   assert(read(receipt.rollback, '.recovery-mutation.json').includes('101'), 'newer generation not retained');
-  return { activeMutation: 100, retainedMutation: 101, rollbackGeneration: receipt.rollback, browserStateRolledBack: browser['starnet.station.v1'] === browser100['starnet.station.v1'] };
+  return { activeMutation: 100, retainedMutation: 101, rollbackGeneration: receipt.rollback, browserStateRolledBack: browser['vultron.station.v1'] === browser100['vultron.station.v1'] };
 });
 
 record('dr.8-recovery-point', 'Measure completed-mutation loss from last successful recovery point', () => {
@@ -165,7 +165,7 @@ record('dr.9-connector-vault', 'Encrypted connector state: the app keeps the lis
   const state = { version: 2, configs: [{ id: 'notion', transport: 'http', url: 'https://mcp.example/api', oauth: true }], oauth: { byId: { notion: { accessToken: 'DO_NOT_EXPORT', refreshToken: 'DO_NOT_EXPORT' } }, clients: {} } };
   const vault = makeConnectorVault({ fs, path, keyHex: 'ab'.repeat(32) });
   vault.write(stateFile, state);
-  assert(JSON.parse(read(root, 'connectors/state.json')).format === 'starnet.connector-vault.v1', 'fixture is not encrypted');
+  assert(JSON.parse(read(root, 'connectors/state.json')).format === 'vultron.connector-vault.v1', 'fixture is not encrypted');
   const online = Recovery.capture({ workspaceRoot: root, browserStore: browser100, now: 3000, lastCompletedMutation: 200, omitUnavailableCredentialStores: true, readConnectorState: () => makeConnectorVault({ fs, path, keyHex: 'ab'.repeat(32) }).load(stateFile) });
   assert(online.report.complete, 'the running-app capture is incomplete');
   assert(JSON.stringify(online).indexOf('DO_NOT_EXPORT') < 0, 'credential leaked into the running-app bundle');
@@ -188,7 +188,7 @@ record('dr.9-connector-vault', 'Encrypted connector state: the app keeps the lis
 
 const failed = scenarios.filter(x => x.status !== 'pass');
 const status = {
-  schema: 'starnet.disaster-recovery-rehearsal.v1',
+  schema: 'vultron.disaster-recovery-rehearsal.v1',
   generatedAt: new Date().toISOString(),
   verdict: failed.length ? 'red' : 'green',
   completeStationRestored: !failed.length,
@@ -200,14 +200,14 @@ const status = {
   rpo: scenarios.find(x => x.id === 'dr.8-recovery-point')?.evidence || null,
   limitations: [
     'The rehearsal uses a disposable filesystem profile and synthetic credentials, including a connector-vault fixture with a synthetic key; installed Windows/macOS UI import and the real OS credential store remain a separate attended proof.',
-    'The RPO is measured for explicit quiescent recovery points. StarNet does not yet claim an automatic continuous-backup RPO.'
+    'The RPO is measured for explicit quiescent recovery points. Vultron does not yet claim an automatic continuous-backup RPO.'
   ]
 };
 
 ensure(out);
 fs.writeFileSync(path.join(out, 'disaster-recovery-status.json'), JSON.stringify(status, null, 2) + '\n');
 const md = [
-  '# StarNet Disaster-Recovery Rehearsal', '',
+  '# Vultron Disaster-Recovery Rehearsal', '',
   '- Verdict: **' + status.verdict.toUpperCase() + '**',
   '- Complete station restored: **' + String(status.completeStationRestored) + '**',
   '- Scenarios: **' + status.counts.pass + '/' + scenarios.length + ' pass**',
@@ -221,8 +221,8 @@ const md = [
 fs.writeFileSync(path.join(out, 'summary.md'), md);
 if (cleanTarget && fs.existsSync(cleanTarget)) {
   fs.cpSync(cleanTarget, path.join(out, 'restored-profile'), { recursive: true });
-  fs.writeFileSync(path.join(out, 'starnet-browser-restore.json'), JSON.stringify({
-    schema: 'starnet.backup', version: 1, app: 'starnet', exportedAt: bundle100.createdAt,
+  fs.writeFileSync(path.join(out, 'vultron-browser-restore.json'), JSON.stringify({
+    schema: 'vultron.backup', version: 1, app: 'vultron', exportedAt: bundle100.createdAt,
     agentName: 'NOVA', secretsIncluded: false, secretPolicy: 'credentials-excluded',
     store: cleanBrowser || {}, notebook: null
   }, null, 2) + '\n');

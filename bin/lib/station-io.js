@@ -40,7 +40,7 @@ function makeStationIO(client) {
       };
       const timer = setTimeout(() => { if (!text) error = 'no reply within ' + secs + ' seconds (network or provider stall)'; else stalled = true; try { req.destroy(); } catch (_) {} finish(); }, o.ms || 60000);
       try {
-        req = http.request({ host: client.host, port: client.port, method: 'POST', path: '/api/run', headers: { Origin: client.base, 'Content-Type': 'application/json', 'Content-Length': payload.length, 'x-starnet-token': client.token(), Accept: 'application/x-ndjson' } }, res => {
+        req = http.request({ host: client.host, port: client.port, method: 'POST', path: '/api/run', headers: { Origin: client.base, 'Content-Type': 'application/json', 'Content-Length': payload.length, 'x-vultron-token': client.token(), Accept: 'application/x-ndjson' } }, res => {
           res.setEncoding('utf8');
           if (res.statusCode !== 200) {
             let b = ''; res.on('data', d => { b += d; }); res.on('end', () => { error = 'the station refused the run (HTTP ' + res.statusCode + ')' + (b ? ': ' + b.slice(0, 160) : ''); finish(); });

@@ -37,7 +37,7 @@ const profileKey = arg('--profile', null), jsonOut = arg('--json', null), hold =
 const gateP95 = Number(arg('--gate-p95', '0'));
 const KEYS = arg('--keys', 'agents,commander,tasks,deliverables,settings,notifs,manual,quests,updates,apps,automation,browser,connectors,messaging,workflows,trophies').split(',');
 const station = resolve(arg('--station', join(repo, 'dev/fixtures/seed-workspace')));
-const OUT = join(tmpdir(), 'starnet-perf-window');
+const OUT = join(tmpdir(), 'vultron-perf-window');
 const scratch = join(OUT, '_ws-' + port), profile = join(OUT, '_profile-' + cdpPort);
 for (const d of [scratch, profile]) try { rmSync(d, { recursive: true, force: true }); } catch {}
 mkdirSync(scratch, { recursive: true });

@@ -100,7 +100,7 @@ const inboxGlassAttn = 'body.glass-demo.rows-inbox:not(.hud-mode) #left #workstr
 A.ok(/^"dot agent agent agent"/.test(decl(pip, inboxGlassAttn, 'grid-template-areas') || ''), 'INBOX attention row: the names own the first line too');
 A.ok(/"dot agent agent agent"/.test(decl(appCss, 'body.rows-inbox #workstreams .ws-row:has(> .ws-agent-group)', 'grid-template-areas') || ''), 'INBOX (base sheet): the same names line');
 
-/* ---- THE RAIL'S TYPE GRID (Andrew 10-27: the session text looked cheap; "it needs to be starnet style text"). VT323 is a
+/* ---- THE RAIL'S TYPE GRID (Andrew 10-27: the session text looked cheap; "it needs to be vultron style text"). VT323 is a
    0.4em-wide face on a 25px pixel grid: the rail sets it at device sizes on the 2.5px ladder, so a letter is a whole number
    of device pixels wide at every TEXT SIZE. Evaluated the way the browser does it: CSS round() over the zoom. ---- */
 const gridOf = name => decl(pip, 'body.glass-demo:not(.hud-mode) #screen-game #left', name) || '';

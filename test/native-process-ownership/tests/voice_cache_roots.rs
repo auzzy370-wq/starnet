@@ -8,10 +8,10 @@
 //! fast gate's rust-policy job requires each test here by name (.github/workflows/fast-gate.yml).
 
 use serde_json::Value;
-use starnet_process_ownership_rules::erase_all::{
-    is_starnet_owned, plan_targets, remove_all, voice_model_cache_roots,
+use vultron_process_ownership_rules::erase_all::{
+    is_vultron_owned, plan_targets, remove_all, voice_model_cache_roots,
 };
-use starnet_process_ownership_rules::now_ms;
+use vultron_process_ownership_rules::now_ms;
 use std::ffi::OsString;
 use std::fs;
 use std::path::PathBuf;
@@ -52,11 +52,11 @@ fn the_voice_cache_roots_match_the_fixture() {
 }
 
 #[test]
-fn every_voice_cache_root_is_starnet_owned() {
+fn every_voice_cache_root_is_vultron_owned() {
     for case in cases() {
         for root in roots_of(&case) {
             assert!(
-                is_starnet_owned(&root),
+                is_vultron_owned(&root),
                 "{}: ERASE would refuse {}",
                 name(&case),
                 root.display()
@@ -78,7 +78,7 @@ fn a_profile_with_no_home_gives_erase_no_voice_target() {
 #[test]
 fn erase_removes_both_voice_cache_roots_and_keeps_the_fresh_workspace() {
     let base = std::env::temp_dir().join(format!(
-        "starnet-voice-roots-{}-{}",
+        "vultron-voice-roots-{}-{}",
         std::process::id(),
         now_ms()
     ));
@@ -99,7 +99,7 @@ fn erase_removes_both_voice_cache_roots_and_keeps_the_fresh_workspace() {
         fs::write(root.join("transformers").join("model.onnx"), b"weights").unwrap();
     }
     // the install folder around the legacy root holds the program, which an erase never touches
-    let program = local.join("StarNet").join("skynet-desktop.exe");
+    let program = local.join("Vultron").join("skynet-desktop.exe");
     fs::write(&program, b"program").unwrap();
 
     let plan = plan_targets(&app_data, &workspaces, None, &[], &extra);

@@ -291,7 +291,7 @@ async function answer(st, c, decision) {
     ac.abort();
     A.ok(await until(() => c.settled), 'the stopped chat() settles');
     A.ok(c.error && c.error.name === 'AbortError', 'a Stop rejects with the AbortError, as an aborted fetch did');
-    A.ok(c.error && !c.error.starnetTransport, 'a Stop is never marked as a transport loss');
+    A.ok(c.error && !c.error.vultronTransport, 'a Stop is never marked as a transport loss');
     A.ok(await until(() => st.withdraws.length === 1), 'the page withdrew the stopped run on the station');
     const run = [...st.runs.values()].find(r => r.agentId === 'crew1');
     A.ok(run && run.gone, 'the station let the stopped run go (the page-gone path its own response closing took)');
@@ -308,7 +308,7 @@ async function answer(st, c, decision) {
     const c = converse(pg, 'crew1', ac.signal);
     ac.abort();
     A.ok(await until(() => c.settled), 'a run stopped while connecting settles');
-    A.ok(c.error && /cannot reach the STARNET sidecar/.test(c.error.message) && !c.error.starnetTransport, 'it keeps the old Stop-while-connecting words, unmarked');
+    A.ok(c.error && /cannot reach the VULTRON sidecar/.test(c.error.message) && !c.error.vultronTransport, 'it keeps the old Stop-while-connecting words, unmarked');
     for (let i = 0; i < 20; i++) await tick();
     A.eq(st.sent('/api/run'), 0, 'no POST /api/run left the page');
   }
@@ -320,7 +320,7 @@ async function answer(st, c, decision) {
     st.loseAnswer = true;
     const c = converse(pg, 'crew1');
     A.ok(await until(() => c.settled), 'the run whose answer was lost settles');
-    A.ok(c.error && c.error.starnetTransport === 'fetch' && /cannot reach the STARNET sidecar/.test(c.error.message), 'as the old lost POST: cannot reach the sidecar, a transport loss');
+    A.ok(c.error && c.error.vultronTransport === 'fetch' && /cannot reach the VULTRON sidecar/.test(c.error.message), 'as the old lost POST: cannot reach the sidecar, a transport loss');
     A.ok(await until(() => st.withdraws.length === 1), 'the page withdrew it');
     const run = [...st.runs.values()].find(r => r.agentId === 'crew1');
     A.ok(run && run.gone, 'the station let it go (the lost connection used to stop it)');
@@ -336,7 +336,7 @@ async function answer(st, c, decision) {
     st.streams[0].s.error(boom);
     A.ok(await until(() => a.settled && b.settled), 'both runs settle');
     for (const c of [a, b]) {
-      A.ok(c.error && c.error.starnetTransport === 'read', c.agentId + ': a lost stream is a transport loss at the read site');
+      A.ok(c.error && c.error.vultronTransport === 'read', c.agentId + ': a lost stream is a transport loss at the read site');
       A.eq(c.error && c.error.message, 'network error', c.agentId + ': the browser\'s own error is kept');
     }
     A.eq(pg.runStream.state().open, false, 'the dead stream is forgotten');
@@ -352,7 +352,7 @@ async function answer(st, c, decision) {
     A.ok(await until(() => a.prompt), 'a run paused');
     st.streams[0].s.close();
     A.ok(await until(() => a.settled), 'it settles');
-    A.ok(a.error && a.error.starnetTransport === 'eof' && /disconnected before completion/.test(a.error.message), 'an ended stream without the run\'s end is the old "reply stream disconnected"');
+    A.ok(a.error && a.error.vultronTransport === 'eof' && /disconnected before completion/.test(a.error.message), 'an ended stream without the run\'s end is the old "reply stream disconnected"');
   }
 
   // ================= a station without the route: the run streams on its own response =================
@@ -446,7 +446,7 @@ async function answer(st, c, decision) {
     await answer(st, b, 'once');
     A.ok(await until(() => b.settled) && b.result && b.result.endReason === 'done', 'and it finishes');
     st.streams[0].s.error(new TypeError('network error'));   // the restart's other half: the page's stream breaks too
-    A.ok(await until(() => warm.settled) && warm.error && warm.error.starnetTransport === 'read', 'the run that was on it reads a lost connection');
+    A.ok(await until(() => warm.settled) && warm.error && warm.error.vultronTransport === 'read', 'the run that was on it reads a lost connection');
   }
 
   A.report('run-stream-pool');

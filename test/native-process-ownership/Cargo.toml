@@ -1,5 +1,5 @@
 [package]
-name = "starnet-process-ownership-rules"
+name = "vultron-process-ownership-rules"
 version = "0.1.0"
 edition = "2021"
 publish = false

@@ -20,7 +20,7 @@ const History = require('../sidecar/transcript-history.js');
 
 const ids = rows => rows.map(r => r.rowId);
 (async () => {
-  const fixture = SidecarFixture.create({ prefix: 'transcript-cursor-http-', env: { STARNET_CRON_ENABLED: '0', SKYNET_CRON_ENABLED: '0' } });
+  const fixture = SidecarFixture.create({ prefix: 'transcript-cursor-http-', env: { VULTRON_CRON_ENABLED: '0', SKYNET_CRON_ENABLED: '0' } });
   try {
     // ---- seed: stream 'cur' has exactly 60 durable rows (hidden, undone and retried ones among them); 'other' and 'gone' have their own ----
     const quick = Object.create(fs); quick.fsyncSync = () => {};
@@ -149,7 +149,7 @@ const ids = rows => rows.map(r => r.rowId);
     await refused('1001 row ids', await post(JSON.stringify({ streams: [{ streamId: 'cur', rowIds: Array.from({ length: 1001 }, (_, i) => i + 1) }] })), 400);
     await refused('51 streams', await post(JSON.stringify({ streams: Array.from({ length: 51 }, () => ({ streamId: 'cur', rowIds: [1] })) })), 400);
     await refused('an oversized body', await post(JSON.stringify({ streams: [{ streamId: 'cur', rowIds: [1], pad: 'x'.repeat(70000) }] })), 413);
-    await refused('a wrong token', await post(JSON.stringify({ streams: [{ streamId: 'cur', rowIds: [1] }] }), { 'X-StarNet-Token': 'not-this-launch' }), 403);
+    await refused('a wrong token', await post(JSON.stringify({ streams: [{ streamId: 'cur', rowIds: [1] }] }), { 'X-Vultron-Token': 'not-this-launch' }), 403);
     const thousand = await json('POST', '/api/transcript/rows', { streams: [{ streamId: 'cur', rowIds: Array.from({ length: 1000 }, (_, i) => i + 1) }] });
     A.eq([thousand.status, thousand.body.streams[0].turns.length], [200, liveRows.length], 'exactly 1000 ids is allowed');
 

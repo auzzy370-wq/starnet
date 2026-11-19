@@ -23,7 +23,7 @@ vm.runInContext(fs.readFileSync(require.resolve('../frontend/app/save.js'), 'utf
 vm.runInContext(app.slice(start, end), c);
 const watch = () => vm.runInContext('watchStationSave()', c);
 const tick = () => new Promise(resolve => queueMicrotask(resolve));
-const stored = () => JSON.parse(cache.get('starnet.save'));
+const stored = () => JSON.parse(cache.get('vultron.save'));
 async function check(label, action) {
   const before = pushed.length;
   const result = action(); assert.notEqual(result && result.ok, false, label + ': valid mutation');
@@ -53,10 +53,10 @@ async function check(label, action) {
   const count = pushed.length; previous.renameRoom(previous.spawnRoomId(), 'Detached'); await tick();
   assert.equal(pushed.length, count, 'replaced stations cannot trigger saves');
   await check('reentry has one subscription', () => c.station.renameRoom(c.station.spawnRoomId(), 'Current'));
-  const lastGood = cache.get('starnet.save'), flashCount = flashes;
+  const lastGood = cache.get('vultron.save'), flashCount = flashes;
   fail = true;
   c.station.renameRoom(c.station.spawnRoomId(), 'Quota failure'); await tick();
-  assert.equal(cache.get('starnet.save'), lastGood, 'failed cache write preserves previous save');
+  assert.equal(cache.get('vultron.save'), lastGood, 'failed cache write preserves previous save');
   assert.equal(flashes, flashCount, 'failed write cannot flash saved');
   assert.match(notices[0][0], /Browser storage for this window is full/, '#121: the notice names the browser cap');
   assert.doesNotMatch(notices[0][0], /free storage/, '#121: freeing disk space cannot raise a browser cap; the notice no longer asks for it');

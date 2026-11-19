@@ -56,7 +56,7 @@ module.exports = (async () => {
     A.eq(t2({ error: 'boom' }), { error: { message: 'boom' } }, 'a mid-stream error line becomes an error chunk');
   }
   // ---- window sizing ----
-  A.eq(N.pickNumCtx(25000, {}), 32768, 'a StarNet task (~21k prompt + 4k output) lands on 32k');
+  A.eq(N.pickNumCtx(25000, {}), 32768, 'a Vultron task (~21k prompt + 4k output) lands on 32k');
   A.eq(N.pickNumCtx(25000, { modelMax: 16384 }), 16384, 'never past the model\'s trained window');
   A.eq(N.pickNumCtx(900000, {}), N.DEFAULT_MAX_CTX, 'never past the ceiling');
   A.eq(N.pickNumCtx(1000, { floor: 32768 }), 32768, 'never steps down from a window the model already runs at (a reload)');
@@ -226,7 +226,7 @@ module.exports = (async () => {
     await collect(mk(), { model: 'q', messages: [{ role: 'user', content: 'hello' }] });
     A.eq(sizes, [32768, 32768], 'a small turn on a NEW provider instance keeps the window the task loaded');
   }
-  // StarNet restarted while Ollama still holds the model at a larger window: adopt it instead of reloading smaller.
+  // Vultron restarted while Ollama still holds the model at a larger window: adopt it instead of reloading smaller.
   {
     const sizes = [];
     const fetch = async (url, init) => {
@@ -270,7 +270,7 @@ module.exports = (async () => {
     A.eq(after, [65536, 32768, 32768, 32768], 'spilling at 64k: the ~17k task steps down to 32k and stays there, and a greeting rides it (no reload down to 8k)');
     const kept = await run('http://fits.test:11434/v1', full);
     A.eq(kept, [65536, 65536, 65536, 65536], 'fully on the GPU: the 64k window is kept (no reload)');
-    // StarNet restarted while Ollama holds a spilling 64k load: it is not adopted for a request that fits 32k.
+    // Vultron restarted while Ollama holds a spilling 64k load: it is not adopted for a request that fits 32k.
     const sizes = [];
     const fetch = async (url, init) => {
       if (url.endsWith('/api/show')) return SHOW(262144, ['completion', 'tools']);
@@ -664,7 +664,7 @@ module.exports = (async () => {
     }
     /* THE CUSTOM CARD'S GUESS (review 10-15). A CUSTOM endpoint borrows the native wire only because its URL LOOKED like
        Ollama (port 11434, or "ollama" in the host name; factory.js looksLikeOllama). When that server is LM Studio, the
-       wrong guess is StarNet's, not the user's: CUSTOM is already the card that speaks to it. The OLLAMA-card sentence
+       wrong guess is Vultron's, not the user's: CUSTOM is already the card that speaks to it. The OLLAMA-card sentence
        told that user to do what they had done, on every run (the provider is rebuilt per run). The same turn goes once
        on the /v1 wire instead, the way the 404 path does, and no OLLAMA-card advice reaches a CUSTOM user. */
     for (const baseUrl of ['http://127.0.0.1:11434/v1', 'http://my-ollama.lan:1234/v1']) {

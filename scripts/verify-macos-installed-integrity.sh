@@ -3,14 +3,14 @@
 # bytes it has just installed and Finder-launched. Two claims, one subcommand each:
 #
 #   page-boot <startup.log> <from-line> <wait-seconds>
-#     The station page's own boot verdict. bootguard sends starnet_boot_report once per page load and the shell writes
+#     The station page's own boot verdict. bootguard sends vultron_boot_report once per page load and the shell writes
 #     one "page-boot:" line to startup.log (src-tauri/src/boot_report.rs). Every such line after line <from-line> must
 #     read "passed · N of N station scripts ran · 0 not run", and at least one must arrive within <wait-seconds>
 #     (gh#136: a script that threw while loading left a station whose boot check still said passed). Prints the lines
 #     it judged.
 #
-#   install <installed StarNet.app> <its executable> <work-dir>
-#     The executable's own headless verify (--starnet-verify-install, src-tauri/src/install_manifest.rs) over the install
+#   install <installed Vultron.app> <its executable> <work-dir>
+#     The executable's own headless verify (--vultron-verify-install, src-tauri/src/install_manifest.rs) over the install
 #     manifest embedded in it must exit 0 and read "install: verified N files" with N >= MIN_MANIFEST_FILES, after the
 #     app's real launches: nothing the running app did rewrote a listed file. Then MODULE zeroed in a COPY of the app
 #     (85f602c4 / E62) must be named, alone and as empty, by the copy's own verify, which exits 3. A copy, because
@@ -29,7 +29,7 @@ export LC_ALL=C
 MIN_MANIFEST_FILES=600
 MODULE=sidecar/tools/builtin/shell.js
 VERIFY_SECONDS=180
-usage="usage: verify-macos-installed-integrity.sh page-boot <startup.log> <from-line> <wait-seconds> | install <StarNet.app> <executable> <work-dir>"
+usage="usage: verify-macos-installed-integrity.sh page-boot <startup.log> <from-line> <wait-seconds> | install <Vultron.app> <executable> <work-dir>"
 
 fail() {
   echo "::error::$*"
@@ -69,7 +69,7 @@ page_boot() {
     fi
     [ "$judged" -eq 0 ] || return 0
     if [ "$polls" -ge $((wait * 5)) ]; then
-      fail "no page-boot line reached $log within ${wait}s after its line $from: the station page never reported its boot (bootguard sends starnet_boot_report once per page load)"
+      fail "no page-boot line reached $log within ${wait}s after its line $from: the station page never reported its boot (bootguard sends vultron_boot_report once per page load)"
     fi
     sleep 0.2
     polls=$((polls + 1))
@@ -85,14 +85,14 @@ headless_verify() {
   # the exit status arrives on fd 3 when the verify ends; read -t bounds the wait without polling
   exec 3< <(
     set +e
-    "$exe" --starnet-verify-install --out "$base.json" > "$base.txt" 2>&1
+    "$exe" --vultron-verify-install --out "$base.json" > "$base.txt" 2>&1
     echo "$?"
   )
   status=""
   read -r -t "$VERIFY_SECONDS" -u 3 status || true
   exec 3<&-
   case "$status" in
-    '' | *[!0-9]*) fail "[$label] $exe --starnet-verify-install did not exit within ${VERIFY_SECONDS}s" ;;
+    '' | *[!0-9]*) fail "[$label] $exe --vultron-verify-install did not exit within ${VERIFY_SECONDS}s" ;;
   esac
   summary=""
   named=""
@@ -108,7 +108,7 @@ headless_verify() {
     esac
   done < "$base.txt"
   [ -s "$base.json" ] ||
-    fail "[$label] $exe wrote no install-verify receipt (exit $status): an executable built before the install manifest has no --starnet-verify-install"
+    fail "[$label] $exe wrote no install-verify receipt (exit $status): an executable built before the install manifest has no --vultron-verify-install"
 }
 
 install_claims() {

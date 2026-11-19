@@ -16,7 +16,7 @@ const { failureOf, flag } = require('../bin/station-recovery.js');
 const Backup = require('../frontend/app/backup.js');
 
 const CLI = path.join(__dirname, '..', 'bin', 'station-recovery.js');
-const root = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-recovery-safety-'));
+const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-recovery-safety-'));
 let seq = 0;
 // fails on the wrong reason too: "it threw" passes for a typo in the test
 function throwsWith(fn, re, msg) {
@@ -66,7 +66,7 @@ function craft(base, mutate) {
   /* ---- the gate: never used is not incomplete ---- */
   const bootedOnce = fresh('booted-once');
   write(bootedOnce, 'agent.save.json', { doc: { agent: { id: 'agent' } } });
-  const onceOut = path.join(root, 'once.starnet-recovery.json');
+  const onceOut = path.join(root, 'once.vultron-recovery.json');
   const onceRun = run(['backup', '--workspace', bootedOnce, '--output', onceOut]);
   A.eq(onceRun.status, 0, 'a station booted once backs up, though most categories have nothing yet: ' + onceRun.stderr);
   A.eq(out(onceRun).verdict.restoreNeeds, [], 'and needs no flag to restore');
@@ -75,7 +75,7 @@ function craft(base, mutate) {
   A.eq(run(['restore', '--bundle', onceOut, '--target', onceTarget]).status, 0, 'and restores with no flag');
 
   const empty = fresh('empty'); fs.mkdirSync(empty, { recursive: true });
-  const emptyOut = path.join(root, 'empty.starnet-recovery.json');
+  const emptyOut = path.join(root, 'empty.vultron-recovery.json');
   const emptyRun = run(['backup', '--workspace', empty, '--output', emptyOut]);
   A.eq(emptyRun.status, 2, 'a folder with no agent writes nothing');
   A.eq(fs.existsSync(emptyOut), false, 'no file');
@@ -124,7 +124,7 @@ function craft(base, mutate) {
   // browser keys prove nothing about the files a restore lands
   const browserOnly = fresh('browser-only');
   write(browserOnly, 'agent/report.md', 'x');
-  const fromBrowser = cap(browserOnly, { browserStore: { 'starnet.save': '{}', 'starnet.station.v1': '{}' } });
+  const fromBrowser = cap(browserOnly, { browserStore: { 'vultron.save': '{}', 'vultron.station.v1': '{}' } });
   A.eq(fromBrowser.report.requirements.find(x => x.category === 'agents').status, 'missing', 'a browser key is not evidence of an agent file');
   A.eq(Recovery.restoreGate(fromBrowser).noAgents, true, 'and does not pass the gate');
 
@@ -370,7 +370,7 @@ function craft(base, mutate) {
   const released = craft(cap(oldWs), b => {
     delete b.directories; delete b.report.integrity; delete b.planKeepsRows;
     b.report.requirements = []; b.report.complete = false;
-    b.browser.push({ key: 'starnet.autonomy.v1', bytes: 2, sha256: Recovery._internals.sha256(Buffer.from('{}')), value: '{}', categories: [] });
+    b.browser.push({ key: 'vultron.autonomy.v1', bytes: 2, sha256: Recovery._internals.sha256(Buffer.from('{}')), value: '{}', categories: [] });
     b.files = b.files.filter(x => x.path !== 'permissions.allow.json');
     b.files.push(
       fileRow('.migration-pending', 'x'), fileRow('agent/What?.md', 'mac'), fileRow('agent/a:b', 'linux'),
@@ -406,7 +406,7 @@ function craft(base, mutate) {
   A.eq(fs.existsSync(path.join(releasedTarget, '_commander.autonomy.json')), false, 'and the default posture');
   for (const id of ['cron.armed.json', 'shell.exec:*', '_commander.autonomy.json', 'permissions.bypass.json']) A.ok(oldReceiptRun.reauthentication.some(x => x.kind === 'approval' && x.id === id), 'listed to redo: ' + id);
   const oldBrowserFile = JSON.parse(fs.readFileSync(out(landedOld).browserImport.file, 'utf8'));
-  A.eq('starnet.autonomy.v1' in oldBrowserFile.store, false, 'and the import file cannot bring the posture back');
+  A.eq('vultron.autonomy.v1' in oldBrowserFile.store, false, 'and the import file cannot bring the posture back');
   const badDirOld = craft(released, b => { b.directories = ['agent/What?', 'agent/fine']; });
   const badDirTarget = fresh('bad-dir');
   const badDirReceipt = Recovery.restore({ bundle: badDirOld, targetRoot: badDirTarget, allowIncomplete: true });
@@ -497,8 +497,8 @@ function craft(base, mutate) {
     A.ok(!Recovery.validate(b).ok, 'validate refuses ' + label + ': ' + rel);
     throwsWith(() => Recovery.restore({ bundle: b, targetRoot: fresh('crafted-target') }), /refusing invalid recovery bundle/, 'restore refuses ' + label);
   };
-  refuses('an owner generation that would lock the user out', '.starnet-workspace-owner.json.generations/999.json');
-  refuses('an owner file', '.starnet-workspace-owner.json');
+  refuses('an owner generation that would lock the user out', '.vultron-workspace-owner.json.generations/999.json');
+  refuses('an owner file', '.vultron-workspace-owner.json');
   refuses('a browser profile', '.browser-profile/Cookies');
   refuses('a cron lock', 'cron.lock');
   refuses('a process ledger', 'proc-ledger.json');
@@ -563,7 +563,7 @@ function craft(base, mutate) {
   }
 
   /* ---- the command printed is the command that runs ---- */
-  const hostile = path.join(root, "o'brien $HOME $& $' %TEMP% `x", 'my.starnet-recovery.json');
+  const hostile = path.join(root, "o'brien $HOME $& $' %TEMP% `x", 'my.vultron-recovery.json');
   fs.mkdirSync(path.dirname(hostile), { recursive: true });
   const printed = seed(fresh('printed'));
   A.eq(run(['backup', '--workspace', printed, '--output', hostile]).status, 0, 'a bundle lands at an awkward path');
@@ -597,7 +597,7 @@ function craft(base, mutate) {
   A.ok(thrown && thrown.stationDisplaced && thrown.stationDisplaced.rollback === rollbackPath, 'the error names where the station is');
   A.ok(fs.existsSync(path.join(rollbackPath, 'agent.save.json')), 'and it is there');
   const words = failureOf('restore', thrown);
-  A.ok(words.recover.indexOf(rollbackPath) >= 0 && /DO NOT OPEN STARNET/.test(words.recover), 'the person is told where and not to launch');
+  A.ok(words.recover.indexOf(rollbackPath) >= 0 && /DO NOT OPEN VULTRON/.test(words.recover), 'the person is told where and not to launch');
   A.ok(/antivirus/.test(words.hint), 'and what usually holds a folder');
   A.ok(words.rollbackError, 'and that the move back failed');
   realRename(rollbackPath, failWs);
@@ -605,19 +605,19 @@ function craft(base, mutate) {
   // fails too, and must not replace the error that says where the station went
   const heldWs = seed(fresh('held'));
   const heldBundle = bundleFile('held', cap(heldWs));
-  fs.writeFileSync(path.join(path.dirname(heldWs), 'starnet-browser-restore.json'), '{"earlier":true}');
+  fs.writeFileSync(path.join(path.dirname(heldWs), 'vultron-browser-restore.json'), '{"earlier":true}');
   const preload = path.join(path.dirname(heldWs), 'hold.js');
   fs.writeFileSync(preload, `
     const fs = require('fs'), T = process.env.HOLD_TARGET, rename = fs.renameSync, unlink = fs.unlinkSync;
     const held = () => Object.assign(new Error('held by a scanner'), { code: 'EIO' });
     fs.renameSync = (a, b) => { if (b === T || /restore-rollback-/.test(a)) throw held(); return rename(a, b); };
-    fs.unlinkSync = p => { if (/starnet-browser-restore\\.json$/.test(p)) throw held(); return unlink(p); };
+    fs.unlinkSync = p => { if (/vultron-browser-restore\\.json$/.test(p)) throw held(); return unlink(p); };
   `);
   const heldRun = cp.spawnSync(process.execPath, ['-r', preload, CLI, 'restore', '--bundle', heldBundle, '--target', heldWs, '--replace-existing'], { cwd: root, encoding: 'utf8', env: Object.assign({}, process.env, { HOLD_TARGET: heldWs }) });
   A.ok(heldRun.status !== 0, 'the CLI reports the failure');
   const heldErr = JSON.parse(heldRun.stderr.slice(heldRun.stderr.indexOf('{\n  "ok"')));
   A.ok(heldErr.stationDisplaced && fs.existsSync(path.join(heldErr.stationDisplaced.rollback, 'agent.save.json')), 'it still names where the station is: ' + heldRun.stderr.slice(-400));
-  A.ok(/DO NOT OPEN STARNET/.test(heldErr.recover) && heldErr.recover.indexOf(heldErr.stationDisplaced.rollback) >= 0, 'and how to recover');
+  A.ok(/DO NOT OPEN VULTRON/.test(heldErr.recover) && heldErr.recover.indexOf(heldErr.stationDisplaced.rollback) >= 0, 'and how to recover');
   A.ok(/opened anyway/.test(heldErr.recover), 'even if it was opened');
   // a brief hold is waited out, with no error at all
   let held = 2;
@@ -641,12 +641,12 @@ function craft(base, mutate) {
 
   /* ---- output never overwrites, and never lands in the station ---- */
   const outWs = seed(fresh('output'));
-  const existing = path.join(root, 'existing.starnet-recovery.json');
+  const existing = path.join(root, 'existing.vultron-recovery.json');
   fs.writeFileSync(existing, 'mine');
   const over = run(['backup', '--workspace', outWs, '--output', existing]);
   A.ok(over.status !== 0 && /already exists/.test(over.stderr), 'an existing output is refused');
   A.eq(fs.readFileSync(existing, 'utf8'), 'mine', 'and is untouched');
-  const inner = path.join(outWs, 'b.starnet-recovery.json');
+  const inner = path.join(outWs, 'b.vultron-recovery.json');
   const innerRun = run(['backup', '--workspace', outWs, '--output', inner]);
   A.ok(innerRun.status !== 0 && /inside the station/.test(innerRun.stderr), 'an output inside the station is refused');
   A.eq(fs.existsSync(inner), false, 'and writes nothing');
@@ -667,18 +667,18 @@ function craft(base, mutate) {
   fs.mkdirSync(leftParent, { recursive: true });
   fs.mkdirSync(leftovers + '.restore-stage-999999-abc');
   fs.writeFileSync(path.join(leftovers + '.restore-stage-999999-abc', 'x'), 'y');
-  fs.writeFileSync(path.join(leftParent, 'starnet-browser-restore.json.restore-stage-999999-1'), 'z');
+  fs.writeFileSync(path.join(leftParent, 'vultron-browser-restore.json.restore-stage-999999-1'), 'z');
   fs.mkdirSync(leftovers + '.restore-stage-' + process.pid + '-live');
   A.eq(run(['restore', '--bundle', switchBundle, '--target', leftovers]).status, 0, 'a restore over leftovers works');
   A.eq(fs.existsSync(leftovers + '.restore-stage-999999-abc'), false, 'a dead process\'s stage is removed');
-  A.eq(fs.existsSync(path.join(leftParent, 'starnet-browser-restore.json.restore-stage-999999-1')), false, 'and its browser stage');
+  A.eq(fs.existsSync(path.join(leftParent, 'vultron-browser-restore.json.restore-stage-999999-1')), false, 'and its browser stage');
   A.ok(fs.existsSync(leftovers + '.restore-stage-' + process.pid + '-live'), 'a live process\'s is not');
 
   const dl = path.join(root, 'Downloads'); fs.mkdirSync(dl);
   const named = n => path.join(dl, n);
-  fs.writeFileSync(named('starnet-recovery-20261101-120000.starnet-recovery.json.tmp-999999-abcdef0123456789'), 'plaintext');
-  fs.writeFileSync(named('starnet-recovery-20261101-120000-2.starnet-recovery.json.tmp-' + process.pid + '-abcdef0123456789'), 'live');
-  fs.writeFileSync(named('starnet-recovery-20261101-120000.starnet-recovery.json'), 'finished');
+  fs.writeFileSync(named('vultron-recovery-20261101-120000.vultron-recovery.json.tmp-999999-abcdef0123456789'), 'plaintext');
+  fs.writeFileSync(named('vultron-recovery-20261101-120000-2.vultron-recovery.json.tmp-' + process.pid + '-abcdef0123456789'), 'live');
+  fs.writeFileSync(named('vultron-recovery-20261101-120000.vultron-recovery.json'), 'finished');
   fs.writeFileSync(named('thesis.tmp-999999-abc'), 'someone else\'s');
   const swept = sweepBackupTemps({ fs, path, dir: dl, pidAlive: pid => pid === process.pid });
   A.eq(swept.removed.length, 1, 'a dead writer\'s unfinished bundle is removed at boot');

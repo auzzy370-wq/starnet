@@ -2,14 +2,14 @@
 //!
 //! The reap exists for one case: a shell killed hard (crash, `taskkill /F`, End Task) never stops its sidecar, and
 //! that orphan keeps the station's WORKSPACES dir and Codex token file busy. It finds those by their executable
-//! image — exactly this install's bundled node. But that same node also runs the `starnet` CLI (bin/starnet.cmd and
-//! bin/starnet run it), a station that CLI booted, and a sidecar's own MCP children. Killing by image alone killed
-//! the `starnet` that had just started this StarNet in the background (review 0.14.1, F4).
+//! image — exactly this install's bundled node. But that same node also runs the `vultron` CLI (bin/vultron.cmd and
+//! bin/vultron run it), a station that CLI booted, and a sidecar's own MCP children. Killing by image alone killed
+//! the `vultron` that had just started this Vultron in the background (review 0.14.1, F4).
 //!
 //! So the image only nominates; the PARENT decides. A process a hard-killed shell left behind has no live parent
 //! (Windows: its parent pid is gone, has exited, or now names a younger process — pid reuse; macOS: launchd
 //! adopted it, ppid 1). A bundled-node process whose parent is alive belongs to someone and is never touched, and
-//! neither is a terminal session this StarNet runs for. Children of an orphan go with it.
+//! neither is a terminal session this Vultron runs for. Children of an orphan go with it.
 
 /// What the reap could prove about a process's parent.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -43,15 +43,15 @@ impl NodeProc {
 #[cfg_attr(not(any(windows, target_os = "macos")), allow(dead_code))]
 pub fn kept_reason(p: &NodeProc, keep: &[u32], own_pid: u32, reap: &[u32]) -> String {
     if p.pid == own_pid {
-        return "this StarNet itself".to_string();
+        return "this Vultron itself".to_string();
     }
     if keep.contains(&p.pid) {
-        return "a starnet terminal this StarNet runs for".to_string();
+        return "a vultron terminal this Vultron runs for".to_string();
     }
     match p.parent_state {
         Parent::Alive if reap.contains(&p.parent) => format!("its parent pid={} is reaped first", p.parent),
         Parent::Alive => format!(
-            "its parent pid={} is alive (a starnet terminal, a station it runs, or a sidecar's own child)",
+            "its parent pid={} is alive (a vultron terminal, a station it runs, or a sidecar's own child)",
             p.parent
         ),
         Parent::Unprovable => format!(
@@ -63,7 +63,7 @@ pub fn kept_reason(p: &NodeProc, keep: &[u32], own_pid: u32, reap: &[u32]) -> St
 }
 
 /// The pids to terminate: orphans (no live parent) and, transitively, bundled-node processes whose parent is one of
-/// them. `keep` (the terminal sessions this StarNet runs for) and `own_pid` are never in it.
+/// them. `keep` (the terminal sessions this Vultron runs for) and `own_pid` are never in it.
 #[cfg_attr(not(any(windows, target_os = "macos")), allow(dead_code))]
 pub fn orphans_to_reap(procs: &[NodeProc], keep: &[u32], own_pid: u32) -> Vec<u32> {
     let spared = |pid: u32| pid == own_pid || keep.contains(&pid);
@@ -190,7 +190,7 @@ mod tests {
     #[test]
     fn only_a_process_without_a_live_parent_is_an_orphan() {
         let procs = [p(10, 999, false), p(11, 4242, true)];
-        assert_eq!(orphans_to_reap(&procs, &[], 1), vec![10], "the starnet CLI (live parent) is never reaped");
+        assert_eq!(orphans_to_reap(&procs, &[], 1), vec![10], "the vultron CLI (live parent) is never reaped");
     }
 
     #[test]
@@ -222,8 +222,8 @@ mod tests {
         assert_eq!(reasons.len(), 4, "every spared process gets a line: {reasons:?}");
         assert!(reasons[0].starts_with("11: its parent pid=4242 is alive"), "{reasons:?}");
         assert!(reasons[1].starts_with("13: its parent pid=4 could not be inspected"), "{reasons:?}");
-        assert!(reasons[2].starts_with("12: a starnet terminal"), "{reasons:?}");
-        assert!(reasons[3].starts_with("1: this StarNet itself"), "{reasons:?}");
+        assert!(reasons[2].starts_with("12: a vultron terminal"), "{reasons:?}");
+        assert!(reasons[3].starts_with("1: this Vultron itself"), "{reasons:?}");
         assert_eq!(kept_reason(&p(20, 10, true), &[], 1, &[10]), "its parent pid=10 is reaped first");
     }
 
@@ -241,8 +241,8 @@ mod tests {
     }
 
     /// Real processes: a node.exe copied to a unique "bundled" path; two ORPHANS on it (each one's parent exits right
-    /// after starting it), one of them named by the keep list (a terminal session this StarNet runs for); a process on
-    /// it with a LIVE parent (this test, standing in for the `starnet` CLI); and a bystander on the original node.
+    /// after starting it), one of them named by the keep list (a terminal session this Vultron runs for); a process on
+    /// it with a LIVE parent (this test, standing in for the `vultron` CLI); and a bystander on the original node.
     /// Only the unkept orphan is nominated.
     #[cfg(windows)]
     #[test]
@@ -255,7 +255,7 @@ mod tests {
             eprintln!("node.exe not on PATH — nothing to prove here, skipping");
             return;
         };
-        let dir = std::env::temp_dir().join(format!("starnet-reap-rule-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("vultron-reap-rule-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let bundled = dir.join("node.exe");
         std::fs::copy(&src, &bundled).unwrap();

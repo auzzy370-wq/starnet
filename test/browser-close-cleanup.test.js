@@ -54,7 +54,7 @@ async function uploadFixture(closeError, serverError, platform, stall) {
   const driver = owned
     ? { allowLocal() {}, ownedPid: owned.pid, async close() { calls.push('driver.close'); await owned.close(); } }
     : { allowLocal() {}, async close() { calls.push('driver.close'); if (closeError) throw closeError; } };
-  const held = p => stall && clock < stall.busyUntilMs && p.endsWith('starnet-upload-live-owned');
+  const held = p => stall && clock < stall.busyUntilMs && p.endsWith('vultron-upload-live-owned');
   const scope = {
     process: simulatedProcess,
     console: { log(...args) { logs.push(args.join(' ')); }, error(...args) { errors.push(args); } },
@@ -82,7 +82,7 @@ async function uploadFixture(closeError, serverError, platform, stall) {
   };
   await vm.runInNewContext(fs.readFileSync(path.join(__dirname, 'browser-upload.e2e.test.js'), 'utf8'), scope);
   // what the fixture's fake mkdtempSync handed it, and the station staging root its uploads would have used
-  const scratch = path.join(os.tmpdir(), 'starnet-upload-live-') + 'owned';
+  const scratch = path.join(os.tmpdir(), 'vultron-upload-live-') + 'owned';
   return { calls, errors, logs, removed, removedVia, waits, owned, simulatedProcess, bodyError, scratch, stagingRoot: EgressFiles.defaultStagingRoot(path, path.join(scratch, 'workspaces'), path.join(scratch, 'staging')) };
 }
 const total = ms => ms.reduce((sum, n) => sum + n, 0);
@@ -185,7 +185,7 @@ const total = ms => ms.reduce((sum, n) => sum + n, 0);
   {
     const fsp = require('node:fs/promises');
     const { makeBrowserTools } = require('../sidecar/tools/builtin/browser.js');
-    const scratch = fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-close-upload-')));
+    const scratch = fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-close-upload-')));
     const ws = path.join(scratch, 'workspaces'), stagingRoot = path.join(scratch, 'staging');
     fs.mkdirSync(path.join(ws, 'agent'), { recursive: true });
     fs.writeFileSync(path.join(ws, 'agent', 'a.txt'), 'A-BYTES');
@@ -227,8 +227,8 @@ const total = ms => ms.reduce((sum, n) => sum + n, 0);
     A.eq(r.simulatedProcess.exitCode, 1, 'fixture failure remains nonzero');
     A.eq(r.removed.filter(p => p === r.scratch).length, closeFailure || serverFailure ? 0 : 1, 'cleanup failure retains scratch; confirmed cleanup permits removal');
     // TEST HYGIENE (polish review round 1): the fixture stages in a base of its own scratch, never the user's real
-    // per-user base (%LOCALAPPDATA%\StarNet on Windows, os.tmpdir() on POSIX)
-    A.ok(/starnet-upload-staging-[0-9a-f]{16}$/.test(r.stagingRoot) && path.dirname(r.stagingRoot) === path.join(r.scratch, 'staging') && path.dirname(r.stagingRoot) !== path.resolve(EgressFiles._internals.stagingBase(path)),
+    // per-user base (%LOCALAPPDATA%\Vultron on Windows, os.tmpdir() on POSIX)
+    A.ok(/vultron-upload-staging-[0-9a-f]{16}$/.test(r.stagingRoot) && path.dirname(r.stagingRoot) === path.join(r.scratch, 'staging') && path.dirname(r.stagingRoot) !== path.resolve(EgressFiles._internals.stagingBase(path)),
       'the fixture\'s upload staging root is the station root in a base inside its own scratch, never the user\'s real per-user base');
     A.eq(r.removed.filter(p => p === r.stagingRoot).length, 1, 'the fixture clears its own upload staging root on every exit, so no staged copy outlives it');
     A.eq(r.removed.filter(p => p !== r.scratch && p !== r.stagingRoot), [], 'the fixture removes nothing but its scratch and its own staging root');

@@ -24,7 +24,7 @@ const { makeTranscriptStore } = StoreModule;
 let TurnKinds = null;
 try { TurnKinds = require('../frontend/app/turnkinds.js'); } catch (e) { A.ok(false, 'frontend/app/turnkinds.js loads: ' + (e && e.message)); }
 
-const BASE = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-row-identity-'));
+const BASE = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-row-identity-'));
 let dirs = 0;
 const freshRoot = () => path.join(BASE, 'h' + (++dirs));
 const SEG = n => 'segment-' + String(n).padStart(6, '0') + '.jsonl';

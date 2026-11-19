@@ -50,17 +50,17 @@ function run(args, env) {
   const fb = mod.judgeTts({ status: 200, headers: H({ 'content-type': 'application/json' }), body: Buffer.from(JSON.stringify({ fallback: true, reason: 'edge: edge upgrade refused: HTTP 403', outcome: { code: 'refused', terminal: true } })) });
   A.ok(fb.ok === false && fb.outcome && fb.outcome.code === 'refused', 'a fallback is red and carries the typed outcome (which leg failed)');
   A.ok(mod.looksLikeMp3(Buffer.from('ID3\u0004')) && !mod.looksLikeMp3(Buffer.from('RIFF')), 'MP3 sniff: an ID3 tag or a frame sync, never a WAV');
-  const env = mod.keylessEnv({ PATH: '/bin', OPENROUTER_KEY: 'sk-or-x', SKYNET_OPENAI_KEY: 'sk-y', ANTHROPIC_API_KEY: 'a', GEMINI_API_KEY: 'g', STARNET_CREDITS_TOKEN: 't' }, '/tmp/p', 9703);
+  const env = mod.keylessEnv({ PATH: '/bin', OPENROUTER_KEY: 'sk-or-x', SKYNET_OPENAI_KEY: 'sk-y', ANTHROPIC_API_KEY: 'a', GEMINI_API_KEY: 'g', VULTRON_CREDITS_TOKEN: 't' }, '/tmp/p', 9703);
   A.ok(!Object.keys(env).some(k => /KEY|TOKEN|SECRET/i.test(k)), 'the keyless sidecar\'s env carries no key or token variable: ' + Object.keys(env).join(','));
-  A.eq([env.STARNET_PORT, env.APPDATA, env.SKYNET_EDGE_TTS_PROBE], ['9703', '/tmp/p', '0'], 'it gets the canary port, a fresh profile, and no boot probe of its own');
+  A.eq([env.VULTRON_PORT, env.APPDATA, env.SKYNET_EDGE_TTS_PROBE], ['9703', '/tmp/p', '0'], 'it gets the canary port, a fresh profile, and no boot probe of its own');
 
   // ---- the real script against loopback stand-ins for a keyless sidecar ----
   let mode = 'live', ttsCalls = 0;
   const srv = http.createServer((req, res) => {
-    if (req.url === '/') { res.writeHead(200, { 'Content-Type': 'text/html' }); return res.end('<script>window.__STARNET_API_TOKEN__="tok-123";</script>'); }
+    if (req.url === '/') { res.writeHead(200, { 'Content-Type': 'text/html' }); return res.end('<script>window.__VULTRON_API_TOKEN__="tok-123";</script>'); }
     if (req.url === '/api/tts' && req.method === 'POST') {
       ttsCalls++;
-      if (req.headers['x-starnet-token'] !== 'tok-123') { res.writeHead(403); return res.end('forbidden token'); }
+      if (req.headers['x-vultron-token'] !== 'tok-123') { res.writeHead(403); return res.end('forbidden token'); }
       if (mode === 'live') { res.writeHead(200, { 'Content-Type': 'audio/mpeg', 'X-Voice-Provider': 'edge:en-US-ChristopherNeural', 'X-Voice-Cache': 'miss' }); return res.end(MP3); }
       res.writeHead(200, { 'Content-Type': 'application/json' });
       return res.end(JSON.stringify({ fallback: true, reason: 'edge: edge upgrade refused: HTTP 403',
@@ -102,19 +102,19 @@ function run(args, env) {
   // reports back, through /api/tts/status, the environment it was booted with. ----
   {
     const os = require('node:os');
-    const stubDir = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-canary-stub-'));
+    const stubDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-canary-stub-'));
     const stub = path.join(stubDir, 'stub-sidecar.js');
     fs.writeFileSync(stub, [
       "'use strict';",
       "const http = require('http');",
       "const MP3 = Buffer.concat([Buffer.from([0xFF, 0xF3, 0x44, 0xC4]), Buffer.alloc(2400, 0x55)]);",
-      "const port = Number(process.env.STARNET_PORT);",
+      "const port = Number(process.env.VULTRON_PORT);",
       "const seen = { secrets: Object.keys(process.env).filter(k => /KEY|TOKEN|SECRET/i.test(k)), appdata: process.env.APPDATA || '',",
-      "  localappdata: process.env.LOCALAPPDATA || '', workspaces: process.env.STARNET_WORKSPACES || '', probe: process.env.SKYNET_EDGE_TTS_PROBE || '', pid: process.pid };",
+      "  localappdata: process.env.LOCALAPPDATA || '', workspaces: process.env.VULTRON_WORKSPACES || '', probe: process.env.SKYNET_EDGE_TTS_PROBE || '', pid: process.pid };",
       "http.createServer((req, res) => {",
       "  if (req.url === '/api/health') { res.writeHead(200); return res.end('ok'); }",
-      "  if (req.url === '/') { res.writeHead(200, { 'Content-Type': 'text/html' }); return res.end('<script>window.__STARNET_API_TOKEN__=\"stub-tok\";</script>'); }",
-      "  if (req.url === '/api/tts' && req.headers['x-starnet-token'] === 'stub-tok') { res.writeHead(200, { 'Content-Type': 'audio/mpeg', 'X-Voice-Provider': 'edge:en-US-ChristopherNeural', 'X-Voice-Cache': 'miss' }); return res.end(MP3); }",
+      "  if (req.url === '/') { res.writeHead(200, { 'Content-Type': 'text/html' }); return res.end('<script>window.__VULTRON_API_TOKEN__=\"stub-tok\";</script>'); }",
+      "  if (req.url === '/api/tts' && req.headers['x-vultron-token'] === 'stub-tok') { res.writeHead(200, { 'Content-Type': 'audio/mpeg', 'X-Voice-Provider': 'edge:en-US-ChristopherNeural', 'X-Voice-Cache': 'miss' }); return res.end(MP3); }",
       "  if (req.url === '/api/tts/status') { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ legs: { edge: Object.assign({ ok: true, code: 'ok' }, { seen }) } })); }",
       "  res.writeHead(404); res.end();",
       "}).listen(port, '127.0.0.1');"
@@ -123,14 +123,14 @@ function run(args, env) {
     fs.writeFileSync(dead, "console.error('stub: refusing to boot'); process.exit(3);\n");
     const freePort = await new Promise(r => { const s = http.createServer().listen(0, '127.0.0.1', () => { const p = s.address().port; s.close(() => r(p)); }); });
     // the canary's OWN environment carries secrets: none may reach the sidecar it boots
-    const leaky = Object.assign({}, process.env, { OPENROUTER_API_KEY: 'sk-or-v1-LEAK', GITHUB_TOKEN: 'ghp_LEAK', SKYNET_OPENAI_KEY: 'sk-LEAK', STARNET_WORKSPACES: 'C:/real/workspaces' });
+    const leaky = Object.assign({}, process.env, { OPENROUTER_API_KEY: 'sk-or-v1-LEAK', GITHUB_TOKEN: 'ghp_LEAK', SKYNET_OPENAI_KEY: 'sk-LEAK', VULTRON_WORKSPACES: 'C:/real/workspaces' });
     const booted = await run(['--sidecar', stub, '--port', String(freePort)], leaky);
     A.eq(booted.code, 0, '--sidecar: a keyless entry that answers Edge audio is green (' + booted.out.trim().slice(0, 400) + ')');
     const seen = booted.verdict && booted.verdict.last && booted.verdict.last.status_edge && booted.verdict.last.status_edge.seen;
     A.ok(seen, '--sidecar: the stub reported the environment it was booted with');
     A.eq(seen && seen.secrets, [], '--sidecar: no key, token or secret variable reached the booted sidecar');
-    A.ok(seen && /starnet-voice-canary-/.test(seen.appdata) && seen.appdata === seen.localappdata, '--sidecar: a fresh hermetic profile for APPDATA/LOCALAPPDATA: ' + (seen && seen.appdata));
-    A.ok(seen && seen.workspaces.indexOf(seen.appdata) === 0, '--sidecar: and a workspace inside it, never the caller\'s STARNET_WORKSPACES: ' + (seen && seen.workspaces));
+    A.ok(seen && /vultron-voice-canary-/.test(seen.appdata) && seen.appdata === seen.localappdata, '--sidecar: a fresh hermetic profile for APPDATA/LOCALAPPDATA: ' + (seen && seen.appdata));
+    A.ok(seen && seen.workspaces.indexOf(seen.appdata) === 0, '--sidecar: and a workspace inside it, never the caller\'s VULTRON_WORKSPACES: ' + (seen && seen.workspaces));
     A.eq(seen && seen.probe, '0', '--sidecar: the booted sidecar runs no boot probe of its own');
     A.ok(seen && !fs.existsSync(seen.appdata), '--sidecar: the profile is removed afterwards');
     const portFree = await new Promise(r => { const s = http.createServer(); s.once('error', () => r(false)); s.listen(freePort, '127.0.0.1', () => s.close(() => r(true))); });

@@ -27,7 +27,7 @@ const { makeFsTools } = require('../sidecar/tools/builtin/fs.js');
 const { makePathTrust } = require('../sidecar/pathtrust.js');
 
 const isWin = process.platform === 'win32';
-const BASE = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-run-paths-')));
+const BASE = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-run-paths-')));
 const WS = path.join(BASE, 'workspaces');
 const PROJECT = path.join(BASE, 'project');
 const OUTSIDE = path.join(BASE, 'outside');
@@ -169,11 +169,11 @@ function plant(linkAt, target) {
     // ---- 2. case on Windows ----
     {
       const W = path.win32;
-      const wr = RunPaths.makeResolver({ pathMod: W, root: 'C:\\StarNet\\workspaces' });
+      const wr = RunPaths.makeResolver({ pathMod: W, root: 'C:\\Vultron\\workspaces' });
       const wp = RunPaths.makeRunPaths(wr, { agentId: AID, projectRoot: 'C:\\Users\\me\\Proj' });
       A.eq(wp.place('c:\\users\\ME\\proj\\src\\a.js'), 'src/a.js', 'win32: a case-variant spelling of the project is the project (place gives the relative name)');
       A.eq(wp.place('C:\\Users\\me\\Project2\\a.js'), 'C:\\Users\\me\\Project2\\a.js', 'win32: a sibling whose name merely starts the same is NOT inside (absolute)');
-      A.eq(wp.placeJail('shots/s.png'), 'C:\\StarNet\\workspaces\\' + AID + '\\shots\\s.png', 'win32: a jail name in a project run is the absolute jail path');
+      A.eq(wp.placeJail('shots/s.png'), 'C:\\Vultron\\workspaces\\' + AID + '\\shots\\s.png', 'win32: a jail name in a project run is the absolute jail path');
       if (isWin) {
         const variant = path.join(WS.toUpperCase(), AID.toUpperCase(), 'case.txt');
         A.ok(!!(await scoped.resolve(variant, { scope: 'write' })), 'windows: a case-variant of the own workspace is still the own workspace');
@@ -205,7 +205,7 @@ function plant(linkAt, target) {
       try { await narrow.readTool.run({ path: 'ok.txt' }, { agentId: AID, paths: scoped }); } catch (e) { e3 = e; }
       A.ok(e3 && /narrow guard/.test(e3.message), 'a tool\'s own narrower guard is never widened by the run\'s path object (' + (e3 && e3.message) + ')');
       // (review minor) the brand is module-private: a hand-built object carrying the old Symbol.for key is not a path object
-      const forged = { [Symbol.for('starnet.runPaths')]: true, agentId: AID, root: OUTSIDE, jail: JAIL, base: () => OUTSIDE,
+      const forged = { [Symbol.for('vultron.runPaths')]: true, agentId: AID, root: OUTSIDE, jail: JAIL, base: () => OUTSIDE,
         resolve: async (rel) => ({ base: OUTSIDE, abs: path.join(OUTSIDE, rel) }), place: (a) => a, placeJail: (r) => r, shellCwd: () => null, setShellCwd: () => null };
       A.eq(RunPaths.isRunPaths(forged), false, 'a forged object with the public Symbol.for brand is not a run path object');
       let e4 = null, got = null;

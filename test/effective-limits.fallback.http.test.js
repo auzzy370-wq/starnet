@@ -11,14 +11,14 @@ const server = http.createServer((req, res) => {
   res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify({ data: [], balanceUsd: 10 }));
 });
 async function scenario(base, operator) {
-  const env = { STARNET_IPC_TOKEN: IPC, STARNET_DEFAULT_MODEL: 'gpt-5.5', STARNET_DEFAULT_PROVIDER: 'codex',
-    STARNET_FALLBACK_MODELS: 'environment-only-model', STARNET_CREDITS_URL: operator ? base + '/credits' : '',
-    STARNET_CREDITS_ACCOUNT: 'fixture-account', STARNET_CREDITS_API_KEY: operator ? 'fixture-credit' : '', STARNET_CLOUD_URL: '',
-    STARNET_BUDGET_PER_DAY: '0', STARNET_LIVE_PRICES: '0', STARNET_REFLECTION: '0', STARNET_STUDY: '0',
-    STARNET_FAILURE_REVIEW: '0', STARNET_QUEST_REFRESH: '0', STARNET_THREAD_MINE: '0', STARNET_SKILL_REVIEW: '0',
-    STARNET_SKILL_CURATOR: '0', STARNET_SCOUT: '0', STARNET_CRON_ENABLED: '0' };
+  const env = { VULTRON_IPC_TOKEN: IPC, VULTRON_DEFAULT_MODEL: 'gpt-5.5', VULTRON_DEFAULT_PROVIDER: 'codex',
+    VULTRON_FALLBACK_MODELS: 'environment-only-model', VULTRON_CREDITS_URL: operator ? base + '/credits' : '',
+    VULTRON_CREDITS_ACCOUNT: 'fixture-account', VULTRON_CREDITS_API_KEY: operator ? 'fixture-credit' : '', VULTRON_CLOUD_URL: '',
+    VULTRON_BUDGET_PER_DAY: '0', VULTRON_LIVE_PRICES: '0', VULTRON_REFLECTION: '0', VULTRON_STUDY: '0',
+    VULTRON_FAILURE_REVIEW: '0', VULTRON_QUEST_REFRESH: '0', VULTRON_THREAD_MINE: '0', VULTRON_SKILL_REVIEW: '0',
+    VULTRON_SKILL_CURATOR: '0', VULTRON_SCOUT: '0', VULTRON_CRON_ENABLED: '0' };
   for (const key of ['OPENROUTER_KEY', 'OPENROUTER_API_KEY', 'KEY_POOL_OPENROUTER']) {
-    env[key] = ''; env['STARNET_' + key] = ''; env['SKYNET_' + key] = '';
+    env[key] = ''; env['VULTRON_' + key] = ''; env['SKYNET_' + key] = '';
   }
   const f = SidecarFixture.create({ prefix: 'effective-fallback-', env });
   const entry = path.join(f.workspace, 'inventory-boot.cjs');
@@ -28,7 +28,7 @@ async function scenario(base, operator) {
   const jwt = 'fixture.' + Buffer.from(JSON.stringify({ exp: 4102444800 })).toString('base64url') + '.fixture';
   fs.writeFileSync(path.join(f.workspace, 'codex', 'tokens.json'), JSON.stringify({ access_token: jwt, refresh_token: 'fixture', token_type: 'Bearer' }));
   async function key(value) {
-    const response = await f.request('/api/key', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-StarNet-Token': IPC },
+    const response = await f.request('/api/key', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Vultron-Token': IPC },
       body: JSON.stringify({ provider: 'openrouter', key: value, keyPool: [], baseUrl: base + '/router' }) });
     assert.equal(response.status, 200);
   }
@@ -50,7 +50,7 @@ async function scenario(base, operator) {
   try {
     await f.start();
     const now = Date.now();
-    const saved = await f.json('POST', '/api/save', { schema: 'starnet.save', version: 6, updatedAt: now,
+    const saved = await f.json('POST', '/api/save', { schema: 'vultron.save', version: 6, updatedAt: now,
       _saveRevision: 0, _saveDirty: true, _saveClient: 'effective-fallback-test', agent: { id: 'agent', name: 'NOVA', createdAt: now },
       agents: [], workstreams: [{ id: 'general', history: [] }], activeId: 'general', generalId: 'general' });
     assert.equal(saved.status, 200); assert.equal(saved.body.ok, true);

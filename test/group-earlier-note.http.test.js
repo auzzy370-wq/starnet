@@ -82,9 +82,9 @@ function assertCarried(words, tag, lead, wire) {
   await new Promise(r => server.listen(0, '127.0.0.1', r));
   const origin = 'http://127.0.0.1:' + server.address().port;
   const fixture = SidecarFixture.create({ prefix: 'group-note-http-', timeoutMs: 20000,
-    env: { SKYNET_OPENROUTER_BASE: origin + '/api/v1', STARNET_OPENROUTER_BASE: origin + '/api/v1',
-      SKYNET_OPENROUTER_KEY: 'sk-or-v1-group-note', STARNET_OPENROUTER_KEY: 'sk-or-v1-group-note', SKYNET_DEFAULT_MODEL: 'test/model', STARNET_DEFAULT_MODEL: 'test/model',
-      ANTHROPIC_BASE_URL: origin + '/v1', ANTHROPIC_API_KEY: KEY, STARNET_ANTHROPIC_API_KEY: KEY, SKYNET_ANTHROPIC_API_KEY: KEY } });
+    env: { SKYNET_OPENROUTER_BASE: origin + '/api/v1', VULTRON_OPENROUTER_BASE: origin + '/api/v1',
+      SKYNET_OPENROUTER_KEY: 'sk-or-v1-group-note', VULTRON_OPENROUTER_KEY: 'sk-or-v1-group-note', SKYNET_DEFAULT_MODEL: 'test/model', VULTRON_DEFAULT_MODEL: 'test/model',
+      ANTHROPIC_BASE_URL: origin + '/v1', ANTHROPIC_API_KEY: KEY, VULTRON_ANTHROPIC_API_KEY: KEY, SKYNET_ANTHROPIC_API_KEY: KEY } });
   try {
     await fixture.start();
     const request = async (method, query, b) => {

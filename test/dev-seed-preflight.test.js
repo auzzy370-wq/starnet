@@ -1,6 +1,6 @@
 'use strict';
 /* test/dev-seed-preflight.test.js — dev/seed.js's model pre-flight checks the catalog the sidecar will call
-   (review docs-claims-13). checkModelInCatalog reads SKYNET_OPENROUTER_BASE (STARNET_ first, like the sidecar's ENV),
+   (review docs-claims-13). checkModelInCatalog reads SKYNET_OPENROUTER_BASE (VULTRON_ first, like the sidecar's ENV),
    so a preview's mock /models answers it and no false 'first runs WILL fail' box is printed; with no override it still
    checks the public openrouter.ai catalog. Pure: the two functions run in a vm with a stubbed fetch (no network, and
    dev/seed.js is never required or spawned, so no sidecar boots). */
@@ -32,8 +32,8 @@ const entry = path.resolve(__dirname, '../dev/seed.js');
   assert.match(dead.errors.join('\n'), /not on http:\/\/127\.0\.0\.1:9\/api\/v1\/models/, 'the warning names the catalog it checked');
   const pub = await preflight({}, ['test/model']);
   assert.deepEqual(pub.urls, ['https://openrouter.ai/api/v1/models'], 'no override keeps the public catalog');
-  const starnet = await preflight({ STARNET_OPENROUTER_BASE: 'http://127.0.0.1:8/v1', SKYNET_OPENROUTER_BASE: 'http://127.0.0.1:9/v1' }, ['test/model']);
-  assert.deepEqual(starnet.urls, ['http://127.0.0.1:8/v1/models'], 'STARNET_OPENROUTER_BASE wins, as in the sidecar');
+  const vultron = await preflight({ VULTRON_OPENROUTER_BASE: 'http://127.0.0.1:8/v1', SKYNET_OPENROUTER_BASE: 'http://127.0.0.1:9/v1' }, ['test/model']);
+  assert.deepEqual(vultron.urls, ['http://127.0.0.1:8/v1/models'], 'VULTRON_OPENROUTER_BASE wins, as in the sidecar');
   assert.equal(require('./_assert.js').fails(), 0, 'shared assertion helpers have no pending failures');
   console.log('dev-seed-preflight.test: OK (7 assertions)');
 })().catch(err => { console.error(err); process.exit(1); });

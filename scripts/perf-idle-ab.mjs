@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // perf-idle-ab.mjs — the RENDERER idle A/B bench (2026-10-20, piece 3 of the "eats my PC" plan). It prices what a
-// visible, idle StarNet window costs the machine, per payer and per phase, before any renderer change is chosen.
+// visible, idle Vultron window costs the machine, per payer and per phase, before any renderer change is chosen.
 // Supersedes scripts/perf-station-cost.mjs for idle work, which could not measure it:
 //   - headless: a synthetic 60 Hz BeginFrame source hides the 144/239 Hz rAF spin and does no real present;
 //   - its own rAF counter loop kept a vsync-rate rAF alive in EVERY phase (its "world-stopped" floor paid for the
@@ -74,16 +74,16 @@ const here = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const argv = process.argv.slice(2);
 const arg = (k, d) => { const i = argv.indexOf(k); return i > -1 && argv[i + 1] != null ? argv[i + 1] : d; };
 const flag = k => argv.includes(k);
-const RUNS_ROOT = resolve(arg('--dir', join(tmpdir(), 'starnet-idle-ab')));
+const RUNS_ROOT = resolve(arg('--dir', join(tmpdir(), 'vultron-idle-ab')));
 const SAMPLER = join(here, 'scripts', 'perf', 'app-footprint.ps1');
-const EDGE = [process.env.STARNET_BENCH_EDGE, 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', 'C:/Program Files/Microsoft/Edge/Application/msedge.exe'].filter(Boolean).find(existsSync);
+const EDGE = [process.env.VULTRON_BENCH_EDGE, 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', 'C:/Program Files/Microsoft/Edge/Application/msedge.exe'].filter(Boolean).find(existsSync);
 const WV2_DIR = 'C:/Program Files (x86)/Microsoft/EdgeWebView/Application';
 const PHASE_ORDER = ['P0', 'P1', 'P2', 'P3', 'P3b', 'P4', 'P5', 'AB', 'P6', 'P7'];
 // Andrew's real view (read 10-15 from his app's WebView2 localStorage; re-read it before a run that matters): 1x
 // pixels, TEXT SIZE 90, a 400 px crew rail, custom hue 216. The look goes through StationUI.setLook, the same path
 // the Settings controls run; the rail and chat widths are per-machine localStorage seeded before the page loads.
 const ANDREW_LOOK = { theme: 'custom', themeHue: 216, themeSat: 100, themeGlow: 20, panelBright: -100, flicker: false, textScale: 90, sessionRow: 'inbox', backdrop: 'nursery' };
-const ANDREW_LOCAL = { 'starnet.crewrail.w': '400', 'starnet.crewrail.rows': '2', 'starnet.chatw': '767' };
+const ANDREW_LOCAL = { 'vultron.crewrail.w': '400', 'vultron.crewrail.rows': '2', 'vultron.chatw': '767' };
 process.on('unhandledRejection', e => console.error('[idle-ab] unhandled rejection (teardown continues):', e && e.stack || e));
 
 // ---------- OS plumbing (Windows) ----------
@@ -227,7 +227,7 @@ function reviewRead() {
   return { n: ms.length, mean: ms.length ? +(ms.reduce((a, b) => a + b, 0) / ms.length).toFixed(2) : null, p95: ms.length ? +ms[Math.min(ms.length - 1, Math.floor(ms.length * 0.95))].toFixed(2) : null, crt: o.crtBackend };
 }
 function pageInfo() {
-  const meta = document.querySelector('meta[name=starnet-version]');
+  const meta = document.querySelector('meta[name=vultron-version]');
   return { vw: innerWidth, vh: innerHeight, dpr: devicePixelRatio, ver: meta ? meta.content : null,
     canvases: [...document.querySelectorAll('canvas')].filter(c => c.width * c.height > 4096).map(c => (c.id || c.className || 'canvas') + ' ' + c.width + 'x' + c.height + (c.offsetParent ? '' : ' (hidden)')),
     backdrop: [...document.querySelectorAll('*')].filter(e => { const s = getComputedStyle(e); return s.backdropFilter && s.backdropFilter !== 'none' && e.offsetParent !== null; })
@@ -266,7 +266,7 @@ async function runOnce(k) {
   const phases = arg('--phases', PHASE_ORDER.join(',')).split(',').map(s => s.trim()).filter(Boolean);
   for (const p of phases) if (!PHASE_ORDER.includes(p)) throw new Error('unknown phase ' + p + ' (have ' + PHASE_ORDER.join(',') + ')');
   const forced = arg('--force-contended', ''), minFreeGB = Number(arg('--min-free-gb', '1.5'));
-  if (!EDGE) throw new Error('msedge.exe not found (set STARNET_BENCH_EDGE)');
+  if (!EDGE) throw new Error('msedge.exe not found (set VULTRON_BENCH_EDGE)');
   if (!existsSync(join(station, 'agent.save.json'))) throw new Error('no agent.save.json in --station ' + station);
 
   const runId = [label, basename(station).replace(/[^\w.-]+/g, '_'), k, Date.now().toString(36)].join('-');
@@ -322,7 +322,7 @@ async function runOnce(k) {
     if (edge && edge.exitCode === null) await Promise.race([new Promise(r => edge.once('exit', r)), sleep(10000)]);
     if (side.exitCode === null) {
       const exited = new Promise(r => side.once('exit', r));
-      try { side.send({ type: 'starnet.shutdown' }); } catch (_) {}   // index.js graceful IPC stop (Windows has no SIGTERM)
+      try { side.send({ type: 'vultron.shutdown' }); } catch (_) {}   // index.js graceful IPC stop (Windows has no SIGTERM)
       await Promise.race([exited, sleep(15000)]);
     }
     for (const [key, rec] of Object.entries(own)) out[key] = killOwn(rec);

@@ -1,16 +1,16 @@
-/* STARNET updates.js
+/* VULTRON updates.js
    Desktop Update Center: autonomous check loop + native Tauri updater bridge. */
 'use strict';
 
 const Updates = (() => {
-  const KEY = 'starnet.updates.v1';
+  const KEY = 'vultron.updates.v1';
   // Human-browsable releases page — the GUARANTEED manual-update fallback when the in-app
   // updater can't complete (Gatekeeper on an unsigned mac build, a network/permission/disk
   // failure, an unsupported install layout). Reinstalling the latest build over the top keeps
   // ALL user data (workspaces live in Application Support; localStorage/IndexedDB in the WebView
   // store keyed by the unchanged bundle id — both OUTSIDE the app bundle the installer replaces).
   // Kept in sync with tauri.conf.json plugins.updater.endpoints[0] (same repo, /releases/latest).
-  const RELEASES_PAGE = 'https://github.com/androoAGI/starnet-releases/releases/latest';
+  const RELEASES_PAGE = 'https://github.com/YOUR-GITHUB-USER/vultron-releases/releases/latest';
   const CORE = (typeof UpdateCore !== 'undefined') ? UpdateCore : null;
   const TAURI = (typeof window !== 'undefined' && window.__TAURI__ && window.__TAURI__.core) ? window.__TAURI__.core : null;
   const invoke = (cmd, args) => TAURI.invoke(cmd, args || {});
@@ -60,9 +60,9 @@ const Updates = (() => {
   // minisign / reqwest / plugin Display text; keep it as the trailing detail for support, never as the whole message.
   function installFailureText(e) {
     const raw = cleanError(e);
-    const kept = ' Nothing was installed; your current StarNet is unchanged.';
+    const kept = ' Nothing was installed; your current Vultron is unchanged.';
     if (/signature|different key|minisign|base64|invalid symbol/i.test(raw)) {
-      return 'Update refused: the download did not match the signed StarNet release.' + kept + ' (' + raw + ')';
+      return 'Update refused: the download did not match the signed Vultron release.' + kept + ' (' + raw + ')';
     }
     if (/download|request|response body|connect|timed? ?out|network|status: \d{3}/i.test(raw)) {
       return 'The update download did not finish.' + kept + ' Check the connection, then press INSTALL UPDATE again. (' + raw + ')';
@@ -133,7 +133,7 @@ const Updates = (() => {
       return snapshot();
     }
     try {
-      const r = await invoke('starnet_update_status');
+      const r = await invoke('vultron_update_status');
       state.desktop = !!r.desktop;
       state.currentVersion = r.currentVersion || '';
       state.target = r.target || '';
@@ -195,7 +195,7 @@ const Updates = (() => {
     state.confirmRuns = 0;
     emit();
     try {
-      const r = await invoke('starnet_update_check');
+      const r = await invoke('vultron_update_check');
       prefs = CORE.recordCheckResult(prefs, r, Date.now());
       state.lastCheckedAt = r.checkedAt || Date.now();
       if (r.available && r.update && !manual && isSkipped(r.update)) {
@@ -206,13 +206,13 @@ const Updates = (() => {
         state.update = r.update;
         state.phase = 'available';
         if (CORE.shouldNotify(prefs, r.update.version, Date.now(), !!r.update.critical)) {
-          notify((r.update.critical ? 'Critical update' : 'StarNet update') + ' v' + r.update.version + ' is ready in Update Center', r.update.critical ? 'warn' : 'gold', undefined, { kind: r.update.critical ? 'alert' : 'result', key: 'update-ready', go: { term: 'updates' } });
+          notify((r.update.critical ? 'Critical update' : 'Vultron update') + ' v' + r.update.version + ' is ready in Update Center', r.update.critical ? 'warn' : 'gold', undefined, { kind: r.update.critical ? 'alert' : 'result', key: 'update-ready', go: { term: 'updates' } });
           prefs = CORE.recordNotified(prefs, r.update.version);
         }
       } else {
         state.update = null;
         state.phase = 'current';
-        if (manual) notify('StarNet is up to date', 'good');
+        if (manual) notify('Vultron is up to date', 'good');
       }
       savePrefs();
     } catch (e) {
@@ -269,12 +269,12 @@ const Updates = (() => {
     } catch (_) { return null; }
   }
 
-  /* WHY the newest save is not confirmed (starnet-releases#4: "have the update gate name the failing cause"): the cause
+  /* WHY the newest save is not confirmed (vultron-releases#4: "have the update gate name the failing cause"): the cause
      CloudSave recorded for its last failed attempt, in the save light's own words (one table: CloudSaveCore.describeCause),
      or "yet" when no attempt has failed (the drain's own time ran out first). And the way past it the card already offers:
      the full installer behind DOWNLOAD LATEST MANUALLY, which keeps the station file — the change it has not confirmed stays
      only in this window, so that is said too. A cause that waiting cannot clear (too large, a full disk, a refused folder, a
-     newer StarNet's data) never says "try again in a moment". */
+     newer Vultron's data) never says "try again in a moment". */
   function saveCause() {
     try {
       const h = (typeof CloudSave !== 'undefined' && CloudSave && typeof CloudSave.health === 'function') ? CloudSave.health() : null;
@@ -284,7 +284,7 @@ const Updates = (() => {
   const STUCK_CAUSES = ['tooLarge', 'diskFull', 'diskDenied', 'degraded', 'forbidden'];
   function unconfirmedSaveRefusal(cause) {
     const words = cause && typeof CloudSaveCore !== 'undefined' && CloudSaveCore && CloudSaveCore.describeCause ? CloudSaveCore.describeCause(cause) : '';
-    return 'Your latest station changes are not confirmed in the station file ' + (words ? '(' + words + ')' : 'yet') + ', so the update was not installed. StarNet stays open' +
+    return 'Your latest station changes are not confirmed in the station file ' + (words ? '(' + words + ')' : 'yet') + ', so the update was not installed. Vultron stays open' +
       (STUCK_CAUSES.indexOf(cause) === -1 ? '; try again in a moment.' : '.') +
       ' If it keeps failing, DOWNLOAD LATEST MANUALLY below installs the full update over the top and keeps your station file — a change the station file has not confirmed stays only in this window.';
   }
@@ -308,18 +308,18 @@ const Updates = (() => {
     try { if (typeof StationUI !== 'undefined' && StationUI && typeof StationUI.refreshSave === 'function') StationUI.refreshSave(); } catch (_) {}
   }
 
-  // the station-save journals (cloudsave.js): 'starnet.save' and one 'starnet.save.w.<window>' per extra live tab. Only THIS
+  // the station-save journals (cloudsave.js): 'vultron.save' and one 'vultron.save.w.<window>' per extra live tab. Only THIS
   // window's journal rides the update bundle — every journal is a whole station save, and the prepare route reads at most
   // 16 MiB (review 10-27: two journals of a big station would refuse the update). The others stay where they are.
-  const SAVE_JOURNAL_RE = /^starnet\.save(?:\.w\.[A-Za-z0-9_-]{1,80})?(?:\.merge)?$/;   // (.merge: a journal's merge description, cloudsave writeSide)
+  const SAVE_JOURNAL_RE = /^vultron\.save(?:\.w\.[A-Za-z0-9_-]{1,80})?(?:\.merge)?$/;   // (.merge: a journal's merge description, cloudsave writeSide)
   function browserStoreSnapshot() {
     const out = {};
-    let own = 'starnet.save';
+    let own = 'vultron.save';
     try { if (typeof CloudSave !== 'undefined' && CloudSave && typeof CloudSave.journalKey === 'function') own = String(CloudSave.journalKey() || own); } catch (_) {}
     try {
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (!/^(?:starnet|skynet)\./i.test(String(key || ''))) continue;
+        if (!/^(?:vultron|skynet)\./i.test(String(key || ''))) continue;
         if (SAVE_JOURNAL_RE.test(String(key)) && key !== own && key !== own + '.merge') continue;
         const value = localStorage.getItem(key);
         if (value != null) out[key] = String(value);
@@ -371,7 +371,7 @@ const Updates = (() => {
   async function install(opts) {
     opts = opts || {};
     if (!TAURI || !CORE || busy || !state.update) {
-      notify('No StarNet update is ready to install', 'warn');
+      notify('No Vultron update is ready to install', 'warn');
       return snapshot();
     }
     const Channel = TAURI.Channel;
@@ -410,7 +410,7 @@ const Updates = (() => {
       state.error = conflict ? conflictRefusal(conflict)
         : drained.saveConfirmed === false
         ? unconfirmedSaveRefusal(cause)
-        : 'State could not be verified on disk. The update was not installed; your current StarNet remains open.';
+        : 'State could not be verified on disk. The update was not installed; your current Vultron remains open.';
       busy = false;
       if (conflict) raiseConflictNotice();
       const causeWords = cause && typeof CloudSaveCore !== 'undefined' && CloudSaveCore && CloudSaveCore.describeCause ? ' (' + CloudSaveCore.describeCause(cause) + ')' : '';
@@ -443,9 +443,9 @@ const Updates = (() => {
     emit();
     installing = true;   // from here a close-requested is the update restart — quit guard must allow it
     try {
-      await invoke('starnet_update_install', { onEvent });
+      await invoke('vultron_update_install', { onEvent });
       state.phase = 'restarting';
-      notify('StarNet update installed - restarting', 'good');
+      notify('Vultron update installed - restarting', 'good');
     } catch (e) {
       installing = false;   // install failed; the app lives on, so the quit guard resumes normally
       let thawError = null;
@@ -502,7 +502,7 @@ const Updates = (() => {
     savePrefs();
     state.update = null;
     state.phase = 'skipped';
-    notify('StarNet v' + prefs.ignoredVersion + ' will be skipped', 'warn');
+    notify('Vultron v' + prefs.ignoredVersion + ' will be skipped', 'warn');
     schedule();
     emit();
   }
@@ -557,7 +557,7 @@ const Updates = (() => {
 
   function html() {
     if (!TAURI) {
-      return '<div class="fb-empty">DESKTOP UPDATES ARE AVAILABLE IN THE PACKAGED STARNET APP.<br><span>This browser preview cannot install native releases.</span></div>';
+      return '<div class="fb-empty">DESKTOP UPDATES ARE AVAILABLE IN THE PACKAGED VULTRON APP.<br><span>This browser preview cannot install native releases.</span></div>';
     }
     const update = state.update;
     const pct = CORE.progress(state.downloaded, state.contentLength);
@@ -578,7 +578,7 @@ const Updates = (() => {
         // Channels-confirmed, and the choice is the Commander's, not a side effect.
         out += '<div class="up-guard">' +
           esc(guardN === 1 ? '1 AGENT IS STILL WORKING' : guardN + ' AGENTS ARE STILL WORKING') +
-          ' - INSTALLING RESTARTS STARNET AND KILLS ' + (guardN === 1 ? 'ITS RUN' : 'THEIR RUNS') + '.</div>' +
+          ' - INSTALLING RESTARTS VULTRON AND KILLS ' + (guardN === 1 ? 'ITS RUN' : 'THEIR RUNS') + '.</div>' +
           '<div class="up-actions">' +
           '<button class="bb sm" id="up-guard-wait">WAIT FOR AGENTS</button>' +
           '<button class="bb sm danger" id="up-install-force" ' + (busy ? 'disabled' : '') + '>INSTALL ANYWAY</button>' +
@@ -589,12 +589,12 @@ const Updates = (() => {
           (update.critical ? '' : '<button class="bb sm danger" id="up-ignore">SKIP VERSION</button>') + '</div></div>';
       }
     } else if (state.phase === 'current') {
-      out += '<div class="up-empty">You have the latest StarNet (checked ' + esc(fmtTime(state.lastCheckedAt)) + ').</div>';
+      out += '<div class="up-empty">You have the latest Vultron (checked ' + esc(fmtTime(state.lastCheckedAt)) + ').</div>';
     } else if (state.phase === 'skipped') {
       // Never "latest": a newer release exists, the Commander chose to skip it.
       out += '<div class="up-empty">v' + esc(prefs.ignoredVersion) + ' is skipped. Press CHECK NOW to see it again.</div>';
     } else if (state.phase === 'checking') {
-      out += '<div class="up-empty">Checking for a newer StarNet...</div>';
+      out += '<div class="up-empty">Checking for a newer Vultron...</div>';
     } else if (state.phase === 'idle') {
       // Not checked this launch: say only what is known — when the last check ran and what it found.
       const known = prefs.availableVersion && prefs.availableVersion !== state.currentVersion && prefs.availableVersion !== prefs.ignoredVersion ? prefs.availableVersion : '';
@@ -606,7 +606,7 @@ const Updates = (() => {
         ? 'The last check found v' + esc(known) + '. Press CHECK NOW to get it ready to install.'
         : skipped ? 'v' + esc(skipped) + ' is skipped. Press CHECK NOW to see it again.'
         : (state.lastCheckedAt ? 'Not checked since ' + esc(fmtTime(state.lastCheckedAt)) + '.' : 'Never checked for updates.') +
-          ' Press CHECK NOW to look for a newer StarNet.') + '</div>';
+          ' Press CHECK NOW to look for a newer Vultron.') + '</div>';
     }
     if (state.phase === 'preparing' || state.phase === 'downloading' || state.phase === 'installing' || state.phase === 'restarting') {
       out += '<div class="up-progress"><div style="width:' + pct + '%"></div></div>' +

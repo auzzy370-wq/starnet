@@ -102,7 +102,7 @@ function opusFramesToOgg(frames, o) {
   head.writeUInt32LE(inputRate, 12);
   head.writeInt16LE(0, 16);          // output gain
   head[18] = 0;                      // mapping family 0: mono/stereo
-  const vendor = Buffer.from('starnet', 'latin1');
+  const vendor = Buffer.from('vultron', 'latin1');
   const tags = Buffer.alloc(8 + 4 + vendor.length + 4);
   tags.write('OpusTags', 0, 'latin1');
   tags.writeUInt32LE(vendor.length, 8);
@@ -211,7 +211,7 @@ const ADPCM_STEPS = [7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 19, 21, 23, 25, 28, 31
   1411, 1552, 1707, 1878, 2066, 2272, 2499, 2749, 3024, 3327, 3660, 4026, 4428, 4871, 5358, 5894, 6484, 7132, 7845, 8630, 9493, 10442,
   11487, 12635, 13899, 15289, 16818, 18500, 20350, 22385, 24623, 27086, 29794, 32767];
 const ADPCM_INDEX = [-1, -1, -1, -1, 2, 4, 6, 8];
-const ADPCM_MIME = 'audio/x-starnet-adpcm';
+const ADPCM_MIME = 'audio/x-vultron-adpcm';
 function adpcmHeader(rate) { const h = Buffer.alloc(8); h.write('SNA1', 0, 'latin1'); h.writeUInt32LE(rate, 4); return h; }
 function makeAdpcmEncoder() {
   let pred = 0, index = 0, half = -1;   // half: a low nibble waiting for its high nibble

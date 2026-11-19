@@ -10,7 +10,7 @@ lane: release-0120-prep-0915
 fix:
 origin: customer
 report: support-2026-09-16-ollama-no-chat-post
-affected: StarNet 0.11.2 Windows; Ollama 0.5.7; qwen2.5:7b; loopback 127.0.0.1:11434
+affected: Vultron 0.11.2 Windows; Ollama 0.5.7; qwen2.5:7b; loopback 127.0.0.1:11434
 family: local-provider-transport
 installer: unverified
 recovery: unconfirmed
@@ -42,7 +42,7 @@ d476eaabc: a native-wire connect timeout now reads /api/ps and states where the 
 
 ## Controlled follow-up (2026-10-12)
 
-GitHub #99 is a distinct newer report: StarNet 0.13.2 on Windows, qwen3:8b then llama3.1:8b, with no Ollama version supplied. E43 remains the older 0.11.2 / Ollama 0.5.7 / qwen2.5:7b configuration above. Neither was reproduced on the affected installation. #99 remains open with no replies as of this follow-up.
+GitHub #99 is a distinct newer report: Vultron 0.13.2 on Windows, qwen3:8b then llama3.1:8b, with no Ollama version supplied. E43 remains the older 0.11.2 / Ollama 0.5.7 / qwen2.5:7b configuration above. Neither was reproduced on the affected installation. #99 remains open with no replies as of this follow-up.
 
 A real dev-seeded sidecar against a controlled local endpoint reproduced a separate error-body stall: HTTP 400 headers and a partial JSON body arrived, then cancellation returned HTTP 200 but no terminal event arrived until the endpoint was forcibly completed. Source cc5bc0147 protects error-body reads with the existing idle watchdog and cancellation signal. Source fd3817394 corrects the idle diagnostic so it does not deny bytes that already arrived. This does not change model-load limits or the graphics lane's allocation-error handling.
 

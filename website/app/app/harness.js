@@ -1,4 +1,4 @@
-/* STARNET — harness.js : the REAL agent harness (BYOK).
+/* VULTRON — harness.js : the REAL agent harness (BYOK).
    Owns the model connection + streaming + token/cost accounting.
 
    For this prototype the call goes browser -> OpenRouter directly (CORS-friendly,
@@ -8,7 +8,7 @@
 'use strict';
 
 const Harness = (() => {
-  const LS = { key: 'starnet.byok.key', keyPool: 'starnet.byok.keyPool', model: 'starnet.byok.model', prov: 'starnet.byok.prov', baseUrl: 'starnet.byok.baseUrl', effort: 'starnet.byok.reasoningEffort' };
+  const LS = { key: 'vultron.byok.key', keyPool: 'vultron.byok.keyPool', model: 'vultron.byok.model', prov: 'vultron.byok.prov', baseUrl: 'vultron.byok.baseUrl', effort: 'vultron.byok.reasoningEffort' };
   const OR = 'https://openrouter.ai/api/v1';
 
   let totals = { tokens: 0, cost: 0, calls: 0 };
@@ -57,7 +57,7 @@ const Harness = (() => {
      is a real past measurement, it is only ever used to produce a tilde-marked projection, and the very
      next turn overwrites it — so a system-prompt or toolset change (which does move the overhead)
      self-corrects on first use rather than persisting a lie. */
-  const LS_OVERHEAD = 'starnet.ctx.overhead';
+  const LS_OVERHEAD = 'vultron.ctx.overhead';
   const OVERHEAD_MAX = 40;   // bounded: a few models per provider, never an unbounded localStorage row
   // Each entry is CtxGauge.calibrate's { overhead } fit. A stored entry that is not a usable fit is
   // DROPPED, not coerced — a half-read calibration would silently bias every projection it feeds.
@@ -161,32 +161,32 @@ const Harness = (() => {
   const DESKTOP = !!TAURI;
   const invoke = (cmd, args) => TAURI.invoke(cmd, args);
   // DEV fast-path (sidecar started with SKYNET_DEV=1, e.g. `npm run dev:seed`): the host injects
-  // window.__STARNET_DEV__ = {model, prov} and holds the API key in its own env (runtimeKey). We treat dev
+  // window.__VULTRON_DEV__ = {model, prov} and holds the API key in its own env (runtimeKey). We treat dev
   // like the desktop "server holds the key" seam — no key in the page, configured() is true, and a fresh
   // origin (a new worktree port) auto-resumes the server-seeded save with no connect screen / awakening.
-  const DEV = (typeof window !== 'undefined' && window.__STARNET_DEV__ && typeof window.__STARNET_DEV__ === 'object') ? window.__STARNET_DEV__ : null;
+  const DEV = (typeof window !== 'undefined' && window.__VULTRON_DEV__ && typeof window.__VULTRON_DEV__ === 'object') ? window.__VULTRON_DEV__ : null;
   const DEVMODE = !!DEV;
   if (DEVMODE) {
     try {
-      if (DEV.model) localStorage.setItem('starnet.byok.model', String(DEV.model));
-      localStorage.setItem('starnet.byok.prov', String(DEV.prov || 'openrouter'));
+      if (DEV.model) localStorage.setItem('vultron.byok.model', String(DEV.model));
+      localStorage.setItem('vultron.byok.prov', String(DEV.prov || 'openrouter'));
     } catch (_) {}
   }
   let _alternateCountByProvider = Object.create(null);
-  let apiToken = (typeof window !== 'undefined' && window.__STARNET_API_TOKEN__) ? String(window.__STARNET_API_TOKEN__) : '';
+  let apiToken = (typeof window !== 'undefined' && window.__VULTRON_API_TOKEN__) ? String(window.__VULTRON_API_TOKEN__) : '';
   let apiTokenPromise = null;
   /* A PAGE THE STATION KEPT ITS KEY FROM (review threads-backend-05 / sidecar-index-06). The sidecar serves this page
      without its key when it cannot prove this browser runs as the station's own OS user (sidecar/peerowner.js: the
      lookup failed or timed out, the connection could not be traced, it belongs to another account, or the platform
-     has no check) and says why in window.__STARNET_TOKEN_WITHHELD__. Every keyed /api call is then refused exactly
+     has no check) and says why in window.__VULTRON_TOKEN_WITHHELD__. Every keyed /api call is then refused exactly
      like a stale page, but this is NOT a restarted station: the page says why + the owner's escape hatch, never
      "the station restarted". For a LASTING reason (another account, no check here) re-reading the page only re-runs
      the same failing check, so it never does. For a TRANSIENT one (the lookup failed or timed out, the connection
      could not be traced) re-running the check is the fix: a refused call re-reads '/' at most once a minute
      (withheldRetryDue) and the page adopts its key in place when the check passes. '' = the page has its key. */
-  let tokenWithheld = (typeof window !== 'undefined' && !window.__STARNET_API_TOKEN__ && window.__STARNET_TOKEN_WITHHELD__) ? String(window.__STARNET_TOKEN_WITHHELD__) : '';
+  let tokenWithheld = (typeof window !== 'undefined' && !window.__VULTRON_API_TOKEN__ && window.__VULTRON_TOKEN_WITHHELD__) ? String(window.__VULTRON_TOKEN_WITHHELD__) : '';
 
-  // TRUE only for our OWN sidecar API — a same-origin request under /api/. The X-StarNet-Token this gates is a
+  // TRUE only for our OWN sidecar API — a same-origin request under /api/. The X-Vultron-Token this gates is a
   // PRIVATE local credential; a naive substring match on '/api/' would attach it to third-party URLs that merely
   // contain '/api/' (e.g. the OpenRouter fallback catalog https://openrouter.ai/api/v1/models), leaking the token
   // cross-origin AND forcing a CORS preflight OpenRouter rejects (so the fallback fails exactly when it's needed).
@@ -205,7 +205,7 @@ const Harness = (() => {
       // The packaged Tauri page is cross-origin from its configured loopback sidecar. Trust only that
       // exact configured loopback origin; accepting arbitrary cross-origin /api URLs would leak the token.
       let sidecar = null;
-      const configured = (typeof window !== 'undefined' && window.__STARNET_API__) ? String(window.__STARNET_API__) : '';
+      const configured = (typeof window !== 'undefined' && window.__VULTRON_API__) ? String(window.__VULTRON_API__) : '';
       if (configured) {
         try {
           const u = new URL(configured, base);
@@ -224,12 +224,12 @@ const Harness = (() => {
   function withApiToken(init, token) {
     init = Object.assign({}, init || {});
     const headers = new Headers(init.headers || {});
-    if (token) headers.set('X-StarNet-Token', token);
+    if (token) headers.set('X-Vultron-Token', token);
     init.headers = headers;
     return init;
   }
   function ensureApiToken() {
-    if (!apiToken && typeof window !== 'undefined' && window.__STARNET_API_TOKEN__) apiToken = String(window.__STARNET_API_TOKEN__);
+    if (!apiToken && typeof window !== 'undefined' && window.__VULTRON_API_TOKEN__) apiToken = String(window.__VULTRON_API_TOKEN__);
     if (apiToken) return Promise.resolve(apiToken);
     if (!apiTokenPromise) apiTokenPromise = Promise.resolve('').then(t => { apiTokenPromise = null; return t; });
     return apiTokenPromise;
@@ -245,7 +245,7 @@ const Harness = (() => {
      any route runs, so the refused request had no effect.
      NARROW BY CONSTRUCTION — it never swallows a real 403:
        · only the gate's KEY refusal counts: a 403 named token_stale (a key rode and was wrong) or token_missing (none
-         rode) in X-StarNet-Code (sidecar/respond.js). A station that names no refusal (an older one) is read by its body,
+         rode) in X-Vultron-Code (sidecar/respond.js). A station that names no refusal (an older one) is read by its body,
          exactly 'forbidden token' (refuseAtGate's own reply). A route's own refusal ('forbidden', 'forbidden host/origin',
          JSON errors, any other code) passes through untouched;
        · a replay needs PROOF of a rotation — the served page carries a token different from the one just refused;
@@ -257,12 +257,12 @@ const Harness = (() => {
      Self-contained on purpose (every dependency injected): test/stale-token-recovery.test.js lifts it by source. */
   function staleTokenRecovery(o) {
     const MARK = 'forbidden token';
-    const TOKEN_RE = /window\.__STARNET_API_TOKEN__=("(?:[^"\\]|\\.)*")/;
+    const TOKEN_RE = /window\.__VULTRON_API_TOKEN__=("(?:[^"\\]|\\.)*")/;
     let inflight = null;
     // the gate's own name for its refusal (a lower-case code); '' from a station that sends none
     function gateCode(res) {
       let c = '';
-      try { c = String((res && res.headers && typeof res.headers.get === 'function' && res.headers.get('X-StarNet-Code')) || '').trim(); } catch (_) { c = ''; }
+      try { c = String((res && res.headers && typeof res.headers.get === 'function' && res.headers.get('X-Vultron-Code')) || '').trim(); } catch (_) { c = ''; }
       return /^[a-z][a-z0-9_]{0,63}$/.test(c) ? c : '';
     }
     function isStaleReply(res) {
@@ -312,7 +312,7 @@ const Harness = (() => {
      rotated its key and this page could not adopt it). A page the station kept its key from (state.tokenWithheld) is
      never "restarted" — a reload only re-runs the same ownership check — and any other 403 is the route's own
      refusal. state.sessionStale undefined = a caller with no recovery state, read as before (a stale session).
-     THE GATE'S CODE DECIDES (truthful acks): a station that names its refusals (X-StarNet-Code, sidecar/respond.js) says which
+     THE GATE'S CODE DECIDES (truthful acks): a station that names its refusals (X-Vultron-Code, sidecar/respond.js) says which
      one it was — token_stale is a stale session, token_missing a page that carries no key (the withheld notice), anything else
      the route's own refusal, worded as an answer, never "unreachable". The status reading above is the legacy one, kept for a
      station that sends no code. `response` is a fetch Response, or a Harness.api result (its code; one this page made up
@@ -324,11 +324,11 @@ const Harness = (() => {
     const s = state || {};
     const status = Number(response.status) || 0;
     let station = '';
-    try { station = String((response.headers && typeof response.headers.get === 'function' ? response.headers.get('X-StarNet-Code') : response.code) || '').trim(); } catch (_) { station = ''; }
+    try { station = String((response.headers && typeof response.headers.get === 'function' ? response.headers.get('X-Vultron-Code') : response.code) || '').trim(); } catch (_) { station = ''; }
     if (!/^[a-z][a-z0-9_]{0,63}$/.test(station) || /^(?:http_\d+|bad_body)$/.test(station)) station = '';   // a station code is a lower-case name
     if (station ? station === 'token_missing' : (status === 403 && s.tokenWithheld)) {
       return { code: 'token_withheld', status, terminal: true, staleSession: false, stationCode: station,
-        tokenWithheld: s.withheldNotice || 'StarNet could not confirm this browser is yours — see the station notice.',
+        tokenWithheld: s.withheldNotice || 'Vultron could not confirm this browser is yours — see the station notice.',
         message: 'this browser was not verified as your own account — see the station notice' };
     }
     if (station ? station === 'token_stale' : (status === 403 && s.sessionStale !== false)) {
@@ -337,8 +337,8 @@ const Harness = (() => {
     }
     if (status === 403) {
       return { code: 'forbidden', status, terminal: true, staleSession: false, tokenWithheld: '', stationCode: station,
-        message: station === 'forbidden_origin' ? 'this page’s address doesn’t match the station; open StarNet at the exact address you forward to it'
-          : station === 'forbidden_host' ? 'StarNet answers only on localhost / 127.0.0.1; reach it through a port forward, not a hostname'
+        message: station === 'forbidden_origin' ? 'this page’s address doesn’t match the station; open Vultron at the exact address you forward to it'
+          : station === 'forbidden_host' ? 'Vultron answers only on localhost / 127.0.0.1; reach it through a port forward, not a hostname'
           : 'the station refused this request (HTTP 403)' };
     }
     // no answer, a timeout, a rate limit or a server fault may clear on its own; any other status will not
@@ -363,7 +363,7 @@ const Harness = (() => {
   const STALE_KEY = 'station-restarted';
   // "keeps trying" only where it is true: a page served by the sidecar re-reads '/' on every refused call; a desktop page never does
   const staleLine = () => 'The station restarted and this page has not picked up its new key yet. '
-    + (!DESKTOP && !(typeof window !== 'undefined' && window.__STARNET_API__) ? 'It keeps trying on its own; reload this page to reconnect now.' : 'Reload this page to reconnect.');
+    + (!DESKTOP && !(typeof window !== 'undefined' && window.__VULTRON_API__) ? 'It keeps trying on its own; reload this page to reconnect now.' : 'Reload this page to reconnect.');
   function reloadThisPage() {
     const door = typeof Friendly !== 'undefined' && Friendly.actionButton ? Friendly.actionButton({ action: 'reload' }) : null;
     if (door && door.run) door.run(); else if (typeof location !== 'undefined' && location.reload) location.reload();
@@ -394,9 +394,9 @@ const Harness = (() => {
       : r === 'other-user' ? 'the connection belongs to another account'
       : r === 'unsupported-platform' ? 'this system can’t run the ownership check'
       : 'the ownership check did not pass';
-    return 'StarNet could not confirm this browser runs as your own user account (' + why + '), so it won’t take commands from this page. '
+    return 'Vultron could not confirm this browser runs as your own user account (' + why + '), so it won’t take commands from this page. '
       + (withheldRetryable(r) ? 'Reload this page to run the check again. If it keeps failing, open' : 'Open')
-      + ' StarNet from the desktop app, or if this is your own browser, restart StarNet with STARNET_TRUST_LOCAL_PEERS=1.';
+      + ' Vultron from the desktop app, or if this is your own browser, restart Vultron with VULTRON_TRUST_LOCAL_PEERS=1.';
   }
   // Shown ONCE per page life — at boot (init) or on the first refused call, whichever comes first — and kept in
   // NOTIFICATIONS as one alert (key folds a repeat after a reload), because it outlives a toast's few seconds. A page
@@ -429,9 +429,9 @@ const Harness = (() => {
   const staleToken = staleTokenRecovery({
     rawFetch: (u, init) => { pageReadAt = Date.now(); return window.fetch(u, init); },   // '/' is not an API URL, so the wrapper passes it straight through
     getToken: () => apiToken,
-    setToken: t => { apiToken = t; try { window.__STARNET_API_TOKEN__ = t; } catch (_) {} },   // apiticket.js mints from the window copy
+    setToken: t => { apiToken = t; try { window.__VULTRON_API_TOKEN__ = t; } catch (_) {} },   // apiticket.js mints from the window copy
     // a withheld page re-reads '/' only when a transient retry is due (last: withheldRetryDue stamps the attempt)
-    canRefresh: () => !DESKTOP && !(typeof window !== 'undefined' && window.__STARNET_API__) && (!tokenWithheld || withheldRetryDue()) && staleRetryDue(),
+    canRefresh: () => !DESKTOP && !(typeof window !== 'undefined' && window.__VULTRON_API__) && (!tokenWithheld || withheldRetryDue()) && staleRetryDue(),
     onRecovered: () => {
       sessionStale = false; staleNotified = false;
       if (tokenWithheld) {   // the re-run ownership check passed: not a restart, and the withheld alert is now handled
@@ -450,7 +450,7 @@ const Harness = (() => {
       if (!staleNotified) { staleNotified = true; stationNotify(staleLine(), 'warn', { kind: 'alert', key: STALE_KEY, onClick: reloadThisPage }); }
     }
   });
-  if (typeof window !== 'undefined' && window.fetch && !window.__STARNET_FETCH_HARDENED__) {
+  if (typeof window !== 'undefined' && window.fetch && !window.__VULTRON_FETCH_HARDENED__) {
     const rawFetch = window.fetch.bind(window);
     window.fetch = function (u, init) {
       if (!isApiUrl(u)) return rawFetch(u, init);
@@ -468,7 +468,7 @@ const Harness = (() => {
         throw e;
       }));
     };
-    window.__STARNET_FETCH_HARDENED__ = true;
+    window.__VULTRON_FETCH_HARDENED__ = true;
   }
 
   const readinessCache = SK.providerReadiness.makeCache();
@@ -510,7 +510,7 @@ const Harness = (() => {
   async function refreshCreditsConfigured() {
     creditsEpoch++;
     await refreshProviderReadiness();
-    return configured('starnet');
+    return configured('vultron');
   }
   function normalizeProviderId(provider) {
     return SK.providers.registry.normalizeProviderId(provider || 'openrouter', '');
@@ -598,8 +598,8 @@ const Harness = (() => {
      hand-over carries that revision and the station takes it only if nothing changed since — an older page can never
      put back a key the Commander rotated or removed elsewhere. A save or REMOVE that failed to reach the station is
      `pending`: the next page boot retries it (on the same condition) until the station confirms it. */
-  const ENGINE_SYNC_SKIP = { codex: 1, grok: 1, kimi: 1, starnet: 1, 'claude-cli': 1 };
-  const ENGINE_SYNC_SLOT = 'starnet.byok.engineSync';
+  const ENGINE_SYNC_SKIP = { codex: 1, grok: 1, kimi: 1, vultron: 1, 'claude-cli': 1 };
+  const ENGINE_SYNC_SLOT = 'vultron.byok.engineSync';
   const ENGINE_RETRY_NOTE = ' — this page retries the next time it loads';
   function engineConfigOf(p) {
     let keyPool = [];
@@ -694,8 +694,8 @@ const Harness = (() => {
       for (let i = 0; i < localStorage.length; i++) {
         const k = String(localStorage.key(i) || '');
         const p = k === LS.baseUrl ? 'openrouter' : (k.indexOf(LS.baseUrl + '.') === 0 ? normalizeProviderId(k.slice(LS.baseUrl.length + 1)) : '');
-        // starnet's endpoint is the linked account's (the sidecar resolves it): never handed over
-        if (!p || p === 'starnet' || held.has(p)) continue;
+        // vultron's endpoint is the linked account's (the sidecar resolves it): never handed over
+        if (!p || p === 'vultron' || held.has(p)) continue;
         held.set(p, String(readScoped(LS.baseUrl, p) || '').trim());   // '' = this window cleared it: the station forgets its copy
       }
     } catch (e) {
@@ -710,7 +710,7 @@ const Harness = (() => {
     return Promise.resolve().then(() => fetch('/api/runtime/agent', { cache: 'no-store' }))
       .then(r => (r && r.ok) ? r.json() : null)
       .then(j => ((j && Array.isArray(j.keptEndpoints)) ? j.keptEndpoints : [])
-        .map(e => String((e && e.provider) || '').trim().toLowerCase()).filter(p => p && p !== 'starnet' && normalizeProviderId(p) === p), e => {
+        .map(e => String((e && e.provider) || '').trim().toLowerCase()).filter(p => p && p !== 'vultron' && normalizeProviderId(p) === p), e => {
         console.warn('[harness] could not read which endpoints the station keeps: ' + ((e && e.message) || e));
         return [];
       });
@@ -761,7 +761,7 @@ const Harness = (() => {
      provider verdict, but the route itself can be refused before it runs (403 forbidden origin/host/token, 423 frozen)
      with a non-JSON body — which used to fold into "the provider did not verify this key" while the provider was
      never even asked. Name the station's refusal and its fix instead. `code`: the gate's own name for it
-     (X-StarNet-Code); the body's words are read only from a station that sends none. PURE (test-locked). */
+     (X-Vultron-Code); the body's words are read only from a station that sends none. PURE (test-locked). */
   function keyCheckFailure(status, j, text, code) {
     j = j || {};
     if (j.error) return String(j.error);
@@ -772,8 +772,8 @@ const Harness = (() => {
     const withheld = typeof tokenWithheld === 'string' && tokenWithheld;
     const gate = code ? String(code) : /forbidden origin/.test(t) ? 'forbidden_origin' : /forbidden host/.test(t) ? 'forbidden_host'
       : /forbidden token/.test(t) ? (withheld ? 'token_missing' : 'token_stale') : '';
-    const hint = gate === 'forbidden_origin' ? ' — this page’s address doesn’t match the station; open StarNet at the exact address you forward to it'
-      : gate === 'forbidden_host' ? ' — StarNet answers only on localhost / 127.0.0.1; reach it through a port forward, not a hostname'
+    const hint = gate === 'forbidden_origin' ? ' — this page’s address doesn’t match the station; open Vultron at the exact address you forward to it'
+      : gate === 'forbidden_host' ? ' — Vultron answers only on localhost / 127.0.0.1; reach it through a port forward, not a hostname'
       : gate === 'token_missing' ? ' — this browser was not verified as running under your own user account, so the station kept its key from this page (see the notice)'
       : gate === 'token_stale' ? ' — the station restarted since this page loaded; reload the page'
       : '';
@@ -1030,7 +1030,7 @@ const Harness = (() => {
       }
       // OpenRouter's catalog (and the managed one, which passes it through) lists batch-only '<id>:batch' rows that
       // chat/completions refuses with a 404: never offer one (the sidecar route drops them too; the direct fallback above does not)
-      if (p === 'openrouter' || p === 'starnet') list = list.filter(m => !/:batch$/i.test(m.id));
+      if (p === 'openrouter' || p === 'vultron') list = list.filter(m => !/:batch$/i.test(m.id));
       list.sort((a, b) => a.id.localeCompare(b.id));
       // scope the catalog to the provider it was fetched FOR — never to a shared map another
       // provider's warm can overwrite (see modelsByProv above).
@@ -1361,11 +1361,11 @@ const Harness = (() => {
        (Nested so the tests that execute chat() on its own run it whole.) */
     function transportLoss(e, site) {
       if (e != null && (typeof e === 'object' || typeof e === 'function') && Object.isExtensible(e)) {
-        e.starnetTransport = site;
-        if (e.starnetTransport === site) return e;
+        e.vultronTransport = site;
+        if (e.vultronTransport === site) return e;
       }
       const wrapped = new Error(String((e && e.message) || e || 'the connection was lost'));
-      wrapped.starnetTransport = site;
+      wrapped.vultronTransport = site;
       wrapped.cause = e;
       return wrapped;
     }
@@ -1381,7 +1381,7 @@ const Harness = (() => {
           continuationToken: String(recovery.continuationToken)
         };
       }
-      if (provider !== 'starnet' && getBaseUrl(provider)) reqBody.baseUrl = getBaseUrl(provider);   // StarNet's endpoint is the linked account's
+      if (provider !== 'vultron' && getBaseUrl(provider)) reqBody.baseUrl = getBaseUrl(provider);   // Vultron's endpoint is the linked account's
       if (streamId) reqBody.streamId = streamId;   // M-mem.2b: scope this run's memory to the active workstream
       if (connectorContinuationOf) reqBody.connectorContinuationOf = connectorContinuationOf;
       if (retryUserRunId) reqBody.retryUserRunId = String(retryUserRunId);
@@ -1459,7 +1459,7 @@ const Harness = (() => {
       // (an abort already withdrew it)
       if (shared) { shared.abandon(); shared = null; }
       // a Stop while connecting keeps today's message, but only a real refused/failed fetch is a transport loss
-      const refused = new Error('cannot reach the STARNET sidecar — start it with `npm start` (node sidecar/index.js)');
+      const refused = new Error('cannot reach the VULTRON sidecar — start it with `npm start` (node sidecar/index.js)');
       throw isAbortError(e) ? refused : transportLoss(refused, 'fetch');
     }
     // A pre-stream failure's TRUE reason lives in the response body — runRouteFailure's {"error":"sidecar
@@ -1467,7 +1467,7 @@ const Harness = (() => {
     // token". The old bare throw discarded it, so the friendly-error ladder never saw the text it classifies on
     // and the RECONNECT CHATGPT / reload doors were lost on this whole path (EL-10/EL-11). Read it (bounded)
     // and carry it in the thrown message. The station's own name for the refusal rides beside the words (stationCode:
-    // X-StarNet-Code), so COMMS decides a stale page, a wrong address or a route's refusal from it, never from a bare 403.
+    // X-Vultron-Code), so COMMS decides a stale page, a wrong address or a route's refusal from it, never from a bare 403.
     if (!res.ok || !res.body) {
       if (shared) { shared.drop(); shared = null; }
       let detail = '';
@@ -1489,7 +1489,7 @@ const Harness = (() => {
     const dec = new TextDecoder();
     let buf = '', full = '', lastUsage = null, runId = null, errMsg = null, endReason = null, finishReason = null, completionVerdict = 'not_assessed', effectVerdict = 'no_observed_effects';
     let budgetScope = null, budgetCapUsd = null;   // additive: WHICH spend cap ended a 'budget' run (+ its $ cap)
-    let budgetCapIsBalance = false;   // additive: that per-run ceiling was the StarNet balance (sidecar admission clamp)
+    let budgetCapIsBalance = false;   // additive: that per-run ceiling was the Vultron balance (sidecar admission clamp)
     let budgetProjected = false;   // additive: the run stopped BEFORE that cap (its family's calls in flight took what was left)
     // additive: a 'budget' stop at the per-run TOKEN ceiling for a model with no known price (loop.js maxUnpricedTokens).
     // The $ cap never governed it, so COMMS must name the real limit instead of "raise your spend cap".
@@ -1925,7 +1925,7 @@ const Harness = (() => {
      answer is read ONCE, by read(response) -> { ok, status, code, j } (truthful acks, 2026-11-03):
        j     the parsed JSON body, or null — never synthesized
        ok    2xx AND a JSON object AND j.ok !== false: a 200 {ok:false} is a refusal, not a success
-       code  '' when ok; else the station's own name for it (X-StarNet-Code, sidecar/respond.js CODES), else j.code, else
+       code  '' when ok; else the station's own name for it (X-Vultron-Code, sidecar/respond.js CODES), else j.code, else
              bad_body (a 2xx that is not a JSON object), refused (a 2xx {ok:false}) or http_<status>
      The shapes:
        get(path)        -> the parsed body of a 2xx JSON answer; else THROWS an Error('http <status>') carrying
@@ -1959,7 +1959,7 @@ const Harness = (() => {
   // the station's own name for a failure (sidecar/respond.js stamps every answer >= 400: a lower-case code); '' from an older station
   function stationCodeOf(response) {
     let c = '';
-    try { c = String((response && response.headers && typeof response.headers.get === 'function' && response.headers.get('X-StarNet-Code')) || '').trim(); } catch (_) { c = ''; }
+    try { c = String((response && response.headers && typeof response.headers.get === 'function' && response.headers.get('X-Vultron-Code')) || '').trim(); } catch (_) { c = ''; }
     return /^[a-z][a-z0-9_]{0,63}$/.test(c) ? c : '';
   }
   // ONE reading of an answer, pure over the Response. A body read the caller aborted is no answer: it rejects.
@@ -1986,8 +1986,8 @@ const Harness = (() => {
       const notice = typeof tokenWithheld === 'string' && tokenWithheld && typeof tokenWithheldNotice === 'function' ? tokenWithheldNotice(tokenWithheld) : '';
       return notice ? notice.replace(/\.\s*$/, '') : 'this browser was not verified as your own account — see the station notice';
     }
-    if (code === 'forbidden_origin') return 'this page’s address doesn’t match the station; open StarNet at the exact address you forward to it';
-    if (code === 'forbidden_host') return 'StarNet answers only on localhost / 127.0.0.1; reach it through a port forward, not a hostname';
+    if (code === 'forbidden_origin') return 'this page’s address doesn’t match the station; open Vultron at the exact address you forward to it';
+    if (code === 'forbidden_host') return 'Vultron answers only on localhost / 127.0.0.1; reach it through a port forward, not a hostname';
     const said = j && [j.error, j.message, j.reason].find(x => typeof x === 'string' && x.trim());
     if (said) return said.trim().replace(/\.\s*$/, '');
     if (code === 'bad_body') return 'the station answered (HTTP ' + status + ') but its reply could not be read';
@@ -2018,14 +2018,14 @@ const Harness = (() => {
     try { U.bus.on('agent.run.error', endContextRun); } catch (_) {}
   }
 
-  /* IS THE LOCAL ENGINE ACTUALLY UP? (2026-07-29 — the "Can't reach StarNet's local service" misdiagnosis.)
+  /* IS THE LOCAL ENGINE ACTUALLY UP? (2026-07-29 — the "Can't reach Vultron's local service" misdiagnosis.)
      A dead response stream and a dead sidecar are INDISTINGUISHABLE from the thrown fetch error alone (see the
      long note on isTransportLoss in friendlyerror.js), and the app used to assert the sidecar was gone and tell
      people to restart — sending users chasing a phantom for days when the real drop was the model's stream.
      This is the measurement that turns that guess into proof.
 
      GET /api/health is the right probe and the only one that works here: it is in apiauth's TOKEN_EXEMPT set, so
-     it needs no X-StarNet-Token (a stale-token 403 would otherwise read as "dead" — a second lie), and its
+     it needs no X-Vultron-Token (a stale-token 403 would otherwise read as "dead" — a second lie), and its
      handler is a bare writeHead(200)/end('ok') that touches no store, so it cannot itself fail for load reasons.
      Bounded by an AbortController, because a socket the sidecar accepted and never answered (the exact
      hung-request bug this fix exists for) would otherwise hang the error row forever. On timeout we return
@@ -2037,7 +2037,7 @@ const Harness = (() => {
      (Chromium appears to retry a dead keep-alive socket with a ~2s backoff before surfacing "Failed to fetch").
      Samples: 249,250,251,251,268,1754,1771,1773,1794,2015 + 251,1778,2030. A 2000ms budget therefore lands
      exactly ON the slow mode and half of all genuinely-dead engines time out into `null` — which is the ONE case
-     where "restart StarNet" is the correct advice, so it must not be lost to an impatient probe. 4000ms clears
+     where "restart Vultron" is the correct advice, so it must not be lost to an impatient probe. 4000ms clears
      the observed tail ~2x. Cost is bounded and rare: the common in-band failure path proves liveness by receipt
      and never calls this at all, and a healthy engine answers /api/health in ~1ms.
      Resolves true | false | null. Never throws, never rejects. */
@@ -2067,7 +2067,7 @@ const Harness = (() => {
        'ok'       /api/health answered 200 — the service is up (a dead link is this window's, not the engine's)
        'degraded' it answered 503 'degraded: …' (crash-loop breaker / workspace-owner hold) — reason is that text VERBATIM
        'silent'   nothing answered inside the budget (a hung service)      'down' the request was refused outright
-     For silent/down the desktop guardian's halt (starnet_sidecar_status) is the reason when it has one. Same 4s budget
+     For silent/down the desktop guardian's halt (vultron_sidecar_status) is the reason when it has one. Same 4s budget
      as pingEngine and for the same measured reason: a hung service must not leave the probe pending forever.
      restartEngine() -> Promise<bool>: the desktop shell kills and respawns the sidecar (same port, same per-launch
      token — the World bridge reconnects on its own). false in a browser (nothing to restart) or on any failure.
@@ -2088,7 +2088,7 @@ const Harness = (() => {
     finally { if (timer) clearTimeout(timer); }
     const core = tauriCoreNow();
     if (!reason && state !== 'ok' && core) {
-      try { const g = await core.invoke('starnet_sidecar_status'); if (g && g.halted && g.reason) reason = 'station service halted: ' + String(g.reason); } catch (_) {}
+      try { const g = await core.invoke('vultron_sidecar_status'); if (g && g.halted && g.reason) reason = 'station service halted: ' + String(g.reason); } catch (_) {}
     }
     return { state, reason };
   }
@@ -2097,7 +2097,7 @@ const Harness = (() => {
     const core = tauriCoreNow();
     if (!core) return Promise.resolve(false);
     if (restartInflight) return restartInflight;
-    restartInflight = Promise.resolve().then(() => core.invoke('starnet_restart_sidecar')).then(up => up === true, () => false)
+    restartInflight = Promise.resolve().then(() => core.invoke('vultron_restart_sidecar')).then(up => up === true, () => false)
       .then(up => { if (up) pushDesktopEndpoints(); return up; })   // #137: re-sync the endpoints with the restarted station
       .finally(() => { restartInflight = null; });
     return restartInflight;

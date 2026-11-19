@@ -9,7 +9,7 @@
    channels and their env auto-starts:
      · the roster-less fallback stands: an agent with no roster wire runs the saved pair, so the boot judges that pair;
      · the STORED credential stands: a sign-in recorded dead still starts the bot (it answers with the expired-sign-in error);
-     · an env auto-start is judged on the record it saves ({ openrouter, STARNET_DEFAULT_MODEL, no key }), never on
+     · an env auto-start is judged on the record it saves ({ openrouter, VULTRON_DEFAULT_MODEL, no key }), never on
        OPENROUTER_KEY alone: the env model marks the headless deploy (the desktop shell injects the channel token and the
        OpenRouter key from the keychain, never a model);
      · an env auto-start never stands in for an ENABLED saved record: it is judged on that record's own agent, so a bound
@@ -51,12 +51,12 @@ function station(sc) {
   const c = {
     RunWire, agentRoster: new Map(Object.entries(sc.roster || {})),
     runtimeKeys: Object.assign(Object.create(null), sc.keys || {}), runtimeBaseUrls: Object.create(null),
-    runtimeKey: String(env.STARNET_OPENROUTER_KEY || ''),   // index.js seeds it from ENV('OPENROUTER_KEY')
+    runtimeKey: String(env.VULTRON_OPENROUTER_KEY || ''),   // index.js seeds it from ENV('OPENROUTER_KEY')
     engineKeys: { get: () => null },
     normalizeProviderId: p => Reg.normalizeProviderId(p, ''), normalizeProvider: p => Reg.normalizeProviderId(p, 'openrouter'),
     getProviderProfile: Reg.getProviderProfile, registryProviderUsesCodex: Reg.providerUsesCodex, registryProviderUsesDeviceOAuth: Reg.providerUsesDeviceOAuth,
     providerRequiresKey: Reg.providerRequiresKey, providerRequiresBaseUrl: Reg.providerRequiresBaseUrl,
-    ENV: k => env['STARNET_' + k], envFirst: names => { for (const n of names || []) if (env[n]) return env[n]; return ''; },
+    ENV: k => env['VULTRON_' + k], envFirst: names => { for (const n of names || []) if (env[n]) return env[n]; return ''; },
     // sc.codex: 'live' (signed in), 'dead' (stored, recorded dead: a relogin-class refresh failure), else none
     codexTokens: sc.codex ? { access_token: 'synthetic-codex-access' } : null, oauthProviders: {}, CODEX_DEFAULT_MODEL: 'gpt-5.5',
     accountLive: () => sc.codex === 'live', anyExtraAccountLive: () => false,
@@ -184,17 +184,17 @@ for (const ch of CHANNELS) {
     const s = station(Object.assign({ tokens: TOKENS, secrets: {} }, sc));
     const got = s.boot();
     A.eq(got.map(x => x.ch), want, kind + ' env: ' + label);
-    A.ok(got.every(x => !(x.cfg || {}).credential && x.model === (sc.env || {}).STARNET_DEFAULT_MODEL), '...each with no credential saved and the env model as its record\'s: ' + JSON.stringify(got));
-    if (wantLive) A.eq(s.stationHubRunConfig('agent', { provider: 'openrouter', model: sc.env.STARNET_DEFAULT_MODEL }).ok ? 'runs' : 'refused', wantLive, '...and its messages ' + wantLive);
+    A.ok(got.every(x => !(x.cfg || {}).credential && x.model === (sc.env || {}).VULTRON_DEFAULT_MODEL), '...each with no credential saved and the env model as its record\'s: ' + JSON.stringify(got));
+    if (wantLive) A.eq(s.stationHubRunConfig('agent', { provider: 'openrouter', model: sc.env.VULTRON_DEFAULT_MODEL }).ok ? 'runs' : 'refused', wantLive, '...and its messages ' + wantLive);
   };
-  const ENVV = { STARNET_OPENROUTER_KEY: 'sk-or-ENV-OPERATOR', STARNET_DEFAULT_MODEL: 'openai/gpt-5' };
+  const ENVV = { VULTRON_OPENROUTER_KEY: 'sk-or-ENV-OPERATOR', VULTRON_DEFAULT_MODEL: 'openai/gpt-5' };
   envRow('a roster-less headless station with OPENROUTER_KEY and DEFAULT_MODEL starts every env bot', 'control', { env: ENVV }, CHANNELS, 'runs');
   envRow('an agent on Anthropic with its key and no OPENROUTER_KEY starts them on the Anthropic pair', 'DEFECT',
-    { env: { STARNET_DEFAULT_MODEL: 'openai/gpt-5' }, roster: { agent: { name: 'NOVA', provider: 'anthropic', model: 'claude-sonnet-5' } }, keys: { anthropic: 'sk-ant-KEYCHAIN' } }, CHANNELS, 'runs');
+    { env: { VULTRON_DEFAULT_MODEL: 'openai/gpt-5' }, roster: { agent: { name: 'NOVA', provider: 'anthropic', model: 'claude-sonnet-5' } }, keys: { anthropic: 'sk-ant-KEYCHAIN' } }, CHANNELS, 'runs');
   envRow('an agent on Anthropic with no Anthropic key stays off, though OPENROUTER_KEY is set', 'REVERSE',
     { env: ENVV, roster: { agent: { name: 'NOVA', provider: 'anthropic', model: 'claude-sonnet-5' } } }, [], 'refused');
   envRow('no DEFAULT_MODEL: no env bot starts (the model marks the headless deploy), whatever runs', 'control',
-    { env: { STARNET_OPENROUTER_KEY: 'sk-or-ENV-OPERATOR' }, roster: { agent: { name: 'NOVA', provider: 'openrouter', model: 'openai/gpt-5' } } }, []);
+    { env: { VULTRON_OPENROUTER_KEY: 'sk-or-ENV-OPERATOR' }, roster: { agent: { name: 'NOVA', provider: 'openrouter', model: 'openai/gpt-5' } } }, []);
   // a saved, enabled record that runs wins over the env start (the env branch is the else)
   const both = station({ tokens: TOKENS, env: ENVV, keys: { anthropic: 'sk-ant-KEYCHAIN' }, roster: { agent: { name: 'NOVA', provider: 'anthropic', model: 'claude-sonnet-5' } },
     secrets: saved('telegram', { provider: 'openrouter', model: 'old-openrouter-model' }) });

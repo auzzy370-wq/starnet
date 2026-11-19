@@ -1,5 +1,5 @@
 /* node test/model-provider-reconcile.test.js — regression for a saved direct-Anthropic model crossing into
-   the managed StarNet provider after relink/update. The live catalog is the authority: an exact routed
+   the managed Vultron provider after relink/update. The live catalog is the authority: an exact routed
    equivalent is persisted, while a model absent from a successful catalog is cleared instead of reinserted. */
 'use strict';
 const A = require('./_assert.js');
@@ -9,7 +9,7 @@ const dockPath = path.join(__dirname, '..', 'frontend', 'app', 'modeldock.js');
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 async function scenario(savedModel, catalog, switchFrom, duringFetch, options = {}) {
-  const targetProvider = options.provider || 'starnet';
+  const targetProvider = options.provider || 'vultron';
   const catalogPath = /^(codex|grok|kimi)$/.test(targetProvider) ? '/api/auth/' + targetProvider + '/models' : '/api/models/' + targetProvider;
   let revision = 0, identity = 'agent';
   let model = savedModel;
@@ -57,7 +57,7 @@ async function scenario(savedModel, catalog, switchFrom, duringFetch, options = 
     ModelDock.init({ apply: change => applied.push(change), identity: () => identity });
     if (switchFrom) {
       await sleep(30);
-      provider = 'starnet';
+      provider = 'vultron';
       await ModelDock.reconcile();
     }
     for (let i = 0; i < 100 && !applied.length; i++) await sleep(5);
@@ -79,11 +79,11 @@ async function overlappingCatalogs() {
   global.document = { getElementById: () => null, querySelector: () => null, addEventListener() {}, createDocumentFragment: () => ({ appendChild() {} }) };
   global.localStorage = { getItem: () => '1', setItem() {} }; global.U = { esc: String };
   global.Harness = {
-    getProv: () => 'starnet', setProv() { revision++; }, getModel: () => model, setModel: value => { model = value; revision++; },
+    getProv: () => 'vultron', setProv() { revision++; }, getModel: () => model, setModel: value => { model = value; revision++; },
     getSelectionRevision: () => revision, getReasoningEffort: () => 'medium', setReasoningEffort() {},
-    configured: p => p === 'starnet', getKey: () => '', getBaseUrl: () => '', listModels: async () => [],
+    configured: p => p === 'vultron', getKey: () => '', getBaseUrl: () => '', listModels: async () => [],
     apiFetch: async url => {
-      if (url === '/api/models/starnet') {
+      if (url === '/api/models/vultron') {
         if (held) { const n = count++; const wait = new Promise(r => releases[n] = r); starts[n](); await wait; }
         return new Response(JSON.stringify({ models: [{ id: held ? 'chosen' : 'old' }] }));
       }
@@ -112,16 +112,16 @@ module.exports = (async () => {
   const live = [{ id: 'anthropic/claude-sonnet-5', name: 'Claude Sonnet 5', supported_parameters: ['reasoning_effort', 'tools'] }];
   const mapped = await scenario('claude-sonnet-5', live, 'anthropic');
   A.eq(mapped.model, 'anthropic/claude-sonnet-5', 'direct Anthropic bare id maps to the catalog-confirmed managed id');
-  A.eq(mapped.provider, 'starnet', 'provider remains StarNet during reconciliation');
+  A.eq(mapped.provider, 'vultron', 'provider remains Vultron during reconciliation');
   A.eq(mapped.applied.length, 1, 'the reconciled pair is persisted through the app callback exactly once');
   A.eq(mapped.applied[0].reason, 'catalog_reconcile', 'the UI can explain that it updated the model');
   A.eq(mapped.applied[0].previousModel, 'claude-sonnet-5', 'the notice names the stale saved value');
 
   const stale = await scenario('claude-sonnet-4-5', live);
-  A.eq(stale.model, '', 'a model absent from a successful StarNet catalog is cleared, not silently used');
+  A.eq(stale.model, '', 'a model absent from a successful Vultron catalog is cleared, not silently used');
   A.eq(stale.applied[0].reason, 'catalog_unavailable', 'the app receives the explicit unavailable state');
-  A.eq(stale.internals.catalogEquivalent('claude-sonnet-5', 'starnet', live), 'anthropic/claude-sonnet-5', 'mapping requires an exact live-catalog match');
-  A.eq(stale.internals.catalogEquivalent('invented-model', 'starnet', live), '', 'mapping never invents a managed slug');
+  A.eq(stale.internals.catalogEquivalent('claude-sonnet-5', 'vultron', live), 'anthropic/claude-sonnet-5', 'mapping requires an exact live-catalog match');
+  A.eq(stale.internals.catalogEquivalent('invented-model', 'vultron', live), '', 'mapping never invents a managed slug');
   // GitHub #98: switching to native GEMINI keeps the routed 'google/…' spelling; the live Gemini catalog confirms its native id
   const geminiLive = [{ id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash' }];
   A.eq(stale.internals.catalogEquivalent('google/gemini-2.5-flash', 'gemini', geminiLive), 'gemini-2.5-flash', 'the routed Gemini spelling maps to the native catalog row');
@@ -131,10 +131,10 @@ module.exports = (async () => {
 
   for (const [label, action, expectedProvider, expectedModel] of [
     ['provider switch', h => { h.setProv('ollama'); h.setModel('qwen3:14b'); }, 'ollama', 'qwen3:14b'],
-    ['A to B to A', h => { h.setProv('ollama'); h.setProv('starnet'); }, 'starnet', 'obsolete'],
-    ['same-provider model choice', h => h.setModel('new-choice'), 'starnet', 'new-choice'],
-    ['same-pair explicit choice', h => h.setModel('obsolete'), 'starnet', 'obsolete'],
-    ['agent identity switch', (_h, focus) => focus('specialist'), 'starnet', 'obsolete']
+    ['A to B to A', h => { h.setProv('ollama'); h.setProv('vultron'); }, 'vultron', 'obsolete'],
+    ['same-provider model choice', h => h.setModel('new-choice'), 'vultron', 'new-choice'],
+    ['same-pair explicit choice', h => h.setModel('obsolete'), 'vultron', 'obsolete'],
+    ['agent identity switch', (_h, focus) => focus('specialist'), 'vultron', 'obsolete']
   ]) {
     const result = await scenario('obsolete', live, null, action);
     A.eq(result.provider, expectedProvider, label + ' preserves provider');

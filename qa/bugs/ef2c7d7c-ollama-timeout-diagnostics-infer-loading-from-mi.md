@@ -9,7 +9,7 @@ found: 2026-10-11
 lane: agent/provider-triage-1011
 fix: e91f3231e
 origin: audit
-report: https://github.com/androoAGI/starnet/issues/99
+report: https://github.com/YOUR-GITHUB-USER/vultron/issues/99
 affected: Source candidate 9f7ab4b4c; synthetic Windows loopback Ollama fixture
 family: local-provider-diagnostic-truth
 installer: unverified
@@ -40,7 +40,7 @@ A native Ollama request that times out before response headers can report that t
 
 ## Verdict
 
-The source diagnostic now distinguishes observed placement from an unproven timeout cause, as required by `docs/STARNET_BEHAVIOR_CONTRACT.md` and the truthful-state law. Retry limits, cancellation, provider routing, loaded-placement data and persistence are unchanged. Full aggregate gates belong to the integration lane. No installed artifact, actual Ollama model or customer recovery was verified; issue #99 remains an open investigation.
+The source diagnostic now distinguishes observed placement from an unproven timeout cause, as required by `docs/VULTRON_BEHAVIOR_CONTRACT.md` and the truthful-state law. Retry limits, cancellation, provider routing, loaded-placement data and persistence are unchanged. Full aggregate gates belong to the integration lane. No installed artifact, actual Ollama model or customer recovery was verified; issue #99 remains an open investigation.
 
 ## Regression
 

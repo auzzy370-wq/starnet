@@ -16,7 +16,7 @@
 
 const CREW_KIT_DEFERRED = Object.freeze(['team.dispatch', 'team.subagents', 'team.steer', 'team.interrupt', 'team.resume']);
 
-// isTask: a task run (tools on the wire). deferralOff: SKYNET_TOOL_SEARCH=0. leanCrew: the STARNET_LEAN_CREW value
+// isTask: a task run (tools on the wire). deferralOff: SKYNET_TOOL_SEARCH=0. leanCrew: the VULTRON_LEAN_CREW value
 // ('0' = kill switch). tools: this run's GRANTED tool names. crewCount: roster agents other than the one running.
 function isCrewlessLead({ isTask, deferralOff, leanCrew, tools, crewCount } = {}) {
   const granted = Array.isArray(tools) ? tools : [];

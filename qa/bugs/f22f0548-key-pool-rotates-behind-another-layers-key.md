@@ -21,8 +21,8 @@ When the upstream refused a run's key (a 401, a rate limit, a spent balance), th
 ## Repro
 
 1. Check out a3af8dafd (or any trunk before this fix) and copy `test/credential-store.pool-binding.e2e.test.js` from this lane into it. Run `node test/credential-store.pool-binding.e2e.test.js`.
-2. Row 1a (probe R1): a headless sidecar with `STARNET_KEY_POOL_CUSTOM=E2` and no env key; the page saves CUSTOM {K, U} through POST /api/providers/engine-key; U answers 401 to K; Run Now of a CUSTOM routine. U receives K, then E2, and the run ends `done`.
-3. Row 2a (probe R6): a desktop-shaped sidecar (`STARNET_DESKTOP_SHELL=1`, the IPC token); the shell pushes a CUSTOM endpoint U6 and a pool [P1] with no key; POST /api/run with its own CUSTOM key Kb; U6 answers 401 to Kb. U6 receives Kb, then P1.
+2. Row 1a (probe R1): a headless sidecar with `VULTRON_KEY_POOL_CUSTOM=E2` and no env key; the page saves CUSTOM {K, U} through POST /api/providers/engine-key; U answers 401 to K; Run Now of a CUSTOM routine. U receives K, then E2, and the run ends `done`.
+3. Row 2a (probe R6): a desktop-shaped sidecar (`VULTRON_DESKTOP_SHELL=1`, the IPC token); the shell pushes a CUSTOM endpoint U6 and a pool [P1] with no key; POST /api/run with its own CUSTOM key Kb; U6 answers 401 to Kb. U6 receives Kb, then P1.
 4. Table form: copy `test/credential-store.no-crossing.test.js` and `test/helpers/credential-store-sandbox.js` into the same checkout and run the first. Its pool table runs over trunk's own resolvers, lifted from that tree's index.js, and runOnceCore's own rotation lines.
 
 ## Evidence
@@ -43,7 +43,7 @@ A key pool rides only its own layer's key: the keychain pool only the keychain k
 Named changes:
 - The /api/key answer's `alternateCount` is the size of the pool the shell pushed, ridden or not, which is the push's own answer. At trunk, with no pushed pool, it counted the environment's pool. No client reads this field from the sidecar: the desktop page takes its count from the keychain (`harness_provider_key_status`).
 - `holds()` (step S3's in-flight watch) counts a backup key only while its layer still holds a key for its pool to ride. A run that rotated onto the keychain pool therefore stops at its next call once the keychain key is removed, and a rotation of the keychain key keeps the run going, since the pool then rides the new key.
-- A headless operator who set only `STARNET_KEY_POOL_<ID>` with no environment key, and relied on it rotating behind a page key or a keyless run, loses that rotation. That rotation was the crossing.
+- A headless operator who set only `VULTRON_KEY_POOL_<ID>` with no environment key, and relied on it rotating behind a page key or a keyless run, loses that rotation. That rotation was the crossing.
 
 States it now refuses, each with its exit:
 1. A key the caller sent, or a channel's own key, never rotates onto a station pool. Refused, it fails over to the run's model and provider fallbacks, never to another layer's account (state 9). Exit: send the backup keys with the key (a browser page sends its own pool with its key), or save the key and its backups together in one layer (Settings, or the environment key beside its `KEY_POOL_<ID>`).
@@ -52,7 +52,7 @@ States it now refuses, each with its exit:
 
 Tests:
 - `test/credential-store.pool-binding.e2e.test.js` (http, new): real sidecars and a recording upstream that refuses the primary. RED at a3af8dafd (11 problems, 18 ok), GREEN here (29 assertions).
-- `test/credential-store.no-crossing.test.js` (fast, new): every combination of the three station layers (a key, backups, both or neither; the keychain pushed or adopted from the shell's spawn pair, then left alone, removed or rotated) for Anthropic, CUSTOM, Ollama, StarNet and Grok, under 17 run shapes. Each station is built by index.js's own wiring and each run resolved by runOnceCore's own lines, against an oracle that reads only the station's description. RED at a3af8dafd (9 problems, 10 ok), GREEN here (27 assertions, 19176 runs).
+- `test/credential-store.no-crossing.test.js` (fast, new): every combination of the three station layers (a key, backups, both or neither; the keychain pushed or adopted from the shell's spawn pair, then left alone, removed or rotated) for Anthropic, CUSTOM, Ollama, Vultron and Grok, under 17 run shapes. Each station is built by index.js's own wiring and each run resolved by runOnceCore's own lines, against an oracle that reads only the station's description. RED at a3af8dafd (9 problems, 10 ok), GREEN here (27 assertions, 19176 runs).
 - `test/credential-store.golden.test.js`: deltas.D2 names every moved row with its old pools and the crossing it closed. With the binding undone, the D2 rows get their old pools back and no other row moves.
 - `test/engine-credential.test.js` executes runOnceCore's key, endpoint, watch and pool lines; `test/set-key-body.test.js` runs the real handler over the real store for `alternateCount`; `test/loop.credential-live.test.js` adds the pool rows of the in-flight watch.
 

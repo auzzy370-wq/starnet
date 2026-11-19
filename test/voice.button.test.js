@@ -908,12 +908,12 @@ async function opensWithin(t, ms) {
     };
     const t = boot({ audio: true, Audio: AutoEndAudio, fetch: stableVoiceFetch });
     const timings=[];t.Voice.attachCoordinator({onTiming:value=>timings.push(value)});
-    t.sandbox.localStorage.setItem('starnet.liveVoice.localVoice.v1', 'am_onyx');
+    t.sandbox.localStorage.setItem('vultron.liveVoice.localVoice.v1', 'am_onyx');
     t.Voice.setSpeakReplies(true);
     t.Voice.setLocalTts(true);
     t.Voice.speak('First sentence establishes the speaker.', 'agent');
     await until(() => requests.length >= 1 && !t.Voice.isSpeaking(), 1000);
-    t.sandbox.localStorage.setItem('starnet.liveVoice.localVoice.v1', 'af_nova');
+    t.sandbox.localStorage.setItem('vultron.liveVoice.localVoice.v1', 'af_nova');
     t.Voice.speak('Second sentence must keep that same speaker.', 'agent');
     await until(() => requests.length >= 2, 1000);
     A.eq(requests[0].localVoice, 'am_onyx', 'Local Live snapshots the selected voice when the session begins');
@@ -1314,14 +1314,14 @@ async function opensWithin(t, ms) {
     served = '';
     A.eq((await say('The keyed station voice speaks.')).chain, 'machine', 'AUTO: the keyed station recipe keeps its locked machine shell');
     A.eq(t.Voice.setVoiceEffect('natural').effect, 'natural', 'effect: a choice is saved');
-    A.eq(t.sandbox.localStorage.getItem('starnet.voice.effect.v1'), 'natural', 'effect: the choice persists in app storage');
+    A.eq(t.sandbox.localStorage.getItem('vultron.voice.effect.v1'), 'natural', 'effect: the choice persists in app storage');
     A.eq((await say('Natural for every voice now.')).chain, 'natural', 'a chosen effect applies to the keyed voice too');
     t.Voice.setVoiceEffect('comms');
     A.eq((await say('Over the comms channel.')).chain, 'comms', 'COMMS routes through the transmission chain');
     t.Voice.setVoiceEffect('machine'); served = 'local-kokoro'; t.Voice.setVoiceChoice('am_michael', 'agent');
     A.eq((await say('A built-in voice as a machine.')).chain, 'machine', 'MACHINE wraps a built-in voice in the shell when asked');
     t.Voice.setVoiceEffect('');
-    A.eq(t.sandbox.localStorage.getItem('starnet.voice.effect.v1'), null, 'effect: AUTO clears the stored choice');
+    A.eq(t.sandbox.localStorage.getItem('vultron.voice.effect.v1'), null, 'effect: AUTO clears the stored choice');
 
     // pacing: a built-in voice is slowed BY THE ENGINE, never time-stretched in the browser
     const slow = await say('A quiet aside.', { speedMul: 0.88 });

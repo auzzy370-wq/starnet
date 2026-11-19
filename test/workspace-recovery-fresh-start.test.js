@@ -8,7 +8,7 @@ const Recovery = require('../sidecar/workspace-recovery.js');
 const Lineage = require('../sidecar/workspace-lineage.js');
 const StationRecord = require('../sidecar/station-record.js');
 
-const root = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-recovery-fresh-'));
+const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-recovery-fresh-'));
 let seq = 0;
 function write(base, rel, value) {
   const p = path.join(base, rel);
@@ -18,10 +18,10 @@ function write(base, rel, value) {
 function fixture(marker) {
   const home = path.join(root, String(++seq));
   const current = path.join(home, 'active', 'workspaces');
-  const legacy = path.join(home, 'StarNet', 'workspaces');
+  const legacy = path.join(home, 'Vultron', 'workspaces');
   fs.mkdirSync(current, { recursive: true });
   write(legacy, 'agent.save.json', { version: 1, agentId: 'agent', updatedAt: 1000, doc: {
-    schema: 'starnet.save', version: 5, updatedAt: 1000,
+    schema: 'vultron.save', version: 5, updatedAt: 1000,
     agent: { id: 'agent', name: 'OLD-STATION' }, station: { rooms: [{ id: 'old' }], props: [] }, workstreams: []
   } });
   write(legacy, '.fresh-start.json', { version: 1, acknowledgedRoots: [] });
@@ -102,7 +102,7 @@ try {
   A.eq(fs.existsSync(path.join(denied.current, 'agent.save.json')), false, 'an unreadable marker never authorizes importing a station');
   A.report('workspace-recovery-fresh-start.test');
 } finally {
-  if (path.dirname(root) !== path.resolve(os.tmpdir()) || !path.basename(root).startsWith('starnet-recovery-fresh-')) {
+  if (path.dirname(root) !== path.resolve(os.tmpdir()) || !path.basename(root).startsWith('vultron-recovery-fresh-')) {
     throw new Error('refusing cleanup outside the fixture root');
   }
   fs.rmSync(root, { recursive: true, force: true });

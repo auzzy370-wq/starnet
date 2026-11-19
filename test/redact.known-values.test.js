@@ -96,11 +96,11 @@ const { collectSecretValues } = require('../sidecar/secret-values.js');
   if (G && CS && SV.SECRET_SHAPES) {
     const T = {
       mistral: 'Qm9wZ3JhbW1pbmdJc0Z1bjEyMzQ1Njc4OTBh',      // MISTRAL_API_KEY: a keyed provider's env key, no vendor prefix
-      mistralPool1: 'mistralPoolOne0c4e8a2f6b1d9e3a7c5f',     // STARNET_KEY_POOL_MISTRAL
+      mistralPool1: 'mistralPoolOne0c4e8a2f6b1d9e3a7c5f',     // VULTRON_KEY_POOL_MISTRAL
       mistralPool2: 'mistralPoolTwo9b3d7f1a5c8e2b6d0a4c',
       anthropicBare: 'anthropicUserExport0123456789abcd',     // a bare ANTHROPIC_API_KEY: the env layer's key
       plainKeyed: 'plainword',                                 // a keyed provider's env key is held whole, whatever it looks like
-      alias: 'brandedOpenRouterAlias0123456789ab',            // STARNET_OPENROUTER_KEY: the alias, a keychain value
+      alias: 'brandedOpenRouterAlias0123456789ab',            // VULTRON_OPENROUTER_KEY: the alias, a keychain value
       customToken: 'customPoolToken0123456789abcdefXY',       // a CUSTOM backup key shaped like a token
       path: 'PathTok0123456789abcdefgh',                       // CUSTOM_OPENAI_BASE_URL /t/<token>/v1
       password: 'pw9Z8y7X6w5V4u3T2s1R0q',                     // GROQ_BASE_URL user:<password>@
@@ -114,9 +114,9 @@ const { collectSecretValues } = require('../sidecar/secret-values.js');
     };
     const AZURE = 'http://127.0.0.1:9/openai/deployments/gpt-4o/v1?api-version=2024-02-01';
     const env = {
-      MISTRAL_API_KEY: T.mistral, STARNET_KEY_POOL_MISTRAL: T.mistralPool1 + ',' + T.mistralPool2, ANTHROPIC_API_KEY: T.anthropicBare,
-      PERPLEXITY_API_KEY: T.plainKeyed, STARNET_OPENROUTER_KEY: T.alias,
-      CUSTOM_OPENAI_KEY: 'lm-studio', STARNET_KEY_POOL_CUSTOM: 'anything,not-needed,' + T.customToken,
+      MISTRAL_API_KEY: T.mistral, VULTRON_KEY_POOL_MISTRAL: T.mistralPool1 + ',' + T.mistralPool2, ANTHROPIC_API_KEY: T.anthropicBare,
+      PERPLEXITY_API_KEY: T.plainKeyed, VULTRON_OPENROUTER_KEY: T.alias,
+      CUSTOM_OPENAI_KEY: 'lm-studio', VULTRON_KEY_POOL_CUSTOM: 'anything,not-needed,' + T.customToken,
       CUSTOM_OPENAI_BASE_URL: 'http://127.0.0.1:1234/t/' + T.path + '/v1', GROQ_BASE_URL: 'http://operator:' + T.password + '@127.0.0.1:9/v1',
       DEEPSEEK_BASE_URL: 'http://127.0.0.1:9/v1?api_key=' + T.query, TOGETHER_BASE_URL: AZURE
     };
@@ -178,10 +178,10 @@ const { collectSecretValues } = require('../sidecar/secret-values.js');
     // decision 8 and the environment's read, on a store built directly: an environment this test edits, a clock it moves
     const Reg = require('../sidecar/providers/registry.js');
     const e = {};
-    const envFirst = names => { for (const n of names || []) for (const k of [n, 'STARNET_' + n, 'SKYNET_' + n]) { const v = String(e[k] || '').trim(); if (v) return v; } return ''; };
+    const envFirst = names => { for (const n of names || []) for (const k of [n, 'VULTRON_' + n, 'SKYNET_' + n]) { const v = String(e[k] || '').trim(); if (v) return v; } return ''; };
     const make = o => CS.makeCredentialStore(Object.assign({ profile: Reg.getProviderProfile, normalize: v => Reg.normalizeProviderId(v, 'openrouter'),
       normalizeId: v => Reg.normalizeProviderId(v, ''), usesCodex: Reg.providerUsesCodex, linked: () => ({ url: '', apiKey: '' }), envFirst,
-      env: s => e['STARNET_' + s] || e['SKYNET_' + s], providerIds: () => Reg.providerIds({ includeInactive: true }), shapes: SV.SECRET_SHAPES }, o || {}));
+      env: s => e['VULTRON_' + s] || e['SKYNET_' + s], providerIds: () => Reg.providerIds({ includeInactive: true }), shapes: SV.SECRET_SHAPES }, o || {}));
     const live = make();
     for (const [v, want] of [['not-needed', false], ['lm-studio', false], ['anything', false], ['ollama', false], ['sk-abcdefghijklmnop0123', true], ['customKey0123456789abcdefXYZ', true]]) {
       e.CUSTOM_OPENAI_KEY = v;

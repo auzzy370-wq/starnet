@@ -6,7 +6,7 @@
      2. a window whose reset has passed says so (the number it had is stale); a window with no number says its status
      3. Grok / Kimi: signed in, and that they do not say how much is left — no meter made up
      4. an API key: its rate buckets from the last response, else unknown (and that they are rate limits, not a balance);
-        StarNet credits: the balance; Ollama: no limit; nothing connected: where to connect one
+        Vultron credits: the balance; Ollama: no limit; nothing connected: where to connect one
      5. the ledger's spend last */
 const A = require('./_assert.js');
 const connect = require('../bin/lib/connect.js');
@@ -56,7 +56,7 @@ A.ok(/^GROK.* · 1 sign-in — Grok does not say how much is left$/.test(line(/^
 /* 4 */
 A.ok(/^OPENROUTER · key saved — requests 199 of 200 left this window \(as of 3 min ago\)$/.test(line(/^OPENROUTER/)), 'an API key: its rate bucket from the last response: ' + line(/^OPENROUTER/));
 A.ok(/^GROQ · key saved — unknown until a call says \(its rate limits, not a balance\)$/.test(line(/^GROQ/)), 'a key no call has used: unknown');
-A.eq(line(/^STARNET/), 'STARNET MANAGED · $12.40 left', 'StarNet credits: the balance');
+A.eq(line(/^VULTRON/), 'VULTRON MANAGED · $12.40 left', 'Vultron credits: the balance');
 A.ok(/^OLLAMA.* · runs on this computer — no limit$/.test(line(/^OLLAMA/)), 'Ollama: no limit');
 A.ok(!L.some(l => /^ANTHROPIC|^GEMINI|^KIMI/.test(l)), 'a provider not connected is not listed');
 A.eq(usageLines({ facts: { configured: new Set(), credits: { state: 'absent' }, claude: { installed: false }, ollama: false }, usage, accounts: {}, now: NOW }), ['No provider is connected yet — /connect adds one.'], 'nothing connected: where to connect one');

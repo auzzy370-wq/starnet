@@ -54,18 +54,18 @@ function reply(res, call) {
   });
   await new Promise(resolve => provider.listen(0, '127.0.0.1', resolve));
   const base = 'http://127.0.0.1:' + provider.address().port + '/api/v1';
-  const fixture = SidecarFixture.create({ prefix: 'starnet-upload-run-', timeoutMs: 30000, env: {
-    SKYNET_OPENROUTER_BASE: base, STARNET_OPENROUTER_BASE: base,
-    SKYNET_OPENROUTER_KEY: 'sk-or-v1-upload-fixture', STARNET_OPENROUTER_KEY: 'sk-or-v1-upload-fixture',
-    SKYNET_DEFAULT_MODEL: MODEL, STARNET_DEFAULT_MODEL: MODEL, SKYNET_DEV: '1',
-    SKYNET_FULL_ACCESS: '', STARNET_FULL_ACCESS: ''
+  const fixture = SidecarFixture.create({ prefix: 'vultron-upload-run-', timeoutMs: 30000, env: {
+    SKYNET_OPENROUTER_BASE: base, VULTRON_OPENROUTER_BASE: base,
+    SKYNET_OPENROUTER_KEY: 'sk-or-v1-upload-fixture', VULTRON_OPENROUTER_KEY: 'sk-or-v1-upload-fixture',
+    SKYNET_DEFAULT_MODEL: MODEL, VULTRON_DEFAULT_MODEL: MODEL, SKYNET_DEV: '1',
+    SKYNET_FULL_ACCESS: '', VULTRON_FULL_ACCESS: ''
   } });
   const project = path.join(fixture.profile, 'project');
   // the station staging root this run's uploads make in the per-user staging base: on Windows the sidecar's own
-  // %LOCALAPPDATA%\StarNet, which the fixture points at its hermetic profile (review round 7 minor 6); on POSIX
+  // %LOCALAPPDATA%\Vultron, which the fixture points at its hermetic profile (review round 7 minor 6); on POSIX
   // os.tmpdir(), outside the fixture's profile. Removed at the end either way.
   const stagingRoot = process.platform === 'win32'
-    ? defaultStagingRoot(path, path.resolve(fixture.workspace), path.join(fixture.profile, 'StarNet'))
+    ? defaultStagingRoot(path, path.resolve(fixture.workspace), path.join(fixture.profile, 'Vultron'))
     : defaultStagingRoot(path, path.resolve(fixture.workspace));
   try {
     // Same committed onboarding seed as dev/seed.js, in a hermetic profile with no real credentials.
@@ -96,7 +96,7 @@ function reply(res, call) {
     const result = id => results.find(m => m.tool_call_id === id)?.content || '';
     A.ok(/File selected for upload: the input was handed a checked copy of it\./.test(result('upload')) && /re-checks it before each later browser action/.test(result('upload')) && /"size":19/.test(result('upload')), 'production browser deps resolve and select project bytes, not the private decoy');
     // run-paths-polish P1: the real CDP driver names the page, so the receipt states the page-lifetime lifecycle
-    A.ok(/StarNet keeps that copy while this page stays open, at most 30 min/.test(result('upload')), 'the receipt states how long the copy is kept (while its page stays open, at most 30 min)');
+    A.ok(/Vultron keeps that copy while this page stays open, at most 30 min/.test(result('upload')), 'the receipt states how long the copy is kept (while its page stays open, at most 30 min)');
     // review round 6: the bytes are read at submit and can still change, so the receipt never says "verified"
     A.ok(/Remote upload\/server acceptance is not verified/.test(result('upload')) && !/selection verified/i.test(result('upload')), 'model receives an honest selection-only receipt');
     A.ok(!/"doc"|loader/.test(result('upload')), 'the page bookkeeping (CDP session / loader id) never reaches the model');
@@ -122,7 +122,7 @@ function reply(res, call) {
     await fixture.dispose();
     provider.closeAllConnections(); await new Promise(resolve => provider.close(resolve));
     // only real folders and the run's own copies live there (nothing here plants a link in it)
-    if (/starnet-upload-staging-[0-9a-f]{16}$/.test(stagingRoot)) { try { fs.rmSync(stagingRoot, { recursive: true, force: true }); } catch (e) { console.log('[cleanup] ' + e.message); } }
+    if (/vultron-upload-staging-[0-9a-f]{16}$/.test(stagingRoot)) { try { fs.rmSync(stagingRoot, { recursive: true, force: true }); } catch (e) { console.log('[cleanup] ' + e.message); } }
   }
   A.report('browser-upload.run.e2e');
 })().catch(e => { console.error(e.stack || e); process.exitCode = 1; });

@@ -271,7 +271,7 @@
      (a promotion's precommit). For each re-stamp skillstore.digestRestamps() lists, an approval that carries one of
      that record's old digests is copied to '<agent>\0<id>\0<new digest>' with the new digest (and the new stamp, when
      its stamp was the record's old stamp): the same bytes, approved once, stay approved. Nothing is removed, so an
-     older StarNet reading the file still finds its own key. A copy is marked `restampedFrom`, so the Commander's next
+     older Vultron reading the file still finds its own key. A copy is marked `restampedFrom`, so the Commander's next
      decision on the skill supersedes it (supersedeApproval, below). */
   function restampApprovals(approvals, restamps) {
     if (!approvals || typeof approvals !== 'object' || !Array.isArray(restamps) || !restamps.length) return null;

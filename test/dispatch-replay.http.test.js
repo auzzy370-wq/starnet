@@ -22,9 +22,9 @@ const server = http.createServer((request, response) => {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const base = 'http://127.0.0.1:' + server.address().port;
   const fixture = SidecarFixture.create({ prefix: 'dispatch-replay-', env: {
-    STARNET_OPENROUTER_BASE: base, SKYNET_OPENROUTER_BASE: base, STARNET_OPENROUTER_KEY: 'fixture', SKYNET_OPENROUTER_KEY: 'fixture',
-    STARNET_DEFAULT_MODEL: 'test/model', SKYNET_DEFAULT_MODEL: 'test/model', STARNET_CRON_ENABLED: '0', SKYNET_CRON_ENABLED: '0',
-    STARNET_TURNID_REPLAY: process.env.TURN_DISPATCH_REPLAY_CONTROL === 'legacy' ? 'legacy' : 'id'
+    VULTRON_OPENROUTER_BASE: base, SKYNET_OPENROUTER_BASE: base, VULTRON_OPENROUTER_KEY: 'fixture', SKYNET_OPENROUTER_KEY: 'fixture',
+    VULTRON_DEFAULT_MODEL: 'test/model', SKYNET_DEFAULT_MODEL: 'test/model', VULTRON_CRON_ENABLED: '0', SKYNET_CRON_ENABLED: '0',
+    VULTRON_TURNID_REPLAY: process.env.TURN_DISPATCH_REPLAY_CONTROL === 'legacy' ? 'legacy' : 'id'
   } });
   try {
     const io = makeSegmentedTranscriptIo({ fs, path, root: path.join(fixture.workspace, 'transcript-history-v2'), schedule() {}, onWarning() {} });

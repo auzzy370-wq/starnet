@@ -3,7 +3,7 @@
 'use strict';
 const crypto = require('node:crypto');
 const { isDeepStrictEqual } = require('node:util');
-const SCHEMA = 'starnet.skill-evaluation.v1';
+const SCHEMA = 'vultron.skill-evaluation.v1';
 const KEY = 'skill-evaluation-receipts';
 const MAX_CASES = 12, MAX_CHECKS = 24, MAX_RECEIPTS = 200;
 const MAX_SUITE_BYTES = 262144, MAX_OBSERVATION_BYTES = 524288, MAX_RECEIPT_BYTES = 524288, MAX_STORE_BYTES = 8388608;

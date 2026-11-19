@@ -40,7 +40,7 @@ const { makeEmitter } = require('../shared/emitter.js');
 const events = require('../shared/events.js');
 
 const chat = fs.readFileSync(require.resolve('../frontend/app/chat.js'), 'utf8');
-const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-steer-rows-'));
+const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-steer-rows-'));
 const clockFrom = start => { let t = start; return () => ++t; };
 const memoryStore = () => makeTranscriptStore({ io: makeMemoryTranscriptIo(), clock: { now: clockFrom(1000) } });
 const rowsOf = (store, stream) => store.view('proof', stream, { complete: true });

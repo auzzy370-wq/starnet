@@ -11,7 +11,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { makeOverseer } = require('../sidecar/overseer.js');
 
-const root = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-overseer-idle-'));
+const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-overseer-idle-'));
 const clone = v => JSON.parse(JSON.stringify(v));
 const page = { generalId: 'home', workstreams: [{ id: 'home', title: null, agentId: 'agent' }, { id: 'side', title: 'Side work', agentId: 'agent' }], deletedIds: [] };
 let clock = 1000;

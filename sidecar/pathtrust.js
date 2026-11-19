@@ -59,7 +59,7 @@
      bypasses this whole function) does — the operator's explicit "this agent is me" switch. Matched on path
      SEGMENTS (forward-slashed, case-folded), so a name merely containing ".ssh" is not caught. */
   const CREDENTIAL_STORES = [
-    [/(^|\/)\.(ssh|gnupg|aws|azure|kube|tauri|starnet-signing|starnet-keys|fly|codex)(\/|$)/, 'SSH, GPG, cloud CLI and signing keys'],
+    [/(^|\/)\.(ssh|gnupg|aws|azure|kube|tauri|vultron-signing|vultron-keys|fly|codex)(\/|$)/, 'SSH, GPG, cloud CLI and signing keys'],
     [/(^|\/)(\.netrc|_netrc|\.git-credentials|\.pypirc|\.pgpass|\.npmrc)$|(^|\/)\.cargo\/credentials(\.toml)?$/, 'saved login credentials'],
     // gcloud and the GitHub CLI keep their logins under %APPDATA% on Windows, ~/.config elsewhere
     [/(^|\/)\.docker\/config\.json$|(^|\/)\.config\/(gcloud|gh)(\/|$)|(^|\/)appdata\/roaming\/(gcloud|github cli)(\/|$)|(^|\/)\.claude\/\.credentials\.json$/, 'cloud and developer CLI logins'],
@@ -169,7 +169,7 @@
 
       const raw = String(absPath == null ? '' : absPath);
       const norm = P.resolve(raw);
-      // NUL and UNC are not local filesystem targets StarNet can pass to Node safely. Full Power removes
+      // NUL and UNC are not local filesystem targets Vultron can pass to Node safely. Full Power removes
       // policy restrictions, not path syntax validity or the distinction between this computer and a share.
       if (raw.indexOf('\0') >= 0) throw new Error('illegal path (NUL): ' + raw);
       if (/^[\\/]{2}/.test(raw)) throw new Error('network paths (UNC) are not local computer paths: ' + raw);

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* scripts/qa/saboteur.mjs — deterministic adversarial API sweeps for StarNet.
+/* scripts/qa/saboteur.mjs — deterministic adversarial API sweeps for Vultron.
  *
  * This is EL-2's first executable slice. It attacks the real, isolated sidecar instead of
  * mocking handlers: every literal /api route is checked for launch-token and hostile-Origin
@@ -96,7 +96,7 @@ function arg(name, fallback) {
 
 async function tokenFromIndex(base) {
   const text = await (await fetch(base + '/')).text();
-  const m = text.match(/window\.__STARNET_API_TOKEN__=("[^"]+")/);
+  const m = text.match(/window\.__VULTRON_API_TOKEN__=("[^"]+")/);
   return m ? JSON.parse(m[1]) : '';
 }
 
@@ -105,7 +105,7 @@ async function request(base, attack, token) {
   let body;
   if (attack.family === 'origin') headers.Origin = 'https://saboteur.invalid';
   if (attack.family === 'payload') {
-    headers['X-StarNet-Token'] = token;
+    headers['X-Vultron-Token'] = token;
     headers['Content-Type'] = 'application/json';
     body = attack.payload.body;
   }

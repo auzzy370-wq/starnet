@@ -13,7 +13,7 @@
      3. station   — the station default every unpinned agent follows: the Overseer's (roster id 'agent') pin.
      4. fallbacks — a host-supplied last resort before the environment (a channel's connect-time pair on a headless
                     station that never received a roster, labelled by the host).
-     5. env       — the environment rule the host computes (STARNET_DEFAULT_MODEL on its provider rule).
+     5. env       — the environment rule the host computes (VULTRON_DEFAULT_MODEL on its provider rule).
      6. none      — an honest refusal: ok:false, model ''.
    HALF A PAIR resolves deterministically, never field by field:
      - a level holding a model but no provider takes the provider of the NEXT level down that names one (an agent pinned to
@@ -24,7 +24,7 @@
        provider it named is reported in `ignored` when it differs from the one the run uses — visible, never silent.
    A PROVIDER THE HOST DOES NOT KNOW (its normaliser answers '' for it: a typo, a provider this build dropped) is reported
    in `ignored` as 'unknown provider' at whatever level the host hands it in AS NAMED. At the EXPLICIT level — an
-   operator's or a caller's own choice (STARNET_V1_PROVIDER, a routine's or a loop's saved pair, a run option) — a model on
+   operator's or a caller's own choice (VULTRON_V1_PROVIDER, a routine's or a loop's saved pair, a run option) — a model on
    it is REFUSED (ok:false): borrowing the next level's provider would send that model, and that provider's credential,
    somewhere nobody chose. A lower level with an unknown provider keeps the half-pair rule (its model borrows the next
    level's provider), reported. The sidecar's roster stores each row's provider already normalised (index.js
@@ -68,7 +68,7 @@
     agent: "the agent's own pin",
     station: 'the station default (the Overseer)',
     connect: "the channel's connect-time choice",
-    env: 'the environment default (STARNET_DEFAULT_MODEL)',
+    env: 'the environment default (VULTRON_DEFAULT_MODEL)',
     none: 'nothing: no model is configured'
   };
 
@@ -117,7 +117,7 @@
         source: 'none', providerSource: named ? named.source : 'none', followsStation: false, ignored: unknown,
         error: 'no model is configured: ' + (agentId === 'agent' ? 'the Overseer has no model'
           : 'agent ' + agentId + ' has no model pin and the station default (the Overseer) has none')
-          + ', and STARNET_DEFAULT_MODEL is unset'
+          + ', and VULTRON_DEFAULT_MODEL is unset'
       };
     }
     const won = list[at];

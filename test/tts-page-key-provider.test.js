@@ -18,7 +18,7 @@ const { stationConsumers } = require('./helpers/credential-store-sandbox.js');
 
 const roots = [];
 async function service(calls, stationKeys, page) {
-  const workspaces = await fsp.mkdtemp(path.join(os.tmpdir(), 'starnet-ttskey-'));
+  const workspaces = await fsp.mkdtemp(path.join(os.tmpdir(), 'vultron-ttskey-'));
   roots.push(workspaces);
   return makeMediaService({
     workspaces, fs, fsp,

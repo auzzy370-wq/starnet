@@ -24,9 +24,9 @@ A.eq(isCrewlessLead(Object.assign({}, base, { tools: LEAD.filter(n => n !== 'tea
 A.eq(isCrewlessLead(Object.assign({}, base, { crewCount: 1 })), false, 'any crew: no diet (byte-identical to before)');
 A.eq(isCrewlessLead(Object.assign({}, base, { isTask: false })), false, 'a chat turn (no tools on the wire): no diet');
 A.eq(isCrewlessLead(Object.assign({}, base, { deferralOff: true })), false, 'SKYNET_TOOL_SEARCH=0: no diet');
-A.eq(isCrewlessLead(Object.assign({}, base, { leanCrew: '0' })), false, 'STARNET_LEAN_CREW=0: no diet');
-A.eq(isCrewlessLead(Object.assign({}, base, { leanCrew: ' 0 ' })), false, 'STARNET_LEAN_CREW=" 0 ": no diet (trimmed)');
-A.eq(isCrewlessLead(Object.assign({}, base, { leanCrew: '1' })), true, 'STARNET_LEAN_CREW=1: diet on');
+A.eq(isCrewlessLead(Object.assign({}, base, { leanCrew: '0' })), false, 'VULTRON_LEAN_CREW=0: no diet');
+A.eq(isCrewlessLead(Object.assign({}, base, { leanCrew: ' 0 ' })), false, 'VULTRON_LEAN_CREW=" 0 ": no diet (trimmed)');
+A.eq(isCrewlessLead(Object.assign({}, base, { leanCrew: '1' })), true, 'VULTRON_LEAN_CREW=1: diet on');
 A.eq(isCrewlessLead(Object.assign({}, base, { tools: null })), false, 'no tool list: no diet');
 A.eq(isCrewlessLead(), false, 'no input: no diet');
 

@@ -37,14 +37,14 @@ const touch = (root, name, sec) => fs.utimesSync(path.join(root, name), sec, sec
       const cacheB = new Map(); const B = page(proxy, cacheB);
       await B.reconcile(null);
       let docB = stationDoc({ agent: { id: 'agent', name: 'OLD', createdAt: 5000 }, updatedAt: Date.now() });
-      cacheB.set('starnet.save', JSON.stringify(docB)); B.push(docB); await B.flush({ force: true });
+      cacheB.set('vultron.save', JSON.stringify(docB)); B.push(docB); await B.flush({ force: true });
       const cacheA = new Map(); const W = page(proxy, cacheA);
       await W.reconcile(null);
       docB = JSON.parse(JSON.stringify(docB)); docB.updatedAt = Date.now() + 1; docB.workstreams.push({ id: 'b-1', history: [turn('user', 'b')] });
-      cacheB.set('starnet.save', JSON.stringify(docB)); B.push(docB); await B.flush({ force: true });   // window W is now behind
+      cacheB.set('vultron.save', JSON.stringify(docB)); B.push(docB); await B.flush({ force: true });   // window W is now behind
       const imported = stationDoc({ agent: { id: 'agent', name: 'OLD-BACKUP', createdAt: 5000 }, updatedAt: Date.now() + 2,
         workstreams: [{ id: 'general', title: null, history: [turn('user', 'hi')] }, { id: 'from-backup', history: [turn('user', 'x')] }] });
-      cacheA.set('starnet.save', JSON.stringify(imported)); W.push(imported, { restore: true });
+      cacheA.set('vultron.save', JSON.stringify(imported)); W.push(imported, { restore: true });
       A.eq(await W.flush({ force: true }), false, 'r1: the import from a window that is behind is refused');
       A.ok(W.health().conflict && W.health().conflict.conflict === true && !W.health().conflict.reset, 'r1: as an ordinary conflict');
       // START FRESH from another window: the station's files leave the workspace, the receipt is written, the sidecar restarts
@@ -52,7 +52,7 @@ const touch = (root, name, sec) => fs.utimesSync(path.join(root, name), sec, sec
       receipt(root, Date.now());
       ref.host = sidecar(root);
       const next = JSON.parse(JSON.stringify(imported)); next.updatedAt = Date.now() + 10; next.workstreams.push({ id: 'a-later', history: [turn('user', 'later')] });
-      cacheA.set('starnet.save', JSON.stringify(next)); W.push(next);
+      cacheA.set('vultron.save', JSON.stringify(next)); W.push(next);
       A.eq(await W.flush({ force: true }), false, 'r1: that window\'s next autosave after START FRESH is refused');
       A.ok(W.health().conflict && W.health().conflict.reset === true, 'r1: as a reset (' + JSON.stringify(W.health().conflict) + ')');
       A.eq(ref.host.saveStore.load('agent'), undefined, 'r1: the fresh workspace stays empty: the pre-reset station never writes itself back');
@@ -66,7 +66,7 @@ const touch = (root, name, sec) => fs.utimesSync(path.join(root, name), sec, sec
       const flaky = { fetch: (u, o) => (o && o.method === 'POST' && failNext-- > 0) ? Promise.reject(new Error('offline')) : host.fetch(u, o) };
       const cache = new Map(); const P = page(flaky, cache);
       const backupDoc = stationDoc({ agent: { id: 'agent', name: 'OLD-BACKUP', createdAt: 5000 }, updatedAt: Date.now(), workstreams: [{ id: 'general', title: null, history: [turn('user', 'from the backup')] }] });
-      cache.set('starnet.save', JSON.stringify(backupDoc)); P.push(backupDoc, { restore: true });
+      cache.set('vultron.save', JSON.stringify(backupDoc)); P.push(backupDoc, { restore: true });
       A.eq(await P.flush({ force: true }), false, 'r1: the import\'s first send gets no answer');
       A.eq(await P.flush({ force: true }), true, 'r1: sent again, the import lands on the empty file of the reset workspace');
       A.eq(host.saveStore.load('agent').agent.name, 'OLD-BACKUP', 'r1: the station is the imported backup');
@@ -82,7 +82,7 @@ const touch = (root, name, sec) => fs.utimesSync(path.join(root, name), sec, sec
       host.saveStore.save('agent', stationDoc({ workstreams: [{ id: 'general', title: null, history: [turn('user', 'hi')] },
         { id: 'X', title: 'Payroll', createdAt: T0 - 1000, lastActiveAt: T0 - 500, history: [turn('user', 'o1 (cleared)'), turn('assistant', 'o2 (cleared)')] }] }), { compareRevision: true });
       const cacheB = new Map(); let newestB = null, B = null;
-      const AppB = { persist() { if (newestB) { const d = JSON.parse(JSON.stringify(newestB)); d._saveDirty = true; d._saveRevision = B.revision(); cacheB.set('starnet.save', JSON.stringify(d)); B.push(d); } } };
+      const AppB = { persist() { if (newestB) { const d = JSON.parse(JSON.stringify(newestB)); d._saveDirty = true; d._saveRevision = B.revision(); cacheB.set('vultron.save', JSON.stringify(d)); B.push(d); } } };
       B = page(host, cacheB, { App: AppB });
       const bootB = await B.reconcile(null);
       // another window clears X (exactly what Workstreams.clearConversation leaves) and that save lands
@@ -114,15 +114,15 @@ const touch = (root, name, sec) => fs.utimesSync(path.join(root, name), sec, sec
       host.saveStore.save('agent', Object.assign({}, host.saveStore.load('agent'), { updatedAt: Date.now() + 1, _saveClient: 'other',
         workstreams: host.saveStore.load('agent').workstreams.concat([{ id: 'other-work', history: [turn('user', 'o')] }]) }), { compareRevision: true });
       const mine = JSON.parse(JSON.stringify(boot)); mine.updatedAt = Date.now() + 2; mine.activeId = 'general';   // no new session
-      cache.set('starnet.save', JSON.stringify(mine)); P.push(mine);
+      cache.set('vultron.save', JSON.stringify(mine)); P.push(mine);
       A.eq(await P.flush({ force: true }), false, 'r2: the window is behind: its save is preserved');
       let threw = null;
       try { await P.restoreConflict(P.health().conflict.recovery); } catch (e) { threw = e.message; }
       A.ok(threw && /nothing was restored/i.test(threw), 'r2: the restore says nothing came back (' + threw + ')');
       A.eq(P._reloads.length, 0, 'r2: the window is not reloaded');
-      A.ok(cache.has('starnet.save'), 'r2: and keeps its browser copy');
+      A.ok(cache.has('vultron.save'), 'r2: and keeps its browser copy');
       const later = JSON.parse(JSON.stringify(mine)); later.updatedAt = Date.now() + 3; later.workstreams.push({ id: 'typed-after', history: [turn('user', 'still saving')] });
-      cache.set('starnet.save', JSON.stringify(later)); P.push(later);
+      cache.set('vultron.save', JSON.stringify(later)); P.push(later);
       await P.flush({ force: true });
       A.ok(fs.readFileSync(path.join(root, P.health().conflict.recovery), 'utf8').includes('still saving'), 'r2: and is not retired: its next save is still kept');
     }

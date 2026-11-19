@@ -1,13 +1,13 @@
 /* website/maps.js — the public community maps gallery (maps.html).
 
-   Reads the SAME signed index every StarNet station reads (/.well-known/starnet-maps.json, built by
+   Reads the SAME signed index every Vultron station reads (/.well-known/vultron-maps.json, built by
    scripts/build-map-catalog.mjs) and lists each map with its picture, its author and what it holds. Same-origin
    requests only (the site's CSP allows nothing else); every string from the index is inserted as text, never as
    HTML, and only paths of the gallery's own shape become links or images. No tracking, no storage. */
 (function () {
   'use strict';
 
-  var INDEX = '/.well-known/starnet-maps.json';
+  var INDEX = '/.well-known/vultron-maps.json';
   var list = document.getElementById('mp-list');
   var status = document.getElementById('mp-status');
   var count = document.getElementById('mp-count');
@@ -22,7 +22,7 @@
   function str(v) { return v == null ? '' : String(v); }
   function n(k, one, many) { k = Number(k) || 0; return k + ' ' + (k === 1 ? one : many); }
   // only the gallery's own immutable file paths are ever used
-  var FILE_RE = { 'still.png': /^maps\/[a-z0-9-]+\/[0-9]+\/still\.png$/, 'build.starnet-build.json': /^maps\/[a-z0-9-]+\/[0-9]+\/build\.starnet-build\.json$/ };
+  var FILE_RE = { 'still.png': /^maps\/[a-z0-9-]+\/[0-9]+\/still\.png$/, 'build.vultron-build.json': /^maps\/[a-z0-9-]+\/[0-9]+\/build\.vultron-build\.json$/ };
   function safe(path, file) { return FILE_RE[file] && FILE_RE[file].test(str(path)) ? '/' + path : ''; }
 
   function card(m) {
@@ -48,12 +48,12 @@
     var holds = [n(st.rooms, 'room', 'rooms'), n(st.props, 'prop', 'props')];
     if (st.lines) holds.push(n(st.lines, 'line', 'lines'));
     body.appendChild(el('p', 'mp-holds', holds.join(' · ')));
-    var build = safe(m.build && m.build.path, 'build.starnet-build.json');
+    var build = safe(m.build && m.build.path, 'build.vultron-build.json');
     if (build) {
       var row = el('p', 'mk-dl-row');
       var a = el('a', 'mk-dl', 'Download the map file');
       a.href = build;
-      a.setAttribute('download', str(m.slug) + '.starnet-build.json');
+      a.setAttribute('download', str(m.slug) + '.vultron-build.json');
       row.appendChild(a);
       row.appendChild(el('span', null, ' ' + Math.max(1, Math.round((Number(m.build.bytes) || 0) / 1024)) + ' KB'));
       body.appendChild(row);
@@ -69,7 +69,7 @@
       return;
     }
     status.textContent = '';
-    if (count) count.textContent = n(maps.length, 'station', 'stations') + ' shared by StarNet players, each one checked by a person.';
+    if (count) count.textContent = n(maps.length, 'station', 'stations') + ' shared by Vultron players, each one checked by a person.';
     for (var i = 0; i < maps.length; i++) list.appendChild(card(maps[i]));
   }
 
@@ -77,7 +77,7 @@
     if (!r.ok) throw new Error('HTTP ' + r.status);
     return r.json();
   }).then(function (doc) {
-    if (!doc || doc.format !== 'starnet-maps/v1' || !Array.isArray(doc.maps)) throw new Error('unsupported gallery');
+    if (!doc || doc.format !== 'vultron-maps/v1' || !Array.isArray(doc.maps)) throw new Error('unsupported gallery');
     // newest version first is not knowable from the index; show by name, the way stations list them
     var maps = doc.maps.filter(function (m) { return m && m.slug && m.title && m.credit; });
     show(maps);

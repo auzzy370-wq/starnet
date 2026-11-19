@@ -146,13 +146,13 @@
       try { return !!o.unmetered(); } catch (e) { if (typeof o.onCheckError === 'function') o.onCheckError(e); return false; }
     };
     const overCount = n => ({
-      why: 'this run and its workers have generated ' + n + (n === 1 ? ' image' : ' images') + ' whose cost is unknown (the provider reported none and StarNet has no price for the model). Spending limits cannot count those, so StarNet stops at ' + unknownCap + ' in one run',
+      why: 'this run and its workers have generated ' + n + (n === 1 ? ' image' : ' images') + ' whose cost is unknown (the provider reported none and Vultron has no price for the model). Spending limits cannot count those, so Vultron stops at ' + unknownCap + ' in one run',
       todo: 'To make more, start a new run. A price is known only after an image comes back, so this holds for every image model until then.' });
     const overDay = day => ({
-      why: 'StarNet has recorded ' + day.used + (day.used === 1 ? ' image' : ' images') + ' whose cost is unknown in the last 24 hours across all runs. Spending limits cannot count those, so it stops at ' + day.limit + ' in any 24 hours',
+      why: 'Vultron has recorded ' + day.used + (day.used === 1 ? ' image' : ' images') + ' whose cost is unknown in the last 24 hours across all runs. Spending limits cannot count those, so it stops at ' + day.limit + ' in any 24 hours',
       todo: 'Room comes back in ' + roomInWords(day.roomInMs) + '. Until then no run on this station can start an image on any route except a ChatGPT plan (flat-rate, so not counted), whatever the model, because a price is known only after an image comes back.' });
     const dayUnreadable = {
-      why: 'StarNet could not read its spend log, so it cannot tell how many images of unknown cost were made in the last 24 hours',
+      why: 'Vultron could not read its spend log, so it cannot tell how many images of unknown cost were made in the last 24 hours',
       todo: 'Nothing about the limit was reached. SETTINGS › SPENDING LIMITS shows what is wrong with the log; resolve that and try again.' };
     async function mediaSpend(call) {
       const signal = call && call.signal;

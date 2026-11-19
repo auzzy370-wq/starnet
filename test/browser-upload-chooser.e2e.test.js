@@ -44,7 +44,7 @@ const pages = {
 (async () => {
   const found = T.findChrome();
   if (!found) { console.log('browser-upload-chooser.e2e: SKIPPED — no Chromium installed'); return; }
-  const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-upload-chooser-'));
+  const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-upload-chooser-'));
   const project = path.join(scratch, 'project'), workspace = path.join(scratch, 'workspaces'), stagingBase = path.join(scratch, 'staging');
   fs.mkdirSync(project); fs.mkdirSync(path.join(workspace, 'agent'), { recursive: true }); fs.mkdirSync(stagingBase);
   fs.writeFileSync(path.join(project, 'photo.png'), 'PNG BYTES');
@@ -171,7 +171,7 @@ const pages = {
     // Chrome's main process exiting does not end its utility processes (a StorageService one held the profile past 11 s on
     // a loaded box, measured 2026-11-01). On Windows the removal starts over while a file is held, inside the bound above;
     // elsewhere about a minute of linear backoff. A lock that outlasts either still fails this step.
-    if (path.dirname(scratch) === path.resolve(os.tmpdir()) && path.basename(scratch).startsWith('starnet-upload-chooser-')) {
+    if (path.dirname(scratch) === path.resolve(os.tmpdir()) && path.basename(scratch).startsWith('vultron-upload-chooser-')) {
       if (process.platform === 'win32') {
         const from = Date.now();
         let held = null;

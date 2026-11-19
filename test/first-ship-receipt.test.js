@@ -168,14 +168,14 @@ const section1 = (async () => {
 
   // UPGRADE: a line an older build marked `done` (a product crate sank at its chute — the old FIRST SHIP / card retirement) has
   // had its moment: read once as shipped, so no second gold toast after the upgrade (review: noteLineShipped never read `done`)
-  store = { 'starnet.refit.finline.test': JSON.stringify({ [ca.key]: { done: 1 }, [cb.key]: { dis: 1 } }) };
+  store = { 'vultron.refit.finline.test': JSON.stringify({ [ca.key]: { done: 1 }, [cb.key]: { dis: 1 } }) };
   ctx = mk(store);
   A.eq(ctx.spent(ca.key), true, 'an older build\'s `done` reads as a spent FIRST SHIP');
   A.eq(ctx.shipped(of(a, 'outbox'), ca.key), null, '…so its first shipment under this build is no FIRST SHIP');
-  A.eq(store['starnet.refit.finline.v2.test'], '1', 'the upgrade is marked done for this station');
-  A.eq(JSON.parse(store['starnet.refit.finline.test'])[cb.key], { dis: 1 }, 'a dismissed line is untouched by the upgrade');
+  A.eq(store['vultron.refit.finline.v2.test'], '1', 'the upgrade is marked done for this station');
+  A.eq(JSON.parse(store['vultron.refit.finline.test'])[cb.key], { dis: 1 }, 'a dismissed line is untouched by the upgrade');
   // …and runs ONCE: a `done` that appears after it is never honoured (nothing writes one now; a stray one proves no shipment)
-  store['starnet.refit.finline.test'] = JSON.stringify({ [cb.key]: { done: 1 } });
+  store['vultron.refit.finline.test'] = JSON.stringify({ [cb.key]: { done: 1 } });
   ctx = mk(store);
   A.eq(ctx.spent(cb.key), false, 'a `done` written after the upgrade does not spend FIRST SHIP');
   const rb = ctx.shipped(of(b, 'outbox'), cb.key);

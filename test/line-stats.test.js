@@ -212,7 +212,7 @@ if (store && store.record) {
   const fs = require('node:fs'), os = require('node:os'), path = require('node:path');
   const { makeDomainStore } = require('../sidecar/domain-store.js');
   const { writeFileDurable } = require('../sidecar/durable-write.js');
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-shipment-readback-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-shipment-readback-'));
   const file = path.join(dir, 'line-shipments.json');
   let blocked = false, failReadback = false, writes = 0;
   const faultFs = Object.create(fs);
@@ -283,7 +283,7 @@ if (store && store.record) {
     ['corrupt main without backup', '{"version":1,"value":'],
     ['empty main without backup', '']
   ];
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-shipment-invalid-'));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-shipment-invalid-'));
   try {
     samples.forEach(([name, bytes], i) => {
       const dir = path.join(root, String(i)); fs.mkdirSync(dir);

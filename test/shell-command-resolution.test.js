@@ -296,7 +296,7 @@ if (process.platform === 'win32') {
       const cwd = path.join(rig.root, row.id); fs.mkdirSync(cwd);
       for (const [name, kind] of Object.entries(row.files)) {
         const target = path.join(cwd, name); fs.mkdirSync(path.dirname(target), { recursive: true });
-        if (kind === 'batch') fs.writeFileSync(target, '@echo batch>"%STARNET_SHELL_MARKER%"\r\n');
+        if (kind === 'batch') fs.writeFileSync(target, '@echo batch>"%VULTRON_SHELL_MARKER%"\r\n');
         else fs.copyFileSync(path.join(rig.root, kind === 'gui' ? 'probe.exe' : 'console-probe.exe'), target);
       }
       const searched = withoutVariable(Object.assign({}, rig.env, { PATH: [path.join(cwd, 'bin'), path.join(cwd, 'later')].join(';'), PATHEXT: row.pathext || rig.env.PATHEXT }));

@@ -56,7 +56,7 @@ async function quickRun(answers, stopAt, wake = false, mind = null, receipts = [
   assert.equal(result.done, 1); assert.equal(result.taught, 1);
   assert(result.stages.some(([,detail]) => detail.startsWith('1 of 2')));
   assert(result.stages.some(([,detail]) => detail.startsWith('2 of 2')));
-  assert(result.storage.has('starnet.interview.deferred.v1'), 'deeper profile stays available later');
+  assert(result.storage.has('vultron.interview.deferred.v1'), 'deeper profile stays available later');
   // org P31: the quick label counts what it really asks — no station pick on offer here, so two questions — and only it
   // carries a count: the talks step up (short, then in depth) instead of a second "three" that read no longer than quick
   assert.deepEqual(Array.from(result.prompts[0].options, o => o.label),

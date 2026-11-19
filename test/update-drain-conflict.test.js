@@ -24,9 +24,9 @@ function makeCase(o) {
   class Channel { constructor(fn) { this.fn = fn; } }
   const invoke = async cmd => {
     calls.push(cmd);
-    if (cmd === 'starnet_update_status') return { desktop: true, currentVersion: '1.0.0', pending: null };
-    if (cmd === 'starnet_update_check') return { available: true, checkedAt: 10, update: { version: '2.0.0', body: '' } };
-    if (cmd === 'starnet_update_install') { installCalls++; return {}; }
+    if (cmd === 'vultron_update_status') return { desktop: true, currentVersion: '1.0.0', pending: null };
+    if (cmd === 'vultron_update_check') return { available: true, checkedAt: 10, update: { version: '2.0.0', body: '' } };
+    if (cmd === 'vultron_update_install') { installCalls++; return {}; }
     return {};
   };
   const fetch = async (url, init) => {

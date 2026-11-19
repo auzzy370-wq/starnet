@@ -21,7 +21,7 @@ A long goal or step with an emoji right where its length cap falls was saved wit
 
 1. Boot a seeded station (`node dev/seed.js`) against a mock provider.
 2. In the page: `await GoalStore.createGoal(<279 chars of words> + '🎯 done', 'the members can open it', [<139 chars> + '🚀 then post', 'Write the second step'], {})`, then `GoalStore.addStep(id, <139 chars> + '🎬 and share it')`.
-3. Read `localStorage['starnet.goals.v1']`, the QUEST LOG text (`StationUI.openTerm('quests','goals')`), and the workspace's `_commander.goals.json` / `_station.journey.json`.
+3. Read `localStorage['vultron.goals.v1']`, the QUEST LOG text (`StationUI.openTerm('quests','goals')`), and the workspace's `_commander.goals.json` / `_station.journey.json`.
 4. Before the fix each ends on a lone surrogate (`\ud83c` / `\ud83d`). Locked by `test/quest-clip-surrogates.test.js`.
 
 ## Evidence

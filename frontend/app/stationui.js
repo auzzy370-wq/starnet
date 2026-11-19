@@ -1,4 +1,4 @@
-/* STARNET — stationui.js : the station-management HUD.
+/* VULTRON — stationui.js : the station-management HUD.
    Ports the v7 pip-boy chrome (floating terminal windows, crew manifest,
    bottom-bar panels) but wires every readout to REAL harness data — the
    present agent, the current measured context window, the real tool
@@ -62,7 +62,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
   const mkEl = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; };
   const sfx = n => { try { if (typeof SFX === 'object' && SFX[n]) SFX[n](); } catch (_) {} };
 
-  const KEY = 'starnet.station.v1';
+  const KEY = 'vultron.station.v1';
   const THEMES = [['amber', '#ffaa33'], ['green', '#3dff70'], ['blue', '#46c8ff'], ['purple', '#b46bff'], ['red', '#ff4136'], ['white', '#e8f0e8']];
 
   let present = [];          // agent objects currently on the station
@@ -1314,7 +1314,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       screen.appendChild(head); screen.appendChild(body);
       w.appendChild(screen);
       w.appendChild(mkEl('div', 'term-plate',
-        '<span>STARNET DYNAMICS</span><span class="term-knobs"><i class="knob"></i><i class="knob"></i></span>'));
+        '<span>VULTRON DYNAMICS</span><span class="term-knobs"><i class="knob"></i><i class="knob"></i></span>'));
     } else {
       w.appendChild(head); w.appendChild(body);
       // Phase-2 chrome (generic, plain windows only — feature windows carry their own casing):
@@ -3998,13 +3998,13 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     // job, and what INSPECT finds shows right under them. An exported package file and skill registries ("taps") are
     // power tools: folded under MORE WAYS, every id unchanged, so wireSkillExchange() is untouched.
     const secExchange =
-      '<p class="sk-note sk-lib-intro">Paste a link to a skill’s <b>SKILL.md</b> file, for example on GitHub. StarNet checks the whole package and shows you what it does before anything installs; unsafe or broken packages are refused.</p>' +
+      '<p class="sk-note sk-lib-intro">Paste a link to a skill’s <b>SKILL.md</b> file, for example on GitHub. Vultron checks the whole package and shows you what it does before anything installs; unsafe or broken packages are refused.</p>' +
       '<div class="sk-exchange-form"><label for="sk-exchange-url">LINK TO A SKILL.md</label>' +
         '<div class="sk-exchange-row"><input id="sk-exchange-url" type="url" autocomplete="off" spellcheck="false" placeholder="https://github.com/owner/repo/blob/main/SKILL.md">' +
         '<button id="sk-exchange-inspect" class="consent-btn" type="button">INSPECT</button></div></div>' +
       '<div id="sk-exchange-preview" class="sk-exchange-preview" role="status" aria-live="polite"><div class="sk-loading">Paste a link, then INSPECT. You see what the skill does, and whether it is safe, before anything installs.</div></div>' +
       '<details class="mc-add-fold sk-more-ways"><summary>More ways to add a skill <span class="dim">(advanced)</span></summary>' +
-        '<div class="sk-exchange-form"><label class="consent-btn" for="sk-exchange-import">IMPORT EXPORTED PACKAGE</label><input id="sk-exchange-import" type="file" accept=".json,.starnet-skill.json,application/json" hidden></div>' +
+        '<div class="sk-exchange-form"><label class="consent-btn" for="sk-exchange-import">IMPORT EXPORTED PACKAGE</label><input id="sk-exchange-import" type="file" accept=".json,.vultron-skill.json,application/json" hidden></div>' +
         '<div class="sk-exchange-form"><label for="sk-registry-url">REGISTRY / TEAM TAP</label>' +
           '<div class="sk-exchange-row"><input id="sk-registry-url" type="url" autocomplete="off" spellcheck="false" placeholder="https://example.com/skills/index.json">' +
           '<input id="sk-registry-query" type="search" autocomplete="off" placeholder="search or browse all">' +
@@ -4017,13 +4017,13 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
        offering choices that would do nothing, and the note about WHEN a change takes effect is shown
        because a live session cannot switch voice mid-call. */
 
-    // SKILL MARKET (2026-09-29): the curated StarNet catalog, browsed as the same glass card grid the connectors
+    // SKILL MARKET (2026-09-29): the curated Vultron catalog, browsed as the same glass card grid the connectors
     // CATALOG uses. The catalog is fetched when this section loads, never in the background.
     // the second intro paragraph restated the desc and the shelves' own notes; its one new fact moved into the desc
     const secMarket =
       '<div class="cc-filters" id="skm-filters" role="group" aria-label="Filter the skill market">' +
         '<button type="button" class="cc-filter active" data-skm-filter="all" aria-pressed="true">ALL</button>' +
-        '<button type="button" class="cc-filter" data-skm-filter="originals" aria-pressed="false">STARNET ORIGINALS</button>' +
+        '<button type="button" class="cc-filter" data-skm-filter="originals" aria-pressed="false">VULTRON ORIGINALS</button>' +
         '<button type="button" class="cc-filter" data-skm-filter="community" aria-pressed="false">COMMUNITY</button>' +
         '<button type="button" class="cc-filter" data-skm-filter="installed" aria-pressed="false">INSTALLED</button>' +
         '<button type="button" class="cc-filter" data-skm-filter="update" aria-pressed="false">UPDATES</button>' +
@@ -4038,7 +4038,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     // is unchanged, so wire() below runs as before, and the retired section ids land here via SECTION_ALIAS.
     const block = (id, label) => '<div class="sec" id="' + id + '"><span class="sec-l">' + label + '</span><span class="sec-r"></span><span class="sec-nd"></span></div>';
     const sections = [
-      { id: 'market', label: 'SKILL MARKET', glyph: '▦', desc: 'New skills for your crew, from StarNet and the community. Installing one switches it on for every agent.', build: frag(secMarket + block('ab-exchange', 'ADD FROM A LINK') + secExchange) },
+      { id: 'market', label: 'SKILL MARKET', glyph: '▦', desc: 'New skills for your crew, from Vultron and the community. Installing one switches it on for every agent.', build: frag(secMarket + block('ab-exchange', 'ADD FROM A LINK') + secExchange) },
       { id: 'library', label: 'SKILLS', glyph: '▤', desc: 'What your crew knows how to do. Switch a skill on or off; agents use it when a task needs it, with the tools they already have.', build: frag(agentPicker + secLibrary + block('ab-agent-skills', 'LEARNED SKILLS') + secAgent) }
     ];
     function wire() {
@@ -4062,7 +4062,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
   window.AbilityLanes = window.AbilityLanes || [];
   window.AbilityLanes.push(abilitySkillsLane);
 
-  /* SKILL MARKET — the curated StarNet catalog as a card grid (the connectors CATALOG's cc-card glass cards, reused
+  /* SKILL MARKET — the curated Vultron catalog as a card grid (the connectors CATALOG's cc-card glass cards, reused
      so the two catalogs look and behave the same, search included). Every status a card shows comes from the
      sidecar's /api/skill-market listing: available, installed, built in (our bundled copy IS the published
      version), update, or tampered (its files changed on disk, so agents are not given it). */
@@ -4077,7 +4077,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
   let skmResult = null;        // { slug, text, ok } — the last install/remove result, shown on that card
   let skmFocus = '';           // slug whose action button takes focus after the next render
   // tell the rest of the app the station's skills changed (the chat's "/" palette re-reads its list)
-  const skillsChanged = () => { try { window.dispatchEvent(new CustomEvent('starnet:skills-changed')); } catch (_) {} };
+  const skillsChanged = () => { try { window.dispatchEvent(new CustomEvent('vultron:skills-changed')); } catch (_) {} };
   // the gear a skill can use for this agent — the SAME reading loadSkillLibrary makes (room objects, shared station
   // gear, profile / Full Access grants from /api/toolsets), so a market card never calls gear "missing" that the
   // library would count as present
@@ -4098,7 +4098,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     const gear = missing.map(skmGear);
     const slug = esc(e.slug);
     const origin = e.shelf === 'originals'
-      ? '<span class="cc-badge cc-official">STARNET ORIGINAL</span>'
+      ? '<span class="cc-badge cc-official">VULTRON ORIGINAL</span>'
       : '<span class="cc-badge cc-community">community · ' + esc(e.author || 'credited') + '</span>';
     const btn = (act, text, cls) => {
       const busy = skmBusy.get(e.slug);
@@ -4114,11 +4114,11 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       action = btn('uninstall', 'REMOVE'); hint = 'Installed · v' + esc(e.installedVersion || e.version) + '.' + needs;
     } else if (e.status === 'bundled') {
       action = '<span class="cc-badge cc-official">BUILT IN</span>';
-      hint = 'Came with StarNet (v' + esc(e.builtInVersion || e.version) + '). Switch it on or off in SKILLS.';
+      hint = 'Came with Vultron (v' + esc(e.builtInVersion || e.version) + '). Switch it on or off in SKILLS.';
     } else if (e.status === 'update') {
       action = btn('install', 'UPDATE');
       hint = e.builtIn && !e.delisted && e.installedVersion === e.builtInVersion
-        ? 'A newer version than the one built into StarNet: v' + esc(e.builtInVersion) + ' → v' + esc(e.version) + '.'
+        ? 'A newer version than the one built into Vultron: v' + esc(e.builtInVersion) + ' → v' + esc(e.version) + '.'
         : 'v' + esc(e.installedVersion) + ' → v' + esc(e.version) + '.';
     } else if (e.status === 'tampered') {
       action = btn('install', 'REINSTALL'); warn = true;
@@ -4144,7 +4144,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     const files = (e.files || []).map(f => '<li><code>' + esc(f.path) + '</code> <span class="dim">' + esc(String(f.bytes)) + ' B</span></li>').join('');
     const upstream = e.upstream && /^https:\/\//.test(String(e.upstream.url || ''))
       ? '<div class="mc-hint">Adapted from <a class="dim" href="' + esc(e.upstream.url) + '" target="_blank" rel="noopener">the original ↗</a> (' + esc(e.upstream.license || e.license) + ')</div>' : '';
-    const search = [e.category, e.author, e.shelf === 'originals' ? 'starnet original' : 'community'].concat(e.tags || []).join(' ');
+    const search = [e.category, e.author, e.shelf === 'originals' ? 'vultron original' : 'community'].concat(e.tags || []).join(' ');
     return '<div class="cc-card' + (on ? ' cc-on' : '') + '" data-skm="' + slug + '" data-shelf="' + esc(e.shelf) + '" data-status="' + esc(e.status) + '" data-installed="' + (e.installedVersion && e.status !== 'available' ? '1' : '') + '" data-search="' + esc(search) + '" style="--ci:' + (i || 0) + '">' +
       '<div class="cc-head"><span class="cc-brand" aria-hidden="true">' + esc(String(e.name || e.slug).slice(0, 2).toUpperCase()) + '</span>' +
         '<div class="cc-identity"><b>' + esc(e.name) + '</b><span class="cc-chip">' + esc(e.category) + '</span></div></div>' +
@@ -4191,21 +4191,21 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       host.dataset.skmOk = '';
       const err = String((d && d.error) || 'no answer').replace(/[.\s]+$/, '');
       if (/turned off on this station/.test(err)) {
-        host.innerHTML = '<p class="mc-notice"><b>The skill market is turned off</b>This station was started with the market switched off (STARNET_SKILL_MARKET_URL=off). Skills you already installed keep working.</p>';
+        host.innerHTML = '<p class="mc-notice"><b>The skill market is turned off</b>This station was started with the market switched off (VULTRON_SKILL_MARKET_URL=off). Skills you already installed keep working.</p>';
         return;
       }
       // a catalog that failed its signature or serial check was reached but REFUSED — say that, not "couldn't reach"
       const refused = /^the skill market (.+?) was not trusted: (.+)$/.exec(err);
       // "http 403" / "took too long" come from THIS app talking to its own station, not from the market
-      const local = /^http \d{3}$/i.test(err) ? 'your station didn\'t answer the request (' + err.toUpperCase() + '); reload StarNet and try again'
+      const local = /^http \d{3}$/i.test(err) ? 'your station didn\'t answer the request (' + err.toUpperCase() + '); reload Vultron and try again'
         : /took too long/i.test(err) ? 'your station took too long to answer' : '';
       host.innerHTML = (refused
-        ? '<p class="mc-notice"><b>StarNet refused the skill market\'s ' + esc(refused[1]) + '</b>' + esc(refused[2]) + '. Nothing from it was used, and skills you already installed keep working.</p>'
+        ? '<p class="mc-notice"><b>Vultron refused the skill market\'s ' + esc(refused[1]) + '</b>' + esc(refused[2]) + '. Nothing from it was used, and skills you already installed keep working.</p>'
         : '<p class="mc-hint">' + (local ? 'Couldn\'t load the skill market: ' + esc(local) : 'Couldn\'t reach the skill market: ' + esc(err)) + '. Skills you already installed keep working.</p>') +
         '<button class="bb xs" type="button" data-skm-act="retry">TRY AGAIN</button>';
       return;
     }
-    const shelves = [['originals', 'StarNet Originals', 'Written by StarNet for your station\'s gear and tools.'], ['community', 'Community picks', 'Open skills by other authors, adapted for StarNet and credited.']];
+    const shelves = [['originals', 'Vultron Originals', 'Written by Vultron for your station\'s gear and tools.'], ['community', 'Community picks', 'Open skills by other authors, adapted for Vultron and credited.']];
     // Originals still lead (DECISIONS: the Skill Market); inside a shelf, its categories in A-Z order, one fold each
     const html = shelves.map(([id, label, note]) => {
       const rows = d.entries.filter(e => e.shelf === id);
@@ -4453,7 +4453,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
           '</div>' +
           '<div class="sk-card-actions"><button class="sk-expand" data-expand="' + esc(s.slug) + '" aria-expanded="false" aria-label="Read instructions for ' + esc(s.name) + '">Read instructions</button>' + switchHTML(s) + '</div>' +
           '<div class="sk-body"><div class="sk-detail-label">Required gear</div><div class="sk-reqs">' + reqBadges(s) + '</div><div class="sk-detail-label">Instructions</div><div class="sk-instructions">' + (typeof Deliverables !== 'undefined' && Deliverables.safeMarkdown ? Deliverables.safeMarkdown(s.body || '') : '<pre>' + esc(s.body || '') + '</pre>') + '</div>' +
-            (s.market ? '<div class="sk-attr">' + (s.shelf === 'originals' ? 'StarNet Original, installed from the Skill Market' : 'From the Skill Market' + (s.author ? ' · by ' + esc(s.author) : '')) + (s.license ? ' · ' + esc(s.license) : '') + '</div>'
+            (s.market ? '<div class="sk-attr">' + (s.shelf === 'originals' ? 'Vultron Original, installed from the Skill Market' : 'From the Skill Market' + (s.author ? ' · by ' + esc(s.author) : '')) + (s.license ? ' · ' + esc(s.license) : '') + '</div>'
               : s.author ? '<div class="sk-attr">Ported from ' + esc(s.author) + (s.license ? ' · ' + esc(s.license) : '') + '</div>' : '') +
           '</div>' +
         '</div>';
@@ -4948,7 +4948,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       if (act === 'export') {
         btn.classList.add('busy'); const r = await Harness.skillExchangeExport({ agentId, id: skill.id }); btn.classList.remove('busy');
         if (r && r.ok && r.envelope) {
-          const receipt = await U.saveFile({ name: r.filename || (skill.id + '.starnet-skill.json'), ext: 'json', text: r.envelope });
+          const receipt = await U.saveFile({ name: r.filename || (skill.id + '.vultron-skill.json'), ext: 'json', text: r.envelope });
           notify(receipt.line, receipt.ok ? 'good' : 'warn');
         } else notify((r && r.error) || 'Export was refused.', 'warn');
         return;
@@ -5030,7 +5030,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
      card (like Edit): the market name, the line on its card, a shelf, a license, the credit and the agreement. The
      sidecar sends the skill exactly as the library holds it; the line it prints is what the market answered. */
   const MARKET_SHELVES = ['Communication', 'Creative', 'Engineering', 'Marketing', 'Planning', 'Productivity', 'Research', 'Writing'];
-  const SHARE_CREDIT_KEY = 'starnet.communityMapCredit';   // one credit name for everything this Commander shares
+  const SHARE_CREDIT_KEY = 'vultron.communityMapCredit';   // one credit name for everything this Commander shares
   function shareSkillToMarket(card, skill, agentId) {
     if (!communityLive()) return;
     const body = card.querySelector('.sk-body'); if (!body || body.dataset.sharing === '1' || body.dataset.editing === '1') return;
@@ -5051,7 +5051,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       '<span class="skm-label" id="' + uid + '-license-l">LICENSE</span><div class="skm-chips" role="group" aria-labelledby="' + uid + '-license-l" data-skm="license"><button type="button" class="consent-btn" aria-pressed="true" data-v="MIT">MIT</button><button type="button" class="consent-btn" aria-pressed="false" data-v="CC-BY-4.0">CC BY 4.0</button></div>' +
       '<label for="' + uid + '-credit">CREDIT ME AS</label><input id="' + uid + '-credit" class="key-input" maxlength="60" autocomplete="off" placeholder="your name or handle">' +
       '<label class="skm-agree"><input type="checkbox" id="' + uid + '-agree"> <span>I wrote this skill (or may share it) and publish it under the license above. Anyone may use and adapt it, with credit to me.</span></label>' +
-      '<div class="sk-attr">A person reads every line before it goes on the market. This station must be linked to your StarNet account.</div>' +
+      '<div class="sk-attr">A person reads every line before it goes on the market. This station must be linked to your Vultron account.</div>' +
       '<div class="sk-attr skm-result" role="status"></div>';
     const $f = (k) => form.querySelector('#' + uid + '-' + k);
     $f('title').value = title;
@@ -5086,16 +5086,16 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       const r = res && res.j;
       send.disabled = false; send.textContent = 'Send for review';
       if (res && res.ok && r.submission) {
-        result.textContent = 'Sent for review as "' + (r.submission.title || fields.title) + '". A person reads it next; your Skills tab on account.starnetos.com shows where it stands.'
+        result.textContent = 'Sent for review as "' + (r.submission.title || fields.title) + '". A person reads it next; your Skills tab on account.vultron.vercel.app shows where it stands.'
           + (r.referencesLeftOut ? ' ' + r.referencesLeftOut + (r.referencesLeftOut === 1 ? ' support file was' : ' support files were') + ' left out: the market takes up to five plain-text references.' : '');
         send.remove(); cancel.textContent = 'Done'; cancel.focus(); sfx('click');
         return;
       }
-      if (!res || (!r && res.status >= 500)) { result.textContent = (res ? 'The station hit an error (HTTP ' + res.status + ').' : 'The station is not answering right now.') + ' This station cannot tell whether the skill arrived. Check your Skills tab on account.starnetos.com before you send it again.'; return; }
+      if (!res || (!r && res.status >= 500)) { result.textContent = (res ? 'The station hit an error (HTTP ' + res.status + ').' : 'The station is not answering right now.') + ' This station cannot tell whether the skill arrived. Check your Skills tab on account.vultron.vercel.app before you send it again.'; return; }
       // a refusal without the route's own body (the gate's, before the share ran): its sentence, and nothing left the station
       if (!r) { const why = Harness.api.why(res); result.textContent = why.charAt(0).toUpperCase() + why.slice(1) + '. Nothing was shared.'; return; }
-      if (r.outcome === 'unknown') { result.textContent = (r.error ? r.error + ' ' : '') + 'This station cannot tell whether the skill arrived. Check your Skills tab on account.starnetos.com before you send it again.'; return; }
-      if (r.linked === false) { result.textContent = 'Link this station to your StarNet account first (STORE › LINK STATION). A free account works. Nothing was shared.'; return; }
+      if (r.outcome === 'unknown') { result.textContent = (r.error ? r.error + ' ' : '') + 'This station cannot tell whether the skill arrived. Check your Skills tab on account.vultron.vercel.app before you send it again.'; return; }
+      if (r.linked === false) { result.textContent = 'Link this station to your Vultron account first (STORE › LINK STATION). A free account works. Nothing was shared.'; return; }
       result.textContent = r.code === 'token_rejected' ? r.error : (r.error || 'The market refused it.') + ' Nothing was shared.';
     };
     $f('title').focus();
@@ -5486,11 +5486,11 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
      the real Harness store; nothing here is simulated. Secrets are shown MASKED only — the
      full key is never written into the DOM (truthful-telemetry + don't-leak-the-key). */
   const PROVIDERS = [
-    // STARNET MANAGED is the one provider with no credential to paste and no account to sign into here: it
+    // VULTRON MANAGED is the one provider with no credential to paste and no account to sign into here: it
     // runs on the credits balance a linked station already has. It is also the one provider that must be able
     // to DISAPPEAR — see creditsProviderState() — because offering it on a station with no cloud configured
     // would advertise an account the user cannot create.
-    { id: 'starnet',       name: 'STARNET MANAGED',   endpoint: 'managed inference · credits', blurb: 'no API key — runs on your balance', live: true, credits: true },
+    { id: 'vultron',       name: 'VULTRON MANAGED',   endpoint: 'managed inference · credits', blurb: 'no API key — runs on your balance', live: true, credits: true },
     { id: 'openrouter',    name: 'OPENROUTER',        endpoint: 'openrouter.ai/api/v1',      blurb: 'one key · 300+ models',  live: true },
     { id: 'codex',         name: 'CHATGPT (CODEX)',   endpoint: 'OAuth · ChatGPT subscription', blurb: 'sign-in, no API key',  live: true },
     { id: 'grok',          name: 'GROK (XAI)',        endpoint: 'OAuth · SuperGrok / X Premium+', blurb: 'sign-in, no API key', live: true },
@@ -5513,7 +5513,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
   const H = () => (typeof Harness === 'object' && Harness) ? Harness : null;
   function provName(id) { const p = PROVIDERS.find(x => x.id === id); return p ? p.name : String(id || '').toUpperCase(); }
 
-  /* ---- STARNET MANAGED, the credits provider -------------------------------------------------
+  /* ---- VULTRON MANAGED, the credits provider -------------------------------------------------
      Three states, and the first one is the reason this is not a static row:
        absent   — no cloud is configured on this station, so the card DOES NOT RENDER. The honesty
                   law the STORE already follows: never offer an account we cannot create. A shipped
@@ -5531,7 +5531,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
   // nothing: an outage is not proof that a saved link vanished.
   function publishCreditsConfigured(configured) {
     const h = H();
-    if (h && h.setDesktopConfigured) h.setDesktopConfigured('starnet', !!configured);
+    if (h && h.setDesktopConfigured) h.setDesktopConfigured('vultron', !!configured);
     if (typeof ModelDock !== 'undefined' && ModelDock.reflect) ModelDock.reflect();
   }
   /* ONE READ, NOT ONE PER REPAINT (live walk 10-14: opening SETTINGS › SPENDING LIMITS fired /api/credits 12 times in
@@ -5586,7 +5586,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
           });
       });
   }
-  // The rows CONNECTIONS should actually draw. Only starnet is ever filtered — every other provider
+  // The rows CONNECTIONS should actually draw. Only vultron is ever filtered — every other provider
   // is a fixed part of the product and must stay visible whether or not it is configured.
   function visibleProviders() {
     return PROVIDERS.filter(p => !p.credits || creditsProv.state !== 'absent');
@@ -5928,7 +5928,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       (extras.length ? all.map(row).join('') : '') +
       box +
       '<div class="prov-accounts-add">' +
-        (canAdd ? '<button class="bb sm" data-act="prov-claude-add" title="sign in another Claude account — Claude Code keeps each sign-in, StarNet never sees them">＋ ADD ACCOUNT</button>' : '') +
+        (canAdd ? '<button class="bb sm" data-act="prov-claude-add" title="sign in another Claude account — Claude Code keeps each sign-in, Vultron never sees them">＋ ADD ACCOUNT</button>' : '') +
         '<span class="dim">' + (extras.length
           ? 'runs start on the first ready account; when it hits its usage limit they continue on the next'
           : 'connect more Claude accounts — when one hits its usage limit, runs continue on the next') + '</span>' +
@@ -5987,21 +5987,21 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     return out;
   }
   function keysFor(id) { return connectedKeys().filter(x => x.provider === id); }
-  // org P04 wiring: STARNET MANAGED takes no key — its bearer is the linked device token (harness.js providerNeedsKey
+  // org P04 wiring: VULTRON MANAGED takes no key — its bearer is the linked device token (harness.js providerNeedsKey
   // excludes it too); its card offers ↗ LINK STATION, never a key field
   function providerAcceptsKey(provider) {
     provider = provider || activeProv();
-    return !isOAuthProvider(provider) && provider !== 'ollama' && provider !== 'claude-cli' && provider !== 'starnet';
+    return !isOAuthProvider(provider) && provider !== 'ollama' && provider !== 'claude-cli' && provider !== 'vultron';
   }
   /* The selected provider's "not set up yet" line under API KEYS (org P04) names what ITS card is missing: a key for a key
-     provider, the ENDPOINT for CUSTOM (its key is optional; the card reads ○ NO ENDPOINT), the LINK for STARNET MANAGED (the
-     card reads ○ NOT LINKED and offers ↗ LINK STATION). A saved or live StarNet link owes no line — the card says its state. */
+     provider, the ENDPOINT for CUSTOM (its key is optional; the card reads ○ NO ENDPOINT), the LINK for VULTRON MANAGED (the
+     card reads ○ NOT LINKED and offers ↗ LINK STATION). A saved or live Vultron link owes no line — the card says its state. */
   function selectedSetupLineHtml(pid, name, creditsState) {
-    const what = pid === 'starnet' ? (creditsState === 'linked' || creditsState === 'saved' ? '' : ' isn’t linked yet.')
+    const what = pid === 'vultron' ? (creditsState === 'linked' || creditsState === 'saved' ? '' : ' isn’t linked yet.')
       : pid === 'custom' ? ', has no endpoint yet.' : ', has no key yet.';
     if (!what) return '';
-    const verb = pid === 'starnet' ? 'LINK IT' : pid === 'custom' ? 'SET IT' : 'ADD IT';
-    return '<div class="key-empty key-goto"><p>The selected provider, ' + esc(name) + (pid === 'starnet' ? ',' : '') + what + '</p>'
+    const verb = pid === 'vultron' ? 'LINK IT' : pid === 'custom' ? 'SET IT' : 'ADD IT';
+    return '<div class="key-empty key-goto"><p>The selected provider, ' + esc(name) + (pid === 'vultron' ? ',' : '') + what + '</p>'
       + '<div class="mc-acts"><button type="button" class="bb sm" data-act="to-prov-card" data-provider="' + esc(pid) + '">▸ ' + verb + ' ON THE ' + esc(name) + ' CARD</button></div></div>';
   }
   /* A CUSTOM ENDPOINT NEEDS ITS ADDRESS (GitHub #113, confirmed live 2026-10-13): the CUSTOM card promised "any /v1 base
@@ -6066,17 +6066,17 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
   }
 
   function providerLogoHtml(id) {
-    const asset = id === 'starnet' ? 'starnet-wordmark.svg' : 'providers/' + (id === 'codex' ? 'openai' : id) + '.svg';
-    return '<span class="prov-logo' + (id === 'starnet' ? ' prov-logo-starnet' : '') + '" aria-hidden="true" style="--provider-icon:url(&quot;' + esc(new URL('assets/brand/' + asset, document.baseURI).href) + '&quot;)"></span>';
+    const asset = id === 'vultron' ? 'vultron-wordmark.svg' : 'providers/' + (id === 'codex' ? 'openai' : id) + '.svg';
+    return '<span class="prov-logo' + (id === 'vultron' ? ' prov-logo-vultron' : '') + '" aria-hidden="true" style="--provider-icon:url(&quot;' + esc(new URL('assets/brand/' + asset, document.baseURI).href) + '&quot;)"></span>';
   }
 
   /* AI & MODELS IN FOUR PLAIN GROUPS (UX night 10-26, Andrew: "pretend these users are like 5"). Nineteen cards stood in
      one column, each led by an API address ("generativelanguage.googleapis.com/v1beta"). They are the same cards, every
      one still drawn (the visibleProviders law) and in PROVIDERS order inside its group, under the one question a newcomer
-     can answer: do you have StarNet credits, a subscription, an API key, or your own model server? A card leads with
+     can answer: do you have Vultron credits, a subscription, an API key, or your own model server? A card leads with
      what you need; its address rides the tip. The group with no id list takes every provider the others do not name. */
   const PROVIDER_GROUPS = [
-    { id: 'credits', label: 'STARNET CREDITS', note: 'link this station once, nothing to paste', ids: ['starnet'] },
+    { id: 'credits', label: 'VULTRON CREDITS', note: 'link this station once, nothing to paste', ids: ['vultron'] },
     { id: 'subscription', label: 'A SUBSCRIPTION YOU HAVE', note: 'sign in, no API key', ids: ['codex', 'grok', 'kimi', 'claude-cli'] },
     { id: 'key', label: 'AN API KEY', note: 'paste a key from the service’s website' },
     { id: 'own', label: 'YOUR OWN MODELS', note: 'on this computer, or a server you run', ids: ['ollama', 'custom'] }
@@ -6174,7 +6174,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
         '</button>' +
           '<span class="prov-stat"><span class="prov-stat-t">' + stat + statWhy + (credentialSaved && !isOAuthProvider(p.id) ? '<i>' + n + (n === 1 ? ' key' : ' keys') + '</i>' : '') + '</span></span>' +   // org P03: the reason sits right under the verdict it explains, above the key count
         (wantsInline ? '<button class="bb sm prov-addkey" data-act="prov-add-toggle" data-provider="' + esc(p.id) + '" aria-label="Add a ' + esc(p.name) + ' key" title="paste a ' + esc(p.name) + ' key without leaving this card">＋ ADD KEY</button>' : '') +
-        (wantsClaudeSignin && !claudeFlowing && !(typeof ClaudeCliSignIn !== 'undefined' && ClaudeCliSignIn.active()) ? '<button class="bb sm prov-addkey" data-act="prov-claude-signin" aria-label="Sign in with Claude" title="opens Claude in your browser — Claude Code keeps the sign-in, StarNet never sees it">' + (claudeCard.failed ? '⏼ TRY AGAIN' : '⏼ SIGN IN') + '</button>' : '') +
+        (wantsClaudeSignin && !claudeFlowing && !(typeof ClaudeCliSignIn !== 'undefined' && ClaudeCliSignIn.active()) ? '<button class="bb sm prov-addkey" data-act="prov-claude-signin" aria-label="Sign in with Claude" title="opens Claude in your browser — Claude Code keeps the sign-in, Vultron never sees it">' + (claudeCard.failed ? '⏼ TRY AGAIN' : '⏼ SIGN IN') + '</button>' : '') +
         (wantsClaudeInstall ? '<button class="bb sm prov-addkey" data-act="prov-claude-install" aria-label="Get Claude Code" title="Claude Code needs a Pro, Max, Team or Enterprise plan">↗ GET CLAUDE CODE</button>' : '') +
         (wantsOAuthSignin ? '<button class="bb sm prov-addkey" data-act="prov-oauth-signin" data-provider="' + esc(p.id) + '" aria-label="Sign in to ' + esc(p.name) + '" title="device-code sign-in — no API key needed">' + (codexDead ? '⏼ RECONNECT' : '⏼ SIGN IN') + '</button>' : '') +
         (wantsInline
@@ -6200,7 +6200,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
         '</div>';
     }
   }
-  // The STARNET MANAGED card. Same shape as every other provider row so it reads as one of them, but its
+  // The VULTRON MANAGED card. Same shape as every other provider row so it reads as one of them, but its
   // action routes to the STORE rather than owning a second copy of the pairing flow.
   function creditsProviderCard(p, pi, active) {
     const linked = creditsProv.state === 'linked';
@@ -6221,8 +6221,8 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       '</button>' +
         '<span class="prov-stat"><span class="prov-stat-t">' + stat + '</span></span>' +
       '<button class="bb sm prov-addkey" data-act="credits-store" data-provider="' + esc(p.id) + '" ' +
-      'aria-label="' + ((linked || saved) ? 'Open the STORE' : 'Link this station to a StarNet account') + '" ' +
-      'title="' + ((linked || saved) ? 'balance, plan and history live in the STORE' : 'link this station to a StarNet account') + '">' +
+      'aria-label="' + ((linked || saved) ? 'Open the STORE' : 'Link this station to a Vultron account') + '" ' +
+      'title="' + ((linked || saved) ? 'balance, plan and history live in the STORE' : 'link this station to a Vultron account') + '">' +
       ((linked || saved) ? '◆ STORE' : '↗ LINK STATION') + '</button>' +
       '</div>';
   }
@@ -6300,7 +6300,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
           '<span class="conn-dot"></span>' +
           '<div class="key-main">' +
           '<div class="key-top"><span class="key-prov">' + esc(provName(k.provider)) + '</span>' +
-          '<code class="key-mask" title="signed in through Claude Code, which keeps the sign-in; StarNet never holds it">' + esc(claudeCliSt.email || 'Claude sign-in') + '</code></div>' +
+          '<code class="key-mask" title="signed in through Claude Code, which keeps the sign-in; Vultron never holds it">' + esc(claudeCliSt.email || 'Claude sign-in') + '</code></div>' +
           '<div class="key-meta">model <b>' + esc(k.model || '—') + '</b> · ' + runState +
           (plan ? ' · <span class="key-stat">' + esc(plan) + '</span>' : '') +
           ' · <span class="key-stat">no API key needed</span></div>' +
@@ -6395,8 +6395,8 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     // (only when addProvider IS the selection: under CHATGPT it is the openrouter stand-in, which is not selected).
     // (g4 final round) "its card above" pointed at whatever card sat above (CLAUDE CODE, OPENROUTER): the line is a real DOOR —
     // its key lands ON that provider's card (focusProvider: scrolls to it and marks it), in reading-size words
-    // (wiring) the line names what that card is missing — a key, CUSTOM's endpoint, STARNET MANAGED's link (selectedSetupLineHtml)
-    else if (addProvider === active && (providerAcceptsKey(addProvider) || addProvider === 'starnet') && !hasAddProvider) rows.push(selectedSetupLineHtml(addProvider, provName(addProvider), creditsProv.state));
+    // (wiring) the line names what that card is missing — a key, CUSTOM's endpoint, VULTRON MANAGED's link (selectedSetupLineHtml)
+    else if (addProvider === active && (providerAcceptsKey(addProvider) || addProvider === 'vultron') && !hasAddProvider) rows.push(selectedSetupLineHtml(addProvider, provName(addProvider), creditsProv.state));
     return rows.join('');
   }
   // edit-in-place / guarded remove for a stored key. Mirrors the CLEAR arm/confirm pattern
@@ -6843,7 +6843,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
         sfx('click');
       });
       if (inlineSave) inlineSave.addEventListener('click', ev => { ev.stopPropagation(); saveInline(card.dataset.provider); });
-      // STARNET MANAGED: both LINK STATION and STORE land in the same place — the STORE section owns the
+      // VULTRON MANAGED: both LINK STATION and STORE land in the same place — the STORE section owns the
       // pairing flow, and duplicating it on this card would be a second implementation to keep in step.
       const toStore = card.querySelector('[data-act="credits-store"]');
       if (toStore) toStore.addEventListener('click', ev => {
@@ -6992,7 +6992,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       }
     } catch (_) {}
     let win = null;
-    try { win = window.open(url, 'starnet_oauth', 'width=540,height=720'); } catch (_) {}
+    try { win = window.open(url, 'vultron_oauth', 'width=540,height=720'); } catch (_) {}
     return { opened: !!win, where: 'popup', win };
   }
 
@@ -7032,7 +7032,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
         if (!current()) return;
         if (!j || typeof j.configured !== 'boolean') throw new Error('invalid credits status');
         if (j && j.configured) return renderCreditsConfigured(body, host, j);
-        // unconfigured → is this station LINKABLE (STARNET_CLOUD_URL wired)? If so, offer LINK STATION. Otherwise
+        // unconfigured → is this station LINKABLE (VULTRON_CLOUD_URL wired)? If so, offer LINK STATION. Otherwise
         // render NOTHING (honesty law: a bare BYOK install shows no STORE surface at all).
         return creditsRead('/api/credits/linkable')
           .then(lk => {
@@ -7115,7 +7115,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     // Same balance, completely different sentence — describing a subscriber's own account as something "the
     // operator tops up" is just wrong on the surface that is supposed to be the truthful one.
     const about = j.linkSaved
-      ? 'This station runs on <b>your StarNet credits</b> — agents work without you bringing a provider key. Each run reserves up to your <b>PER RUN</b> budget and refunds whatever it doesn’t spend. You can always switch to your own key: add it on a provider card above, then select that card.'
+      ? 'This station runs on <b>your Vultron credits</b> — agents work without you bringing a provider key. Each run reserves up to your <b>PER RUN</b> budget and refunds whatever it doesn’t spend. You can always switch to your own key: add it on a provider card above, then select that card.'
       : 'This station runs on <b>managed credits</b> — a prepaid balance the operator tops up, so your agents can work without you bringing your own provider key. Each run reserves up to your <b>PER RUN</b> budget and refunds whatever it doesn’t spend. You can always switch to your own key: add it on a provider card above, then select that card.';
     host.innerHTML =
       '<h4 class="ms-h">STORE <span class="dim">— managed credits</span></h4>' +
@@ -7130,7 +7130,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
         (j.subscription ? '<button class="bb xs" id="credits-manage" title="change or cancel your plan in the browser">MANAGE PLAN ↗</button>' : '') +
         '<button class="bb xs" id="credits-refresh" title="re-read the balance">↻ REFRESH</button>' +
       '</div>' +
-      '<div class="mc-hint">Adding credits opens your browser — StarNet never handles your payment details.</div>' +
+      '<div class="mc-hint">Adding credits opens your browser — Vultron never handles your payment details.</div>' +
       '<div class="set-row"><span class="dim">RECENT ACTIVITY</span></div>' +
       '<div class="mc-list">' + rows + '</div>' +
       (j.linkSaved ? '<div class="set-row" style="margin-top:.6em"><span class="dim" style="font-size:.85em">' +
@@ -7173,14 +7173,14 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
           stage = 'refresh';
         })
         // Symmetric to the link path: a station that just gave up its credential must stop reporting
-        // that it can run on credits, or STARNET stays selectable and every run fails at admission.
+        // that it can run on credits, or VULTRON stays selectable and every run fails at admission.
         .then(() => { forgetCreditsReads(); return (H() && H().refreshCreditsConfigured) ? H().refreshCreditsConfigured() : null; })   // the account just changed: every read below is afresh
         .then(() => refreshCreditsProvider())
         .then(() => { _creditsUnlinkPending = false; scheduleSettingsRepaint(); wireCredits(body); })
         .catch(() => {
           _creditsUnlinkPending = false;
           _creditsUnlinkError = stage === 'keychain'
-            ? 'Could not clear the saved account credential. Unlink was not completed. Try UNLINK again; if it still fails, fully quit and reopen StarNet.'
+            ? 'Could not clear the saved account credential. Unlink was not completed. Try UNLINK again; if it still fails, fully quit and reopen Vultron.'
             : stage === 'station'
               ? 'Could not confirm that unlink completed. Refresh the account connection, then retry UNLINK if it is still linked.'
               : 'Unlink completed, but the account display could not refresh. Retry to load the linking options.';
@@ -7219,10 +7219,10 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     host.innerHTML =
       '<h4 class="ms-h">STORE <span class="dim">— managed credits</span></h4>' +
       creditsUnlinkErrorMarkup() +
-      '<p class="set-about">Link this station to your <b>StarNet account</b> to run agents on managed credits — no provider key needed. You will confirm a short code in your browser.</p>' +
+      '<p class="set-about">Link this station to your <b>Vultron account</b> to run agents on managed credits — no provider key needed. You will confirm a short code in your browser.</p>' +
       (note ? '<div class="set-row" style="color:var(--gold,#e8c15a)">' + esc(note) + '</div>' : '') +
       '<div class="mc-acts"><button class="bb sm" id="credits-link">🔗 LINK STATION</button></div>' +
-      '<div class="mc-hint">Linking opens your browser to confirm — StarNet never handles your payment details.</div>' +
+      '<div class="mc-hint">Linking opens your browser to confirm — Vultron never handles your payment details.</div>' +
       '<div id="credits-link-state"></div>';
     const btn = host.querySelector('#credits-link');
     if (btn) btn.addEventListener('click', () => { sfx('click'); startCreditsLink(body, host); });
@@ -7237,9 +7237,9 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     const btn = host.querySelector('#credits-link');
     if (btn) btn.disabled = true;
     if (state) state.innerHTML = '<div class="set-row dim">Requesting a link code…</div>';
-    // Same failure facts as the genesis LINK (app.js startStarnetLink): a dead local engine is never "the link service".
+    // Same failure facts as the genesis LINK (app.js startVultronLink): a dead local engine is never "the link service".
     const startFail = info => Object.assign(new Error('start failed'), { linkStart: info });
-    Harness.api.post('/api/credits/link/start', { deviceName: 'StarNet Station' })
+    Harness.api.post('/api/credits/link/start', { deviceName: 'Vultron Station' })
       .then(r => { if (generation !== _creditsLinkGeneration) return null; if (!r || !r.ok) throw startFail({ status: r && r.status, j: r && r.j, why: r ? Harness.api.why(r) : '' }); return r.j; },
         () => { throw startFail({ local: true }); })
       .then(j => { if (generation !== _creditsLinkGeneration) return; if (!j || !j.code) throw new Error('no code'); showCreditsLinkCode(body, host, j); })
@@ -7285,7 +7285,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
             // NOTE the token itself never passes through here — Rust reads the file, moves the
             // secret, and rewrites it. We only say "a link just happened". Best-effort: with no
             // desktop shell (browser/dev) there is no keychain, and the file path stays honest.
-            // Tell Harness the credential now exists: configured('starnet') is what resume and the
+            // Tell Harness the credential now exists: configured('vultron') is what resume and the
             // model dock gate on, and it was probed at boot when this station was NOT yet linked.
             adoptCreditsToken()
               .then(() => { forgetCreditsReads(); return (H() && H().refreshCreditsConfigured) ? H().refreshCreditsConfigured() : null; })   // the account just changed: every read below is afresh
@@ -7317,7 +7317,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
   // Read-only server facts, grouped by the payers the current station routes can use. No client-side admission rule.
   function effectiveLimitsHtml(effective) {
     if (!effective || !Array.isArray(effective.rows) || !Array.isArray(effective.classes)) return '<div class="dim">effective limits unavailable</div>';
-    const names = { metered: 'API KEY', managed: 'STARNET CREDITS', subscription: 'SIGN-IN PLAN', local: 'LOCAL MODEL' };
+    const names = { metered: 'API KEY', managed: 'VULTRON CREDITS', subscription: 'SIGN-IN PLAN', local: 'LOCAL MODEL' };
     const valueText = row => {
       if (typeof row.value !== 'number' || !Number.isFinite(row.value)) return 'unavailable';
       if (row.value === 0 && row.zero === 'off') return 'off';
@@ -7332,7 +7332,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
         const pending = typeof r.nextValue === 'number' ? ' <span class="dim">(saved: ' + esc(r.nextValue.toLocaleString('en-US')) + '; after restart)</span>' : '';
         const media = r.group === 'spending' && (cls === 'subscription' || cls === 'local') ? ' Paid images only; chat calls spend no dollars.' : '';
         return '<div class="set-row"><span>' + esc(r.label) + '</span><strong>' + esc(valueText(r)) + '</strong>' + pending + '</div>' +
-          '<div class="mc-hint">' + esc(r.source || 'unknown') + ' · ' + esc(r.where || '') + (r.env ? ' · STARNET_' + esc(r.env) : '') + '<br>' + esc((r.hint || '') + media) + '</div>';
+          '<div class="mc-hint">' + esc(r.source || 'unknown') + ' · ' + esc(r.where || '') + (r.env ? ' · VULTRON_' + esc(r.env) : '') + '<br>' + esc((r.hint || '') + media) + '</div>';
       }).join('') + '</details>';
     }).join('') || '<div class="dim">No payer is selected yet.</div>';
   }
@@ -7388,14 +7388,14 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
           badge.hidden = false;
         }
       });
-      // Issue #53: "0 = no cap" is not the whole truth on StarNet credits — a managed run with PER RUN at 0 stops
+      // Issue #53: "0 = no cap" is not the whole truth on Vultron credits — a managed run with PER RUN at 0 stops
       // at the default the sidecar reports (null when no managed credits are wired: then say nothing).
       const managedHint = body.querySelector('#bg-managed-hint');
       if (managedHint) {
         const md = st && st.managedRunDefaultUsd;
         const showManaged = typeof md === 'number' && Number.isFinite(md) && md > 0;
         managedHint.textContent = showManaged
-          ? 'On StarNet credits, a run with PER RUN at 0 still stops at ' + fmtUsd(md) + ', so one prompt can’t use up your balance. Set a per-run cap above 0 to use your own limit instead.'
+          ? 'On Vultron credits, a run with PER RUN at 0 still stops at ' + fmtUsd(md) + ', so one prompt can’t use up your balance. Set a per-run cap above 0 to use your own limit instead.'
           : '';
         managedHint.hidden = !showManaged;
       }
@@ -7420,11 +7420,11 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
         const floor = (st.atLeast && typeof st.atLeast.today === 'number') ? ' At least ' + fmtUsd(st.atLeast.today) + ' today.' : '';
         // Estimates are recovery choices, not measured spend or permission to waive a chosen cap.
         spendEl.textContent = acc.writeError
-          ? 'Spend history unavailable — it could not be saved to disk, so your spending limits can’t be checked. Restart StarNet to recover it.'
+          ? 'Spend history unavailable — it could not be saved to disk, so your spending limits can’t be checked. Restart Vultron to recover it.'
           : (acc.readError === 'UNSETTLED_SPEND' && open)
             ? 'Spend history unavailable — ' + missing +
               '. Limits you chose refuse paid calls until this is settled; the shipped soft rail stays unenforced. Settle ' + (open === 1 ? 'it' : 'each') + ' below.' + floor
-            : 'Spend history unavailable — the spend record could not be read, so your spending limits can’t be checked. Restart StarNet; if this stays, the spend files in your workspaces folder are damaged.';
+            : 'Spend history unavailable — the spend record could not be read, so your spending limits can’t be checked. Restart Vultron; if this stays, the spend files in your workspaces folder are damaged.';
       } else if (spendEl) {
         const today = fmtUsd(st && st.spentToday), life = fmtUsd(st && st.lifetime);
         const runs = (st && typeof st.runs === 'number') ? st.runs : 0;
@@ -7475,11 +7475,11 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
         const row = document.createElement('div');
         row.className = 'set-row bg-unsettled';
         const where = [r.provider, r.model].filter(Boolean).join(' · ');
-        // WHERE the charge is: a run on StarNet credits (receipt managed:true) was billed to the managed account, so its
+        // WHERE the charge is: a run on Vultron credits (receipt managed:true) was billed to the managed account, so its
         // charge is in the STORE's RECENT ACTIVITY (AI & MODELS), which lists each charge with its run id — on a linked
         // station and an operator (env) one alike — not on a provider dashboard the user never had.
         const managed = r.managed === true, byok = r.managed === false;
-        const chargedBy = managed ? 'what StarNet charged' : byok ? 'what your provider charged' : 'the verified charge';
+        const chargedBy = managed ? 'what Vultron charged' : byok ? 'what your provider charged' : 'the verified charge';
         // A skill evaluation run (budgetUnsettledRuns tags it kind 'evaluation' from its runId, which survives a restart)
         // may well have finished: what it lacks is a recorded price, so it reads UNPRICED, never INTERRUPTED.
         const evaluation = r.kind === 'evaluation';
@@ -7491,14 +7491,14 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
         const countedTip = bound ? ' Suggested settlement: ' + fmtUsd(bound.usd) + ' (' + (BOUND_WORDS[bound.source] || 'estimate') + '). This is not a measured charge and does not waive a spending limit you chose.'
           : ' A spending limit you chose refuses paid calls until this charge is settled.';
         if (damaged) row.setAttribute('data-tip', 'One line of your spend record could not be read (an older crash can leave a torn line), so what it recorded is unknown' +
-          (r.model ? ' (it names ' + r.model + ')' : '') + '. Match it to StarNet Recent Activity or your provider billing records, then enter only its verified charge: StarNet books it once, keeps the damaged line untouched, and ' +
+          (r.model ? ' (it names ' + r.model + ')' : '') + '. Match it to Vultron Recent Activity or your provider billing records, then enter only its verified charge: Vultron books it once, keeps the damaged line untouched, and ' +
           (bound ? 'the charge is settled.' : 'your spending limits can be checked again.') + countedTip);
         else row.setAttribute('data-tip', (evaluation ? 'This skill evaluation run has no recorded price: its provider usage came back without one, or the call failed or was cut off'
-          : 'This run stopped before StarNet recorded what it spent') +
-          (managed ? ' (it ran on your StarNet credits' + (r.model ? ', ' + r.model : '') + ')' : (where ? ' (it started on ' + where + ')' : '')) +
-          (managed ? '. Enter what StarNet charged for it — SETTINGS → AI & MODELS › STORE › RECENT ACTIVITY lists those charges as ' + creditRunTag(r.runId)
-            : byok ? '. Enter the charge your provider dashboard shows for it' : '. The billing source was not recorded. Match this run to StarNet Recent Activity or the original provider billing records, then enter only its verified charge') +
-          (bound ? ': StarNet books it once and the charge is settled.' : ': StarNet books it once and your spending limits can be checked again.') + countedTip);
+          : 'This run stopped before Vultron recorded what it spent') +
+          (managed ? ' (it ran on your Vultron credits' + (r.model ? ', ' + r.model : '') + ')' : (where ? ' (it started on ' + where + ')' : '')) +
+          (managed ? '. Enter what Vultron charged for it — SETTINGS → AI & MODELS › STORE › RECENT ACTIVITY lists those charges as ' + creditRunTag(r.runId)
+            : byok ? '. Enter the charge your provider dashboard shows for it' : '. The billing source was not recorded. Match this run to Vultron Recent Activity or the original provider billing records, then enter only its verified charge') +
+          (bound ? ': Vultron books it once and the charge is settled.' : ': Vultron books it once and your spending limits can be checked again.') + countedTip);
         const what = document.createElement('span');
         what.className = 'bg-un-what';
         const name = document.createElement('b');
@@ -7723,10 +7723,10 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
   }
 
   // CLASS TIER MODELS (Class Loadouts S3) — the three tier->model pins the summon path (app.resolveTierModel)
-  // reads. Persisted in localStorage under the SAME key app.js reads (starnet.tierModels.v1) so there's no new
+  // reads. Persisted in localStorage under the SAME key app.js reads (vultron.tierModels.v1) so there's no new
   // plumbing between the two IIFEs. The selects use the active provider's live catalog;
   // an empty value means "(station default)" — the tier inherits the model dock.
-  const TIER_MODELS_KEY = 'starnet.tierModels.v1';
+  const TIER_MODELS_KEY = 'vultron.tierModels.v1';
   const TM_TIERS = ['reasoning', 'balanced', 'fast'];
   function readTierModels() {
     try { const m = JSON.parse(localStorage.getItem(TIER_MODELS_KEY) || '{}'); return (m && typeof m === 'object') ? m : {}; }
@@ -8096,7 +8096,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
         const f = fileIn.files && fileIn.files[0]; if (!f) return;
         const reader = new FileReader();
         reader.onload = () => {
-          let env; try { env = JSON.parse(String(reader.result || '')); } catch (_) { setMsg('that is not a valid StarNet backup file'); sfx('bad'); fileIn.value = ''; return; }
+          let env; try { env = JSON.parse(String(reader.result || '')); } catch (_) { setMsg('that is not a valid Vultron backup file'); sfx('bad'); fileIn.value = ''; return; }
           setMsg('importing…');
           Harness.api.post('/api/config/import', { envelope: env })
             .then(async ({ ok, j }) => {
@@ -8322,14 +8322,14 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       '<div class="mc-form" id="budget-form">' +
         '<div class="set-row"><label for="bg-perRun">PER RUN <span class="src-badge" id="bg-src-perRun" hidden></span></label><input id="bg-perRun" class="key-input bg-cap" type="number" min="0" step="0.01" inputmode="decimal" autocomplete="off" placeholder="blank or 0 = no cap"></div>' +
         '<div class="mc-hint">Hard ceiling for a single agent run. The run stops the moment it would exceed this. On a subscription chat this one does not apply, so a paid image there is held only by the limits below.</div>' +
-        '<div class="mc-hint" id="bg-managed-hint" hidden></div>' +   // #53: the StarNet-credit default, painted from /api/budget/status
+        '<div class="mc-hint" id="bg-managed-hint" hidden></div>' +   // #53: the Vultron-credit default, painted from /api/budget/status
         '<div class="set-row"><label for="bg-perAgent">PER AGENT <span class="src-badge" id="bg-src-perAgent" hidden></span></label><input id="bg-perAgent" class="key-input bg-cap" type="number" min="0" step="0.01" inputmode="decimal" autocomplete="off" placeholder="blank or 0 = no cap"></div>' +
         '<div class="mc-hint">Lifetime cap on any one agent’s total spend across all its runs.</div>' +
         '<div class="set-row"><label for="bg-perDay">PER DAY <span class="src-badge" id="bg-src-perDay" hidden></span></label><input id="bg-perDay" class="key-input bg-cap" type="number" min="0" step="0.01" inputmode="decimal" autocomplete="off" placeholder="blank or 0 = no cap"></div>' +
         '<div class="mc-hint">Total spend across every agent in a rolling 24-hour window.</div>' +
         '<div class="set-row"><label for="bg-global">GLOBAL <span class="src-badge" id="bg-src-global" hidden></span></label><input id="bg-global" class="key-input bg-cap" type="number" min="0" step="0.01" inputmode="decimal" autocomplete="off" placeholder="blank or 0 = no cap"></div>' +
         '<div class="mc-hint">All-time ceiling across everything. The last line of defence.</div>' +
-        '<div class="mc-hint">Images whose cost is unknown are not held by these dollar limits: when a provider reports no cost and StarNet has no price, the image counts as nothing here. By default StarNet stops a run at 10 of them instead, and every run at 50 in any 24 hours (the station can set other counts; the receipt of each such image states the ones in force). A price is known only after an image comes back, so at either count no further image starts, whatever its model, except on a ChatGPT plan, which is flat-rate.</div>' +
+        '<div class="mc-hint">Images whose cost is unknown are not held by these dollar limits: when a provider reports no cost and Vultron has no price, the image counts as nothing here. By default Vultron stops a run at 10 of them instead, and every run at 50 in any 24 hours (the station can set other counts; the receipt of each such image states the ones in force). A price is known only after an image comes back, so at either count no further image starts, whatever its model, except on a ChatGPT plan, which is flat-rate.</div>' +
         '<div class="mc-acts">' +
           '<button class="bb sm" id="bg-save">SAVE LIMITS</button>' +
           '<button class="bb xs" id="bg-reset" title="clear the saved value so this cap follows the environment default again" style="display:none">RESET TO DEFAULTS</button>' +
@@ -8347,7 +8347,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       // plain first (UX night 10-26): what it is for, then the one rule; which connection runs a fallback model stays said;
       // the four real trigger classes stay named (errorClass: availability, authentication, billing, rate limits), and the word
       // is FALLBACK, never "backup" (org P04: STATION BACKUP is a different thing)
-      '<p class="set-about">If your model fails mid-run because it is unavailable, its key or sign-in is refused, it is out of credit, or it hits rate limits, StarNet tries these models, top to bottom. You pick your main model in COMMS. <b>An empty list means no fallback.</b> Fallback models run on your OpenRouter key, or on StarNet credits when StarNet is your provider; COMMS and the logbook say when one takes over.</p>' +
+      '<p class="set-about">If your model fails mid-run because it is unavailable, its key or sign-in is refused, it is out of credit, or it hits rate limits, Vultron tries these models, top to bottom. You pick your main model in COMMS. <b>An empty list means no fallback.</b> Fallback models run on your OpenRouter key, or on Vultron credits when Vultron is your provider; COMMS and the logbook say when one takes over.</p>' +
       '<div class="mc-form" id="fbc-form">' +
         '<div id="fbc-list" class="mc-list-fb"><div class="dim">reading chain…</div></div>' +
         '<div class="set-row"><select id="fbc-add" class="fbc-sel"><option value="">＋ add a model from the catalog…</option></select></div>' +
@@ -8508,13 +8508,13 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     const secSystem =
       // "POWER" — this header held only KEEP COMPUTER AWAKE, so "SCHEDULED TASKS" mislabelled it.
       '<h4 class="ms-h">POWER</h4>' +
-      '<label class="set-row"><input type="checkbox" id="set-awake" ' + (awakeChecked ? 'checked' : '') + (awakeDesktop ? '' : ' disabled') + '> KEEP COMPUTER AWAKE <span class="dim">— ' + (awakeDesktop ? 'prevent idle sleep while StarNet is open' : 'desktop app only') + '</span></label>' +
+      '<label class="set-row"><input type="checkbox" id="set-awake" ' + (awakeChecked ? 'checked' : '') + (awakeDesktop ? '' : ' disabled') + '> KEEP COMPUTER AWAKE <span class="dim">— ' + (awakeDesktop ? 'prevent idle sleep while Vultron is open' : 'desktop app only') + '</span></label>' +
       // Lane 4D — native startup/tray choices + the honest background-lifecycle explainer. All controls are
       // desktop-only; they stay disabled and the line names the browser reality otherwise. The explainer
       // is filled live from the tray supervisor's REAL armed state (wireLifecycle) so it never over-claims.
-      '<label class="set-row"><input type="checkbox" id="set-autostart" disabled> LAUNCH AT LOGIN <span class="dim">— ' + (lifecycleDesktop ? 'start StarNet automatically when you sign in' : 'desktop app only') + '</span></label>' +
+      '<label class="set-row"><input type="checkbox" id="set-autostart" disabled> LAUNCH AT LOGIN <span class="dim">— ' + (lifecycleDesktop ? 'start Vultron automatically when you sign in' : 'desktop app only') + '</span></label>' +
       '<label class="set-row"><input type="checkbox" id="set-start-minimized" disabled> START MINIMIZED TO TRAY <span class="dim">— ' + (lifecycleDesktop ? 'begin each launch hidden; open from the tray icon' : 'desktop app only') + '</span></label>' +
-      '<label class="set-row"><input type="checkbox" id="set-close-to-tray" disabled> CLOSE WINDOW TO TRAY <span class="dim">— ' + (lifecycleDesktop ? 'X hides StarNet; tray Quit stops it' : 'desktop app only') + '</span></label>' +
+      '<label class="set-row"><input type="checkbox" id="set-close-to-tray" disabled> CLOSE WINDOW TO TRAY <span class="dim">— ' + (lifecycleDesktop ? 'X hides Vultron; tray Quit stops it' : 'desktop app only') + '</span></label>' +
       '<p class="set-about" id="lifecycle-desc">' + (lifecycleDesktop ? 'Checking what runs in the background…' : 'The desktop app can stay supervised in the system tray. This browser tab has no background process.') + '</p>' +
       // ADVANCED — env-only runtime knobs, now editable + persisted server-side (P1-9). PRECEDENCE is spelled out
       // in the card: an explicit environment variable ALWAYS wins over a value saved here (a deploy stays in control).
@@ -8564,7 +8564,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       '<div id="diag-swallowed" class="dim" style="margin-top:6px;font-size:11px">swallowed errors: reading…</div>' +
       '<h4 class="ms-h">LIVE DOCTOR <span class="dim">— opt-in runtime proof</span></h4>' +
       // plain first (UX night 10-26); every probe it runs is still named
-      '<p class="set-about">Checks, for real, that StarNet works: one tiny reply from your model, one harmless test command, a hello to each connected service, and a status check of each chat channel. It sends no chat messages and shares no secrets.</p>' +
+      '<p class="set-about">Checks, for real, that Vultron works: one tiny reply from your model, one harmless test command, a hello to each connected service, and a status check of each chat channel. It sends no chat messages and shares no secrets.</p>' +
       '<label class="set-check"><input type="checkbox" id="diag-live-consent"> I understand this makes real requests and may spend one tiny model reply.</label>' +
       '<div class="set-save"><button class="bb sm" id="diag-live-run">RUN LIVE DOCTOR</button><button class="bb sm" id="diag-live-copy" hidden>⧉ COPY RECEIPT</button></div>' +
       '<div id="diag-live-msg" class="msg"></div>' +
@@ -8574,7 +8574,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       '<div id="diag-build" class="dim" style="margin-top:6px;font-size:11px" hidden></div>' +
       // CLEAR NOTIFICATIONS moved to the NOTIFICATIONS section (where it belongs); this is now just the about note.
       '<h4 class="ms-h">ABOUT</h4>' +
-      '<p class="set-about">STARNET — gamified AI-agent harness.<br>Theme, display & audio preferences are saved locally on this machine. Manage planned tasks under MY WORK › TASKS and saved conversations under SESSIONS in COMMS.</p>';
+      '<p class="set-about">VULTRON — gamified AI-agent harness.<br>Theme, display & audio preferences are saved locally on this machine. Manage planned tasks under MY WORK › TASKS and saved conversations under SESSIONS in COMMS.</p>';
 
     // Keep every control mounted and reachable; group existing nodes without replacing their IDs.
     function arrangeSettingsPane(el) {
@@ -8700,7 +8700,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     let paintBackdropSwatches = () => {};
 
     const sections = [
-      { id: 'providers', label: 'AI & MODELS', glyph: '⌁', desc: 'The AI your agents think with. Connect one below: StarNet credits, a subscription you have, an API key, or your own models. Everything under API KEYS is optional.', build: el => frag(secProviders() + secModels)(el) },
+      { id: 'providers', label: 'AI & MODELS', glyph: '⌁', desc: 'The AI your agents think with. Connect one below: Vultron credits, a subscription you have, an API key, or your own models. Everything under API KEYS is optional.', build: el => frag(secProviders() + secModels)(el) },
       // ONE WORD: AUTONOMY — the dial and what it did while you were away are one section (the old NIGHT SHIFT
       // section folded in; openTerm maps its id here so an old deep link still lands).
       { id: 'autonomy', label: 'AUTONOMY', glyph: '◈', desc: 'Choose when agents work on their own, where that work goes, and see what they did while you were away.', build: frag(secAutonomy + secAwayActivity) },
@@ -8714,10 +8714,10 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       // preferences — same word, two doors), and a 'SYSTEM' section inside SETTINGS inside the SYSTEM
       // dock read as a loop.
       { id: 'notifs', label: 'ALERTS', glyph: '◔', desc: 'What pings you while you work, and whether it chimes.', build: frag(secNotifs) },
-      // STARNET REMOTE: pair a phone and drive the station from anywhere (app/remote-devices.js owns the pane)
+      // VULTRON REMOTE: pair a phone and drive the station from anywhere (app/remote-devices.js owns the pane)
       { id: 'remote', label: 'REMOTE', glyph: '▯', desc: 'Pair your phone and control this station from anywhere.', build: el => { if (typeof RemoteDevices !== 'undefined') RemoteDevices.mount(el, arrangeSettingsPane); else el.textContent = 'Remote is not available in this build.'; } },
       // BROWSER: where the station browser lives — built-in / a Chrome window (YOUR CHROME is not offered yet; app/outputbrowser.js owns the pane)
-      { id: 'browser', label: 'BROWSER', glyph: '◎', desc: 'Where the station browser runs: inside StarNet, or as its own Chrome window.', build: el => {
+      { id: 'browser', label: 'BROWSER', glyph: '◎', desc: 'Where the station browser runs: inside Vultron, or as its own Chrome window.', build: el => {
         if (typeof OutputBrowser !== 'undefined' && OutputBrowser.mountSettings) OutputBrowser.mountSettings(el, arrangeSettingsPane);
         // SAVED SIGN-INS: STEP-IN is no longer a standing dock button, so the sign-ins it keeps get a door here
         const row = mkEl('div', 'set-row');
@@ -8749,7 +8749,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     wireProviderActions(host);
     wireKeyActions(host);
     queueProviderHealthRefresh();
-    // The STARNET MANAGED card is drawn from a cached credits state, so the FIRST paint of a fresh session
+    // The VULTRON MANAGED card is drawn from a cached credits state, so the FIRST paint of a fresh session
     // has nothing to go on. Re-read, and repaint only if the answer changed the card's existence or its
     // balance — an unconditional rerender here would wipe an open key editor on every settings open.
     (() => {
@@ -8947,12 +8947,12 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
           if (startMinimizedToggle) { startMinimizedToggle.disabled = false; startMinimizedToggle.checked = !!v.startMinimized; }
           if (closeToTrayToggle) { closeToTrayToggle.disabled = false; closeToTrayToggle.checked = !!v.closeToTray; }
           if (v.closeToTray) {
-            lifeDesc.textContent = 'Closing the window hides StarNet in the tray and keeps the station running. Use Quit StarNet in the tray menu to stop it.';
+            lifeDesc.textContent = 'Closing the window hides Vultron in the tray and keeps the station running. Use Quit Vultron in the tray menu to stop it.';
           } else if (v.armed) {
             const why = (v.reasons && v.reasons.length) ? v.reasons.join(', ') : 'armed background work';
             lifeDesc.textContent = 'Right now, closing the window KEEPS the station running in the background (' + why + '). Quit fully from the tray icon. Otherwise closing would fully quit.';
           } else {
-            lifeDesc.textContent = 'Right now, nothing is armed — closing the window fully quits StarNet (no background process). Arm a routine, connect a channel, or set ON ITS OWN to ' + initiativeLabel('leash') + ' or ' + initiativeLabel('free') + ' in SETTINGS › AUTONOMY to keep it running while closed.';
+            lifeDesc.textContent = 'Right now, nothing is armed — closing the window fully quits Vultron (no background process). Arm a routine, connect a channel, or set ON ITS OWN to ' + initiativeLabel('leash') + ' or ' + initiativeLabel('free') + ' in SETTINGS › AUTONOMY to keep it running while closed.';
           }
         }).catch(() => { lifeDesc.textContent = 'Closing the window keeps the station running only when armed work needs it — otherwise it fully quits.'; });
       };
@@ -9613,7 +9613,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
             '<div class="set-row"><label>USER</label><input class="key-input" data-ssh-user value="' + esc(String(target.user || '')) + '" placeholder="optional"></div>' +
             '<div class="set-row"><label>PORT</label><input class="key-input" data-ssh-port type="number" min="1" max="65535" value="' + esc(String(target.port || 22)) + '"></div>' +
             '<div class="set-row"><label>REMOTE ROOT</label><input class="key-input" data-ssh-root value="' + esc(String(target.remoteRoot || '/workspace')) + '" placeholder="/workspace"></div>' +
-            '<div class="mc-hint">Uses the OS OpenSSH agent/config with batch authentication and strict known_hosts. StarNet stores no password or private key. Files push before each command and pull back afterward; sync never deletes either side.</div>' +
+            '<div class="mc-hint">Uses the OS OpenSSH agent/config with batch authentication and strict known_hosts. Vultron stores no password or private key. Files push before each command and pull back afterward; sync never deletes either side.</div>' +
             '<div class="mc-hint" data-ssh-status>' + esc(sshStatus) + '</div>' +
             '<div class="mc-acts"><button class="bb sm" data-ssh-save>SAVE &amp; PROBE</button>' +
               (sshConfigured ? '<button class="bb sm" data-ssh-sync="push">PUSH NOW</button><button class="bb sm" data-ssh-sync="pull">PULL NOW</button><button class="bb xs danger" data-ssh-clear>CLEAR TARGET</button>' : '') +
@@ -10597,7 +10597,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
         banner.style.cssText = 'position:fixed;top:8px;left:10%;right:10%;z-index:100000;padding:16px;background:#281e12;color:#fff;border:2px solid #e8b35c';
         const label = document.createElement('p'); label.textContent = d.title;
         const exportButton = document.createElement('button'); exportButton.className = 'bb'; exportButton.textContent = 'Download this window’s save';
-        exportButton.onclick = async () => { const receipt = await U.saveFile({ name: 'starnet-conflicting-save.json', ext: 'json', text: JSON.stringify(CloudSave.localSnapshot() || {}) }); notify(receipt.line, receipt.ok ? '' : 'warn'); };
+        exportButton.onclick = async () => { const receipt = await U.saveFile({ name: 'vultron-conflicting-save.json', ext: 'json', text: JSON.stringify(CloudSave.localSnapshot() || {}) }); notify(receipt.line, receipt.ok ? '' : 'warn'); };
         const reload = document.createElement('button'); reload.className = 'bb'; reload.textContent = reset ? 'Open the fresh station' : 'Reload current station'; reload.onclick = async () => { try { await CloudSave.reloadCurrent(); } catch (e) { label.textContent = e.message; } };
         // the preserved copy's sessions go INTO the station (added, never removing any), then this window reloads onto it
         // never after a RESET, and never for erased work: the station was erased on purpose, and this copy is from before it
@@ -10610,13 +10610,13 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       return;
     }
     if (h && h.degraded) {
-      // EL-11 FIX 1: the sidecar is REFUSING writes — this workspace was written by a NEWER StarNet. Persistent
+      // EL-11 FIX 1: the sidecar is REFUSING writes — this workspace was written by a NEWER Vultron. Persistent
       // red dot + a one-time visible line; never lets a refused write read as a healthy backup.
       d.classList.add('degraded');
-      d.title = 'this station’s data was written by a newer StarNet — update the app. Until then, changes are NOT being backed up.';
+      d.title = 'this station’s data was written by a newer Vultron — update the app. Until then, changes are NOT being backed up.';
       if (!degradedNotified) {
         degradedNotified = true;
-        try { notify('This station’s data was written by a newer StarNet — update the app. Until you do, your changes are NOT being backed up.', 'bad'); } catch (_) {}
+        try { notify('This station’s data was written by a newer Vultron — update the app. Until you do, your changes are NOT being backed up.', 'bad'); } catch (_) {}
       }
     } else if (h && h.cause === 'tooLarge' && (h.consecutiveFailures || 0) > 0) {
       // a save over the station file's 16 MiB cap (a named 413): retrying cannot land it, so it says so on the FIRST refusal,
@@ -10637,7 +10637,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
         d.title = cache + ' — saving to the station file only. Your latest change is confirmed in the station file.';
       } else if ((h.consecutiveFailures || 0) > 0) {
         d.classList.add('degraded');
-        d.title = cache + ' and the station file has not confirmed your latest change (' + saveCauseWords(h) + ') — it is NOT saved. Keep StarNet open; it keeps retrying.';
+        d.title = cache + ' and the station file has not confirmed your latest change (' + saveCauseWords(h) + ') — it is NOT saved. Keep Vultron open; it keeps retrying.';
       } else {
         d.classList.add('stale');
         d.title = cache + ' — your latest change is NOT saved yet; it is on its way to the station file.';
@@ -10822,7 +10822,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
         el.appendChild(mkEl('p', 'cd-privacy', 'Your profile is stored locally. Its briefing is sent to each agent’s configured model when it works; relevant summaries may also be used for suggestions.'));
         el.appendChild(cdBriefing(ds));
       } },
-      { id: 'sources', label: 'SOURCES', glyph: '⌁', desc: 'Manage the notes StarNet can study for useful work.', build: el => {
+      { id: 'sources', label: 'SOURCES', glyph: '⌁', desc: 'Manage the notes Vultron can study for useful work.', build: el => {
         if (typeof WorkHub !== 'undefined') WorkHub.mountSources(el);
         else el.appendChild(mkEl('p', 'cd-empty', 'Source settings are unavailable. Reopen the dossier to try again.'));
       }, onShow: el => { const detail = el.querySelector('.wh-source-settings'); if (detail) detail.open = true; } },
@@ -11177,7 +11177,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
      you are on, and the steps ahead.
 
      WHERE IT DEPARTS FROM A BATTLE PASS, DELIBERATELY: nothing here is locked, and no node is a tier you
-     buy or unlock. StarNet's standing law is that the log reveals ORDER and never withholds — so upcoming
+     buy or unlock. Vultron's standing law is that the log reveals ORDER and never withholds — so upcoming
      nodes read as "coming up", never as locked loot, and there is no padlock, no tier number, and no
      fake currency. The reward each node names is the real outcome the milestone produces.
 
@@ -11224,7 +11224,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
      journey ledger already proves. Rewards are cosmetic and applied on the spot (a rank title, an ASCII frame every
      five tiers); CLAIM is a per-viewer acknowledgement with a sting, never a gate. Drawn in plain ASCII so VT323 owns
      every glyph. */
-  const BP_KEY = 'starnet.battlepass.v1';
+  const BP_KEY = 'vultron.battlepass.v1';
   function bpClaimed() { try { const r = JSON.parse(localStorage.getItem(BP_KEY) || 'null'); return r && Number(r.claimedTier) || 0; } catch (_) { return 0; } }
   function bpSetClaimed(t) { try { localStorage.setItem(BP_KEY, JSON.stringify({ claimedTier: t })); } catch (_) {} }
   function bpModel() {
@@ -11378,7 +11378,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     const next = steps.find(s => s.isNext && s.status !== 'done');
     const accept = (next && !next.inFlight)
       ? '<button class="consent-btn q-arc-accept q-track-accept" data-gid="' + esc(next.arcGoalId) + '" data-mid="' + esc(next.milestoneId) + '">▶ START THIS STEP</button><p class="sub dim">Starts work with your crew using your current model and permissions.</p>'
-        + '<details class="q-life-report"><summary>I DID THIS STEP</summary><label>What did you do?<textarea class="q-step-evidence" maxlength="1000" placeholder="Describe the action you completed outside StarNet"></textarea></label>'
+        + '<details class="q-life-report"><summary>I DID THIS STEP</summary><label>What did you do?<textarea class="q-step-evidence" maxlength="1000" placeholder="Describe the action you completed outside Vultron"></textarea></label>'
         + '<button class="consent-btn q-step-report" data-gid="' + esc(next.arcGoalId) + '" data-mid="' + esc(next.milestoneId) + '">RECORD MY ACTION</button></details>'
       : (next && next.inFlight ? '<span class="sub q-track-running">the build for this step is running — finishing it completes the step.</span>' : '');
     const alternatives = steps.filter(s => s.status !== 'done' && !s.isNext);
@@ -11635,7 +11635,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     const recent = (Array.isArray(j.outcomes) ? j.outcomes : []).slice(-3).reverse();
     const progression = j.progression;
     const achievements = progression && Array.isArray(progression.achievements) ? progression.achievements.slice(-5).reverse() : [];
-    const proofLabel = (kind, authority) => authority === 'commander-confirmed' ? 'You confirmed' : kind === 'metric' ? 'You recorded' : 'StarNet recorded';
+    const proofLabel = (kind, authority) => authority === 'commander-confirmed' ? 'You confirmed' : kind === 'metric' ? 'You recorded' : 'Vultron recorded';
     const growthHtml = progression ? '<div class="q-commander-growth"><div class="q-journey-title">COMMANDER LEVEL ' + progression.level + '</div>'
       + '<div class="sub">' + progression.points + ' achievement points · ' + progression.pointsToNextLevel + ' to the next level</div>'
       + '<div class="sub dim">Confirmed goal activity and recorded metric checkpoints earn points across your goals. Confirming a completed goal earns 100 points. Setbacks never erase your history.</div>'
@@ -11699,7 +11699,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
           + '<button class="consent-btn q-goal-reflect">SAVE REFLECTION</button></details></details>';
       }).join('') + '</div>' : '';
     return '<details class="q-life-goal q-life-manage"' + (goals.length ? '' : ' open') + '><summary>Start a goal</summary>'
-      + '<p class="sub">A rough idea is enough. Shape it with StarNet or write your own plan.</p>'
+      + '<p class="sub">A rough idea is enough. Shape it with Vultron or write your own plan.</p>'
       + '<label>I want to…<input class="q-new-goal" maxlength="280" placeholder="Learn to play a song, change careers, build a business…"></label>'
       + '<button class="consent-btn q-goal-suggest">HELP SHAPE MY PLAN</button><p class="sub dim">Uses your current AI model to suggest an editable plan. Saving and starting work are separate actions.</p>'
       + '<div class="q-plan-feedback" role="status" aria-live="polite"></div><div class="q-plan-proposal"></div>'
@@ -11883,7 +11883,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       const rewardHtml = q.reward ? '<div class="sub q-reward"><span class="q-field-label">REWARD</span>&#9670; ' + esc(q.reward) + '</div>' : '';
       const actionRow = (goBtn || queueBtn) ? '<div class="q-actions">' + goBtn + queueBtn + '</div>' : '';
       const lifeActions = q.kind === 'ledger' && q.status !== 'done' ? '<div class="q-life-quest" data-qid="' + esc(q.id) + '">'
-        + '<div class="sub q-owner">' + esc(q.executionMode === 'commander' ? 'YOUR ACTION' : q.executionMode === 'together' ? 'YOU + STARNET' : 'STARNET CAN HELP') + '</div>'
+        + '<div class="sub q-owner">' + esc(q.executionMode === 'commander' ? 'YOUR ACTION' : q.executionMode === 'together' ? 'YOU + VULTRON' : 'VULTRON CAN HELP') + '</div>'
         + (q.whyNow ? '<div class="sub">Why now: ' + esc(q.whyNow) + '</div>' : '')
         + (isPaused(q) ? '<div class="sub">' + esc(q.disposition.type === 'later' ? 'Saved for tomorrow' : q.disposition.type === 'too_big' ? 'Needs a smaller step' : 'Blocked') + (q.disposition.reason ? ': ' + esc(q.disposition.reason) : '') + '</div><button class="consent-btn q-quest-disposition" data-action="resume">RESUME</button>'
           : '<details><summary>CHANGE THIS RECOMMENDATION</summary><label>What needs to change?<input id="q-reason-' + esc(q.id) + '" class="q-disposition-reason" value="' + esc(questDrafts.get(q.id)?.reason || '') + '" maxlength="240" placeholder="For example: waiting for a reply, or only 15 minutes available"></label>'
@@ -12162,7 +12162,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     if (suggest) suggest.addEventListener('click', async () => {
       if (body._journeyPlanning) return;
       const form = body.querySelector('.q-life-manage'), title = form.querySelector('.q-new-goal').value.trim();
-      if (title.length < 4) { body._journeyPlanMessage = 'Tell StarNet a little about what you want to do first.'; planFeedback.textContent = body._journeyPlanMessage; form.querySelector('.q-new-goal').focus(); return; }
+      if (title.length < 4) { body._journeyPlanMessage = 'Tell Vultron a little about what you want to do first.'; planFeedback.textContent = body._journeyPlanMessage; form.querySelector('.q-new-goal').focus(); return; }
       const options = { motivation: form.querySelector('.q-new-motivation').value, constraints: form.querySelector('.q-new-constraints').value,
         successCondition: form.querySelector('.q-new-success').value, steps: form.querySelector('.q-new-steps').value };
       body._journeyPlanning = true; body._journeyPlan = null; rerender('quests', false);
@@ -12251,7 +12251,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       current.querySelector('.q-new-success').focus(); current.scrollIntoView({ block: 'nearest' });
     }));
     body.querySelectorAll('.q-journey-export').forEach(b => b.addEventListener('click', async () => {
-      const receipt = await U.saveFile({ name: 'starnet-journey.json', ext: 'json', text: GoalStore.exportJourney() });
+      const receipt = await U.saveFile({ name: 'vultron-journey.json', ext: 'json', text: GoalStore.exportJourney() });
       notify(receipt.line, receipt.ok ? '' : 'warn');
     }));
     body.querySelectorAll('.q-goal-focus').forEach(b => b.addEventListener('click', () => { if (GoalStore.focusGoal(b.dataset.gid)) rerender('quests', false); }));
@@ -12819,10 +12819,10 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
   }
 
   // called when entering the game room with the live agent(s)
-  // one-shot: fold any legacy starnet.station.v1 kanban cards into real workstreams, then retire tasks[].
+  // one-shot: fold any legacy vultron.station.v1 kanban cards into real workstreams, then retire tasks[].
   // Guarded by a persisted flag so a refresh never re-imports / duplicates the cards. Runs from enter(),
   // which is called during app.js init() while `const App` is still in its TDZ — so this must NOT touch
-  // App. The imported workstreams are written to starnet.save by the trailing persist() in resumeInto/onWake
+  // App. The imported workstreams are written to vultron.save by the trailing persist() in resumeInto/onWake
   // (a direct in-scope call), which always follows enterGame; here we only update our own station store.
   function importLegacyTasks() {
     if (store.tasksImported) return;

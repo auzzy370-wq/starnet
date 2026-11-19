@@ -80,7 +80,7 @@ function memStorage(broken) {
   const m = new Map();
   return { getItem: k => { if (broken) throw new Error('blocked'); return m.has(k) ? m.get(k) : null; }, setItem: (k, v) => { if (broken) throw new Error('blocked'); m.set(k, String(v)); } };
 }
-const onDisk = (storage, ws) => { const raw = storage.getItem('starnet.sentNow.v1'); return raw ? (JSON.parse(raw)[ws] || []) : []; };
+const onDisk = (storage, ws) => { const raw = storage.getItem('vultron.sentNow.v1'); return raw ? (JSON.parse(raw)[ws] || []) : []; };
 function sendRig(opts) {
   Channels.reset();
   const lines = [], flushed = [], posts = [];

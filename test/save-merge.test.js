@@ -27,7 +27,7 @@ const T = (c, ts) => ({ role: 'user', content: c, ts: ts || 0 });
 const contents = w => (w ? w.history : []).map(t => t.content);
 const sess = (doc, id) => doc.workstreams.find(w => w.id === id);
 function station0() {
-  return { schema: 'starnet.save', version: 6, updatedAt: 1000, _saveRevision: 4, _saveClient: 'w-a',
+  return { schema: 'vultron.save', version: 6, updatedAt: 1000, _saveRevision: 4, _saveClient: 'w-a',
     agent: { id: 'agent', name: 'NOVA', createdAt: 5000, model: 'm1', stats: { xp: 1 } },
     agents: [{ id: 'agent', name: 'NOVA', stats: { xp: 1 } }, { id: 'c1', name: 'Ada', model: 'x', reasoningEffort: 'low', stats: { xp: 3 } }],
     usage: { tokens: 100, cost: 1, calls: 10 }, station: { props: [{ id: 'p1', t: 'desk', x: 1 }], name: 'deck' },

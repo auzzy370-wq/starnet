@@ -20,7 +20,7 @@ const source = fs.readFileSync(path.join(__dirname, '../frontend/app/cloudsave.j
     };
     vm.runInNewContext(source, context);
     const client = context.module.exports;
-    client.push({ schema: 'starnet.save', version: 5, updatedAt: 1, agent: { id: 'agent' } });
+    client.push({ schema: 'vultron.save', version: 5, updatedAt: 1, agent: { id: 'agent' } });
     const writing = client.flush({ force: true });
     await Promise.resolve(); await Promise.resolve();
     const deadline = [...timers.values()].find(t => t.delay === 15000);
@@ -47,7 +47,7 @@ const source = fs.readFileSync(path.join(__dirname, '../frontend/app/cloudsave.j
     const deadline=[...timers.values()].find(t=>t.delay===2500);assert.ok(deadline,phase+' GET has bounded deadline');deadline.fn();
     assert.equal(await pulling,null);assert.equal(signal.aborted,true);assert.equal(client.pullOutcome(),'unreachable','GET timeout never proves empty');
     late({save:null});await Promise.resolve();assert.equal(client.pullOutcome(),'unreachable','late response cannot turn timeout into empty');
-    const doc={schema:'starnet.save',version:5,updatedAt:1,agent:{id:'agent'}};
+    const doc={schema:'vultron.save',version:5,updatedAt:1,agent:{id:'agent'}};
     context.fetch=async()=>({ok:true,json:async()=>({save:doc})});assert.deepEqual(await client.pull(),doc);assert.equal(client.pullOutcome(),'save','same client can retry successfully');
   }
   console.log('cloudsave timeout: stalled headers/body, abort, late acknowledgement and retry PASS');

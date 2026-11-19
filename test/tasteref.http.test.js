@@ -16,7 +16,7 @@ const {spawn} = require('node:child_process');
 const {once} = require('node:events');
 const {bootToken} = require('./_httpToken.js');
 const root = path.resolve(__dirname, '..');
-const workspace = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-taste-ref-'));
+const workspace = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-taste-ref-'));
 const PNG_B64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
 const PAGE = (accent, font) => '<!doctype html><html><head><style>:root{--bg:#0b0f14;--accent:' + accent + '}body{background:var(--bg);color:#e6e6e6;font-family:"' + font + '",sans-serif}h1{color:' + accent + '}a{color:' + accent + '}</style></head><body><h1>Candles</h1></body></html>';
 let child, base, headers;
@@ -55,9 +55,9 @@ async function boot() {
   const socket = http.createServer(); socket.listen(0, '127.0.0.1'); await once(socket, 'listening'); const port = socket.address().port; await new Promise(r => socket.close(r));
   base = 'http://127.0.0.1:' + port;
   const orBase = 'http://127.0.0.1:' + mock.address().port + '/api/v1';
-  child = spawn(process.execPath, ['sidecar/index.js'], {cwd: root, env: {...process.env, SKYNET_WORKSPACES: workspace, SKYNET_PORT: String(port), SKYNET_OPENROUTER_BASE: orBase, STARNET_OPENROUTER_BASE: orBase, SKYNET_OPENROUTER_KEY: 'sk-or-v1-tasteref-fixture', SKYNET_FULL_ACCESS: '1', SKYNET_EDGE_TTS: '0', SKYNET_REFLECT: '0', SKYNET_SKILL_REVIEW: '0', SKYNET_AUX_BUDGET: '0'}, stdio: ['ignore', 'pipe', 'pipe']});
+  child = spawn(process.execPath, ['sidecar/index.js'], {cwd: root, env: {...process.env, SKYNET_WORKSPACES: workspace, SKYNET_PORT: String(port), SKYNET_OPENROUTER_BASE: orBase, VULTRON_OPENROUTER_BASE: orBase, SKYNET_OPENROUTER_KEY: 'sk-or-v1-tasteref-fixture', SKYNET_FULL_ACCESS: '1', SKYNET_EDGE_TTS: '0', SKYNET_REFLECT: '0', SKYNET_SKILL_REVIEW: '0', SKYNET_AUX_BUDGET: '0'}, stdio: ['ignore', 'pipe', 'pipe']});
   await new Promise((resolve, reject) => { let out = ''; const timer = setTimeout(() => reject(new Error('boot timeout: ' + out.slice(-1200))), 30000); const read = d => { out += d; if (out.includes('Open in your browser:')) { clearTimeout(timer); resolve(); } }; child.stdout.on('data', read); child.stderr.on('data', read); child.once('exit', c => { clearTimeout(timer); reject(new Error('boot exit ' + c + out.slice(-1200))); }); });
-  headers = {'Content-Type': 'application/json', 'X-StarNet-Token': await bootToken(base, base), Origin: base};
+  headers = {'Content-Type': 'application/json', 'X-Vultron-Token': await bootToken(base, base), Origin: base};
 }
 async function stop() { if (child && child.exitCode === null) { const exit = once(child, 'exit'); child.kill(); await exit; } }
 async function api(url, body) { const r = await fetch(base + url, {headers, method: body === undefined ? 'GET' : 'POST', body: body === undefined ? undefined : JSON.stringify(body)}); return {status: r.status, body: await r.json()}; }

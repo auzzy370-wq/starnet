@@ -35,12 +35,12 @@ function childEnv(source = process.env) {
 // or project folder they launched from). It, and anything it opens, gets one
 // stable private folder, so any native relative write lands there instead.
 function driverCwd(tmp = os.tmpdir()) {
-  const dir = path.join(tmp, 'starnet-cua');
+  const dir = path.join(tmp, 'vultron-cua');
   try { fs.mkdirSync(dir, { recursive: true }); return dir; }
   catch (error) { failNote('computer.runtime.cwd', error); return tmp; }
 }
 // The private cwd must not move the DRIVER itself: Windows resolves a relative
-// spawn path against the child's cwd, so a relative STARNET_CUA_BINARY (or a
+// spawn path against the child's cwd, so a relative VULTRON_CUA_BINARY (or a
 // dev-eval argv path) would stop resolving while computer-control's installed()
 // / check() still find it from the sidecar cwd. Pin it to the sidecar cwd first:
 // a path with a separator always, a bare name only when it sits there (the old
@@ -62,8 +62,8 @@ async function connect({ binary: requested, signal, clock, timeoutMs = 20000 }) 
   const env = childEnv();
   const binary = driverBinary(requested);
   const cwd = driverCwd();
-  const socket = '\\\\.\\pipe\\starnet-cua-' + randomUUID();
-  const session = 'starnet-' + randomUUID();
+  const socket = '\\\\.\\pipe\\vultron-cua-' + randomUUID();
+  const session = 'vultron-' + randomUUID();
   let daemon, proxy, client, closed = false, closePromise, failure;
   const children = new Set();
   const launch = args => {

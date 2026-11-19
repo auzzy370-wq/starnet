@@ -7,7 +7,7 @@
    SOURCE: no budget.check( call is left outside makeGovernor and the run's own check (loop.js asks runBudget).
    THE REAL SIDECAR, a stored ChatGPT sign-in and an OpenRouter key, both pushed to one local fake at the transport edge (the
    desktop's runtime push; the subscription-stacking-oauth.e2e pattern; every other outbound fetch refused, and the autonomy
-   dial at WAIT so every quest refresh is a press), a chosen $1 day cap (STARNET_BUDGET_PER_DAY):
+   dial at WAIT so every quest refresh is a press), a chosen $1 day cap (VULTRON_BUDGET_PER_DAY):
      - on the key: a one-shot (POST /api/routing/line-draft) runs under the cap; a run whose call costs $2 then reaches it, and
        from there no metered call path reaches the transport: not the run-end passes, not another run, not the one-shot, not
        REFRESH QUESTS;
@@ -88,10 +88,10 @@ function startFake() {
   return new Promise(resolve => server.listen(0, '127.0.0.1', () => resolve({ server, calls, base: 'http://127.0.0.1:' + server.address().port })));
 }
 
-const ENV = { STARNET_IPC_TOKEN: IPC, STARNET_BUDGET_PER_DAY: '1', SKYNET_AUX_BUDGET: '0', STARNET_DEBUG_CHANNELS: '1',
-  STARNET_WORKER_STALL_MS: '450000.9', STARNET_WORKER_STALL_IN_TOOL_MS: '100', STARNET_WORKER_MAX_ITERS: '3.5',
-  STARNET_SKILL_REVIEW: '0', STARNET_SKILL_CURATOR: '0', STARNET_DEFAULT_MODEL: 'or/model', STARNET_CREDITS_URL: '', STARNET_CLOUD_URL: '' };
-for (const name of ['OPENROUTER_KEY', 'OPENROUTER_API_KEY', 'OPENAI_API_KEY', 'XAI_API_KEY', 'CREDITS_API_KEY', 'AUX_MODEL', 'REFLECT_MODEL', 'MAX_ITERS', 'MAX_SUBSCRIPTION_TOKENS']) { ENV[name] = ''; ENV['STARNET_' + name] = ''; ENV['SKYNET_' + name] = ''; }
+const ENV = { VULTRON_IPC_TOKEN: IPC, VULTRON_BUDGET_PER_DAY: '1', SKYNET_AUX_BUDGET: '0', VULTRON_DEBUG_CHANNELS: '1',
+  VULTRON_WORKER_STALL_MS: '450000.9', VULTRON_WORKER_STALL_IN_TOOL_MS: '100', VULTRON_WORKER_MAX_ITERS: '3.5',
+  VULTRON_SKILL_REVIEW: '0', VULTRON_SKILL_CURATOR: '0', VULTRON_DEFAULT_MODEL: 'or/model', VULTRON_CREDITS_URL: '', VULTRON_CLOUD_URL: '' };
+for (const name of ['OPENROUTER_KEY', 'OPENROUTER_API_KEY', 'OPENAI_API_KEY', 'XAI_API_KEY', 'CREDITS_API_KEY', 'AUX_MODEL', 'REFLECT_MODEL', 'MAX_ITERS', 'MAX_SUBSCRIPTION_TOKENS']) { ENV[name] = ''; ENV['VULTRON_' + name] = ''; ENV['SKYNET_' + name] = ''; }
 
 function seed(workspace) {
   fs.mkdirSync(path.join(workspace, 'codex'), { recursive: true });
@@ -125,7 +125,7 @@ function rig(fixture, fake) {
     }
   }
   async function push(provider, key) {
-    const res = await fixture.request('/api/key', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-StarNet-Token': IPC }, body: JSON.stringify({ provider, key, baseUrl: fake.base + '/' + provider }) });
+    const res = await fixture.request('/api/key', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Vultron-Token': IPC }, body: JSON.stringify({ provider, key, baseUrl: fake.base + '/' + provider }) });
     A.eq(res.status, 200, provider + ': its endpoint is pushed to the fake');
   }
   async function roster(stationProvider) {
@@ -241,7 +241,7 @@ async function capArm(fake, shim) {
 
 // ===== A CHECK THAT THROWS refuses, with its exit named: the station's side-effect-free spend check fails =====
 async function throwArm(fake, shim) {
-  const fixture = SidecarFixture.create({ prefix: 'gov-every-call-throw-', timeoutMs: 30000, entry: bootEntry(fs.mkdtempSync(path.join(shim, 'throw-')), true), env: Object.assign({}, ENV, { STARNET_BUDGET_PER_DAY: '' }) });
+  const fixture = SidecarFixture.create({ prefix: 'gov-every-call-throw-', timeoutMs: 30000, entry: bootEntry(fs.mkdtempSync(path.join(shim, 'throw-')), true), env: Object.assign({}, ENV, { VULTRON_BUDGET_PER_DAY: '' }) });
   const t = rig(fixture, fake);
   const start = fake.calls.length;
   try {
@@ -251,12 +251,12 @@ async function throwArm(fake, shim) {
     await t.roster('openrouter');
     const draft = await t.lineDraft();
     A.eq(draft.status, 409, 'a throwing check: the one-shot is refused (it used to read as "not blocked" and spend): ' + draft.text.slice(0, 240));
-    A.ok(/spending check failed/.test(draft.body && draft.body.error) && /restart StarNet/.test(draft.body.error) && /SPENDING LIMITS/.test(draft.body.error), 'and its refusal names the exit: ' + (draft.body && draft.body.error));
+    A.ok(/spending check failed/.test(draft.body && draft.body.error) && /restart Vultron/.test(draft.body.error) && /SPENDING LIMITS/.test(draft.body.error), 'and its refusal names the exit: ' + (draft.body && draft.body.error));
     const at = fixture.output().length;
     const ran = await t.run('gov-or', 'openrouter');
     A.eq(ran.end.reason, 'done', 'fixture: the run itself checks with its run id, so it runs');
     A.eq(fake.calls.slice(start).filter(c => c.kind === 'aux').length, 0, 'a throwing check: no run-end pass reaches the transport (they used to be noted and let through)');
-    A.ok(/\[aux-governor\][^\n]*spending check failed[^\n]*restart StarNet/.test(fixture.output().slice(at)), 'and the run-end says so with the exit');
+    A.ok(/\[aux-governor\][^\n]*spending check failed[^\n]*restart Vultron/.test(fixture.output().slice(at)), 'and the run-end says so with the exit');
     const quest = await t.refreshQuests();
     A.ok(!!quest && quest.outcome === 'skipped' && /spend history is unavailable/.test(quest.reason || ''), 'a throwing check: REFRESH QUESTS keeps its refusal and its words: ' + JSON.stringify(quest));
     A.eq(fake.calls.slice(start).filter(c => c.kind === 'linedraft' || c.kind === 'quest').length, 0, 'a throwing check: neither the one-shot nor the quest refresh reached the transport');

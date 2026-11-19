@@ -1,5 +1,5 @@
 /* test/save-interleave.seeded.test.js — no window can wedge autosave, lose or silently revert another window's work, churn
-   reloads, or boot a stale view (wave-1 save-latch-kill, 10-26 reliability audit family B3; gh#153, #121, starnet-releases#4,
+   reloads, or boot a stale view (wave-1 save-latch-kill, 10-26 reliability audit family B3; gh#153, #121, vultron-releases#4,
    qa/bugs 27bae3d6; review 10-27).
 
    THE HARNESS. Real modules end to end: the REAL page (frontend/app/cloudsave.js + cloudsavecore.js, one vm per window)
@@ -163,7 +163,7 @@ function world(seed, opts) {
   const trace = (...a) => { if (tracing) console.log('[t=' + (clock.now() % 1e7) + ']', ...a); };
   const brief = d => d ? { rev: d._saveRevision, dirty: d._saveDirty, client: String(d._saveClient || '').slice(0, 14), merge: !!d._saveMerge, hero: d.agent && d.agent.name, sessions: (d.workstreams || []).map(w => w.id + ':' + (w.history || []).length).join(',') } : null;
   // a founded station: the windows boot onto it (a missing one is onboarding, not this harness)
-  host.saveStore.save('agent', { schema: 'starnet.save', version: 6, updatedAt: clock.now(), _saveRevision: 0, _saveDirty: false, _saveClient: 'founder',
+  host.saveStore.save('agent', { schema: 'vultron.save', version: 6, updatedAt: clock.now(), _saveRevision: 0, _saveDirty: false, _saveClient: 'founder',
     agent: { id: 'agent', name: 'NOVA', createdAt: 5000 }, agents: [], generalId: 'general', activeId: 'general', deletedIds: [],
     workstreams: [{ id: 'general', title: null, history: [{ role: 'user', content: 'founded' }] }] }, { compareRevision: true });
   let uuidSeq = 0, turnSeq = 0, reqSeq = 0;
@@ -257,7 +257,7 @@ function world(seed, opts) {
   }
   // save.js's key()/useKey()/load() over the browser cache: the page's own journal (cloudsave openJournal picks it)
   function saveOf(ls, current) {
-    let key = 'starnet.save';
+    let key = 'vultron.save';
     // load() migrates as Save.loadStatus() does: an older cache (the founder's v6 save) reads as the current version, nothing moved
     return { CURRENT: current || 6, key: () => key, useKey: k => { key = String(k); return key; },
       load: () => { try { const d = JSON.parse(ls.getItem(key) || 'null'); if (d && typeof d === 'object' && Number(d.version) < (current || 6)) d.version = current || 6; return d; } catch (_) { return null; } } };
@@ -275,7 +275,7 @@ function world(seed, opts) {
   function docOf(w) {
     const ws = clone(w.state.ws);
     if (packed) for (const s of ws) s.history = packedHistory(w, s);
-    return { schema: 'starnet.save', version: packed ? 7 : 6, agent: { id: 'agent', name: w.state.hero, createdAt: 5000 }, agents: clone(w.state.crew), generalId: 'general', activeId: 'general',
+    return { schema: 'vultron.save', version: packed ? 7 : 6, agent: { id: 'agent', name: w.state.hero, createdAt: 5000 }, agents: clone(w.state.crew), generalId: 'general', activeId: 'general',
       deletedIds: clone(w.state.deleted), workstreams: ws };
   }
   // the window proves a row by reading it from the transcript (a reconcile, a run end): it may now save it by reference
@@ -300,7 +300,7 @@ function world(seed, opts) {
     return row;
   };
   // the key this window's page writes its save under (its journal; the single legacy key with opts.noJournal)
-  function cacheKey(w) { return (opts.noJournal || !w.page.journalKey) ? 'starnet.save' : w.page.journalKey(); }
+  function cacheKey(w) { return (opts.noJournal || !w.page.journalKey) ? 'vultron.save' : w.page.journalKey(); }
   // a window's non-session changes the station has not taken when it dies (or reopens on a boot merge) are the boot merge's
   // to keep beside the station, not the station file's (I3)
   function expose(w) {

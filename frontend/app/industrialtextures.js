@@ -1,4 +1,4 @@
-/* StarNet reference-authored industrial materials, September 2026.
+/* Vultron reference-authored industrial materials, September 2026.
  * Image-authored albedo; geometry, lighting, seats and live activity remain owned
  * by the station renderer. The industrial set is the default; ?textures=classic
  * retains the original renderer for comparison and recovery.
@@ -15,7 +15,7 @@ const IndustrialTextures = (() => {
   } catch (_) {}
   const originals = Object.create(null), failed = [];   // no prototype: a lazy read of 'constructor' is not a material
   /* THE IDLE RENDERER (wave 5: gh#69, gh#114, bug 9256a771, email E55), BEHIND A FLAG until Andrew has A/B'd the look.
-     On:  ?idleRenderer=1, or localStorage 'starnet.idleRenderer' = '1' (World.setIdleRenderer(true) writes it; read once, at load).
+     On:  ?idleRenderer=1, or localStorage 'vultron.idleRenderer' = '1' (World.setIdleRenderer(true) writes it; read once, at load).
      Off: the default, and ?idleRenderer=0 wins over the stored value. Off, nothing below changes a single draw. */
   /* LAZY ART (the idle renderer's second half). Every material used to be decoded AND painted into its own full-size canvas
      at boot, whether this station's floor ever showed it or not: 77 textures, about 353 MiB of canvases (window-leaks ART).
@@ -25,7 +25,7 @@ const IndustrialTextures = (() => {
   let lazyArt = false;
   try {
     const q = new URLSearchParams(location.search).get('idleRenderer');
-    lazyArt = q != null ? (q === '1' || q === 'on') : (typeof localStorage !== 'undefined' && localStorage.getItem('starnet.idleRenderer') === '1');
+    lazyArt = q != null ? (q === '1' || q === 'on') : (typeof localStorage !== 'undefined' && localStorage.getItem('vultron.idleRenderer') === '1');
   } catch (_) {}
   const ART_LRU_MAX = 24;
   const artStats = { painted: 0, evicted: 0 };

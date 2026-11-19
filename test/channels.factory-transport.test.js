@@ -175,7 +175,7 @@ function station(kind, root) {
 }
 
 (async () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-factory-transport-'));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-factory-transport-'));
   try {
     for (const kind of KINDS) {
       const s = station(kind, path.join(root, kind));

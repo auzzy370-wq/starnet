@@ -55,7 +55,7 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8').replace(/\r\
   }
   A.ok(!/continue-on-error/.test(job), 'S2: no step of the job may fail without failing the job');
 
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-fast-shards-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-fast-shards-'));
   try {
     const cut = (steps, n) => Array.from({ length: n }, (_, i) => runner.shardSteps(steps, runner.parseShard((i + 1) + '/' + n)));
 

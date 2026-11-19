@@ -19,7 +19,7 @@ const { makeStdioTransport } = require('../sidecar/mcp/transport.stdio.js');
 const { makeEnvironmentManager } = require('../sidecar/environment.js');
 
 (async () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-safecell-reconnect-'));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-safecell-reconnect-'));
   let cell = 'missing', label = '', intoStopped = 0;
   const servers = [];   // live MCP exec children
   // pid stays undefined on every fake child, so no teardown path can ever signal a real process
@@ -30,7 +30,7 @@ const { makeEnvironmentManager } = require('../sidecar/environment.js');
     const done = (out, code) => setImmediate(() => { if (out) child.stdout.emit('data', Buffer.from(out)); child.emit('exit', code); child.emit('close', code); });
     child.stdin = { write() { return true; }, end() {} };
     if (a[0] === 'inspect') { if (cell === 'missing') done('Error: No such object\n', 1); else done((cell === 'running') + '\t' + label + '\tsc1\n', 0); }
-    else if (a[0] === 'create') { label = a.find(x => /^ai\.starnet\.workspace=/.test(x)).split('=')[1]; cell = 'stopped'; done('cid\n', 0); }
+    else if (a[0] === 'create') { label = a.find(x => /^ai\.vultron\.workspace=/.test(x)).split('=')[1]; cell = 'stopped'; done('cid\n', 0); }
     else if (a[0] === 'start') { cell = 'running'; done('started\n', 0); }
     else if (a[0] === 'exec' && cell !== 'running') {
       intoStopped++;
@@ -48,12 +48,12 @@ const { makeEnvironmentManager } = require('../sidecar/environment.js');
         return true;
       }, end() {} };
       servers.push(child);
-    } else if (a[0] === 'exec') done(/starnet-ready/.test(a[a.length - 1]) ? 'starnet-ready' : '', 0);
+    } else if (a[0] === 'exec') done(/vultron-ready/.test(a[a.length - 1]) ? 'vultron-ready' : '', 0);
     else done('', 0);
     return child;
   };
   const env = makeEnvironmentManager({ spawn: dockerSpawn, fs, pathMod: path, root, clock: { now: () => 0 },
-    config: { backend: 'docker', dockerBin: 'dockerx', dockerImage: 'starnet-node:test' } });
+    config: { backend: 'docker', dockerBin: 'dockerx', dockerImage: 'vultron-node:test' } });
 
   const timers = [];
   const mgr = makeConnectorManager({

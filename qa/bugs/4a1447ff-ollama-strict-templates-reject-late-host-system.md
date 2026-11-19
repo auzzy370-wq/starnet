@@ -9,8 +9,8 @@ found: 2026-10-11
 lane: agent/provider-triage-1011
 fix: d3e708cb0
 origin: customer
-report: https://github.com/androoAGI/starnet/issues/102
-affected: StarNet 0.13.1 Windows; qwen38-27b:latest via Ollama in WSL2
+report: https://github.com/YOUR-GITHUB-USER/vultron/issues/102
+affected: Vultron 0.13.1 Windows; qwen38-27b:latest via Ollama in WSL2
 family: local-provider-system-projection
 installer: unverified
 recovery: unconfirmed

@@ -19,25 +19,25 @@ function write(root, rel, value) {
 }
 function quiet(extra) {
   return Object.assign({ SKYNET_DEV: '1', SKYNET_CRON_ENABLED: '0', SKYNET_LOOP_ENABLED: '0', SKYNET_EDGE_TTS: '0',
-    OPENROUTER_API_KEY: '', SKYNET_OPENROUTER_KEY: '', STARNET_OPENROUTER_KEY: '' }, extra || {});
+    OPENROUTER_API_KEY: '', SKYNET_OPENROUTER_KEY: '', VULTRON_OPENROUTER_KEY: '' }, extra || {});
 }
 
 (async () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-recovery-home-'));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-recovery-home-'));
   const downloads = path.join(home, 'Downloads');
   fs.mkdirSync(downloads);
-  const isolated = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-recovery-isolated-'));
+  const isolated = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-recovery-isolated-'));
   const target = path.join(isolated, 'workspaces');
-  const app = SidecarFixture.create({ prefix: 'starnet-recovery-backup-', env: quiet({ STARNET_CONNECTOR_ENCRYPTION_KEY: 'ab'.repeat(32), USERPROFILE: home, HOME: home }), timeoutMs: 20000 });
+  const app = SidecarFixture.create({ prefix: 'vultron-recovery-backup-', env: quiet({ VULTRON_CONNECTOR_ENCRYPTION_KEY: 'ab'.repeat(32), USERPROFILE: home, HOME: home }), timeoutMs: 20000 });
   let second = null;
   // nested, so update-snapshots (a sibling of WORKSPACES) lands in this test's folder and never in the shared temp root
-  const stationHome = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-recovery-station-'));
+  const stationHome = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-recovery-station-'));
   fs.rmSync(app.workspace, { recursive: true, force: true });
   app.workspace = path.join(stationHome, 'workspaces');
   fs.mkdirSync(app.workspace);
   try {
     const ws = app.workspace;
-    write(ws, 'agent.save.json', { version: 1, agentId: 'agent', updatedAt: 1000, savedAt: 1000, doc: { schema: 'starnet.save', version: 1, updatedAt: 1000, agent: { id: 'agent', name: 'NOVA' }, station: { rooms: [{ id: 'lab' }], props: [{ id: 'terminal' }] }, workstreams: [] } });
+    write(ws, 'agent.save.json', { version: 1, agentId: 'agent', updatedAt: 1000, savedAt: 1000, doc: { schema: 'vultron.save', version: 1, updatedAt: 1000, agent: { id: 'agent', name: 'NOVA' }, station: { rooms: [{ id: 'lab' }], props: [{ id: 'terminal' }] }, workstreams: [] } });
     write(ws, 'transcript.jsonl', '{}\n');
     write(ws, 'agent.notebook.json', { entries: [{ id: 'm' }] });
     write(ws, 'cron.jobs.json', { jobs: [] });
@@ -50,7 +50,7 @@ function quiet(extra) {
     write(ws, 'connectors/state.json', { version: 2, configs: [{ id: 'vaulted-reference', transport: 'http', url: 'http://127.0.0.1:1/mcp', headers: { Authorization: 'Bearer ' + SECRET } }], oauth: { byId: {}, clients: {} } });
     await app.start();
     const sealed = JSON.parse(fs.readFileSync(path.join(ws, 'connectors', 'state.json'), 'utf8'));
-    A.ok(String(sealed.format).startsWith('starnet.connector-vault.'), 'boot sealed the connector store: the real encrypted case');
+    A.ok(String(sealed.format).startsWith('vultron.connector-vault.'), 'boot sealed the connector store: the real encrypted case');
 
     const info = (await app.json('GET', '/api/recovery/info')).body;
     A.eq(info.ok, true, 'the info route answers');
@@ -59,7 +59,7 @@ function quiet(extra) {
     A.eq(path.resolve(info.cli), path.resolve(CLI), 'and the CLI beside it');
     A.ok(info.commands.restore.indexOf('--replace-existing') >= 0 && info.commands.restore.indexOf(ws) >= 0, 'its restore command targets that folder');
 
-    const made = await app.json('POST', '/api/recovery/backup', { browserStore: { 'starnet.save': JSON.stringify({ agent: { id: 'agent' } }), 'starnet.station.v1': '{"room":"lab"}', 'starnet.byok.key': SECRET } });
+    const made = await app.json('POST', '/api/recovery/backup', { browserStore: { 'vultron.save': JSON.stringify({ agent: { id: 'agent' } }), 'vultron.station.v1': '{"room":"lab"}', 'vultron.byok.key': SECRET } });
     A.eq(made.status, 200, 'the route answers: ' + made.text);
     A.eq(path.dirname(made.body.file), downloads, 'the bundle is in Downloads');
     A.eq(made.body.requirements.find(x => x.category === 'connector_references').status, 'present', 'the running app reads its own encrypted store');
@@ -103,11 +103,11 @@ function quiet(extra) {
 
     const restored = run(['restore', '--bundle', made.body.file, '--target', target]);
     A.eq(restored.status, 0, 'the CLI restores it into an isolated folder: ' + restored.stderr);
-    const browserFile = JSON.parse(fs.readFileSync(path.join(isolated, 'starnet-browser-restore.json'), 'utf8'));
-    A.eq(browserFile.store['starnet.station.v1'], '{"room":"lab"}', 'with the browser state beside it');
-    A.eq(browserFile.store['starnet.byok.key'], undefined, 'and no browser credential');
+    const browserFile = JSON.parse(fs.readFileSync(path.join(isolated, 'vultron-browser-restore.json'), 'utf8'));
+    A.eq(browserFile.store['vultron.station.v1'], '{"room":"lab"}', 'with the browser state beside it');
+    A.eq(browserFile.store['vultron.byok.key'], undefined, 'and no browser credential');
 
-    second = SidecarFixture.create({ prefix: 'starnet-recovery-clean-', env: quiet({ STARNET_CONNECTOR_ENCRYPTION_KEY: 'cd'.repeat(32), USERPROFILE: home, HOME: home }), timeoutMs: 20000 });
+    second = SidecarFixture.create({ prefix: 'vultron-recovery-clean-', env: quiet({ VULTRON_CONNECTOR_ENCRYPTION_KEY: 'cd'.repeat(32), USERPROFILE: home, HOME: home }), timeoutMs: 20000 });
     fs.rmSync(second.workspace, { recursive: true, force: true });
     second.workspace = target;
     await second.start();

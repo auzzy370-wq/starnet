@@ -47,7 +47,7 @@ const read = project();
 const write = station => {
   const previous = store.loadPrimaryState('agent');
   const revision = previous.status === 'ok' ? previous.wrapper.doc._saveRevision : 0;
-  return store.save('agent', { schema: 'starnet.save', version: Save.CURRENT, updatedAt: now++, _saveRevision: revision,
+  return store.save('agent', { schema: 'vultron.save', version: Save.CURRENT, updatedAt: now++, _saveRevision: revision,
     _saveClient: 'projection-test', _saveDirty: true, agent: { id: 'agent' }, station }, { compareRevision: true });
 };
 try {

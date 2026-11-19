@@ -319,6 +319,6 @@ const NY = require('../frontend/app/needsyou.js');
   A.eq(Places.get('needs-you') && Places.get('needs-you').words, 'SESSIONS › NEEDS YOU', 'station.show knows the needs-you place');
   const M = require('../sidecar/manual.js');
   A.ok(/NEEDS YOU at the top of SESSIONS \[needs-you\] lists every card waiting \(also NOTIFICATIONS › NEEDS YOU\)/.test(M.manualSection('concepts')), 'the agent manual points at the rail first, NOTIFICATIONS second');
-  A.ok(!/NOTIFICATIONS › NEEDS YOU lists every/.test(M.starnetManual()), 'no manual line points only at NOTIFICATIONS any more');
+  A.ok(!/NOTIFICATIONS › NEEDS YOU lists every/.test(M.vultronManual()), 'no manual line points only at NOTIFICATIONS any more');
   A.report('needs-you-one-list.test');
 })().catch(e => { console.error(e); process.exit(1); });

@@ -18,7 +18,7 @@ const os = require('os');
 const { makeFsTools } = require('../sidecar/tools/builtin/fs.js');
 const { makeRegistry } = require('../sidecar/tools/registry.js');
 
-const ROOT = path.join(os.tmpdir(), 'starnet-fs-read-version-' + process.pid);
+const ROOT = path.join(os.tmpdir(), 'vultron-fs-read-version-' + process.pid);
 const CTX = { agentId: 'ag', emit: () => {} };
 const absOf = (rel) => path.join(ROOT, 'ag', rel);
 const PRECONDITION = { code: 'fresh_read_required', requiredTool: 'fs.read', requiredState: 'current_file_observed' };

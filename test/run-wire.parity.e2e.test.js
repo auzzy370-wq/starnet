@@ -8,7 +8,7 @@
    for the same agent:
      COMMS (/api/run with the page's pair) · Run Now · the scheduled tick · a Telegram owner DM (connected while the page's
      global wire was another agent's OpenRouter pin) and the DM after a chat /model · /v1 (the generic model and a selected
-     agent) · ACP (GET /api/runtime/agent, then the bridge's /api/run body) · `starnet run` (bin/lib/cli-core.js) · the
+     agent) · ACP (GET /api/runtime/agent, then the bridge's /api/run body) · `vultron run` (bin/lib/cli-core.js) · the
      Live Doctor's probe, which must also name the pair and its source.
    The run rows name where each pair came from (wireSource), and Run Now says it was pressed (trigger 'manual').
    team.dispatch is covered in-process by test/run-wire.invariant.test.js: the real orchestration module, handed the
@@ -78,13 +78,13 @@ test('every entry point reaches the provider with the agent\'s one pair', { time
   const up = await upstream();
   const tg = await telegramApi();
   const fixture = SidecarFixture.create({ prefix: 'run-wire-parity-', timeoutMs: 30000, env: {
-    STARNET_DEFAULT_MODEL: '', SKYNET_DEFAULT_MODEL: '', STARNET_V1_MODEL: '', SKYNET_V1_MODEL: '',
-    STARNET_OPENROUTER_KEY: 'sk-or-v1-parity', SKYNET_OPENROUTER_KEY: 'sk-or-v1-parity',
-    STARNET_OPENROUTER_BASE: up.base + '/or/api/v1', SKYNET_OPENROUTER_BASE: up.base + '/or/api/v1',
+    VULTRON_DEFAULT_MODEL: '', SKYNET_DEFAULT_MODEL: '', VULTRON_V1_MODEL: '', SKYNET_V1_MODEL: '',
+    VULTRON_OPENROUTER_KEY: 'sk-or-v1-parity', SKYNET_OPENROUTER_KEY: 'sk-or-v1-parity',
+    VULTRON_OPENROUTER_BASE: up.base + '/or/api/v1', SKYNET_OPENROUTER_BASE: up.base + '/or/api/v1',
     CUSTOM_OPENAI_KEY: 'custom-parity', CUSTOM_OPENAI_BASE_URL: up.base + '/custom/v1',
-    STARNET_API_KEY: V1_KEY, SKYNET_API_KEY: V1_KEY,
-    STARNET_TELEGRAM_API_BASE: tg.base, SKYNET_TELEGRAM_API_BASE: tg.base,
-    STARNET_CRON_TICK_MS: '400', SKYNET_CRON_TICK_MS: '400'
+    VULTRON_API_KEY: V1_KEY, SKYNET_API_KEY: V1_KEY,
+    VULTRON_TELEGRAM_API_BASE: tg.base, SKYNET_TELEGRAM_API_BASE: tg.base,
+    VULTRON_CRON_TICK_MS: '400', SKYNET_CRON_TICK_MS: '400'
   } });
   fs.writeFileSync(path.join(fixture.workspace, 'cron.armed.json'), JSON.stringify({ version: 1, armed: true }), 'utf8');
   const HERO = ['custom', 'hero-model'], SMITH = ['openrouter', 'smith-model'];
@@ -143,8 +143,8 @@ test('every entry point reaches the provider with the agent\'s one pair', { time
         body: JSON.stringify({ model, stream: false, messages: [{ role: 'user', content: marker }] }), signal: AbortSignal.timeout(60000) });
       return { status: r.status, text: await r.text() };
     };
-    assert.equal((await v1('starnet-agent', 'V1_MARK_generic')).status, 200);
-    assertReached('V1_MARK_generic', HERO, '/v1 starnet-agent');
+    assert.equal((await v1('vultron-agent', 'V1_MARK_generic')).status, 200);
+    assertReached('V1_MARK_generic', HERO, '/v1 vultron-agent');
     assert.equal((await v1('smith', 'V1_MARK_smith')).status, 200);
     assertReached('V1_MARK_smith', SMITH, '/v1 smith');
     assert.equal((await v1('legacy', 'V1_MARK_legacy')).status, 200);
@@ -159,14 +159,14 @@ test('every entry point reaches the provider with the agent\'s one pair', { time
     assert.equal(acp.status, 200, 'ACP run: ' + acp.text.slice(0, 200));
     assertReached('ACP_MARK_hello', HERO, 'ACP');
 
-    // ---- `starnet run` ----
+    // ---- `vultron run` ----
     const core = require('../bin/lib/cli-core.js');
     for (const [id, want] of [['legacy', HERO], ['smith', SMITH]]) {
       const sel = core.pickAgent(rt, { agent: id });
       assert.ok(sel.ok, 'the CLI picks ' + id + ': ' + JSON.stringify(sel));
       const r = await apiRun(core.buildRunBody(sel, 'CLI_MARK_' + id, {}));
       assert.equal(r.status, 200, 'CLI run ' + id + ': ' + r.text.slice(0, 200));
-      assertReached('CLI_MARK_' + id, want, 'starnet run ' + id);
+      assertReached('CLI_MARK_' + id, want, 'vultron run ' + id);
     }
 
     // ---- a Telegram owner DM: connected while the page's global wire was another agent's OpenRouter pin ----

@@ -1,6 +1,6 @@
 /* node test/diagnostics-build.test.js — P1.5 build provenance render seam (frontend/app/diagnostics.js).
 
-   The desktop binary is stamped with its git commit (build.rs) and exposes it via the starnet_build_info Tauri
+   The desktop binary is stamped with its git commit (build.rs) and exposes it via the vultron_build_info Tauri
    command; diagnostics.js turns that into ONE honest line "build <version> @ <commit>[ DIRTY]". This locks:
      · formatBuild() shapes the line correctly (incl. the DIRTY suffix) and returns '' for missing/empty input.
      · buildLine() FAILS SOFT to '' in a plain browser (no window.__TAURI__) — truthful telemetry: never invent a
@@ -17,9 +17,9 @@ const { formatBuild } = Diag._internals;
 {
   const buildRs = fs.readFileSync(require.resolve('../src-tauri/build.rs'), 'utf8');
   const mainRs = fs.readFileSync(require.resolve('../src-tauri/src/main.rs'), 'utf8');
-  A.ok(/STARNET_BUILD_TREE/.test(buildRs) && /HEAD\^\{tree\}/.test(buildRs), 'build.rs stamps the exact Git source tree');
-  A.ok(/STARNET_BUILD_PROVENANCE_KIND/.test(buildRs), 'build.rs stamps the base provenance kind');
-  A.ok(/source_tree:[\s\S]*provenance_kind:/.test(mainRs) && /STARNET_BUILD_TREE/.test(mainRs), 'starnet_build_info exposes sourceTree + provenanceKind');
+  A.ok(/VULTRON_BUILD_TREE/.test(buildRs) && /HEAD\^\{tree\}/.test(buildRs), 'build.rs stamps the exact Git source tree');
+  A.ok(/VULTRON_BUILD_PROVENANCE_KIND/.test(buildRs), 'build.rs stamps the base provenance kind');
+  A.ok(/source_tree:[\s\S]*provenance_kind:/.test(mainRs) && /VULTRON_BUILD_TREE/.test(mainRs), 'vultron_build_info exposes sourceTree + provenanceKind');
 }
 
 // ---- formatBuild: the pure shaper ----
@@ -78,20 +78,20 @@ const SHELL_ZEROED = 'sidecar/tools/builtin/shell.js is empty (0 of 101,179 byte
 
     // (2) Tauri core present, command resolves → the formatted line
     global.window = { __TAURI__: { core: { invoke: (cmd) => {
-      A.eq(cmd, 'starnet_build_info', 'buildLine invokes starnet_build_info');
+      A.eq(cmd, 'vultron_build_info', 'buildLine invokes vultron_build_info');
       return Promise.resolve({ version: '0.2.2', commit: 'abc1234', sourceTree: 'b'.repeat(40), provenanceKind: 'dirty-dev', dirty: true });
     } } } };
     A.eq(await Diag.buildLine(), 'build 0.2.2 @ abc1234 [dirty-dev tree bbbbbbbbbbbb] DIRTY', 'Tauri path resolves the honest build line');
 
     // (3) old shell WITHOUT the command (invoke rejects) → '' (never surface an error/fake line)
     global.window = { __TAURI__: { core: { invoke: () => Promise.reject(new Error('unknown command')) } } };
-    A.eq(await Diag.buildLine(), '', 'a shell without starnet_build_info => "" (graceful)');
+    A.eq(await Diag.buildLine(), '', 'a shell without vultron_build_info => "" (graceful)');
 
     // (4) THE COPIED REPORT carries the install line, in both of its paths. Driven through copy() with fakes only at
     // the edges: the shell's invoke, the sidecar's /api/diagnostics and the clipboard.
     const damaged = { version: '0.14.2', commit: 'c160d90', installIntegrity: { state: 'damaged', files: 2351, damaged: 1, hashed: false, named: [SHELL_ZEROED] } };
     let shell = damaged;
-    global.window = { __TAURI__: { core: { invoke: (cmd) => cmd === 'starnet_build_info' ? Promise.resolve(shell) : Promise.reject(new Error('unknown command')) } } };
+    global.window = { __TAURI__: { core: { invoke: (cmd) => cmd === 'vultron_build_info' ? Promise.resolve(shell) : Promise.reject(new Error('unknown command')) } } };
     let sidecarText = '';
     const savedFetch = global.fetch;
     const savedNavigator = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
@@ -101,7 +101,7 @@ const SHELL_ZEROED = 'sidecar/tools/builtin/shell.js is empty (0 of 101,179 byte
     try {
       const copy = () => new Promise(resolve => Diag.copy({ notify: false, onDone: (ok, text) => resolve(text) }));
       // the engine answered: its report gains the shell's install line
-      sidecarText = 'STARNET DIAGNOSTICS\nAgents:        3';
+      sidecarText = 'VULTRON DIAGNOSTICS\nAgents:        3';
       const alive = await copy();
       A.ok(alive.startsWith(sidecarText) && alive.includes('\ninstall:       DAMAGED - ' + SHELL_ZEROED + '\n'), 'the sidecar report carries the install line: ' + JSON.stringify(alive));
       A.eq(copied[copied.length - 1], alive, 'that is the text on the clipboard');
@@ -113,7 +113,7 @@ const SHELL_ZEROED = 'sidecar/tools/builtin/shell.js is empty (0 of 101,179 byte
       // an older shell (no field): no install line in either path, never a guess
       shell = { version: '0.14.1', commit: 'abc1234' };
       A.ok(!/\ninstall:/.test(await copy()), 'an older shell adds no install line (dead engine)');
-      sidecarText = 'STARNET DIAGNOSTICS';
+      sidecarText = 'VULTRON DIAGNOSTICS';
       A.ok(!/\ninstall:/.test(await copy()), 'an older shell adds no install line (live engine)');
       // a verified install says so
       shell = Object.assign({}, damaged, { installIntegrity: { state: 'verified', files: 2351 } });

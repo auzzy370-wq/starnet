@@ -15,7 +15,7 @@ origin: audit
 
 ## Symptom
 
-With the active provider switched to one whose catalog does not list a model id, StarNet still reports a context window and a price for that id — borrowed from another provider's catalog that happens to use the same bare id. The model picker hint, the history fitter and the context gauge then act on a window and price this provider never published.
+With the active provider switched to one whose catalog does not list a model id, Vultron still reports a context window and a price for that id — borrowed from another provider's catalog that happens to use the same bare id. The model picker hint, the history fitter and the context gauge then act on a window and price this provider never published.
 
 ## Repro
 

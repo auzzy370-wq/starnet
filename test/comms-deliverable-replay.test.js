@@ -93,7 +93,7 @@ for (const [label, mutated] of [
   c.wireFileOpen(a, 'out/report.md', 'vex'); c.activeWs = { agentId: 'someone-else' };
   for (const fn of handlers.pointerdown || []) fn({});
   for (const fn of handlers.click || []) fn({ preventDefault() {}, stopPropagation() {} });
-  A.eq(opened, [['starnet_open_artifact', { path: 'out/report.md', agentId: 'vex' }]], 'click opens the original exact artifact through its owning workspace');
+  A.eq(opened, [['vultron_open_artifact', { path: 'out/report.md', agentId: 'vex' }]], 'click opens the original exact artifact through its owning workspace');
   A.ok(ticketed.every(call => call[0] === 'out/report.md' && call[1] === 'vex'), 'ticket refresh keeps the original path and owner after switching');
   A.eq([a.target, a.rel], ['_blank', 'noopener'], 'browser links retain native new-tab behavior');
   c.window.getSelection = () => 'selected prose';

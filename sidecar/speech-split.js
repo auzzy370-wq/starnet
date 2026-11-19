@@ -1,4 +1,4 @@
-/* speech-split.js — THE sentence splitter for everything StarNet says aloud (speech-ladder lane, wave 4).
+/* speech-split.js — THE sentence splitter for everything Vultron says aloud (speech-ladder lane, wave 4).
 
    Four splitters used to cut the same reply four ways: the desk's streamer (chat.js) knew abbreviations, the desk's
    per-request cut (voice.js splitForTts) cut "v0.13.2" and "$4.99" at their dots once a reply passed 1000 characters,

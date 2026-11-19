@@ -46,7 +46,7 @@ function workspace() { const r = fs.mkdtempSync(path.join(os.tmpdir(), 'save-res
 const conflictFiles = root => fs.readdirSync(root).filter(n => /^agent\.save-conflict-.*\.json$/.test(n));
 const turn = (role, content) => ({ role, content });
 const stationDoc = over => Object.assign({
-  schema: 'starnet.save', version: 6, updatedAt: 1000, _saveRevision: 0, _saveDirty: false,
+  schema: 'vultron.save', version: 6, updatedAt: 1000, _saveRevision: 0, _saveDirty: false,
   agent: { id: 'agent', name: 'NOVA', createdAt: 5000 }, agents: [], generalId: 'general', activeId: 'general', deletedIds: [],
   workstreams: [{ id: 'general', title: null, history: [turn('user', 'hi')] }]
 }, over || {});
@@ -95,7 +95,7 @@ function page(host, cache, extra) {
   const context = Object.assign({ console, module: { exports: {} }, require: () => require('../frontend/app/cloudsavecore.js'), setTimeout, clearTimeout, AbortController,
     location: { reload() { reloads.push(1); } },
     localStorage: { getItem: k => (cache.has(k) ? cache.get(k) : null), setItem: (k, v) => cache.set(k, v), removeItem: k => cache.delete(k) },
-    Save: { CURRENT: 6, load: () => JSON.parse(cache.get('starnet.save') || 'null') },
+    Save: { CURRENT: 6, load: () => JSON.parse(cache.get('vultron.save') || 'null') },
     fetch: (url, opts) => host.fetch(url, opts) }, extra || {});
   vm.runInNewContext(cloudsaveSrc, context);
   const cs = context.module.exports; cs._reloads = reloads;
@@ -134,7 +134,7 @@ function stationUi(cloudSave, uiStore) {
       const resumed = await c.reconcile(null);
       const typed = JSON.parse(JSON.stringify(resumed)); typed.updatedAt = Date.now(); typed._saveDirty = true;
       typed.workstreams.push({ id: 'typed-just-now', title: 'C work', history: [turn('user', 'the thing I just asked'), turn('assistant', 'the answer')] });
-      cache.set('starnet.save', JSON.stringify(typed));
+      cache.set('vultron.save', JSON.stringify(typed));
       c.push(typed);
       const offer = (await c.conflicts()).find(x => x.restorable > 0);
       A.ok(offer && offer.file === b.recovery, '1: the boot offer names B\'s preserved file (' + JSON.stringify(offer) + ')');
@@ -153,7 +153,7 @@ function stationUi(cloudSave, uiStore) {
       host.saveStore.save('agent', stationDoc(), { compareRevision: true });
       const cacheA = new Map();
       let newest = null, cs = null;
-      const App = { persist() { if (newest) { cacheA.set('starnet.save', JSON.stringify(newest)); cs.push(newest); } } };
+      const App = { persist() { if (newest) { cacheA.set('vultron.save', JSON.stringify(newest)); cs.push(newest); } } };
       cs = page(host, cacheA, { App });
       const base = await cs.reconcile(null);
       host.saveStore.save('agent', stationDoc({ _saveRevision: host.saveStore.load('agent')._saveRevision, updatedAt: 2000, _saveClient: 'window-b' }), { compareRevision: true });
@@ -171,7 +171,7 @@ function stationUi(cloudSave, uiStore) {
       try { await cs.restoreConflict(own); } catch (e) { threw = e.message; }
       A.ok(threw && /nothing was restored/i.test(threw) && /nothing was lost/i.test(threw), '1b: the restore stops and says why (' + threw + ')');
       A.eq(cs._reloads.length, 0, '1b: the window does not reload');
-      A.ok(cacheA.has('starnet.save') && JSON.parse(cacheA.get('starnet.save')).workstreams.some(w => w.id === 'a-2'), '1b: the browser cache still holds the newest session');
+      A.ok(cacheA.has('vultron.save') && JSON.parse(cacheA.get('vultron.save')).workstreams.some(w => w.id === 'a-2'), '1b: the browser cache still holds the newest session');
       A.ok(!host.saveStore.load('agent').workstreams.some(w => w.id === 'a-1'), '1b: nothing was merged into the station');
       // the rating catches up: the same click now saves first (into its own preserved file) and restores it whole
       host.setRatingAt(0);
@@ -191,20 +191,20 @@ function stationUi(cloudSave, uiStore) {
       const S = page(host, cacheS);
       await S.reconcile(null);
       let docS = stationDoc({ agent: { id: 'agent', name: 'OLD', createdAt: 5000 }, updatedAt: Date.now() });
-      for (let i = 0; i < 3; i++) { docS = JSON.parse(JSON.stringify(docS)); docS.updatedAt = Date.now() + i; docS.workstreams.push({ id: 'old-' + i, history: [turn('user', 'old ' + i)] }); cacheS.set('starnet.save', JSON.stringify(docS)); S.push(docS); await S.flush({ force: true }); }
+      for (let i = 0; i < 3; i++) { docS = JSON.parse(JSON.stringify(docS)); docS.updatedAt = Date.now() + i; docS.workstreams.push({ id: 'old-' + i, history: [turn('user', 'old ' + i)] }); cacheS.set('vultron.save', JSON.stringify(docS)); S.push(docS); await S.flush({ force: true }); }
       for (const n of fs.readdirSync(root)) if (n.startsWith('agent.save')) fs.unlinkSync(path.join(root, n));
       receipt(root, 7000);
       host = sidecar(root);
-      const cacheS2 = new Map(cacheS); const Sb = page(host, cacheS2); await Sb.reconcile(JSON.parse(cacheS2.get('starnet.save')));
+      const cacheS2 = new Map(cacheS); const Sb = page(host, cacheS2); await Sb.reconcile(JSON.parse(cacheS2.get('vultron.save')));
       A.eq(await Sb.flush({ force: true }), false, '2: the stale tab\'s save after the reset is refused');
       A.ok(Sb.health().conflict && Sb.health().conflict.reset === true, '2: as a reset');
       const cacheF = new Map(); const F = page(host, cacheF); await F.reconcile(null);
       const clock0 = Date.now();
       let docF = stationDoc({ agent: { id: 'agent', name: 'FRESH', createdAt: 8000 }, updatedAt: Date.now() + 20 });
-      for (let i = 0; i < 3; i++) { docF = JSON.parse(JSON.stringify(docF)); docF.updatedAt = Date.now() + 30 + i; docF.workstreams.push({ id: 'fresh-' + i, history: [turn('user', 'fresh ' + i)] }); cacheF.set('starnet.save', JSON.stringify(docF)); F.push(docF); A.eq(await F.flush({ force: true }), true, '2: fresh autosave ' + i + ' lands'); }
+      for (let i = 0; i < 3; i++) { docF = JSON.parse(JSON.stringify(docF)); docF.updatedAt = Date.now() + 30 + i; docF.workstreams.push({ id: 'fresh-' + i, history: [turn('user', 'fresh ' + i)] }); cacheF.set('vultron.save', JSON.stringify(docF)); F.push(docF); A.eq(await F.flush({ force: true }), true, '2: fresh autosave ' + i + ' lands'); }
       A.ok(F.revision() >= clock0 && F.revision() !== Sb.revision(), '2: the fresh station\'s line starts at the clock, not at 1 (' + F.revision() + ' vs the stale tab\'s ' + Sb.revision() + ')');
       A.ok(!F.health().seeded, '2: a fresh station\'s first save is not called a re-seed');
-      docS = JSON.parse(JSON.stringify(docS)); docS.updatedAt = Date.now() + 50; docS._saveRevision = Sb.revision(); cacheS2.set('starnet.save', JSON.stringify(docS)); Sb.push(docS);
+      docS = JSON.parse(JSON.stringify(docS)); docS.updatedAt = Date.now() + 50; docS._saveRevision = Sb.revision(); cacheS2.set('vultron.save', JSON.stringify(docS)); Sb.push(docS);
       A.eq(await Sb.flush({ force: true }), false, '2: the stale pre-reset tab\'s next save is still refused');
       A.eq(host.saveStore.load('agent').agent.name, 'FRESH', '2: the station is still the fresh one');
     }
@@ -223,14 +223,14 @@ function stationUi(cloudSave, uiStore) {
       const p = page(host, cache);
       await p.reconcile(null);
       const backupDoc = stationDoc({ updatedAt: Date.now(), workstreams: [{ id: 'general', title: null, history: [turn('user', 'from the backup')] }] });
-      cache.set('starnet.save', JSON.stringify(backupDoc));
+      cache.set('vultron.save', JSON.stringify(backupDoc));
       p.push(backupDoc, { restore: true });
       A.eq(await p.flush({ force: true }), true, '2: an explicit RESTORE BACKUP of a pre-reset station lands on the empty file');
       const raw = fs.readFileSync(path.join(root, 'agent.save.json'), 'utf8');
       A.ok(raw.indexOf('_saveRestore') < 0, '2: the restore flag never reaches the station file');
       A.eq(host.saveStore.load('agent').workstreams[0].history[0].content, 'from the backup', '2: the station is the restored backup');
       const next = JSON.parse(JSON.stringify(backupDoc)); next.updatedAt = Date.now() + 5; next.workstreams[0].history.push(turn('assistant', 'later'));
-      cache.set('starnet.save', JSON.stringify(next)); p.push(next);
+      cache.set('vultron.save', JSON.stringify(next)); p.push(next);
       A.eq(await p.flush({ force: true }), true, '2: and the next ordinary autosave lands on it');
       // a station founded AFTER the receipt still takes the empty file as an ordinary first save
       const root2 = workspace();

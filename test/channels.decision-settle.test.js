@@ -98,7 +98,7 @@ const onWire = (w, re) => w.wire.filter(m => m.chat === CHATS.tgDm && re.test(St
       w.boot();
       await w.advance(60000);
       A.eq(w.runs.filter(r => r.tags.indexOf(m) >= 0).length, 1, how + ': after the restart the stopped task never runs again');
-      A.eq(onWire(w, /NOT run again/), 0, how + ': nor is it told it was interrupted (was: replayed under the attempt rule: "StarNet restarted while it was working on …")');
+      A.eq(onWire(w, /NOT run again/), 0, how + ': nor is it told it was interrupted (was: replayed under the attempt rule: "Vultron restarted while it was working on …")');
       A.eq(onWire(w, /Nothing is running|Stopped the run in progress/), 1, how + ': and the stop itself is not replayed');
     } finally { w.uninstall(); }
   }

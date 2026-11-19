@@ -2,7 +2,7 @@
 // Only the sidecar child of test/routine-delivery.session-return.e2e.test.js uses this preload. The real transcript writer, its rollback and its
 // read-back still run; while the arm file exists, the one write of a kind:'delivery' row fails with EIO before any byte lands.
 const fs = require('node:fs'), path = require('node:path');
-const workspace = path.resolve(process.env.STARNET_WORKSPACES);
+const workspace = path.resolve(process.env.VULTRON_WORKSPACES);
 const history = path.join(workspace, 'transcript-history-v2');
 const arm = path.join(workspace, 'delivery-fault.arm');
 const evidence = path.join(workspace, 'delivery-fault-observed.jsonl');

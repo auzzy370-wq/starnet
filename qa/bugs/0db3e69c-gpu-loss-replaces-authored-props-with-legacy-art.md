@@ -27,7 +27,7 @@ After talking to a Qwen3 8B agent, the owner saw missing floor/wall surfaces, pr
 1. Start the isolated seeded app and wait for authored props to load.
 2. Clear a prepared prop body canvas and dispatch its contextlost event. On the original renderer, PropRemaster.draw returns false indefinitely; PropSprites routes that result to the old procedural painter.
 3. Separately inject InvalidStateError into a floor-probe read, then clear the station bake. The original watchdog permanently sets probeOff and never repairs the floor.
-4. Run test/prop-recovery-live.e2e.test.mjs with STARNET_REPRO_BASELINE=a20ffa71f for the controlled old-renderer live reproduction; omit the variable to test the candidate. This uses loopback app/CDP fault injection, not real GPU exhaustion.
+4. Run test/prop-recovery-live.e2e.test.mjs with VULTRON_REPRO_BASELINE=a20ffa71f for the controlled old-renderer live reproduction; omit the variable to test the candidate. This uses loopback app/CDP fault injection, not real GPU exhaustion.
 
 ## Evidence
 

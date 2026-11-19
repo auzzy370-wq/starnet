@@ -41,7 +41,7 @@ Source investigation at 67850c57a and the reported commit:
 - sidecar/index.js:1410 records agent.run.error into the diagnostic tail. Provider calls can emit these errors too. The reported last run completed; the most recent pasted TLS error predates that run.
 - web_fetch uses local Undici independently of the selected model provider. Optional Jina extraction requires its own configured key. The credits error is a separate run failure and cannot explain a TLS alert from a direct public-page request.
 - Comparing e70324eb to v0.13.0/current source shows no direct-fetch transport repair. The web.js difference concerns web_request stored-key refusal text. Bundled Node remains v22.23.2 and Undici remains 6.28.1.
-- The live GitHub release API reports v0.13.0 published 2026-10-03T23:08:55Z (7:08 p.m. America/New_York), after the pasted diagnostics capture, with an Apple Silicon DMG. Release notes do not claim a TLS fix: https://github.com/androoAGI/starnet-releases/releases/tag/v0.13.0 .
+- The live GitHub release API reports v0.13.0 published 2026-10-03T23:08:55Z (7:08 p.m. America/New_York), after the pasted diagnostics capture, with an Apple Silicon DMG. Release notes do not claim a TLS fix: https://github.com/YOUR-GITHUB-USER/vultron-releases/releases/tag/v0.13.0 .
 - Public issue searches for TLS/fetch failures and local transport history did not identify a correlated macOS TLS repair. This is a bounded search, not proof no other report exists.
 
 A live-network module probe with bundled Windows Node v22.23.2 and Undici 6.28.1 found a DIFFERENT defect, ERR_INVALID_IP_ADDRESS. See audit record 051f8c3b. Correcting that defect must not close this TLS report without correlated evidence.

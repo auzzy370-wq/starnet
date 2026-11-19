@@ -2,10 +2,10 @@
 /* node test/local-voice-cache-root.test.js — the voice-model cache never resolves inside the install folder, and a
    cache that is already on disk is moved or reused, never downloaded again.
 
-   THE HOLE (gh#65): on Windows the download sat in %LOCALAPPDATA%\StarNet\models, and %LOCALAPPDATA%\StarNet IS the NSIS
+   THE HOLE (gh#65): on Windows the download sat in %LOCALAPPDATA%\Vultron\models, and %LOCALAPPDATA%\Vultron IS the NSIS
    per-user install folder. The uninstaller deletes only the files it installed and then a non-recursive RMDir, so an
    uninstall orphaned 150-330 MB of weights and kept the install folder alive. On macOS the cache sat beside the app's
-   own folder, so a manual wipe needed a second one. The bare sidecar's %LOCALAPPDATA%\StarNet\workspaces stays where it
+   own folder, so a manual wipe needed a second one. The bare sidecar's %LOCALAPPDATA%\Vultron\workspaces stays where it
    is: that is station data, the one documented exception, and whether ERASE deletes it is Andrew's call.
 
    HOW THE ROWS RUN: the real sidecar module is copied into a scratch tree whose node_modules holds fake engine packages,
@@ -23,12 +23,12 @@ const { sidecarFileContaining } = require('./helpers/source.js');
 
 const REPO = path.resolve(__dirname, '..');
 const FIXTURE = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'voice-cache-roots.json'), 'utf8'));
-const SCRATCH = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-voice-roots-')));
+const SCRATCH = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-voice-roots-')));
 const MODULE = path.join(SCRATCH, 'sidecar', 'local-voice.js');
 const SAVED_PLATFORM = Object.getOwnPropertyDescriptor(process, 'platform');
 const SAVED_ENV = { ...process.env };
-const LIFECYCLE_ENV = ['LOCALAPPDATA', 'USERPROFILE', 'HOME', 'XDG_CACHE_HOME', 'STARNET_MODEL_CACHE',
-  'STARNET_KOKORO_DTYPE', 'SKYNET_KOKORO_DTYPE', 'STARNET_LOCAL_VOICE', 'SKYNET_LOCAL_VOICE'];
+const LIFECYCLE_ENV = ['LOCALAPPDATA', 'USERPROFILE', 'HOME', 'XDG_CACHE_HOME', 'VULTRON_MODEL_CACHE',
+  'VULTRON_KOKORO_DTYPE', 'SKYNET_KOKORO_DTYPE', 'VULTRON_LOCAL_VOICE', 'SKYNET_LOCAL_VOICE'];
 const SPEECH = Buffer.from(new Float32Array(16000).fill(0.1).buffer);
 const WHISPER_FILES = ['encoder_model_quantized.onnx', 'decoder_model_merged_quantized.onnx'];
 
@@ -100,18 +100,18 @@ function layout(kind, name) {
   if (kind === 'windows') {
     const local = path.join(profile, 'AppData', 'Local');
     return { platform: 'win32', env: { LOCALAPPDATA: local, USERPROFILE: profile, HOME: profile }, profile,
-      installDir: path.join(local, 'StarNet'), root: path.join(local, 'ai.skynet.harness', 'models'),
-      legacy: path.join(local, 'StarNet', 'models') };
+      installDir: path.join(local, 'Vultron'), root: path.join(local, 'ai.skynet.harness', 'models'),
+      legacy: path.join(local, 'Vultron', 'models') };
   }
   if (kind === 'macos') {
     const support = path.join(profile, 'Library', 'Application Support');
     return { platform: 'darwin', env: { USERPROFILE: profile, HOME: profile }, profile,
-      installDir: path.join(support, 'StarNet'), root: path.join(support, 'ai.skynet.harness', 'models'),
-      legacy: path.join(support, 'StarNet', 'models') };
+      installDir: path.join(support, 'Vultron'), root: path.join(support, 'ai.skynet.harness', 'models'),
+      legacy: path.join(support, 'Vultron', 'models') };
   }
   const xdg = path.join(profile, 'cache');
   return { platform: 'linux', env: { USERPROFILE: profile, HOME: profile, XDG_CACHE_HOME: xdg }, profile,
-    installDir: path.join(profile, 'opt', 'starnet'), root: path.join(xdg, 'starnet', 'models'), legacy: null };
+    installDir: path.join(profile, 'opt', 'vultron'), root: path.join(xdg, 'vultron', 'models'), legacy: null };
 }
 
 // Every row asserts in the layout it names; a throw is a failed row, so the file always reaches its report.
@@ -176,9 +176,9 @@ const DOORS = [
         A.eq(voiceCacheRoots({ platform: c.node, env: c.env, homedir: () => home, join: path.posix.join }),
           { root: c.root, legacy: c.legacy }, c.name);
       }
-      A.eq(voiceCacheRoots({ platform: 'win32', env: { STARNET_MODEL_CACHE: 'D:/voice', LOCALAPPDATA: 'C:/a' }, homedir: () => 'C:/a', join: path.posix.join }),
-        { root: 'D:/voice', legacy: null }, 'STARNET_MODEL_CACHE wins, and a chosen cache has no legacy root to move');
-      A.eq(voiceCacheRoots({ platform: 'win32', env: { LOCALAPPDATA: 'C:/a', STARNET_MODEL_CACHE: 'D:/voice' }, homedir: () => { throw new Error('no home'); }, join: path.posix.join }).root,
+      A.eq(voiceCacheRoots({ platform: 'win32', env: { VULTRON_MODEL_CACHE: 'D:/voice', LOCALAPPDATA: 'C:/a' }, homedir: () => 'C:/a', join: path.posix.join }),
+        { root: 'D:/voice', legacy: null }, 'VULTRON_MODEL_CACHE wins, and a chosen cache has no legacy root to move');
+      A.eq(voiceCacheRoots({ platform: 'win32', env: { LOCALAPPDATA: 'C:/a', VULTRON_MODEL_CACHE: 'D:/voice' }, homedir: () => { throw new Error('no home'); }, join: path.posix.join }).root,
         'D:/voice', 'the resolver only asks for a home folder it needs');
     }
   }
@@ -302,9 +302,9 @@ const DOORS = [
     A.ok(fs.existsSync(path.join(at.legacy, 'transformers', 'partial.tmp')), say('the legacy root is left alone'));
   });
 
-  await row('STARNET_MODEL_CACHE', 'windows', async (at, say) => {
+  await row('VULTRON_MODEL_CACHE', 'windows', async (at, say) => {
     const chosen = path.join(at.profile, 'chosen');
-    process.env.STARNET_MODEL_CACHE = chosen;
+    process.env.VULTRON_MODEL_CACHE = chosen;
     seedBoth(at.legacy);
     const voice = freshVoice();
     A.eq(voice.status().cacheRoot, chosen, say('still wins'));
@@ -361,12 +361,12 @@ const DOORS = [
     A.ok(/pub fn voice_model_cache_roots/.test(erase), 'erase_all.rs holds the rule the crate tests');
     for (const [doc, text] of [['PRIVACY.md', privacy], ['troubleshooting', trouble]]) {
       A.ok(text.includes('%LOCALAPPDATA%\\ai.skynet.harness\\'), doc + ' names the new Windows location');
-      A.ok(text.includes('%LOCALAPPDATA%\\StarNet\\models\\'), doc + ' names the old Windows location');
-      A.ok(text.includes('~/Library/Application Support/StarNet/models/'), doc + ' names the old macOS location');
+      A.ok(text.includes('%LOCALAPPDATA%\\Vultron\\models\\'), doc + ' names the old Windows location');
+      A.ok(text.includes('~/Library/Application Support/Vultron/models/'), doc + ' names the old macOS location');
     }
     A.ok(/voice-model download: <code>%LOCALAPPDATA%\\ai\.skynet\.harness\\<\/code>/i.test(trouble), 'the guide puts the Windows download in the new location');
     A.ok(/voice-model download: <code>~\/Library\/Application Support\/ai\.skynet\.harness\/<\/code>/i.test(trouble), 'the guide puts the macOS download in the new location');
-    A.ok(!/voice-model download: <code>%LOCALAPPDATA%\\StarNet\\<\/code>/i.test(trouble), 'and no longer in the install folder');
+    A.ok(!/voice-model download: <code>%LOCALAPPDATA%\\Vultron\\<\/code>/i.test(trouble), 'and no longer in the install folder');
   }
 })().catch(error => {
   A.ok(false, 'the test itself failed: ' + (error && error.stack || error));

@@ -30,7 +30,7 @@ function start(workspaces, port, extraEnv) {
       SKYNET_QUEST_REFRESH: '0',
       SKYNET_CRON: '0',
       SKYNET_OPENROUTER_KEY: '',
-      STARNET_OPENROUTER_KEY: ''
+      VULTRON_OPENROUTER_KEY: ''
     }, extraEnv || {}),
     stdio: ['ignore', 'pipe', 'pipe']
   });
@@ -63,7 +63,7 @@ function waitExit(child, timeoutMs, output) {
 }
 
 (async () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-owner-e2e-'));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-owner-e2e-'));
   const sentinel = path.join(root, 'canonical-user-state.json');
   const sentinelBytes = JSON.stringify({ agents: 4, workstreams: 33, marker: 'must-survive-collision' });
   fs.writeFileSync(sentinel, sentinelBytes);
@@ -76,7 +76,7 @@ function waitExit(child, timeoutMs, output) {
     fs.writeFileSync(protectedSentinel, sentinelBytes);
     const protectedPort = await freePort();
     const dev = start(protectedRoot, protectedPort, {
-      LOCALAPPDATA: fakeAppData, APPDATA: fakeAppData, SKYNET_DEV: '1', STARNET_DEV: '1'
+      LOCALAPPDATA: fakeAppData, APPDATA: fakeAppData, SKYNET_DEV: '1', VULTRON_DEV: '1'
     });
     processes.push(dev.child);
     const devRefused = await waitExit(dev.child, 30000, dev.output);
@@ -90,7 +90,7 @@ function waitExit(child, timeoutMs, output) {
     await Promise.race([waitFor(() => a.output().includes('http://127.0.0.1:' + portA), 30000,
       () => 'first sidecar did not boot:\n' + a.output()), diesFirst(a.child, a.output)]);
 
-    const lockfile = path.join(root, '.starnet-workspace-owner.json');
+    const lockfile = path.join(root, '.vultron-workspace-owner.json');
     A.eq(JSON.parse(fs.readFileSync(lockfile, 'utf8')).pid, a.child.pid, 'real host claims WORKSPACES before serving');
 
     const b = start(root, portB); processes.push(b.child);

@@ -26,13 +26,13 @@ const { _internals: Browser } = require('../sidecar/tools/builtin/browser.js');
 const Orphans = require('../sidecar/tools/builtin/browser-orphans.js');
 
 const ENV = {
-  STARNET_DEV: '0', SKYNET_DEV: '0', SKYNET_QUEST_REFRESH: '0', STARNET_QUEST_REFRESH: '0',
-  STARNET_CRON_ENABLED: '0', SKYNET_CRON_ENABLED: '0', STARNET_LOOP_ENABLED: '0', SKYNET_LOOP_ENABLED: '0',
-  SKYNET_LIVE_PRICES: '0', STARNET_LIVE_PRICES: '0', STARNET_EDGE_TTS: '0', SKYNET_EDGE_TTS: '0',
-  STARNET_CLOUD_URL: 'http://127.0.0.1:1', STARNET_CREDITS_URL: 'http://127.0.0.1:1', STARNET_DESKTOP_SHELL: '0',
-  SKYNET_OPENROUTER_BASE: 'http://127.0.0.1:1', STARNET_OPENROUTER_BASE: 'http://127.0.0.1:1',
-  OPENROUTER_API_KEY: '', SKYNET_OPENROUTER_KEY: '', STARNET_OPENROUTER_KEY: '', OPENAI_API_KEY: '', SKYNET_OPENAI_API_KEY: '', STARNET_OPENAI_API_KEY: '',
-  STARNET_BROWSER_HEADLESS: '1'
+  VULTRON_DEV: '0', SKYNET_DEV: '0', SKYNET_QUEST_REFRESH: '0', VULTRON_QUEST_REFRESH: '0',
+  VULTRON_CRON_ENABLED: '0', SKYNET_CRON_ENABLED: '0', VULTRON_LOOP_ENABLED: '0', SKYNET_LOOP_ENABLED: '0',
+  SKYNET_LIVE_PRICES: '0', VULTRON_LIVE_PRICES: '0', VULTRON_EDGE_TTS: '0', SKYNET_EDGE_TTS: '0',
+  VULTRON_CLOUD_URL: 'http://127.0.0.1:1', VULTRON_CREDITS_URL: 'http://127.0.0.1:1', VULTRON_DESKTOP_SHELL: '0',
+  SKYNET_OPENROUTER_BASE: 'http://127.0.0.1:1', VULTRON_OPENROUTER_BASE: 'http://127.0.0.1:1',
+  OPENROUTER_API_KEY: '', SKYNET_OPENROUTER_KEY: '', VULTRON_OPENROUTER_KEY: '', OPENAI_API_KEY: '', SKYNET_OPENAI_API_KEY: '', VULTRON_OPENAI_API_KEY: '',
+  VULTRON_BROWSER_HEADLESS: '1'
 };
 
 function write(file, body) { fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, typeof body === 'string' ? body : JSON.stringify(body)); }
@@ -45,12 +45,12 @@ function exited(child, ms) {
 }
 const onProfile = async profile => Orphans.profileProcesses(await Orphans.makeProcessLister({})(), profile).length;
 function station(name) {
-  return { version: 1, agentId: 'agent', updatedAt: 5, savedAt: 5, doc: { schema: 'starnet.save', version: 5, updatedAt: 5, agent: { id: 'agent', name },
+  return { version: 1, agentId: 'agent', updatedAt: 5, savedAt: 5, doc: { schema: 'vultron.save', version: 5, updatedAt: 5, agent: { id: 'agent', name },
     station: { rooms: [{ id: 'command' }], props: [] }, workstreams: [{ id: 'general', history: [] }] } };
 }
 
 async function row(what, build, request, proveApplied) {
-  const fixture = SidecarFixture.create({ prefix: 'starnet-fresh-browser-', timeoutMs: 30000, env: ENV });
+  const fixture = SidecarFixture.create({ prefix: 'vultron-fresh-browser-', timeoutMs: 30000, env: ENV });
   const root = fixture.workspace;
   fixture.workspace = path.join(root, 'workspaces');
   const ws = fixture.workspace, profile = path.join(ws, '.browser-profile');
@@ -92,7 +92,7 @@ async function row(what, build, request, proveApplied) {
       // A failed identity query cannot skip disposal of the sidecar we started.
       try { await Orphans.sweep({ profileDir: profile }); } catch (_) {}
       await fixture.dispose();
-      if (path.dirname(root) !== path.resolve(os.tmpdir()) || !path.basename(root).startsWith('starnet-fresh-browser-')) throw new Error('unsafe fixture root cleanup');
+      if (path.dirname(root) !== path.resolve(os.tmpdir()) || !path.basename(root).startsWith('vultron-fresh-browser-')) throw new Error('unsafe fixture root cleanup');
       fs.rmSync(root, { recursive: true, force: true });
     }
   }
@@ -116,7 +116,7 @@ async function row(what, build, request, proveApplied) {
 
   let candidateId = null;
   await row('RECOVERY', ({ fixture, ws }) => {
-    write(path.join(fixture.profile, 'StarNet', 'workspaces', 'agent.save.json'), station('NOVA'));
+    write(path.join(fixture.profile, 'Vultron', 'workspaces', 'agent.save.json'), station('NOVA'));
     write(path.join(ws, 'ledger.jsonl'), 'old\n');
   }, async ({ fixture }) => {
     const line = (await fixture.json('GET', '/api/lineage')).body.lineage;

@@ -71,16 +71,16 @@ function startUpstream() {
 function hermeticEnv(base) {
   const env = {};
   for (const k of Object.keys(process.env)) {
-    if (/^(OPENROUTER|ANTHROPIC|OPENAI|GEMINI|GOOGLE_API|XAI|GROQ|MISTRAL|DEEPSEEK|TOGETHER|FIREWORKS|PERPLEXITY|CEREBRAS|KIMI|ELEVENLABS|STARNET_|SKYNET_)/i.test(k)) env[k] = '';
+    if (/^(OPENROUTER|ANTHROPIC|OPENAI|GEMINI|GOOGLE_API|XAI|GROQ|MISTRAL|DEEPSEEK|TOGETHER|FIREWORKS|PERPLEXITY|CEREBRAS|KIMI|ELEVENLABS|VULTRON_|SKYNET_)/i.test(k)) env[k] = '';
   }
-  return Object.assign(env, { SKYNET_FULL_ACCESS: '1', STARNET_FULL_ACCESS: '1', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0',
-    SKYNET_THREAD_MINE: '0', SKYNET_AUX_BUDGET: '0', STARNET_LIVE_PRICES: '0', STARNET_CREDITS_URL: '', SKYNET_CREDITS_URL: '',
+  return Object.assign(env, { SKYNET_FULL_ACCESS: '1', VULTRON_FULL_ACCESS: '1', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0',
+    SKYNET_THREAD_MINE: '0', SKYNET_AUX_BUDGET: '0', VULTRON_LIVE_PRICES: '0', VULTRON_CREDITS_URL: '', SKYNET_CREDITS_URL: '',
     SKYNET_OPENROUTER_BASE: base, SKYNET_OPENROUTER_KEY: 'tomb-fixture', SKYNET_DEFAULT_MODEL: 'test/model' });
 }
 
 (async () => {
   const up = await startUpstream();
-  const fixture = SidecarFixture.create({ prefix: 'starnet-session-delete-', timeoutMs: 30000, env: hermeticEnv(up.base) });
+  const fixture = SidecarFixture.create({ prefix: 'vultron-session-delete-', timeoutMs: 30000, env: hermeticEnv(up.base) });
   const json = (method, route, body) => fixture.json(method, route, body);
   async function run(phase, streamId, words, extra) {
     up.state.phase = phase;
@@ -116,7 +116,7 @@ function hermeticEnv(base) {
     const goneFile = await upload('quokka-notes.txt', 'kept notes about the quokka');
     const keepFile = await upload('platypus-notes.txt', 'kept notes about the platypus');
     A.ok(goneFile && goneFile.ok && keepFile && keepFile.ok && /^\.attachments\//.test(goneFile.path), 'both sessions\' files are uploaded into the agent\'s workspace');
-    const fileStatus = async ref => (await fixture.request('/api/file?agent=agent&path=' + encodeURIComponent(ref.path), { headers: { 'X-StarNet-Token': fixture.token } })).status;
+    const fileStatus = async ref => (await fixture.request('/api/file?agent=agent&path=' + encodeURIComponent(ref.path), { headers: { 'X-Vultron-Token': fixture.token } })).status;
     const seeded = await run('seed', DELETED, 'echo session uniqueword quokka', { messages: [{ role: 'user', content: 'echo session uniqueword quokka', attachments: [goneFile] }] });
     A.ok(seeded.bodies.length >= 3, 'the seed run reached the model (two memory saves + the reply)');
     await run('keep', KEPT, 'Draft the platypus launch plan for Friday');

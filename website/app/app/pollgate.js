@@ -1,4 +1,4 @@
-/* STARNET — pollgate.js : the ONE owner of "is anyone looking?" for the browser's background polls.
+/* VULTRON — pollgate.js : the ONE owner of "is anyone looking?" for the browser's background polls.
 
    IDLE CPU PIECE 3 (2026-10-20, "it eats my PC's resources"). Every module armed its own setInterval / setTimeout chain at
    boot or when a window opened, and only /api/halt, the group list, NEEDS YOU and the apps dock looked at document.hidden.

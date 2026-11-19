@@ -11,7 +11,7 @@ const path = require('path');
 const os = require('os');
 const { makePathTrust } = require('../sidecar/pathtrust.js');
 
-const ROOT = path.join(os.tmpdir(), 'starnet-pathtrust-' + process.pid);
+const ROOT = path.join(os.tmpdir(), 'vultron-pathtrust-' + process.pid);
 
 async function rejects(promise, msg) { try { await promise; A.ok(false, msg + ' — did NOT reject'); } catch (e) { A.ok(true, msg); } }
 
@@ -161,7 +161,7 @@ function scriptPrompt(decision) {
   //      the OS credential store, browser profiles. Only Full Power (unrestrictedHost) reaches them. ----
   {
     const home = path.join(ROOT, 'home');
-    const stores = [['.ssh', 'id_ed25519'], ['.aws', 'credentials'], ['.tauri', 'starnet-updater.key'], ['.codex', 'auth.json'],
+    const stores = [['.ssh', 'id_ed25519'], ['.aws', 'credentials'], ['.tauri', 'vultron-updater.key'], ['.codex', 'auth.json'],
       [path.join('AppData', 'Local', 'Google', 'Chrome', 'User Data', 'Default'), 'Login Data'],
       // security-storage-03: the Windows homes of the gcloud and GitHub CLI logins, and cargo's registry token
       [path.join('AppData', 'Roaming', 'gcloud'), 'credentials.db'], [path.join('AppData', 'Roaming', 'GitHub CLI'), 'hosts.yml'],

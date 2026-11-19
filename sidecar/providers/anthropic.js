@@ -49,11 +49,11 @@
     } catch (_) { return false; }
   })();
   const cacheControl = () => (CACHE_TTL_1H ? { type: 'ephemeral', ttl: '1h' } : { type: 'ephemeral' });
-  // TOOL ANCHOR kill switch (see buildBody): STARNET_ANTHROPIC_TOOL_ANCHOR=0 restores the system-only anchor layout.
+  // TOOL ANCHOR kill switch (see buildBody): VULTRON_ANTHROPIC_TOOL_ANCHOR=0 restores the system-only anchor layout.
   // Read per call, so flipping it takes effect on the next request without a restart.
   function toolAnchorOn() {
     const env = (typeof process !== 'undefined' && process.env) ? process.env : {};
-    const raw = env.STARNET_ANTHROPIC_TOOL_ANCHOR != null ? env.STARNET_ANTHROPIC_TOOL_ANCHOR : env.SKYNET_ANTHROPIC_TOOL_ANCHOR;
+    const raw = env.VULTRON_ANTHROPIC_TOOL_ANCHOR != null ? env.VULTRON_ANTHROPIC_TOOL_ANCHOR : env.SKYNET_ANTHROPIC_TOOL_ANCHOR;
     return String(raw == null ? '' : raw).trim() !== '0';
   }
   // the block kinds Anthropic documents as legal carriers of cache_control (plus schema-less tool defs)

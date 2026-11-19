@@ -421,12 +421,12 @@ function checkExport(where, pkg, want) {
     const marketFormat = require('../sidecar/skills/market-format.js');
     const signing = require('../sidecar/skills/market-signing.js');
     const KEY = signing.generateKeyPair();
-    const INDEX = 'https://market.example/.well-known/starnet-skills.json';
+    const INDEX = 'https://market.example/.well-known/vultron-skills.json';
     const md = Buffer.from('---\nname: byte-check\ndescription: "Checks bytes."\nlicense: MIT\nmetadata:\n  title: "Byte Check"\n---\n1. Check the bytes.\r\n2. Keep CRLF.\r\n', 'utf8');
     const notes = Buffer.from('﻿Notes with a BOM, CRLF\r\nand Ünïcödé.\r\n', 'utf8');
     // one catalog entry; `served` maps a path to the bytes the server answers with (and the signed manifest lists)
     async function marketRun(label, served) {
-      const built = marketFormat.buildEntry({ slug: 'byte-check', version: '1.0.0', shelf: 'originals', license: 'MIT', authors: ['StarNet'],
+      const built = marketFormat.buildEntry({ slug: 'byte-check', version: '1.0.0', shelf: 'originals', license: 'MIT', authors: ['Vultron'],
         files: Object.keys(served).map(p => ({ path: p, content: p === 'SKILL.md' ? served[p].toString('utf8') : 'placeholder' })) });
       const pkg = packageFormat.canonicalize(Object.keys(served).map(p => ({ path: p, bytes: served[p] })));
       built.entry.digest = pkg.digest; built.entry.bytes = pkg.bytes;
@@ -437,7 +437,7 @@ function checkExport(where, pkg, want) {
       const keys = [{ id: 'test-market', publicKey: KEY.publicKey }];
       const put = (url, value) => { const t = JSON.stringify(value, null, 2) + '\n'; files.set(url, Buffer.from(t)); files.set(signing.sigUrl(url), Buffer.from(signing.sign(Buffer.from(t), KEY.privateKeyPem, keys))); };
       put(INDEX, doc);
-      put('https://market.example/.well-known/starnet-skills-revoked.json', marketFormat.revocationDocument({ serial: 1, revoked: [] }));
+      put('https://market.example/.well-known/vultron-skills-revoked.json', marketFormat.revocationDocument({ serial: 1, revoked: [] }));
       const store = new Map();
       const root = path.join(tmp, 'market-' + label);
       const m = makeSkillMarket({ fs, path, root, guard, now: () => 1000, trustedKeys: keys, catalogUrl: () => INDEX,

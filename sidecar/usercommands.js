@@ -115,7 +115,7 @@ function menuEntries(list, reserved) {
 }
 
 /* execRefusal(name, ctx) — why a shell command did not run over messaging, worded for the chat it was typed in.
-   It must be TRUE for that chat: the old line said these "only run in the StarNet desktop app", while the owner's
+   It must be TRUE for that chat: the old line said these "only run in the Vultron desktop app", while the owner's
    Telegram DM had been running them all along. ctx = { chatType: 'group'|'dm', ownerDmExec } — ownerDmExec says
    this channel has an owner DM where one does run. A group never runs one: the output would post to the room. */
 function execRefusal(name, ctx) {
@@ -123,10 +123,10 @@ function execRefusal(name, ctx) {
   const cmd = '/' + String(name || 'command');
   if (c.chatType === 'group') {
     return cmd + ' is one of your shell commands, and those never run in a group: the output would be posted to everyone here. '
-      + (c.ownerDmExec ? 'Send it to me in our DM instead.' : 'Run it from the StarNet desktop app instead.');
+      + (c.ownerDmExec ? 'Send it to me in our DM instead.' : 'Run it from the Vultron desktop app instead.');
   }
-  if (c.ownerDmExec) return cmd + ' is one of your shell commands and could not run here. Run it from the StarNet desktop app.';
-  return cmd + ' is one of your shell commands. Over messaging those only run in your DM with the station\'s Telegram bot; here, run it from the StarNet desktop app.';
+  if (c.ownerDmExec) return cmd + ' is one of your shell commands and could not run here. Run it from the Vultron desktop app.';
+  return cmd + ' is one of your shell commands. Over messaging those only run in your DM with the station\'s Telegram bot; here, run it from the Vultron desktop app.';
 }
 
 module.exports = { makeUserCommands, menuEntries, execRefusal, NAME_RE, MAX_COMMANDS, MAX_CMD_LEN };

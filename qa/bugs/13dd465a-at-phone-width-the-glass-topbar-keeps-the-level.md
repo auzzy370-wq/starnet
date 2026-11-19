@@ -15,7 +15,7 @@ origin: audit
 
 ## Symptom
 
-At phone width (the starnetos.com live embed on a phone, or a desktop window dragged narrow — the Tauri window has no minimum width) the topbar still shows the COMMANDER level lamp and pushes the UPLINK cluster past the right edge: it reads "UPLI" and the ONLINE / LINK DOWN state is not on screen at all.
+At phone width (the vultron.vercel.app live embed on a phone, or a desktop window dragged narrow — the Tauri window has no minimum width) the topbar still shows the COMMANDER level lamp and pushes the UPLINK cluster past the right edge: it reads "UPLI" and the ONLINE / LINK DOWN state is not on screen at all.
 
 ## Repro
 

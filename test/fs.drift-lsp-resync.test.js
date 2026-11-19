@@ -25,7 +25,7 @@ const { makeFsTools } = require('../sidecar/tools/builtin/fs.js');
 const DRIFT_NOTE = '\n\n[LSP unavailable: the file changed on disk while this edit was in flight (another writer), so a before/after diagnostic comparison would include their change. Run verify.run for project-level proof.]';
 
 (async () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-drift-lsp-'));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-drift-lsp-'));
   const fixture = path.join(__dirname, 'fixtures', 'fake-lsp-server.js');
   const manager = makeLspManager({
     spawn, fs, fsp, pathMod: path, env: Object.assign({}, process.env),

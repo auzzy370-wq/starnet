@@ -3,7 +3,7 @@
 
    The local runtime profile (one request on a silent local server) and the local prompt budget both ask the same two
    questions of an endpoint: is it on this computer or this network, and what window did its /models row report for this
-   model. Both answers come from what StarNet already has — the host's name (errorClass.hostScope) and the catalog reads the
+   model. Both answers come from what Vultron already has — the host's name (errorClass.hostScope) and the catalog reads the
    adapter already makes — never a new probe. Locked here:
      1. scope from the name alone: loopback / private / public / '' (no host); `local` = loopback or private
      2. ONE object per base URL (a trailing slash is the same URL); a credential never rides into host/hostPort

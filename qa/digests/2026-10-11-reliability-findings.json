@@ -287,7 +287,7 @@
     },
     {
       "key": "reliability:REL-1",
-      "originalCandidateTitle": "StarNet sends a non-standard message format: 23 sources of mid-conversation `role:system` messages, which strict local model templates reject (#102). The failure is then retried for 106 s and blamed on the provider",
+      "originalCandidateTitle": "Vultron sends a non-standard message format: 23 sources of mid-conversation `role:system` messages, which strict local model templates reject (#102). The failure is then retried for 106 s and blamed on the provider",
       "completedRecoveredLenses": [
         {
           "lens": "repro",
@@ -435,7 +435,7 @@
     },
     {
       "key": "speed:speed-3",
-      "originalCandidateTitle": "Turn inflation: StarNet uses 1.3-1.9x the model turns and ~3x the tool calls of Claude Code for the same task on the same model",
+      "originalCandidateTitle": "Turn inflation: Vultron uses 1.3-1.9x the model turns and ~3x the tool calls of Claude Code for the same task on the same model",
       "completedRecoveredLenses": [
         {
           "lens": "repro",
@@ -482,7 +482,7 @@
     },
     {
       "key": "speed:speed-7",
-      "originalCandidateTitle": "Model-turn latency is never measured or gated, so every release can make StarNet slower without any test failing",
+      "originalCandidateTitle": "Model-turn latency is never measured or gated, so every release can make Vultron slower without any test failing",
       "completedRecoveredLenses": [
         {
           "lens": "repro",
@@ -709,7 +709,7 @@
     },
     {
       "key": "hermes-delta:HD-2",
-      "originalCandidateTitle": "Hermes split its god files and added a size and complexity ratchet a branch cannot loosen; StarNet's composition root keeps growing and every lane edits it",
+      "originalCandidateTitle": "Hermes split its god files and added a size and complexity ratchet a branch cannot loosen; Vultron's composition root keeps growing and every lane edits it",
       "completedRecoveredLenses": [],
       "disposition": "not-independently-reverified",
       "reason": "Retain as a candidate from recovered investigation; absence of a disposition is not confirmation. See group synthesis."
@@ -730,7 +730,7 @@
     },
     {
       "key": "hermes-delta:HD-5",
-      "originalCandidateTitle": "StarNet records lessons as prose for agents to remember; Hermes turns them into blocking checks whose message names the fix at the moment an agent trips them",
+      "originalCandidateTitle": "Vultron records lessons as prose for agents to remember; Hermes turns them into blocking checks whose message names the fix at the moment an agent trips them",
       "completedRecoveredLenses": [],
       "disposition": "overstated",
       "reason": "Existing deterministic/source checks enforce some lessons; zero checks is unsupported"
@@ -744,28 +744,28 @@
     },
     {
       "key": "hermes-delta:HD-7",
-      "originalCandidateTitle": "StarNet auto-injects memories ranked fresh on every message, and each recall makes a memory rank higher next time; Hermes uses a small fixed curated memory plus explicit search",
+      "originalCandidateTitle": "Vultron auto-injects memories ranked fresh on every message, and each recall makes a memory rank higher next time; Hermes uses a small fixed curated memory plus explicit search",
       "completedRecoveredLenses": [],
       "disposition": "superseded-in-part",
       "reason": "Recall write-time/newer-wins changes merged"
     },
     {
       "key": "hermes-delta:HD-8",
-      "originalCandidateTitle": "Hermes now competes on StarNet's GUI turf: an Electron desktop app with onboarding, a built-in tour, a desktop pet and free inference out of the box (behind a per-bundle switch)",
+      "originalCandidateTitle": "Hermes now competes on Vultron's GUI turf: an Electron desktop app with onboarding, a built-in tour, a desktop pet and free inference out of the box (behind a per-bundle switch)",
       "completedRecoveredLenses": [],
       "disposition": "not-independently-reverified",
       "reason": "Retain as a candidate from recovered investigation; absence of a disposition is not confirmation. See group synthesis."
     },
     {
       "key": "hermes-delta:HD-9",
-      "originalCandidateTitle": "StarNet has no field signal at all; Hermes records why memory, compression and updates fail in a local store, and sending it is opt-in",
+      "originalCandidateTitle": "Vultron has no field signal at all; Hermes records why memory, compression and updates fail in a local store, and sending it is opt-in",
       "completedRecoveredLenses": [],
       "disposition": "not-independently-reverified",
       "reason": "Retain as a candidate from recovered investigation; absence of a disposition is not confirmation. See group synthesis."
     },
     {
       "key": "hermes-delta:HD-10",
-      "originalCandidateTitle": "No 'narrow waist' rule: StarNet adds every feature to the core sidecar, while Hermes moves capability out to plugins and skills",
+      "originalCandidateTitle": "No 'narrow waist' rule: Vultron adds every feature to the core sidecar, while Hermes moves capability out to plugins and skills",
       "completedRecoveredLenses": [],
       "disposition": "not-independently-reverified",
       "reason": "Retain as a candidate from recovered investigation; absence of a disposition is not confirmation. See group synthesis."
@@ -863,7 +863,7 @@
     },
     {
       "key": "peers:peers-4",
-      "originalCandidateTitle": "fs.patch can silently corrupt files: StarNet's block_anchor dropped the safety check Hermes has",
+      "originalCandidateTitle": "fs.patch can silently corrupt files: Vultron's block_anchor dropped the safety check Hermes has",
       "completedRecoveredLenses": [],
       "disposition": "repaired-in-this-lane",
       "reason": "f0a53efb0; source and seeded before/after proof; full gates reported separately"

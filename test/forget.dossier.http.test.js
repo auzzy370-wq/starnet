@@ -28,14 +28,14 @@ const RUN_GONE = 'run_gone_1', RUN_KEPT = 'run_kept_1', RUN_OLD = 'run_old_1';
 const now = Date.now();
 const hermeticEnv = () => {
   const env = {};
-  for (const k of Object.keys(process.env)) if (/^(OPENROUTER|ANTHROPIC|OPENAI|GEMINI|GOOGLE_API|XAI|GROQ|MISTRAL|DEEPSEEK|TOGETHER|FIREWORKS|PERPLEXITY|CEREBRAS|KIMI|ELEVENLABS|STARNET_|SKYNET_)/i.test(k)) env[k] = '';
-  return Object.assign(env, { SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0', SKYNET_THREAD_MINE: '0', SKYNET_AUX_BUDGET: '0', STARNET_LIVE_PRICES: '0',
-    STARNET_CREDITS_URL: '', SKYNET_CREDITS_URL: '' });
+  for (const k of Object.keys(process.env)) if (/^(OPENROUTER|ANTHROPIC|OPENAI|GEMINI|GOOGLE_API|XAI|GROQ|MISTRAL|DEEPSEEK|TOGETHER|FIREWORKS|PERPLEXITY|CEREBRAS|KIMI|ELEVENLABS|VULTRON_|SKYNET_)/i.test(k)) env[k] = '';
+  return Object.assign(env, { SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0', SKYNET_THREAD_MINE: '0', SKYNET_AUX_BUDGET: '0', VULTRON_LIVE_PRICES: '0',
+    VULTRON_CREDITS_URL: '', SKYNET_CREDITS_URL: '' });
 };
 const until = async (fn, label, ms = 15000) => { const end = Date.now() + ms; for (;;) { const v = await fn(); if (v) return v; if (Date.now() > end) throw new Error('timed out: ' + label); await new Promise(r => setTimeout(r, 100)); } };
 
 (async () => {
-  const fixture = SidecarFixture.create({ prefix: 'starnet-forget-dossier-', timeoutMs: 30000, env: hermeticEnv() });
+  const fixture = SidecarFixture.create({ prefix: 'vultron-forget-dossier-', timeoutMs: 30000, env: hermeticEnv() });
   const json = (method, route, body) => fixture.json(method, route, body);
   const file = () => { try { return JSON.parse(fs.readFileSync(path.join(fixture.workspace, '_commander.dossier.json'), 'utf8')); } catch (_) { return null; } };
   const posture = async () => (await json('GET', '/api/autonomy/posture')).body;
@@ -117,11 +117,11 @@ const until = async (fn, label, ms = 15000) => { const end = Date.now() + ms; fo
     const exported = await json('POST', '/api/config/export', { only: ['dossier'] });
     A.eq(exported.body.sections.dossier.sourceRunIds, [RUN_KEPT], '(e) the export carries the runs the block was learned from');
     A.eq(exported.body.sections.dossier.complete, true, '(e) ...and whether that list is whole');
-    const envelope = (block, ids, complete) => ({ starnetExport: 1, exportedAt: Date.now(), app: 'StarNet', sections: { dossier: { block, sourceRunIds: ids, complete } } });
+    const envelope = (block, ids, complete) => ({ vultronExport: 1, exportedAt: Date.now(), app: 'Vultron', sections: { dossier: { block, sourceRunIds: ids, complete } } });
     const badRestore = await json('POST', '/api/config/import', { envelope: envelope('WHAT YOU KNOW: ships the quokka tracker', [RUN_GONE], true) });
     A.eq(badRestore.body.applied.includes('dossier'), false, '(e) a backup whose block was learned from a deleted session is not restored');
     A.ok(badRestore.body.notes.some(n => /dossier/i.test(n)), '(e) ...and the answer says why');
-    const oldRestore = await json('POST', '/api/config/import', { envelope: { starnetExport: 1, sections: { dossier: { block: 'WHAT YOU KNOW: an old backup' } } } });
+    const oldRestore = await json('POST', '/api/config/import', { envelope: { vultronExport: 1, sections: { dossier: { block: 'WHAT YOU KNOW: an old backup' } } } });
     A.eq(oldRestore.body.applied.includes('dossier'), false, '(e) a backup from before provenance cannot show its sources and is not restored after a delete');
     A.eq(file().block, 'WHAT YOU KNOW: ships the kept tracker', '(e) ...the held block is untouched by both');
     const goodRestore = await json('POST', '/api/config/import', { envelope: envelope('WHAT YOU KNOW: restored kept tracker', [RUN_KEPT], true) });

@@ -97,7 +97,7 @@ A.eq(RunOutcome.ofRow(null).outcome, 'failed', 'no row proves nothing');
 
 // ---- 6. the provider vocabulary stays in step with the classifier ----
 for (const reason of Object.keys(ErrorClass.REASONS)) A.ok(RunOutcome.isProviderCode(reason), 'errorClass reason ' + reason + ' is a provider code');
-A.ok(!RunOutcome.isProviderCode('spend_history_unavailable') && !RunOutcome.isProviderCode('no_terminal_outcome'), 'StarNet\'s own stops are not provider codes');
+A.ok(!RunOutcome.isProviderCode('spend_history_unavailable') && !RunOutcome.isProviderCode('no_terminal_outcome'), 'Vultron\'s own stops are not provider codes');
 for (const c of ['rate_limit', 'auth', 'template_refusal', 'quota_exhausted']) A.ok(RunOutcome.providerAnswered(c), c + ': the provider answered (and refused)');
 for (const c of ['unreachable', 'timeout', 'tls_certificate', 'overloaded']) A.ok(!RunOutcome.providerAnswered(c), c + ': nothing usable answered');
 

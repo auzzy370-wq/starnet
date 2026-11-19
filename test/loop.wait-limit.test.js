@@ -1,6 +1,6 @@
 /* node test/loop.wait-limit.test.js — THE WAIT SAYS ITS LIMIT (local-runtime-profile lane, gap D, 2026-11-03).
 
-   A local server that is loading a model can sit silent for minutes, and StarNet now waits the local ceiling for it once
+   A local server that is loading a model can sit silent for minutes, and Vultron now waits the local ceiling for it once
    (local-runtime-silence.test.js). The wait line showed how long it had waited, never how long it WOULD wait. The adapter
    states its ceiling on its { type:'waiting' } events (limitMs + limitKind: 'connect' counts from the call going out,
    'silence' from the last byte), the loop's agent.waiting beat carries it, and COMMS reads it (comms-wait-line.test.js).
@@ -149,7 +149,7 @@ const last = seq => waits(seq)[waits(seq).length - 1] || {};
     const h = harness();
     const g1 = gate(), g2 = gate();
     const provider = { stream: async function* () {
-      yield { type: 'waiting', phase: 'connect', note: 'no answer yet · 1 other StarNet call still open there' };
+      yield { type: 'waiting', phase: 'connect', note: 'no answer yet · 1 other Vultron call still open there' };
       await g1.p;
       yield { type: 'waiting', phase: 'connect', note: 'no answer yet', limitMs: 300000, limitKind: 'connect', limitElapsedMs: 1000 };
       await g2.p;

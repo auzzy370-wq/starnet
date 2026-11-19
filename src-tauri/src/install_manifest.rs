@@ -17,7 +17,7 @@
 //! wrong size), bounded by PRESENCE_BUDGET; after the first spawn returns a CONTENT pass hashes every entry on a
 //! background thread. Both fail open: the spawn always proceeds, and the verdict only names files, in messages that
 //! already exist (startup.log, the startup-failure text, the guardian's halt reason, BuildInfo.installIntegrity, which
-//! is the copied diagnostics' install line). `--starnet-verify-install` runs the whole verdict headless for CI and
+//! is the copied diagnostics' install line). `--vultron-verify-install` runs the whole verdict headless for CI and
 //! support.
 //!
 //! std + serde_json + sha2 only, and nothing from main.rs: test/native-install-manifest compiles this file by path so
@@ -33,7 +33,7 @@ use std::time::{Duration, Instant};
 use sha2::{Digest, Sha256};
 
 /// The schema marker. The release train greps the built exe for it next to `"complete":true` (release-train.yml).
-pub const SCHEMA: &str = "starnet.install-manifest/1";
+pub const SCHEMA: &str = "vultron.install-manifest/1";
 /// What a code file is: the set scripts/lib/bundle-source-integrity.mjs uses (test/install-manifest.test.js holds the
 /// two equal). No binary is ever listed.
 pub const CODE_EXTENSIONS: &[&str] = &["js", "cjs", "mjs", "json", "html", "htm", "css"];
@@ -45,8 +45,8 @@ pub const FAILURE_WAIT: Duration = Duration::from_secs(3);
 /// How many damaged files startup.log names before it says how many more there are.
 pub const NAMED_IN_LOG: usize = 20;
 /// tauri.conf.json productName: on Linux the bundle's resources sit in <exe dir>/../lib/<productName>.
-pub const PRODUCT_NAME: &str = "StarNet";
-pub const VERIFY_FLAG: &str = "--starnet-verify-install";
+pub const PRODUCT_NAME: &str = "Vultron";
+pub const VERIFY_FLAG: &str = "--vultron-verify-install";
 pub const EXIT_VERIFIED: i32 = 0;
 pub const EXIT_USAGE: i32 = 2;
 pub const EXIT_DAMAGED: i32 = 3;
@@ -230,7 +230,7 @@ fn add_file(path: &Path, installed: String, entries: &mut Vec<Entry>, gaps: &mut
 }
 
 /// The manifest as written to OUT_DIR, one entry per line. The header is fixed text so the release train can find
-/// `"schema":"starnet.install-manifest/1","complete":true` in the built exe.
+/// `"schema":"vultron.install-manifest/1","complete":true` in the built exe.
 pub fn to_json(manifest: &Manifest) -> String {
     let quote = |s: &str| serde_json::to_string(s).unwrap_or_else(|_| "\"\"".to_string());
     let gaps: Vec<String> = manifest.gaps.iter().map(|g| quote(g)).collect();
@@ -536,7 +536,7 @@ impl Verdict {
     pub fn dialog_lead(&self) -> Option<String> {
         let findings = self.findings();
         let first = findings.first()?;
-        let mut lead = format!("StarNet's installation is damaged: {}.", first.describe());
+        let mut lead = format!("Vultron's installation is damaged: {}.", first.describe());
         match findings.len() {
             1 => {}
             2 => lead.push_str(" 1 more file is damaged too; startup.log names it."),
@@ -556,7 +556,7 @@ impl Verdict {
             n => format!(" (+{} more, named in startup.log)", n - 1),
         };
         Some(format!(
-            "StarNet's installation is damaged: {}{more}. Restore it from your security program's quarantine or reinstall StarNet from starnetos.com; your station, agents and keys are kept.",
+            "Vultron's installation is damaged: {}{more}. Restore it from your security program's quarantine or reinstall Vultron from vultron.vercel.app; your station, agents and keys are kept.",
             first.describe()
         ))
     }
@@ -582,10 +582,10 @@ fn exits(findings: &[Finding]) -> String {
     let (it, them) = if findings.len() == 1 { ("it", "it") } else { ("these files", "them") };
     if findings.iter().any(|f| f.damage.quarantine_shaped()) {
         format!(
-            "A security program may have quarantined or emptied {it}: restore {them} from that program's quarantine, or reinstall StarNet from starnetos.com. Your station, agents and keys are kept."
+            "A security program may have quarantined or emptied {it}: restore {them} from that program's quarantine, or reinstall Vultron from vultron.vercel.app. Your station, agents and keys are kept."
         )
     } else {
-        "An update may not have finished: reinstall StarNet from starnetos.com. Your station, agents and keys are kept."
+        "An update may not have finished: reinstall Vultron from vultron.vercel.app. Your station, agents and keys are kept."
             .to_string()
     }
 }
@@ -807,7 +807,7 @@ pub fn verify_install(embedded: &str, root: Option<&Path>) -> Verdict {
 pub fn receipt(verdict: &Verdict, root: Option<&Path>) -> String {
     let mut value = verdict.to_info();
     if let Some(obj) = value.as_object_mut() {
-        obj.insert("schema".to_string(), serde_json::json!("starnet.install-verify/1"));
+        obj.insert("schema".to_string(), serde_json::json!("vultron.install-verify/1"));
         obj.insert("exitCode".to_string(), serde_json::json!(verdict.exit_code()));
         obj.insert(
             "root".to_string(),
@@ -833,7 +833,7 @@ pub fn receipt(verdict: &Verdict, root: Option<&Path>) -> String {
     serde_json::to_string_pretty(&value).unwrap_or_default() + "\n"
 }
 
-/// `--starnet-verify-install [--root DIR] [--out FILE]`, handled before Tauri starts (main.rs). None unless the FIRST
+/// `--vultron-verify-install [--root DIR] [--out FILE]`, handled before Tauri starts (main.rs). None unless the FIRST
 /// argument is the flag. Exits 0 verified, 3 damaged, 4 not checked (2 for a usage error).
 pub fn verify_install_main(argv: impl IntoIterator<Item = OsString>, embedded: &str) -> Option<i32> {
     let mut args = argv.into_iter().skip(1);
@@ -885,7 +885,7 @@ mod tests {
             .duration_since(std::time::UNIX_EPOCH)
             .map(|d| d.as_nanos())
             .unwrap_or(0);
-        let dir = std::env::temp_dir().join(format!("starnet-install-manifest-{}-{nanos}-{name}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("vultron-install-manifest-{}-{nanos}-{name}", std::process::id()));
         fs::create_dir_all(&dir).unwrap();
         dir
     }
@@ -928,9 +928,9 @@ mod tests {
             put(&src("../sidecar/skills/catalog.json"), b"{\"skills\":[]}\n");
             put(&src("../sidecar/README.md"), b"not code\n");
             put(&src("../shared/events.js"), b"module.exports = { EVENTS: [] };\n");
-            put(&src("../bin/starnet.js"), b"#!/usr/bin/env node\nrequire('./lib/cli-core.js');\n");
+            put(&src("../bin/vultron.js"), b"#!/usr/bin/env node\nrequire('./lib/cli-core.js');\n");
             put(&src("../bin/lib/cli-core.js"), b"module.exports = function main() {};\n");
-            put(&src("../bin/starnet.cmd"), b"@node \"%~dp0starnet.js\" %*\r\n");
+            put(&src("../bin/vultron.cmd"), b"@node \"%~dp0vultron.js\" %*\r\n");
             put(&src("frontend-dist/index.html"), b"<!doctype html><script src=\"app/app.js\"></script>\n");
             put(&src("frontend-dist/app/app.js"), b"window.App = {};\n");
             put(&src("frontend-dist/css/station.css"), b"body { margin: 0 }\n");
@@ -1050,7 +1050,7 @@ mod tests {
             paths,
             vec![
                 "bin/lib/cli-core.js",
-                "bin/starnet.js",
+                "bin/vultron.js",
                 "frontend/app/app.js",
                 "frontend/css/station.css",
                 "frontend/index.html",
@@ -1070,7 +1070,7 @@ mod tests {
             assert_eq!((entry.size, entry.sha256.as_str()), (size, sha256.as_str()), "{}", entry.path);
         }
         let json = to_json(&manifest);
-        assert!(json.starts_with("{\"schema\":\"starnet.install-manifest/1\",\"complete\":true,"), "{json}");
+        assert!(json.starts_with("{\"schema\":\"vultron.install-manifest/1\",\"complete\":true,"), "{json}");
         assert_eq!(parse(&json).unwrap(), manifest);
         // the Linux install root follows the product name
         let conf: serde_json::Value = serde_json::from_str(TAURI_CONF).unwrap();
@@ -1105,8 +1105,8 @@ mod tests {
             "",
             "{}",
             "not json",
-            "{\"schema\":\"starnet.install-manifest/0\",\"complete\":true,\"gaps\":[],\"entries\":[]}",
-            "{\"schema\":\"starnet.install-manifest/1\",\"complete\":true,\"gaps\":[],\"entries\":[]}",
+            "{\"schema\":\"vultron.install-manifest/0\",\"complete\":true,\"gaps\":[],\"entries\":[]}",
+            "{\"schema\":\"vultron.install-manifest/1\",\"complete\":true,\"gaps\":[],\"entries\":[]}",
         ] {
             let verdict = verify_install(embedded, Some(&fx.install));
             assert!(matches!(verdict, Verdict::NotChecked(_)), "{embedded:?} -> {verdict:?}");
@@ -1224,8 +1224,8 @@ mod tests {
         let shell = |damage: Damage| Finding { path: "sidecar/tools/builtin/shell.js".to_string(), damage };
         let emptied = Verdict::Damaged { files: 2351, findings: vec![shell(Damage::Empty { expected: 89158 })], hashed: false };
         let lead = emptied.dialog_lead().unwrap();
-        assert!(lead.starts_with("StarNet's installation is damaged: sidecar/tools/builtin/shell.js is empty (0 of 89,158 bytes)."), "{lead}");
-        assert!(lead.contains("A security program may have quarantined or emptied it: restore it from that program's quarantine, or reinstall StarNet from starnetos.com."), "{lead}");
+        assert!(lead.starts_with("Vultron's installation is damaged: sidecar/tools/builtin/shell.js is empty (0 of 89,158 bytes)."), "{lead}");
+        assert!(lead.contains("A security program may have quarantined or emptied it: restore it from that program's quarantine, or reinstall Vultron from vultron.vercel.app."), "{lead}");
         assert!(lead.contains("Your station, agents and keys are kept."), "{lead}");
         // a half-applied update is named as one, with the reinstall exit
         let stale = Verdict::Damaged {
@@ -1235,10 +1235,10 @@ mod tests {
         };
         let lead = stale.dialog_lead().unwrap();
         assert!(lead.contains("is the wrong size (88,001 of 89,158 bytes). 1 more file is damaged too; startup.log names it."), "{lead}");
-        assert!(lead.contains("An update may not have finished: reinstall StarNet from starnetos.com.") && !lead.contains("quarantine"), "{lead}");
+        assert!(lead.contains("An update may not have finished: reinstall Vultron from vultron.vercel.app.") && !lead.contains("quarantine"), "{lead}");
         // the guardian's halt reason leads with the file; a healthy or unchecked install changes nothing
         let halted = with_install_lead(&emptied, "crash-loop: the station service exited 6 times.".to_string());
-        assert!(halted.starts_with("StarNet's installation is damaged: sidecar/tools/builtin/shell.js is empty") && halted.ends_with("crash-loop: the station service exited 6 times."), "{halted}");
+        assert!(halted.starts_with("Vultron's installation is damaged: sidecar/tools/builtin/shell.js is empty") && halted.ends_with("crash-loop: the station service exited 6 times."), "{halted}");
         for quiet in [Verdict::Verified { files: 3 }, Verdict::Checking { files: 3 }, Verdict::NotChecked("dev build".to_string())] {
             assert_eq!(quiet.dialog_lead(), None);
             assert_eq!(with_install_lead(&quiet, "reason".to_string()), "reason");
@@ -1304,8 +1304,8 @@ mod tests {
                 let embedded = to_json(&manifest);
                 let package = fx.dir.join("package");
                 let (root, exe) = match layout {
-                    "macos" => (package.join("Contents/Resources"), package.join("Contents/MacOS/StarNet")),
-                    "linux" => (package.join("lib").join(PRODUCT_NAME), package.join("bin/starnet")),
+                    "macos" => (package.join("Contents/Resources"), package.join("Contents/MacOS/Vultron")),
+                    "linux" => (package.join("lib").join(PRODUCT_NAME), package.join("bin/vultron")),
                     _ => (package.clone(), package.join("skynet-desktop.exe")),
                 };
                 copy_tree(&fx.install, &root);
@@ -1360,10 +1360,10 @@ mod tests {
         assert_eq!(verify_install_main(vec![OsString::from("skynet-desktop")], &embedded), None);
         assert_eq!(verify_install_main(vec![OsString::from("skynet-desktop"), OsString::from("--background")], &embedded), None);
         // install roots: the folder holding sidecar/, beside the exe (Windows) or in Contents/Resources (macOS)
-        let mac = fx.dir.join("StarNet.app").join("Contents");
+        let mac = fx.dir.join("Vultron.app").join("Contents");
         fs::create_dir_all(mac.join("MacOS")).unwrap();
         fs::create_dir_all(mac.join("Resources").join("sidecar")).unwrap();
-        let found = install_root(&root_candidates(&mac.join("MacOS").join("StarNet"))).unwrap();
+        let found = install_root(&root_candidates(&mac.join("MacOS").join("Vultron"))).unwrap();
         assert!(found.join("sidecar").is_dir() && found.ends_with("Resources"), "{found:?}");
         assert_eq!(install_root(&root_candidates(&fx.install.join("skynet-desktop.exe"))), Some(fx.install.clone()));
     }

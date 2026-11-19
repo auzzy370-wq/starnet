@@ -9,8 +9,8 @@ found: 2026-10-17
 lane: agent/safe-egress-module-1103
 fix: 448c99d2a
 origin: customer
-report: https://github.com/androoAGI/starnet/issues/128
-affected: StarNet hosts on macOS and Linux (tool descriptions are the same bytes on every host)
+report: https://github.com/YOUR-GITHUB-USER/vultron/issues/128
+affected: Vultron hosts on macOS and Linux (tool descriptions are the same bytes on every host)
 family: platform-description-truth
 installer: unverified
 recovery: unconfirmed

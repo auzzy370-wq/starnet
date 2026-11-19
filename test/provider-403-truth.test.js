@@ -6,7 +6,7 @@
        auth → "The provider rejected the API key — check it, or paste a new one". The key is fine; its limit is not.
      · An upstream REGION refusal behind OpenRouter (metadata.raw unsupported_country_region_territory) read as auth.
      · Any provider/proxy 403 whose text says "Forbidden" ("openai-compatible http 403 - Forbidden") read, in the
-       BROWSER, as StarNet's own stale page token → "The station restarted — reload this page" with a RELOAD door,
+       BROWSER, as Vultron's own stale page token → "The station restarted — reload this page" with a RELOAD door,
        while the node classifier called the same text auth. The sidecar's own token gate is "sidecar HTTP 403".
    Pinned on the sidecar classifier and on BOTH friendlyerror paths (browser = loaded without require). */
 'use strict';

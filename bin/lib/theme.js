@@ -1,12 +1,12 @@
 'use strict';
-/* bin/lib/theme.js — the terminal's color themes: the StarNet app's own presets (frontend/css/style.css body.theme-*:
+/* bin/lib/theme.js — the terminal's color themes: the Vultron app's own presets (frontend/css/style.css body.theme-*:
    amber, green, blue, purple, white — the same hexes the app paints with) plus the terminal's neon red, its default.
 
    A theme moves the ACCENT only: the rules, labels, tabs, the prompt, the wordmark (the Sixel logo's glow ramp too) and
    the camera feed's lit screens and working rim. Status keeps its meaning — the app's own "warn" color for what needs
    you (each preset picked one that never clashes with its accent), green for done (cyan on the green theme), orange for
    failed. Pure data + one apply() that sets the palettes the renderer already reads (tui PALETTE/BG, sixel RAMP,
-   camfeed's accent ramp, rim and wall trim). The pick is saved beside the app's data (cli.json); STARNET_THEME overrides it. */
+   camfeed's accent ramp, rim and wall trim). The pick is saved beside the app's data (cli.json); VULTRON_THEME overrides it. */
 const fs = require('fs');
 const path = require('path');
 
@@ -63,7 +63,7 @@ function build(name) {
   };
 }
 
-// where the pick is kept: beside the StarNet app's own data (the terminal already reads its workspace there). Read from
+// where the pick is kept: beside the Vultron app's own data (the terminal already reads its workspace there). Read from
 // the env it is given only (never the process's own home), so an env without APPDATA / HOME has no file: nothing is kept.
 function configFile(env, platform) {
   const e = env || process.env, p = platform || process.platform, home = e.HOME || e.USERPROFILE || '';
@@ -72,10 +72,10 @@ function configFile(env, platform) {
   return base ? path.join(base, 'ai.skynet.harness', 'cli.json') : '';
 }
 const known = n => NAMES.indexOf(String(n || '').toLowerCase().trim()) >= 0;
-// the theme to start with: STARNET_THEME, else the saved pick, else red
+// the theme to start with: VULTRON_THEME, else the saved pick, else red
 function load(env, file) {
   const e = env || process.env;
-  if (known(e.STARNET_THEME)) return String(e.STARNET_THEME).toLowerCase().trim();
+  if (known(e.VULTRON_THEME)) return String(e.VULTRON_THEME).toLowerCase().trim();
   const f = file === undefined ? configFile(e) : file;
   try { const j = f && JSON.parse(fs.readFileSync(f, 'utf8')); if (j && known(j.theme)) return j.theme; } catch (_) {}
   return DEFAULT;

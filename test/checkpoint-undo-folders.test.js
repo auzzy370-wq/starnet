@@ -40,7 +40,7 @@ const { runGit, gitRun, launchSpawn, runRows } = require('./helpers/checkpoint-r
 const isWin = process.platform === 'win32';
 const foldsCase = isWin || process.platform === 'darwin';
 
-const BASE = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-ckpt-folders-')));
+const BASE = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-ckpt-folders-')));
 const ROOT = path.join(BASE, 'ws');
 function put(file, body) { fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, body); }
 // every file below dir with its bytes, by path, sorted

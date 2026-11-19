@@ -28,11 +28,11 @@ const { floorOf, publishFloor } = require('./helpers/saved-floor.js');
     await new Promise(resolve => upstream.listen(0, '127.0.0.1', resolve));
     const url = 'http://127.0.0.1:' + upstream.address().port;
     fx = SidecarFixture.create({ prefix: 'line-entry-host-', env: {
-      STARNET_DEV: '1', STARNET_FULL_ACCESS: '1', STARNET_DEFAULT_PROVIDER: 'openrouter', STARNET_DEFAULT_MODEL: 'test/model', SKYNET_DEFAULT_MODEL: 'test/model',
-      STARNET_OPENROUTER_KEY: 'entry-fixture-key', SKYNET_OPENROUTER_KEY: 'entry-fixture-key',
-      STARNET_OPENROUTER_BASE: url + '/v1', SKYNET_OPENROUTER_BASE: url + '/v1', STARNET_MAX_ITERS: '2', STARNET_BUDGET_PER_DAY: '0',
-      STARNET_CREDITS_URL: '', STARNET_CLOUD_URL: '', STARNET_LIVE_PRICES: '0', STARNET_REFLECTION: '0', STARNET_STUDY: '0',
-      STARNET_FAILURE_REVIEW: '0', STARNET_SKILL_REVIEW: '0', STARNET_SKILL_CURATOR: '0', STARNET_THREAD_MINE: '0', STARNET_SCOUT: '0', STARNET_QUEST_REFRESH: '0',
+      VULTRON_DEV: '1', VULTRON_FULL_ACCESS: '1', VULTRON_DEFAULT_PROVIDER: 'openrouter', VULTRON_DEFAULT_MODEL: 'test/model', SKYNET_DEFAULT_MODEL: 'test/model',
+      VULTRON_OPENROUTER_KEY: 'entry-fixture-key', SKYNET_OPENROUTER_KEY: 'entry-fixture-key',
+      VULTRON_OPENROUTER_BASE: url + '/v1', SKYNET_OPENROUTER_BASE: url + '/v1', VULTRON_MAX_ITERS: '2', VULTRON_BUDGET_PER_DAY: '0',
+      VULTRON_CREDITS_URL: '', VULTRON_CLOUD_URL: '', VULTRON_LIVE_PRICES: '0', VULTRON_REFLECTION: '0', VULTRON_STUDY: '0',
+      VULTRON_FAILURE_REVIEW: '0', VULTRON_SKILL_REVIEW: '0', VULTRON_SKILL_CURATOR: '0', VULTRON_THREAD_MINE: '0', VULTRON_SCOUT: '0', VULTRON_QUEST_REFRESH: '0',
       LINE_ENTRY_FIXTURE_UPSTREAM: url,
       LINE_ENTRY_HOST_CONTROL_INDEX: process.env.LINE_ENTRY_HOST_CONTROL_INDEX || '', LINE_ENTRY_HOST_CONTROL_SHA256: process.env.LINE_ENTRY_HOST_CONTROL_SHA256 || ''
     } });
@@ -47,7 +47,7 @@ const { floorOf, publishFloor } = require('./helpers/saved-floor.js');
     const api = async (method, route, body) => { const out = await fx.json(method, route, body); assert.equal(out.status, 200, route + ': ' + out.text.slice(0, 400)); return out.body; };
     await fx.start();
     await api('POST', '/api/memory/config', { reflectEnabled: false, studyEnabled: false, failureReviewEnabled: false });
-    await api('POST', '/api/save', { schema: 'starnet.save', version: require('../frontend/app/save.js').CURRENT, updatedAt: Date.now(), _saveRevision: 0, _saveDirty: true,
+    await api('POST', '/api/save', { schema: 'vultron.save', version: require('../frontend/app/save.js').CURRENT, updatedAt: Date.now(), _saveRevision: 0, _saveDirty: true,
       _saveClient: 'entry-fixture', agent: { id: 'reviewer', name: 'Reviewer', createdAt: Date.now() }, agents: [],
       workstreams: [{ id: 'general', history: [] }], activeId: 'general', generalId: 'general' });
     await api('POST', '/api/roster', { updatedAt: Date.now(), agents: [{ agentId: 'reviewer', name: 'Reviewer', provider: 'openrouter', model: 'test/model' }] });

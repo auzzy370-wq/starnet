@@ -64,14 +64,14 @@ const server = http.createServer((req, res) => {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const endpoint = 'http://127.0.0.1:' + server.address().port + '/v1';
   const fixture = SidecarFixture.create({ prefix: 'skill-evaluation-spend-', timeoutMs: 30000, env: {
-    STARNET_DEFAULT_MODEL: MODEL, SKYNET_DEFAULT_MODEL: MODEL,
-    STARNET_OPENROUTER_BASE: endpoint, SKYNET_OPENROUTER_BASE: endpoint,
-    STARNET_OPENROUTER_KEY: 'local-fixture-only', SKYNET_OPENROUTER_KEY: 'local-fixture-only',
-    STARNET_BUDGET_PER_DAY: '1', SKYNET_BUDGET_PER_DAY: '1',
+    VULTRON_DEFAULT_MODEL: MODEL, SKYNET_DEFAULT_MODEL: MODEL,
+    VULTRON_OPENROUTER_BASE: endpoint, SKYNET_OPENROUTER_BASE: endpoint,
+    VULTRON_OPENROUTER_KEY: 'local-fixture-only', SKYNET_OPENROUTER_KEY: 'local-fixture-only',
+    VULTRON_BUDGET_PER_DAY: '1', SKYNET_BUDGET_PER_DAY: '1',
     // no PER RUN cap: the shipped default is none, and that is what most stations evaluate with
-    STARNET_FULL_ACCESS: '1', SKYNET_FULL_ACCESS: '1',
+    VULTRON_FULL_ACCESS: '1', SKYNET_FULL_ACCESS: '1',
     SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0', SKYNET_REFLECT: '0', SKYNET_SCOUT: '0',
-    SKYNET_QUEST_REFRESH: '0', SKYNET_CRON_ENABLED: '0', STARNET_CRON_ENABLED: '0'
+    SKYNET_QUEST_REFRESH: '0', SKYNET_CRON_ENABLED: '0', VULTRON_CRON_ENABLED: '0'
   } });
   const api = async (method, route, body, status = 200) => {
     const response = await fixture.json(method, route, body, { signal: AbortSignal.timeout(90000) });
@@ -119,7 +119,7 @@ const server = http.createServer((req, res) => {
     // a run nobody capped ($2, issue #53), never a fixed $0.08 that a premium model passes on its first call
     assert.equal(unsettled.runCapUsd, 2, 'an uncapped station gives each evaluation run the uncapped-run ceiling');
     // security-storage-07: the row says what it is (an evaluation, not an interrupted run) and the billing source the
-    // host knew (the Commander's own key here, so not StarNet credits)
+    // host knew (the Commander's own key here, so not Vultron credits)
     assert.equal(unsettled.kind, 'evaluation');
     assert.equal(unsettled.title, 'skill evaluation (agent)');
     assert.equal(unsettled.managed, false, 'the billing source is known');

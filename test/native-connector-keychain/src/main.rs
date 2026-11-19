@@ -47,9 +47,9 @@ impl Context {
     fn load(phase: &str) -> Result<Self, String> {
         let env = |key| std::env::var(key).unwrap_or_default();
         let platform = if cfg!(target_os = "windows") { "Windows" } else if cfg!(target_os = "macos") { "macOS" } else { "unsupported" };
-        let run = env("STARNET_ACCEPTANCE_RUN_ID");
+        let run = env("VULTRON_ACCEPTANCE_RUN_ID");
         guard(&env("GITHUB_ACTIONS"), &env("RUNNER_OS"), &env("RUNNER_ENVIRONMENT"),
-            &env("STARNET_DISPOSABLE_KEYCHAIN"), platform, &run, phase)?;
+            &env("VULTRON_DISPOSABLE_KEYCHAIN"), platform, &run, phase)?;
         let temp = PathBuf::from(env("RUNNER_TEMP"));
         if !temp.is_absolute() { return Err("Requires an absolute runner temp root".into()); }
         let temp = temp.canonicalize().map_err(|_| "Cannot resolve runner temp root")?;
@@ -57,7 +57,7 @@ impl Context {
         Ok(Self {
             service: format!("ai.skynet.harness.acceptance.{run}"),
             account: format!("connectors:acceptance:{run}"),
-            dir: temp.join(format!("starnet-connector-keychain-{run}")), run,
+            dir: temp.join(format!("vultron-connector-keychain-{run}")), run,
         })
     }
     fn receipt(&self, name: &str, value: Value) -> Result<(), String> {
@@ -85,7 +85,7 @@ impl Context {
     fn vault(&self, phase: &str, key: &str) -> Result<(), String> {
         let status = std::process::Command::new("node")
             .arg("test/native-connector-keychain/vault-check.cjs").arg(phase)
-            .env("STARNET_CONNECTOR_ENCRYPTION_KEY", key)
+            .env("VULTRON_CONNECTOR_ENCRYPTION_KEY", key)
             .status().map_err(|_| "Cannot run vault acceptance")?;
         if !status.success() { return Err("Vault acceptance failed; synthetic evidence preserved".into()); }
         Ok(())

@@ -2,27 +2,27 @@
    page every v6 install runs today. test/save-version-downgrade.test.js loads it to prove an OLDER page refuses a save written
    by this build instead of reading a packed history element as a message. Never edit it and never bring it up to date: its
    whole value is that it does not follow save.js. Everything below this comment is the file, byte for byte. */
-/* STARNET — save.js : local persistence for the agent + session.
+/* VULTRON — save.js : local persistence for the agent + session.
    A VERSIONED envelope so saves survive future changes. localStorage for now;
    the same shape + migration ladder moves to the SQLite sidecar later. */
 'use strict';
 
 const Save = (() => {
   /* THIS WINDOW'S CRASH JOURNAL (wave-1 save-latch-kill; qa/bugs 27bae3d6). Every tab of one browser shares localStorage,
-     and the whole save used to live under the one key 'starnet.save': a tab reloaded while another tab ran booted THAT tab's
+     and the whole save used to live under the one key 'vultron.save': a tab reloaded while another tab ran booted THAT tab's
      stale snapshot as its own work, and a crashed tab's unsent save was overwritten by the next persist of any other tab.
-     Now each window writes its own key: 'starnet.save' (LEGACY_KEY — the first window of a browser, and every save before
-     this change) or 'starnet.save.w.<window>' for a second live tab. CloudSave.openJournal() picks it at boot (a dead
+     Now each window writes its own key: 'vultron.save' (LEGACY_KEY — the first window of a browser, and every save before
+     this change) or 'vultron.save.w.<window>' for a second live tab. CloudSave.openJournal() picks it at boot (a dead
      window's journal is continued; a live window's is never touched) and calls useKey(); everything here reads and writes
      key(). Before openJournal() runs, key() is the legacy key, exactly as before. */
-  const LEGACY_KEY = 'starnet.save';
-  const JOURNAL_KEY_RE = /^starnet\.save(?:\.w\.[A-Za-z0-9_-]{1,80})?$/;
+  const LEGACY_KEY = 'vultron.save';
+  const JOURNAL_KEY_RE = /^vultron\.save(?:\.w\.[A-Za-z0-9_-]{1,80})?$/;
   let KEY = LEGACY_KEY;
   function key() { return KEY; }
   function useKey(k) { if (JOURNAL_KEY_RE.test(String(k || ''))) KEY = String(k); return KEY; }
-  const PRE_MIGRATE_BACKUP_KEY = 'starnet.save.pre-migrate.backup';
-  const LEGACY_SCHEMA = 'skynet.save';   // Skynet→StarNet rename: saves written before the rename carry this schema tag (the
-  const SCHEMA = 'starnet.save';         // legacymigrate boot pass copies the OLD `skynet.save` localStorage KEY forward; load() still accepts the old TAG inside the value).
+  const PRE_MIGRATE_BACKUP_KEY = 'vultron.save.pre-migrate.backup';
+  const LEGACY_SCHEMA = 'skynet.save';   // Skynet→Vultron rename: saves written before the rename carry this schema tag (the
+  const SCHEMA = 'vultron.save';         // legacymigrate boot pass copies the OLD `skynet.save` localStorage KEY forward; load() still accepts the old TAG inside the value).
   // v6 belongs to the 0.9 line. v0.8.5 shipped save v5 and its Workstreams normalizer does not know the
   // candidate's persisted `titleStrong` provenance bit. Reusing v5 let a manual rollback accept the newer save,
   // silently strip that bit on persist, and make a re-upgraded session eligible for another automatic rename.
@@ -96,7 +96,7 @@ const Save = (() => {
 
   // FORWARD-VERSION GUARD (P0.3). loadStatus() is the honest verdict channel the boot path reads BEFORE
   // it decides resume-vs-onboard. A save whose version is GREATER than this build's CURRENT was written by
-  // a NEWER StarNet: this code cannot read the fields that version added, so migrating it (which would
+  // a NEWER Vultron: this code cannot read the fields that version added, so migrating it (which would
   // re-stamp version = CURRENT and drop those fields) is silent contamination. We refuse: leave the stored
   // doc byte-for-byte UNTOUCHED and report { status:'future', version } so the boot path can raise an
   // honest "update the app" gate instead of either mangling the save or (worse) treating it as no-save and

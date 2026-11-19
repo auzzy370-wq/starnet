@@ -76,7 +76,7 @@ const ADAPTERS = [
   { name: 'anthropic (binding model)', wire: 'anthropic', model: 'claude-fable-5-1', simOpts: { bindsThinking: true }, make: sim => makeAnthropicProvider({ fetch: sim.fetch, key: 'k' }) },
   { name: 'gemini', wire: 'gemini', model: 'gemini-3-pro-preview', make: sim => makeGeminiProvider({ fetch: sim.fetch, key: 'k' }) },
   { name: 'codex', wire: 'codex', model: 'gpt-5.5', make: sim => makeCodexProvider({ fetch: sim.fetch, token: 't' }) },
-  { name: 'claude-cli', wire: 'claude-cli', model: 'sonnet', make: sim => makeClaudeCliProvider({ spawn: sim.spawn, fs: sim.fs, bin: 'claude.exe', env: { PATH: '', STARNET_CLAUDE_CLI_PERSIST: '0' }, platform: 'linux' }) }
+  { name: 'claude-cli', wire: 'claude-cli', model: 'sonnet', make: sim => makeClaudeCliProvider({ spawn: sim.spawn, fs: sim.fs, bin: 'claude.exe', env: { PATH: '', VULTRON_CLAUDE_CLI_PERSIST: '0' }, platform: 'linux' }) }
 ];
 
 // ---- the scenario's tools: two reads and a tool that ends the tool phase (a terminal-evidence control) ----
@@ -214,7 +214,7 @@ async function runScenario(ad) {
      another tool result follow a tool result. A loop host note right after tool results (<continue_after_tools>, a
      steering note, <loop_guard>, <terminal_evidence> …) is a user turn on the 'chat' projection (and was a system message
      before it — refused either way), so such a run is refused there. Carrying the note inside the tool turn, or bridging
-     with an assistant turn StarNet did not receive, are the two shapes Mistral accepts — a product call on how a host
+     with an assistant turn Vultron did not receive, are the two shapes Mistral accepts — a product call on how a host
      note may be worded into the transcript (openIssues), so it is not taken here. When a fix lands this FAILS: then move
      a Mistral profile into ADAPTERS. A refusal of this shape is a format_error with Mistral's own words: no systemless
      resend (it would not help) and no chat-template sentence (it is not a template). */
@@ -395,7 +395,7 @@ async function runScenario(ad) {
     A.ok(/the chat template of the model qwen38-27b:latest on 127\.0\.0\.1 refused/.test(msg), 'Jinja 500: the error NAMES the template — model and host');
     A.ok(/with no system message at all was refused too/.test(msg), 'Jinja 500: and says the systemless shape was refused too');
     // the customer's diagnostics clamp each error at 300 characters (diagnostics.js MSG_MAX): the naming must come first
-    A.ok(msg.slice(0, 300).indexOf('the chat template of the model qwen38-27b:latest on 127.0.0.1 refused the conversation StarNet sent ("System message must be at the beginning")') >= 0,
+    A.ok(msg.slice(0, 300).indexOf('the chat template of the model qwen38-27b:latest on 127.0.0.1 refused the conversation Vultron sent ("System message must be at the beginning")') >= 0,
       'Jinja 500: the template, the model, the host and the template\'s own words all fit in the 300 characters a diagnostics report keeps');
     A.ok(/^openai-compatible http 500 — /.test(msg), 'Jinja 500: the adapter label + status still lead (what the page routes on)');
     A.eq(err && err.payload.transient, false, 'Jinja 500: not transient');
@@ -430,7 +430,7 @@ async function runScenario(ad) {
     for (const [what, err] of Object.entries(isTpl)) {
       const c = classifyApiError(err, { model: 'some-model' });
       A.eq(c.reason, 'template_refusal', what + ': a template refusal');
-      A.ok(/the chat template of the model some-model on \S+ refused the conversation StarNet sent \("/.test(c.message.slice(0, 300)), what + ': the template\'s own words are quoted inside the 300 characters a report keeps');
+      A.ok(/the chat template of the model some-model on \S+ refused the conversation Vultron sent \("/.test(c.message.slice(0, 300)), what + ': the template\'s own words are quoted inside the 300 characters a report keeps');
     }
     A.ok(/update the model on that server/.test(classifyApiError(isTpl['vLLM HF template (bare)'], { model: 'm' }).message), 'a template on this network: update the model on that server');
     const hosted = classifyApiError(isTpl['hosted Qwen template'], { model: 'm' }).message;

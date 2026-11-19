@@ -15,7 +15,7 @@ A.ok(index.indexOf('app/journey.js') < index.indexOf('app/journeystore.js'), 'pu
 A.ok(app.indexOf('JourneyStore.init') >= 0 && app.indexOf('JourneyStore.reset') >= 0, 'journey lifecycle initializes and clears for a new Commander');
 A.ok(goals.indexOf('JourneyStore.noteMilestone') >= 0, 'verified goal milestones fold into durable journey evidence');
 A.ok(host.indexOf("exact: '/api/journey'") >= 0 && /journeyStore\.adaptationBlock\(agentId[,)]/.test(host), 'HTTP proof and per-agent adaptation are wired into the real host');
-// the cache-stable system prompt carries the tier-only block; the STARNET_STABLE_PREFIX=0 kill switch keeps the counted one
+// the cache-stable system prompt carries the tier-only block; the VULTRON_STABLE_PREFIX=0 kill switch keeps the counted one
 A.ok(host.indexOf('journeyStore.adaptationBlock(agentId, { counts: !stablePrefix })') >= 0, 'the stable system prompt gets the count-free adaptation block');
 A.ok(ui.indexOf('STATION XP') >= 0 && ui.indexOf('COMMANDER JOURNEY') >= 0 && ui.indexOf('STATION EVOLUTION') >= 0, 'the UI keeps all three progression tracks distinct');
 // org pass 10-14 (P28): one number, one name — the station-XP meter mislabelled AGENT GROWTH is gone, approvals read as thumbs-up

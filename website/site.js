@@ -1,4 +1,4 @@
-/* StarNet site — boot sequence, platform detect, live release links, motion */
+/* Vultron site — boot sequence, platform detect, live release links, motion */
 (function(){
   'use strict';
 
@@ -24,14 +24,15 @@
   // hiding a bare link would leave the surrounding prose referring to a page nobody can reach.
   document.querySelectorAll('[data-pricing-link]').forEach(function(el){ el.hidden = !PRICING_LIVE; });
 
-  var RELEASES_REPO = 'androoAGI/starnet-releases';
+  var RELEASES_REPO = 'YOUR-GITHUB-USER/vultron-releases';
 
-  // StarNet Credits (managed plans). The billing service is a separate host; until it is
-  // deployed `live:false` keeps every buy button honest — no button on this site may imply
-  // a purchase we cannot actually take. Flip `live` to true once the service answers.
+  // Vultron Credits (managed plans). There is NO billing service behind this build yet, so `live`
+  // stays false and every buy button reads [ SOON ]: no button on this site may imply a purchase we
+  // cannot actually take. Flip it to true — and point accountUrl at a service you run yourself —
+  // only once that service answers.
   var CREDITS = {
-    live: true,
-    accountUrl: 'https://account.starnetos.com'
+    live: false,
+    accountUrl: 'https://account.vultron.vercel.app'
   };
   (function wireCredits(){
     var ctas = document.querySelectorAll('[data-credits-cta]');
@@ -55,7 +56,7 @@
 
   /* ---------- boot sequence (once per session) ---------- */
   var bootLines = [
-    '> STARNET TERMLINK',
+    '> VULTRON TERMLINK',
     '> ESTABLISHING UPLINK ........... OK',
     '> STATION MANIFEST LOADED ....... OK',
     '> RENDERING TERMINAL'

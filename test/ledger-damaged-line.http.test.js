@@ -47,7 +47,7 @@ const near = (a, b) => typeof a === 'number' && Math.abs(a - b) < 1e-9;
   // ---- A: a damaged middle line never blocks a capped run: it counts at its bound, an ordinary cap stop RESUME clears,
   //      and it stays listed until the Commander settles it in one click; the record is never touched ----
   const f = new SidecarFixture({ prefix: 'ledger-damaged-line-', timeoutMs: 20000, env: { SKYNET_BUDGET_PER_DAY: '2.5', SKYNET_AUX_BUDGET: '0', SKYNET_QUEST_REFRESH: '0',
-    SKYNET_OPENROUTER_BASE: base, STARNET_OPENROUTER_BASE: base, SKYNET_OPENROUTER_KEY: 'damaged-fixture', SKYNET_DEFAULT_MODEL: 'test/spend' } });
+    SKYNET_OPENROUTER_BASE: base, VULTRON_OPENROUTER_BASE: base, SKYNET_OPENROUTER_KEY: 'damaged-fixture', SKYNET_DEFAULT_MODEL: 'test/spend' } });
   const ledger = path.join(f.workspace, 'ledger.jsonl');
   const original = good1 + '\n' + glued + '\n' + good2 + '\n';
   fs.writeFileSync(ledger, original);

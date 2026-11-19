@@ -67,7 +67,7 @@ const enc = v => (v === undefined ? 'undefined' : (typeof v === 'number' && !isF
     const code = l.replace(/\/\/.*$/, '');
     const profileRead = (/getProviderProfile\(/.test(code) && /\bunmetered\b/.test(code)) || /\b(profile|Profile|prof)\??\.unmetered\b/.test(code) || /\?\.unmetered\b/.test(code);
     const projection = file === 'sidecar/providers/registry.js' && /^\s*unmetered: !!profile\.unmetered,$/.test(l);   // toPublicProfile: the registry's own field, published
-    const managedRule = /=== 'starnet' \|\| !!CREDITS_URL/.test(code) || /credits\.configured\(\) && !\w*[Uu]nmetered/.test(code);
+    const managedRule = /=== 'vultron' \|\| !!CREDITS_URL/.test(code) || /credits\.configured\(\) && !\w*[Uu]nmetered/.test(code);
     if ((profileRead && !projection) || managedRule) offenders.push((file || 'sidecar/index.js') + ': ' + l.trim().slice(0, 110));
   });
   A.eq(offenders, [], 'no inline profile.unmetered read or managed rule outside sidecar/billing-class.js');
@@ -123,7 +123,7 @@ const loopPart = (async () => {
     A.eq([r.reason, p.calls(), end.subscriptionCapTokens, r.subscriptionTokens], ['budget', 3, 100000, 120000],
       id + ': a sign-in attempt that reports no subscription flag counts — the run stops at the 100,000-token seatbelt after 3 calls (was max_iters after 8)');
     A.eq(r.billingClasses, ['subscription'], id + ': the run reports what its attempts were');
-    A.ok(/SIGN-IN TOKEN CEILING/.test(r.budgetNote || '') && /STARNET_MAX_SUBSCRIPTION_TOKENS/.test(r.budgetNote || ''), id + ': the loop\'s own stop note names the knob: ' + r.budgetNote);
+    A.ok(/SIGN-IN TOKEN CEILING/.test(r.budgetNote || '') && /VULTRON_MAX_SUBSCRIPTION_TOKENS/.test(r.budgetNote || ''), id + ': the loop\'s own stop note names the knob: ' + r.budgetNote);
   }
   {
     const p = toolProvider(Object.assign({}, CODEX_USAGE, { cost: 0, subscription: true }));
@@ -336,7 +336,7 @@ const governorPart = ledgerPart.then(async () => {
   A.eq(Object.keys(BillingClass.KINDS).sort(), ['aux', 'media', 'nightshift', 'oneshot', 'quest-refresh', 'run', 'skill-curator', 'skill-evaluation', 'skill-review'], 'every paid call path is a named kind');
   A.eq(Object.keys(BillingClass.KINDS).filter(k => BillingClass.KINDS[k].background).sort(), BACKGROUND, 'the background kinds are the paths whose rows the 24-hour token ceiling counts');
   for (const kind of Object.keys(BillingClass.KINDS)) {
-    for (const id of ['openrouter', 'starnet', 'codex', 'grok', 'kimi', 'ollama', 'claude-cli', 'custom']) {
+    for (const id of ['openrouter', 'vultron', 'codex', 'grok', 'kimi', 'ollama', 'claude-cli', 'custom']) {
       const cls = billing.classOf(id), dollars = kind === 'media' || BillingClass.POLICY[cls].dollarCaps, where = kind + ' on ' + id + ' (' + cls + ')';
       // a reached day cap refuses a dollar payer; a plan or a local model spends no dollars, so it is never asked
       const capped = rig();
@@ -355,7 +355,7 @@ const governorPart = ledgerPart.then(async () => {
       const x = thrown.governor.admit(kind, { providerId: id, agentId: 'a' });
       if (dollars) {
         A.eq([x.gate, x.unknown, x.code, x.cause, x.error], ['check', true, 'spend_history_unavailable', 'check', 'ledger down'], where + ': a throwing budget refuses');
-        A.ok(/spending check failed \(ledger down\)/.test(x.why) && /restart StarNet/.test(x.exit) && /SPENDING LIMITS/.test(x.exit), where + ': with its exit: ' + x.exit);
+        A.ok(/spending check failed \(ledger down\)/.test(x.why) && /restart Vultron/.test(x.exit) && /SPENDING LIMITS/.test(x.exit), where + ': with its exit: ' + x.exit);
         A.eq(thrown.seen.errors, [[kind, 'ledger down']], where + ': the error is noted under its kind');
       } else A.eq(x, null, where + ': never asks the budget, so its throw cannot reach it');
     }
@@ -363,7 +363,7 @@ const governorPart = ledgerPart.then(async () => {
   // the other inputs that can throw: the payer lookup and the token gate. Each refuses; none reads as admitted
   for (const [what, o, kind] of [['the payer lookup', { throwClass: true }, 'oneshot'], ['the token gate', { throwGate: true, verdict: null }, 'aux']]) {
     const r = rig(o).governor.admit(kind, { providerId: 'codex', agentId: 'a' });
-    A.eq(r && [r.gate, r.unknown, r.cause, /restart StarNet/.test(r.exit)], ['check', true, 'check', true], what + ' throwing refuses ' + kind + ' with its exit');
+    A.eq(r && [r.gate, r.unknown, r.cause, /restart Vultron/.test(r.exit)], ['check', true, 'check', true], what + ' throwing refuses ' + kind + ' with its exit');
   }
   A.eq(rig({ verdict: null }).governor.admit('nonsense', { providerId: 'openrouter' }).gate, 'check', 'a path with no name is refused, never admitted');
   // a run's own check: its family's pool answers first; a call the pools then stop gives its reservation back

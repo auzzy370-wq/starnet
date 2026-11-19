@@ -24,7 +24,7 @@ const { makeTranscriptStore, projectConversation } = require('../sidecar/transcr
 const { makeSegmentedTranscriptIo } = require('../sidecar/transcript-history.js');
 const { makeRecallTool } = require('../sidecar/tools/builtin/recall.js');
 
-function temp(name) { return fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-selftalk-' + name + '-')); }
+function temp(name) { return fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-selftalk-' + name + '-')); }
 const clockAt = start => { let t = start; return { now: () => t, set: v => { t = v; } }; };
 
 (async () => {

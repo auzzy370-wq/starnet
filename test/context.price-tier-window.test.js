@@ -227,7 +227,7 @@ const { makeCostEngine } = require('../sidecar/cost.js');
     A.eq(C('gemini', 'gemini-2.5-pro', false), 200000, 'a Gemini key prices from the catalog: Gemini Pro is held under 200k');
     A.eq(C('xai', 'grok-4.6', false), 200000, 'an xAI key: grok is held under 200k');
     A.eq(C('anthropic', 'claude-haiku-5-5', false), 100000, 'an Anthropic key: Haiku 5.5 is held under 100K');
-    A.eq(C('starnet', 'google/gemini-2.5-pro', false), 200000, 'StarNet credits price from the catalog: held under the tier');
+    A.eq(C('vultron', 'google/gemini-2.5-pro', false), 200000, 'Vultron credits price from the catalog: held under the tier');
     A.eq(C('anthropic', 'claude-opus-4-7', false), 0, 'a linear-priced model has no ceiling on any route');
     for (const id of ['google/gemini-2.5-pro', 'x-ai/grok-4-fast', 'anthropic/claude-haiku-5.5']) {
       A.eq(C('openrouter', id, false), 0, 'OpenRouter books its billed usage.cost (every tier priced): ' + id + ' keeps its whole window');

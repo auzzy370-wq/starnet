@@ -1,4 +1,4 @@
-/* node test/cli.test.js — the PURE decisions of the `starnet` CLI (bin/lib/cli-core.js), no I/O.
+/* node test/cli.test.js — the PURE decisions of the `vultron` CLI (bin/lib/cli-core.js), no I/O.
 
    Locks: argument parsing + env fallbacks · the attach-vs-spawn choice (never spawn beside a live station,
    never boot into a workspace a live desktop owns, a NAMED port that is dead is an error not a spawn) · the
@@ -31,9 +31,9 @@ const StationRecord = require('../sidecar/station-record.js');
   A.ok(core.parseArgs(['--help'], {}).help, '--help');
   A.ok(core.parseArgs(['--version'], {}).version, '--version');
   A.ok(core.parseArgs(['-p', 'x', '--spawn'], {}).spawn, '--spawn');
-  const env = core.parseArgs(['status'], { STARNET_PORT: '4444', STARNET_TOKEN: 'tk', STARNET_WORKSPACES: '/env/ws' });
-  A.eq(env.port, 4444, 'STARNET_PORT env fallback'); A.eq(env.token, 'tk', 'STARNET_TOKEN env fallback'); A.eq(env.workspace, '/env/ws', 'STARNET_WORKSPACES env fallback');
-  A.eq(core.parseArgs(['status', '--port', '5'], { STARNET_PORT: '4444' }).port, 5, 'a flag beats the env');
+  const env = core.parseArgs(['status'], { VULTRON_PORT: '4444', VULTRON_TOKEN: 'tk', VULTRON_WORKSPACES: '/env/ws' });
+  A.eq(env.port, 4444, 'VULTRON_PORT env fallback'); A.eq(env.token, 'tk', 'VULTRON_TOKEN env fallback'); A.eq(env.workspace, '/env/ws', 'VULTRON_WORKSPACES env fallback');
+  A.eq(core.parseArgs(['status', '--port', '5'], { VULTRON_PORT: '4444' }).port, 5, 'a flag beats the env');
   const throws = (argv, re, label) => { let msg = ''; try { core.parseArgs(argv, {}); } catch (e) { msg = e.message; } A.ok(re.test(msg), label + ': ' + msg); };
   throws(['run'], /needs a prompt/, 'run without a prompt is a usage error');
   throws(['-p', 'x', '--timeout', 'soon'], /--timeout/, 'non-numeric timeout');
@@ -53,7 +53,7 @@ const StationRecord = require('../sidecar/station-record.js');
   const named = c({ candidates: [{ source: 'flag', port: 9, reachable: false }] });
   A.eq(named.mode, 'refuse', 'a NAMED dead port is an error, never a spawn'); A.ok(/--port/.test(named.reason), 'and names the flag');
   const envNamed = c({ candidates: [{ source: 'env', port: 9, reachable: false }] });
-  A.ok(envNamed.mode === 'refuse' && /STARNET_PORT/.test(envNamed.reason), 'an env-named dead port names STARNET_PORT');
+  A.ok(envNamed.mode === 'refuse' && /VULTRON_PORT/.test(envNamed.reason), 'an env-named dead port names VULTRON_PORT');
   const owned = c({ candidates: [{ source: 'default', port: 8787, reachable: false }], desktop: { ownerAlive: true, ownerPid: 10436, port: 0 } });
   A.eq(owned.mode, 'refuse', 'a live desktop owner with an unknown port is never spawned over'); A.ok(/10436/.test(owned.reason), 'the refusal names the pid');
   const ownedOverride = c({ candidates: [{ source: 'default', port: 8787, reachable: false }], desktop: { ownerAlive: true, ownerPid: 10436, port: 0 }, workspaceOverride: true });
@@ -64,25 +64,25 @@ const StationRecord = require('../sidecar/station-record.js');
   A.eq(c({ forceSpawn: true, noSpawn: true }).mode, 'refuse', '--spawn + --no-spawn refuses');
   /* The desktop app's station while the app is CLOSED: its keys, bot tokens and credits token live in the OS keychain,
      which only the app hands its sidecar. A station the terminal boots there would be a keyless second copy of the real
-     one (routines firing and failing, bots offline) — so `starnet` STARTS THE APP in the background (no window) and
+     one (routines firing and failing, bots offline) — so `vultron` STARTS THE APP in the background (no window) and
      attaches to the station it brings up. The terminal never needs the app open. */
   const dead = [{ source: 'default', port: 8787, reachable: false }];
-  const EXE = 'C:\\Users\\x\\AppData\\Local\\StarNet\\skynet-desktop.exe';
+  const EXE = 'C:\\Users\\x\\AppData\\Local\\Vultron\\skynet-desktop.exe';
   const closedApp = c({ candidates: dead, desktop: { ownerAlive: false, station: true, appRan: true, appExe: EXE } });
   A.eq(closedApp.mode, 'launch-app', 'the desktop app\'s station with the app closed: start the app in the background, never refuse');
   A.eq(closedApp.exe, EXE, '…the app it found');
   const noApp = c({ candidates: dead, desktop: { ownerAlive: false, station: true, appRan: true, appExe: '' } });
   A.eq(noApp.mode, 'refuse', 'no app on this computer to start: refused, never booted keyless');
-  A.ok(/app was not found/.test(noApp.reason) && /STARNET_APP_EXE/.test(noApp.reason) && /--workspace <dir>/.test(noApp.reason), '…and the reason says so, and the two ways on: ' + noApp.reason);
+  A.ok(/app was not found/.test(noApp.reason) && /VULTRON_APP_EXE/.test(noApp.reason) && /--workspace <dir>/.test(noApp.reason), '…and the reason says so, and the two ways on: ' + noApp.reason);
   const closedAsk = c({ candidates: dead, desktop: { ownerAlive: false, station: true, appRan: true, appExe: EXE }, noSpawn: true });
   A.eq(closedAsk.mode, 'refuse', '--no-spawn (a question: status, ls) never starts the app');
-  A.ok(/isn't running/.test(closedAsk.reason) && /run `starnet` to start it/.test(closedAsk.reason) && !/open the StarNet app/i.test(closedAsk.reason), '…and says `starnet` starts it, never "open the app": ' + closedAsk.reason);
+  A.ok(/isn't running/.test(closedAsk.reason) && /run `vultron` to start it/.test(closedAsk.reason) && !/open the Vultron app/i.test(closedAsk.reason), '…and says `vultron` starts it, never "open the app": ' + closedAsk.reason);
   A.eq(c({ candidates: dead, desktop: { ownerAlive: false, station: true, appRan: true, appExe: EXE }, workspaceOverride: true }).mode, 'spawn', '…a workspace the operator named still boots (headless use)');
   /* --spawn alone still targets that same workspace (defaultWorkspace picks the desktop station whenever it holds one), so
      it is the same keyless copy: refused, and the reason names both ways that work */
   const closedSpawn = c({ candidates: dead, desktop: { ownerAlive: false, station: true, appRan: true, appExe: EXE }, forceSpawn: true });
   A.eq(closedSpawn.mode, 'refuse', '…an explicit --spawn never boots the closed app\'s station keyless');
-  A.ok(/plain `starnet`/.test(closedSpawn.reason) && /--workspace <dir>/.test(closedSpawn.reason) && !/open the StarNet app/i.test(closedSpawn.reason), '…and says plain starnet starts it with its keys, or name a --workspace: ' + closedSpawn.reason);
+  A.ok(/plain `vultron`/.test(closedSpawn.reason) && /--workspace <dir>/.test(closedSpawn.reason) && !/open the Vultron app/i.test(closedSpawn.reason), '…and says plain vultron starts it with its keys, or name a --workspace: ' + closedSpawn.reason);
   A.eq(c({ candidates: dead, desktop: { ownerAlive: false, station: true, appRan: true }, forceSpawn: true, workspaceOverride: true }).mode, 'spawn', '--spawn --workspace <dir> still boots (headless use)');
   A.eq(c({ candidates: dead, desktop: { ownerAlive: false, station: true, appRan: false }, forceSpawn: true }).mode, 'spawn', '--spawn on a terminal-only station still boots');
   A.eq(c({ candidates: dead, desktop: { ownerAlive: false, station: true, appRan: false, appExe: EXE } }).mode, 'spawn', 'a station in that folder that no desktop app ever ran (a terminal-only one) still boots');
@@ -94,9 +94,9 @@ const StationRecord = require('../sidecar/station-record.js');
 // ---- the app's own path, from its startup.log -------------------------------------------------------------------
 {
   const P = core.parseStartupExe;
-  const win = 'startup exe=Ok("C:\\\\Users\\\\andro\\\\AppData\\\\Local\\\\StarNet\\\\skynet-desktop.exe") resource_dir=Ok("\\\\\\\\?\\\\C:\\\\Users\\\\andro\\\\AppData\\\\Local\\\\StarNet") root=C:\\Users\\andro\\AppData\\Local\\StarNet port=1';
-  A.eq(P(win), 'C:\\Users\\andro\\AppData\\Local\\StarNet\\skynet-desktop.exe', 'Rust\'s Debug escaping is undone (\\\\ → \\), and resource_dir is not mistaken for it');
-  A.eq(P('startup exe=Ok("/old/StarNet")\nspawn_sidecar pid=1 port=2 listening=true\nstartup exe=Ok("/Applications/StarNet.app/Contents/MacOS/skynet-desktop") port=3\n'), '/Applications/StarNet.app/Contents/MacOS/skynet-desktop', 'the LAST start wins');
+  const win = 'startup exe=Ok("C:\\\\Users\\\\andro\\\\AppData\\\\Local\\\\Vultron\\\\skynet-desktop.exe") resource_dir=Ok("\\\\\\\\?\\\\C:\\\\Users\\\\andro\\\\AppData\\\\Local\\\\Vultron") root=C:\\Users\\andro\\AppData\\Local\\Vultron port=1';
+  A.eq(P(win), 'C:\\Users\\andro\\AppData\\Local\\Vultron\\skynet-desktop.exe', 'Rust\'s Debug escaping is undone (\\\\ → \\), and resource_dir is not mistaken for it');
+  A.eq(P('startup exe=Ok("/old/Vultron")\nspawn_sidecar pid=1 port=2 listening=true\nstartup exe=Ok("/Applications/Vultron.app/Contents/MacOS/skynet-desktop") port=3\n'), '/Applications/Vultron.app/Contents/MacOS/skynet-desktop', 'the LAST start wins');
   A.eq(P('startup exe=Ok("C:\\\\Users\\\\O\\\'Brien \\"x\\"\\\\caf\\u{e9}\\\\a.exe")'), 'C:\\Users\\O\'Brien "x"\\café\\a.exe', 'quotes, apostrophes and \\u{…} come back as written');
   A.eq(P('startup exe=Err(Os { code: 2 })'), '', 'a start that could not tell its own path gives none');
   A.eq(P(''), '', 'no log, no app');
@@ -107,16 +107,16 @@ const StationRecord = require('../sidecar/station-record.js');
 {
   const J = core.joinOutcome;
   // the exact lines src-tauri/src/main.rs writes (setup's start line; join_terminal_session's four outcomes)
-  const started = 'startup: started by starnet (--background, terminal pid 4242) — the station runs with the app\'s keys; the window stays parked until someone opens StarNet';
-  const joined = 'second-launch --background: starnet session pid 4242 joins the station the terminal started';
-  const starting = 'second-launch --background: starnet session pid 4242 joins once StarNet has started';
-  const closing = 'second-launch --background: starnet session pid 4242 arrived while StarNet is closing (its starnet sessions ended); start StarNet again once it has quit';
-  const notTracked = 'second-launch --background: starnet session pid 4242: this StarNet is a person\'s or stays in the tray; a terminal ending never closes it';
+  const started = 'startup: started by vultron (--background, terminal pid 4242) — the station runs with the app\'s keys; the window stays parked until someone opens Vultron';
+  const joined = 'second-launch --background: vultron session pid 4242 joins the station the terminal started';
+  const starting = 'second-launch --background: vultron session pid 4242 joins once Vultron has started';
+  const closing = 'second-launch --background: vultron session pid 4242 arrived while Vultron is closing (its vultron sessions ended); start Vultron again once it has quit';
+  const notTracked = 'second-launch --background: vultron session pid 4242: this Vultron is a person\'s or stays in the tray; a terminal ending never closes it';
   A.eq(J(started, 4242), 'started-for', 'the start line names the terminal it was started for');
   A.eq(J(joined, 4242), 'joined', 'a join it took');
   A.eq(J(starting, 4242), 'starting', 'a join that arrived while it was still starting (tracked once it has)');
   A.eq(J(closing, 4242), 'closing', 'a join that arrived while it closes: start it again');
-  A.eq(J(notTracked, 4242), 'not-tracked', 'a person\'s StarNet, or one staying in the tray');
+  A.eq(J(notTracked, 4242), 'not-tracked', 'a person\'s Vultron, or one staying in the tray');
   A.eq(J(joined.replace('4242', '42420'), 4242), null, 'another pid (even one that starts with ours) is not ours');
   A.eq(J([started, closing].join('\n'), 4242), 'closing', 'the LAST line about the pid wins');
   A.eq(J([joined, 'close-request: close_to_tray=false', notTracked.replace('4242', '7')].join('\r\n'), 4242), 'joined', 'other pids\' lines and CRLF are ignored');
@@ -188,7 +188,7 @@ const StationRecord = require('../sidecar/station-record.js');
   const unknownProv = core.pickAgent(rt, { agent: 'researcher', provider: 'not-a-provider' });
   A.ok(!unknownProv.ok && /--provider "not-a-provider" is not a provider this station knows/.test(unknownProv.error), 'an unknown bare --provider is still refused: ' + JSON.stringify(unknownProv));
   // (review round 4) ...and so is an unknown --provider WITH --model: it was sent as typed, and the station's /api/run ran
-  // it on openrouter with its own key (`starnet run --provider olama --model llama3` ran openrouter/llama3)
+  // it on openrouter with its own key (`vultron run --provider olama --model llama3` ran openrouter/llama3)
   for (const typo of ['olama', 'open-router', 'chatgpt']) {
     const sel = core.pickAgent(rt, { agent: 'researcher', provider: typo, model: 'llama3' });
     A.ok(!sel.ok && sel.error === '--provider "' + typo + '" is not a provider this station knows', '--provider ' + typo + ' --model llama3 is refused: ' + JSON.stringify(sel));
@@ -279,7 +279,7 @@ const StationRecord = require('../sidecar/station-record.js');
   A.eq(a.approvalMode, 'full', 'FULL POWER from minute one — no consent gate for the bootstrapped agent');
   A.ok(/ATLAS/.test(a.system), 'the system prompt names the agent');
   A.eq(d.save.agentId + ':' + d.save.version, 'agent:1', 'save envelope');
-  A.eq(d.save.doc.schema + ':' + d.save.doc.version, 'starnet.save:5', 'the save doc is the schema the desktop resumes');
+  A.eq(d.save.doc.schema + ':' + d.save.doc.version, 'vultron.save:5', 'the save doc is the schema the desktop resumes');
   A.eq(d.save.doc.agent.id + ':' + d.save.doc.agent.name + ':' + d.save.doc.agent.model, 'agent:ATLAS:anthropic/claude-haiku-4.5', 'save.agent mirrors the roster');
   A.eq(d.save.doc.prov, 'openrouter', 'the provider rides doc.prov (the desktop restores it before the credential check)');
   A.eq(d.save.updatedAt + ':' + d.save.doc.updatedAt, '1700000000123:1700000000123', 'timestamps come from the injected clock');
@@ -301,7 +301,7 @@ const StationRecord = require('../sidecar/station-record.js');
   ];
   A.eq(core.inferProvider({ env: {}, profiles }).provider, '', 'nothing set → no provider');
   A.eq(core.inferProvider({ env: { ANTHROPIC_API_KEY: 'k' }, profiles }).provider, 'anthropic', 'a bare key env');
-  A.eq(core.inferProvider({ env: { STARNET_OPENROUTER_KEY: 'k' }, profiles }).provider, 'openrouter', 'STARNET_-scoped');
+  A.eq(core.inferProvider({ env: { VULTRON_OPENROUTER_KEY: 'k' }, profiles }).provider, 'openrouter', 'VULTRON_-scoped');
   A.eq(core.inferProvider({ env: { SKYNET_OPENAI_API_KEY: 'k' }, profiles }).provider, 'openai', 'SKYNET_-scoped legacy');
   A.eq(core.inferProvider({ env: { OPENAI_API_KEY: 'k', ANTHROPIC_API_KEY: 'k' }, profiles }).provider, 'openai', 'registry order decides ties');
   A.eq(core.inferProvider({ env: {}, profiles, codexTokensPresent: true }).provider, 'codex', 'a stored ChatGPT sign-in counts');

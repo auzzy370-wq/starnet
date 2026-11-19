@@ -16,29 +16,29 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 async function waitHealth(base, child) {
   const start = performance.now();
   for (let attempt = 0; attempt < 120; attempt++) {
-    if (child.exitCode != null) throw new Error(`StarNet sidecar exited ${child.exitCode} before health`);
+    if (child.exitCode != null) throw new Error(`Vultron sidecar exited ${child.exitCode} before health`);
     try {
       const response = await fetch(base + '/health', { signal: AbortSignal.timeout(1000) });
       if (response.ok) return { bootMs: performance.now() - start, body: await response.json() };
     } catch (_) {}
     await sleep(100);
   }
-  throw new Error('StarNet sidecar health timeout');
+  throw new Error('Vultron sidecar health timeout');
 }
 
-async function starnetProbe(opts, prompt, model) {
-  const root = resolve(opts.starnetRoot), workspaces = resolve(opts.starnetHome);
+async function vultronProbe(opts, prompt, model) {
+  const root = resolve(opts.vultronRoot), workspaces = resolve(opts.vultronHome);
   // the OS picks the port (test/helpers/ports.js): 19000 + pid % 1000 can land on a reserved or a taken port
   const port = await allocatePort(), base = `http://127.0.0.1:${port}`;
   const bearer = randomBytes(32).toString('hex');
-  const out = createWriteStream(resolve(opts.outputDir, 'same-model-starnet.out.log'));
-  const err = createWriteStream(resolve(opts.outputDir, 'same-model-starnet.err.log'));
+  const out = createWriteStream(resolve(opts.outputDir, 'same-model-vultron.out.log'));
+  const err = createWriteStream(resolve(opts.outputDir, 'same-model-vultron.err.log'));
   const child = spawn(join(root, 'node.exe'), [join(root, 'sidecar', 'index.js')], {
     cwd: root, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'],
     env: Object.assign({}, process.env, {
-      STARNET_WORKSPACES: workspaces, STARNET_PORT: String(port), STARNET_API_KEY: bearer,
-      STARNET_DEFAULT_MODEL: model, STARNET_FULL_ACCESS: '1', SKYNET_FULL_ACCESS: '1',
-      STARNET_CRON_ARMED: '0', SKYNET_CRON_ARMED: '0'
+      VULTRON_WORKSPACES: workspaces, VULTRON_PORT: String(port), VULTRON_API_KEY: bearer,
+      VULTRON_DEFAULT_MODEL: model, VULTRON_FULL_ACCESS: '1', SKYNET_FULL_ACCESS: '1',
+      VULTRON_CRON_ARMED: '0', SKYNET_CRON_ARMED: '0'
     })
   });
   child.stdout.pipe(out); child.stderr.pipe(err);
@@ -46,11 +46,11 @@ async function starnetProbe(opts, prompt, model) {
     const health = await waitHealth(base, child);
     const modelsResponse = await fetch(base + '/v1/models', { headers: { Authorization: `Bearer ${bearer}` }, signal: AbortSignal.timeout(5000) });
     const models = await modelsResponse.json();
-    const agent = ((models && models.data) || []).find(row => row && row.id !== 'starnet-agent') || {};
+    const agent = ((models && models.data) || []).find(row => row && row.id !== 'vultron-agent') || {};
     const started = performance.now(); let firstTokenMs = null, text = '', usage = null, terminal = false;
     const response = await fetch(base + '/v1/chat/completions', {
       method: 'POST', headers: { Authorization: `Bearer ${bearer}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: agent.id || 'starnet-agent', stream: true, messages: [{ role: 'user', content: prompt }] }),
+      body: JSON.stringify({ model: agent.id || 'vultron-agent', stream: true, messages: [{ role: 'user', content: prompt }] }),
       signal: AbortSignal.timeout(600000)
     });
     const reader = response.body && response.body.getReader();
@@ -104,15 +104,15 @@ async function hermesProbe(opts, prompt, model) {
 }
 
 const opts = argsOf(process.argv.slice(2));
-for (const key of ['starnetRoot', 'starnetHome', 'hermesSource', 'hermesPython', 'hermesHome', 'output']) if (!opts[key]) throw new Error(`missing --${key}`);
+for (const key of ['vultronRoot', 'vultronHome', 'hermesSource', 'hermesPython', 'hermesHome', 'output']) if (!opts[key]) throw new Error(`missing --${key}`);
 opts.outputDir = resolve(opts.outputDir || '.dogfood/eval'); mkdirSync(opts.outputDir, { recursive: true });
 const prompt = 'Return exactly PARITY-PROBE-731 and no other text.';
 const model = String(opts.model || 'gpt-5.6-sol');
-const result = { schemaVersion: 'starnet.eval.same-model-probe.v1', generatedAt: new Date().toISOString(), prompt, comparisonModel: model,
-  starnet: await starnetProbe(opts, prompt, model), hermes: await hermesProbe(opts, prompt, model) };
-result.sameModel = result.starnet.model === result.hermes.model && result.starnet.provider === result.hermes.provider;
-result.pass = result.sameModel && result.starnet.ok && result.hermes.ok && result.starnet.text === 'PARITY-PROBE-731' && result.hermes.text === 'PARITY-PROBE-731';
+const result = { schemaVersion: 'vultron.eval.same-model-probe.v1', generatedAt: new Date().toISOString(), prompt, comparisonModel: model,
+  vultron: await vultronProbe(opts, prompt, model), hermes: await hermesProbe(opts, prompt, model) };
+result.sameModel = result.vultron.model === result.hermes.model && result.vultron.provider === result.hermes.provider;
+result.pass = result.sameModel && result.vultron.ok && result.hermes.ok && result.vultron.text === 'PARITY-PROBE-731' && result.hermes.text === 'PARITY-PROBE-731';
 writeFileSync(resolve(opts.output), JSON.stringify(result, null, 2) + '\n', 'utf8');
-console.log(`[agent-eval] SAME MODEL ${result.pass ? 'PASS' : 'FAIL'} StarNet=${result.starnet.provider}/${result.starnet.model} Hermes=${result.hermes.provider}/${result.hermes.model}`);
+console.log(`[agent-eval] SAME MODEL ${result.pass ? 'PASS' : 'FAIL'} Vultron=${result.vultron.provider}/${result.vultron.model} Hermes=${result.hermes.provider}/${result.hermes.model}`);
 console.log(`[agent-eval] probe ${resolve(opts.output)}`);
 process.exitCode = result.pass ? 0 : 1;

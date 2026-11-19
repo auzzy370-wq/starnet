@@ -117,7 +117,7 @@ function copy(name, doc, o) {
     const said = capped.takeNotes('agent');
     A.ok(capped.size === 2 && k1.dropped === 1 && k2.dropped === 0 && k3.dropped === 0 && emptiedFor[0] === k1.path,
       'P1 bound: past the limit the OLDEST copy goes first, and the input holding it is emptied');
-    A.ok(said.length === 1 && /"k1\.txt" was dropped: StarNet keeps at most 2 staged uploads/.test(said[0]) && /the file input holding it was emptied/.test(said[0]), 'P1 bound: and it is said: ' + said.join(' '));
+    A.ok(said.length === 1 && /"k1\.txt" was dropped: Vultron keeps at most 2 staged uploads/.test(said[0]) && /the file input holding it was emptied/.test(said[0]), 'P1 bound: and it is said: ' + said.join(' '));
     // STRICT (Codex A3-CAP-01): one selection over the bound was let in whole (the batch was exempt from the eviction), so
     // "at most N at once" was false. It is refused whole now: none of it registered, no older copy evicted for it
     const batch = [copy('k4.txt', page), copy('k5.txt', page), copy('k6.txt', page)];
@@ -253,7 +253,7 @@ function copy(name, doc, o) {
     const e1 = copy('e1.txt', page), e2 = copy('e2.txt', page);
     for (const e of [e1, e2]) { await ev.add([e]); ev.settle([e], page); }
     const evSaid = ev.takeNotes('agent');
-    A.ok(e1.dropped === 1 && evSaid.length === 1 && /"e1\.txt" was dropped: StarNet keeps at most 1 staged uploads .*oldest out first; no file input still held it/.test(evSaid[0]) && !/select it again/.test(evSaid[0]),
+    A.ok(e1.dropped === 1 && evSaid.length === 1 && /"e1\.txt" was dropped: Vultron keeps at most 1 staged uploads .*oldest out first; no file input still held it/.test(evSaid[0]) && !/select it again/.test(evSaid[0]),
       'A3 minor: ...so does the eviction: ' + evSaid.join(' '));
     const rc = makeUploadStage({ log: () => {}, docAlive: async () => true, clearInputs: none });
     const r1 = copy('r1.txt', page), r2 = copy('r2.txt', page, { agentId: 'other' });

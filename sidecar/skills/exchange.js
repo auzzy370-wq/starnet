@@ -51,7 +51,7 @@ function parseDocument(text, sourceUrl) {
   // a standard SKILL.md keeps author/version (and sometimes license) under `metadata:`; top-level wins when both exist
   const md = fm.meta.metadata && typeof fm.meta.metadata === 'object' && !Array.isArray(fm.meta.metadata) ? fm.meta.metadata : {};
   const scalarText = (v) => (v == null || typeof v === 'object') ? '' : str(v);
-  // the spec `name` is an identifier (pdf-processing); a StarNet export also carries its display title under
+  // the spec `name` is an identifier (pdf-processing); a Vultron export also carries its display title under
   // metadata.title, which reads better in the panel and round-trips the original name
   const title = scalarText(md.title).replace(/\s+/g, ' ').trim();
   const name = (title && title.length <= 80 ? title : scalarText(fm.meta.name)).trim();
@@ -237,7 +237,7 @@ function makeSkillExchange(deps) {
     // The package's files are its source's own sealed bytes (digest-bound, published by their author); the metadata
     // beside them is this station's record, and leaves through the stored-text scrub like every other skill text.
     const pkg = packageFormat.fromEnvelope({ format: packageFormat.FORMAT, digest: current.packageDigest, files: current.packageFiles });
-    return { filename: (current.id || 'skill') + '.starnet-skill.json', digest: pkg.digest, envelope: packageFormat.toEnvelope(pkg, leavingMeta(current, {
+    return { filename: (current.id || 'skill') + '.vultron-skill.json', digest: pkg.digest, envelope: packageFormat.toEnvelope(pkg, leavingMeta(current, {
       sourceUrl: scrub(current.sourceUrl || ''), sourceDigest: current.sourceDigest || '', sourceFetchedAt: current.sourceFetchedAt || 0
     })) };
   }
@@ -253,7 +253,7 @@ function makeSkillExchange(deps) {
   /* EXPORT WHAT WE WROTE (2026-09-29). Export used to refuse every skill without a sealed install package, i.e.
      everything the Commander or their agents authored: the one kind of skill most worth sharing. This builds a
      standard Agent Skills folder from the skill as it is now: SKILL.md with a spec name (lowercase letters, digits,
-     hyphens, max 64), the description, license when known, and the display title under metadata.title so StarNet
+     hyphens, max 64), the description, license when known, and the display title under metadata.title so Vultron
      can show the same name after import; setup notes and body below; support files at their own paths. A skill the
      guard BLOCKED is never packaged for someone else. */
   function specName(name) {
@@ -293,7 +293,7 @@ function makeSkillExchange(deps) {
       .filter(f => f && f.path && f.path !== 'SKILL.md')
       .map(f => ({ path: outPath(f), bytes: outBytes(f) })));
     const pkg = packageFormat.canonicalize(files);
-    return { filename: specName(name) + '.starnet-skill.json', digest: pkg.digest,
+    return { filename: specName(name) + '.vultron-skill.json', digest: pkg.digest,
       envelope: packageFormat.toEnvelope(pkg, leavingMeta(current, { summary: scrub(current.summary || '') || description })) };
   }
   function publishHandoff(input) {
@@ -309,8 +309,8 @@ function makeSkillExchange(deps) {
       },
       instructions: [
         'Extract the standard skill folder represented by the package and host it without changing bytes.',
-        'Set sourceUrl to the public HTTPS URL of SKILL.md and add the registry entry to a starnet-skill-registry/v1 index.',
-        'Inspect the hosted URL in StarNet and confirm its package SHA-256 is ' + exported.digest + ' before sharing.'
+        'Set sourceUrl to the public HTTPS URL of SKILL.md and add the registry entry to a vultron-skill-registry/v1 index.',
+        'Inspect the hosted URL in Vultron and confirm its package SHA-256 is ' + exported.digest + ' before sharing.'
       ],
       uploaded: false
     };

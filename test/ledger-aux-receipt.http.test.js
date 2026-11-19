@@ -92,7 +92,7 @@ const QUIET = { SKYNET_QUEST_REFRESH: '0', SKYNET_THREAD_MINE: '0', SKYNET_SKILL
     });
     await new Promise(r => server.listen(0, HOST, r));
     const base = 'http://' + HOST + ':' + server.address().port + '/api/v1';
-    const f = SidecarFixture.create({ prefix: 'ledger-aux-crash-', timeoutMs: 30000, env: Object.assign({ SKYNET_OPENROUTER_BASE: base, STARNET_OPENROUTER_BASE: base, SKYNET_BUDGET_PER_DAY: '10' }, QUIET) });
+    const f = SidecarFixture.create({ prefix: 'ledger-aux-crash-', timeoutMs: 30000, env: Object.assign({ SKYNET_OPENROUTER_BASE: base, VULTRON_OPENROUTER_BASE: base, SKYNET_BUDGET_PER_DAY: '10' }, QUIET) });
     const ws = f.workspace;
     // one memory to recall: the run embeds it and its query through the hybrid lane before the first model call
     fs.writeFileSync(path.join(ws, 'agent.notebook.json'), JSON.stringify([{ id: 'mem-rollback', kind: 'note', title: 'Rollback notes', body: 'Keep rollback notes in every deploy summary.', ts: Date.now() - 60000 }]));

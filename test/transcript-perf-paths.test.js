@@ -1,7 +1,7 @@
 /* node test/transcript-perf-paths.test.js — what one transcript row and one transcript read cost (perf review 2026-10-19:
    #4, #5, "Away briefing N+1", "Lifetime search", the `constructor` query).
 
-   A user said StarNet "eats my PC's resources". Every transcript row opened its segment three times (tail byte, append,
+   A user said Vultron "eats my PC's resources". Every transcript row opened its segment three times (tail byte, append,
    read-back: a Defender rescan each, on a file growing to 4 MB) and SHA-256'd the whole ~1 MB active index, which nothing
    reads until a manifest write. Every history() read re-read and re-parsed whole segments, even for a stream the RAM
    mirror held completely — 2-4 times per run, and every 3 s per desk screen. A recall re-read and re-hashed every closed
@@ -33,7 +33,7 @@ if (process.env.TURN_BRIEFING_IO_CONTROL) {
 const { makeSegmentedTranscriptIo } = history;
 const { makeTranscriptStore } = transcriptStoreModule;
 
-const base = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-tx-perf-'));
+const base = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-tx-perf-'));
 let dirs = 0;
 const freshDir = () => path.join(base, 'h' + (++dirs));
 const opened = [];

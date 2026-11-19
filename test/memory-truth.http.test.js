@@ -46,10 +46,10 @@ async function journey() {
   await new Promise(r => server.listen(0, '127.0.0.1', r));
   const providerBase = 'http://127.0.0.1:' + server.address().port + '/v1';
   const fixture = SidecarFixture.create({ prefix: 'memory-truth-', timeoutMs: 20000, env: {
-    SKYNET_FULL_ACCESS: '1', STARNET_FULL_ACCESS: '1', SKYNET_AUX_BUDGET: '1', STARNET_AUX_BUDGET: '1',
-    SKYNET_OPENROUTER_KEY: 'memory-fixture', STARNET_OPENROUTER_KEY: 'memory-fixture',
-    SKYNET_OPENROUTER_BASE: providerBase, STARNET_OPENROUTER_BASE: providerBase,
-    SKYNET_DEFAULT_MODEL: 'memory-fixture', STARNET_DEFAULT_MODEL: 'memory-fixture'
+    SKYNET_FULL_ACCESS: '1', VULTRON_FULL_ACCESS: '1', SKYNET_AUX_BUDGET: '1', VULTRON_AUX_BUDGET: '1',
+    SKYNET_OPENROUTER_KEY: 'memory-fixture', VULTRON_OPENROUTER_KEY: 'memory-fixture',
+    SKYNET_OPENROUTER_BASE: providerBase, VULTRON_OPENROUTER_BASE: providerBase,
+    SKYNET_DEFAULT_MODEL: 'memory-fixture', VULTRON_DEFAULT_MODEL: 'memory-fixture'
   } });
   const json = async (method, route, body) => {
     const r = await fixture.request(route, { method, headers: { 'Content-Type': 'application/json' }, body: body === undefined ? undefined : JSON.stringify(body) });

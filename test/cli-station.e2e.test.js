@@ -1,6 +1,6 @@
-/* node test/cli-station.e2e.test.js — `starnet ls / approve / deny / watch / flow`, end to end, against a REAL sidecar.
+/* node test/cli-station.e2e.test.js — `vultron ls / approve / deny / watch / flow`, end to end, against a REAL sidecar.
 
-   test/cli-dashboard.test.js locks the pure model and formatters. This spawns bin/starnet.js exactly as a shell does
+   test/cli-dashboard.test.js locks the pure model and formatters. This spawns bin/vultron.js exactly as a shell does
    (no TTY) beside a run another client started the way the page does (POST /api/run on its own conversation), with a
    content-driven mock OpenRouter (zero spend) and a hermetic profile, and proves:
      1. `ls --json` sees that run's open ask as needs-you, naming what it wants to write;
@@ -8,7 +8,7 @@
         answered; a second `approve` / `deny` with nothing waiting exits 6;
      3. `watch --json` streams the run's events (start with its prompt, the tool call, the end);
      4. `-p` marks a task (the model is offered tools) and talk as talk (none) — without isTask no tool was ever offered;
-     5. `flow` on a station with no lines says so, exit 0; a bare `starnet` in a pipe prints usage, never a screen;
+     5. `flow` on a station with no lines says so, exit 0; a bare `vultron` in a pipe prints usage, never a screen;
      6. `-p` started inside a project works in it once the station trusts it (the agent is told the folder and a
         relative write lands there), and before that says the folder is not trusted and works in its own workspace;
      7. the station's own slash commands answer the terminal (POST /api/slash/dispatch, client 'terminal'): /tools reads
@@ -28,7 +28,7 @@ const { spawn } = require('child_process');
 const { SidecarFixture } = require('./helpers/sidecar-fixture.js');
 
 const HOST = '127.0.0.1';
-const BIN = path.resolve(__dirname, '..', 'bin', 'starnet.js');
+const BIN = path.resolve(__dirname, '..', 'bin', 'vultron.js');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 function startMock(seen) {
@@ -59,8 +59,8 @@ function startMock(seen) {
           res.end('data: [DONE]\n\n');
         };
         if (msgs.some(m => m && m.role === 'tool')) return say('done');
-        if (/write the station notes/i.test(text)) return tool('fs.write', { path: 'station-notes.md', content: 'approved from starnet approve' });
-        if (/write the project note/i.test(text)) return tool('fs.write', { path: 'project-note.md', content: 'written from the folder starnet was started in' });
+        if (/write the station notes/i.test(text)) return tool('fs.write', { path: 'station-notes.md', content: 'approved from vultron approve' });
+        if (/write the project note/i.test(text)) return tool('fs.write', { path: 'project-note.md', content: 'written from the folder vultron was started in' });
         return say('Hello from the station.');
       });
     });
@@ -81,14 +81,14 @@ function cli(args, env, ms, cwd) {
 function post(fixture, p, body) {
   return new Promise(resolve => {
     const payload = Buffer.from(JSON.stringify(body));
-    const req = http.request({ host: HOST, port: fixture.port, path: p, method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': payload.length, 'X-StarNet-Token': fixture.token, Origin: fixture.baseUrl } }, res => {
+    const req = http.request({ host: HOST, port: fixture.port, path: p, method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': payload.length, 'X-Vultron-Token': fixture.token, Origin: fixture.baseUrl } }, res => {
       let b = ''; res.setEncoding('utf8'); res.on('data', d => { b += d; }); res.on('end', () => { let j = null; try { j = JSON.parse(b); } catch (_) {} resolve({ status: res.statusCode, json: j }); });
     });
     req.on('error', e => resolve({ status: 0, json: null, error: e.message })); req.end(payload);
   });
 }
 function hermetic(profile) {
-  const h = { APPDATA: profile, LOCALAPPDATA: profile, XDG_DATA_HOME: profile, STARNET_PORT: '', SKYNET_PORT: '', STARNET_WORKSPACES: '', SKYNET_WORKSPACES: '', STARNET_TOKEN: '', STARNET_API_TOKEN: '', SKYNET_API_TOKEN: '' };
+  const h = { APPDATA: profile, LOCALAPPDATA: profile, XDG_DATA_HOME: profile, VULTRON_PORT: '', SKYNET_PORT: '', VULTRON_WORKSPACES: '', SKYNET_WORKSPACES: '', VULTRON_TOKEN: '', VULTRON_API_TOKEN: '', SKYNET_API_TOKEN: '' };
   if (process.platform !== 'win32') h.HOME = profile;
   return h;
 }
@@ -97,9 +97,9 @@ function hermetic(profile) {
   const seen = [];
   const mock = await startMock(seen);
   const providerEnv = {
-    SKYNET_OPENROUTER_BASE: mock.base, STARNET_OPENROUTER_BASE: mock.base,
-    SKYNET_OPENROUTER_KEY: 'sk-or-v1-station-fake', STARNET_OPENROUTER_KEY: 'sk-or-v1-station-fake',
-    SKYNET_DEFAULT_MODEL: 'test/model', STARNET_DEFAULT_MODEL: 'test/model'
+    SKYNET_OPENROUTER_BASE: mock.base, VULTRON_OPENROUTER_BASE: mock.base,
+    SKYNET_OPENROUTER_KEY: 'sk-or-v1-station-fake', VULTRON_OPENROUTER_KEY: 'sk-or-v1-station-fake',
+    SKYNET_DEFAULT_MODEL: 'test/model', VULTRON_DEFAULT_MODEL: 'test/model'
   };
   const fixture = SidecarFixture.create({ prefix: 'sk-cli-station-', env: providerEnv });
   await fixture.start();
@@ -122,7 +122,7 @@ function hermetic(profile) {
     const pageEvents = [];
     const payload = Buffer.from(JSON.stringify({ model: 'test/model', provider: 'openrouter', agentId: 'agent', streamId: 'desk-e2e', placed: [{ objectType: 'computer' }, { objectType: 'cabinet' }], messages: [{ role: 'user', content: 'write the station notes' }] }));
     const pageDone = new Promise(resolve => {
-      const req = http.request({ host: HOST, port: fixture.port, path: '/api/run', method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': payload.length, 'X-StarNet-Token': fixture.token, Origin: fixture.baseUrl } }, res => {
+      const req = http.request({ host: HOST, port: fixture.port, path: '/api/run', method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': payload.length, 'X-Vultron-Token': fixture.token, Origin: fixture.baseUrl } }, res => {
         res.setEncoding('utf8'); let buf = '';
         res.on('data', d => { buf += d; let i; while ((i = buf.indexOf('\n')) >= 0) { const l = buf.slice(0, i).trim(); buf = buf.slice(i + 1); if (l) { try { pageEvents.push(JSON.parse(l)); } catch (_) {} } } });
         res.on('end', resolve);
@@ -173,14 +173,14 @@ function hermetic(profile) {
     await cli(['-p', 'thanks!', '--port', port], env);
     A.ok(seen.some(s => /thanks!/.test(s.text)) && !seen.some(s => /thanks!/.test(s.text) && s.tools > 0), '-p on a pleasantry: talk, no tools');
 
-    /* ---- 5. flow + a bare starnet in a pipe ----------------------------------------------------- */
+    /* ---- 5. flow + a bare vultron in a pipe ----------------------------------------------------- */
     const fl = await cli(['flow', '--port', port], env);
     A.eq(fl.code, 0, 'flow exits 0');
     A.ok(/no workflows on this station yet/.test(fl.out), 'and says there are none: ' + fl.out);
     const fj = JSON.parse((await cli(['flow', '--json', '--port', port], env)).out);
     A.eq(fj.flows, [], 'flow --json: an empty list');
     const bare = await cli([], env);
-    A.ok(bare.code === 0 && /starnet — run StarNet agents/.test(bare.out), 'a bare starnet without a terminal prints the usage');
+    A.ok(bare.code === 0 && /vultron — run Vultron agents/.test(bare.out), 'a bare vultron without a terminal prints the usage');
 
     /* ---- 6. the folder it was started in --------------------------------------------------------- */
     const proj = fs.mkdtempSync(path.join(os.tmpdir(), 'sk-cli-proj-'));
@@ -210,7 +210,7 @@ function hermetic(profile) {
     const station = WM.create();
     A.ok(station.addProp({ t: 'war_intelcab', x: 2, y: 2, w: 1, h: 2 }).ok, 'a cabinet on the floor');
     const rev = ((await fixture.json('GET', '/api/save?agent=agent')).body.save || {})._saveRevision || 0;
-    const saved = await fixture.json('POST', '/api/save', { schema: 'starnet.save', version: 5, _saveRevision: rev, updatedAt: Date.now(), agent: { id: 'agent' }, station: station.serialize() });
+    const saved = await fixture.json('POST', '/api/save', { schema: 'vultron.save', version: 5, _saveRevision: rev, updatedAt: Date.now(), agent: { id: 'agent' }, station: station.serialize() });
     A.ok(saved.body && saved.body.ok, 'the floor is saved: ' + saved.text);
     const dispatch = async (input, extra) => (await post(fixture, '/api/slash/dispatch', Object.assign({ input, agentId: 'agent' }, extra || {}))).json || {};
     const said = d => (d.directive ? [d.directive.title].concat(d.directive.lines || [], [d.directive.text]) : []).filter(Boolean).join(' | ');
@@ -237,11 +237,11 @@ function hermetic(profile) {
       return seen.map(s => s.sys).join('\n');
     };
     const termSys = await termRun({ streamId: 'cli-agent', rosterSystem: true, client: 'terminal' });
-    A.ok(termSys.indexOf('[TERMINAL] The Commander is talking to you from the StarNet terminal CLI') >= 0, 'the terminal run carries the [TERMINAL] note');
-    A.ok(termSys.indexOf('using StarNet from its TERMINAL CLI') >= 0, 'and the terminal manual pointer, not the desktop manual');
-    A.ok(termSys.indexOf('name the object to place in the StarNet desktop app to grant it') >= 0, 'and the capability note sends missing gear to the desktop app (the run\'s viewer reached summarizeCapabilities): ' + (termSys.match(/You do NOT have[^\n]*\n[^\n]*/) || [''])[0].slice(0, 300));
+    A.ok(termSys.indexOf('[TERMINAL] The Commander is talking to you from the Vultron terminal CLI') >= 0, 'the terminal run carries the [TERMINAL] note');
+    A.ok(termSys.indexOf('using Vultron from its TERMINAL CLI') >= 0, 'and the terminal manual pointer, not the desktop manual');
+    A.ok(termSys.indexOf('name the object to place in the Vultron desktop app to grant it') >= 0, 'and the capability note sends missing gear to the desktop app (the run\'s viewer reached summarizeCapabilities): ' + (termSys.match(/You do NOT have[^\n]*\n[^\n]*/) || [''])[0].slice(0, 300));
     const deskSys = await termRun({ streamId: 'desk-e2e-8', placed: [{ objectType: 'cabinet' }] });
-    A.ok(deskSys.indexOf('[TERMINAL]') < 0 && deskSys.indexOf('in the StarNet desktop app to grant it') < 0 && deskSys.indexOf('TERMINAL CLI') < 0, 'a page run on the same station gets none of it');
+    A.ok(deskSys.indexOf('[TERMINAL]') < 0 && deskSys.indexOf('in the Vultron desktop app to grant it') < 0 && deskSys.indexOf('TERMINAL CLI') < 0, 'a page run on the same station gets none of it');
   } catch (e) {
     A.ok(false, 'cli-station e2e threw: ' + ((e && e.stack) || e));
   } finally {

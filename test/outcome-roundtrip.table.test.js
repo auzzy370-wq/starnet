@@ -15,7 +15,7 @@
    failure branch and board chip (sliced from harness.js / chat.js) over the browser-shaped friendlyerror; the channel hub; the cron driver
    and the notifier fed by its cron.result; /v1 over HTTP; the ACP core fed by the bridge's own openRun (sidecar/acp/serve.js,
    reading the run's NDJSON off a stand-in /api/run); the terminal's run tracker and the exit-code call
-   bin/starnet.js really makes; the Live Doctor's failureState on the provider's own error; the run-history row runOnceCore
+   bin/vultron.js really makes; the Live Doctor's failureState on the provider's own error; the run-history row runOnceCore
    records (its fields lifted from the record call, the row stamp from the host's outcomeOf) and the phone's activity view of
    it, plus the track record that folds it; the ROUTINES window's card cell over the job the cron driver settled and its RUN
    HISTORY line over that row as GET /api/cron/history hands it over (sliced from windows/routines.js and handleCronHistory);
@@ -44,7 +44,7 @@
                           line was ok, the fire never settled its crate        notifications 12/16  ...and pinged "ran on its own"
      Run Now 27/50        the same, and it settled a cut reply's, a held line's and a stopped or partial line's crate 'done'
      /v1 14/19            cut = completed / stop, a policy block = failed, an empty reply = interrupted
-     ACP 15/27            cut = end_turn with no note, a 429 "failed inside StarNet", a policy block = end_turn, empty unexplained
+     ACP 15/27            cut = end_turn with no note, a 429 "failed inside Vultron", a policy block = end_turn, empty unexplained
      CLI 12/15            cut exited 0 and ok, a policy block exited 1 as a run failure, a worker's end ended the lead's run
      run history 13/30    no row recorded an outcome; the track record counted a cut reply and a question as successes
      ROUTINES window 4/48 the card and RUN HISTORY read the bare reason: a cut reply "✓ ok", a 429 "✕ error", a question "✕ clarifying",
@@ -59,7 +59,7 @@
      away briefing 13/15  a cut reply and a question nobody answered were briefed under Done as "ran"
    The per-review measurements of this table stay with the lane's history on agent/typed-outcomes-1029, frozen at bb0a62df0.
    NOT CLOSED HERE: a Deny followed by a finished reply stays 'succeeded' on every surface (the 10-17 rule e2e.run-truth-1017
-   locks). GitHub androoAGI/starnet-releases#9 (rel#9: a Deny should end the run 'denied' or 'stopped by user') is NOT closed by
+   locks). GitHub YOUR-GITHUB-USER/vultron-releases#9 (rel#9: a Deny should end the run 'denied' or 'stopped by user') is NOT closed by
    this lane: it is deferred to the follow-up lane denied-outcome, which waits on the per-surface semantics.
    Nothing here boots a sidecar; /v1 and the ACP bridge's stand-in station bind loopback servers on OS-chosen ports
    (listen(0)); the group turn's store lives in an OS temp folder it removes. */
@@ -162,7 +162,7 @@ const ACP_STOP = { done: 'end_turn', cut: 'max_tokens', asked: 'end_turn', codex
   policy: 'refusal', budget: 'end_turn', steps: 'max_turn_requests', empty: 'end_turn', stopped: 'cancelled', noend: 'end_turn', thrown: 'end_turn', delegated: 'end_turn', delegatedNoEnd: 'end_turn' };
 const ACP_SAYS = { cut: /cut short/, codex429: /model provider failed this turn \(rate_limit\)/, empty: /empty reply/, steps: /step limit/, budget: /spend cap/,
   policy: /safety filter declined this request/,
-  // a lead that never ended is told so — never "failed inside StarNet", and never a clean end_turn because its WORKER ended 'done'
+  // a lead that never ended is told so — never "failed inside Vultron", and never a clean end_turn because its WORKER ended 'done'
   // (review 4.1: the bridge took any agent.run.end on the stream as the lead's, so delegatedNoEnd read as a clean finish)
   noend: /never reported how this run ended/, delegatedNoEnd: /never reported how this run ended/ };
 // the terminal: its exit code (EXIT: 0 ok, 1 run failed, 4 cancelled, 5 stopped short of done)
@@ -719,10 +719,10 @@ async function viaAcp(run) {
   return { stopReason: r.result && r.result.stopReason, text: notes.join('') };
 }
 
-// ---- the terminal: the real run tracker, and the exit-code call bin/starnet.js really makes ----
-const starnetSrc = read('bin/starnet.js');
-const exitCall = /core\.exitCodeForReason\(summary\.reason, (\{[^}]*\})\)/.exec(starnetSrc);
-A.ok(!!exitCall, 'fixture: bin/starnet.js decides the exit code with core.exitCodeForReason(summary.reason, …)');
+// ---- the terminal: the real run tracker, and the exit-code call bin/vultron.js really makes ----
+const vultronSrc = read('bin/vultron.js');
+const exitCall = /core\.exitCodeForReason\(summary\.reason, (\{[^}]*\})\)/.exec(vultronSrc);
+A.ok(!!exitCall, 'fixture: bin/vultron.js decides the exit code with core.exitCodeForReason(summary.reason, …)');
 function viaCli(run) {
   const t = CliCore.makeRunTracker();
   const wire = wireOf(run);
@@ -873,7 +873,7 @@ function check(surface, kind, ok, why) {
       const acp = await viaAcp(run);
       check('ACP', kind, acp.stopReason === ACP_STOP[kind], 'stopReason ' + ACP_STOP[kind] + ' (got ' + acp.stopReason + ')');
       if (ACP_SAYS[kind]) check('ACP', kind, ACP_SAYS[kind].test(acp.text), 'the editor is told ' + ACP_SAYS[kind] + ' (got ' + JSON.stringify(acp.text.slice(-160)) + ')');
-      if (code && code !== 'no_terminal_outcome') check('ACP', kind, !/inside StarNet/.test(acp.text), 'a provider failure (a safety block included) is never "a failure inside StarNet"');
+      if (code && code !== 'no_terminal_outcome') check('ACP', kind, !/inside Vultron/.test(acp.text), 'a provider failure (a safety block included) is never "a failure inside Vultron"');
 
       // the terminal
       const cli = viaCli(run);

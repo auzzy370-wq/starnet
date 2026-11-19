@@ -6,7 +6,7 @@
    browser page saved left /api/stt/status at cloud:false (probe P2) and a voice note with no page header had no OpenRouter
    leg. web_search's paid rung armed only on the run's own OpenRouter key or the alias, so a page key or a bare
    OPENROUTER_API_KEY never reached it, and on a run on another provider it sent that run's model id to OpenRouter. It armed on
-   StarNet-credits runs too, spending a BYOK key on a run the image route keeps off every BYOK key. And STT, TTS and the rung
+   Vultron-credits runs too, spending a BYOK key on a run the image route keeps off every BYOK key. And STT, TTS and the rung
    dialed https://openrouter.ai whatever endpoint the key was saved with, so a key kept for a proxy left for the public host.
 
    THE FIX. credentialFor('openrouter') is the one credential (sidecar/credential-store.js CONSUMERS): the key, the endpoint
@@ -19,7 +19,7 @@
    on record, and a recording upstream at one path per endpoint. NEVER RUN THIS WITHOUT THE PRELOAD: the voice legs and the
    rung would reach the real openrouter.ai, Mojeek and DuckDuckGo. This file sets it, and stops if the edge did not come up.
    The keyless engines get 503 there and SKYNET_WEB_READER=0, so web_search reaches its OpenRouter rung; the Edge voice is off
-   (SKYNET_EDGE_TTS=0) and so is the local engine (STARNET_LOCAL_VOICE=0), so /api/tts and /api/stt reach the keyed leg.
+   (SKYNET_EDGE_TTS=0) and so is the local engine (VULTRON_LOCAL_VOICE=0), so /api/tts and /api/stt reach the keyed leg.
 
    Rows:
      1. THREE SOURCES, one credential {K, U}: a browser page saves it; a desktop's keychain holds it (the shell's spawn pair and
@@ -28,7 +28,7 @@
         on a station with no other image route reaches U; /api/stt with no page header reaches U; /api/tts with no page key
         reaches U/audio/speech.
      2. A run ON OpenRouter arms the rung with its own key, endpoint and model.
-     3. CREDITS: a desktop with a keychain OpenRouter key and a linked StarNet account: a credits run's web_search tries the
+     3. CREDITS: a desktop with a keychain OpenRouter key and a linked Vultron account: a credits run's web_search tries the
         free engines and never arms the station's key.
      4. GUARDS (decision 1): a page-saved key leaves /api/stt/status.preferred as it was, and does not displace a station
         OpenAI image route (image-task.e2e keeps its rows too). A TTS leg that dials a public host is answered at the edge: the
@@ -67,7 +67,7 @@ const K = {
   guard: 'sk-or-v1-PAGE-BESIDE-OPENAI-0123456789abcdefghij',
   model: 'custom-MODEL-key-0123456789abcdefghijklmnopqrs',
   openai: 'sk-proj-PAGE-OPENAI-key-0123456789abcdefghijklm',
-  device: 'starnet-device-token-0123456789abcdefghijklmnop',
+  device: 'vultron-device-token-0123456789abcdefghijklmnop',
   flight: 'sk-or-v1-PAGE-key-REMOVED-MID-RUN-0123456789abcd',
   flight2: 'sk-or-v1-PAGE-key-ROTATED-IN-MID-RUN-0123456789a'
 };
@@ -110,7 +110,7 @@ function recorder() {
       try { body = JSON.parse(raw) || {}; } catch (_) { body = {}; }
       seen.push({ path: req.url, key: String(req.headers.authorization || '').replace(/^Bearer\s+/i, ''), body });
       if (/\/models(?:\?|$)/.test(req.url)) return json(res, { data: [{ id: 'test/model', context_length: 8000, supported_parameters: ['tools'], pricing: { prompt: '0', completion: '0' } }] });
-      // the linked StarNet account: its balance and metering, around the same model
+      // the linked Vultron account: its balance and metering, around the same model
       if (/^\/cloud\//.test(req.url) && /\/balance/.test(req.url)) return json(res, { balanceUsd: 50 });
       if (/^\/cloud\//.test(req.url) && /\/(?:debit|credit)$/.test(req.url)) return json(res, { ok: true, balanceUsd: 50 });
       if (/^\/cloud\//.test(req.url) && !/\/chat\/completions$/.test(req.url)) return json(res, { entries: [] });
@@ -130,13 +130,13 @@ function recorder() {
 const AMBIENT = ['OPENROUTER_KEY', 'OPENROUTER_API_KEY', 'OPENROUTER_BASE', 'OPENAI_API_KEY', 'GROQ_API_KEY', 'GEMINI_API_KEY', 'GOOGLE_API_KEY', 'GOOGLE_AI_API_KEY', 'GROQ_BASE_URL',
   'GEMINI_BASE_URL', 'GOOGLE_AI_BASE_URL', 'GROQ_BASE', 'OPENAI_BASE', 'CUSTOM_OPENAI_KEY', 'OPENAI_COMPATIBLE_KEY', 'CUSTOM_OPENAI_BASE_URL', 'OPENAI_COMPATIBLE_BASE_URL',
   'KEY_POOL_OPENROUTER', 'DESKTOP_SHELL', 'IPC_TOKEN', 'CREDITS_URL', 'CREDITS_TOKEN', 'CLOUD_URL', 'FALLBACK_MODELS', 'DEFAULT_MODEL'];
-const pair = (name, value) => ({ ['SKYNET_' + name]: value, ['STARNET_' + name]: value });
+const pair = (name, value) => ({ ['SKYNET_' + name]: value, ['VULTRON_' + name]: value });
 function station(label, env, seed) {
   const blank = {};
-  for (const n of AMBIENT) { blank[n] = ''; blank['STARNET_' + n] = ''; blank['SKYNET_' + n] = ''; }
+  for (const n of AMBIENT) { blank[n] = ''; blank['VULTRON_' + n] = ''; blank['SKYNET_' + n] = ''; }
   const prior = String(process.env.NODE_OPTIONS || '').trim();
   const fx = SidecarFixture.create({ prefix: 'cs-consumers-' + label + '-', timeoutMs: 45000, env: Object.assign(blank, {
-    STARNET_FULL_ACCESS: '1', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0', SKYNET_THREAD_MINE: '0', SKYNET_AUX_BUDGET: '0',
+    VULTRON_FULL_ACCESS: '1', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0', SKYNET_THREAD_MINE: '0', SKYNET_AUX_BUDGET: '0',
     ...pair('WEB_READER', '0'), ...pair('EDGE_TTS', '0'), ...pair('LOCAL_VOICE', '0'),
     NODE_OPTIONS: (prior ? prior + ' ' : '') + '--require=' + EDGE
   }, env) });
@@ -146,11 +146,11 @@ function station(label, env, seed) {
     fx,
     async start() {
       if (seed) seed(fx.workspace);
-      await fx.start({ STARNET_TEST_EDGE_OUT: edgeFile });
+      await fx.start({ VULTRON_TEST_EDGE_OUT: edgeFile });
       if (!edge().some(e => e.edge === 'ready')) throw new Error(label + ': the outbound edge did not come up: refusing to run a station that could reach the internet');
     },
     edge: () => edge().filter(e => e.host),
-    push: body => fx.request('/api/key', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-StarNet-Token': IPC }, body: JSON.stringify(body) })
+    push: body => fx.request('/api/key', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Vultron-Token': IPC }, body: JSON.stringify(body) })
       .then(async r => ({ status: r.status, body: await r.json().catch(() => null) })),
     engineKey: body => fx.json('POST', '/api/providers/engine-key', body),
     sttStatus: () => fx.json('GET', '/api/stt/status').then(r => r.body),
@@ -229,7 +229,7 @@ const toolOk = (events, name) => { const r = events.find(e => e.name === 'agent.
 
     /* ================= 1. the desktop keychain ================= */
     {
-      const s = await boot(station('desktop', { STARNET_DESKTOP_SHELL: '1', ...pair('IPC_TOKEN', IPC), ...pair('OPENROUTER_KEY', K.keychain) }));
+      const s = await boot(station('desktop', { VULTRON_DESKTOP_SHELL: '1', ...pair('IPC_TOKEN', IPC), ...pair('OPENROUTER_KEY', K.keychain) }));
       const model = await s.push({ provider: 'custom', baseUrl: up.base + '/model/v1' });
       const pushed = await s.push({ provider: 'openrouter', baseUrl: at('keychain') });
       A.eq([model.status, pushed.status, pushed.body && pushed.body.credentialSource], [200, 200, 'keychain'], 'desktop: the shell hands over the endpoints; the key is the keychain\'s');
@@ -242,16 +242,16 @@ const toolOk = (events, name) => { const r = events.find(e => e.name === 'agent.
       await everyConsumer(s, 'headless', K.env, 'env');
     }
 
-    /* ================= 3. a StarNet-credits run never arms the station's key ================= */
+    /* ================= 3. a Vultron-credits run never arms the station's key ================= */
     {
       const seed = ws => {
         fs.mkdirSync(path.join(ws, '.secrets'), { recursive: true });
         fs.writeFileSync(path.join(ws, '.secrets', 'credits.json'), JSON.stringify({ url: up.base + '/cloud', deviceToken: K.device, accountId: 'acct-fixture', linkedAt: 1 }));
       };
-      const s = await boot(station('credits', { STARNET_DESKTOP_SHELL: '1', ...pair('IPC_TOKEN', IPC), ...pair('OPENROUTER_KEY', K.credits), STARNET_CLOUD_URL: up.base + '/cloud', STARNET_CREDITS_TOKEN: K.device }, seed));
+      const s = await boot(station('credits', { VULTRON_DESKTOP_SHELL: '1', ...pair('IPC_TOKEN', IPC), ...pair('OPENROUTER_KEY', K.credits), VULTRON_CLOUD_URL: up.base + '/cloud', VULTRON_CREDITS_TOKEN: K.device }, seed));
       A.eq((await s.push({ provider: 'openrouter', baseUrl: at('credits') })).status, 200, 'credits: the shell hands over the OpenRouter endpoint');
       const before = up.seen.length;
-      const credits = await s.run({ provider: 'starnet', model: 'test/model', agentId: 'credits-run', messages: [{ role: 'user', content: 'SEARCH-THE-WEB' }] });
+      const credits = await s.run({ provider: 'vultron', model: 'test/model', agentId: 'credits-run', messages: [{ role: 'user', content: 'SEARCH-THE-WEB' }] });
       A.ok(up.seen.slice(before).some(r => r.path.startsWith('/cloud/') && /\/chat\/completions$/.test(r.path) && r.key === K.device), 'credits: the run is on the linked account, with its device token');
       A.ok(['www.mojeek.com', 'html.duckduckgo.com', 'lite.duckduckgo.com'].every(h => s.edge().some(e => e.host === h)), 'credits: its web_search ran, and the free engines answered 503 at the edge');
       A.eq(up.seen.slice(before).filter(r => Array.isArray(r.body.plugins) || r.key === K.credits).map(r => r.path), [], 'credits: the station\'s OpenRouter key is never armed on a credits run (decision 2), at its own endpoint');

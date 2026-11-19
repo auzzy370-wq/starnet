@@ -111,7 +111,7 @@ let chrome, cdp, profile, failed = false;
 try {
   const httpPort = await freePort();
   await new Promise(done => server.listen(httpPort, '127.0.0.1', done));
-  const port = await freePort(); profile = mkdtempSync(join(tmpdir(), 'starnet-offcanvas-'));
+  const port = await freePort(); profile = mkdtempSync(join(tmpdir(), 'vultron-offcanvas-'));
   chrome = spawn(findChrome(), ['--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check', '--mute-audio',
     '--remote-debugging-port=' + port, '--user-data-dir=' + profile, 'about:blank'], { stdio: 'ignore', windowsHide: true });
   cdp = await connectCDP(port);
@@ -147,7 +147,7 @@ finally {
   server.close();
   if (profile) {
     const rel = relative(resolve(tmpdir()), resolve(profile));
-    assert.ok(rel && !rel.startsWith('..') && !isAbsolute(rel) && rel.startsWith('starnet-offcanvas-'), 'cleanup stays inside the test temp directory');
+    assert.ok(rel && !rel.startsWith('..') && !isAbsolute(rel) && rel.startsWith('vultron-offcanvas-'), 'cleanup stays inside the test temp directory');
     for (let attempt = 0; attempt < 50; attempt++) try { rmSync(profile, { recursive: true, force: true }); break; }
     catch (error) { if (!['EBUSY', 'EPERM', 'ENOTEMPTY'].includes(error.code) || attempt === 49) throw error; await sleep(200); }
   }

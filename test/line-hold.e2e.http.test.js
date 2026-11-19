@@ -43,10 +43,10 @@ const BLOCKED_REPLY = 'This is not safe to publish.\nVERDICT: blocked';
   await new Promise(resolve => upstream.listen(0, '127.0.0.1', resolve));
   const base = 'http://127.0.0.1:' + upstream.address().port;
   const fixture = SidecarFixture.create({ prefix: 'line-hold-e2e-', timeoutMs: 40000, env: {
-    STARNET_DEFAULT_MODEL: '', SKYNET_DEFAULT_MODEL: '', STARNET_OPENROUTER_KEY: '', SKYNET_OPENROUTER_KEY: '',
+    VULTRON_DEFAULT_MODEL: '', SKYNET_DEFAULT_MODEL: '', VULTRON_OPENROUTER_KEY: '', SKYNET_OPENROUTER_KEY: '',
     CUSTOM_OPENAI_KEY: 'direct-fixture', CUSTOM_OPENAI_BASE_URL: base + '/v1',
-    STARNET_LIVE_PRICES: '0', STARNET_REFLECTION: '0', STARNET_STUDY: '0', STARNET_FAILURE_REVIEW: '0', STARNET_SKILL_REVIEW: '0',
-    STARNET_SKILL_CURATOR: '0', STARNET_THREAD_MINE: '0', STARNET_SCOUT: '0', STARNET_QUEST_REFRESH: '0', STARNET_CREDITS_URL: '', STARNET_CLOUD_URL: ''
+    VULTRON_LIVE_PRICES: '0', VULTRON_REFLECTION: '0', VULTRON_STUDY: '0', VULTRON_FAILURE_REVIEW: '0', VULTRON_SKILL_REVIEW: '0',
+    VULTRON_SKILL_CURATOR: '0', VULTRON_THREAD_MINE: '0', VULTRON_SCOUT: '0', VULTRON_QUEST_REFRESH: '0', VULTRON_CREDITS_URL: '', VULTRON_CLOUD_URL: ''
   } });
   const api = (method, route, body) => fixture.json(method, route, body);
   const sleep = ms => new Promise(r => setTimeout(r, ms));

@@ -1,4 +1,4 @@
-/* STARNET — worldmodel.js : the canonical, mutable, serializable STATION document.
+/* VULTRON — worldmodel.js : the canonical, mutable, serializable STATION document.
 
    This is the single source of truth the builder edits and that both the renderer
    (via projectGeometry → stationbake.js) and the future AgentOrg runtime read.
@@ -501,8 +501,8 @@ const WorldModel = (() => {
   const STATION_VERSION = 2;
   function freshDoc(createdAt) {
     const doc = {
-      schema: 'starnet.station', version: STATION_VERSION, _nid: 1,
-      meta: { name: 'STARNET STATION', createdAt: createdAt || stationId(), tier: 0, spawnRoomId: null, trunkRoomId: null },
+      schema: 'vultron.station', version: STATION_VERSION, _nid: 1,
+      meta: { name: 'VULTRON STATION', createdAt: createdAt || stationId(), tier: 0, spawnRoomId: null, trunkRoomId: null },
       rooms: {}, order: [], props: [], belts: {}, edges: []
     };
     // seed the shabby starter HAB (18×11 floor — the v7 / world.js starter room), so a new
@@ -4024,7 +4024,7 @@ const WorldModel = (() => {
     // Whole-layout changes use the same single-step history and invalidation as
     // ordinary REFIT edits. Assemble and validate before touching the live doc.
     function replaceLayout(layout) {
-      if (!layout || layout.schema !== 'starnet.station' || !Array.isArray(layout.props) || !layout.rooms) return fail('BAD_LAYOUT');
+      if (!layout || layout.schema !== 'vultron.station' || !Array.isArray(layout.props) || !layout.rooms) return fail('BAD_LAYOUT');
       const candidate = migrate(clone(layout));
       if (!candidate.order.length || new Set(candidate.props.map(p => p.id)).size !== candidate.props.length) return fail('BAD_LAYOUT');
       const probe = makeStation(clone(candidate));
@@ -5073,7 +5073,7 @@ const WorldModel = (() => {
   /* forward-only migration ladder for serialized docs (none yet — v1 is current) */
   function migrate(doc) {
     if (!doc || typeof doc !== 'object') return doc;
-    if (!doc.schema) doc.schema = 'starnet.station';
+    if (!doc.schema) doc.schema = 'vultron.station';
     if (!doc.version) doc.version = 1;
     // v1 -> v2: links are added — derived from the belts on the first read after load (makeStation's link cache), which is
     // the same compile that routes the floor now, and adopted only when they compile to the identical plan
@@ -5133,7 +5133,7 @@ const WorldModel = (() => {
     else { const clean = {}; for (const k in doc.belts) { const d = doc.belts[k]; if (/^-?\d+,-?\d+$/.test(k) && (d === 'E' || d === 'W' || d === 'N' || d === 'S')) clean[k] = d; } doc.belts = clean; }
     if (!Array.isArray(doc.edges)) doc.edges = [];
     doc.edges = doc.edges.map(cleanPipelineEdge).filter(Boolean);
-    if (!doc.meta || typeof doc.meta !== 'object') doc.meta = { name: 'STARNET STATION', createdAt: 0, tier: 0, spawnRoomId: null };
+    if (!doc.meta || typeof doc.meta !== 'object') doc.meta = { name: 'VULTRON STATION', createdAt: 0, tier: 0, spawnRoomId: null };
     /* ONE-TIME, NON-DESTRUCTIVE BACKFILL of the station id (see freshDoc's note). A doc saved before
        station identity existed carries createdAt 0/absent; give it one now so its per-station latches
        stop colliding with every other station's. It must be SAVED on the same load that stamps it —

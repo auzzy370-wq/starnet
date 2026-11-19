@@ -150,17 +150,17 @@ A.ok(EC.normalizeInput({ key: KEY, baseUrl: 'https://proxy.example/v1' }).ok, 'a
 /* ---------- credentialError: ONE sentence, real ways out ---------- */
 {
   const key = EC.credentialError({ id: 'openrouter', label: 'OpenRouter', kind: 'key', env: 'OPENROUTER_API_KEY', what: 'this scheduled routine' });
-  A.eq(key, 'no OpenRouter API key is saved on this station for this scheduled routine — connect or re-save it under SETTINGS → AI & MODELS, or set OPENROUTER_API_KEY in the environment that starts StarNet', 'the key sentence');
+  A.eq(key, 'no OpenRouter API key is saved on this station for this scheduled routine — connect or re-save it under SETTINGS → AI & MODELS, or set OPENROUTER_API_KEY in the environment that starts Vultron', 'the key sentence');
   A.ok(!/connect an? .+? api key\b/i.test(key), 'not the interactive "connect a X API key" shape the chat error ladder maps to "no key connected yet"');
   A.ok(/base URL/.test(EC.credentialError({ label: 'Custom', kind: 'baseUrl', baseUrlEnv: 'CUSTOM_OPENAI_BASE_URL' })) && /CUSTOM_OPENAI_BASE_URL/.test(EC.credentialError({ label: 'Custom', kind: 'baseUrl', baseUrlEnv: 'CUSTOM_OPENAI_BASE_URL' })), 'an endpoint provider names its base URL and env var');
   A.ok(/ChatGPT is not signed in/.test(EC.credentialError({ kind: 'codex' })), 'ChatGPT names the sign-in');
-  A.ok(/not linked to a StarNet account/.test(EC.credentialError({ kind: 'starnet' })), 'managed credits name the link');
-  for (const kind of ['key', 'baseUrl', 'codex', 'oauth', 'starnet', 'unpaired', 'other']) A.ok(EC.credentialError({ label: 'X', kind }).indexOf('SETTINGS → AI & MODELS') >= 0, kind + ' names the real settings page');
+  A.ok(/not linked to a Vultron account/.test(EC.credentialError({ kind: 'vultron' })), 'managed credits name the link');
+  for (const kind of ['key', 'baseUrl', 'codex', 'oauth', 'vultron', 'unpaired', 'other']) A.ok(EC.credentialError({ label: 'X', kind }).indexOf('SETTINGS → AI & MODELS') >= 0, kind + ' names the real settings page');
   // (credential-store lane, S7, decision 5) an env key with no endpoint: never "no base URL is saved" beside one that is
   const P3C = { id: 'custom', label: 'CUSTOM', kind: 'unpaired', env: 'CUSTOM_OPENAI_KEY', baseUrlEnv: 'CUSTOM_OPENAI_BASE_URL', what: 'this routine', keylessUrl: true };
-  A.eq(EC.credentialError(P3C), 'CUSTOM_OPENAI_KEY is set in the environment that starts StarNet, but no CUSTOM base URL goes with it: the URL saved under SETTINGS → AI & MODELS was saved without a key, and an environment key is never sent to a URL saved in the page. Save the key next to that URL in Settings, or set CUSTOM_OPENAI_BASE_URL.',
+  A.eq(EC.credentialError(P3C), 'CUSTOM_OPENAI_KEY is set in the environment that starts Vultron, but no CUSTOM base URL goes with it: the URL saved under SETTINGS → AI & MODELS was saved without a key, and an environment key is never sent to a URL saved in the page. Save the key next to that URL in Settings, or set CUSTOM_OPENAI_BASE_URL.',
     'P3c: the sentence names the env key as the half with no endpoint, why the saved URL is not its to use, and both exits (decision 5, word for word)');
-  A.eq(EC.credentialError(Object.assign({}, P3C, { keylessUrl: false })), 'CUSTOM_OPENAI_KEY is set in the environment that starts StarNet, but no CUSTOM base URL goes with it: set CUSTOM_OPENAI_BASE_URL, or save the key next to the URL under SETTINGS → AI & MODELS',
+  A.eq(EC.credentialError(Object.assign({}, P3C, { keylessUrl: false })), 'CUSTOM_OPENAI_KEY is set in the environment that starts Vultron, but no CUSTOM base URL goes with it: set CUSTOM_OPENAI_BASE_URL, or save the key next to the URL under SETTINGS → AI & MODELS',
     'no URL saved anywhere: the same head and both exits, never "set it under Settings" alone, which would lead to the state above');
   A.ok(!/undefined/.test(EC.credentialError({ label: 'X', kind: 'unpaired', env: 'X_KEY' })) && !/undefined/.test(EC.credentialError({ label: 'X', kind: 'unpaired', env: 'X_KEY', keylessUrl: true })),
     'a provider with no URL variable names only the exit it has');
@@ -277,7 +277,7 @@ A.ok(NR.bindingPhrase('no-provider').indexOf(EC.UNATTENDED_REMEDY) >= 0, 'nightr
     A.eq(hr({ key: KX, baseUrl: 'https://explicit.example/v1' }), { key: KX, baseUrl: 'https://explicit.example/v1' }, "a body's own endpoint still rides its own key");
   }
   // (review r3) a SUBSCRIPTION sign-in's OAuth bearer (ChatGPT, Grok, Kimi) never follows a per-run endpoint — an
-  // /api/run body's, a channel snapshot's — as the managed StarNet credential never does; the Commander's own still applies
+  // /api/run body's, a channel snapshot's — as the managed Vultron credential never does; the Commander's own still applies
   {
     PROFILES.codex = { authType: 'oauth_device_code', keyEnv: [], baseUrlEnv: [], baseUrl: '' };
     PROFILES.kimi = { authType: 'oauth_device_code', keyEnv: [], baseUrlEnv: ['KIMI_BASE_URL'], baseUrl: 'https://api.kimi.example/v1' };
@@ -447,8 +447,8 @@ A.ok(NR.bindingPhrase('no-provider').indexOf(EC.UNATTENDED_REMEDY) >= 0, 'nightr
     const keyless = { custom: { baseUrl: 'http://page-llm/v1', rev: 'r1' } };
     A.ok(/^CUSTOM_OPENAI_KEY is set in the environment/.test(said({ env: { CUSTOM_OPENAI_KEY: 'k' }, page: keyless })) && /was saved without a key/.test(said({ env: { CUSTOM_OPENAI_KEY: 'k' }, page: keyless })), 'P3c: the unpaired sentence, naming the keyless URL');
     A.ok(/^OPENAI_COMPATIBLE_KEY is set in the environment/.test(said({ env: { OPENAI_COMPATIBLE_KEY: 'k' } })) && !/saved without a key/.test(said({ env: { OPENAI_COMPATIBLE_KEY: 'k' } })), 'an env key with no URL anywhere: it names the variable the key is in, not the first of the provider\'s names');
-    A.ok(/^STARNET_CUSTOM_OPENAI_KEY is set in the environment/.test(said({ env: { STARNET_CUSTOM_OPENAI_KEY: 'k' } })), '...the branded spelling too');
-    A.eq(said({ env: {} }), 'no CUSTOM base URL is saved on this station for this routine — set it under SETTINGS → AI & MODELS, or set CUSTOM_OPENAI_BASE_URL in the environment that starts StarNet', 'no key at all: the sentence it always was: that is what is missing');
+    A.ok(/^VULTRON_CUSTOM_OPENAI_KEY is set in the environment/.test(said({ env: { VULTRON_CUSTOM_OPENAI_KEY: 'k' } })), '...the branded spelling too');
+    A.eq(said({ env: {} }), 'no CUSTOM base URL is saved on this station for this routine — set it under SETTINGS → AI & MODELS, or set CUSTOM_OPENAI_BASE_URL in the environment that starts Vultron', 'no key at all: the sentence it always was: that is what is missing');
     A.eq(said({ env: {}, page: { custom: { key: 'k', rev: 'r1' } } }), said({ env: {} }), 'a page key with no URL: the same, and saving the URL beside it pairs them');
     A.eq(said({ env: {}, kept: { on: true }, pushes: [['custom', { key: 'k' }]] }), said({ env: {} }), 'the desktop keychain\'s key with no endpoint: the same (#137): a URL saved in Settings is the keychain\'s own, and rides it');
   }

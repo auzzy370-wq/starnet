@@ -311,7 +311,7 @@ function startMockTelegram() {
 function boot(port, env, attemptsLeft) {
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, [INDEX], {
-      env: Object.assign({}, process.env, env, { SKYNET_PORT: String(port), STARNET_PORT: String(port) }),
+      env: Object.assign({}, process.env, env, { SKYNET_PORT: String(port), VULTRON_PORT: String(port) }),
       stdio: ['ignore', 'pipe', 'pipe']
     });
     let out = '', settled = false;
@@ -405,17 +405,17 @@ async function waitUntil(fn, ms, label) {
   ] }));
   const env = {
     SKYNET_WORKSPACES: ws,
-    STARNET_WORKSPACES: ws,
+    VULTRON_WORKSPACES: ws,
     SKYNET_OPENROUTER_BASE: llm.base,
-    STARNET_OPENROUTER_BASE: llm.base,
+    VULTRON_OPENROUTER_BASE: llm.base,
     SKYNET_OPENROUTER_KEY: 'sk-or-v1-telegram-fake',
-    STARNET_OPENROUTER_KEY: 'sk-or-v1-telegram-fake',
+    VULTRON_OPENROUTER_KEY: 'sk-or-v1-telegram-fake',
     SKYNET_DEFAULT_MODEL: 'test/model',
-    STARNET_DEFAULT_MODEL: 'test/model',
+    VULTRON_DEFAULT_MODEL: 'test/model',
     SKYNET_TELEGRAM_TOKEN: 'TESTTOKEN',
-    STARNET_TELEGRAM_TOKEN: 'TESTTOKEN',
+    VULTRON_TELEGRAM_TOKEN: 'TESTTOKEN',
     SKYNET_TELEGRAM_API_BASE: tg.base,
-    STARNET_TELEGRAM_API_BASE: tg.base
+    VULTRON_TELEGRAM_API_BASE: tg.base
   };
   const live = await boot(await allocatePort(), env, 20);
   let child = live.child;
@@ -444,7 +444,7 @@ async function waitUntil(fn, ms, label) {
     // before asking it to run anything.
     const pair = await (await fetch(B + '/api/channels/telegram/owner/pair', {
       method: 'POST',
-      headers: { 'X-StarNet-Token': token, Origin: B, 'Content-Type': 'application/json' },
+      headers: { 'X-Vultron-Token': token, Origin: B, 'Content-Type': 'application/json' },
       body: '{}'
     })).json();
     A.ok(pair && /^[-A-Z0-9]{11}$/.test(String(pair.code || '')), 'local owner pairing issued a one-time code');
@@ -453,13 +453,13 @@ async function waitUntil(fn, ms, label) {
 
     const channelFile = path.join(ws, 'channels', 'secrets.json');
     const stationBeforeMalformed = fs.existsSync(channelFile) ? fs.readFileSync(channelFile, 'utf8') : null;
-    const stationStatusBefore = await (await fetch(B + '/api/channels/telegram/status', { headers: { 'X-StarNet-Token': token, Origin: B } })).json();
+    const stationStatusBefore = await (await fetch(B + '/api/channels/telegram/status', { headers: { 'X-Vultron-Token': token, Origin: B } })).json();
     const stationBadDisconnect = await fetch(B + '/api/channels/telegram/disconnect', {
-      method: 'POST', headers: { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: B }, body: '{bad'
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: B }, body: '{bad'
     });
     A.eq(stationBadDisconnect.status, 400, 'malformed station Telegram disconnect -> 400');
     if (stationBeforeMalformed !== null) A.eq(fs.readFileSync(channelFile, 'utf8'), stationBeforeMalformed, 'malformed station disconnect leaves durable configuration byte-identical');
-    const stationStatus = await (await fetch(B + '/api/channels/telegram/status', { headers: { 'X-StarNet-Token': token, Origin: B } })).json();
+    const stationStatus = await (await fetch(B + '/api/channels/telegram/status', { headers: { 'X-Vultron-Token': token, Origin: B } })).json();
     A.eq(stationStatus.connected, stationStatusBefore.connected, 'malformed station disconnect does not change the connected flag');
     A.eq(stationStatus.state, stationStatusBefore.state, 'malformed station disconnect does not change the poll state');
     tg.pushText(4242, 99, 'research AI trend now');
@@ -478,11 +478,11 @@ async function waitUntil(fn, ms, label) {
 
     // the chat's FIRST exchange is filed under the chat's own stream (it used to land in the global catch-all, COMMS
     // General: a new chat had no record yet, and hub.js resolvedStreamId's guard read the missing record as a stream id)
-    const tr = await (await fetch(B + '/api/transcript?stream=channel_telegram_4242&agent=tg_4242&limit=20', { headers: { 'X-StarNet-Token': token, Origin: B } })).json();
+    const tr = await (await fetch(B + '/api/transcript?stream=channel_telegram_4242&agent=tg_4242&limit=20', { headers: { 'X-Vultron-Token': token, Origin: B } })).json();
     const turns = (tr && tr.turns) || [];
     A.ok(turns.some(t => t.role === 'user' && String(t.content || '').indexOf('research AI trend now') >= 0), 'transcript captured Telegram user turn');
     A.ok(turns.some(t => t.role === 'assistant' && String(t.content || '').indexOf('Telegram answer') >= 0), 'transcript captured Telegram assistant reply');
-    const gl = await (await fetch(B + '/api/transcript?stream=global&agent=tg_4242&limit=200', { headers: { 'X-StarNet-Token': token, Origin: B } })).json();
+    const gl = await (await fetch(B + '/api/transcript?stream=global&agent=tg_4242&limit=200', { headers: { 'X-Vultron-Token': token, Origin: B } })).json();
     A.ok(!((gl && gl.turns) || []).some(t => String(t.content || '').indexOf('research AI trend now') >= 0), 'and NOT under the global catch-all stream');
 
     // ---- authenticated owner DM: real agent shell execution + defined command execution ------------------
@@ -502,8 +502,8 @@ async function waitUntil(fn, ms, label) {
     A.ok(shellSystem.includes('[ORCHESTRATION]'), 'owner Telegram task receives the crew briefing for its advertised delegation tools');
     // the owner away from the station (self-driving lane 2): a pointer to manual.read — never the ~6K index, never nothing
     const Manual = require('../sidecar/manual.js');
-    A.ok(shellSystem.includes(Manual.starnetManualPointer()) && shellWire.indexOf('manual_read') >= 0, 'owner Telegram task gets the manual pointer, and manual_read is on its wire');
-    A.ok(!shellSystem.includes(Manual.starnetManualIndex()), 'owner Telegram task does NOT carry the inline manual index');
+    A.ok(shellSystem.includes(Manual.vultronManualPointer()) && shellWire.indexOf('manual_read') >= 0, 'owner Telegram task gets the manual pointer, and manual_read is on its wire');
+    A.ok(!shellSystem.includes(Manual.vultronManualIndex()), 'owner Telegram task does NOT carry the inline manual index');
     const shellToolMessages = shellReqs.flatMap(r => (r.messages || []).filter(m => m && m.role === 'tool'));
     A.ok(shellToolMessages.some(m => /TELEGRAM_SHELL_OK/.test(JSON.stringify(m))),
       'the shell output returns through the real tool loop before the agent replies: ' + JSON.stringify(shellToolMessages));
@@ -512,7 +512,7 @@ async function waitUntil(fn, ms, label) {
     // This precedes parityRoster; use the existing local paired owner, real brief and real dispatcher.
     {
       const chat = 4247, agentId = 'tg_' + chat;
-      const headers = { 'X-StarNet-Token': token, Origin: B };
+      const headers = { 'X-Vultron-Token': token, Origin: B };
       const initial = await (await fetch(B + '/api/runtime/agent', { headers })).json();
       A.eq(initial.agents, [], 'crewless Telegram begins with no saved crew');
       const requestFrom = llm.requests.length, eventFrom = sse.events.length, sendFrom = tg.sends.length;
@@ -574,7 +574,7 @@ async function waitUntil(fn, ms, label) {
 
     // Same named lead and specialist through desktop and owner Telegram; a wire tool
     // alone is not proof that the worker ran or that its result reached the parent.
-    const parityHeaders = () => ({ 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: B });
+    const parityHeaders = () => ({ 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: B });
     const parityRoster = await fetch(B + '/api/roster', { method: 'POST', headers: parityHeaders(), body: JSON.stringify({ agents: [
       { agentId: 'parity_lead', system: 'Lead parity crew', name: 'Parity Lead', model: 'test/model' },
       { agentId: 'parity_worker', system: 'Return the requested marker.', name: 'Parity Worker', model: 'test/model' }
@@ -671,7 +671,7 @@ async function waitUntil(fn, ms, label) {
     await waitUntil(() => tg.sends.some(s => String(s.chat_id) === '7778'), 8000, '/start reply');
     const startReply = rendered((tg.sends.find(s => String(s.chat_id) === '7778') || {}).text);
     A.eq(llm.requests.length, llmBeforeStart, '/start is answered by the hub without spending a model turn');
-    A.ok(/STARNET online/.test(startReply), '/start greets the newcomer instead of answering "/start" as a question');
+    A.ok(/VULTRON online/.test(startReply), '/start greets the newcomer instead of answering "/start" as a question');
     A.ok(/\/help/.test(startReply), '/start tells a first-time member what they can actually say');
 
     /* ---- /approvals ON must not COST the agent its office --------------------------------------------------
@@ -734,7 +734,7 @@ async function waitUntil(fn, ms, label) {
     // HOLD it in-flight via the mock gate, prove the snapshot lists it (attributed + sourced 'telegram'), then
     // release and prove it's gone once the run ends — exactly tracking the hub's inflight lifecycle. ----
     const snapshot = async () => {
-      const r = await fetch(B + '/api/state/snapshot', { headers: { 'X-StarNet-Token': token, Origin: B } });
+      const r = await fetch(B + '/api/state/snapshot', { headers: { 'X-Vultron-Token': token, Origin: B } });
       A.eq(r.status, 200, 'GET /api/state/snapshot -> 200');
       return r.json();
     };
@@ -865,7 +865,7 @@ async function waitUntil(fn, ms, label) {
     const pollsBeforeRestart = tg.calls.filter(c => c.method === 'getUpdates').length;
     const restartEnv = Object.assign({}, env);
     delete restartEnv.SKYNET_TELEGRAM_TOKEN;
-    delete restartEnv.STARNET_TELEGRAM_TOKEN;
+    delete restartEnv.VULTRON_TELEGRAM_TOKEN;
     // Concurrent suites can claim the old address during shutdown. This proves
     // credential persistence in the same workspace, independently of its HTTP port.
     const restarted = await boot(await allocatePort(), restartEnv, 20);
@@ -878,14 +878,14 @@ async function waitUntil(fn, ms, label) {
     let restartStatusSeen = null;
     try {
       await waitUntil(async () => {
-        restartStatusSeen = await (await fetch(B + '/api/channels/telegram/status', { headers: { 'X-StarNet-Token': token, Origin: B } })).json();
+        restartStatusSeen = await (await fetch(B + '/api/channels/telegram/status', { headers: { 'X-Vultron-Token': token, Origin: B } })).json();
         return restartStatusSeen && restartStatusSeen.connected === true && restartStatusSeen.state === 'up';
       }, 7000, 'saved Telegram status up after restart');
     } catch (e) {
       e.message += ': ' + JSON.stringify(restartStatusSeen);
       throw e;
     }
-    const restartedStatus = await (await fetch(B + '/api/channels/telegram/status', { headers: { 'X-StarNet-Token': token, Origin: B } })).json();
+    const restartedStatus = await (await fetch(B + '/api/channels/telegram/status', { headers: { 'X-Vultron-Token': token, Origin: B } })).json();
     A.eq(restartedStatus.configured, true, 'restart resolves the saved Telegram token without user input');
     A.eq(restartedStatus.durable, true, 'restart reports the saved Telegram token has a durable home');
     await telegramParity('owner Telegram after restart');
@@ -898,7 +898,7 @@ async function waitUntil(fn, ms, label) {
        told "1 of 1 known chat(s) reachable now" — and channel.send's own honest refusal was unreachable.
        Driven over /api/run because channel.targets has no HTTP surface of its own. */
     {
-      const headers = { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: B };
+      const headers = { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: B };
       const runTargets = async () => {
         const res = await fetch(B + '/api/run', {
           method: 'POST', headers,

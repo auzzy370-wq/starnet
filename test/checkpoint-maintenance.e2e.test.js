@@ -6,7 +6,7 @@ const {spawnSync}=require('node:child_process');
 const {SidecarFixture}=require('./helpers/sidecar-fixture.js');
 const fixture=SidecarFixture.create({entry:path.resolve(__dirname,'../dev/seed.js'),timeoutMs:60000,
   env:{SKYNET_DEFAULT_MODEL:'checkpoint-local-fixture',SKYNET_OPENROUTER_KEY:'',OPENROUTER_KEY:'',OPENROUTER_API_KEY:'',
-    STARNET_CHECKPOINT_MAX_BYTES:String(96*1024)}});
+    VULTRON_CHECKPOINT_MAX_BYTES:String(96*1024)}});
 fixture.args=['--keep','--workspace',fixture.workspace];
 function killOwnedLauncher(){if(process.platform==='win32'&&fixture.child&&fixture.child.exitCode===null)spawnSync('taskkill',['/pid',String(fixture.child.pid),'/t','/f'],{windowsHide:true,stdio:'ignore'});}
 (async()=>{try{

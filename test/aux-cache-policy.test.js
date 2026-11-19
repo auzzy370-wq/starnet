@@ -14,7 +14,7 @@ const plain = value => {
   return value;
 };
 (async () => {
-  for (const route of ['anthropic', 'openrouter', 'starnet']) {
+  for (const route of ['anthropic', 'openrouter', 'vultron']) {
     const bodies = [];
     const provider = selectProvider({ provider: route, key: 'fixture', baseUrl: 'http://127.0.0.1:9/v1', fetch: async (url, init) => {
       if (!init?.body) return new Response('{"data":[]}', { headers: { 'Content-Type': 'application/json' } });

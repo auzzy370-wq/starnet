@@ -646,7 +646,7 @@
   }
 
   /* CHAT WIRE KEYS (2026-10-07, user report: Mistral 422 "extra_forbidden" on messages[1].user.streamId).
-     The transcript a run replays is COMMS's own rows — they carry StarNet bookkeeping (ts, streamId, agentId,
+     The transcript a run replays is COMMS's own rows — they carry Vultron bookkeeping (ts, streamId, agentId,
      sourceRunId, error, stopped, attachments, the loop's `reasoning` parking field). Lenient endpoints (OpenAI)
      ignore unknown message keys; strict ones (Mistral's pydantic schema) reject the WHOLE request, so every run
      failed — even the first message of a new chat. Project each message onto the Chat Completions message keys
@@ -670,11 +670,11 @@
     return changed ? out : messages;
   }
 
-  /* IMAGES ONLY TO A MODEL THAT CAN SEE THEM (2026-10-23, StarNet Cloud proxy logs: 14 managed completions refused by
+  /* IMAGES ONLY TO A MODEL THAT CAN SEE THEM (2026-10-23, Vultron Cloud proxy logs: 14 managed completions refused by
      OpenRouter with 404 "No endpoints found that support image input"). A COMMS photo, a channel photo or a browser
      screenshot rode to a text-only model, and since the image stays in the conversation every later turn failed the
      same way. imageInputOf(row) reads a catalog row: an explicit boolean supportsImages, else OpenRouter's
-     architecture.input_modalities (the StarNet Cloud /v1/models relays it verbatim), else its older `modality` string
+     architecture.input_modalities (the Vultron Cloud /v1/models relays it verbatim), else its older `modality` string
      ("text+image->text"). true/false only when the catalog SAYS; null when it says nothing — and an adapter strips
      images only on false, so a model of unknown capability is sent exactly what it was before. */
   function imageInputOf(row) {
@@ -702,7 +702,7 @@
      file and the path; untagged images (a screenshot, an image tool result) share one note per run that offers the
      image-analysis route only for a saved file the conversation itself names. */
   const IMAGE_PART_TYPES = { image_url: 1, input_image: 1, image: 1 };
-  const IMAGE_SOURCE = Symbol.for('starnet.imageSource');
+  const IMAGE_SOURCE = Symbol.for('vultron.imageSource');
   function tagImageSource(part, source) {
     if (!part || typeof part !== 'object' || !source || typeof source !== 'object') return part;
     const path = String(source.path || '').trim();
@@ -1153,14 +1153,14 @@
     return nativeRoles(messages);
   }
 
-  /* BATCH-ONLY VARIANTS (fix 2026-10-23). OpenRouter's /models, and the StarNet managed catalog that passes it through,
+  /* BATCH-ONLY VARIANTS (fix 2026-10-23). OpenRouter's /models, and the Vultron managed catalog that passes it through,
      lists '<id>:batch' rows (75 of 468 on 2026-10-23, every one beside its '<id>' row, at half its price) that only a
      batch adapter serves: chat/completions answers 404 "<id>:batch cannot be used with the chat/completions endpoint".
-     Every StarNet turn runs on chat/completions, so such a row is never offered, and an id an older build let a user
+     Every Vultron turn runs on chat/completions, so such a row is never offered, and an id an older build let a user
      save runs on its base model (the variant suffix is a routing option on that model, as gemini.js routedToNative
      reads ':free'). The catalog marks batch rows by the suffix alone. Scoped to the providers whose catalog is
      OpenRouter's: elsewhere 'name:tag' is a local model tag (Ollama). Callers pass a normalized provider id. */
-  const OPENROUTER_CATALOG_PROVIDERS = ['openrouter', 'starnet'];
+  const OPENROUTER_CATALOG_PROVIDERS = ['openrouter', 'vultron'];
   const BATCH_VARIANT = /:batch$/i;
   function isBatchOnlyModel(providerId, model) {
     return OPENROUTER_CATALOG_PROVIDERS.indexOf(String(providerId || '').trim().toLowerCase()) >= 0

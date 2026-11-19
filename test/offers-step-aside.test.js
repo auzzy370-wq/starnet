@@ -105,7 +105,7 @@ const PITCH = 'PITCH: a custom invoice sorter\nWHY: you do it by hand\nBUILD: wo
 
   /* ---------- the routine proposals ---------- */
   const TWO = ['JOB: Standup draft', 'WHY: kills the standup pain', 'GROUNDS: manual standups', 'CADENCE: morning', 'RUN: Draft the standup from what you know.',
-    '', 'JOB: Ship nudge', 'WHY: advances the goal', 'GROUNDS: ship StarNet', 'CADENCE: weekly', 'RUN: Draft the next ship step.'].join('\n');
+    '', 'JOB: Ship nudge', 'WHY: advances the goal', 'GROUNDS: ship Vultron', 'CADENCE: weekly', 'RUN: Draft the next ship step.'].join('\n');
   function jobsRig(o) {
     o = o || {};
     const model = slowModel(), store = memStore(), scheduled = [], ledger = [], lines = [];
@@ -118,7 +118,7 @@ const PITCH = 'PITCH: a custom invoice sorter\nWHY: you do it by hand\nBUILD: wo
     });
     const AutoJobStore = vm.runInContext('AutoJobStore', s.ctx);
     AutoJobStore.init({ getSystem: () => 'SYS', getName: () => 'NOVA', readiness: () => ({ ready: true, reasons: [] }),
-      getBeliefs: () => ({ goals: ['ship StarNet'], pain: ['manual standups'] }), getExistingJobs: () => Promise.resolve([]),
+      getBeliefs: () => ({ goals: ['ship Vultron'], pain: ['manual standups'] }), getExistingJobs: () => Promise.resolve([]),
       scheduleJob: b => { scheduled.push(b); return Promise.resolve({ ok: true }); }, boardPlaced: () => false, schedulerArmed: () => (o.armed === undefined ? true : o.armed) });
     return { s, model, AutoJobStore, scheduled, ledger, store, bus, lines };
   }
@@ -215,10 +215,10 @@ const PITCH = 'PITCH: a custom invoice sorter\nWHY: you do it by hand\nBUILD: wo
     A.ok(parts.every(x => x.length > 0) && parts[0].length < 5000, 'onboarding.js offerDeferred and its IOU helpers sliced');
     const rigD = () => {
       const store = memStore(), nudges = [];
-      store.mem['starnet.interview.deferred.v1'] = '1';
+      store.mem['vultron.interview.deferred.v1'] = '1';
       const s = station({ globals: { localStorage: store.ls, Chat: { nudge: (text, opts, cb) => nudges.push(cb), isBusy: () => false } } });
       vm.runInContext([
-        "var DEFER_KEY = 'starnet.interview.deferred.v1', running = false, docs = null, commit = null, notifyFn = null, getSystem = null, NAME = 'NOVA', persona = null, specialty = null, role = null, steps = [], i = 0, beatN = 0, beatTotal = 0, meetingLog = [];",
+        "var DEFER_KEY = 'vultron.interview.deferred.v1', running = false, docs = null, commit = null, notifyFn = null, getSystem = null, NAME = 'NOVA', persona = null, specialty = null, role = null, steps = [], i = 0, beatN = 0, beatTotal = 0, meetingLog = [];",
         'function brainReady() { return true; } function buildSteps() { return []; }',
         // the meeting the awakening uses, cut down to its shape: a latency line, then questions, standing down when running ends
         "async function runLeadMeeting() { await Dialogue.say('let’s fill in the picture.', { auto: true }); if (!running) return; meetingLog.push('asked'); const a = await Dialogue.node({ lines: 'a few questions, or a deeper conversation?', options: [{ label: 'A short conversation', value: 'loose' }] }); if (!running) return; meetingLog.push('answered:' + a.value); }"
@@ -227,7 +227,7 @@ const PITCH = 'PITCH: a custom invoice sorter\nWHY: you do it by hand\nBUILD: wo
     };
     const accept = async t => {
       A.eq(vm.runInContext('offerDeferred({})', t.s.ctx), true, 'a returning station with a live brain is offered the deferred interview');
-      A.eq(t.store.mem['starnet.interview.deferred.v1'], undefined, 'the IOU is spent on offer, as before');
+      A.eq(t.store.mem['vultron.interview.deferred.v1'], undefined, 'the IOU is spent on offer, as before');
       const done = t.nudges[0]({ value: 'go' });
       await wait(320); await settle();
       return { done };   // wrapped: an async function returning a promise would adopt it and wait for the interview to end
@@ -243,7 +243,7 @@ const PITCH = 'PITCH: a custom invoice sorter\nWHY: you do it by hand\nBUILD: wo
       await Promise.race([done, wait(200)]); await settle();
       A.eq(t.s.D.isOpen(), false, 'the panel is gone');
       A.eq(t.run(), false, 'the meeting stands down: Onboarding is no longer running (nothing else stays blocked behind it)');
-      A.eq(t.store.mem['starnet.interview.deferred.v1'], '1', 'unanswered, never declined: the IOU is re-armed for a later boot');
+      A.eq(t.store.mem['vultron.interview.deferred.v1'], '1', 'unanswered, never declined: the IOU is re-armed for a later boot');
       A.eq(t.log(), ['asked'], 'and nothing was answered for the Commander');
     }
     {
@@ -261,7 +261,7 @@ const PITCH = 'PITCH: a custom invoice sorter\nWHY: you do it by hand\nBUILD: wo
       await Promise.race([done, wait(200)]); await settle();
       A.eq(t.s.D.isOpen(), false, 'Esc closes it');
       A.eq(t.run(), false, 'and the meeting stands down');
-      A.eq(t.store.mem['starnet.interview.deferred.v1'], undefined, 'the Commander left it: the IOU stays spent (declining is answering)');
+      A.eq(t.store.mem['vultron.interview.deferred.v1'], undefined, 'the Commander left it: the IOU stays spent (declining is answering)');
     }
   }
 

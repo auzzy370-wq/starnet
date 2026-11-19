@@ -179,7 +179,7 @@
     return out.length ? out : null;
   }
   /* PROMPT-CACHE ROUTING (2026-10-17, token-burn audit). The Codex backend serves a cached prefix only to a request
-     that names a cache route. Measured live, 4 identical-prefix calls of a 21k-token StarNet request on gpt-5.6-sol:
+     that names a cache route. Measured live, 4 identical-prefix calls of a 21k-token Vultron request on gpt-5.6-sol:
        no route ............................. 0 cached tokens on every call
        body prompt_cache_key only ........... 0 cached on every call (this backend ignores it)
        session_id header only ............... 20,864 of 21,046 (99%) from call 2

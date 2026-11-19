@@ -19,7 +19,7 @@
   'use strict';
 
   const JSONRPC = '2.0';
-  const LOCAL_ERROR = Symbol.for('starnet.mcp.localTransportError');   // read by client.js safeRpcError
+  const LOCAL_ERROR = Symbol.for('vultron.mcp.localTransportError');   // read by client.js safeRpcError
   // the longest one unfinished SSE event may grow before the stream is closed (the stdio transport's line cap)
   const MAX_EVENT_CHARS = 64 * 1024 * 1024;
   // what each kept line or chunk piece of an open event is charged on top of its characters: about what V8 spends

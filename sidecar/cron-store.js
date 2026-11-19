@@ -725,7 +725,7 @@
       const receipt = { runId: runId, outcome: 'interrupted', failureCode: null, reason: 'interrupted' };
       return Object.assign({}, job, { lastRunId: runId, lastRunAt: iso(startedAt), lastStatus: 'error', lastReason: 'interrupted',
         lastOutcome: 'interrupted', lastFailureCode: null, lastFire: receipt, fireReceipts: withFireReceipt(job, receipt),
-        lastError: String(info.error || 'interrupted: StarNet stopped before this run finished'), state: job.enabled === false ? job.state : 'error' });
+        lastError: String(info.error || 'interrupted: Vultron stopped before this run finished'), state: job.enabled === false ? job.state : 'error' });
     });
   }
 

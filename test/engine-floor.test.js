@@ -3,7 +3,7 @@
    THE HOLE THIS CLOSES (gh#136, qa/bugs/5308fc67, email E12): the floor was declared three ways and they disagreed.
    tauri.conf.json promised macOS 11.0; bootguard.js called any engine without regex lookbehind TOO OLD ("needs Safari
    16.4+"), so on a healthy Safari 16.0 Mac every copied report said "web engine: TOO OLD" and one missing non-critical
-   file rendered "STARNET NEEDS A NEWER macOS" with RELOAD hidden instead of naming the file; and the syntax ratchet
+   file rendered "VULTRON NEEDS A NEWER macOS" with RELOAD hidden instead of naming the file; and the syntax ratchet
    banned 16.4 syntax precisely so that engines BELOW 16.4 could parse the page.
 
    Laws:
@@ -126,7 +126,7 @@ function textOf(el) { return (el.textContent || '') + el.children.map(textOf).jo
   if (table) {
     // the floor engine itself: every API newer than the floor deleted by the WebKit floor shim
     const atFloor = engine();
-    const shim = atFloor.sandbox.__STARNET_FLOOR_SHIM__;
+    const shim = atFloor.sandbox.__VULTRON_FLOOR_SHIM__;
     A.eq(shim && shim.removed.slice().sort(), floor.postFloorApis(table).map(f => f.id).sort(), 'F3: the floor shim deletes every table API newer than the floor');
     A.eq(shim && [shim.kept, shim.absent], [[], []], 'F3: and keeps none of them');
     atFloor.ready();
@@ -165,7 +165,7 @@ function textOf(el) { return (el.textContent || '') + el.children.map(textOf).jo
   const main = stageSrc.slice(stageSrc.indexOf('if (isMain)'));
   A.ok(/assertEngineFloor\(\{ root: ROOT \}\)/.test(main) && main.indexOf('assertEngineFloor(') < main.lastIndexOf('stage();'), 'F5: the staging entry checks the floor before it stages');
   if (floor && table) {
-    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-engine-floor-'));
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-engine-floor-'));
     try {
       const put = (rel, text) => { fs.mkdirSync(path.dirname(path.join(tmp, rel)), { recursive: true }); fs.writeFileSync(path.join(tmp, rel), text); };
       const conf = JSON.stringify(tauri, null, 2);

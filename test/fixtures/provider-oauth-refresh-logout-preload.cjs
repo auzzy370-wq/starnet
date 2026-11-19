@@ -16,7 +16,7 @@ globalThis.fetch = async function (raw, options) {
     return json(200, { device_code: 'DC_NEWSIGNIN', user_code: 'NEW-SIGN', verification_uri: 'https://auth.example.test/verify', interval: 5, expires_in: 600 });
   }
   if (!/\/oauth2?\/token$|\/api\/oauth\/token$/.test(u.pathname)) return json(503, { error: 'offline test fixture' });
-  const root = process.env.STARNET_WORKSPACES;
+  const root = process.env.VULTRON_WORKSPACES;
   const body = String((options && options.body) || '');
   if (/device_code/.test(body)) return json(200, { access_token: 'NEWSIGNIN_ACCESS', refresh_token: 'R_NEWSIGNIN', token_type: 'Bearer', expires_in: 3600 });
   let rt = '';

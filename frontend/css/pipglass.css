@@ -1,7 +1,7 @@
 /* PIP-GLASS (Andrew 10-01). "a fallout pip boy 3000 style … it needs that glassiness, with the pip boy aesthetic",
    then "still too smooth … more like that black mirror bandersnatch, fallout pip boy, ascii matrix vibe".
    The panels stay translucent glass; what was SMOOTH (soft gradients, wide blur glows, big round corners) gives
-   way to StarNet's own retro vocabulary — the world's 2026-09-03 "90s Bandersnatch" CRT pass and the ASCII kit:
+   way to Vultron's own retro vocabulary — the world's 2026-09-03 "90s Bandersnatch" CRT pass and the ASCII kit:
      · BANDERSNATCH FRINGE — a faint red / blue split on the phosphor type, the world's colour bleed on the glass
      · DITHER, NOT GRADIENT — a lit row / open tab is a 1px ordered-dither ▒ field with a crisp 1px edge
      · CRISP — 4px corners, 1px lines, small tight glows; a curved-glass sheen + tube vignette on each panel
@@ -521,7 +521,7 @@ body.glass-demo:not(.hud-mode) #chat-panel .receipts .receipt-items { margin-top
 body.glass-demo:not(.hud-mode) #chat-panel .receipts .receipt-items[hidden] { display: none; }
 
 /* ============================================================
-   UI SWEEP (Andrew 10-02: "so many flaws … tiny little areas that havent been improved in ages … sweep starnet UI
+   UI SWEEP (Andrew 10-02: "so many flaws … tiny little areas that havent been improved in ages … sweep vultron UI
    to find any areas that are extremely old and not up to date with the new style, also change the HUD button").
    ============================================================ */
 /* HUD key: a square glass icon key like the idbar's + / globe keys — a picture-in-picture glyph (a small window riding
@@ -2151,7 +2151,7 @@ body.glass-demo:not(.hud-mode) #screen-game #chat-panel > h3 { background: linea
 body.glass-demo:not(.hud-mode) #screen-game #bottombar > .bb-group:is([data-group="crew"], [data-group="system"]) { background: none; }
 
 /* ============================================================
-   THE RAIL'S TYPE GRID (Andrew 10-27: the session text looked cheap, and "it needs to be starnet style text" — VT323, set
+   THE RAIL'S TYPE GRID (Andrew 10-27: the session text looked cheap, and "it needs to be vultron style text" — VT323, set
    right). VT323 is drawn on a 25px pixel grid, 0.4em a letter. Set where its letters fall between device pixels — 17px at
    TEXT SIZE 90 is 15.3 — every stroke smears and each letter lands on a different fraction of a pixel. The rail's text is
    set where the face draws clean instead: its device size on the 2.5px ladder (17.5, 20, 22.5, 25 …), so every letter is a

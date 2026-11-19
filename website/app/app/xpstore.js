@@ -1,4 +1,4 @@
-/* STARNET — xpstore.js : the live wiring that turns REAL harness events into agent + station growth.
+/* VULTRON — xpstore.js : the live wiring that turns REAL harness events into agent + station growth.
 
    Subscribes (read-only) to the U.bus event spine — every harness event is already re-emitted there
    by harness.js — runs each outcome through the pure Xp engine, mutates the persisted agent.stats and
@@ -15,7 +15,7 @@ const XpStore = (() => {
   let credentialFn = () => {};   // S3: fired ONLY when an agent's coarse track record actually changes
   let wired = false;
   let generation = 0;          // an async reply from a previous station must never credit its replacement
-  // RATING CATCH-UP RETRY (starnet-releases#4 Blocker 2). The save's watermark (station.ratingSyncAt) advances only on a
+  // RATING CATCH-UP RETRY (vultron-releases#4 Blocker 2). The save's watermark (station.ratingSyncAt) advances only on a
   // complete rating sync, and the sidecar refuses every save whose watermark trails the ledger. A sync that failed once
   // (one refused GET at boot, or the history read after a new rating) waited for the next boot, and until then no save
   // could land. A failed catch-up now retries on a growing backoff while this station is live.

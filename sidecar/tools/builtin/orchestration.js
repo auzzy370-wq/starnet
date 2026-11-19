@@ -110,7 +110,7 @@
   const BUILDER_KIT = [{ instanceId: 'builder_lent', objectType: 'builder' }];
   const kitFor = lent => (lent ? WORKER_KIT.concat(BUILDER_KIT) : WORKER_KIT);
   const canLendBuilder = ctx => { try { const r = ctx && typeof ctx.canUse === 'function' ? ctx.canUse({ name: 'station.build' }) : null; return !!(r && r.ok); } catch (_) { return false; } };
-  /* A BOUND IS THE LEAD'S CALL (starnet-releases#5). bounded:true on a team.dispatch worker or a team.spawn task holds
+  /* A BOUND IS THE LEAD'S CALL (vultron-releases#5). bounded:true on a team.dispatch worker or a team.spawn task holds
      that one worker to a quick one-page read: DomainTask's WORKER_MAX_ITERS turns and WORKER_MAX_TOOLS tool calls, plus
      WORKER_MAX_MS of wall clock on dispatch (spawn and resume never had a clock). The brief's wording never bounds
      anyone: the dispatcher used to classify each brief and cut every one-host "read" to 3 turns / 3 tools / 45s unasked,
@@ -127,7 +127,7 @@
     const b = boundOf({ bounded: true }) || {};
     return { type: 'boolean', description: 'One-page read: ' + b.maxIters + ' turns, ' + b.maxTools + ' tool calls' + (clock ? ', ' + Math.round(b.maxMs / 1000) + 's' : '') + '.' };
   };
-  /* A SCOPE IS THE LEAD'S CALL TOO (gh#58, starnet-releases#5). onlyHost on a team.dispatch worker or a team.spawn task
+  /* A SCOPE IS THE LEAD'S CALL TOO (gh#58, vultron-releases#5). onlyHost on a team.dispatch worker or a team.spawn task
      confines that one worker's web reach to one host (DomainTask.scopeOf): the run host keeps web_search and delegation
      off it, refuses other hosts and stops its tools on proven NXDOMAIN for that host. The normalized host rides the row,
      the start handle and the subagent record, so team.resume re-applies it. A value that is not a host refuses that job
@@ -1423,7 +1423,7 @@
               settle(r); return { status: 'error', reason: r.reason, result: r.result, usd: r.usd, taintedBy: r.taintedBy || '' };
             }
             if (!result) {
-              const r = { label, agentId: ephemeralId, reason: 'refused', result: 'subagent could not start — the concurrency cap (STARNET_MAX_CONCURRENT_AGENTS) is full or a sign-in is needed. Try fewer at once.', usd: 0 };
+              const r = { label, agentId: ephemeralId, reason: 'refused', result: 'subagent could not start — the concurrency cap (VULTRON_MAX_CONCURRENT_AGENTS) is full or a sign-in is needed. Try fewer at once.', usd: 0 };
               settle(r); return { status: 'error', reason: 'refused', result: r.result, usd: 0 };
             }
             const firstText = lastAssistant(result.messages) || '(the subagent returned no text)';

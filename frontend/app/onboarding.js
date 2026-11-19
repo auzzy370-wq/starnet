@@ -1,4 +1,4 @@
-/* STARNET — onboarding.js : THE AWAKENING (the first-meeting), master cut.
+/* VULTRON — onboarding.js : THE AWAKENING (the first-meeting), master cut.
 
    A breathtaking, witnessed birth. Your agent catches fire in the dark and finds its first dry, quick
    words in front of you; THE FLOOD then pours every page it knows into its mind — overwhelming, then
@@ -1032,7 +1032,7 @@ const Onboarding = (() => {
      or an ask reaches them it steps aside, unanswered — the meeting stands down (as stop() makes it) and the IOU is re-armed, so a
      later boot offers it again. Esc is its "not now": the Commander left it, so the IOU stays spent. Answers already given are kept.
      Before this it opened as the awakening's ceremony and held all three over COMMS (the gh#158 shape). */
-  const DEFER_KEY = 'starnet.interview.deferred.v1';
+  const DEFER_KEY = 'vultron.interview.deferred.v1';
   function setDeferred() { try { localStorage.setItem(DEFER_KEY, '1'); } catch (_) {} }
   function deferredPending() { try { return localStorage.getItem(DEFER_KEY) === '1'; } catch (_) { return false; } }
   function clearDeferred() { try { localStorage.removeItem(DEFER_KEY); } catch (_) {} }

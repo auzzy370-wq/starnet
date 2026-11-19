@@ -23,35 +23,35 @@ let n = 0;
 const ok = (value, message) => { assert.ok(value, message); n++; };
 const eq = (actual, expected, message) => { assert.deepStrictEqual(actual, expected, message); n++; };
 
-const SAVE = JSON.stringify({ schema: 'starnet.save', version: 8, agent: { id: 'agent', name: 'NOVA' } });
+const SAVE = JSON.stringify({ schema: 'vultron.save', version: 8, agent: { id: 'agent', name: 'NOVA' } });
 const SECRET_ROWS = {
-  'starnet.byok.key': 'QA_BYOK_KEY',
-  'starnet.byok.key.openrouter': 'QA_SCOPED_BYOK_KEY',
-  'starnet.byok.baseUrl.openrouter': 'https://u:QA_BASEURL_PASSWORD@example.test/v1?token=QA_URL_TOKEN',
-  'starnet.provider.openai.apiKey': 'QA_PROVIDER_API_KEY',
-  'starnet.providers.anthropic.key': 'QA_PROVIDER_KEY',
-  'starnet.channel.discord.bot_token': 'QA_CHANNEL_TOKEN',
-  'starnet.channels.telegram.credential': 'QA_CHANNEL_CREDENTIAL',
-  'starnet.oauth.github.refresh_token': 'QA_OAUTH_TOKEN',
-  'starnet.auth.session.token': 'QA_AUTH_TOKEN',
-  'starnet.credentials.v1': 'QA_CREDENTIAL_BLOB',
-  'starnet.secret.future': 'QA_FUTURE_SECRET'
+  'vultron.byok.key': 'QA_BYOK_KEY',
+  'vultron.byok.key.openrouter': 'QA_SCOPED_BYOK_KEY',
+  'vultron.byok.baseUrl.openrouter': 'https://u:QA_BASEURL_PASSWORD@example.test/v1?token=QA_URL_TOKEN',
+  'vultron.provider.openai.apiKey': 'QA_PROVIDER_API_KEY',
+  'vultron.providers.anthropic.key': 'QA_PROVIDER_KEY',
+  'vultron.channel.discord.bot_token': 'QA_CHANNEL_TOKEN',
+  'vultron.channels.telegram.credential': 'QA_CHANNEL_CREDENTIAL',
+  'vultron.oauth.github.refresh_token': 'QA_OAUTH_TOKEN',
+  'vultron.auth.session.token': 'QA_AUTH_TOKEN',
+  'vultron.credentials.v1': 'QA_CREDENTIAL_BLOB',
+  'vultron.secret.future': 'QA_FUTURE_SECRET'
 };
 
 (async () => {
-  localStorage.setItem('starnet.save', SAVE);
-  localStorage.setItem('starnet.station.v1', JSON.stringify({ theme: 'amber', crt: true }));
-  localStorage.setItem('starnet.byok.model', 'openai/gpt-safe-model-name');
-  localStorage.setItem('starnet.byok.prov', 'openrouter');
+  localStorage.setItem('vultron.save', SAVE);
+  localStorage.setItem('vultron.station.v1', JSON.stringify({ theme: 'amber', crt: true }));
+  localStorage.setItem('vultron.byok.model', 'openai/gpt-safe-model-name');
+  localStorage.setItem('vultron.byok.prov', 'openrouter');
   for (const [key, value] of Object.entries(SECRET_ROWS)) localStorage.setItem(key, value);
   global.Harness = { notebook: async () => [{ id: 'm1', title: 'safe memory', body: 'remember the launch checklist' }] };
 
   const bundle = await Backup.build();
   const bytes = JSON.stringify(bundle);
   eq(bundle.secretsIncluded, false, 'portable bundle explicitly declares that secrets are excluded');
-  eq(bundle.store['starnet.save'], SAVE, 'agent save survives export');
-  eq(JSON.parse(bundle.store['starnet.station.v1']).theme, 'amber', 'station settings survive export');
-  eq(bundle.store['starnet.byok.model'], 'openai/gpt-safe-model-name', 'nonsecret model selection survives export');
+  eq(bundle.store['vultron.save'], SAVE, 'agent save survives export');
+  eq(JSON.parse(bundle.store['vultron.station.v1']).theme, 'amber', 'station settings survive export');
+  eq(bundle.store['vultron.byok.model'], 'openai/gpt-safe-model-name', 'nonsecret model selection survives export');
   eq(bundle.notebook[0].title, 'safe memory', 'nonsecret memory survives export');
   for (const [key, sentinel] of Object.entries(SECRET_ROWS)) {
     ok(!Object.prototype.hasOwnProperty.call(bundle.store, key), 'credential storage record excluded: ' + key);
@@ -61,19 +61,19 @@ const SECRET_ROWS = {
   // Import is backward-compatible with a v1/legacy envelope, but its contents are untrusted. Preserve an existing
   // local key and ignore every incoming credential family while restoring safe records.
   localStorage.clear();
-  localStorage.setItem('starnet.byok.key.openrouter', 'CURRENT_MACHINE_KEY');
+  localStorage.setItem('vultron.byok.key.openrouter', 'CURRENT_MACHINE_KEY');
   const legacyStore = Object.assign({
-    'skynet.save': JSON.stringify({ schema: 'starnet.save', version: 8, agent: { id: 'agent', name: 'RESTORED' } }),
+    'skynet.save': JSON.stringify({ schema: 'vultron.save', version: 8, agent: { id: 'agent', name: 'RESTORED' } }),
     'skynet.station.v1': JSON.stringify({ theme: 'green' })
   }, SECRET_ROWS, { 'skynet.byok.key.legacy': 'QA_LEGACY_KEY' });
   const applied = Backup.applyBundle({ schema: 'skynet.backup', version: 1, agentName: 'RESTORED', store: legacyStore });
   ok(applied.ok, 'legacy bundle still imports');
-  eq(JSON.parse(localStorage.getItem('starnet.save')).agent.name, 'RESTORED', 'legacy nonsecret save maps forward');
-  eq(JSON.parse(localStorage.getItem('starnet.station.v1')).theme, 'green', 'legacy nonsecret settings map forward');
-  eq(localStorage.getItem('starnet.byok.key.openrouter'), 'CURRENT_MACHINE_KEY', 'import never overwrites this machine credential');
-  eq(localStorage.getItem('starnet.byok.key.legacy'), null, 'legacy credential alias is not restored');
+  eq(JSON.parse(localStorage.getItem('vultron.save')).agent.name, 'RESTORED', 'legacy nonsecret save maps forward');
+  eq(JSON.parse(localStorage.getItem('vultron.station.v1')).theme, 'green', 'legacy nonsecret settings map forward');
+  eq(localStorage.getItem('vultron.byok.key.openrouter'), 'CURRENT_MACHINE_KEY', 'import never overwrites this machine credential');
+  eq(localStorage.getItem('vultron.byok.key.legacy'), null, 'legacy credential alias is not restored');
   for (const key of Object.keys(SECRET_ROWS)) {
-    if (key === 'starnet.byok.key.openrouter') continue;
+    if (key === 'vultron.byok.key.openrouter') continue;
     eq(localStorage.getItem(key), null, 'incoming credential record ignored: ' + key);
   }
 

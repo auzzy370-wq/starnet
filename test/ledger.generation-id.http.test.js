@@ -31,10 +31,10 @@ const server = http.createServer((req, res) => {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const base = 'http://127.0.0.1:' + server.address().port;
   const f = SidecarFixture.create({ prefix: 'generation-receipt-', env: {
-    STARNET_IPC_TOKEN: IPC, STARNET_DEFAULT_MODEL: 'receipt/model', STARNET_OPENROUTER_BASE: base,
-    STARNET_OPENROUTER_KEY: 'fixture', STARNET_BUDGET_PER_DAY: '0', STARNET_LIVE_PRICES: '0',
-    STARNET_REFLECTION: '0', STARNET_STUDY: '0', STARNET_FAILURE_REVIEW: '0', STARNET_QUEST_REFRESH: '0',
-    STARNET_THREAD_MINE: '0', STARNET_SKILL_REVIEW: '0', STARNET_SKILL_CURATOR: '0', STARNET_SCOUT: '0', STARNET_CRON_ENABLED: '0'
+    VULTRON_IPC_TOKEN: IPC, VULTRON_DEFAULT_MODEL: 'receipt/model', VULTRON_OPENROUTER_BASE: base,
+    VULTRON_OPENROUTER_KEY: 'fixture', VULTRON_BUDGET_PER_DAY: '0', VULTRON_LIVE_PRICES: '0',
+    VULTRON_REFLECTION: '0', VULTRON_STUDY: '0', VULTRON_FAILURE_REVIEW: '0', VULTRON_QUEST_REFRESH: '0',
+    VULTRON_THREAD_MINE: '0', VULTRON_SKILL_REVIEW: '0', VULTRON_SKILL_CURATOR: '0', VULTRON_SCOUT: '0', VULTRON_CRON_ENABLED: '0'
   } });
   const rows = () => fs.readFileSync(path.join(f.workspace, 'ledger.jsonl'), 'utf8').split('\n').filter(Boolean).map(JSON.parse);
   // Permit only loopback fake transport. No real credential or remote endpoint can escape this fixture.
@@ -45,11 +45,11 @@ const server = http.createServer((req, res) => {
   try {
     await f.start();
     const now = Date.now();
-    const saved = await f.json('POST', '/api/save', { schema: 'starnet.save', version: 6, updatedAt: now,
+    const saved = await f.json('POST', '/api/save', { schema: 'vultron.save', version: 6, updatedAt: now,
       _saveRevision: 0, _saveDirty: true, _saveClient: 'generation-receipt-test', agent: { id: 'agent', name: 'NOVA', createdAt: now },
       agents: [], workstreams: [{ id: 'general', history: [] }], activeId: 'general', generalId: 'general' });
     A.eq([saved.status, saved.body && saved.body.ok], [200, true], 'station save accepted before roster');
-    A.eq((await f.request('/api/key', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-StarNet-Token': IPC }, body: JSON.stringify({ provider: 'openrouter', key: 'fixture', baseUrl: base }) })).status, 200, 'station provider points to fake');
+    A.eq((await f.request('/api/key', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Vultron-Token': IPC }, body: JSON.stringify({ provider: 'openrouter', key: 'fixture', baseUrl: base }) })).status, 200, 'station provider points to fake');
     A.eq((await f.json('POST', '/api/roster', { updatedAt: now, agents: [{ agentId: 'agent', name: 'NOVA', provider: 'openrouter', model: 'receipt/model' }] })).status, 200, 'station model set');
     const ran = await f.json('POST', '/api/run', { agentId: 'agent', provider: 'openrouter', model: 'receipt/model', key: 'fixture', streamId: 'receipt-run',
       messages: [{ role: 'user', content: 'Look up receipt fixture once, then report completion.' }] });

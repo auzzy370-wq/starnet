@@ -148,7 +148,7 @@ async function openPage(browser, base, path, o, shim) {
       return {
         accounting: g && typeof g.verdict === 'function' ? g.verdict() : null,
         banner: !!document.getElementById('bootguard-fatal'),
-        shim: window.__STARNET_FLOOR_SHIM__ || null
+        shim: window.__VULTRON_FLOOR_SHIM__ || null
       };
     });
     Object.assign(r, seen);
@@ -186,7 +186,7 @@ async function bootAndJudge(pw, o, shim) {
   let last = null;
   for (let attempt = 0; attempt < 3; attempt++) {
     const port = await allocatePort();
-    last = await withKeylessSidecar(o.sidecar, port, base => judgeAll(pw, base, o, shim), { profilePrefix: 'starnet-webkit-floor-', healthMs: o.bootMs });
+    last = await withKeylessSidecar(o.sidecar, port, base => judgeAll(pw, base, o, shim), { profilePrefix: 'vultron-webkit-floor-', healthMs: o.bootMs });
     if (last && last.ok === false && !last.pages && bindRefused(last.tail)) continue;
     break;
   }
@@ -203,7 +203,7 @@ function emit(verdict, o) {
 async function main() {
   let o;
   try { o = parseArgs(process.argv.slice(2)); } catch (e) { console.error(String((e && e.message) || e)); process.exit(EXIT.usage); }
-  if (!o.out) o.out = mkdtempSync(join(tmpdir(), 'starnet-webkit-floor-'));
+  if (!o.out) o.out = mkdtempSync(join(tmpdir(), 'vultron-webkit-floor-'));
   mkdirSync(o.out, { recursive: true });
   const table = readFloor();
   const verdict = { harness: 'webkit-floor-boot', ok: false, floor: o.floor ? { safari: table.safari, macos: table.macos } : null, pin: PLAYWRIGHT_PIN,

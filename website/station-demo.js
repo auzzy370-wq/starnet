@@ -1,12 +1,12 @@
 /* station-demo.js — the homepage "watch it work" console (2026-10-19).
-   Each chapter is a RECORDING of the real StarNet renderer (scripts/record-station-demo.mjs plays the
+   Each chapter is a RECORDING of the real Vultron renderer (scripts/record-station-demo.mjs plays the
    chapter's harness events through website/app and records the station canvas). This file plays the
    clip and prints the same chapter's trace lines (station-chapters.js) on the video's own clock, so the
    text and the picture cannot drift. A clip is ~1 MB: it starts in about a second, where booting the
    whole app in an iframe used to take tens of MB and many seconds. The caption says it is a replay. */
 (function(){
   'use strict';
-  var C = window.StarnetChapters;
+  var C = window.VultronChapters;
   var root = document.querySelector('[data-demo]');
   var video = document.getElementById('crew-video');
   if (!C || !root || !video) return;
@@ -97,5 +97,5 @@
   document.addEventListener('visibilitychange', function(){ if (document.hidden) setVisible(false); });
 
   play(0);
-  window.__starnetDemo = { play: play, state: function(){ return { chapter: C.ORDER[current], t: video.currentTime, paused: video.paused, lines: log.children.length }; } };
+  window.__vultronDemo = { play: play, state: function(){ return { chapter: C.ORDER[current], t: video.currentTime, paused: video.paused, lines: log.children.length }; } };
 })();

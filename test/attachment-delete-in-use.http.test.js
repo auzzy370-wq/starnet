@@ -39,9 +39,9 @@ function startMockOpenRouter() {
 }
 const hermeticEnv = () => {
   const env = {};
-  for (const k of Object.keys(process.env)) if (/^(OPENROUTER|ANTHROPIC|OPENAI|GEMINI|GOOGLE_API|XAI|GROQ|MISTRAL|DEEPSEEK|TOGETHER|FIREWORKS|PERPLEXITY|CEREBRAS|KIMI|ELEVENLABS|STARNET_|SKYNET_)/i.test(k)) env[k] = '';
-  return Object.assign(env, { SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0', SKYNET_THREAD_MINE: '0', SKYNET_AUX_BUDGET: '0', STARNET_LIVE_PRICES: '0',
-    STARNET_CREDITS_URL: '', SKYNET_CREDITS_URL: '' });
+  for (const k of Object.keys(process.env)) if (/^(OPENROUTER|ANTHROPIC|OPENAI|GEMINI|GOOGLE_API|XAI|GROQ|MISTRAL|DEEPSEEK|TOGETHER|FIREWORKS|PERPLEXITY|CEREBRAS|KIMI|ELEVENLABS|VULTRON_|SKYNET_)/i.test(k)) env[k] = '';
+  return Object.assign(env, { SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_CURATOR: '0', SKYNET_THREAD_MINE: '0', SKYNET_AUX_BUDGET: '0', VULTRON_LIVE_PRICES: '0',
+    VULTRON_CREDITS_URL: '', SKYNET_CREDITS_URL: '' });
 };
 const until = async (fn, label, ms = 20000) => { const end = Date.now() + ms; for (;;) { const v = await fn(); if (v) return v; if (Date.now() > end) throw new Error('timed out: ' + label); await new Promise(r => setTimeout(r, 100)); } };
 
@@ -52,7 +52,7 @@ const until = async (fn, label, ms = 20000) => { const end = Date.now() + ms; fo
    not read back, so the page may hold no ref, and the pass is the net. */
 async function tornLineScenario(mock) {
   const fs = require('node:fs'), path = require('node:path');
-  const fixture = SidecarFixture.create({ prefix: 'starnet-attach-torn-', timeoutMs: 30000, env: Object.assign(hermeticEnv(), { SKYNET_OPENROUTER_BASE: mock.base }) });
+  const fixture = SidecarFixture.create({ prefix: 'vultron-attach-torn-', timeoutMs: 30000, env: Object.assign(hermeticEnv(), { SKYNET_OPENROUTER_BASE: mock.base }) });
   const walk = d => fs.readdirSync(d, { withFileTypes: true }).flatMap(e => e.isDirectory() ? walk(path.join(d, e.name)) : [path.join(d, e.name)]);
   try {
     await fixture.start();
@@ -62,9 +62,9 @@ async function tornLineScenario(mock) {
       A.ok(r.status === 200 && r.body && r.body.ok, 'upload ' + name + ': ' + JSON.stringify(r.body));
       return { id: r.body.id, name, path: r.body.path, mediaType: 'text/plain', kind: 'file' };
     };
-    const present = async ref => (await fetch(fixture.baseUrl + '/api/file?agent=agent&path=' + encodeURIComponent(ref.path), { headers: { 'X-StarNet-Token': fixture.token, Origin: fixture.baseUrl } })).status === 200;
+    const present = async ref => (await fetch(fixture.baseUrl + '/api/file?agent=agent&path=' + encodeURIComponent(ref.path), { headers: { 'X-Vultron-Token': fixture.token, Origin: fixture.baseUrl } })).status === 200;
     const say = async (streamId, content, files) => {
-      const res = await fetch(fixture.baseUrl + '/api/run', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-StarNet-Token': fixture.token, Origin: fixture.baseUrl },
+      const res = await fetch(fixture.baseUrl + '/api/run', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Vultron-Token': fixture.token, Origin: fixture.baseUrl },
         body: JSON.stringify({ key: 'sk-or-v1-e2e-fake', model: 'test/model', agentId: 'agent', streamId, messages: [{ role: 'user', content, attachments: files }] }) });
       A.eq(res.status, 200, 'the run in ' + streamId + ' streams 200');
       await res.text();
@@ -119,18 +119,18 @@ async function tornLineScenario(mock) {
 
 (async () => {
   const mock = await startMockOpenRouter();
-  const fixture = SidecarFixture.create({ prefix: 'starnet-attach-in-use-', timeoutMs: 30000, env: Object.assign(hermeticEnv(), { SKYNET_OPENROUTER_BASE: mock.base }) });
+  const fixture = SidecarFixture.create({ prefix: 'vultron-attach-in-use-', timeoutMs: 30000, env: Object.assign(hermeticEnv(), { SKYNET_OPENROUTER_BASE: mock.base }) });
   try {
     await fixture.start();
     const B = fixture.baseUrl, token = fixture.token;
-    const H = { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: B };
+    const H = { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: B };
     const json = (method, route, body) => fixture.json(method, route, body);
     const upload = async name => {
       const r = await json('POST', '/api/attachments', { agent: 'agent', name, dataUrl: 'data:text/plain;base64,' + Buffer.from('notes about ' + name).toString('base64') });
       A.ok(r.status === 200 && r.body && r.body.ok && /^\.attachments\//.test(r.body.path), 'upload ' + name + ': ' + JSON.stringify(r.body));
       return { id: r.body.id, name, path: r.body.path, mediaType: 'text/plain', kind: 'file' };
     };
-    const present = async ref => (await fetch(B + '/api/file?agent=agent&path=' + encodeURIComponent(ref.path), { headers: { 'X-StarNet-Token': token, Origin: B } })).status === 200;
+    const present = async ref => (await fetch(B + '/api/file?agent=agent&path=' + encodeURIComponent(ref.path), { headers: { 'X-Vultron-Token': token, Origin: B } })).status === 200;
     const say = async (streamId, content, files) => {
       const res = await fetch(B + '/api/run', { method: 'POST', headers: H, body: JSON.stringify({ key: 'sk-or-v1-e2e-fake', model: 'test/model', agentId: 'agent', streamId,
         messages: [{ role: 'user', content, attachments: files }] }) });

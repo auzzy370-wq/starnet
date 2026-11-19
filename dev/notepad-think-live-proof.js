@@ -62,11 +62,11 @@ const endOf = (events) => { const e = events.filter(x => x.name === 'agent.run.e
 (async () => {
   const ollama = await startOllama();
   const sidecar = SidecarFixture.create({
-    prefix: 'starnet-notepad-think-', timeoutMs: 45000,
+    prefix: 'vultron-notepad-think-', timeoutMs: 45000,
     env: {
       OLLAMA_BASE_URL: ollama.base, SKYNET_DEFAULT_MODEL: MODEL, SKYNET_AUX_BUDGET: '0', SKYNET_QUEST_REFRESH: '0',
-      SKYNET_OPENROUTER_KEY: '', STARNET_OPENROUTER_KEY: '', OPENROUTER_KEY: '', OPENROUTER_API_KEY: '',
-      SKYNET_FULL_ACCESS: '', STARNET_FULL_ACCESS: ''
+      SKYNET_OPENROUTER_KEY: '', VULTRON_OPENROUTER_KEY: '', OPENROUTER_KEY: '', OPENROUTER_API_KEY: '',
+      SKYNET_FULL_ACCESS: '', VULTRON_FULL_ACCESS: ''
     }
   });
   try {

@@ -1,8 +1,8 @@
-/* bin/lib/tui.js — the PURE screen of the `starnet` dashboard: model + ui state + terminal size → rows of styled
+/* bin/lib/tui.js — the PURE screen of the `vultron` dashboard: model + ui state + terminal size → rows of styled
    segments, and those rows → ANSI strings. No I/O and no clock (`now` is passed in), so test/cli-dashboard.test.js
    renders it to plain text and checks the layout.
 
-   Layout: the header (the StarNet wordmark; beside it the station, the counts, NOW — what the busy agents are doing —
+   Layout: the header (the Vultron wordmark; beside it the station, the counts, NOW — what the busy agents are doing —
    and FLOWS), then two framed panels: CREW down the left (lamp, name, a word for what it is doing; the agent in COMMS
    marked; ≥ 90 columns) and COMMS (the focused agent's conversation, the open ask's card at its foot), then the prompt
    and the keys. One palette: names in white, neon red the only accent, color only where it carries status.
@@ -12,7 +12,7 @@
 'use strict';
 
 const { fmtDur, fmtShort, costText, askInspect, ONCE_ONLY_TOOLS, RUN_FLOOR } = require('./station-model.js');
-// the StarNet mark, cut from the real brand art by dev/cli-logo.cjs (never redrawn)
+// the Vultron mark, cut from the real brand art by dev/cli-logo.cjs (never redrawn)
 const logo = require('./logo.js');
 const sixelLib = require('./sixel.js');   // the real logo: an image where the terminal draws Sixel, braille dots elsewhere
 
@@ -166,7 +166,7 @@ function render(model, ui, size, now) {
   const hits = [], areas = {};
   const hit = (x0, x1, y, act) => { if (act && y >= 0 && x1 > x0) hits.push({ x0, x1, y, act }); };
   if (W < 46 || H < 16) {
-    g.put(0, 0, trunc('starnet needs at least 46×16 — this terminal is ' + W + '×' + H, W), 'am');
+    g.put(0, 0, trunc('vultron needs at least 46×16 — this terminal is ' + W + '×' + H, W), 'am');
     const small = g.out(); small.hits = hits; small.areas = areas;
     return small;
   }
@@ -234,9 +234,9 @@ function render(model, ui, size, now) {
     });
   }
 
-  // ---- header: the StarNet wordmark, and beside it the station, the counts, NOW and FLOWS -------------------------
+  // ---- header: the Vultron wordmark, and beside it the station, the counts, NOW and FLOWS -------------------------
   // where the terminal draws images, the REAL logo is an image the dashboard paints into these cells (ui.logoImage); the
-  // screen here only keeps them blank. Without an image: the same real logo as braille dots (STARNET_LOGO=ascii keeps the
+  // screen here only keeps them blank. Without an image: the same real logo as braille dots (VULTRON_LOGO=ascii keeps the
   // drawn-letter version, =plain the one-line mark)
   const img = ui.logoImage && ui.logoImage.cols > 0 ? ui.logoImage : null;
   const word = img || ui.logo === 'plain' ? null : ui.logo === 'ascii' ? (logo && logo.word) || null : sixelLib.brailleLogo();
@@ -258,7 +258,7 @@ function render(model, ui, size, now) {
   } else {
     // the one-line mark, the counts on it; NOW and FLOWS under it only when they have something to say
     let x = 0;
-    'STARNET'.split('').forEach((ch, i) => { x = g.put(x, 0, ch, 'logo b'); if (i < 6) x = g.put(x, 0, ' ', ''); });
+    'VULTRON'.split('').forEach((ch, i) => { x = g.put(x, 0, ch, 'logo b'); if (i < 6) x = g.put(x, 0, ' ', ''); });
     const xc = putCounts(0, x + 3);
     if (!narrow && xc - x > 30) g.put(x + 3, 0, trunc(ui.stationLabel || '', xc - x - 6), 'dim');
     y = 1;
@@ -363,7 +363,7 @@ function render(model, ui, size, now) {
   const ix0 = cx0 + 2, ix1 = cx1 - 2, iy0 = top + 1, iy1 = bot - 1;
   const cw = Math.min(ix1 - ix0 + 1, 96);
   // the agent menu you opened first; then an agent's ask (a run is waiting on it); else the folder card, when the folder
-  // `starnet` started in is not trusted
+  // `vultron` started in is not trusted
   const menuAgent = !wk && ui.agentMenu ? model.state.agents.get(ui.agentMenu) : null;
   const menuRow = menuAgent ? rows.find(r => r.id === menuAgent.id) : null;
   // the "/" menu while a command is typed (above everything else at the foot: it goes the moment the word is done)
@@ -447,7 +447,7 @@ function render(model, ui, size, now) {
 
   // ---- prompt + keys ------------------------------------------------------------------------------------------------
   const flashKey = ui.keyFlash && ui.keyFlash.until > now;
-  let px = g.put(0, promptY, (ui.wake ? 'you' : focusRow ? focusRow.name.toLowerCase() : 'starnet') + ' ', 'dim');   // the awakening: your answers
+  let px = g.put(0, promptY, (ui.wake ? 'you' : focusRow ? focusRow.name.toLowerCase() : 'vultron') + ' ', 'dim');   // the awakening: your answers
   px = g.put(px, promptY, '▸ ', 'brand b');
   const room = W - px - 2 - (flashKey ? 8 : 0);
   // a pasted multi-line message shows its breaks as ⏎; a secret (a /connect key) shows only that something is typed
@@ -469,7 +469,7 @@ function render(model, ui, size, now) {
       ? (wk.ask ? ((wk.ask.options || []).length ? '1-' + wk.ask.options.length + ' pick · ' : '') + (wk.ask.custom ? 'or type your own + enter · ' : '') + 'ctrl+c pauses setup'
         : wk.typing ? 'any key shows the rest' : 'ctrl+c pauses setup')
       : slash ? 'tab completes /' + slash.items[slash.sel].name + ' · enter runs it · ↑ ↓ pick · esc hides this'
-      : slashCommandOf(ui) ? (c => '/' + c.name + (c.argsHint ? ' ' + c.argsHint : '') + ' — ' + c.desc + (c.here === false ? ' (only in the StarNet app)' : ''))(slashCommandOf(ui))
+      : slashCommandOf(ui) ? (c => '/' + c.name + (c.argsHint ? ' ' + c.argsHint : '') + ' — ' + c.desc + (c.here === false ? ' (only in the Vultron app)' : ''))(slashCommandOf(ui))
       : menuRow ? 'o open chat · m model · n new chat · h history' + (menuAgent.runs && menuAgent.runs.size ? ' · s stop' : '') + ' · esc close'
       : front
       ? (front.question ? (front.question.options.length ? '1-' + front.question.options.length + ' pick · ' : '') + 'type an answer + enter · esc clears' : 'y allow once · ' + (canAlways(front) ? 'a always · ' : '') + 'n deny · v ' + (front.view ? 'hide' : 'view') + ' · ' + (narrow ? 'tab agent' : 'tab next agent'))
@@ -977,7 +977,7 @@ function cardLines(q, model, cw, H) {
 // Always (allow this kind of action from now on) is offered where the app's card offers it: not on an ask answered fresh
 // every time
 function canAlways(q) { return !!q && !q.question && ONCE_ONLY_TOOLS.indexOf(q.tool) < 0; }
-// the card that asks to trust the folder `starnet` was started in: the project root the station would trust, and what that
+// the card that asks to trust the folder `vultron` was started in: the project root the station would trust, and what that
 // means. Answered with y / n like an ask.
 function trustLines(t, cw) {
   const lines = [{ kind: 'top', title: 'TRUST THIS FOLDER?' }];
@@ -989,7 +989,7 @@ function trustLines(t, cw) {
   lines.push({ kind: 'bottom', keys: [['[Y] TRUST', 'am b', { t: 'key', key: 'y' }], ['[N] NOT NOW', 'am b', { t: 'key', key: 'n' }]] });
   return lines;
 }
-/* THE AWAKENING in COMMS (bin/lib/awaken.js): who said each line (STARNET before the agent exists, then the agent; YOU
+/* THE AWAKENING in COMMS (bin/lib/awaken.js): who said each line (VULTRON before the agent exists, then the agent; YOU
    for your answers), each line typed out at its own pace (e.born + e.cps; e.full once it is all shown), a note under them
    while the station works (the wire test). Newest at the bottom; scrolls by ui.scroll. */
 function drawWake(g, w, top, bot, x0, x1, ui, now) {
@@ -1005,8 +1005,8 @@ function drawWake(g, w, top, bot, x0, x1, ui, now) {
     const all = [...String(e.text)];
     const n = e.full ? all.length : Math.min(all.length, Math.floor(Math.max(0, now - e.born) * (e.cps || 44) / 1000));
     const shown = all.slice(0, n).join('') + (n < all.length ? '▍' : '');
-    const tc = e.bad ? 'bad' : e.you ? (e.skip ? 'dim' : 'hi') : e.who === 'STARNET' ? 'fg' : 'hi';
-    const lc = e.you ? 'hi b' : e.who === 'STARNET' ? 'dim b' : 'ph b';
+    const tc = e.bad ? 'bad' : e.you ? (e.skip ? 'dim' : 'hi') : e.who === 'VULTRON' ? 'fg' : 'hi';
+    const lc = e.you ? 'hi b' : e.who === 'VULTRON' ? 'dim b' : 'ph b';
     wrap(shown || ' ', tw).forEach((ln, j) => rows.push({ label: newBlock && !j ? e.who : '', lc, segs: [[ln, tc]] }));
   });
   if (w.note) rows.push({ label: '', segs: [[spin(now, ui.still) + ' ' + w.note, w.noteStyle || 'dim']] });

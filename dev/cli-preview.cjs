@@ -1,6 +1,6 @@
 'use strict';
 /* node dev/cli-preview.cjs [rootDir] [--demo] — a REAL station (dev/seed.js, isolated workspace + profile) on a scripted
-   local model, with a crew of four, for driving the `starnet` terminal dashboard without credentials or spend.
+   local model, with a crew of four, for driving the `vultron` terminal dashboard without credentials or spend.
 
    The model streams its replies a word at a time and calls real tools (it opens the task brief, lists and reads files,
    writes one), so the dashboard has live text, tool lines and approvals to show. The crew runs on approvalMode 'ask'
@@ -10,9 +10,9 @@
    --demo plays the DESKTOP: once the station is up it starts work the way the page does (POST /api/run on a desk
    conversation, the floor's capability objects placed) — ASTRA fixes a redirect, CYPHER runs the tests, ULTRON drafts
    notes — so the dashboard shows runs it did not start, and their approvals. Answer them from the dashboard
-   (y / n) or with `starnet approve`. --loop repeats the desk work every 90 s.
+   (y / n) or with `vultron approve`. --loop repeats the desk work every 90 s.
 
-   Then, in another terminal:  node bin/starnet.js --port 9471   (or ls / watch / approve / flow).
+   Then, in another terminal:  node bin/vultron.js --port 9471   (or ls / watch / approve / flow).
    The scripted model proves the harness flow, not real-model judgment. */
 const fs = require('node:fs');
 const http = require('node:http');
@@ -27,10 +27,10 @@ const DEMO = args.includes('--demo');
 const LOOP = args.includes('--loop');
 const DESK_ONLY = args.includes('--desk');   // a station is already up on the port: just play the desk once
 const root = path.resolve(args.find(a => !a.startsWith('--')) || '.dogfood/cli-preview');
-const port = Number(process.env.STARNET_PORT) || 9471;
+const port = Number(process.env.VULTRON_PORT) || 9471;
 
 const CREW = [
-  { agentId: 'astra', name: 'ASTRA', role: 'backend fixer', system: 'You are ASTRA, a careful backend engineer aboard a StarNet station.' },
+  { agentId: 'astra', name: 'ASTRA', role: 'backend fixer', system: 'You are ASTRA, a careful backend engineer aboard a Vultron station.' },
   { agentId: 'cypher', name: 'CYPHER', role: 'test runner', system: 'You are CYPHER, the station test runner.' },
   { agentId: 'ultron', name: 'ULTRON', role: 'writer', system: 'You are ULTRON, the station writer.' }
 ];
@@ -116,7 +116,7 @@ async function desk(base, token) {
   const placed = [{ objectType: 'computer' }, { objectType: 'cabinet' }, { objectType: 'workbench' }];
   const runOne = (agentId, text) => new Promise(resolve => {
     const payload = Buffer.from(JSON.stringify({ model: 'test/model', provider: 'openrouter', agentId, streamId: 'desk-' + agentId, isTask: true, messages: [{ role: 'user', content: text }], placed }));
-    const req = http.request(base + '/api/run', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': payload.length, 'x-starnet-token': token, Origin: base } }, res => { res.resume(); res.on('end', resolve); res.on('close', resolve); });
+    const req = http.request(base + '/api/run', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': payload.length, 'x-vultron-token': token, Origin: base } }, res => { res.resume(); res.on('end', resolve); res.on('close', resolve); });
     req.on('error', resolve);
     req.end(payload);
   });
@@ -130,7 +130,7 @@ async function desk(base, token) {
 
 (async () => {
   if (DESK_ONLY) {
-    const { makeClient } = require(path.join(REPO, 'bin', 'starnet.js'));
+    const { makeClient } = require(path.join(REPO, 'bin', 'vultron.js'));
     const client = makeClient('127.0.0.1', port);
     const token = await client.discoverToken();
     if (!token) throw new Error('no station answering on ' + port);
@@ -142,18 +142,18 @@ async function desk(base, token) {
   seedWorkspace(ws);
   const child = spawn(process.execPath, [path.join(__dirname, 'seed.js'), '--keep', '--workspace', ws], { windowsHide: true, stdio: 'inherit', env: {
     ...process.env, APPDATA: profile, LOCALAPPDATA: profile, XDG_DATA_HOME: profile,
-    SKYNET_PORT: String(port), STARNET_PORT: String(port), SKYNET_DEFAULT_MODEL: 'test/model', SEED_FULL_ACCESS: '0',
+    SKYNET_PORT: String(port), VULTRON_PORT: String(port), SKYNET_DEFAULT_MODEL: 'test/model', SEED_FULL_ACCESS: '0',
     SKYNET_OPENROUTER_KEY: 'sk-or-v1-local-proof', SKYNET_OPENROUTER_BASE: 'http://127.0.0.1:' + mock.address().port + '/api/v1'
   } });
   child.on('exit', () => { mock.close(); process.exit(0); });
   process.on('exit', () => { try { child.kill(); } catch (_) {} });
   if (!DEMO) return;
-  const { makeClient } = require(path.join(REPO, 'bin', 'starnet.js'));
+  const { makeClient } = require(path.join(REPO, 'bin', 'vultron.js'));
   const client = makeClient('127.0.0.1', port);
   for (let i = 0; i < 120 && !(await client.health(1000)); i++) await sleep(500);
   const token = await client.discoverToken();
   if (!token) { console.error('[cli-preview] could not read the station token'); return; }
-  console.log('[cli-preview] station up on http://127.0.0.1:' + port + ' — run: node bin/starnet.js --port ' + port);
+  console.log('[cli-preview] station up on http://127.0.0.1:' + port + ' — run: node bin/vultron.js --port ' + port);
   await sleep(LOOP ? 8000 : 15000);
   do { await desk(client.base, token); if (LOOP) await sleep(90000); } while (LOOP);
 })().catch(e => { console.error(e); process.exitCode = 1; });

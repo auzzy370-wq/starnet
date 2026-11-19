@@ -123,11 +123,11 @@ const msgs = () => [{ role: 'system', content: 'Lifecycle fixture' }, { role: 'u
     const st = r.provider.persistStats();
     A.eq([st.live, st.cleanupPending], [false, 0], 'exit-only: after the drain window the session is released');
     A.ok(r.children[0].child.stdout.destroyed && r.children[0].child.stderr.destroyed, 'exit-only: its pipes are let go');
-    A.ok(r.removed.some(f => /starnet-claude-cli-.*-s1-/.test(f)), 'exit-only: its system-prompt file is removed');
+    A.ok(r.removed.some(f => /vultron-claude-cli-.*-s1-/.test(f)), 'exit-only: its system-prompt file is removed');
   }
 
   // 3. A REPLY THAT WROTE ON AND THEN ENDED books its result line (review 2026-10-13): exact usage + this turn's cost
-  //    share, not the stream estimate; the child is closed (it holds text StarNet never recorded) and a warm one waits.
+  //    share, not the stream estimate; the child is closed (it holds text Vultron never recorded) and a warm one waits.
   {
     const r = rig((rec, n) => n === 1 ? [init('ANTHROPIC_API_KEY'), start({ input_tokens: 9 }), delta(block + '\n<function_results>guess'), result(block + '\n<function_results>guess', 0.4)] : []);
     const out = await collect(r.provider, r.request(msgs()));
@@ -185,7 +185,7 @@ const msgs = () => [{ role: 'system', content: 'Lifecycle fixture' }, { role: 'u
     r.provider.release('life-run');
   }
 
-  // 6. THE CLI COMPACTING ITS OWN HISTORY (compact_boundary) means the child no longer holds StarNet's transcript: the
+  // 6. THE CLI COMPACTING ITS OWN HISTORY (compact_boundary) means the child no longer holds Vultron's transcript: the
   //    turn is delivered, the child is closed, and the next turn starts a fresh child with the whole history.
   {
     const r = rig((rec, n) => n === 1 ? [init('none'), { type: 'system', subtype: 'compact_boundary' }, delta('Folded and done.'), result('Folded and done.', 0)] : [init('none'), delta('again'), result('again', 0)]);
@@ -233,7 +233,7 @@ const msgs = () => [{ role: 'system', content: 'Lifecycle fixture' }, { role: 'u
   // 7. THE EXIT HOOK REMOVES EACH LIVE CHILD's PROMPT FILE (review 2026-10-13). A separate node process parks a
   //    persistent child (mocked) whose system prompt is a REAL temp file, then exits without releasing it.
   {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-cli-exit-'));
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-cli-exit-'));
     const host = path.join(dir, 'host.js');
     fs.writeFileSync(host, [
       "'use strict';",
@@ -251,7 +251,7 @@ const msgs = () => [{ role: 'system', content: 'Lifecycle fixture' }, { role: 'u
       '(async () => {',
       '  const fs = require("node:fs"), os = require("node:os"), path = require("node:path");',
       // a hard-killed process that once had this pid can have left a file with the same prefix: only this run's count
-      '  const mine = () => fs.readdirSync(os.tmpdir()).filter(f => f.startsWith("starnet-claude-cli-" + process.pid + "-s"));',
+      '  const mine = () => fs.readdirSync(os.tmpdir()).filter(f => f.startsWith("vultron-claude-cli-" + process.pid + "-s"));',
       '  const before = new Set(mine());',
       '  for await (const e of p.stream({ model: "sonnet", tools, runId: "exit-run", messages: [{ role: "system", content: "EXIT_HOOK_PROMPT" }, { role: "user", content: "go" }] })) void e;',
       '  const files = mine().filter(f => !before.has(f));',

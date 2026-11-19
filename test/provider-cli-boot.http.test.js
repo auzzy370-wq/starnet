@@ -7,9 +7,9 @@ const Reg = require('../sidecar/providers/registry.js');
 const ROOT = path.resolve(__dirname, '..');
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 async function check(loggedIn, envOnly) {
-  const env = { STARNET_CRON_ENABLED: '0', SKYNET_CRON_ENABLED: '0', STARNET_DEFAULT_MODEL: '', SKYNET_DEFAULT_MODEL: '' };
+  const env = { VULTRON_CRON_ENABLED: '0', SKYNET_CRON_ENABLED: '0', VULTRON_DEFAULT_MODEL: '', SKYNET_DEFAULT_MODEL: '' };
   for (const p of Reg.listProviderProfiles({ public: false })) for (const name of [...(p.keyEnv || []), ...(p.baseUrlEnv || [])]) {
-    env[name] = ''; env['STARNET_' + name] = ''; env['SKYNET_' + name] = '';
+    env[name] = ''; env['VULTRON_' + name] = ''; env['SKYNET_' + name] = '';
   }
   const fx = SidecarFixture.create({ prefix: 'readiness-cli-boot-', env });
   const marker = path.join(fx.workspace, 'channel-started.txt');
@@ -22,7 +22,7 @@ async function check(loggedIn, envOnly) {
     fs.appendFileSync(${JSON.stringify(calls)}, 'status\\n');
     setTimeout(() => { console.log(JSON.stringify({ loggedIn: ${loggedIn}, authMethod: 'fixture' })); }, 180);
   `);
-  fx.env.STARNET_CLAUDE_BIN = path.join(fx.workspace, 'fixture-bin/claude.cmd');
+  fx.env.VULTRON_CLAUDE_BIN = path.join(fx.workspace, 'fixture-bin/claude.cmd');
   const preload = path.join(fx.workspace, 'fixture-preload.cjs');
   fs.writeFileSync(preload, `
     const fs = require('fs');
@@ -56,8 +56,8 @@ async function check(loggedIn, envOnly) {
   fx.env.NODE_OPTIONS = '--require ' + JSON.stringify(preload);
   fs.mkdirSync(path.join(fx.workspace, 'channels'), { recursive: true });
   if (envOnly) {
-    fx.env.STARNET_SLACK_TOKEN = 'xoxb-fixture xapp-fixture';
-    fx.env.STARNET_DEFAULT_MODEL = 'sonnet';
+    fx.env.VULTRON_SLACK_TOKEN = 'xoxb-fixture xapp-fixture';
+    fx.env.VULTRON_DEFAULT_MODEL = 'sonnet';
     fs.writeFileSync(path.join(fx.workspace, 'agent.roster.json'), JSON.stringify({ version: 1, agents: [{ agentId: 'agent', provider: 'claude-cli', model: 'sonnet', name: 'Fixture' }] }));
   } else fs.writeFileSync(path.join(fx.workspace, 'channels/secrets.json'), JSON.stringify({ slack: {
     enabled: true, token: 'xoxb-fixture xapp-fixture', provider: 'claude-cli', model: 'sonnet', agentId: 'agent'

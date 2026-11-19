@@ -141,16 +141,16 @@ function startModel() {
   const fx = SidecarFixture.create({ prefix: 'sk-run-registry-', entry: path.join(__dirname, 'helpers', 'run-fault-host.cjs'),
     portAllocator: () => { const p = firstPort; firstPort = 0; return p ? Promise.resolve(p) : allocatePort(); },
     env: {
-      SKYNET_OPENROUTER_BASE: model.base, STARNET_OPENROUTER_BASE: model.base,
-      SKYNET_OPENROUTER_KEY: 'sk-or-v1-run-registry-fake', STARNET_OPENROUTER_KEY: 'sk-or-v1-run-registry-fake',
-      SKYNET_DEFAULT_MODEL: 'test/model', STARNET_DEFAULT_MODEL: 'test/model',
-      SKYNET_V1_MODEL: 'test/model', STARNET_V1_MODEL: 'test/model',
-      SKYNET_API_KEY: V1KEY, STARNET_API_KEY: V1KEY,
+      SKYNET_OPENROUTER_BASE: model.base, VULTRON_OPENROUTER_BASE: model.base,
+      SKYNET_OPENROUTER_KEY: 'sk-or-v1-run-registry-fake', VULTRON_OPENROUTER_KEY: 'sk-or-v1-run-registry-fake',
+      SKYNET_DEFAULT_MODEL: 'test/model', VULTRON_DEFAULT_MODEL: 'test/model',
+      SKYNET_V1_MODEL: 'test/model', VULTRON_V1_MODEL: 'test/model',
+      SKYNET_API_KEY: V1KEY, VULTRON_API_KEY: V1KEY,
       SKYNET_DEV: '1',                                     // the dev channel hub (POST /api/dev/inbound): the production makeChannelHub
-      SKYNET_CRON_TICK_MS: '250', STARNET_CRON_TICK_MS: '250',
+      SKYNET_CRON_TICK_MS: '250', VULTRON_CRON_TICK_MS: '250',
       SKYNET_LOOP_TICK_MS: '5000',                         // the loop tick's floor
       SKYNET_FULL_ACCESS: '1',                             // team.spawn / dispatch are consent-gated; the approval path has its own suites
-      STARNET_REMOTE_PORT: String(lanPort), STARNET_REMOTE_LAN: '1', STARNET_REMOTE_RELAY: 'off'
+      VULTRON_REMOTE_PORT: String(lanPort), VULTRON_REMOTE_LAN: '1', VULTRON_REMOTE_RELAY: 'off'
     } });
   // the overseer's conversation is a desk session: seed the save the way e2e.overseer does, as a CURRENT save with its floor saved (a station
   // of the old save version, or one with no floor in it, is held until a page migrates it: nothing would route). Nothing is drawn on the
@@ -316,12 +316,12 @@ function startModel() {
     await fx.json('POST', '/api/cron/arm', { enabled: false });
 
     // ---- /v1: chat (sync and stream) and /v1/runs (in no older registry since the stop handles became the table's: legacy 0) ----
-    await cell('v1-sync', userSaid('HOLD-V1SYNC'), () => v1('/v1/chat/completions', { model: 'starnet-agent', messages: [{ role: 'user', content: 'HOLD-V1SYNC answer' }] }).then(r => r.text()),
+    await cell('v1-sync', userSaid('HOLD-V1SYNC'), () => v1('/v1/chat/completions', { model: 'vultron-agent', messages: [{ role: 'user', content: 'HOLD-V1SYNC answer' }] }).then(r => r.text()),
       { mark: 'HOLD-V1SYNC', stop: true, source: 'api' });
-    await cell('v1-stream', userSaid('HOLD-V1STREAM'), () => v1('/v1/chat/completions', { model: 'starnet-agent', stream: true, messages: [{ role: 'user', content: 'HOLD-V1STREAM answer' }] }).then(r => r.text()),
+    await cell('v1-stream', userSaid('HOLD-V1STREAM'), () => v1('/v1/chat/completions', { model: 'vultron-agent', stream: true, messages: [{ role: 'user', content: 'HOLD-V1STREAM answer' }] }).then(r => r.text()),
       { mark: 'HOLD-V1STREAM', stop: true, source: 'api' });
     let v1RunId = '';
-    await cell('v1-runs', userSaid('HOLD-V1RUNS'), () => v1('/v1/runs', { model: 'starnet-agent', input: 'HOLD-V1RUNS answer' }).then(r => r.json()).then(j => { v1RunId = j.run_id; }),
+    await cell('v1-runs', userSaid('HOLD-V1RUNS'), () => v1('/v1/runs', { model: 'vultron-agent', input: 'HOLD-V1RUNS answer' }).then(r => r.json()).then(j => { v1RunId = j.run_id; }),
       { mark: 'HOLD-V1RUNS', stop: true, source: 'api' });
     A.ok(v1RunId, 'the /v1/runs run had its id');
 
@@ -383,7 +383,7 @@ function startModel() {
 
     // ---- release on every exit: a throw inside the run, a throw in the conversation queue ----
     ctl({ mode: 'throw-after-start', mark: 'FAULT-CORE' });
-    const thrown = await v1('/v1/chat/completions', { model: 'starnet-agent', messages: [{ role: 'user', content: 'FAULT-CORE answer' }] });
+    const thrown = await v1('/v1/chat/completions', { model: 'vultron-agent', messages: [{ role: 'user', content: 'FAULT-CORE answer' }] });
     A.ok(thrown.status >= 500, 'a run that throws after its start fails its /v1 caller (' + thrown.status + ')');
     await emptied('throw in the run');
     ctl({ mode: 'throw-in-queue', streamId: 'rt-fault-queue' });
@@ -400,9 +400,9 @@ function startModel() {
       for (const k of Object.keys(marks)) model.hold('estop-' + k, userSaid(marks[k]));
       const comms = desk('rt-estop', marks.comms + ' answer when released');
       const hub = fx.json('POST', '/api/dev/inbound', { text: marks.hub + ' answer this', chatId: 'rtestop' }).catch(e => ({ error: e.message }));
-      const sync = v1('/v1/chat/completions', { model: 'starnet-agent', messages: [{ role: 'user', content: marks.sync + ' answer' }] }).then(r => r.json()).catch(e => ({ error: e.message }));
-      const stream = v1('/v1/chat/completions', { model: 'starnet-agent', stream: true, messages: [{ role: 'user', content: marks.stream + ' answer' }] }).then(r => r.text()).catch(e => 'ERR ' + e.message);
-      const job = await v1('/v1/runs', { model: 'starnet-agent', input: marks.runs + ' answer' }).then(r => r.json());
+      const sync = v1('/v1/chat/completions', { model: 'vultron-agent', messages: [{ role: 'user', content: marks.sync + ' answer' }] }).then(r => r.json()).catch(e => ({ error: e.message }));
+      const stream = v1('/v1/chat/completions', { model: 'vultron-agent', stream: true, messages: [{ role: 'user', content: marks.stream + ' answer' }] }).then(r => r.text()).catch(e => 'ERR ' + e.message);
+      const job = await v1('/v1/runs', { model: 'vultron-agent', input: marks.runs + ' answer' }).then(r => r.json());
       for (const k of Object.keys(marks)) await model.held('estop-' + k);
       const ids = {};
       for (const k of Object.keys(marks)) ids[k] = (tagged(marks[k]) || {}).runId || '';

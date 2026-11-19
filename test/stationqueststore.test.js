@@ -124,13 +124,13 @@ StationQuestStore.sync();
 A.eq(StationQuestStore.quests().some(q => q.id.indexOf(':outbox') > 0), false, 'unattended work + no outbox placed → STILL no OUTBOX quest (away/cron/chat runs wait in DELIVERABLES › TO REVIEW, never on a chute)');
 {
   // an OPEN one an older build saved is waved off on load — never flipped done (nothing was closed), never re-minted
-  const saved = JSON.parse(global.localStorage.getItem('starnet.stationquests.v1'));
+  const saved = JSON.parse(global.localStorage.getItem('vultron.stationquests.v1'));
   saved.gaps['sq:hero:outbox'] = { agentId: 'hero', cap: 'outbox', capLabel: 'DELIVERY', propLabel: 'OUTBOX', agentLabel: 'The station', firstSeenAt: 1, lastSeenAt: 1, hits: 1, completedAt: null, dismissedAt: null };
-  global.localStorage.setItem('starnet.stationquests.v1', JSON.stringify(saved));
+  global.localStorage.setItem('vultron.stationquests.v1', JSON.stringify(saved));
   StationQuestStore.init();
   A.eq(StationQuestStore.quests().some(q => q.id === 'sq:hero:outbox'), false, 'a saved OPEN OUTBOX quest is retired on load');
   A.eq(StationQuestStore.isDismissed('sq:hero:outbox'), true, '…as a dismissal (it is not celebrated as done)');
-  A.ok(JSON.parse(global.localStorage.getItem('starnet.stationquests.v1')).gaps['sq:hero:outbox'].dismissedAt != null, '…and the retirement is saved');
+  A.ok(JSON.parse(global.localStorage.getItem('vultron.stationquests.v1')).gaps['sq:hero:outbox'].dismissedAt != null, '…and the retirement is saved');
   doc = { props: [{ t: 'outbox', x: 1, y: 1 }] };
   StationQuestStore.sync();
   A.eq(StationQuestStore.quests().some(q => q.id === 'sq:hero:outbox'), false, 'placing an OUTBOX later never resurrects it');
@@ -140,7 +140,7 @@ A.ok(!/evalOutboxCandidate/.test(sqSrc) && !/pendingCount/.test(sqSrc), 'the sto
 
 /* ---------- reset: the new-hero clean slate ---------- */
 StationQuestStore.reset();
-A.eq(global.localStorage.getItem('starnet.stationquests.v1'), null, 'reset removes the self-persisted key');
+A.eq(global.localStorage.getItem('vultron.stationquests.v1'), null, 'reset removes the self-persisted key');
 A.eq(StationQuestStore.quests().length, 0, 'a reset store degrades to no quests until the next init');
 StationQuestStore.init();
 A.eq(StationQuestStore.isDismissed('sq:nova:studio'), false, 'after reset+init, no prior Commander history remains');

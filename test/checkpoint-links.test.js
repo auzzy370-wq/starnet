@@ -360,7 +360,7 @@ const { sidecarSourceFiles, locateSidecarFunction, sidecarFunctionSource, sideca
 
 const isWin = process.platform === 'win32';
 
-const BASE = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-ckpt-links-')));
+const BASE = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-ckpt-links-')));
 const ROOT = path.join(BASE, 'ws');
 const links = [];
 function link(target, at) {

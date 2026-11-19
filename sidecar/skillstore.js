@@ -269,7 +269,7 @@
       if (!skill || skill.agentId !== str(r.agentId) || skill.name !== r.name) return;
       candidateRows.set(keyOf(skill.agentId, skill.name), Object.assign({}, r, { skill }));
     }
-    // A USAGE ROW (markUsed) carries only the counters, keyed by `skillName` — never `name`, so an older StarNet
+    // A USAGE ROW (markUsed) carries only the counters, keyed by `skillName` — never `name`, so an older Vultron
     // that does not know the row reads it as a nameless record and skips it instead of replacing the skill.
     // A use always leaves the skill ACTIVE (markUsed never touches an archived one, and the run's view() has already
     // flipped a stale one in RAM), so the row restores that unconditionally; a later curate/archive record, which comes

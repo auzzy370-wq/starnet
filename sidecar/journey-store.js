@@ -198,7 +198,7 @@ function adaptationText(m, outcome) {
     : m.tier === 'practiced' ? 'prefer relevant repeated patterns while stating uncertainty'
       : 'consider the early pattern but verify it before relying on it';
   return 'Because ' + m.agentId + ' completed ' + m.count + ' verified ' + m.domain + ' outcome' + (m.count === 1 ? '' : 's')
-    + ' (latest: ' + title + '), StarNet will ' + posture + ' for this agent and surface uncertainty outside that track.';
+    + ' (latest: ' + title + '), Vultron will ' + posture + ' for this agent and surface uncertainty outside that track.';
 }
 
 // Mutates a normalized record inside the durable store update. sourceId is the idempotency authority.
@@ -492,7 +492,7 @@ function makeJourneyStore(deps) {
   /* opts.counts === false: the TIER-ONLY form for the cache-stable system prompt (index.js CACHE-STABLE PREFIX). A count
      changes with every verified outcome, so a counted line re-wrote the cached prefix mid-conversation; this form names
      domain + tier + instruction, ordered by tier then domain, and changes only when a tier is crossed or a domain is
-     added or muted. Default: the counted lines, ordered by count (the STARNET_STABLE_PREFIX=0 prompt, unchanged). */
+     added or muted. Default: the counted lines, ordered by count (the VULTRON_STABLE_PREFIX=0 prompt, unchanged). */
   const TIER_RANK = { proven: 3, practiced: 2, tested: 1 };
   function adaptationBlock(agentId, opts) {
     const counts = !(opts && opts.counts === false);

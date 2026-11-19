@@ -71,7 +71,7 @@ function startMock() {
     fs.mkdirSync(path.join(fixture.workspace, AGENT), { recursive: true });
     fs.writeFileSync(path.join(fixture.workspace, AGENT, 'pic.png'), PNG);
     const r = await fetch(B + '/api/run', {
-      method: 'POST', headers: { 'Content-Type': 'application/json', 'X-StarNet-Token': fixture.token, Origin: B },
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Vultron-Token': fixture.token, Origin: B },
       body: JSON.stringify({ key: 'sk-or-v1-runtitle-fake', model: 'test/model', agentId: AGENT, isTask: true, placed: [{ objectType: 'cabinet' }],
         messages: [{ role: 'user', content: DIRECTIVE }] })
     });

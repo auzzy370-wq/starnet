@@ -1,4 +1,4 @@
-/* STARNET — cloudsavecore.js : the pure, testable brain of the durable-mirror sync.
+/* VULTRON — cloudsavecore.js : the pure, testable brain of the durable-mirror sync.
 
    cloudsave.js does the I/O (fetch/beacon/timers); THIS module holds the state machine that
    decides "when do we retry?" and "is the durable mirror stale?" — no browser globals, no
@@ -28,13 +28,13 @@ const CloudSaveCore = (() => {
 
   function num(v) { const n = Number(v); return Number.isFinite(n) && n > 0 ? n : 0; }
 
-  /* WHY THE NEWEST SAVE IS NOT IN THE STATION FILE (wave-1 save-latch-kill; gh#121, starnet-releases#4). One name per failed
+  /* WHY THE NEWEST SAVE IS NOT IN THE STATION FILE (wave-1 save-latch-kill; gh#121, vultron-releases#4). One name per failed
      attempt, read by the save light, the update drain and diagnostics alike. Taken ONLY from what the station answered, or
      from the fact that it did not answer: the disk is named only when the station said ENOSPC (diskFull) or EPERM/EACCES
      (diskDenied) — every failure streak used to read "check disk space" on machines with plenty of disk.
        offline           no answer (network, timeout, a reply that did not parse)
        forbidden         the station's gate refused this window's key: token_stale (a key from before a restart) or token_missing
-                         (no key rode) in X-StarNet-Code — a route's own 403 is not one. From a station that names no refusal (an
+                         (no key rode) in X-Vultron-Code — a route's own 403 is not one. From a station that names no refusal (an
                          older one): any 401/403
        tooLarge          413: the save is over the 16 MiB the station file takes (sidecar/save-wire.js)
        diskFull          the write failed with ENOSPC
@@ -42,14 +42,14 @@ const CloudSaveCore = (() => {
        writeFailed       the write failed with another errno (a locked file, …): never called the disk
        unreadable        the station file could not be read, so it was not overwritten
        conflict          refused as another window's change
-       degraded          the workspace was written by a newer StarNet
+       degraded          the workspace was written by a newer Vultron
        growthStale       refused until this window catches up on rating history
        growthUnavailable the rating history could not be read
        refused           any other refusal (an answer without ok:true) */
   const CAUSES = Object.freeze(['offline', 'forbidden', 'tooLarge', 'diskFull', 'diskDenied', 'writeFailed', 'unreadable', 'conflict', 'degraded', 'growthStale', 'growthUnavailable', 'refused']);
   function isCause(c) { return CAUSES.indexOf(c) !== -1; }
   // o: { answered: did the station reply at all, status: its HTTP status, body: its parsed JSON (or null),
-  //      code: the station's own name for a failure (X-StarNet-Code; '' from an older station) }
+  //      code: the station's own name for a failure (X-Vultron-Code; '' from an older station) }
   function causeOf(o) {
     o = o || {};
     if (!o.answered) return 'offline';
@@ -77,13 +77,13 @@ const CloudSaveCore = (() => {
       case 'diskDenied': return 'the station file’s folder refused the write (check its permissions)';
       case 'writeFailed': return 'the station file could not be written';
       case 'unreadable': return 'the station file could not be read right now, so it was not overwritten';
-      case 'forbidden': return 'StarNet refused this window’s connection — reload the window';
+      case 'forbidden': return 'Vultron refused this window’s connection — reload the window';
       case 'growthStale': return 'this window is catching up on rating history first';
       case 'growthUnavailable': return 'the rating history could not be read';
-      case 'degraded': return 'this station’s data was written by a newer StarNet';
+      case 'degraded': return 'this station’s data was written by a newer Vultron';
       case 'conflict': return 'another window saved newer station changes';
       case 'refused': return 'the station refused the save';
-      default: return 'StarNet’s station service did not answer';
+      default: return 'Vultron’s station service did not answer';
     }
   }
 
@@ -177,7 +177,7 @@ const CloudSaveCore = (() => {
     return { v: 1, top, rows, gone };
   }
   /* A REFUSED MERGE, BY KIND: 'permanent' — asking again cannot help (another station, a copy from before a reset, a newer
-     save format, a workspace written by a newer StarNet): the window stops merging and its saves take the plain path, where
+     save format, a workspace written by a newer Vultron): the window stops merging and its saves take the plain path, where
      a refusal stands as a conflict, as before; 'tooLarge' — this save, merged, is over the 16 MiB the station file takes:
      said as "too large" and asked again with the backoff (a smaller save can land; a whole-save boot merge treats it as
      permanent); 'absent' — there is no station file: the plain save puts this window's save there; anything else is passing

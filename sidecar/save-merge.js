@@ -1,5 +1,5 @@
 /* sidecar/save-merge.js — merge a window's save into the station file when another window has saved past it (wave-1
-   save-latch-kill; gh#153 "a desktop window plus a browser tab", #121, starnet-releases#4).
+   save-latch-kill; gh#153 "a desktop window plus a browser tab", #121, vultron-releases#4).
 
    Two windows of one station each hold the whole station and save the whole station. The station file's revision check
    (savestore compareRevision) refuses a save built on a revision another window already moved past — right, since writing

@@ -1,7 +1,7 @@
 /* The homepage "watch it work" console (2026-10-19) plays RECORDINGS of the real renderer. Each chapter in
    website/station-chapters.js is played once through the real app (website/app booted from the crew save in
    demo-boot.js) by scripts/record-station-demo.mjs, which emits the harness's own bus events through
-   demo-boot's StarnetDemoBridge and records the station canvas. The page plays the clip and prints the same
+   demo-boot's VultronDemoBridge and records the station canvas. The page plays the clip and prints the same
    chapter's trace on the video clock. These pins keep four promises: the room is still the product's own
    starter, every chapter has its clip, the recorder drives the app only through the bridge, and the page
    says it is a replay. */
@@ -27,14 +27,14 @@ A.eq(/<iframe[^>]*crew-app|app\/embed\.htm/.test(html), false, 'the homepage no 
 A.ok(/station-chapters\.js\?v=\d+"><\/script>\s*<script src="station-demo\.js\?v=\d+">/.test(html), 'the chapter data loads before the player');
 A.eq(/live-preview\.js/.test(html), false, 'the retired starter-preview crop script is gone');
 A.eq(/sch-flow|cp-crew|data-term=/.test(html), false, 'the retired SVG capability schematics are gone (the replay chapters replace them)');
-A.ok(/Recorded from the actual StarNet renderer/.test(html) && /scripted replay/i.test(html) && /no model is running on this page/.test(html),
+A.ok(/Recorded from the actual Vultron renderer/.test(html) && /scripted replay/i.test(html) && /no model is running on this page/.test(html),
   'the console says plainly that it is a recording of a scripted replay and no model runs');
 A.ok(/id="station"/.test(html), 'the generator-owned PRODUCT nav link (#station) still lands on the console');
 A.ok(/\.stage-clip video\{/.test(css) && /aspect-ratio:890 \/ 702/.test(css), 'the clip fills the room window at the recorded aspect');
 
 // ---- every chapter has its clip and poster ----
 const g = {}; vm.runInNewContext(chapters, { window: g });
-const C = g.StarnetChapters;
+const C = g.VultronChapters;
 A.eq(C.ORDER, ['delegate', 'flow', 'tools', 'away', 'ledger'], 'five chapters, in tab order');
 for (const key of C.ORDER) {
   const mp4 = path.join(ROOT, 'website', 'assets', 'station', key + '.mp4');
@@ -49,7 +49,7 @@ A.ok(/video\.currentTime \* 1000 - C\.LEAD_MS/.test(js), 'trace lines are printe
 A.ok(/IntersectionObserver/.test(js) && /visibilitychange/.test(js), 'the clip pauses off screen and in hidden tabs');
 for (const ev of ['workitem.placed', 'agent.run.start', 'agent.run.end', 'agent.tool_call', 'agent.tool_result', 'shell.exec', 'verify.result', 'agent.token'])
   A.ok(chapters.includes("'" + ev + "'"), 'a recording drives the renderer with the real ' + ev + ' event');
-A.ok(/StarnetDemoBridge\.emit\(n, p\)/.test(recorder) && /StarnetChapters\.perform\(/.test(recorder),
+A.ok(/VultronDemoBridge\.emit\(n, p\)/.test(recorder) && /VultronChapters\.perform\(/.test(recorder),
   'the recorder plays the shared chapter script through the embed bridge');
 A.ok(/captureStream\(30\)/.test(recorder) && /crop=\$\{CROP\.w\}:\$\{CROP\.h\}/.test(recorder), 'the recorder captures the station canvas and crops it to the room');
 
@@ -58,7 +58,7 @@ A.ok(/function scopeTextures\(\)/.test(demo) && /ROOM_PROPS = \/\^\(desk\|war_in
   'the embed downloads only the textures this room draws (the full catalogue was ~240 MB)');
 A.ok(/World\.setFrameCap\(1000 \/ 30\)/.test(demo),
   'the embed caps its own draw rate: an iframe is never focused, so the 5 fps blur pace would otherwise apply');
-A.ok(/window\.StarnetDemoBridge = \{\s*crew: function\(\)[\s\S]*?emit: function\(name, payload\)\{ U\.bus\.emit\(name, payload\); \}\s*\};/.test(demo),
+A.ok(/window\.VultronDemoBridge = \{\s*crew: function\(\)[\s\S]*?emit: function\(name, payload\)\{ U\.bus\.emit\(name, payload\); \}\s*\};/.test(demo),
   'the bridge exposes exactly a crew count and an emit onto the app bus');
 
 function bootDemo(initial) {
@@ -71,8 +71,8 @@ function bootDemo(initial) {
   return rows;
 }
 
-const upgraded = bootDemo({ 'starnet.save': '{"retired":"station"}' });
-const save = JSON.parse(upgraded['starnet.save']);
+const upgraded = bootDemo({ 'vultron.save': '{"retired":"station"}' });
+const save = JSON.parse(upgraded['vultron.save']);
 const starter = require('../frontend/app/worldmodel.js').starterDoc();
 starter.meta.createdAt = 0;
 const starterRevision = 'starter-' + require('crypto').createHash('sha256').update(JSON.stringify(starter)).digest('hex').slice(0, 16);
@@ -98,9 +98,9 @@ A.ok(save.station.props.some(p => p.t === 'intake') && save.station.props.some(p
 A.ok(Object.keys(save.station.belts).length >= 10, 'one belt runs the length of the floor');
 A.eq(save.station.props.find(p => p.t === 'desk' && p.id === 'p2').agentId, save.agent.id, 'the starter desk belongs to the overseer');
 
-A.eq(upgraded['starnet.website.demo.rev'], starterRevision + '+crew1',
+A.eq(upgraded['vultron.website.demo.rev'], starterRevision + '+crew1',
   'a layout-derived revision (plus the crew-scene marker) moves returning visitors off obsolete saves');
-const already = bootDemo({ 'starnet.website.demo.rev': starterRevision + '+crew1', 'starnet.save': '{"preserved":true}' });
-A.eq(already['starnet.save'], '{"preserved":true}', 'the demo revision migrates once instead of overwriting storage on every load');
+const already = bootDemo({ 'vultron.website.demo.rev': starterRevision + '+crew1', 'vultron.save': '{"preserved":true}' });
+A.eq(already['vultron.save'], '{"preserved":true}', 'the demo revision migrates once instead of overwriting storage on every load');
 
 A.report('website-live-preview.test');

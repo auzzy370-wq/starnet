@@ -4,8 +4,8 @@
 // pins every rule against process shapes copied from a real box.
 //
 // WHY a tree walk and never a name match: on the box this was built on, 13 msedgewebview2.exe processes ran and NONE
-// were StarNet's (SearchHost.exe and GoogleDriveFS.exe own WebView2 trees too). A filter by process name charged
-// ~100 MB and their CPU to StarNet. Attribution starts at the app's OWN pid and follows ParentProcessId only.
+// were Vultron's (SearchHost.exe and GoogleDriveFS.exe own WebView2 trees too). A filter by process name charged
+// ~100 MB and their CPU to Vultron. Attribution starts at the app's OWN pid and follows ParentProcessId only.
 //
 // The PowerShell sampler mirrors roleOf / gpuPct / the contention rule (PowerShell cannot import this module); the
 // bench re-derives every sampler row's role with roleOf and reports a mismatch, so the two copies cannot drift
@@ -341,8 +341,8 @@ export function hermeticEnv({ baseEnv = {}, runDir, ws, port }) {
   Object.assign(env, {
     USERPROFILE: home, HOME: home, APPDATA: roaming, LOCALAPPDATA: local, XDG_DATA_HOME: local, TEMP: tmp, TMP: tmp,
     HERMES_HOME: join(home, '.hermes'), CODEX_HOME: join(home, '.codex'), CLAUDE_CONFIG_DIR: join(home, '.claude'),
-    STARNET_WORKSPACES: ws, SKYNET_WORKSPACES: ws, STARNET_PORT: String(port), SKYNET_PORT: String(port),
-    STARNET_DEV: '1', SKYNET_DEV: '1',
+    VULTRON_WORKSPACES: ws, SKYNET_WORKSPACES: ws, VULTRON_PORT: String(port), SKYNET_PORT: String(port),
+    VULTRON_DEV: '1', SKYNET_DEV: '1',
     SKYNET_DEFAULT_MODEL: 'anthropic/claude-sonnet-4.6',   // the DEV page lands in-game without a key
     SKYNET_LIVE_PRICES: '0',
     SKYNET_OPENROUTER_BASE: 'http://127.0.0.1:9/',

@@ -1,10 +1,10 @@
-/* sidecar/acp/core.js — the PURE core of StarNet's ACP (Agent Client Protocol) agent.
+/* sidecar/acp/core.js — the PURE core of Vultron's ACP (Agent Client Protocol) agent.
 
-   THE GAP THIS CLOSES. StarNet had no editor integration of any kind — zero. You could reach an agent from the
+   THE GAP THIS CLOSES. Vultron had no editor integration of any kind — zero. You could reach an agent from the
    station window, from five messaging channels, from a routine, and from an OpenAI-compatible HTTP surface, but
    not from the place a developer actually works. The reference harness ships a full ACP agent (acp_adapter/,
    ~5.3k lines) and that is what makes it reachable from Zed, Neovim, and every other ACP client. This is the
-   same protocol on StarNet's own seams.
+   same protocol on Vultron's own seams.
 
    ACP is JSON-RPC 2.0 over stdio, spoken BOTH ways: the editor calls the agent (initialize, session/new,
    session/prompt), and the agent calls back into the editor (session/update notifications for streaming, and
@@ -18,7 +18,7 @@
    workspace is a hard invariant, so this core never touches a store file: every action is an HTTP call to the
    running sidecar, exactly like sidecar/mcp/serve.js. A prompt is POST /api/run (which streams NDJSON events),
    a permission answer is POST /api/consent, a cancel is POST /api/cancel. Nothing here duplicates harness logic
-   — if the station is down, every method answers with an honest "start StarNet" error instead of pretending.
+   — if the station is down, every method answers with an honest "start Vultron" error instead of pretending.
 
    ── PURE ───────────────────────────────────────────────────────────────────────────────────────────────────
    No fs, no fetch, no clock, no rng: `callSidecar` / `openRun` / `notify` / `request` / `newId` are all injected,
@@ -26,7 +26,7 @@
    lives only in serve.js.
 
    ── WHAT IS DELIBERATELY NOT HERE (v1 honesty) ──────────────────────────────────────────────────────────────
-   · agent_thought_chunk: StarNet's event contract carries `agent.reasoning {on}` — a FLAG that reasoning is
+   · agent_thought_chunk: Vultron's event contract carries `agent.reasoning {on}` — a FLAG that reasoning is
      happening — and no reasoning-text deltas (by design: a thinking delta must never be emitted as a text
      event). So there is no thought stream to forward, and we advertise none rather than faking one.
    · fs/read_text_file & fs/write_text_file: an ACP client can offer its OWN filesystem so the agent sees
@@ -35,7 +35,7 @@
      agent reads what is on disk — correct, just less clever than it could be.
    · diff content on an edit tool call: ACP can render a real before/after diff, but agent.tool_result carries a
      SUMMARY, not the old and new text. We send the summary as text rather than inventing a diff.
-   · session modes: ACP modes would map to StarNet's approvalMode, but a bridge that could switch itself to
+   · session modes: ACP modes would map to Vultron's approvalMode, but a bridge that could switch itself to
      'full' is a bridge that can self-grant. Not offered. */
 'use strict';
 (function (root, factory) {
@@ -49,7 +49,7 @@
   const RunOutcome = (typeof require === 'function') ? require('../../frontend/app/runoutcome.js') : ((typeof globalThis !== 'undefined' && globalThis.RunOutcome) || null);
   const JSONRPC = '2.0';
   const PROTOCOL_VERSION = 1;          // ACP protocol revision this agent implements
-  const AGENT_NAME = 'starnet';
+  const AGENT_NAME = 'vultron';
   const MAX_PROMPT_CHARS = 200000;     // a pasted file is a legitimate prompt; a whole repo is not
   const MAX_TURNS_KEPT = 60;           // per-session transcript tail handed back to /api/run
 
@@ -110,7 +110,7 @@
   }
 
   // ---------------------------------------------------------------------------
-  // StarNet tool -> ACP tool-call shape
+  // Vultron tool -> ACP tool-call shape
   // ---------------------------------------------------------------------------
 
   /* toolKind(name) -> one of ACP's tool kinds. The kind is what an editor uses to pick an icon and to decide
@@ -194,7 +194,7 @@
     /* path.trust is not a tool the model calls — it is the station's FOLDER-TRUST ask, and because an ACP
        session sends its cwd as the project root it is very often the FIRST card a user ever sees here. Titling
        it "path.trust" made the most important first impression unreadable. */
-    if (n === 'path.trust' && path) return 'Allow StarNet to work in ' + short(path);
+    if (n === 'path.trust' && path) return 'Allow Vultron to work in ' + short(path);
     if (n === 'shell.exec' && args && args.cmd) return 'Run ' + short(args.cmd);
     if (n === 'shell.exec' && args && args.command) return 'Run ' + short(args.command);
     if (n === 'verify.run' && args && args.cmd) return 'Verify ' + short(args.cmd);
@@ -217,7 +217,7 @@
   // run end reason -> ACP stopReason
   // ---------------------------------------------------------------------------
 
-  /* Every StarNet terminal reason maps onto one of ACP's five stop reasons. The ones that are NOT a plain
+  /* Every Vultron terminal reason maps onto one of ACP's five stop reasons. The ones that are NOT a plain
      end_turn matter: an editor renders 'cancelled' and 'refusal' differently, and 'max_turn_requests' is the
      signal that says "ask me to continue" rather than "I finished".
      'budget' has no ACP equivalent — it ends the turn, and the caller appends a plain sentence saying WHY so
@@ -252,21 +252,21 @@
     // projected (agent.run.end budgetProjected): the run family's calls still in flight already took what was left, so
     // the run stopped BEFORE its cap — never say it hit one it did not reach (bug d3a76db3 review)
     if (r === 'budget' && projected === true) return atBalance === true
-      ? '\n\n(stopped: this run stopped before it would spend more than what is left on your StarNet balance — add credits in StarNet under SETTINGS → AI & MODELS.)'
-      : '\n\n(stopped: this run stopped before it would pass its per-run spend cap — raise it in StarNet under SETTINGS › SPENDING LIMITS.)';
-    // a StarNet run whose ceiling admission clamped to the balance (agent.run.end budgetCapIsBalance): raising a cap
+      ? '\n\n(stopped: this run stopped before it would spend more than what is left on your Vultron balance — add credits in Vultron under SETTINGS → AI & MODELS.)'
+      : '\n\n(stopped: this run stopped before it would pass its per-run spend cap — raise it in Vultron under SETTINGS › SPENDING LIMITS.)';
+    // a Vultron run whose ceiling admission clamped to the balance (agent.run.end budgetCapIsBalance): raising a cap
     // does nothing — the wallet ran out
-    if (r === 'budget' && atBalance === true) return '\n\n(stopped: this run used what was left on your StarNet balance — add credits in StarNet under SETTINGS → AI & MODELS.)';
-    if (r === 'budget') return '\n\n(stopped: this run hit a spend cap — raise or clear it in StarNet under SETTINGS › SPENDING LIMITS.)';
+    if (r === 'budget' && atBalance === true) return '\n\n(stopped: this run used what was left on your Vultron balance — add credits in Vultron under SETTINGS → AI & MODELS.)';
+    if (r === 'budget') return '\n\n(stopped: this run hit a spend cap — raise or clear it in Vultron under SETTINGS › SPENDING LIMITS.)';
     if (r === 'max_iters') return '\n\n(stopped: reached the step limit for one turn — send "continue" to keep going.)';
-    // the outcome's code says WHOSE failure it was: a provider's rate limit is not "a failure inside StarNet" (typed-outcomes)
-    if (so && so.outcome === 'failed' && RunOutcome && RunOutcome.isProviderCode(so.failureCode)) return '\n\n(stopped: the model provider failed this turn (' + so.failureCode + ') — the error above says why; send it again, or switch model in StarNet.)';
-    if (so && so.outcome === 'failed' && so.failureCode === 'no_terminal_outcome') return '\n\n(stopped: StarNet never reported how this run ended — check the station log, then send it again.)';
-    // a refused run (the model or its provider's safety filter declined the request) is never "a failure inside StarNet": the
+    // the outcome's code says WHOSE failure it was: a provider's rate limit is not "a failure inside Vultron" (typed-outcomes)
+    if (so && so.outcome === 'failed' && RunOutcome && RunOutcome.isProviderCode(so.failureCode)) return '\n\n(stopped: the model provider failed this turn (' + so.failureCode + ') — the error above says why; send it again, or switch model in Vultron.)';
+    if (so && so.outcome === 'failed' && so.failureCode === 'no_terminal_outcome') return '\n\n(stopped: Vultron never reported how this run ended — check the station log, then send it again.)';
+    // a refused run (the model or its provider's safety filter declined the request) is never "a failure inside Vultron": the
     // refusal stopReason carries a model's own refusal; a provider's safety block says whose filter it was (typed-outcomes)
-    if (so && so.outcome === 'refused') return so.failureCode === 'content_policy_blocked' ? '\n\n(stopped: the model provider\'s safety filter declined this request — rephrase it, or switch model in StarNet.)' : '';
-    if (r === 'error' || (so && so.outcome === 'failed')) return '\n\n(stopped: the run failed inside StarNet' + (so && so.failureCode && so.failureCode !== 'run_failure' ? ' (' + so.failureCode + ')' : '') + ' — check the station log for the error.)';
-    if (so && so.outcome === 'empty') return '\n\n(stopped: the model sent back an empty reply — send "continue" to try again, or switch model in StarNet.)';
+    if (so && so.outcome === 'refused') return so.failureCode === 'content_policy_blocked' ? '\n\n(stopped: the model provider\'s safety filter declined this request — rephrase it, or switch model in Vultron.)' : '';
+    if (r === 'error' || (so && so.outcome === 'failed')) return '\n\n(stopped: the run failed inside Vultron' + (so && so.failureCode && so.failureCode !== 'run_failure' ? ' (' + so.failureCode + ')' : '') + ' — check the station log for the error.)';
+    if (so && so.outcome === 'empty') return '\n\n(stopped: the model sent back an empty reply — send "continue" to try again, or switch model in Vultron.)';
     if (so && so.outcome === 'cut_short') return '\n\n(stopped: the reply was cut short by the model\'s output limit — send "continue" for the rest.)';
     return '';
   }
@@ -275,7 +275,7 @@
   // permission options
   // ---------------------------------------------------------------------------
 
-  /* The three answers StarNet's consent broker actually understands, in ACP's option vocabulary. `optionId` is
+  /* The three answers Vultron's consent broker actually understands, in ACP's option vocabulary. `optionId` is
      the exact string POST /api/consent wants, so nothing has to be translated on the way back — and an
      UNRECOGNISED answer is coerced to 'deny' by the sidecar, which is the fail-closed direction. */
   function permissionOptions() {
@@ -329,7 +329,7 @@
       log('initialize from ' + clientName + ' (protocol v' + str(p.protocolVersion) + ')');
       return {
         protocolVersion: PROTOCOL_VERSION,
-        agentInfo: { name: AGENT_NAME, title: 'StarNet', version: version() },
+        agentInfo: { name: AGENT_NAME, title: 'Vultron', version: version() },
         agentCapabilities: {
           // loadSession: this process can replay a session it is still holding (see session/load — it is
           // honest about a sessionId from a PREVIOUS bridge process, which it cannot know about).
@@ -337,7 +337,7 @@
           /* image: FALSE — and this must stay false until images actually reach the model.
              It was true in the first cut, which is a capability lie of the exact kind this project forbids: a
              client reads `image: true` as "this agent can see pictures", so it happily lets the user attach a
-             screenshot, and the agent then answers about text it was never shown. Attachments enter StarNet
+             screenshot, and the agent then answers about text it was never shown. Attachments enter Vultron
              through the station's own attachment seam (a workspace file + provider image blocks) and this
              bridge has no path to it. Declaring false makes a client either disable image attachment or warn,
              which is the truthful outcome; blocksToTurn still degrades gracefully and STATES the count if a
@@ -355,14 +355,14 @@
     async function newSession(params) {
       const p = params || {};
       const cwd = str(p.cwd);
-      const sessionId = 'starnet-' + newId();
+      const sessionId = 'vultron-' + newId();
       sessions.set(sessionId, { cwd: cwd, messages: [], run: null });
       log('new session ' + sessionId + ' (cwd=' + cwd + ')');
-      // mcpServers: an ACP client may pass its own MCP servers for this session. StarNet's connectors are
+      // mcpServers: an ACP client may pass its own MCP servers for this session. Vultron's connectors are
       // account-level and configured in the station, so we do not silently adopt them — and we say so once
       // rather than letting the user wonder why their editor's MCP tools are absent.
       if (Array.isArray(p.mcpServers) && p.mcpServers.length) {
-        log('ignoring ' + p.mcpServers.length + ' client-supplied MCP server(s): StarNet connectors are configured in the station');
+        log('ignoring ' + p.mcpServers.length + ' client-supplied MCP server(s): Vultron connectors are configured in the station');
       }
       return { sessionId: sessionId };
     }
@@ -411,7 +411,7 @@
       let text = turn.text;
       if (turn.images) {
         text += (text ? '\n\n' : '') + '[' + turn.images + ' image(s) were attached in the editor but could not be '
-          + 'forwarded: StarNet\'s ACP bridge does not carry image attachments yet. Say so if the answer depends on them.]';
+          + 'forwarded: Vultron\'s ACP bridge does not carry image attachments yet. Say so if the answer depends on them.]';
       }
       if (turn.unsupported.length) log('prompt contained unsupported block type(s): ' + turn.unsupported.join(', '));
 
@@ -421,7 +421,7 @@
       let runId = '';
       let answer = '';
       let leadRunId = '';
-      let stopAtBalance = false;   // this run's own budget stop was the StarNet balance (agent.run.end budgetCapIsBalance)
+      let stopAtBalance = false;   // this run's own budget stop was the Vultron balance (agent.run.end budgetCapIsBalance)
       let stopProjected = false;   // ...and it stopped BEFORE the cap, on calls still in flight (agent.run.end budgetProjected)
       let leadEnd = null, leadErr = null;   // the lead run's own end (stamped with its outcome) and error (its code)
       const seen = new Map();   // callId -> { name, args }
@@ -477,7 +477,7 @@
         if (name === 'agent.run.error') {
           if (!q.runId || !leadRunId || str(q.runId) === leadRunId) leadErr = q;
           const msg = str(q.message);
-          if (msg) messageChunk(sessionId, '\n\n(StarNet run error: ' + msg + ')');
+          if (msg) messageChunk(sessionId, '\n\n(Vultron run error: ' + msg + ')');
           return;
         }
       };
@@ -538,7 +538,7 @@
         // A transport failure is not a protocol failure: the turn ends, and the user is told plainly.
         const msg = (e && e.message) || String(e);
         log('run failed: ' + msg);
-        messageChunk(sessionId, (answer ? '\n\n' : '') + '(StarNet could not complete this turn: ' + msg + ')');
+        messageChunk(sessionId, (answer ? '\n\n' : '') + '(Vultron could not complete this turn: ' + msg + ')');
         reason = 'error';
       } finally {
         s.run = null;

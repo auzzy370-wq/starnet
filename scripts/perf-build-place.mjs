@@ -34,7 +34,7 @@ const port = arg('--port', '9712'), cdpPort = Number(arg('--cdp', '9722')), size
 const reps = Number(arg('--reps', '1'));
 const only = arg('--only', 'place,move,turn,delete,undo,belt,south,north,rename').split(',');
 const station = resolve(arg('--station', join(repo, 'dev/fixtures/seed-workspace')));
-const OUT = resolve(arg('--out', join(tmpdir(), 'starnet-perf-build')));
+const OUT = resolve(arg('--out', join(tmpdir(), 'vultron-perf-build')));
 const shots = arg('--shots') ? resolve(arg('--shots')) : null;
 const scratch = join(OUT, '_ws-' + port), profile = join(OUT, '_profile-' + cdpPort), home = join(OUT, '_home-' + port);
 for (const d of [scratch, profile, home]) rmSync(d, { recursive: true, force: true });

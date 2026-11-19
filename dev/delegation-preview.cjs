@@ -112,10 +112,10 @@ async function provider() {
   const mock = await provider();
   const root = path.resolve(process.argv[2] || '.dogfood/delegation');
   const profile = path.join(root, 'profile'); fs.mkdirSync(profile, { recursive: true });
-  const port = Number(process.env.STARNET_PORT) || 9444;
+  const port = Number(process.env.VULTRON_PORT) || 9444;
   const child = spawn(process.execPath, [path.join(__dirname, 'seed.js'), '--keep', '--workspace', path.join(root, 'workspace')], { windowsHide: true, stdio: 'inherit', env: {
     ...process.env, APPDATA: profile, LOCALAPPDATA: profile, XDG_DATA_HOME: profile,
-    SKYNET_PORT: String(port), STARNET_PORT: String(port), SKYNET_DEFAULT_MODEL: 'test/model',
+    SKYNET_PORT: String(port), VULTRON_PORT: String(port), SKYNET_DEFAULT_MODEL: 'test/model',
     SKYNET_OPENROUTER_KEY: 'sk-or-v1-local-proof', SKYNET_OPENROUTER_BASE: 'http://127.0.0.1:' + mock.address().port + '/api/v1'
   } });
   child.on('exit', () => mock.close());

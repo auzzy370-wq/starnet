@@ -1,7 +1,7 @@
 /* node test/headless-station-default.test.js — a headless client runs on the station default (GitHub #96 follow-up, quick win 13).
 
    GET /api/runtime/agent is what an out-of-process client (the ACP editor bridge, a script) reads before it drives
-   POST /api/run. It resolved provider 'openrouter' + STARNET_DEFAULT_MODEL whatever the station runs on, so a station
+   POST /api/run. It resolved provider 'openrouter' + VULTRON_DEFAULT_MODEL whatever the station runs on, so a station
    whose agent runs on a ChatGPT sign-in (no OpenRouter key) answered "configured: false" and the editor refused to run.
    And the bridge sent no persona, so the run was a bare model with no identity.
 
@@ -98,7 +98,7 @@ const signedInChatGPT = id => id === 'codex';
       }
       if (req.method === 'POST' && req.url === '/api/run') {
         let body = null; try { body = JSON.parse(raw); } catch (_) {}
-        runs.push({ body, token: req.headers['x-starnet-token'] });
+        runs.push({ body, token: req.headers['x-vultron-token'] });
         res.writeHead(200, { 'Content-Type': 'application/x-ndjson' });
         res.write(JSON.stringify({ name: 'agent.run.start', payload: { runId: 'r1', agentId: 'agent' } }) + '\n');
         res.write(JSON.stringify({ name: 'agent.token', payload: { runId: 'r1', delta: 'hello from NOVA' } }) + '\n');

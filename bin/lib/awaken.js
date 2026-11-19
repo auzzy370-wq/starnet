@@ -3,7 +3,7 @@
    The same ceremony the app runs (frontend/app/app.js onWakeAttempt + enterGame, frontend/app/onboarding.js), beat for
    beat, written through the same routes, so opening the app later finds an ordinary onboarded station:
      CREATE           the Overseer's name (blank → a station codename), its personality, its working style (ask / full power)
-     CONNECT A BRAIN  ChatGPT, Claude Code, Grok or Kimi sign-in, StarNet credits, or Ollama on this computer — then a model,
+     CONNECT A BRAIN  ChatGPT, Claude Code, Grok or Kimi sign-in, Vultron credits, or Ollama on this computer — then a model,
                       then the app's own wire test ("Reply with exactly: OK"): the awakening never starts on a dead wire. API
                       keys are added in the desktop app (its keychain); a terminal-only station reads them from the environment.
      WAKE             the app's resets (autonomy posture, journey, memory, inherited grants), the agent, the starter room with its
@@ -73,10 +73,10 @@ const BRAINS = [
   { id: 'claude-cli', label: 'Claude — sign in through Claude Code', flow: 'claude' },
   { id: 'grok', label: 'Grok — sign in with your X account', flow: 'device', path: 'grok' },
   { id: 'kimi', label: 'Kimi — sign in with your Kimi account', flow: 'device', path: 'kimi' },
-  { id: 'starnet', label: 'StarNet credits — link your StarNet account', flow: 'credits' },
+  { id: 'vultron', label: 'Vultron credits — link your Vultron account', flow: 'credits' },
   { id: 'ollama', label: 'Ollama — free, runs on this computer', flow: 'local' }
 ];
-const BRAIN_NAME = { codex: 'ChatGPT', 'claude-cli': 'Claude', grok: 'Grok', kimi: 'Kimi', starnet: 'StarNet credits', ollama: 'Ollama' };
+const BRAIN_NAME = { codex: 'ChatGPT', 'claude-cli': 'Claude', grok: 'Grok', kimi: 'Kimi', vultron: 'Vultron credits', ollama: 'Ollama' };
 
 function makeAwakening(deps) {
   const st = deps.st, io = deps.io, M = deps.mods;
@@ -212,24 +212,24 @@ function makeAwakening(deps) {
   /* ======================================== CREATE ======================================================================= */
   async function create() {
     io.stage('CREATE YOUR OVERSEER', 'Who it is');
-    await io.say([seg('there’s no one aboard this station yet. you’re about to make its Overseer — the first agent, the one that runs the place.', 46, 300)], { who: 'STARNET' });
-    await io.say([seg('what should it be called?', 46, 0)], { who: 'STARNET' });
+    await io.say([seg('there’s no one aboard this station yet. you’re about to make its Overseer — the first agent, the one that runs the place.', 46, 300)], { who: 'VULTRON' });
+    await io.say([seg('what should it be called?', 46, 0)], { who: 'VULTRON' });
     const n = await io.ask({ options: [{ label: 'Give it a station codename', value: '', skip: true }], custom: true, customLabel: 'its name', placeholder: 'a name, up to 18 letters', optional: true });
     let raw = n.skip ? '' : String(n.value || '').trim();
     if (M.Dialogue.isUnnamed(raw)) raw = M.Dialogue.codename();
     const name = raw.toUpperCase().slice(0, 18);
     let persona = null;
     for (;;) {
-      await io.say([seg('how should ' + name + ' talk?', 46, 0)], { who: 'STARNET' });
+      await io.say([seg('how should ' + name + ' talk?', 46, 0)], { who: 'VULTRON' });
       const list = M.Personas.list();
       const p = await io.ask({ options: list.map(x => ({ label: x.name + ' — ' + x.vibe, value: x.id })) });
       persona = M.Personas.get ? M.Personas.get(p.value) : list.find(x => x.id === p.value);
       if (p.value !== 'unhinged') break;
-      await io.say([seg('unhinged is irreverent and profane by default. keep it?', 46, 0)], { who: 'STARNET' });
+      await io.say([seg('unhinged is irreverent and profane by default. keep it?', 46, 0)], { who: 'VULTRON' });
       const sure = await io.ask({ options: [{ label: 'Keep unhinged', value: 'yes' }, { label: 'Pick another', value: 'no' }] });
       if (sure.value === 'yes') break;
     }
-    await io.say([seg('how much can ' + name + ' do without asking you?', 46, 0)], { who: 'STARNET' });
+    await io.say([seg('how much can ' + name + ' do without asking you?', 46, 0)], { who: 'VULTRON' });
     const ap = await io.ask({ options: [
       { label: 'Ask for approval — stops to check with you before it writes, runs, or reaches out', value: 'ask' },
       { label: 'Full power — uses the whole local computer without approval prompts', value: 'full' }
@@ -246,15 +246,15 @@ function makeAwakening(deps) {
       const provs = (ok(pr) && pr.json && pr.json.providers) || [];
       const configured = new Set(provs.filter(p => p && p.configured).map(p => p.id));
       const named = id => BRAIN_NAME[id] || ((provs.find(p => p && p.id === id) || {}).name) || id;   // the station's own name for it
-      await io.say([seg(name + ' thinks with a model you connect. which one?', 46, 0)], { who: 'STARNET' });
+      await io.say([seg(name + ' thinks with a model you connect. which one?', 46, 0)], { who: 'VULTRON' });
       const ready = [...configured].filter(id => id !== 'compute' && id !== 'mock');
       const options = ready.map(id => ({ label: named(id) + ' — already connected on this station', value: 'use:' + id }))
         .concat(BRAINS.filter(b => !configured.has(b.id)).map(b => ({ label: b.label, value: b.id })))
         .concat([{ label: 'An API key (OpenRouter, OpenAI, Anthropic …)', value: 'key' }]);
       const pick = await io.ask({ options });
       if (pick.value === 'key') {
-        await io.say([seg('API keys are added in the StarNet desktop app — SETTINGS › AI & MODELS — which keeps them in your computer’s keychain.', 44, 300)], { who: 'STARNET' });
-        if (o.privateStation) await io.say([seg('this station runs from the terminal on its own, so it can also read one from your environment: set it (for example OPENROUTER_API_KEY or ANTHROPIC_API_KEY) and run starnet again.', 44, 300)], { who: 'STARNET' });
+        await io.say([seg('API keys are added in the Vultron desktop app — SETTINGS › AI & MODELS — which keeps them in your computer’s keychain.', 44, 300)], { who: 'VULTRON' });
+        if (o.privateStation) await io.say([seg('this station runs from the terminal on its own, so it can also read one from your environment: set it (for example OPENROUTER_API_KEY or ANTHROPIC_API_KEY) and run vultron again.', 44, 300)], { who: 'VULTRON' });
         continue;
       }
       const id = String(pick.value).replace(/^use:/, '');
@@ -270,9 +270,9 @@ function makeAwakening(deps) {
       io.note('', 'dim');
       if (wire && !wire.error && String(wire.text || '').trim()) return { provider: id, model };
       const why = String((wire && (wire.error || wire.text)) || 'no reply within 30 seconds (network or provider stall)').replace(/\s+/g, ' ').slice(0, 160);
-      await io.say([seg(wireTestLine(why, wire && wire.outcome), 44, 300)], { who: 'STARNET' });
+      await io.say([seg(wireTestLine(why, wire && wire.outcome), 44, 300)], { who: 'VULTRON' });
       // a local model's first call also LOADS it into memory, which can outlast the test: the next try finds it warm
-      if (id === 'ollama' && /no reply within/.test(why)) await io.say([seg('Ollama may still be loading ' + model + ' into memory — the first call can take a minute. pick it again in a moment.', 44, 300)], { who: 'STARNET' });
+      if (id === 'ollama' && /no reply within/.test(why)) await io.say([seg('Ollama may still be loading ' + model + ' into memory — the first call can take a minute. pick it again in a moment.', 44, 300)], { who: 'VULTRON' });
     }
   }
   /* THE WIRE TEST'S HEADLINE (review r8; the page's twin is frontend/app/app.js wireTestLine, word for word): a test that did not FINISH is
@@ -293,12 +293,12 @@ function makeAwakening(deps) {
       const r = await st.get('/api/models/ollama', 15000);
       const models = (ok(r) && r.json && Array.isArray(r.json.models)) ? r.json.models : [];
       if (models.length) return true;
-      await io.say([seg('Ollama isn’t answering on this computer, or it has no models yet. install it from ollama.com, pull a model (for example: ollama pull qwen3), then pick it again.', 44, 300)], { who: 'STARNET' });
+      await io.say([seg('Ollama isn’t answering on this computer, or it has no models yet. install it from ollama.com, pull a model (for example: ollama pull qwen3), then pick it again.', 44, 300)], { who: 'VULTRON' });
       return false;
     }
     if (b.flow === 'device') {
       const s = await st.post('/api/auth/' + b.path + '/start', {}, 20000);
-      if (!(ok(s) && s.json && s.json.user_code)) { await io.say([seg('could not start the ' + BRAIN_NAME[b.id] + ' sign-in: ' + ((s.json && s.json.error) || s.error || 'HTTP ' + s.status), 44, 300)], { who: 'STARNET' }); return false; }
+      if (!(ok(s) && s.json && s.json.user_code)) { await io.say([seg('could not start the ' + BRAIN_NAME[b.id] + ' sign-in: ' + ((s.json && s.json.error) || s.error || 'HTTP ' + s.status), 44, 300)], { who: 'VULTRON' }); return false; }
       const url = s.json.verification_uri_complete || s.json.verification_uri;
       return waitLink('open ' + url + ' and enter the code ' + s.json.user_code + ' to sign in with ' + BRAIN_NAME[b.id] + '.', url, (s.json.expires_in || 900) * 1000, Math.max(2, s.json.interval || 5) * 1000,
         async () => { const p = await st.post('/api/auth/' + b.path + '/poll', { device_auth_id: s.json.device_auth_id, user_code: s.json.user_code }, 20000); const j = (p && p.json) || { status: 'pending' }; return j.status === 'connected' ? 'ok' : j.status === 'error' ? 'sign-in failed: ' + (j.error || 'try again') : ''; });
@@ -306,31 +306,31 @@ function makeAwakening(deps) {
     if (b.flow === 'claude') {
       const status = await st.get('/api/auth/claude-cli/status', 15000);
       const j = (ok(status) && status.json) || null;
-      if (!j || typeof j.installed !== 'boolean') { await io.say([seg('couldn’t check Claude Code right now — pick it again in a moment.', 44, 300)], { who: 'STARNET' }); return false; }
+      if (!j || typeof j.installed !== 'boolean') { await io.say([seg('couldn’t check Claude Code right now — pick it again in a moment.', 44, 300)], { who: 'VULTRON' }); return false; }
       if (!j.installed) {
-        await io.say([seg('Claude Code isn’t installed on this computer yet. install it — ' + (process.platform === 'win32' ? 'in PowerShell: irm https://claude.ai/install.ps1 | iex' : 'in a terminal: curl -fsSL https://claude.ai/install.sh | bash') + ' — then pick Claude again.', 44, 300)], { who: 'STARNET' });
+        await io.say([seg('Claude Code isn’t installed on this computer yet. install it — ' + (process.platform === 'win32' ? 'in PowerShell: irm https://claude.ai/install.ps1 | iex' : 'in a terminal: curl -fsSL https://claude.ai/install.sh | bash') + ' — then pick Claude again.', 44, 300)], { who: 'VULTRON' });
         return false;
       }
       if (j.loggedIn) return true;
       const s = await st.post('/api/auth/claude-cli/start', {}, 30000);
       const sj = (s && s.json) || {};
       if (sj.status === 'connected') return true;
-      if (!sj.login_id) { await io.say([seg('could not start the Claude sign-in: ' + (sj.error || s.error || 'HTTP ' + s.status), 44, 300)], { who: 'STARNET' }); return false; }
+      if (!sj.login_id) { await io.say([seg('could not start the Claude sign-in: ' + (sj.error || s.error || 'HTTP ' + s.status), 44, 300)], { who: 'VULTRON' }); return false; }
       return waitLink('finish signing in with Claude' + (sj.url ? ' at ' + sj.url : ' in the browser window Claude Code opened') + '. if it shows you a code, type it here and press enter.', sj.url, 15 * 60000, 3000,
         async () => { const p = await st.post('/api/auth/claude-cli/poll', { login_id: sj.login_id }, 20000); const pj = (p && p.json) || { status: 'pending' }; return pj.status === 'connected' ? 'ok' : (pj.status === 'error' || pj.status === 'failed') ? 'sign-in failed: ' + (pj.error || 'try again') : ''; },
         async code => { const c = await st.post('/api/auth/claude-cli/code', { login_id: sj.login_id, code }, 30000); return (c && c.json && (c.json.status === 'connected' || c.json.ok)) ? 'ok' : ''; },
         async () => { await st.post('/api/auth/claude-cli/cancel', { login_id: sj.login_id }, 10000); });
     }
     if (b.flow === 'credits') {
-      const s = await st.post('/api/credits/link/start', { deviceName: 'starnet terminal' }, 20000);
-      if (!(ok(s) && s.json && s.json.code)) { await io.say([seg('could not start linking your StarNet account: ' + ((s.json && s.json.error) || s.error || 'HTTP ' + s.status), 44, 300)], { who: 'STARNET' }); return false; }
-      const linked = await waitLink('open ' + s.json.verifyUrl + ' and confirm the code ' + s.json.code + ' to link this station to your StarNet account.', s.json.verifyUrl, 15 * 60000, 3000,
+      const s = await st.post('/api/credits/link/start', { deviceName: 'vultron terminal' }, 20000);
+      if (!(ok(s) && s.json && s.json.code)) { await io.say([seg('could not start linking your Vultron account: ' + ((s.json && s.json.error) || s.error || 'HTTP ' + s.status), 44, 300)], { who: 'VULTRON' }); return false; }
+      const linked = await waitLink('open ' + s.json.verifyUrl + ' and confirm the code ' + s.json.code + ' to link this station to your Vultron account.', s.json.verifyUrl, 15 * 60000, 3000,
         async () => { const p = await st.post('/api/credits/link/poll', { code: s.json.code }, 20000); const pj = (p && p.json) || {}; return pj.linked ? 'ok' : /^(expired|consumed|unknown|invalid)$/.test(String(pj.status || '')) ? 'that link code ' + pj.status + ' — start again' : ''; });
       if (!linked) return false;
       const c = await st.get('/api/credits', 20000);
       const bal = c && c.json && typeof c.json.balanceUsd === 'number' ? c.json.balanceUsd : null;
-      if (bal == null) { await io.say([seg('StarNet couldn’t confirm your credit balance right now. your credits are safe — try again in a moment.', 44, 300)], { who: 'STARNET' }); return false; }
-      if (!(bal > 0)) { await io.say([seg('your StarNet account has no credits yet — waking your agent uses credits right away. add credits at account.starnetos.com, then pick StarNet again.', 44, 300)], { who: 'STARNET' }); return false; }
+      if (bal == null) { await io.say([seg('Vultron couldn’t confirm your credit balance right now. your credits are safe — try again in a moment.', 44, 300)], { who: 'VULTRON' }); return false; }
+      if (!(bal > 0)) { await io.say([seg('your Vultron account has no credits yet — waking your agent uses credits right away. add credits at account.vultron.vercel.app, then pick Vultron again.', 44, 300)], { who: 'VULTRON' }); return false; }
       return true;
     }
     return true;
@@ -340,7 +340,7 @@ function makeAwakening(deps) {
     if (b.flow === 'device') {
       const s = await st.post('/api/auth/' + b.path + '/add', {}, 20000);
       const sj = (s && s.json) || {};
-      if (!(ok(s) && sj.user_code)) { await io.say([seg('could not start another ' + name + ' sign-in: ' + (sj.error || s.error || 'HTTP ' + s.status), 44, 300)], { who: 'STARNET' }); return false; }
+      if (!(ok(s) && sj.user_code)) { await io.say([seg('could not start another ' + name + ' sign-in: ' + (sj.error || s.error || 'HTTP ' + s.status), 44, 300)], { who: 'VULTRON' }); return false; }
       const url = sj.verification_uri_complete || sj.verification_uri;
       return waitLink('open ' + url + ' and enter the code ' + sj.user_code + ' — sign in with the OTHER ' + name + ' account (not the one already connected).', url, (sj.expires_in || 900) * 1000, Math.max(2, sj.interval || 5) * 1000,
         async () => { const p = await st.post('/api/auth/' + b.path + '/account-poll', { login_id: sj.login_id, device_auth_id: sj.device_auth_id }, 20000); const j = (p && p.json) || { status: 'pending' }; return j.status === 'connected' ? 'ok' : j.status === 'error' ? 'sign-in failed: ' + (j.error || 'try again') : ''; });
@@ -349,7 +349,7 @@ function makeAwakening(deps) {
       const s = await st.post('/api/auth/claude-cli/add', {}, 30000);
       const sj = (s && s.json) || {};
       if (sj.status === 'connected') return true;
-      if (!sj.login_id || !sj.account) { await io.say([seg('could not start another Claude sign-in: ' + (sj.error || s.error || 'HTTP ' + s.status), 44, 300)], { who: 'STARNET' }); return false; }
+      if (!sj.login_id || !sj.account) { await io.say([seg('could not start another Claude sign-in: ' + (sj.error || s.error || 'HTTP ' + s.status), 44, 300)], { who: 'VULTRON' }); return false; }
       const acct = sj.account;
       const landed = await waitLink('finish signing in with the OTHER Claude account' + (sj.url ? ' at ' + sj.url : ' in the browser window Claude Code opened') + '. if it shows you a code, type it here and press enter.', sj.url, 15 * 60000, 3000,
         async () => { const p = await st.post('/api/auth/claude-cli/poll', { account: acct, login_id: sj.login_id }, 20000); const pj = (p && p.json) || { status: 'pending' }; return pj.status === 'connected' ? 'ok' : (pj.status === 'error' || pj.status === 'failed') ? 'sign-in failed: ' + (pj.error || 'try again') : ''; },
@@ -362,7 +362,7 @@ function makeAwakening(deps) {
   }
   // show the link + code, poll until it lands; the person can open the link, type a code (Claude), or go back
   async function waitLink(text, url, ttlMs, everyMs, poll, sendCode, cancel) {
-    await io.say([seg(text, 44, 200)], { who: 'STARNET' });
+    await io.say([seg(text, 44, 200)], { who: 'VULTRON' });
     let settled = null, stop = false;
     const deadline = now() + ttlMs;
     (async () => {
@@ -380,11 +380,11 @@ function makeAwakening(deps) {
       if (settled || a.value === '__settled') break;
       if (a.value === 'open') { try { st.open(url); } catch (_) {} continue; }
       if (a.value === 'back') { stop = true; if (cancel) await cancel().catch(() => {}); return false; }
-      if (a.custom && sendCode && String(a.value || '').trim()) { const r = await sendCode(String(a.value).trim()); if (r) { settled = r; break; } await io.say([seg('that code didn’t take — check it and try again.', 44, 200)], { who: 'STARNET' }); }
+      if (a.custom && sendCode && String(a.value || '').trim()) { const r = await sendCode(String(a.value).trim()); if (r) { settled = r; break; } await io.say([seg('that code didn’t take — check it and try again.', 44, 200)], { who: 'VULTRON' }); }
     }
     stop = true;
-    if (settled === 'ok') { await io.say([seg('connected.', 46, 200)], { who: 'STARNET' }); return true; }
-    await io.say([seg(String(settled), 44, 200)], { who: 'STARNET' });
+    if (settled === 'ok') { await io.say([seg('connected.', 46, 200)], { who: 'VULTRON' }); return true; }
+    await io.say([seg(String(settled), 44, 200)], { who: 'VULTRON' });
     return false;
   }
   async function pickModel(provider, label) {
@@ -392,7 +392,7 @@ function makeAwakening(deps) {
     const r = await st.get(route, 30000);
     const models = (ok(r) && r.json && Array.isArray(r.json.models)) ? r.json.models.filter(m => m && m.id) : [];
     const def = (r.json && r.json.default) || (models[0] && models[0].id) || '';
-    await io.say([seg('which model?' + (def ? ' (' + def + ' is the station’s pick for ' + (label || BRAIN_NAME[provider] || provider) + ')' : ''), 46, 0)], { who: 'STARNET' });
+    await io.say([seg('which model?' + (def ? ' (' + def + ' is the station’s pick for ' + (label || BRAIN_NAME[provider] || provider) + ')' : ''), 46, 0)], { who: 'VULTRON' });
     const top = models.slice(0, 7);
     if (def && !top.some(m => m.id === def)) top.unshift({ id: def });
     const a = await io.ask({ options: top.map(m => ({ label: m.id + (m.displayName && m.displayName.toLowerCase() !== m.id.toLowerCase() ? ' — ' + m.displayName : '') + (m.id === def ? ' (suggested)' : ''), value: m.id })).concat([{ label: 'Go back', value: '', skip: true }]), custom: true, customLabel: 'a model slug', placeholder: 'type a model id', optional: true });
@@ -411,7 +411,7 @@ function makeAwakening(deps) {
     ctx = { agent, station, dossier: M.Dossier.fresh(), profile: M.Profile.fresh(), rev: 0, birthLines: null, birthFailed: false, purposeSaid: '', persona: c.persona, quickTotal: 0, quickN: 0 };
     M.Dossier.seedFromDocs(ctx.dossier, agent.docs, now(), { resync: true });
     // the save first (onboarded:false): it founds the station in its record (sidecar/station-record.js). Until it lands, the
-    // resets below leave files an older StarNet's recovery gate reads as a PRIOR station, so a setup cut short between the two
+    // resets below leave files an older Vultron's recovery gate reads as a PRIOR station, so a setup cut short between the two
     // would strand that start
     await persist();
     await pushRoster();
@@ -659,7 +659,7 @@ function makeAwakening(deps) {
       const c = await create();
       const wire = await connect(c.name, opts);
       io.stage('WAKE', c.name);
-      await io.say([seg('waking ' + c.name + '…', 46, 200)], { who: 'STARNET' });
+      await io.say([seg('waking ' + c.name + '…', 46, 200)], { who: 'VULTRON' });
       await wake(c, wire);
       io.speaker(c.name);
       // its own first words, asked for the moment it wakes (fire-and-collect, never awaited by a beat)

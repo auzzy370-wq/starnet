@@ -126,7 +126,7 @@ function load(src, headers, globals, extra) {
   A.ok(W.autoTitle(fresh.id, 'Draft the launch email') && W.titleOf(fresh) === 'Draft the launch email', '…until its first message names it');
   // the exported file and search read the same name (the export heading said "General" for any untitled session)
   const md = W.exportConversation('blank', 'markdown', { exportedAt: 1 });
-  A.ok(/^# New session$/m.test(md.text) && md.filename === 'starnet-new-session.md', 'an untitled session exports as "New session": ' + md.filename);
+  A.ok(/^# New session$/m.test(md.text) && md.filename === 'vultron-new-session.md', 'an untitled session exports as "New session": ' + md.filename);
   A.ok(/^# General$/m.test(W.exportConversation('home', 'markdown', { exportedAt: 1 }).text), '…the General home exports as "General"');
   A.eq(W.search('general').map(h => h.id), ['home'], 'searching "general" finds the General home only, not every untitled session');
   // the voice call hears the rail's names: one "General", the untitled session as "New session"

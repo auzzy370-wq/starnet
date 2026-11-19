@@ -20,7 +20,7 @@ No new application defect was reproduced in this pass. The release remains **NOT
 | Exact installed WebView | Nine smoke checks PASS with matching candidate commit/tree and executable bytes. |
 | Installed customer regressions | Provider fallback and delegated MCP suites PASS using the installed Node/sidecar bundle and controlled upstream services. |
 
-Build: [34571871677](https://github.com/androoAGI/starnet/actions/runs/34571871677). Installed proof: [34573167978](https://github.com/androoAGI/starnet/actions/runs/34573167978), controlled by `01200c9a1`. The new controller retains candidate Git history for exact source-tree verification and adds the installed static-setting and WebView checks; it does not alter application runtime behavior.
+Build: [34571871677](https://github.com/YOUR-GITHUB-USER/vultron/actions/runs/34571871677). Installed proof: [34573167978](https://github.com/YOUR-GITHUB-USER/vultron/actions/runs/34573167978), controlled by `01200c9a1`. The new controller retains candidate Git history for exact source-tree verification and adds the installed static-setting and WebView checks; it does not alter application runtime behavior.
 
 The Windows installer has a valid Andrew Sims signature. Installer SHA-256: `78c0a42bc4f902fdd9a8ad79bedabc50b451016f76099d680479bc7742c55a2f`. Installed executable SHA-256: `86e3d108ea95843bdcb72750dc24ab7b44228f3d18a9a06dad58db75dcfd5b94`.
 

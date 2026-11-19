@@ -1,4 +1,4 @@
-/* STARNET — battlepass.js : the PURE battle-pass projection behind the QUEST LOG's PASS view.
+/* VULTRON — battlepass.js : the PURE battle-pass projection behind the QUEST LOG's PASS view.
 
    Andrew, 2026-10-19: "it should feel like a Fortnite battle pass, except the goals are based off the user's
    actual goals and desires." This engine dresses the Commander's EXISTING, sidecar-owned progression as a pass —

@@ -200,7 +200,7 @@ module.exports = (async () => {
 
   // ---- 5. the station fallback fits to the same line as the page ----
   const T = 'authority_turn_current';
-  const dual = Dual.make({ now: () => 1000000, hash: x => x, env: key => (key === 'STARNET_TURNID_WINDOW' ? 'id' : undefined) });
+  const dual = Dual.make({ now: () => 1000000, hash: x => x, env: key => (key === 'VULTRON_TURNID_WINDOW' ? 'id' : undefined) });
   const store = Store.makeTranscriptStore({ io: makeMemoryTranscriptIo(), clock: { now: () => 1000000 }, pick: (...args) => dual.pick(...args) });
   for (let i = 0; i < 80; i++) {
     const turnId = 'authority_turn_' + String(i).padStart(4, '0');

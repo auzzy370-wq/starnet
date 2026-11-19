@@ -21,7 +21,7 @@ recoveryEvidence: September 21 Mac reporter says 0.12.4 now works; aggregate rec
 
 ## Symptom
 
-Opening StarNet produces a page-side boot-guard failure naming `shared/specialties.js` as the single failed script. The reported page path is `/`; the user agent identifies Mac WebKit. The report does not include the application version, full origin, requested resource URL, or native startup log.
+Opening Vultron produces a page-side boot-guard failure naming `shared/specialties.js` as the single failed script. The reported page path is `/`; the user agent identifies Mac WebKit. The report does not include the application version, full origin, requested resource URL, or native startup log.
 
 ## Repro
 

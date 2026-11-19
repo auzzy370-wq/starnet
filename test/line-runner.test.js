@@ -21,7 +21,7 @@ const { makeChannelHub } = require('../sidecar/channels/hub.js');
 const { makeChainRunner } = require('../sidecar/routing/chain.js');
 const Pipeline = require('../frontend/app/pipeline.js');
 
-const HOST_NOTE = '[StarNet] Saved in this agent\'s private workspace, not a project folder: notes.md. Other agents cannot read it there.';
+const HOST_NOTE = '[Vultron] Saved in this agent\'s private workspace, not a project folder: notes.md. Other agents cannot read it there.';
 function memStore() {
   const hist = new Map(), recs = new Map();
   return {

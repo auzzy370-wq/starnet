@@ -17,7 +17,7 @@ if ($null -eq $definition) { throw 'Upgrade harness has no Assert-InstalledInteg
 . ([scriptblock]::Create($definition.Extent.Text))
 
 $systemTemp = [IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd('\')
-$fixtureRoot = [IO.Path]::GetFullPath((Join-Path $systemTemp ('starnet-integrity-test-' + [guid]::NewGuid().ToString('N'))))
+$fixtureRoot = [IO.Path]::GetFullPath((Join-Path $systemTemp ('vultron-integrity-test-' + [guid]::NewGuid().ToString('N'))))
 if (-not $fixtureRoot.StartsWith($systemTemp + '\', [StringComparison]::OrdinalIgnoreCase)) { throw 'Fixture escaped temporary directory' }
 $install = Join-Path $fixtureRoot 'install'
 $work = Join-Path $fixtureRoot 'work'

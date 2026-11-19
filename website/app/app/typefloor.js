@@ -1,4 +1,4 @@
-/* STARNET — typefloor.js : the station windows' text floor.
+/* VULTRON — typefloor.js : the station windows' text floor.
 
    WHY (Andrew 10-19: "make sure the text isnt too small everywhere", then "give the windows the same text floor and
    spacing too"): measured across every station window and each of its rail sections at his settings, 3,179 pieces of

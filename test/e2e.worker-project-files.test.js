@@ -84,10 +84,10 @@ function toolResultFor(requests, callId) {
   const project = fs.mkdtempSync(path.join(os.tmpdir(), 'YoutubeService-'));
   const projectRoot = path.resolve(project);
   const fixture = SidecarFixture.create({ prefix: 'issue77-worker-files-', timeoutMs: 20000, env: {
-    STARNET_OPENROUTER_KEY: '', SKYNET_OPENROUTER_KEY: '', OPENROUTER_KEY: '', OPENROUTER_API_KEY: '',
-    STARNET_CREDITS_URL: '', SKYNET_CREDITS_URL: '', STARNET_CREDITS_TOKEN: '', SKYNET_CREDITS_TOKEN: '', STARNET_CLOUD_URL: '',
-    STARNET_IMAGE_MODEL: '', SKYNET_IMAGE_MODEL: '', SKYNET_FULL_ACCESS: '', SKYNET_AUX_BUDGET: '0',
-    STARNET_OPENROUTER_BASE: provider.baseUrl, SKYNET_OPENROUTER_BASE: provider.baseUrl
+    VULTRON_OPENROUTER_KEY: '', SKYNET_OPENROUTER_KEY: '', OPENROUTER_KEY: '', OPENROUTER_API_KEY: '',
+    VULTRON_CREDITS_URL: '', SKYNET_CREDITS_URL: '', VULTRON_CREDITS_TOKEN: '', SKYNET_CREDITS_TOKEN: '', VULTRON_CLOUD_URL: '',
+    VULTRON_IMAGE_MODEL: '', SKYNET_IMAGE_MODEL: '', SKYNET_FULL_ACCESS: '', SKYNET_AUX_BUDGET: '0',
+    VULTRON_OPENROUTER_BASE: provider.baseUrl, SKYNET_OPENROUTER_BASE: provider.baseUrl
   } });
   try {
     // the trusted project ("My Project Folders") + the Commander's standing ASK-mode grants for the two consent

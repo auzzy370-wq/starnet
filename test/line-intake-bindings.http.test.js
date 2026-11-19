@@ -19,11 +19,11 @@ const MODEL = 'intake-receipt-fixture';
   await new Promise(r => upstream.listen(0, '127.0.0.1', r));
   const origin = 'http://127.0.0.1:' + upstream.address().port;
   const fixture = SidecarFixture.create({ prefix: 'intake-receipt-', env: {
-    STARNET_DEV: '1', STARNET_FULL_ACCESS: '1', STARNET_DEFAULT_PROVIDER: 'custom', STARNET_DEFAULT_MODEL: MODEL,
-    CUSTOM_OPENAI_KEY: 'fixture-key', CUSTOM_OPENAI_BASE_URL: origin + '/v1', STARNET_MAX_ITERS: '4',
-    STARNET_BUDGET_PER_DAY: '0', STARNET_CREDITS_URL: '', STARNET_CLOUD_URL: '', STARNET_LIVE_PRICES: '0',
-    STARNET_REFLECTION: '0', STARNET_STUDY: '0', STARNET_FAILURE_REVIEW: '0', STARNET_SKILL_REVIEW: '0',
-    STARNET_SKILL_CURATOR: '0', STARNET_THREAD_MINE: '0', STARNET_SCOUT: '0', STARNET_QUEST_REFRESH: '0', STARNET_CRON_ENABLED: '0'
+    VULTRON_DEV: '1', VULTRON_FULL_ACCESS: '1', VULTRON_DEFAULT_PROVIDER: 'custom', VULTRON_DEFAULT_MODEL: MODEL,
+    CUSTOM_OPENAI_KEY: 'fixture-key', CUSTOM_OPENAI_BASE_URL: origin + '/v1', VULTRON_MAX_ITERS: '4',
+    VULTRON_BUDGET_PER_DAY: '0', VULTRON_CREDITS_URL: '', VULTRON_CLOUD_URL: '', VULTRON_LIVE_PRICES: '0',
+    VULTRON_REFLECTION: '0', VULTRON_STUDY: '0', VULTRON_FAILURE_REVIEW: '0', VULTRON_SKILL_REVIEW: '0',
+    VULTRON_SKILL_CURATOR: '0', VULTRON_THREAD_MINE: '0', VULTRON_SCOUT: '0', VULTRON_QUEST_REFRESH: '0', VULTRON_CRON_ENABLED: '0'
   } });
   const boot = path.join(fixture.workspace, 'intake-boot.cjs');
   fs.writeFileSync(boot, "const real=globalThis.fetch;globalThis.fetch=function(url){const u=new URL(String((url&&url.url)||url));return u.origin==="
@@ -34,7 +34,7 @@ const MODEL = 'intake-receipt-fixture';
   const chat = () => JSON.parse(fs.readFileSync(path.join(fixture.workspace, 'channels/chatmap.json'), 'utf8')).chats['receipt-chat'];
   try {
     await fixture.start();
-    await api('POST', '/api/save', { schema: 'starnet.save', version: require('../frontend/app/save.js').CURRENT, updatedAt: Date.now(), _saveRevision: 0, _saveDirty: true,
+    await api('POST', '/api/save', { schema: 'vultron.save', version: require('../frontend/app/save.js').CURRENT, updatedAt: Date.now(), _saveRevision: 0, _saveDirty: true,
       _saveClient: 'intake-fixture', agent: { id: 'agent', name: 'Receipt agent', createdAt: Date.now() }, agents: [],
       workstreams: [{ id: 'general', history: [] }], activeId: 'general', generalId: 'general' });
     assert.notEqual((await api('POST', '/api/roster', { updatedAt: Date.now(), agents: [{ agentId: 'agent', provider: 'custom', model: MODEL }] })).held, true);
@@ -62,7 +62,7 @@ const MODEL = 'intake-receipt-fixture';
     const trigger = await api('POST', '/api/routing/triggers', { kind: 'webhook', lineId: 'line-stable', intakeId: 'forged', config: { task: 'Write the webhook receipt result.' } });
     A.eq(trigger.trigger.intakeId, 'in', 'actual webhook binding names its INBOX');
     const hook = await fixture.json('POST', '/api/hooks/' + trigger.trigger.id, { job: 'receipt' },
-      { headers: { 'X-StarNet-Hook-Key': trigger.secret, 'Idempotency-Key': 'receipt-one' } });
+      { headers: { 'X-Vultron-Hook-Key': trigger.secret, 'Idempotency-Key': 'receipt-one' } });
     assert.equal(hook.status, 202, hook.text);
     let hookJob;
     for (let i = 0; i < 150; i++) { hookJob = (await api('GET', '/api/line-jobs/' + hook.body.jobId)).job; if (hookJob && hookJob.status !== 'running') break; await new Promise(r => setTimeout(r, 50)); }

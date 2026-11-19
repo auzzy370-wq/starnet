@@ -366,7 +366,7 @@ body .toast .toast-lamp { font-size: var(--sn-type-meta); }
 /* ============================================================
    DELEGATED WORK (2026-10-10, delegated.js). The decision-card material (--beat-*): a dispatch is the same kind of
    object as an approval or a turn-in, a live status you can act on. Andrew 10-10 on the first calm pass (a bare rule,
-   14-15px type, underlined "stop" / "back to" links): "ugly like the old version of starnet, cheap looking". One card
+   14-15px type, underlined "stop" / "back to" links): "ugly like the old version of vultron, cheap looking". One card
    per dispatch: a head that says who has the work and where it stands, then (while it runs, or on a click) one row
    per worker with ONE real key, Stop while it runs, Open after. Matte: state is a lamp / edge / fill, never a glow.
    ============================================================ */

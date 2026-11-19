@@ -50,8 +50,8 @@
        parsed `allowedMaxTokens`; the loop retries the SAME turn once with the output budget lowered to it
        (recovery-policy `lower_output`). retryable:false keeps every adapter from re-sending the doomed body. */
     output_cap:             { retryable: false, shouldRotateCredential: false, shouldFallback: false, shouldCompress: false },
-    /* The StarNet credit relay priced this call's PROMPT ALONE over its per-call ceiling ($10 by default at starnet-cloud
-       b5582dd, configurable there: HTTP 400 `call_too_expensive`, "This request could cost more than the $10.00 StarNet
+    /* The Vultron credit relay priced this call's PROMPT ALONE over its per-call ceiling ($10 by default at vultron-cloud
+       b5582dd, configurable there: HTTP 400 `call_too_expensive`, "This request could cost more than the $10.00 Vultron
        allows for one call"). The copy quotes the relay's own number, never this one. The same
        prompt on the same model is refused identically, so no resend. A configured fallback is a different model at its
        own price and may fit, so it is worth taking. No fold: shortening the conversation is the Commander's call, not a
@@ -73,7 +73,7 @@
        retry; a configured fallback OFF that local runtime may take over (the loop skips same-runtime entries). */
     local_memory:           { retryable: false, shouldRotateCredential: false, shouldFallback: true,  shouldCompress: false },
     /* An adapter-proven LOADED, SILENT local model (#99): Ollama's native chat sent nothing for the whole connect ceiling
-       while /api/ps listed the model at every read and no other StarNet call was open on that server. A resend aborts
+       while /api/ps listed the model at every read and no other Vultron call was open on that server. A resend aborts
        Ollama mid-request and repeats the same prompt on the same model, so no retry. No fallback either, exactly as
        `timeout`: the turn ends with the adapter's placement sentence. A model NOT listed stays `timeout`. */
     local_timeout:          { retryable: false, shouldRotateCredential: false, shouldFallback: false, shouldCompress: false },
@@ -302,19 +302,19 @@
      the same way. The model is unavailable to this account: no resend, the model dock is the fix, and a configured
      fallback may answer (model_not_found). Mirrored in frontend/app/friendlyerror.js — keep the two in step. */
   const ACCOUNT_MODEL_REFUSED_RE = /model is not supported when using codex with a chatgpt account/;
-  /* A MODEL THAT CANNOT SEE IMAGES was sent one (2026-10-23, StarNet Cloud logs: OpenRouter 404 "No endpoints found
+  /* A MODEL THAT CANNOT SEE IMAGES was sent one (2026-10-23, Vultron Cloud logs: OpenRouter 404 "No endpoints found
      that support image input", 14 managed completions in two bursts). Resending the same request repeats the refusal,
      so it is never retryable; another model may see images, so a configured fallback is still worth taking
      (model_not_found). The adapters (openrouter.js, openai-compatible.js) also remember the model as text-only, so the
      NEXT request to it goes without the image. Mirrored in frontend/app/friendlyerror.js — keep the two in step.
-     Vendor wordings: OpenRouter/StarNet "no endpoints found that support image input"; DeepSeek "unknown variant
+     Vendor wordings: OpenRouter/Vultron "no endpoints found that support image input"; DeepSeek "unknown variant
      `image_url`"; OpenAI's own text-only models (o1-mini, o3-mini, gpt-3.5-turbo, whose /v1/models states no
      modalities, so the image is sent) 400 "Invalid content type. image_url is only supported by certain models." */
   const IMAGE_INPUT_REFUSED_RE = /no endpoints found that support image input|(?:does not|doesn'?t|cannot|can'?t) (?:support|accept|take|handle) (?:image|vision)|image input (?:is )?(?:not supported|unsupported)|(?:images?|vision) (?:input )?(?:is |are )?not supported (?:by|for|on) (?:this|the) model|unknown variant `image_url`|image_url is only supported by certain models/;
   function isImageInputRefusal(text) { return IMAGE_INPUT_REFUSED_RE.test(String(text || '').toLowerCase()); }
   const IMAGE_INPUT_FIX = ' — this model cannot take image input: pick a vision model in the COMMS model dock (or remove the image), then send again.';
   /* A 403 THAT NAMES THE UPSTREAM PROVIDER is that provider refusing THIS request, never our credential (xai-403-1023:
-     26 managed completions answered 403 "provider xAI · Provider returned error", and a StarNet-credits user, who has no
+     26 managed completions answered 403 "provider xAI · Provider returned error", and a Vultron-credits user, who has no
      key, was told the provider rejected the API key). A router that rejects OUR key answers 401 and names no provider;
      once it names the upstream (the adapter's err.upstreamProvider, error.provider, error.metadata.provider_name, the
      "[…; provider X]" fact the openai-compatible adapter writes, or OpenRouter's own "Provider returned error" wrapper),
@@ -334,8 +334,8 @@
      "No allowed providers", a region or an upstream 403: those refuse every request to that model. Surfaced as the
      classification's `unsupportedPart` fact (the failure review keys on it: its plain text request has no such part). */
   const UNSUPPORTED_PART_RE = /no endpoints found that (?:support|can handle)\b/;
-  // the StarNet credit relay's per-call ceiling refusal (starnet-cloud src/app.js THE CREDIT RESERVATION)
-  const CALL_TOO_EXPENSIVE_RE = /could cost more than the \$\d+(?:\.\d+)? starnet allows for one call/;
+  // the Vultron credit relay's per-call ceiling refusal (vultron-cloud src/app.js THE CREDIT RESERVATION)
+  const CALL_TOO_EXPENSIVE_RE = /could cost more than the \$\d+(?:\.\d+)? vultron allows for one call/;
   function isCallTooExpensive(code, low) {
     return String(code || '').toLowerCase() === 'call_too_expensive' || CALL_TOO_EXPENSIVE_RE.test(low);
   }
@@ -390,7 +390,7 @@
      between "user" and "assistant""), Mistral / mistral_common ("Unexpected role 'user' after role 'tool'", "Expected
      last role User or Tool") — which keeps format_error, its own words first and no chat-template advice; and a template
      ENGINE failure that names no role shape ("default chat template is no longer allowed", "Unknown StringValue filter:
-     safe", "chat template does not support tool calls"), which is not StarNet's conversation shape and keeps the class
+     safe", "chat template does not support tool calls"), which is not Vultron's conversation shape and keeps the class
      it had. */
   const TEMPLATE_ROLE_RE = /system message must be at the beginning|system role (?:is )?not supported|conversation roles must alternate/;
   const ROLE_ORDER_RE = /roles must alternate|unexpected role '?(?:system|user|assistant|tool)'? after role|expected last role/;
@@ -412,8 +412,8 @@
     const said = ((TEMPLATE_SAID_RE.exec(original) || [])[1] || '').trim();
     const model = String((ctx && ctx.model) || '').trim();
     const host = refusalHost(err);
-    const naming = 'the chat template of ' + (model ? 'the model ' + model : 'this model') + (host ? ' on ' + host : '') + ' refused the conversation StarNet sent';
-    const why = ' — StarNet sends one system message first, then user and assistant turns in turn, ending on a user turn'
+    const naming = 'the chat template of ' + (model ? 'the model ' + model : 'this model') + (host ? ' on ' + host : '') + ' refused the conversation Vultron sent';
+    const why = ' — Vultron sends one system message first, then user and assistant turns in turn, ending on a user turn'
       + (err && err.templateRetried ? ', and the same conversation with no system message at all was refused too' : '');
     const scope = hostScope(host);
     const fix = '. That template is stricter than the model\'s own chat format: '
@@ -527,7 +527,7 @@
     // 1b. OUTPUT cap — BEFORE the overflow patterns, whose `maximum.*tokens` matches this refusal's wording and
     //     used to fold history for nothing, retry the identical max_tokens, and kill the run.
     if ((!status || status === 400 || status === 422) && parseOutputCap(low) > 0) return 'output_cap';
-    // 1c. the StarNet relay's per-call price ceiling — a 400 that is neither malformed nor an overflow
+    // 1c. the Vultron relay's per-call price ceiling — a 400 that is neither malformed nor an overflow
     if ((!status || status === 400) && isCallTooExpensive(code, low)) return 'call_too_expensive';
     // 1d. the model's chat template refused the conversation's shape — whatever status carried it: Ollama's /v1 sends
     //     its Jinja exception as a 500 (#102), LM Studio as a 400. Never our credential (401/403) and never a busy
@@ -622,7 +622,7 @@
     } else if (reason === 'tls_certificate') {
       text = 'TLS certificate verification failed' + (transportDetail(err) ? ' (' + transportDetail(err) + ')' : '')
         + ' — this machine does not trust the provider\'s certificate. Behind a corporate proxy or an antivirus HTTPS scanner, '
-        + 'point NODE_EXTRA_CA_CERTS at its root certificate and restart StarNet; for a self-hosted endpoint, give it a valid certificate. ['
+        + 'point NODE_EXTRA_CA_CERTS at its root certificate and restart Vultron; for a self-hosted endpoint, give it a valid certificate. ['
         + message + ']';
     } else if (reason === 'model_not_found' && IMAGE_INPUT_REFUSED_RE.test(low)) {
       // the provider's words stay first (the UI routes on the adapter label + status); the fix rides after them

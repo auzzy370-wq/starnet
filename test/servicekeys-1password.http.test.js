@@ -5,7 +5,7 @@
      - saving op://… reads it at once: the row is READY, names its reference, and the response never carries the value;
      - the value is never written to servicekeys.json (or its backup) — only the reference is;
      - a reference 1Password refuses is still SAVED, and the row says why it is not ready (truthful, not "live");
-     - `op` gets an explicit minimal env: the user's OP_* vars, never a STARNET_/SKYNET_ station secret;
+     - `op` gets an explicit minimal env: the user's OP_* vars, never a VULTRON_/SKYNET_ station secret;
      - after a restart the reference survives but the value does not (it is re-read on use, never restored from disk).
    Rides test:http (child-process boot). Without a C compiler on Windows the stub cannot be built: SKIP, said aloud. */
 'use strict';
@@ -78,7 +78,7 @@ function buildStub(dir) {
   const B = () => fixture.baseUrl;
   const j = async (m, p, body) => {
     const headers = { 'Content-Type': 'application/json', Origin: B() };
-    if (fixture.token) headers['X-StarNet-Token'] = fixture.token;
+    if (fixture.token) headers['X-Vultron-Token'] = fixture.token;
     const r = await fetch(B() + p, { method: m, headers, body: body ? JSON.stringify(body) : undefined });
     const t = await r.text(); let v; try { v = JSON.parse(t); } catch (_) { v = t; }
     return { status: r.status, body: v, text: t };
@@ -112,7 +112,7 @@ function buildStub(dir) {
     // ---- op's environment: OP_* yes, station secrets no ----
     const names = fs.readFileSync(log, 'utf8').split(/\r?\n/).filter(Boolean);
     A.ok(names.indexOf('OP_ACCOUNT') >= 0 && names.indexOf('OP_STUB_LOG') >= 0, 'the user\'s OP_* vars reach op');
-    A.ok(!names.some(n => /^(STARNET|SKYNET)_/i.test(n)), 'no STARNET_/SKYNET_ variable reaches op — got ' + names.filter(n => /^(STARNET|SKYNET)_/i.test(n)).join(','));
+    A.ok(!names.some(n => /^(VULTRON|SKYNET)_/i.test(n)), 'no VULTRON_/SKYNET_ variable reaches op — got ' + names.filter(n => /^(VULTRON|SKYNET)_/i.test(n)).join(','));
 
     // ---- a refused reference is saved, and says why it is not ready ----
     const lk = await j('POST', '/api/servicekeys', { name: 'Locked Thing', key: LOCKED });

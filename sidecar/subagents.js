@@ -310,7 +310,7 @@
         // the LENT BUILDER (team.dispatch builder:true): sticky, so team.resume restarts it with the same kit
         builder: meta.builder != null ? meta.builder === true : !!(old && old.builder === true),
         // the lead's bounded:true (orchestration.js boundOf): sticky the same way, so team.resume re-applies the lead's
-        // bound from the record and never re-reads it from the prompt's wording (starnet-releases#5)
+        // bound from the record and never re-reads it from the prompt's wording (vultron-releases#5)
         bounded: meta.bounded != null ? meta.bounded === true : !!(old && old.bounded === true),
         // ...and its onlyHost (orchestration.js hostScopeOf, already normalized): the host scope team.resume re-applies
         onlyHost: String(meta.onlyHost != null ? meta.onlyHost : ((old && old.onlyHost) || '')).slice(0, 253),

@@ -21,7 +21,7 @@ const Backup = require('../frontend/app/backup.js');
 const backupFile = require('../sidecar/backupfile.js');
 const configExport = require('../sidecar/configexport.js');
 
-const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-export-134-'));
+const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-export-134-'));
 const NOW = Date.UTC(2026, 9, 18, 12, 0, 0);
 const DAY = '2026-10-18';
 
@@ -37,7 +37,7 @@ const DAY = '2026-10-18';
     ok(!/'saved ' \+ r\.file/.test(appjs), 'EXPORT AGENT (recovery screen) never claims "saved" for a file it only handed over');
 
     // ---- sidecar: where the desktop file lands, named before it is written ----
-    eq(backupFile.stationBackupBase(NOW), 'starnet-station-' + DAY, 'the backup name carries the export day');
+    eq(backupFile.stationBackupBase(NOW), 'vultron-station-' + DAY, 'the backup name carries the export day');
     const homeNoDl = fs.mkdtempSync(path.join(tmp, 'home-a-'));
     eq(backupFile.defaultExportDir(homeNoDl), homeNoDl, 'no Downloads folder: the file lands in home');
     const homeDl = fs.mkdtempSync(path.join(tmp, 'home-b-'));
@@ -45,13 +45,13 @@ const DAY = '2026-10-18';
     eq(backupFile.defaultExportDir(homeDl), path.join(homeDl, 'Downloads'), 'the Downloads folder when it exists');
 
     // ---- sidecar: write, prove, never clobber ----
-    const first = backupFile.saveExportFile('{"a":1}\n', { dir: homeDl, base: 'starnet-station-' + DAY });
+    const first = backupFile.saveExportFile('{"a":1}\n', { dir: homeDl, base: 'vultron-station-' + DAY });
     eq(first.ok, true, 'the first save succeeds');
-    eq(first.file, 'starnet-station-' + DAY + '.json', 'the first save keeps the plain name');
-    eq(first.path, path.join(homeDl, 'starnet-station-' + DAY + '.json'), 'the returned path is the real absolute path');
+    eq(first.file, 'vultron-station-' + DAY + '.json', 'the first save keeps the plain name');
+    eq(first.path, path.join(homeDl, 'vultron-station-' + DAY + '.json'), 'the returned path is the real absolute path');
     eq(fs.readFileSync(first.path, 'utf8'), '{"a":1}\n', 'the file on disk holds exactly what was exported');
-    const second = backupFile.saveExportFile('{"a":2}\n', { dir: homeDl, base: 'starnet-station-' + DAY });
-    eq(second.file, 'starnet-station-' + DAY + '-2.json', 'a second export the same day gets its own name');
+    const second = backupFile.saveExportFile('{"a":2}\n', { dir: homeDl, base: 'vultron-station-' + DAY });
+    eq(second.file, 'vultron-station-' + DAY + '-2.json', 'a second export the same day gets its own name');
     eq(fs.readFileSync(first.path, 'utf8'), '{"a":1}\n', 'the earlier backup is never overwritten');
     const missing = backupFile.saveExportFile('{}', { dir: path.join(tmp, 'no-such-folder'), base: 'x' });
     eq(missing.ok, false, 'a folder that is not there is an honest failure');
@@ -59,10 +59,10 @@ const DAY = '2026-10-18';
     ok(!fs.existsSync(path.join(tmp, 'no-such-folder')), 'a failed save creates nothing');
 
     // ---- round trip: the real envelope saved, read back, and accepted by the real importer ----
-    const env = configExport.buildExport({ budget: { perRun: 2 }, settings: { theme: 'blue' } }, { now: NOW, app: 'StarNet' });
+    const env = configExport.buildExport({ budget: { perRun: 2 }, settings: { theme: 'blue' } }, { now: NOW, app: 'Vultron' });
     const saved = backupFile.saveStationExport(JSON.stringify(env, null, 2), { home: homeNoDl, now: NOW });
     eq(saved.ok, true, 'the station export saves');
-    eq(saved.path, path.join(homeNoDl, 'starnet-station-' + DAY + '.json'), 'saveStationExport names the real file');
+    eq(saved.path, path.join(homeNoDl, 'vultron-station-' + DAY + '.json'), 'saveStationExport names the real file');
     const parsed = configExport.parseImport(JSON.parse(fs.readFileSync(saved.path, 'utf8')));
     eq(parsed.ok, true, 'the saved file imports back through the real importer');
     eq(parsed.sections.budget, { perRun: 2 }, 'the saved file carries the station config');
@@ -87,7 +87,7 @@ const DAY = '2026-10-18';
       download: (f, t) => { downloads.push(f); return true; }, now: NOW });
     eq(r.ok, true, 'desktop export succeeds');
     eq(r.where, 'disk', 'desktop export is a file the station wrote');
-    eq(r.path, path.join(fakeHome, 'Downloads', 'starnet-station-' + DAY + '.json'), 'desktop result carries the real path');
+    eq(r.path, path.join(fakeHome, 'Downloads', 'vultron-station-' + DAY + '.json'), 'desktop result carries the real path');
     ok(r.line.indexOf(r.path) >= 0, 'the line names the exact path: ' + r.line);
     ok(/secrets excluded/.test(r.line), 'the line still says secrets are excluded');
     eq(downloads.length, 0, 'desktop never also drops a WebView download');
@@ -101,9 +101,9 @@ const DAY = '2026-10-18';
       download: (f, t) => { downloads.push(f); texts.push(t); return true; }, now: NOW });
     eq(r.ok, true, 'browser export succeeds');
     eq(r.where, 'browser', 'browser export is a hand-off to the browser');
-    eq(downloads, ['starnet-station-' + DAY + '.json'], 'the browser is handed the dated file');
-    eq(JSON.parse(texts[0]).starnetExport, 1, 'the handed file is the real envelope');
-    ok(r.line.indexOf('starnet-station-' + DAY + '.json') >= 0, 'the browser line names the file: ' + r.line);
+    eq(downloads, ['vultron-station-' + DAY + '.json'], 'the browser is handed the dated file');
+    eq(JSON.parse(texts[0]).vultronExport, 1, 'the handed file is the real envelope');
+    ok(r.line.indexOf('vultron-station-' + DAY + '.json') >= 0, 'the browser line names the file: ' + r.line);
     ok(/browser's downloads/.test(r.line), 'the browser line points at the browser downloads');
     ok(!/✓/.test(r.line) && !/^exported/.test(r.line), 'the browser line claims no delivery it cannot see');
     eq(calls, ['/api/config/export'], 'the browser never asks the sidecar to write a file on the host');
@@ -119,9 +119,9 @@ const DAY = '2026-10-18';
     eq(r.ok, true, 'a refused save still exports through the hand-off');
     eq(r.where, 'browser', 'the fallback is the hand-off');
     eq(calls, ['/api/config/export/save', '/api/config/export'], 'refused save -> plain export');
-    eq(downloads, ['starnet-station-' + DAY + '.json'], 'the fallback hands over the dated file');
+    eq(downloads, ['vultron-station-' + DAY + '.json'], 'the fallback hands over the dated file');
     ok(/permission denied/.test(r.line), 'the line says why the save failed: ' + r.line);
-    ok(r.line.indexOf('starnet-station-' + DAY + '.json') >= 0, 'the fallback line names the file');
+    ok(r.line.indexOf('vultron-station-' + DAY + '.json') >= 0, 'the fallback line names the file');
 
     // an older sidecar without the save route (404, no JSON ok) falls back the same way
     calls = []; downloads = [];

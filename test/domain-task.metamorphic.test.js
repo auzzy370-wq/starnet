@@ -1,5 +1,5 @@
 /* node test/domain-task.metamorphic.test.js — A WORKER'S BUDGET IS ITS LEAD'S CALL, NEVER ITS BRIEF'S WORDING
-   (domain-task-advisory; starnet-releases#5, gh#58, the 10-14 delegated-web-tools report).
+   (domain-task-advisory; vultron-releases#5, gh#58, the 10-14 delegated-web-tools report).
 
    The dispatcher used to read each worker's brief with DomainTask.classify and, when the wording looked like a one-host
    "pure read", cut that worker to 3 turns / 3 tool calls / a 45 s slice that nobody asked for: delegated security, QA
@@ -48,10 +48,10 @@ const CONTROL = 'Summarize what we know about the release plan.';
    1-4, and the engineering row is the one the 10-15 lane pinned as the reporter's. gh#58: the reconstructed routine
    spec and the residual domain-terminal.test.js pins. The 10-14 report: its "check/review itch.io ... site" lead. */
 const REPORT = [
-  ['rel#5 engineering', 'Review the deployment script for starnet-demo.io, write a unit test for it, and run it.'],
-  ['rel#5 security', 'Review the security headers and TLS setup on starnet-demo.io and list the risks.'],
-  ['rel#5 qa', 'Check starnet-demo.io and read the release checklist in its docs.'],
-  ['rel#5 automation', 'Inspect the CI status page on ci.starnet-demo.io and summarize what failed.'],
+  ['rel#5 engineering', 'Review the deployment script for vultron-demo.io, write a unit test for it, and run it.'],
+  ['rel#5 security', 'Review the security headers and TLS setup on vultron-demo.io and list the risks.'],
+  ['rel#5 qa', 'Check vultron-demo.io and read the release checklist in its docs.'],
+  ['rel#5 automation', 'Inspect the CI status page on ci.vultron-demo.io and summarize what failed.'],
   ['rel#5 markdown', 'Review deploy-notes.md and confirm the release steps.'],
   ['gh#58 api', 'POST to https://api.x.com/v1/items with ${MY_KEY}, then check the response'],
   ['gh#58 residual', 'check my orders on printify.com and summarize them'],
@@ -64,14 +64,14 @@ const CORPUS = [
   'Go ahead, check out starnessos.com and then read the docs.', 'Open https://example.com/docs', 'Open docs.rs and read the crate docs.',
   'Visit example.sh and inspect the site.', 'Check starnessos.invalid and read its docs.',
   // real sites, not file names
-  'check example.com', 'open starnetos.com', 'review github.io pages', 'check itch.io site', 'read the docs at docs.python.org',
+  'check example.com', 'open vultron.vercel.app', 'review github.io pages', 'check itch.io site', 'read the docs at docs.python.org',
   'visit www.notes.md', 'check https://main.py/', 'check docs.rs/tokio', 'Check the perplexity.ai website', 'open claude.ai',
   'check notion.so', 'Visit point.md', 'Check example.com and save the summary into notes.md', 'check about.me',
   // the #5 table: briefs that also ask for work, and briefs that only read
-  'Review the deployment script for starnet-demo.io, write a unit test that covers it, then run the test and report the result.',
+  'Review the deployment script for vultron-demo.io, write a unit test that covers it, then run the test and report the result.',
   'Inspect the nginx config for example.com and fix the redirect.', 'Check example.com and build a landing page like it.',
   'Review the auth flow for example.com and implement the missing token refresh.', 'Can you check example.com and fix the broken header?',
-  '- review the starnet-demo.io deploy config\n- run the smoke tests', "Read example.com's pricing page and write a summary into notes.md",
+  '- review the vultron-demo.io deploy config\n- run the smoke tests', "Read example.com's pricing page and write a summary into notes.md",
   'Read the API docs at docs.example.com and write a short summary into C:\\Users\\me\\proj\\notes.md',
   'Read the API docs at docs.example.com and write a short summary into C:/Users/me/proj/notes.md',
   'Read the API docs at docs.example.com and write a short summary into C:\\Users\\me\\My Project\\notes.md',

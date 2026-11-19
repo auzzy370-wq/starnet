@@ -45,7 +45,7 @@ const Ledger = require('./delivery-ledger.js');
 // host's fail-closed timer within seconds — neither is queued; everything else a hub sends is a durable delivery
 const EPHEMERAL = Object.freeze({ command: 1, prompt: 1 });
 // what a keyboard says when a restart found it unanswered: the ask died with its process, and nothing ran on it
-const RESTARTED_STAMP = '▸ StarNet restarted — not answered; the action did not run';
+const RESTARTED_STAMP = '▸ Vultron restarted — not answered; the action did not run';
 
 function makeHubDelivery(ctx) {
   const c = ctx || {};

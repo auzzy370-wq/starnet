@@ -1,4 +1,4 @@
-# StarNet v0.13.5 (draft)
+# Vultron v0.13.5 (draft)
 
 DRAFT updated 2026-10-13 for **v0.13.5**. v0.13.3 was a published security-only hotfix on top of v0.13.2, and a v0.13.4 recall hotfix is held, so this is the big feature release that v0.13.3's notes promised as "coming next". It describes the review candidate on `agent/release-review-1012`; it is not a published or installed-verified release. Reconcile the final candidate before copying these notes. `release:bump` replaces root `RELEASE_NOTES.md` with a scaffold; keep the current public release notes intact until the cut.
 
@@ -9,14 +9,14 @@ Do not re-announce what v0.13.3 already shipped (stricter local access checks, o
 The Update Center shows only the first 520 characters of RELEASE_NOTES.md, heading included, as plain text. So the paste-ready notes below OPEN with exactly this:
 
 ```
-# StarNet v0.13.5
+# Vultron v0.13.5
 
 **Before you update:** if you might ever go back to an older version, save a station backup first (SETTINGS › APP & BACKUP › STATION BACKUP). Older versions don't know SEND TO or SPLIT THE JOB and drop them when they save.
 
 **SEND TO can start paid work** on the next line, on that line's own budget, even from RUN ONE REAL JOB. **MOVE is gone:** drag a selected piece to move it, Shift+drag moves anything. On the Conveyors tab keys 1-8 pick pieces.
 ```
 
-Measured with node (`String.length`, the unit `frontend/app/updates.js` shortNotes cuts by): **469 characters**, `# StarNet v0.13.5` heading and both blank lines included, under the 520 limit. Re-measure if the opening changes.
+Measured with node (`String.length`, the unit `frontend/app/updates.js` shortNotes cuts by): **469 characters**, `# Vultron v0.13.5` heading and both blank lines included, under the 520 limit. Re-measure if the opening changes.
 
 ## Release notes draft (paste over the `release:bump` scaffold at the cut)
 
@@ -77,7 +77,7 @@ The big update v0.13.3 promised. Lines hand finished work to each other, a SPLIT
 - **Chat:** long conversations keep your messages and the current task when they're compacted, recall reaches older conversations, file and review trays keep their context, and the stop reason stays visible after a reload.
 - **Files:** a file edit that doesn't match the file exactly is refused before anything is written, and edits keep the file's line endings.
 - **Voice:** a better local voice, a separate model for spoken turns, and spoken approvals that wait for you to confirm.
-- **Local models:** Ollama works with strict system-message templates, and timeouts say what StarNet actually saw.
+- **Local models:** Ollama works with strict system-message templates, and timeouts say what Vultron actually saw.
 - **Skills:** a proposed change stays separate from the approved skill until you approve it. If an evaluation finishes every case, every case passes on the new version and nothing gets worse, you can approve the change even when it measured no improvement.
 - **Connectors, channels and spending:** a locked connector store is told apart from an empty one, Discord and Signal setup covers more cases, and an old receipt with no recorded billing source says BILLING SOURCE UNKNOWN instead of guessing.
 - **Update Center:** an available update is remembered across restarts, opening the panel checks again, and SKIP VERSION now stays skipped. Only CHECK NOW shows a skipped version again.
@@ -108,7 +108,7 @@ The big update v0.13.3 promised. Lines hand finished work to each other, a SPLIT
 - **Skill review and approval.** Proposed changes stay separate from the active approved skill through evaluation and rejection; promotion requires owner approval. A complete evaluation where every candidate case passes and nothing regresses can be approved with an explicit "no measured improvement" confirmation; failed, regressed and incomplete evaluations cannot. Larger skill libraries have a searchable overflow index. Reviews retain structured correction and outcome evidence and resume durable pending work after restart. Evaluation charges follow the selected budget policy. Evaluation on Ollama or a Codex, Grok or Kimi sign-in is booked as unmetered at $0, even when it fails, times out or is cancelled, and does not count toward dollar caps. Every other provider is metered, including a Custom endpoint such as a local LM Studio or vLLM server: an unknown charge there, such as usage with no published price, leaves an unsettled receipt, which blocks paid runs under strict caps until the Commander settles it.
 - **Approved design references.** Saved approved work and style references retain their file identity, can be supplied to image-capable providers, and support reversible keep/undo feedback. Requested properties that were not observed are not presented as reference facts.
 - **Connectors and channels.** Connector storage distinguishes locked encrypted data from an empty fallback store; starting fresh preserves verified recovery copies and revokes old live clients and pending sign-ins after the durable reset succeeds. Discord and Signal setup guidance covers additional failure and private-recipient cases.
-- **Local models.** Ollama request formatting accommodates strict system-message templates. Unfinished HTTP error bodies remain cancellable and use the existing idle watchdog. Timeout messages describe what StarNet observed. The separately reported long wait before an Ollama chat request is still under investigation.
+- **Local models.** Ollama request formatting accommodates strict system-message templates. Unfinished HTTP error bodies remain cancellable and use the existing idle watchdog. Timeout messages describe what Vultron observed. The separately reported long wait before an Ollama chat request is still under investigation.
 - **Web diagnostics.** Post-header decoding and socket failures retain bounded cause codes and hostnames without including page contents or URL secrets.
 - **Files and child tools.** Browser uploads resolve the current project's file and verify what was selected. Ambiguous file patches are refused before writing; Windows child tools retain their required runtime environment. Selecting an upload is not proof that the destination website accepted it.
 - **Spending review.** Old pending receipts whose billing source was not recorded now say BILLING SOURCE UNKNOWN. Recorded managed and BYOK receipts retain their distinct guidance. Historical charges, caps and billing sources are not guessed; unresolved spending can block work under explicitly configured spending limits.

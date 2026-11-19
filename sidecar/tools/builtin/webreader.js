@@ -4,7 +4,7 @@
    WHY (2026-07-31, field data + the Hermes reach audit): the dominant real-world web failures are bot
    walls (403) and throttled keyless engines — problems a REAL browser fingerprint doesn't have. Hermes
    solves reach architecturally (vendor reader APIs + real browsers, model-driven escalation, no
-   automatic fallback); StarNet is local-first with no vendor keys, but it SHIPS a CDP Chrome. This
+   automatic fallback); Vultron is local-first with no vendor keys, but it SHIPS a CDP Chrome. This
    module turns that asset into automatic reach: when the cheap path fails in a way a browser can fix,
    the tool quietly reads the page through Chrome instead of reporting weather.
 
@@ -126,7 +126,7 @@
     const downNote = () => 'web search\'s background browser could not start (' + launchDown.reason.slice(0, 160) + ')';
 
     function availability() {
-      if (String(env.SKYNET_WEB_READER || env.STARNET_WEB_READER || '') === '0') return { ok: false, reason: 'disabled' };
+      if (String(env.SKYNET_WEB_READER || env.VULTRON_WEB_READER || '') === '0') return { ok: false, reason: 'disabled' };
       if (launchDown && clock() - launchDown.at < LAUNCH_COOLDOWN_MS) return { ok: false, launchFailed: true, reason: downNote() };
       if (!makeDriver) return { ok: false, reason: 'browser module unavailable' };
       if (deps.makeDriver) return { ok: true };   // an injected factory needs no Chrome on disk
@@ -153,7 +153,7 @@
       driver = makeDriver({
         forceHeadless: true, headless: true, cdpPort: 0, env,
         // ephemeral, reader-owned profile — never the station's signed-in one (see POSTURE above)
-        profileDir: P && OS ? P.join(OS.tmpdir(), 'starnet-webreader-' + process.pid) : undefined,
+        profileDir: P && OS ? P.join(OS.tmpdir(), 'vultron-webreader-' + process.pid) : undefined,
         cleanupProfile: true
       });
       return driver;

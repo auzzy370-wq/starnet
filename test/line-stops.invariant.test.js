@@ -284,7 +284,7 @@ const neverHandedPartial = (label, log) => A.ok(!log.some(r => r.text.indexOf(PA
 
   /* ---------- A STAGE THAT DID NOT FINISH (doneMeans): six ways, one code, and its partial text goes nowhere ---------- */
   const UNFINISHED = { cut_short: 'the reply was cut short', out_of_budget: 'hit a spending limit', step_limit: 'reached the step limit',
-    asked: 'asked a question', interrupted: 'interrupted when StarNet stopped', no_end: 'its run never reported how it ended' };
+    asked: 'asked a question', interrupted: 'interrupted when Vultron stopped', no_end: 'its run never reported how it ended' };
   for (const kind of Object.keys(UNFINISHED)) {
     const label = 'a stage that ended ' + kind;
     const { out, log } = await runChain(base.router, { editor: kind }, seed());

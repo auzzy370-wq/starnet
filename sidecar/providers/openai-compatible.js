@@ -29,7 +29,7 @@
     if (text.indexOf(param) >= 0) return true;
     return (PARAM_ALIASES[param] || []).some(alias => text.indexOf(alias) >= 0);
   }
-  // The chat-completions wire accepts this effort scale; StarNet's wider scale (xhigh/max) clamps into it.
+  // The chat-completions wire accepts this effort scale; Vultron's wider scale (xhigh/max) clamps into it.
   const WIRE_EFFORTS = ['minimal', 'low', 'medium', 'high'];
   function wireEffort(value) {
     const v = String(value || '').trim().toLowerCase();
@@ -53,7 +53,7 @@
     if (v === 'min') return 'minimal';
     if (v === 'med' || v === 'mid') return 'medium';
     if (v === 'extra' || v === 'xtra' || v === 'extrahigh') return 'xhigh';
-    return EFFORT_ORDER.indexOf(v) >= 0 ? v : '';   // a level StarNet has no name for is dropped, never coerced
+    return EFFORT_ORDER.indexOf(v) >= 0 ? v : '';   // a level Vultron has no name for is dropped, never coerced
   }
   function declaredEffortList(raw) {
     if (!Array.isArray(raw)) return null;
@@ -163,7 +163,7 @@
     return { n, background };
   }
   /* The same, for a LOCAL /v1 endpoint (LOCAL SILENCE below): server -> Set of open calls. A local server often serves
-     one request at a time, so a silent request with another StarNet call open there may only be queued behind it: that
+     one request at a time, so a silent request with another Vultron call open there may only be queued behind it: that
      request is re-sent ONCE (BUSY: ONE RE-SEND, below). Keyed by the SERVER (host:port), not the configured URL string:
      localhost, 127.0.0.1 and [::1] on one port are one server, and so are two paths on it. */
   const localOpen = new Map();
@@ -220,11 +220,11 @@
   /* REASONING_CONTENT RIDES BACK (DeepSeek thinking mode, api-docs.deepseek.com/guides/thinking_mode, 2026-09).
      "For requests carrying the tools parameter, the reasoning_content must be fully passed back to the API in all
      subsequent requests — even for turns where the model did not perform a tool call", else 400 "The
-     reasoning_content in the thinking mode must be passed back to the API". Every StarNet run carries tools, so a
+     reasoning_content in the thinking mode must be passed back to the API". Every Vultron run carries tools, so a
      V4 model thinking by default (high) failed on its second request. The adapter parks each turn's text as an
      opaque { type:'reasoning_content' } block on the turn (provider.js contract) and hands it back here. A turn
      with no captured text (history the page kept, a sidecar restart) gets '' — the shape the fix other harnesses
-     shipped (Hermes, OpenCode). StarNet's own `reasoning` parking field never rides the wire. */
+     shipped (Hermes, OpenCode). Vultron's own `reasoning` parking field never rides the wire. */
   function reasoningTextOf(blocks) {
     if (!Array.isArray(blocks)) return null;
     let text = null;
@@ -250,7 +250,7 @@
   }
 
   // NO default endpoint. This adapter used to fall back to https://api.openai.com/v1 on an empty baseUrl,
-  // which meant a provider whose baseUrl resolves dynamically (starnet: the linked cloud URL) silently sent
+  // which meant a provider whose baseUrl resolves dynamically (vultron: the linked cloud URL) silently sent
   // its runs — bearer credential and all — to OpenAI's API the moment the link failed to resolve, and the
   // user got OpenAI's "invalid model ID" for a catalog id that was never meant for that endpoint
   // (2026-08-25 stranded-user incident). An endpointless provider must refuse loudly, never reroute.
@@ -295,7 +295,7 @@
     const providerName = safeErrorField((e && e.provider) || (e && e.metadata && (e.metadata.provider_name || e.metadata.provider)), 100);
     const requestId = safeErrorField(
       (e && (e.request_id || e.requestId)) || (data && (data.request_id || data.requestId)) ||
-      responseHeader(res, ['x-starnet-request-id', 'x-request-id', 'x-openrouter-request-id', 'request-id']),
+      responseHeader(res, ['x-vultron-request-id', 'x-request-id', 'x-openrouter-request-id', 'request-id']),
       120
     );
     const upstreamRequestId = safeErrorField(e && e.upstream_request_id, 120);
@@ -325,10 +325,10 @@
     const id = (m && (m.id || m.name || m.model)) ? String(m.id || m.name || m.model) : '';
     if (!id) return null;
     const params = Array.isArray(m.supported_parameters) ? m.supported_parameters.slice() : [];
-    // Declared levels: StarNet's own non-empty `reasoningEfforts` (static rosters, the managed proxy), else a
+    // Declared levels: Vultron's own non-empty `reasoningEfforts` (static rosters, the managed proxy), else a
     // vendor block — xAI `capabilities.reasoning_effort` / `default_reasoning_effort`, DeepSeek
     // `effort.supported_levels` / `default_level` (api-docs.deepseek.com, GET /models). An xAI entry that carries
-    // capabilities but no levels is a DECLARED "no dial" ([]). An empty StarNet list keeps its old meaning (unknown).
+    // capabilities but no levels is a DECLARED "no dial" ([]). An empty Vultron list keeps its old meaning (unknown).
     const caps = (m.capabilities && typeof m.capabilities === 'object' && !Array.isArray(m.capabilities)) ? m.capabilities : null;
     // Only an xAI-shaped block declares the dial: one that names reasoning levels, xAI's empty no-dial `{}`, or an
     // xAI-owned entry. Other vendors publish capability blocks too (Mistral: completion_chat, function_calling, ...)
@@ -346,7 +346,7 @@
       id,
       name: m.name || id,
       context_length: reportedWindow(m),
-      // an OpenRouter-shaped list (the StarNet proxy relays OpenRouter's) names it under top_provider
+      // an OpenRouter-shaped list (the Vultron proxy relays OpenRouter's) names it under top_provider
       max_completion_tokens: Number(m.max_completion_tokens || m.max_output_tokens || (m.top_provider && m.top_provider.max_completion_tokens) || 0) || null,
       pricing: m.pricing || null,
       supported_parameters: params,
@@ -357,7 +357,7 @@
       reasoningEfforts: declared ? declared : (Array.isArray(m.reasoningEfforts) ? m.reasoningEfforts.slice() : []),
       reasoningEffortsDeclared: !!declared,
       defaultReasoningLevel: (defaultLevel && declared && declared.indexOf(defaultLevel) >= 0) ? defaultLevel : null,
-      // image input as the row states it (the StarNet managed list relays OpenRouter's architecture.input_modalities);
+      // image input as the row states it (the Vultron managed list relays OpenRouter's architecture.input_modalities);
       // null when the row says nothing, which is every vendor /v1/models list — those keep sending images as before
       supportsImages: provider.imageInputOf(m)
     };
@@ -429,7 +429,7 @@
        and then no first byte, or nothing between two chunks within the idle ceiling — ends the turn on errorClass
        `local_timeout` after that ONE request, with a sentence naming the host, the phase and the wait. A server still
        loading a model gets the local connect ceiling (the Ollama profile's 300 s) and a wait note. Kept as before: a
-       public host. A request while another StarNet call is open on the same server (ours may be queued behind it) is
+       public host. A request while another Vultron call is open on the same server (ours may be queued behind it) is
        re-sent ONCE, and a second silence ends the turn the same way (BUSY: ONE RE-SEND, requestWithRetry).
        The ceiling: SKYNET_LOCAL_CONNECT_TIMEOUT_MS when set, else an explicitly set SKYNET_PROVIDER_CONNECT_MS (the one
        knob every card obeyed before this lane), else the local 300 s. */
@@ -478,7 +478,7 @@
        names the prices.js table to fall back to (null for ollama/custom/perplexity — genuinely unpriced, and
        the run stays honestly 'unpriced' there). Catalog pricing, when an endpoint DOES publish it, still wins. */
     const priceFamily = (typeof opts.priceFamily === 'string' && opts.priceFamily.trim()) ? opts.priceFamily.trim() : null;
-    /* RUN ATTRIBUTION (2026-09-29). A profile that names a runIdHeader (only `starnet`: our own proxy) gets the
+    /* RUN ATTRIBUTION (2026-09-29). A profile that names a runIdHeader (only `vultron`: our own proxy) gets the
        harness run id of the calling run (req.runId) on every chat request, so the cloud ledger can tie each
        debit to the run that spent it. Off for every other profile: a run id is never sent to a third party. */
     const runIdHeader = (typeof opts.runIdHeader === 'string' && /^[A-Za-z0-9-]{1,64}$/.test(opts.runIdHeader)) ? opts.runIdHeader : '';
@@ -642,7 +642,7 @@
         if (stopped) return;
         const others = otherOllamaCalls(nativeBase, self);
         const note = ollamaNative.placementFacts(ps, body.model, promptTokens, server)
-          + (others.n ? ' · ' + others.n + ' other StarNet call' + (others.n === 1 ? '' : 's') + ' still open there'
+          + (others.n ? ' · ' + others.n + ' other Vultron call' + (others.n === 1 ? '' : 's') + ' still open there'
             + (others.background === others.n ? ' (background)' : others.background ? ' (' + others.background + ' background)' : '') : '');
         if (note !== last) { last = note; onWait({ phase: 'connect', note }); }
         arm(waitNoteMs * 3);
@@ -654,12 +654,12 @@
         sawMissing() { return missing; }
       };
     }
-    /* LOCAL SILENCE wait note: a /v1 server has no /api/ps, so the note says only what StarNet knows — the server has not
-       answered, a load can take minutes, how long StarNet will wait in all (limitMs, for the wait line), and how many other
-       StarNet calls are open there. No probe: nothing is read from the server. Re-checked every 3x waitNoteMs; a note goes
+    /* LOCAL SILENCE wait note: a /v1 server has no /api/ps, so the note says only what Vultron knows — the server has not
+       answered, a load can take minutes, how long Vultron will wait in all (limitMs, for the wait line), and how many other
+       Vultron calls are open there. No probe: nothing is read from the server. Re-checked every 3x waitNoteMs; a note goes
        out only when it changes.
        THE LIMIT IS STATED ONLY WHEN IT IS TRUE (review M3): limitMs rides the note only when this request's silence would end
-       the turn — no other StarNet call open there, or the one busy re-send already spent (self.busyResent). A request that
+       the turn — no other Vultron call open there, or the one busy re-send already spent (self.busyResent). A request that
        would be re-sent states none. limitElapsedMs: how long THIS request has been out, so the wait line counts the ceiling
        from this send, not from an earlier one in the same attempt. */
     function localWaitProbe(onWait, self) {
@@ -672,7 +672,7 @@
         if (stopped) return;
         const others = otherLocalCalls(baseUrl, self);
         const note = 'no answer yet from the model server at ' + (endpoint.hostPort || endpoint.host) + where + ' (a server loading a model can take minutes)'
-          + (others ? ' · ' + others + ' other StarNet call' + (others === 1 ? '' : 's') + ' still open there' : '');
+          + (others ? ' · ' + others + ' other Vultron call' + (others === 1 ? '' : 's') + ' still open there' : '');
         const endsTurn = !others || !!(self && self.busyResent);
         const key = note + (endsTurn ? '|limit' : '');
         if (key !== last) {
@@ -688,7 +688,7 @@
     /* The turn's end on a silent LOCAL server (LOCAL SILENCE above): the timeout error keeps its "timed out" words in
        brackets and gains the sentence and errorClass's local_timeout flag. phase: 'connect' (no response headers),
        'first byte' (headers, then nothing), 'between chunks' (the reply stopped mid-way). resent: the one busy re-send was
-       spent (BUSY: ONE RE-SEND) — the sentence says another StarNet call was open there and the request went twice.
+       spent (BUSY: ONE RE-SEND) — the sentence says another Vultron call was open there and the request went twice.
        The fix line names no "context length" or "window" (review M2): those words read as a context overflow on COMMS's
        text ladder, which told the user to start a fresh chat. */
     function localSilenceError(e, phase, ms, env, resent) {
@@ -703,8 +703,8 @@
       e.ownMessage = true;
       e.message = 'The model server at ' + (endpoint.hostPort || endpoint.host) + ' ' + where + ' ' + what + ' (' + phase + ' phase), so this turn ended. '
         + (resent
-          ? 'Another StarNet call was open on that server, so StarNet re-sent the request once in case it was only queued behind that call; the re-send got no answer either. '
-          : 'StarNet did not re-send the request: a re-send would start the same prompt over on a server that may still be working on it. ')
+          ? 'Another Vultron call was open on that server, so Vultron re-sent the request once in case it was only queued behind that call; the re-send got no answer either. '
+          : 'Vultron did not re-send the request: a re-send would start the same prompt over on a server that may still be working on it. ')
         + 'Check the server\'s own log (a model too big for that machine\'s memory can stall there), pick a smaller model in the COMMS model dock, or raise '
         + env + ' if it needs longer. [' + original + ']';
       return e;
@@ -778,7 +778,7 @@
 
     /* A CUSTOM card's BORROWED native wire (GH#111 review): its URL only looked like Ollama, so a server that answers the
        native chat as a different server (notOllamaError, thrown on the FIRST native object, before this turn yielded
-       anything) is StarNet's own wrong guess, and CUSTOM is already the card that speaks to it. nativeWire is off by
+       anything) is Vultron's own wrong guess, and CUSTOM is already the card that speaks to it. nativeWire is off by
        then; the same turn goes once on the /v1 wire, the way the 404 path does, and a /v1 failure reports itself.
        Every other route streams wireStreamOnce untouched. */
     async function* wireStream(req) {
@@ -857,7 +857,7 @@
           && ((declared && declared.some(e => e !== 'none')) || emitsReasoning(baseUrl, req.model));
         body.messages = replayReasoningContent(body.messages, thinking, !!body.tools);
       }
-      // Strict Chat Completions endpoints (Mistral: 422 extra_forbidden) reject StarNet's own bookkeeping keys on a
+      // Strict Chat Completions endpoints (Mistral: 422 extra_forbidden) reject Vultron's own bookkeeping keys on a
       // message (ts, streamId, agentId, the `reasoning` parking field) — only Chat Completions message keys leave.
       body.messages = provider.chatWireMessages(body.messages);
       if (cacheControl) body.messages = cacheControl(body.messages, req.model, req.cacheSystemPrefix, req.neverReread === true && !(req.tools && req.tools.length));
@@ -868,7 +868,7 @@
         const facts = await factsFor(req.model);
         const modelMax = (facts && facts.contextLength) || 0;
         const need = ollamaNative.estimateTokens(body) + (Number(body.max_tokens) || 0);
-        // First use of this model in this process: if Ollama already holds it loaded at a usable window (StarNet was
+        // First use of this model in this process: if Ollama already holds it loaded at a usable window (Vultron was
         // restarted inside the keep-alive, or the Commander loaded it larger), keep that window rather than reload.
         // A TASK (it carries tools: the long prompt that times out) keeps a window bigger than it needs only while the model
         // fits the GPU: one /api/ps shows spilling to the CPU is not adopted, and a held one steps back down to the
@@ -1100,7 +1100,7 @@
         if (!doneEmitted) { yield* flushReasoning(); yield { type: 'done', finishReason: null, truncated: !sawSentinel }; }
       } catch (e) {
         if (isAbort(e, req.signal)) return;
-        // LOCAL SILENCE: the idle watchdog fired on a local /v1 server with no other StarNet call open there — one request, then
+        // LOCAL SILENCE: the idle watchdog fired on a local /v1 server with no other Vultron call open there — one request, then
         // the truth. With another call open there (ours may be queued behind it) the loop re-sends ONCE (e.localBusy ->
         // req.localBusyResent); a silence on that re-send ends the turn too.
         if (localCall && !translate && e && e.code === 'PROVIDER_STREAM_TIMEOUT' && e.phase === 'idle') {
@@ -1165,13 +1165,13 @@
             /* NO RE-SEND OF A LOADED MODEL'S SILENCE (#99 follow-up). Every re-send aborts Ollama mid-request and sends the
                same prompt to the same model, so a CPU-spilled model that needs longer than the ceiling to answer a task
                prompt got 7 sends and never finished. When /api/ps listed the model at every read of this attempt and no
-               other StarNet call is open on that server (none of ours it could have queued behind), the turn ends now
+               other Vultron call is open on that server (none of ours it could have queued behind), the turn ends now
                on errorClass `local_timeout` with the placement above. Still re-sent: a model missing from any read (a
-               load may have eaten the wait, or hung), an unreadable status, another StarNet call open there. */
+               load may have eaten the wait, or hung), an unreadable status, another Vultron call open there. */
             if (ollamaNative.psRow(ps, body.model) && !(probe && probe.sawMissing()) && !otherOllamaCalls(nativeBase, wire.openCall).n) e.localModelTimeout = true;
           }
           /* LOCAL SILENCE: a local /v1 server sent no headers within the local connect ceiling. Nothing else of ours open
-             there: the turn ends now. BUSY: ONE RE-SEND (review M1) — another StarNet call open there may hold the server, so
+             there: the turn ends now. BUSY: ONE RE-SEND (review M1) — another Vultron call open there may hold the server, so
              this request is re-sent ONCE (here when this ladder has a rung left, else by the loop: e.localBusy ->
              req.localBusyResent); a silence on that re-send ends the turn on local_timeout, saying the other call was open.
              Before, a busy silence kept the whole hosted ladder: 7 sends x the 300 s local ceiling, ~37 min. */
@@ -1253,7 +1253,7 @@
         // run never pay the extra round-trip). Does not consume a transient-retry attempt.
         if (dropUnsupportedParam(body, res.status, detail)) { attempt--; continue; }
         // A vendor API rejecting a slash-prefixed id as an unknown/invalid model means a ROUTED-catalog id
-        // (StarNet managed / OpenRouter, e.g. "openai/gpt-…") reached a direct vendor endpoint. Without this
+        // (Vultron managed / OpenRouter, e.g. "openai/gpt-…") reached a direct vendor endpoint. Without this
         // line the user sees only the vendor's bare "invalid model ID" and has no path back (2026-08-25
         // stranded-user incident) — name the mismatch and the fix. Slash-native catalogs (together, fireworks,
         // groq) are safe: their ids resolve on their own endpoints, so this only fires on a real mismatch.
@@ -1263,7 +1263,7 @@
           && /invalid model|is not a valid model|model .*(does not exist|not found)/i.test(String(detail))) {
           const sent = String(body.model || '');
           if (routedIdHint && sent.indexOf('/') > 0) {
-            detail += ' — "' + sent + '" is a routed-catalog model id (vendor/model), but this provider calls the vendor API directly. Switch the provider in the model picker (STARNET or OPENROUTER for routed ids), or pick a model from this provider\'s own catalog.';
+            detail += ' — "' + sent + '" is a routed-catalog model id (vendor/model), but this provider calls the vendor API directly. Switch the provider in the model picker (VULTRON or OPENROUTER for routed ids), or pick a model from this provider\'s own catalog.';
           } else if (!routedIdHint && sent && String(detail).indexOf(sent) < 0) {
             detail += ' — the endpoint did not accept the model id "' + sent + '"; check the exact id in your endpoint\'s model list.';
           }

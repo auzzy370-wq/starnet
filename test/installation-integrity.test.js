@@ -5,7 +5,7 @@ const path = require('node:path');
 const assert = require('node:assert/strict');
 const { spawnSync } = require('node:child_process');
 const { inspect } = require('../scripts/qa/installation-integrity.cjs');
-const root = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-integrity-'));
+const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-integrity-'));
 const installed = path.join(root, 'installed'), reference = path.join(root, 'reference');
 const shell = 'sidecar/tools/builtin/shell.js';
 const put = (dir, rel, bytes) => { const file = path.join(dir, rel); fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, bytes); };

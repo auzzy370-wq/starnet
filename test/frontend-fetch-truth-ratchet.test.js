@@ -13,7 +13,7 @@
                        empty or false answer
      BYPASS            a raw fetch of an /api/ URL, or a local fetch-wrapper helper, outside harness.js. JSON exchanges go
                        through Harness.api; a stream or blob keeps its Response in scope and stays an audited row
-     STATUS_ONLY_STALE a 401/403 status compare outside harness.js: a stale session is the gate's code (X-StarNet-Code
+     STATUS_ONLY_STALE a 401/403 status compare outside harness.js: a stale session is the gate's code (X-Vultron-Code
                        token_stale), never a bare status. The rows left are guarded legacy readings for an older sidecar
                        that names no code, and friendlyerror's provider ladder
 

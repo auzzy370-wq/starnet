@@ -11,14 +11,14 @@ const { resolveConnectorOauthTarget } = require('../sidecar/mcp/oauth-target.js'
 const catalog = require('../sidecar/mcp/catalog.js');
 
 (async () => {
-  const installed = { installed: { client_id: '123456-starnettest.apps.googleusercontent.com' } };
+  const installed = { installed: { client_id: '123456-vultrontest.apps.googleusercontent.com' } };
   assert.equal(desktopClient(installed).tokenEndpointAuthMethod, 'none');
   assert.equal(desktopClient({ installed: { ...installed.installed, client_secret: 'native-metadata' } }).tokenEndpointAuthMethod, 'client_secret_post');
   assert.throws(() => desktopClient({ web: installed.installed }), /Desktop/);
   assert.throws(() => desktopClient({ installed: { client_id: 'bogus' } }), /invalid/);
   assert.throws(() => desktopClient({ installed: { ...installed.installed, token_uri: 'https://evil.invalid' } }), /host/);
   assert.equal(loadDesktopClient({ env: {}, readFile() { throw Error('not configured'); } }), null);
-  assert.equal(loadDesktopClient({ env: { STARNET_GOOGLE_DESKTOP_CLIENT_JSON: JSON.stringify(installed) }, readFile() { throw Error('must use publisher environment'); } }).clientId, installed.installed.client_id);
+  assert.equal(loadDesktopClient({ env: { VULTRON_GOOGLE_DESKTOP_CLIENT_JSON: JSON.stringify(installed) }, readFile() { throw Error('must use publisher environment'); } }).clientId, installed.installed.client_id);
   assert.equal(productForUrl(ENDPOINTS.gmail + '.evil'), null);
   const legacy = resolveConnectorOauthTarget('gmail', catalog, [{ id: 'gmail', oauth: true, transport: 'http', url: 'https://gmailmcp.googleapis.com/mcp/v1' }]);
   assert.equal(legacy.custom, false);
@@ -108,10 +108,10 @@ const catalog = require('../sidecar/mcp/catalog.js');
       assert.deepEqual(G.heldUse(cfgOf('gmail')), { id: 'gmail-app-password', name: 'Gmail (app password)' });
       assert.deepEqual(G.heldUse(cfgOf('google-drive')), { id: 'google-files', name: 'Selected Google files' });
       // it points to the alternative and never says it works: the card existing proves nothing about the account (GitHub #148)
-      assert.equal(G.heldMessage(cfgOf('gmail')), 'Google blocks StarNet’s Gmail sign-in until StarNet passes Google’s review. Meanwhile you can try Gmail (app password) instead.');
-      assert.equal(G.heldMessage(cfgOf('google-drive')), 'Google blocks StarNet’s Google Drive sign-in until StarNet passes Google’s review. Meanwhile you can try Selected Google files instead.');
+      assert.equal(G.heldMessage(cfgOf('gmail')), 'Google blocks Vultron’s Gmail sign-in until Vultron passes Google’s review. Meanwhile you can try Gmail (app password) instead.');
+      assert.equal(G.heldMessage(cfgOf('google-drive')), 'Google blocks Vultron’s Google Drive sign-in until Vultron passes Google’s review. Meanwhile you can try Selected Google files instead.');
       for (const id of Object.keys(G.SERVICES)) assert.ok(!/works/.test(G.heldMessage(cfgOf(id))), id + ': the held line never says the alternative works');
-      assert.equal(G.heldMessage(cfgOf('google-drive'), false), 'Google blocks StarNet’s Google Drive sign-in until StarNet passes Google’s review.', 'never points to an alternative this build cannot connect');
+      assert.equal(G.heldMessage(cfgOf('google-drive'), false), 'Google blocks Vultron’s Google Drive sign-in until Vultron passes Google’s review.', 'never points to an alternative this build cannot connect');
       assert.equal(G.signInHeld({ id: 'notion', url: 'https://mcp.notion.com/mcp', transport: 'http' }), false, 'non-Google connectors are untouched');
       assert.equal(G.signInHeld({ id: 'google-files', url: G.FILES_URL, googleApi: true }), false, 'Selected Google files is never held');
       const savedHeld = Object.assign({}, G.RELEASED);
@@ -122,7 +122,7 @@ const catalog = require('../sidecar/mcp/catalog.js');
       finally { G.RELEASE_DEFERRED = true; }
     } finally { G.EARLY_ACCESS = false; }
     const wf = dir => fs.readFileSync(path.join(__dirname, '../.github/workflows', dir), 'utf8');
-    assert.ok(!/STARNET_GOOGLE_EARLY_ACCESS/.test(wf('release-train.yml')), 'the public release train can never stage early access');
+    assert.ok(!/VULTRON_GOOGLE_EARLY_ACCESS/.test(wf('release-train.yml')), 'the public release train can never stage early access');
     assert.match(wf('desktop-build.yml'), /google_early_access:[\s\S]*default: "false"/, 'internal builds opt in explicitly, default off');
   }
   // Send-only Gmail: one tool, a well-formed MIME message, and header injection refused before any network call.
@@ -160,14 +160,14 @@ const catalog = require('../sidecar/mcp/catalog.js');
   const train = fs.readFileSync(path.join(__dirname, '../.github/workflows/release-train.yml'), 'utf8');
   assert.ok(train.includes('run: node scripts/stage-google-client.mjs\n'));
   assert.ok(!train.includes('stage-google-client.mjs --optional'));
-  const stageRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-google-stage-'));
+  const stageRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-google-stage-'));
   try {
     fs.mkdirSync(path.join(stageRoot, 'scripts'));
     fs.mkdirSync(path.join(stageRoot, 'sidecar/mcp'), { recursive: true });
     fs.copyFileSync(path.join(__dirname, '../scripts/stage-google-client.mjs'), path.join(stageRoot, 'scripts/stage-google-client.mjs'));
     fs.copyFileSync(path.join(__dirname, '../sidecar/mcp/google-client.js'), path.join(stageRoot, 'sidecar/mcp/google-client.js'));
     const stage = (raw, optional = false) => spawnSync(process.execPath, [path.join(stageRoot, 'scripts/stage-google-client.mjs'), ...(optional ? ['--optional'] : [])], {
-      encoding: 'utf8', env: { ...process.env, STARNET_GOOGLE_DESKTOP_CLIENT_JSON: raw, NODE_OPTIONS: '' }
+      encoding: 'utf8', env: { ...process.env, VULTRON_GOOGLE_DESKTOP_CLIENT_JSON: raw, NODE_OPTIONS: '' }
     });
     const staged = path.join(stageRoot, 'sidecar/mcp/google-client.json');
     fs.writeFileSync(staged, JSON.stringify(installed));
@@ -188,7 +188,7 @@ const catalog = require('../sidecar/mcp/catalog.js');
     assert.equal(fs.existsSync(staged), false, 'internal builds cannot inherit a stale registration');
     // EARLY ACCESS is stamped into the registration only when the build asks for it.
     const stageEarly = (flag) => spawnSync(process.execPath, [path.join(stageRoot, 'scripts/stage-google-client.mjs')], {
-      encoding: 'utf8', env: { ...process.env, STARNET_GOOGLE_DESKTOP_CLIENT_JSON: JSON.stringify(installed), STARNET_GOOGLE_EARLY_ACCESS: flag, NODE_OPTIONS: '' }
+      encoding: 'utf8', env: { ...process.env, VULTRON_GOOGLE_DESKTOP_CLIENT_JSON: JSON.stringify(installed), VULTRON_GOOGLE_EARLY_ACCESS: flag, NODE_OPTIONS: '' }
     });
     assert.equal(stageEarly('').status, 0);
     assert.equal(JSON.parse(fs.readFileSync(staged, 'utf8')).earlyAccess, undefined, 'a normal build carries no early-access flag');

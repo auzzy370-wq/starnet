@@ -167,7 +167,7 @@ const rejects = async (p, label) => { try { await p; A.ok(false, label + ' (did 
     await rejects(t.getTool.run({ id: w.id }), 'scheduled update stops on a deleted definition');
   }
   {
-    const { t } = make(); const source = { kind: 'agent', id: 'starnet', label: 'StarNet' };
+    const { t } = make(); const source = { kind: 'agent', id: 'vultron', label: 'Vultron' };
     for (const display of ['list', 'trend', 'progress']) {
       await t.configure({ id: display, label: display, request: 'real data', display }, source);
       await rejects(run(t, { id: display, version: 1, value: '9' }), display + ' refuses an invented/missing shape');
@@ -187,7 +187,7 @@ const rejects = async (p, label) => { try { await p; A.ok(false, label + ' (did 
   // the host grants widget.get/widget.set to the run whose purpose IS a configured widget: its own conversation
   // ('widget-<id>', frontend/app/widgets.js openWidgetTask) or a routine whose job meta names it — never anything else
   {
-    const { t } = make(); const source = { kind: 'agent', id: 'starnet', label: 'StarNet' };
+    const { t } = make(); const source = { kind: 'agent', id: 'vultron', label: 'Vultron' };
     await t.configure({ id: 'w-ai-spend', label: 'AI spend', request: 'total spend this month from the ledger', display: 'metric' }, source);
     await run(t, { id: 'app-revenue', value: '$5' });   // an agent-fed readout: no user definition behind it
     A.eq(t.updateRunOf({ streamId: 'widget-w-ai-spend' }), 'w-ai-spend', 'the widget\'s own conversation is its update run');
@@ -212,7 +212,7 @@ const rejects = async (p, label) => { try { await p; A.ok(false, label + ' (did 
   }
   // the update run reads and publishes ITS OWN widget only; any other id is refused with a clear error
   {
-    const { t } = make(); const source = { kind: 'agent', id: 'starnet', label: 'StarNet' };
+    const { t } = make(); const source = { kind: 'agent', id: 'vultron', label: 'Vultron' };
     await t.configure({ id: 'w-mine', label: 'Mine', request: 'mine', display: 'metric' }, source);
     await t.configure({ id: 'w-other', label: 'Other', request: 'other', display: 'metric' }, source);
     const scoped = { agentId: 'nova', runId: 'run_9', widgetScope: 'w-mine' };

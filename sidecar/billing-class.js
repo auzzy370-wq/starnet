@@ -8,7 +8,7 @@
 
    FOUR PAYERS (billingClassOf):
      'metered'       the Commander's own key: real dollars per call.
-     'managed'       StarNet credits: the starnet relay on a linked station, or every metered run on an operator's
+     'managed'       Vultron credits: the vultron relay on a linked station, or every metered run on an operator's
                      CREDITS_URL deployment (the operator fronts the keys there). Reserved and settled on that account.
      'subscription'  a sign-in plan: ChatGPT (Codex), Grok OAuth, Kimi OAuth, and Claude Code when its call reports a
                      subscription login. Nothing is billed per call; every call draws on the plan's usage window.
@@ -20,15 +20,15 @@
    POLICY is the one table per payer, and every decision reads it:
      dollarCaps            PER RUN, the run family's spend pool, the per-agent/day/global pools and the aux dollar check
      managedAdmission      the run reserves its cap against the managed account before its first call
-     unpricedTokenCeiling  the per-run token ceiling for usage nothing can price (STARNET_MAX_UNPRICED_TOKENS)
-     signInTokenCeiling    the per-run sign-in seatbelt (STARNET_MAX_SUBSCRIPTION_TOKENS): every attempt of this payer counts
+     unpricedTokenCeiling  the per-run token ceiling for usage nothing can price (VULTRON_MAX_UNPRICED_TOKENS)
+     signInTokenCeiling    the per-run sign-in seatbelt (VULTRON_MAX_SUBSCRIPTION_TOKENS): every attempt of this payer counts
      auxTokenCeiling       the 24-hour background token ceiling (#105). Route-level: a route that MAY sign in keeps it
      promptTier            the run's window stops at the model's long-context price tier (prices.js promptTierCeiling)
      mediaDollarsCrossRun  #164: only the run's media dollars meet the cross-run limits (its own calls spend none)
      imageUnknownCaps      #164: images of unknown cost are counted (spend.js: 10 per run family, 50 in 24 hours)
      ledgerMetered         the run's ledger row counts toward the metered dollar totals (a row's unmetered = !ledgerMetered)
 
-   The host binds what only it knows ONCE (makeBilling: the provider profile table, whether StarNet credits are
+   The host binds what only it knows ONCE (makeBilling: the provider profile table, whether Vultron credits are
    configured, the CREDITS_URL deployment) and every call site asks the bound object:
      classOf / policyOf(providerId)      a route's payer before any call, and its POLICY row
      classifierFor(providerId)           the per-attempt classifier the loop calls on every booked attempt (o.billingClassOf,
@@ -69,10 +69,10 @@
   function isClass(c) { return typeof c === 'string' && CLASSES.indexOf(c) >= 0; }
 
   /* WHO IS MANAGED (issue #6, 2026-08-30): only a run whose spend lands on the managed account. On a device-LINKED
-     station that is solely the 'starnet' relay (a BYOK run pays its own vendor); on an env STARNET_CREDITS_URL deployment
+     station that is solely the 'vultron' relay (a BYOK run pays its own vendor); on an env VULTRON_CREDITS_URL deployment
      the operator fronts every metered run's keys, so all of them do. A plan or a local model never touches managed credit. */
   function managedRoute(providerId, creditsConfigured, creditsUrl) {
-    return !!creditsConfigured && (providerId === 'starnet' || !!creditsUrl);
+    return !!creditsConfigured && (providerId === 'vultron' || !!creditsUrl);
   }
   // Claude Code: one route, two payers — a subscription login books $0, an API-key login books the CLI's reported cost
   function perCallRoute(profile) { return !!profile && !profile.unmetered && profile.adapter === 'claude-cli'; }
@@ -105,7 +105,7 @@
   /* runRowClass({ routes, attempts }) -> the class a finished run's rows carry: what its calls really were.
      routes: every route the run ran on, in order ({ cls, perCall }: the run's classifier, then each provider fallback's);
      attempts: the classes its booked attempts reported (the loop's result.billingClasses). A route with a fixed payer (a
-     key, StarNet credits, a sign-in plan, a local model) counts at it, whatever its attempts did. A per-call route (Claude
+     key, Vultron credits, a sign-in plan, a local model) counts at it, whatever its attempts did. A per-call route (Claude
      Code) counts at what its attempts reported when it is the run's only route; otherwise, or when none reported, at its
      class before any call (metered: unknown is never a sign-in). The most-paying class wins. */
   function runRowClass(o) {
@@ -230,7 +230,7 @@
     const n = v => (Number(v) || 0).toLocaleString('en-US'), usd = v => '$' + (Number(v) || 0).toFixed(2);
     if (r.gate === 'tokens') return { why: 'the 24-hour background token ceiling is reached on this route (' + n(r.used) + ' of ' + n(r.ceiling) + ' tokens)',
       exit: 'it lifts as the 24 hours roll on, or raise BACKGROUND TOKEN CEILING in an agent’s MEMORY tab (0 = off)' };
-    if (r.gate === 'check') return { why: 'the spending check failed (' + r.error + ')', exit: 'restart StarNet; ' + LIMITS + ' shows what the spend record holds' };
+    if (r.gate === 'check') return { why: 'the spending check failed (' + r.error + ')', exit: 'restart Vultron; ' + LIMITS + ' shows what the spend record holds' };
     // budget.js names the way out of every refusal over unknown spend (unknownExit): COUNT AS or the charge, a restart, the files
     if (r.unknown) return { why: 'spend history is unavailable (' + (r.cause || 'unknown') + ')', exit: r.exit ? String(r.exit) : 'see ' + LIMITS };
     return { why: 'the ' + (r.scope || 'spending') + ' spending cap is reached' + (typeof r.cap === 'number' ? ' (' + usd(r.usd) + ' of ' + usd(r.cap) + ')' : ''),

@@ -14,7 +14,7 @@ const os = require('node:os');
 const { makeImageTools } = require('../sidecar/tools/builtin/image.js');
 const TasteRef = require('../sidecar/tasteref.js');
 
-const ROOT = path.join(os.tmpdir(), 'starnet-image-ref-test-' + process.pid);
+const ROOT = path.join(os.tmpdir(), 'vultron-image-ref-test-' + process.pid);
 const PNG_B64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
 const DATA_URL = 'data:image/png;base64,' + PNG_B64;
 function stubFetch(handler) {

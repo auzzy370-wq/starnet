@@ -643,9 +643,9 @@ const DNS_TEXT = {
     A.ok(Object.isFrozen(e.egress) && e.egress.exit === 'local-service' && e.egress.origin === 'caller', 'refusal(): a frozen egress record with its exit');
     A.ok(S.refusal('not-public', { policy: 'connectorOauth', host: 'x.internal' }).hostAuthored !== true, 'connector OAuth never marks a refusal host-authored');
     A.ok(S.refusal('not-public', { policy: 'web', host: 'x.internal', origin: 'redirect' }).hostAuthored !== true, 'a redirect hop\'s refusal is never host-authored');
-    const BROWSER_GOLDEN = 'StarNet\'s browser safety check refused it: this computer\'s DNS answered 0.0.0.0 for www.etsy.com, a private or blocked address. ' +
+    const BROWSER_GOLDEN = 'Vultron\'s browser safety check refused it: this computer\'s DNS answered 0.0.0.0 for www.etsy.com, a private or blocked address. ' +
       'That answer usually comes from a DNS filter (Pi-hole, AdGuard, NextDNS, router parental controls), a VPN, a security app or the hosts file on this computer. ' +
-      'A browser using its own secure DNS can still open the site, so it may work there. StarNet\'s browser uses no outside proxy, VPN or gateway: it connects ' +
+      'A browser using its own secure DNS can still open the site, so it may work there. Vultron\'s browser uses no outside proxy, VPN or gateway: it connects ' +
       'from this computer. Fix or allow www.etsy.com in that DNS filter.';
     A.eq(S.privateAnswerExit('www.etsy.com', '0.0.0.0', 'browser'), BROWSER_GOLDEN, 'the browser voice is explainRefusal\'s text, byte for byte');
     const B = require('../sidecar/tools/builtin/browser.js')._internals;
@@ -653,7 +653,7 @@ const DNS_TEXT = {
       'and browser.js explainRefusal says exactly that');
     const web = S.privateAnswerExit('api.shop.example', '10.1.2.3', 'web');
     A.ok(web.startsWith('this computer\'s DNS answered 10.1.2.3 for api.shop.example, a private or blocked address.') && /Fix or allow api\.shop\.example in that DNS filter\.$/.test(web) &&
-      /own secure DNS/.test(web) && !/StarNet's browser/.test(web), 'the web voice: what answered, who usually answers so, and the exit');
+      /own secure DNS/.test(web) && !/Vultron's browser/.test(web), 'the web voice: what answered, who usually answers so, and the exit');
     const station = S.privateAnswerExit('auth.example', '0.0.0.0', 'connectorOauth');
     A.ok(/DNS answered 0\.0\.0\.0 for auth\.example/.test(station) && /Fix or allow auth\.example in that DNS filter\.$/.test(station) && !/own secure DNS/.test(station),
       'connector sign-in speaks in the station voice (a policy name picks its voice)');

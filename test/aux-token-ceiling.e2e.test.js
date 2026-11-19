@@ -9,7 +9,7 @@
      - a local route has no ceiling; junk settings are refused; 0 is off; the setting survives a restart;
      - manual REFRESH QUESTS runs at the ceiling; the automatic look stops before it stamps its cadence.
 
-   Waiting is event-based. With STARNET_DEBUG_CHANNELS=1 every run-end with a candidate prints an [aux-governor] line, and that line
+   Waiting is event-based. With VULTRON_DEBUG_CHANNELS=1 every run-end with a candidate prints an [aux-governor] line, and that line
    says what was spent or that the ceiling stopped it. After a spending line, the wait is for a pass to have started, then for every
    child to have ended and the booked rows to read the same twice. No assertion hangs on a fixed quiet window. */
 'use strict';
@@ -51,7 +51,7 @@ process.stdin.on('end', () => {
 });
 `;
 
-const fakeRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'starnet-fakeclaude-'));
+const fakeRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-fakeclaude-'));
 const pkg = path.join(fakeRoot, 'node_modules', '@anthropic-ai', 'claude-code');
 fs.mkdirSync(pkg, { recursive: true });
 fs.writeFileSync(path.join(pkg, 'cli.js'), FAKE_CLI);
@@ -65,11 +65,11 @@ const starts = () => log().filter(c => c.ev === 'start');
 // SidecarFixture leaves USERPROFILE real on Windows; these boots read no real sign-in or home directory
 const home = path.join(fakeRoot, 'home');
 fs.mkdirSync(home);
-const COMMON = { HOME: home, USERPROFILE: home, STARNET_CLAUDE_BIN: shim, FAKE_CLAUDE_LOG: logFile, STARNET_CLAUDE_CLI_PERSIST: '0', STARNET_DEBUG_CHANNELS: '1', SKYNET_SKILL_CURATOR: '0' };
+const COMMON = { HOME: home, USERPROFILE: home, VULTRON_CLAUDE_BIN: shim, FAKE_CLAUDE_LOG: logFile, VULTRON_CLAUDE_CLI_PERSIST: '0', VULTRON_DEBUG_CHANNELS: '1', SKYNET_SKILL_CURATOR: '0' };
 const rowsOf = f => { try { return fs.readFileSync(path.join(f.workspace, 'ledger.jsonl'), 'utf8').split('\n').filter(Boolean).map(l => JSON.parse(l)); } catch (_) { return []; } };
 const seed = (f, rows) => fs.appendFileSync(path.join(f.workspace, 'ledger.jsonl'), rows.map(r => JSON.stringify(r)).join('\n') + '\n');
 const auxRow = (provider, tokens, ageMs) => Object.assign({ runId: 'seed-' + provider + '-' + ageMs, agentId: 'seed', turns: 0, usd: 0, tokens, model: 'm', unmetered: provider !== 'claude-cli', provider, aux: 'reflection', ts: Date.now() - ageMs }, provider === 'claude-cli' ? { subscription: true } : {});
-const post = (f, body) => fetch(f.baseUrl + '/api/memory/config', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-StarNet-Token': f.token, Origin: f.baseUrl }, body: JSON.stringify(body) });
+const post = (f, body) => fetch(f.baseUrl + '/api/memory/config', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Vultron-Token': f.token, Origin: f.baseUrl }, body: JSON.stringify(body) });
 const cfg = async f => (await f.request('/api/memory/config')).json();
 // These scenarios test background token policy on an established local sign-in. Merely
 // reading memory/config does not resolve the CLI's initially unknown auth state.
@@ -103,7 +103,7 @@ async function childrenDone(f, before, expectChild) {
 }
 async function run(f, agentId, extra) {
   const before = starts().length, from = f.output().length;
-  const r = await fetch(f.baseUrl + '/api/run', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-StarNet-Token': f.token, Origin: f.baseUrl },
+  const r = await fetch(f.baseUrl + '/api/run', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Vultron-Token': f.token, Origin: f.baseUrl },
     body: JSON.stringify(Object.assign({ provider: 'claude-cli', model: 'haiku', agentId, isTask: true, placed: [], system: MARK + ': you are Ada.', messages: [{ role: 'user', content: 'Rebuild the staging rollback path and write up what changed and why.' }] }, extra || {})) });
   const raw = await r.text();
   if (r.status !== 200) {
@@ -265,7 +265,7 @@ async function questArm() {
     // A roster alone is held until the first accepted station save. Found the station through its real door:
     // an automatic quest look must remain inert on an unfounded workspace, regardless of seeded soft evidence.
     const foundedAt = Date.now();
-    const founded = await f.json('POST', '/api/save', { schema: 'starnet.save', version: 6, updatedAt: foundedAt,
+    const founded = await f.json('POST', '/api/save', { schema: 'vultron.save', version: 6, updatedAt: foundedAt,
       _saveRevision: 0, _saveDirty: true, _saveClient: 'aux-ceiling-test',
       agent: { id: 'agent', name: 'NOVA', createdAt: foundedAt }, agents: [],
       workstreams: [{ id: 'general', history: [] }], activeId: 'general', generalId: 'general' });
@@ -293,7 +293,7 @@ async function questArm() {
     A.eq(Number(s.lastCycleAt || 0), 0, 'a blocked look spends no cycle: the cadence was not stamped');
     const noted = (s.ledger || []).length;
 
-    const r = await fetch(f.baseUrl + '/api/quests/refresh/run', { method: 'POST', headers: { 'X-StarNet-Token': f.token, Origin: f.baseUrl } });
+    const r = await fetch(f.baseUrl + '/api/quests/refresh/run', { method: 'POST', headers: { 'X-Vultron-Token': f.token, Origin: f.baseUrl } });
     A.eq((await r.json()).started, true, 'the manual press starts at the ceiling');
     let after = null;
     for (const until = Date.now() + 15000; Date.now() < until;) {

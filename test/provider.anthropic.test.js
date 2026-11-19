@@ -122,15 +122,15 @@ async function collect(provider, req) { const out = []; for await (const e of pr
     A.eq(split.messages.map(m => m.content.some(b => b.cache_control)), [false, true, true], 'split system: two sliding tail anchors');
     {
       // the kill switch is read PER CALL: the provider made above (module already loaded) obeys it without a re-require
-      const prev = process.env.STARNET_ANTHROPIC_TOOL_ANCHOR;
-      process.env.STARNET_ANTHROPIC_TOOL_ANCHOR = '0';
+      const prev = process.env.VULTRON_ANTHROPIC_TOOL_ANCHOR;
+      process.env.VULTRON_ANTHROPIC_TOOL_ANCHOR = '0';
       let legacy = null;
       try {
         await collect(makeAnthropicProvider({ key: 'k', fetch: async (_, o) => { legacy = JSON.parse(o.body); return new Response('data: {"type":"message_stop"}\n\n'); } }),
           { model: 'm', cacheSystemPrefix: SPLIT_SYS, messages: [{ role: 'system', content: SPLIT_SYS + '\n\nper-conversation tail' }].concat(tail3.slice(1)), tools: TOOLS });
-      } finally { if (prev === undefined) delete process.env.STARNET_ANTHROPIC_TOOL_ANCHOR; else process.env.STARNET_ANTHROPIC_TOOL_ANCHOR = prev; }
+      } finally { if (prev === undefined) delete process.env.VULTRON_ANTHROPIC_TOOL_ANCHOR; else process.env.VULTRON_ANTHROPIC_TOOL_ANCHOR = prev; }
       A.ok(legacy && !legacy.tools[0].cache_control && legacy.system[0].cache_control && legacy.system[1].cache_control,
-        'kill switch STARNET_ANTHROPIC_TOOL_ANCHOR=0 (read per call): the system-only anchor layout');
+        'kill switch VULTRON_ANTHROPIC_TOOL_ANCHOR=0 (read per call): the system-only anchor layout');
     }
 
     // With NO system prompt the last tool is the only anchor that still covers the tool catalogue.

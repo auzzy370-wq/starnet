@@ -1,17 +1,17 @@
 'use strict';
-/* test/helpers/fake-desktop-app.js — a stand-in for the StarNet desktop app, for test/cli-app-launch.e2e.test.js.
+/* test/helpers/fake-desktop-app.js — a stand-in for the Vultron desktop app, for test/cli-app-launch.e2e.test.js.
 
    It plays the app's part of the terminal-launch contract (src-tauri/src/terminal_session.rs + main.rs) and nothing
    more:
    - every launch appends its argv to config.record;
    - the FIRST launch (it holds config.lockFile) brings the station up the way the app does — the REAL sidecar on
      the app's workspace, with the env the app injects from its keychain (config.keychain, never the terminal's own
-     env) — logs `startup: started by starnet (--background, terminal pid N)` and, once the station answers,
+     env) — logs `startup: started by vultron (--background, terminal pid N)` and, once the station answers,
      `spawn_sidecar pid=… port=… listening=true` to startup.log beside the workspace (unless config.logSpawn is
      false: then the station is one the app's log does not know);
    - a later launch while one runs hands its --terminal-pid to the first (config.joinFile — the single-instance
      plugin's job) and logs the app's join line for that pid: it joins, or, while the first one is closing, it was
-     told StarNet is closing (start it again once it has quit). Then it exits 0;
+     told Vultron is closing (start it again once it has quit). Then it exits 0;
    - the first one runs while any terminal session it runs for is alive. When none is left it is CLOSING for
      config.closeMs (default 0: at once) — its station still up (or, with config.dropStationOnClose, already down:
      the real app's drain stops the sidecar before the process exits), joins told so — then stops and exits.
@@ -36,15 +36,15 @@ let first = false;
 try { fs.writeFileSync(cfg.lockFile, String(process.pid), { flag: 'wx' }); first = true; } catch (_) {}
 if (!first) {
   if (terminalPid && state() === 'closing') {
-    logLine('second-launch --background: starnet session pid ' + terminalPid + ' arrived while StarNet is closing (its starnet sessions ended); start StarNet again once it has quit');
+    logLine('second-launch --background: vultron session pid ' + terminalPid + ' arrived while Vultron is closing (its vultron sessions ended); start Vultron again once it has quit');
   } else if (terminalPid) {
     fs.appendFileSync(cfg.joinFile, terminalPid + '\n');
-    logLine('second-launch --background: starnet session pid ' + terminalPid + ' joins the station the terminal started');
+    logLine('second-launch --background: vultron session pid ' + terminalPid + ' joins the station the terminal started');
   }
   process.exit(0);
 }
 fs.writeFileSync(cfg.stateFile, 'starting');
-if (terminalPid) logLine('startup: started by starnet (--background, terminal pid ' + terminalPid + ') — the station runs with the app\'s keys; the window stays parked until someone opens StarNet');
+if (terminalPid) logLine('startup: started by vultron (--background, terminal pid ' + terminalPid + ') — the station runs with the app\'s keys; the window stays parked until someone opens Vultron');
 
 const alive = pid => { try { process.kill(pid, 0); return true; } catch (e) { return !!(e && e.code === 'EPERM'); } };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -67,8 +67,8 @@ function healthy(port) {
   const port = await freePort();
   const sidecar = spawn(process.execPath, [path.resolve(__dirname, '..', '..', 'sidecar', 'index.js')], {
     env: Object.assign({}, process.env, cfg.keychain || {}, {
-      SKYNET_PORT: String(port), STARNET_PORT: String(port),
-      SKYNET_WORKSPACES: cfg.workspaces, STARNET_WORKSPACES: cfg.workspaces
+      SKYNET_PORT: String(port), VULTRON_PORT: String(port),
+      SKYNET_WORKSPACES: cfg.workspaces, VULTRON_WORKSPACES: cfg.workspaces
     }),
     stdio: 'ignore'
   });
@@ -93,7 +93,7 @@ function healthy(port) {
     if (!sessions.size) {
       closingSince = Date.now();
       fs.writeFileSync(cfg.stateFile, 'closing');
-      logLine('terminal-done: every starnet session it ran for has ended; deciding as a window close');
+      logLine('terminal-done: every vultron session it ran for has ended; deciding as a window close');
       if (cfg.dropStationOnClose) { try { sidecar.kill(); } catch (_) {} }
       if (!(Number(cfg.closeMs) > 0)) stop();
     }

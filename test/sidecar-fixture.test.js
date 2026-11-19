@@ -21,7 +21,7 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
   // Another server takes the port after the fixture's probe and answers /api/health 200, while the child (standing in for
   // a sidecar still loading its modules) has not bound anything. The fixture must not take that 200 as its sidecar.
-  const raced = SidecarFixture.create({ prefix: 'starnet-fixture-impostor-', timeoutMs: 1500, timeoutUnderTest: true, acquireToken: false, bindRetries: 0 });
+  const raced = SidecarFixture.create({ prefix: 'vultron-fixture-impostor-', timeoutMs: 1500, timeoutUnderTest: true, acquireToken: false, bindRetries: 0 });
   const racedWorkspace = raced.workspace;
   const stillLoading = path.join(raced.workspace, 'still-loading.js');
   fs.writeFileSync(stillLoading, 'setInterval(() => {}, 1000);\n');
@@ -56,12 +56,12 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
   const occupiedPort = blocker.address().port;
   let allocationCalls = 0;
   const retrying = SidecarFixture.create({
-    prefix: 'starnet-fixture-bind-retry-',
+    prefix: 'vultron-fixture-bind-retry-',
     timeoutMs: 9000,
     portAllocator: async () => (++allocationCalls === 1 ? occupiedPort : allocatePort())
   });
   try {
-    await retrying.start({ OPENROUTER_KEY: '', STARNET_OPENROUTER_KEY: '', SKYNET_OPENROUTER_KEY: '' });
+    await retrying.start({ OPENROUTER_KEY: '', VULTRON_OPENROUTER_KEY: '', SKYNET_OPENROUTER_KEY: '' });
     A.eq(allocationCalls, 2, 'fixture retries with a fresh OS port when the reserved port loses the bind race');
     A.ok(retrying.port !== occupiedPort, 'bind retry does not reuse the occupied port');
   } finally {
@@ -70,9 +70,9 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
     blocker.close();
   }
 
-  const healthy = SidecarFixture.create({ prefix: 'starnet-fixture-self-' });
+  const healthy = SidecarFixture.create({ prefix: 'vultron-fixture-self-' });
   const healthyWorkspace = healthy.workspace;
-  await healthy.start({ OPENROUTER_KEY: '', STARNET_OPENROUTER_KEY: '', SKYNET_OPENROUTER_KEY: '' });
+  await healthy.start({ OPENROUTER_KEY: '', VULTRON_OPENROUTER_KEY: '', SKYNET_OPENROUTER_KEY: '' });
   const healthyPid = healthy.child.pid;
   A.ok(healthy.token.length >= 32, 'fixture waits for health and acquires the browser boot token');
   A.eq((await healthy.json('GET', '/api/health')).status, 200, 'authenticated JSON helper reaches the running sidecar');
@@ -80,7 +80,7 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
   A.ok(!processAlive(healthyPid), 'dispose waits for the sidecar process to exit');
   A.ok(!fs.existsSync(healthyWorkspace), 'dispose removes the owned temporary workspace');
 
-  const failing = SidecarFixture.create({ prefix: 'starnet-fixture-fail-', timeoutMs: 150, timeoutUnderTest: true, acquireToken: false });
+  const failing = SidecarFixture.create({ prefix: 'vultron-fixture-fail-', timeoutMs: 150, timeoutUnderTest: true, acquireToken: false });
   const failingWorkspace = failing.workspace;
   const neverReady = path.join(failing.workspace, 'never-ready.js');
   fs.writeFileSync(neverReady, 'setInterval(() => {}, 1000);\n');

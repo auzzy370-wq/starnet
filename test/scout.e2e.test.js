@@ -122,7 +122,7 @@ function trustedInterests(label, now) {
 
 async function driveRun(B, token, agentId, text) {
   const r = await fetch(B + '/api/run', {
-    method: 'POST', headers: { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: B },
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: B },
     body: JSON.stringify({ key: 'sk-or-v1-scout-fake', model: 'test/model', agentId, isTask: true, messages: [{ role: 'user', content: text }] })
   });
   const rd = r.body.getReader(); while (true) { const { done } = await rd.read(); if (done) break; }   // drain to run end
@@ -133,7 +133,7 @@ async function pollScout(B, token, pred, label, ms) {
   const until = Date.now() + (ms || 15000);
   let last = null;
   while (Date.now() < until) {
-    try { last = await (await fetch(B + '/api/scout', { headers: { 'X-StarNet-Token': token, Origin: B } })).json(); } catch (_) {}
+    try { last = await (await fetch(B + '/api/scout', { headers: { 'X-Vultron-Token': token, Origin: B } })).json(); } catch (_) {}
     if (last && pred(last)) return last;
     await sleep(250);
   }
@@ -169,7 +169,7 @@ const QUIET = { SKYNET_THREAD_MINE: '0', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_
       const token = await bootToken(B, B);
 
       // sanity: pre-run, the scout is honestly COLD (no interests -> warm:false, gate binds 'cold').
-      const cold = await (await fetch(B + '/api/scout', { headers: { 'X-StarNet-Token': token, Origin: B } })).json();
+      const cold = await (await fetch(B + '/api/scout', { headers: { 'X-Vultron-Token': token, Origin: B } })).json();
       A.eq(cold.warm, false, 'pre-run the station is honestly cold (no interests yet)');
       A.eq(cold.gate.binding, 'cold', 'the gate reports the cold binding pre-run');
 
@@ -347,7 +347,7 @@ const QUIET = { SKYNET_THREAD_MINE: '0', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_
         while (!mock.held.extraction && Date.now() < until) await sleep(50);
       }
       A.ok(mock.held.extraction, 'PAUSE ARM: the live extraction call is in flight (held by the mock)');
-      const off = await (await fetch(B + '/api/personalization', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: B }, body: JSON.stringify({ enabled: false }) })).json();
+      const off = await (await fetch(B + '/api/personalization', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: B }, body: JSON.stringify({ enabled: false }) })).json();
       A.eq(off.enabled, false, 'PAUSE ARM: the Commander paused learning while the call was in flight');
       const interestsFile = path.join(ws, 'scout.interests.json');
       const before = fs.existsSync(interestsFile) ? fs.readFileSync(interestsFile, 'utf8') : null;
@@ -360,7 +360,7 @@ const QUIET = { SKYNET_THREAD_MINE: '0', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_
       await sleep(300);
       const after = fs.existsSync(interestsFile) ? fs.readFileSync(interestsFile, 'utf8') : null;
       A.eq(after, before, 'PAUSE ARM: scout.interests.json is byte-identical — the late reply folded nothing');
-      const s = await (await fetch(B + '/api/scout', { headers: { 'X-StarNet-Token': token, Origin: B } })).json();
+      const s = await (await fetch(B + '/api/scout', { headers: { 'X-Vultron-Token': token, Origin: B } })).json();
       A.ok(!(s.ledger || []).some(e => e.kind === 'interests' && e.outcome === 'folded'), 'PAUSE ARM: no "folded" note was written after the pause');
       A.ok(!(s.interests || []).some(t => /nvidia/.test(t.topic)), 'PAUSE ARM: the topic never entered the histogram');
       A.eq(mock.calls.indexOf('recipe'), -1, 'PAUSE ARM: the cycle drafted nothing after the pause');

@@ -58,7 +58,7 @@ const SCENARIOS = {
   crew5: { crew: [VEGA, QUILL, BOLT, ECHO, RUNE], desks: [[2, 4], [14, 4], [2, 8], [8, 8], [11, 8]],
     ask: 'Big parallel job — split it across all five crew with team.dispatch, all at once, and do not do the parts yourself. '
       + 'VEGA: search the web for the top 3 open-source vector databases and their GitHub star counts. '
-      + 'QUILL: write a 5-line README intro for a tool called StarNet and save it to notes/readme-intro.md. '
+      + 'QUILL: write a 5-line README intro for a tool called Vultron and save it to notes/readme-intro.md. '
       + 'BOLT: write tools/wordcount.js, a node script that counts words in a file passed as an argument, and run it on itself with the terminal. '
       + 'ECHO: fetch https://news.ycombinator.com and list the top 3 story titles. '
       + 'RUNE: create notes/checklist.md with a 6-item launch checklist, then read it back to confirm it saved. '
@@ -84,7 +84,7 @@ async function main() {
     await evalJS(cdp, `location.href = ${JSON.stringify(URL)}`);
     if (!(await waitDevReady(cdp, evalJS, { url: URL }))) throw new Error('app never reached the game screen');
     // Andrew's real view (memory: shoot-ui-at-andrews-real-settings): rail + chat widths need a reload to apply
-    await evalJS(cdp, `(() => { localStorage.setItem('starnet.crewrail.w', '400'); localStorage.setItem('starnet.crewrail.rows', '2'); localStorage.setItem('starnet.chatw', '767'); return true; })()`);
+    await evalJS(cdp, `(() => { localStorage.setItem('vultron.crewrail.w', '400'); localStorage.setItem('vultron.crewrail.rows', '2'); localStorage.setItem('vultron.chatw', '767'); return true; })()`);
     await evalJS(cdp, `location.reload()`);
     await sleep(1500);
     if (!(await waitDevReady(cdp, evalJS, { url: URL }))) throw new Error('app never came back after reload');

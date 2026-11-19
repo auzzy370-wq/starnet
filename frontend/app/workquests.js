@@ -1,4 +1,4 @@
-/* STARNET — workquests.js : the PURE work-quest generator (G1c) — an accepted idea becomes a trackable build.
+/* VULTRON — workquests.js : the PURE work-quest generator (G1c) — an accepted idea becomes a trackable build.
 
    When the Commander says "build it" to a First Pitch or an ongoing idea (pitchstore/suggeststore doBuild),
    that acceptance is a real commitment worth tracking. This engine turns it into a multi-step WORK quest whose
@@ -196,7 +196,7 @@
         // + Task Brief end stalls under, workqueststore); an empty reply, an interruption and a reviewer's hold each say themselves
         : (e.stalledReason === 'clarifying' || e.stalledReason === 'asked') ? 'the run asked you a question — answer it first'
         : e.stalledReason === 'empty' ? 'the model sent back an empty reply'
-        : e.stalledReason === 'interrupted' ? 'the run was interrupted when StarNet stopped'
+        : e.stalledReason === 'interrupted' ? 'the run was interrupted when Vultron stopped'
         : e.stalledReason === 'blocked' ? 'a reviewer held the work at a gate'
         : 'the run errored out';
       return {

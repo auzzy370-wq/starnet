@@ -45,15 +45,15 @@ function boot(port, env, attemptsLeft) {
 
 function signedHeaders(token, origin, timestamp, nonce, body) {
   return {
-    'Content-Type': 'application/json', 'X-StarNet-Token': token, Origin: origin,
-    'x-starnet-timestamp': timestamp, 'x-starnet-nonce': nonce,
-    'x-starnet-signature': crypto.createHmac('sha256', SECRET).update(timestamp + '.' + nonce + '.' + body).digest('hex')
+    'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: origin,
+    'x-vultron-timestamp': timestamp, 'x-vultron-nonce': nonce,
+    'x-vultron-signature': crypto.createHmac('sha256', SECRET).update(timestamp + '.' + nonce + '.' + body).digest('hex')
   };
 }
 
 (async () => {
   const ws = fs.mkdtempSync(path.join(os.tmpdir(), 'sk-webhook-replay-'));
-  const env = { SKYNET_WORKSPACES: ws, STARNET_CHANNEL_WEBHOOK_SECRET: SECRET };
+  const env = { SKYNET_WORKSPACES: ws, VULTRON_CHANNEL_WEBHOOK_SECRET: SECRET };
   const body = JSON.stringify({ message: { chatId: 'chat-1', text: 'hello station' } });
   const timestamp = String(Date.now());
   const nonce = 'nonce_e2e_' + crypto.randomBytes(12).toString('hex');

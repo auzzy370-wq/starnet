@@ -44,9 +44,9 @@ const MAX_RECOVERY_TOTAL_BYTES = 2 * 1024 * 1024 * 1024;   // 2 GiB aggregate so
 const SAVE_NAMES = ['agent.save.json', 'agent.save.json.bak'];
 // The workspace's own lifecycle files (its station record and legacy reset marker) never travel with a recovered station:
 // a copied marker used to replace the live generation's erase choice (gh#101). The restored stage gets its own record.
-const SKIP_TOP = new Set(['.browser-profile', '.starnet-workspace-owner.json.generations'].concat(stationRecord.LIFECYCLE_FILES));
+const SKIP_TOP = new Set(['.browser-profile', '.vultron-workspace-owner.json.generations'].concat(stationRecord.LIFECYCLE_FILES));
 const SKIP_FILES = new Set([
-  '.starnet-workspace-owner.json', 'cron.lock', 'proc-ledger.json',
+  '.vultron-workspace-owner.json', 'cron.lock', 'proc-ledger.json',
   '.migration-pending', '.migration-receipt.json', '.migrated'
 ]);
 
@@ -81,7 +81,7 @@ function decodeSave(raw) {
   let envelope;
   try { envelope = JSON.parse(raw.toString('utf8')); } catch (_) { return null; }
   const doc = isObj(envelope && envelope.doc) ? envelope.doc : envelope;
-  if (!isObj(doc) || doc.schema !== 'starnet.save' || !isObj(doc.agent)) return null;
+  if (!isObj(doc) || doc.schema !== 'vultron.save' || !isObj(doc.agent)) return null;
   return {
     stationName: String(doc.agent.name || doc.agent.id || 'Prior station').slice(0, 120),
     updatedAt: Math.max(0, Number(doc.updatedAt || envelope.updatedAt || envelope.savedAt) || 0),
@@ -289,7 +289,7 @@ function readLastResult(workspaceRoot, deps) {
    workspace looks exactly like a lost one — so every ad-hoc test sidecar (mkdtemp under os.tmpdir())
    silently copied the Commander's production station into its throwaway workspace the day v0.10.6 was
    installed locally. Rule: when the TARGET workspace root resolves under os.tmpdir() or under any
-   env-declared scratch root (STARNET_SCRATCH_ROOT / SKYNET_SCRATCH_ROOT, path-delimiter separated),
+   env-declared scratch root (VULTRON_SCRATCH_ROOT / SKYNET_SCRATCH_ROOT, path-delimiter separated),
    the auto branch is skipped with a reason. Explicit operator-driven recovery (a written request file,
    the CLI, disaster-recovery restore) is untouched: it never consults this. Returns null when the
    target is not scratch. */
@@ -299,7 +299,7 @@ function scratchRoots(o) {
   const env = o.env || process.env;
   const out = [];
   try { const t = typeof o.tmpdir === 'function' ? o.tmpdir() : osNative.tmpdir(); if (t) out.push(path.resolve(String(t))); } catch (_) {}
-  for (const k of ['STARNET_SCRATCH_ROOT', 'SKYNET_SCRATCH_ROOT']) {
+  for (const k of ['VULTRON_SCRATCH_ROOT', 'SKYNET_SCRATCH_ROOT']) {
     const v = env && env[k];
     if (!v) continue;
     for (const part of String(v).split(path.delimiter)) { if (part.trim()) out.push(path.resolve(part.trim())); }
@@ -418,8 +418,8 @@ function landInPlace(fs, path, stage, current) {
   dropStage(fs, stage);
 }
 
-/* A HOLDER STARNET MAY END. On Windows any open handle under a generation refuses its move aside (EPERM, EBUSY, EACCES), and
-   one holder is StarNet's own: a station browser process left on this generation's profile. Chromium can start one as the
+/* A HOLDER VULTRON MAY END. On Windows any open handle under a generation refuses its move aside (EPERM, EBUSY, EACCES), and
+   one holder is Vultron's own: a station browser process left on this generation's profile. Chromium can start one as the
    last sidecar closes its browser, and it outlives the browser holding no lock file (start-fresh-browser.e2e.test.js caught
    it); a crash leaves the whole browser. After the first refusal the processes on that profile are ended, each by its own pid
    (o.sweepProfile: index.js passes browser-orphans.js sweepSync), and the move is tried again for a few seconds. A generation
@@ -436,7 +436,7 @@ function holderOf(o, fs, path, now, current) {
     end() {
       if (workspaceBusy(o, fs, path, now, current)) return false;
       const profile = path.join(current, '.browser-profile');
-      if (!fs.existsSync(profile)) return true;   // no station browser ever ran on this generation: nothing of StarNet's to end
+      if (!fs.existsSync(profile)) return true;   // no station browser ever ran on this generation: nothing of Vultron's to end
       try {
         const receipt = o.sweepProfile(profile);
         if (receipt && (receipt.found || receipt.error)) failNote('lineage.activation.holder', new Error(require('./tools/builtin/browser-orphans.js').describeSweep(receipt)));
@@ -548,7 +548,7 @@ function resumeActivation(o) {
       return finish();
     } catch (error) {
       return strandedResult(fs, path, now, current, Object.assign({}, tag, kind === 'fresh' ? { code: 'FRESH_ACTIVATION_FAILED' } : {}, {
-        error: ACTIVATIONS[kind].word + ' could not finish: ' + String(error && error.message || error) + '. The generation it set aside is at ' + j.aside + '. StarNet tries again at its next start.' }));
+        error: ACTIVATIONS[kind].word + ' could not finish: ' + String(error && error.message || error) + '. The generation it set aside is at ' + j.aside + '. Vultron tries again at its next start.' }));
     }
   }
   return null;
@@ -567,7 +567,7 @@ function failRequest(fs, path, now, current, requestPath, fields) {
 function staleFreshRequest(request, facts, buildVersion) {
   const again = ' Nothing was moved. Press START FRESH again if you still want a new station.';
   if (String(request.fromVersion || '') !== String(buildVersion || '')) return { code: 'FRESH_REQUEST_BUILD_CHANGED',
-    error: 'StarNet changed version after START FRESH was requested (' + String(request.fromVersion || 'unknown') + ' to ' + String(buildVersion || 'unknown') + ').' + again };
+    error: 'Vultron changed version after START FRESH was requested (' + String(request.fromVersion || 'unknown') + ' to ' + String(buildVersion || 'unknown') + ').' + again };
   if (facts.markerAt !== (request.markerAt === undefined ? null : request.markerAt)) return { code: 'FRESH_REQUEST_MARKER_CHANGED',
     error: 'this workspace was reset again after START FRESH was requested.' + again };
   const changed = Array.from(new Set(Object.keys(request.pinned).concat(Object.keys(facts.pinned)))).filter(name => request.pinned[name] !== facts.pinned[name]).sort();
@@ -593,7 +593,7 @@ function freshFailure(fs, path, platform, current, error) {
   const holder = inUse ? freshHolder(fs, path, platform, current) : null;
   const what = inUse && !stranded ? 'this workspace could not be set aside (' + code + '): a program may still have a file in it open.' : String(error && error.message || error);
   const next = inUse ? ' Close what is using it, then press START FRESH again.' : ' Press START FRESH again once that is fixed.';
-  const fields = { code: 'FRESH_ACTIVATION_FAILED', error: stranded ? what + '. StarNet finishes this at its next start.' : what + ' Nothing was moved.' + next };
+  const fields = { code: 'FRESH_ACTIVATION_FAILED', error: stranded ? what + '. Vultron finishes this at its next start.' : what + ' Nothing was moved.' + next };
   return holder ? Object.assign(fields, { holder }) : fields;
 }
 
@@ -697,7 +697,7 @@ function applyPendingRecovery(opts) {
   if (!attempt.ran) {
     return {
       ok: false, applied: false, lockUnavailable: true, code: 'RECOVERY_LOCK_UNAVAILABLE',
-      error: 'another StarNet process holds the workspace recovery lock'
+      error: 'another Vultron process holds the workspace recovery lock'
     };
   }
   return attempt.result;
@@ -780,7 +780,7 @@ function applyPendingRecoveryLocked(opts) {
     activateGeneration(fs, path, current, stage, rollback, holderOf(o, fs, path, now, current));
     return finishActivation(fs, path, now, current, requestPath, result);
   } catch (error) {
-    if (error && error.stranded) return strandedResult(fs, path, now, current, { error: String(error.message) + '. StarNet finishes this at its next start.' });
+    if (error && error.stranded) return strandedResult(fs, path, now, current, { error: String(error.message) + '. Vultron finishes this at its next start.' });
     dropStage(fs, stage);
     return fail(error);
   }
@@ -813,7 +813,7 @@ function recoveryReport(opts) {
   const platform = String(o.platform || process.platform);
   const lastRecovery = publicLastResult(o);
   return {
-    schema: 'starnet.workspace-recovery-report',
+    schema: 'vultron.workspace-recovery-report',
     version: 1,
     generatedAt: new Date(now()).toISOString(),
     platform,

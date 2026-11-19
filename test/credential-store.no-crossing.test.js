@@ -16,7 +16,7 @@
    1. THE POOL TABLE. Every combination of the three station layers, each holding a key, backup keys, both or neither: the
       keychain pushed, or adopted from the shell's spawn pair under its marker, then left alone, REMOVEd or rotated; the
       operator's environment; the page copy with and without its endpoint. For a keyed cloud provider (Anthropic), CUSTOM,
-      a keyless local one (Ollama), StarNet's linked account and a sign-in (Grok). Each station is built as production
+      a keyless local one (Ollama), Vultron's linked account and a sign-in (Grok). Each station is built as production
       builds it: index.js's own adoption statement, store construction and one-line functions over the store
       (test/helpers/credential-store-sandbox.js wiredImpl). Each run is resolved by runOnceCore's OWN lines, lifted from
       index.js and executed: who the caller is, the run's key and endpoint, the S3 watch's sent-by-caller mark, and the
@@ -27,10 +27,10 @@
       THE ORACLE reads the station's description, never the store: a run may rotate onto the pool sent with a key it sent
       in this request; else onto nothing when its endpoint is not the station's own for its key; else onto the first
       non-empty pool of a layer that holds the run's key (keychain, environment, page); never onto the run key itself.
-      runOnceCore rotates only providers whose profile has credentialPool; for the others (Ollama, StarNet, the sign-ins)
+      runOnceCore rotates only providers whose profile has credentialPool; for the others (Ollama, Vultron, the sign-ins)
       the rows check the answer a rotation would get from the same lines.
    2. NAMED ROWS: the probes' R1 and R6, a desktop REMOVE that leaves the keychain pool's slot unused, OpenRouter's alias
-      (a headless STARNET_OPENROUTER_KEY is the environment's key, so its KEY_POOL rides it, as credrotate.e2e needs), and a
+      (a headless VULTRON_OPENROUTER_KEY is the environment's key, so its KEY_POOL rides it, as credrotate.e2e needs), and a
       key two layers hold (each layer's pool is that key's own; the first with backups serves).
    3. HELD (S3's in-flight watch): a key in a pool is held only while its layer holds a key, so a run that rotated onto it
       stops at its next call once that key is removed; and the push still answers the size of the pool it keeps.
@@ -41,7 +41,7 @@
    4. THE MODULE DIALERS. Every leg (the three STT legs, the three TTS legs, the web rung, Live Voice, the image route) built with
       the real module over the store's consumerDeps(), the function index.js uses, with fetch faked only at the network, over
       every combination of a provider's layers: a key, an endpoint, both or neither in the keychain, the environment and the page
-      copy. Keys a page sends with one request, a run on OpenRouter and a StarNet-credits run are rows of their own. THE ORACLE
+      copy. Keys a page sends with one request, a run on OpenRouter and a Vultron-credits run are rows of their own. THE ORACLE
       reads the station's description, never the store: see homeOf.
    5. THE ONE CREDENTIAL: credentialFor's key, endpoint, source and rank (decision 1) by where the key came from.
    6. THE CENSUS, over the sidecar's own source: a provider host stands only in the registry's profiles and each adapter's default
@@ -55,7 +55,7 @@
    endpoint, used whole; a keyless lower pair replaces nobody's key; a key a caller passes is never swapped; and no shape of
    baseUrl hands a key an endpoint saved for another key, except the two station-wide overrides.
    7. THE PAIR TABLE. Every combination of the three station layers (a key, an endpoint, backups, or nothing) for a keyed cloud
-      provider, CUSTOM, a keyless local one, StarNet's linked account and a sign-in, each built by index.js's own wiring, under
+      provider, CUSTOM, a keyless local one, Vultron's linked account and a sign-in, each built by index.js's own wiring, under
       each shape the wrappers are called in: the station's own (runKey undefined, no caller key: a gate); a key handed in as the
       run key (the scheduled fire, Run Now, a line hop); a key as the caller's with no run key (a hub's secrets(), the fallback
       loop, the catalog); a record handing a key back; a key sent in this request; each with and without an endpoint named beside
@@ -124,9 +124,9 @@ function station(p, K, via, event, E, P) {
   const poolName = 'KEY_POOL_' + p.toUpperCase();
   const env = {}, pushes = [];
   if (via === 'spawn') {
-    env.STARNET_DESKTOP_SHELL = '1';
-    if (K.includes('k')) { env['STARNET_' + keyEnv] = 'kc'; env['SKYNET_' + keyEnv] = 'kc'; }
-    if (K.includes('p')) { env['STARNET_' + poolName] = 'kc.p'; env['SKYNET_' + poolName] = 'kc.p'; }
+    env.VULTRON_DESKTOP_SHELL = '1';
+    if (K.includes('k')) { env['VULTRON_' + keyEnv] = 'kc'; env['SKYNET_' + keyEnv] = 'kc'; }
+    if (K.includes('p')) { env['VULTRON_' + poolName] = 'kc.p'; env['SKYNET_' + poolName] = 'kc.p'; }
   } else if (K) {
     const patch = {};
     if (K.includes('k')) patch.key = 'kc';
@@ -136,13 +136,13 @@ function station(p, K, via, event, E, P) {
   if (event === 'remove') pushes.push([p, { key: '' }]);
   if (event === 'rotate') pushes.push([p, { key: 'kc2' }]);
   if (E.includes('k')) env[keyEnv] = 'en';
-  if (E.includes('p')) env['STARNET_' + poolName] = 'en.p';
+  if (E.includes('p')) env['VULTRON_' + poolName] = 'en.p';
   const rec = {};
   if (P.includes('k')) rec.key = 'pg';
   if (P.includes('p')) rec.keyPool = ['pg.p'];
   if (P.includes('u')) rec.baseUrl = U.pg;
   const sc = { env, pushes, kept: { on: !!K }, page: P ? { [p]: Object.assign(rec, { rev: 'r1' }) } : undefined,
-    linked: p === 'starnet' ? { url: 'http://li.test', apiKey: 'li' } : undefined };
+    linked: p === 'vultron' ? { url: 'http://li.test', apiKey: 'li' } : undefined };
   const desc = {
     keychain: { keys: [event === 'rotate' ? 'kc2' : event === 'remove' ? '' : (K.includes('k') ? 'kc' : '')], pool: K.includes('p') ? ['kc.p'] : [] },
     environment: { keys: [E.includes('k') ? 'en' : ''], pool: E.includes('p') ? ['en.p'] : [] },
@@ -208,7 +208,7 @@ const report = (out, what, tally, kind) => {
 /* ================= 1. the pool table ================= */
 {
   const out = { stations: 0, rows: 0, rotating: 0, bad: [], byShape: new Map() };
-  const PROVIDERS = ['anthropic', 'custom', 'ollama', 'starnet', 'grok'];
+  const PROVIDERS = ['anthropic', 'custom', 'ollama', 'vultron', 'grok'];
   for (const p of PROVIDERS) {
     const keyed = !!(Reg.getProviderProfile(p).keyEnv || []).length;
     const Ks = [['', '', '']];
@@ -232,7 +232,7 @@ const report = (out, what, tally, kind) => {
   const none = { keys: [''], pool: [] };
   // R1: an operator env KEY_POOL_CUSTOM (no env key) and the page's CUSTOM pair {K, U}; a routine's Run Now on the page key
   {
-    const sc = { env: { STARNET_KEY_POOL_CUSTOM: 'en.p' }, page: { custom: { key: 'pg', baseUrl: U.pg, rev: 'r1' } }, pushes: [] };
+    const sc = { env: { VULTRON_KEY_POOL_CUSTOM: 'en.p' }, page: { custom: { key: 'pg', baseUrl: U.pg, rev: 'r1' } }, pushes: [] };
     const { r } = one(sc, { keychain: none, environment: { keys: [''], pool: ['en.p'] }, page: { keys: ['pg'], pool: [] } }, 'custom', { key: 'pg' });
     A.eq([r.runKey, r.baseUrl, r.pool], ['pg', U.pg, []], 'R1: a routine on the page key {K, U} never rotates onto the operator\'s env KEY_POOL at U (trunk sent it there)');
   }
@@ -251,9 +251,9 @@ const report = (out, what, tally, kind) => {
     A.eq([r.runKey, r.pool], ['', []], p + ': after the shell\'s REMOVE the keychain pool it keeps is unused (trunk rotated a keyless run onto it)');
     if (HAS_STORE) A.eq(api.keychainValues().pools, [['kc.p']], p + ': ...while the store still holds the slot the shell keeps');
   }
-  // OpenRouter's alias: a headless STARNET_OPENROUTER_KEY is the environment's key, and its KEY_POOL rides it (credrotate.e2e)
+  // OpenRouter's alias: a headless VULTRON_OPENROUTER_KEY is the environment's key, and its KEY_POOL rides it (credrotate.e2e)
   {
-    const env = { STARNET_OPENROUTER_KEY: 'br', STARNET_KEY_POOL_OPENROUTER: 'en.p' };
+    const env = { VULTRON_OPENROUTER_KEY: 'br', VULTRON_KEY_POOL_OPENROUTER: 'en.p' };
     const desc = { keychain: none, environment: { keys: ['br'], pool: ['en.p'] }, page: none };
     for (const [label, o, want] of [['the station\'s own run', {}, ['en.p']], ['a gate\'s key', { key: 'br' }, ['en.p']], ['a body key no layer holds', { key: 'fo', keyInRequest: true }, []],
       ['the export\'s key sent in this request', { key: 'br', keyInRequest: true }, []]]) {
@@ -272,7 +272,7 @@ const report = (out, what, tally, kind) => {
     const page = { anthropic: { key: 'same', keyPool: ['pg.p'], rev: 'r1' } };
     const a = one({ env: { ANTHROPIC_API_KEY: 'same' }, page, pushes: [] }, { keychain: none, environment: { keys: ['same'], pool: [] }, page: { keys: ['same'], pool: ['pg.p'] } }, 'anthropic', {});
     A.eq([a.r.runKey, a.r.pool, a.want], ['same', ['pg.p'], ['pg.p']], 'one key in the environment and the page copy: the page\'s backups are that key\'s own');
-    const b = one({ env: { ANTHROPIC_API_KEY: 'same', STARNET_KEY_POOL_ANTHROPIC: 'en.p' }, page, pushes: [] }, { keychain: none, environment: { keys: ['same'], pool: ['en.p'] }, page: { keys: ['same'], pool: ['pg.p'] } }, 'anthropic', {});
+    const b = one({ env: { ANTHROPIC_API_KEY: 'same', VULTRON_KEY_POOL_ANTHROPIC: 'en.p' }, page, pushes: [] }, { keychain: none, environment: { keys: ['same'], pool: ['en.p'] }, page: { keys: ['same'], pool: ['pg.p'] } }, 'anthropic', {});
     A.eq([b.r.pool, b.want], [['en.p'], ['en.p']], '...and with backups in both, the environment\'s (key order) serve');
   }
 }
@@ -290,8 +290,8 @@ if (HAS_STORE) {
   A.eq(answer.alternateCount, 1, '...while the push still answers the size of the pool the shell keeps (alternateCount)');
   api.push('anthropic', { key: 'kc2' });
   A.eq(api.holds('anthropic', 'kc.p'), true, 'held: a new keychain key takes the pool back');
-  const env = impl({ env: { STARNET_KEY_POOL_ANTHROPIC: 'en.p' }, pushes: [] });
-  const envKeyed = impl({ env: { ANTHROPIC_API_KEY: 'en', STARNET_KEY_POOL_ANTHROPIC: 'en.p' }, pushes: [] });
+  const env = impl({ env: { VULTRON_KEY_POOL_ANTHROPIC: 'en.p' }, pushes: [] });
+  const envKeyed = impl({ env: { ANTHROPIC_API_KEY: 'en', VULTRON_KEY_POOL_ANTHROPIC: 'en.p' }, pushes: [] });
   A.eq([env.holds('anthropic', 'en.p'), envKeyed.holds('anthropic', 'en.p')], [false, true], 'held: an env KEY_POOL with no env key is unused; with one it is held');
   const page = impl({ env: {}, page: { custom: { keyPool: ['pg.p'], baseUrl: U.pg, rev: 'r1' } }, pushes: [] });
   A.eq(page.holds('custom', 'pg.p'), false, 'held: a page copy\'s backups with no page key are unused');
@@ -402,8 +402,8 @@ async function moduleDialers(root) {
     await search(c.webRung({ providerId: 'openrouter', runKey: 'rk', baseUrl: U.ex, model: 'or/model' }), calls);
     row(st, 'the web rung on a run on OpenRouter', calls, [[U.ex + '/chat/completions', 'rk', 'or/model']]);
     calls = [];
-    await search(c.webRung({ providerId: 'starnet', runKey: 'li', baseUrl: 'http://li.test/v1', model: 'or/model' }), calls);
-    row(st, 'the web rung on a StarNet-credits run', calls, []);
+    await search(c.webRung({ providerId: 'vultron', runKey: 'li', baseUrl: 'http://li.test/v1', model: 'or/model' }), calls);
+    row(st, 'the web rung on a Vultron-credits run', calls, []);
   }
   const liveVoice = Reg.getProviderProfile('openai').liveVoice;
   for (const st of stations.openai) {
@@ -455,18 +455,18 @@ async function moduleDialers(root) {
 /* ================= 5. the one credential, and its rank (decision 1) ================= */
 function rankRows() {
   const cred = (sc, p) => { const api = impl(sc); for (const [id, patch] of sc.pushes || []) api.push(id, patch); return api.credStore.credentialFor(p || 'openrouter'); };
-  const shell = v => ({ STARNET_DESKTOP_SHELL: '1', STARNET_OPENROUTER_KEY: v, SKYNET_OPENROUTER_KEY: v });
+  const shell = v => ({ VULTRON_DESKTOP_SHELL: '1', VULTRON_OPENROUTER_KEY: v, SKYNET_OPENROUTER_KEY: v });
   const def = Reg.getProviderProfile('openrouter').baseUrl;
   for (const [label, sc, want] of [
     ['the desktop\'s spawn key', { env: shell('kc'), kept: { on: true } }, ['kc', def, 'primary', 'keychain']],
     ['a pushed key', { env: {}, kept: { on: true }, pushes: [['openrouter', { key: 'kc', baseUrl: U.kc }]] }, ['kc', U.kc, 'primary', 'keychain']],
-    ['a headless STARNET_OPENROUTER_KEY', { env: { STARNET_OPENROUTER_KEY: 'br', STARNET_OPENROUTER_BASE: U.br } }, ['br', U.br, 'primary', 'environment']],
+    ['a headless VULTRON_OPENROUTER_KEY', { env: { VULTRON_OPENROUTER_KEY: 'br', VULTRON_OPENROUTER_BASE: U.br } }, ['br', U.br, 'primary', 'environment']],
     ['a headless SKYNET_OPENROUTER_KEY', { env: { SKYNET_OPENROUTER_KEY: 'sk' } }, ['sk', def, 'primary', 'environment']],
     ['a bare OPENROUTER_KEY', { env: { OPENROUTER_KEY: 'en', OPENROUTER_BASE: U.en } }, ['en', U.en, 'gap', 'environment']],
     ['a bare OPENROUTER_API_KEY', { env: { OPENROUTER_API_KEY: 'en2' } }, ['en2', def, 'gap', 'environment']],
-    ['a branded OPENROUTER_API_KEY, which the alias never covered', { env: { STARNET_OPENROUTER_API_KEY: 'br2' } }, ['br2', def, 'gap', 'environment']],
+    ['a branded OPENROUTER_API_KEY, which the alias never covered', { env: { VULTRON_OPENROUTER_API_KEY: 'br2' } }, ['br2', def, 'gap', 'environment']],
     ['the page copy', { env: {}, page: { openrouter: { key: 'pg', baseUrl: U.pg, rev: 'r1' } } }, ['pg', U.pg, 'gap', 'page']],
-    ['a branded export the shell\'s REMOVE leaves behind', { env: { STARNET_OPENROUTER_KEY: 'br' }, kept: { on: true }, pushes: [['openrouter', { key: '' }]] }, ['br', def, 'gap', 'environment']],
+    ['a branded export the shell\'s REMOVE leaves behind', { env: { VULTRON_OPENROUTER_KEY: 'br' }, kept: { on: true }, pushes: [['openrouter', { key: '' }]] }, ['br', def, 'gap', 'environment']],
     ['nothing', { env: {} }, ['', '', 'gap', 'none']]
   ]) {
     const c = cred(sc);
@@ -490,13 +490,13 @@ function pairStation(p, K, E, P) {
   if (K.includes('p')) patch.keyPool = ['kc.p'];
   if (E.includes('k')) env[prof.keyEnv[0]] = 'en';
   if (E.includes('u')) env[prof.baseUrlEnv[0]] = U.en;
-  if (E.includes('p')) env['STARNET_KEY_POOL_' + p.toUpperCase()] = 'en.p';
+  if (E.includes('p')) env['VULTRON_KEY_POOL_' + p.toUpperCase()] = 'en.p';
   if (P.includes('k')) rec.key = 'pg';
   if (P.includes('u')) rec.baseUrl = U.pg;
   if (P.includes('p')) rec.keyPool = ['pg.p'];
   return { p, K, E, P, label: p + ' K:' + (K || '-') + ' E:' + (E || '-') + ' P:' + (P || '-'),
     sc: { env, pushes: K ? [[p, patch]] : [], kept: { on: !!K }, page: P ? { [p]: Object.assign(rec, { rev: 'r1' }) } : undefined,
-      linked: p === 'starnet' ? { url: 'http://li.test', apiKey: 'li' } : undefined } };
+      linked: p === 'vultron' ? { url: 'http://li.test', apiKey: 'li' } : undefined } };
 }
 const LINKED_URL = 'http://li.test/v1';
 const signIn = p => Reg.getProviderProfile(p).authType === 'oauth_device_code';
@@ -506,7 +506,7 @@ const pageKey = s => s.P.includes('k') ? 'pg' : null;
 // the page's endpoint goes only with the page's own key, over the env URL; a keyless one only with a keyless run, under the env URL
 function pairHomeOf(s, key) {
   const prof = Reg.getProviderProfile(s.p);
-  if (s.p === 'starnet') return [LINKED_URL, 'linked'];
+  if (s.p === 'vultron') return [LINKED_URL, 'linked'];
   if (s.K.includes('u')) return [U.kc, 'keychain'];
   if (key && key === pageKey(s) && s.P.includes('u')) return [U.pg, 'page'];
   if (s.E.includes('u')) return [U.en, 'environment'];
@@ -516,7 +516,7 @@ function pairHomeOf(s, key) {
 const pairHome = (s, key) => pairHomeOf(s, key)[0];
 // the station's own choice: the first layer, in key order, whose key has a usable endpoint; none: the first layer's key
 function pairChoice(s) {
-  if (s.p === 'starnet') return { key: 'li', layer: 'linked' };
+  if (s.p === 'vultron') return { key: 'li', layer: 'linked' };
   const needsUrl = !!Reg.getProviderProfile(s.p).requiresBaseUrl;
   const held = layersHolding(s).map(l => ({ layer: l[0], key: l[2] }));
   return held.find(h => !needsUrl || pairHome(s, h.key)) || held[0] || { key: '', layer: 'none' };
@@ -545,7 +545,7 @@ function pairRows() {
     if (prof.requiresBaseUrl && !url) return source === 'environment' ? 'unpaired' : 'baseUrl';
     return (prof.keyRequired && !key) ? 'key' : '';
   };
-  for (const p of ['anthropic', 'custom', 'ollama', 'starnet', 'grok']) {
+  for (const p of ['anthropic', 'custom', 'ollama', 'vultron', 'grok']) {
     const sh = pairShapes(p);
     for (const K of sh.K) for (const E of sh.E) for (const P of sh.P) {
       const st = pairStation(p, K, E, P);
@@ -553,7 +553,7 @@ function pairRows() {
       for (const [id, patch] of st.sc.pushes) api.push(id, patch);
       out.stations++;
       const choice = pairChoice(st), home = pairHome(st, choice.key);
-      const namedOk = p !== 'starnet' && !signIn(p);   // StarNet and the sign-ins never take a named endpoint
+      const namedOk = p !== 'vultron' && !signIn(p);   // Vultron and the sign-ins never take a named endpoint
       // ---- the station's own choice: a gate reads this pair, and the run goes out on it ----
       row(st, 'the station\'s own key', api.key(p, ''), choice.key);
       row(st, 'the station\'s own endpoint', api.baseUrl(p, ''), home);
@@ -566,7 +566,7 @@ function pairRows() {
       for (const k of ['kc', 'en', 'pg', 'fo']) {
         const want = pairHome(st, k);
         const held = layersHolding(st).some(l => l[2] === k);
-        if (p !== 'starnet') row(st, 'an explicit key is never swapped', api.key(p, k), k);
+        if (p !== 'vultron') row(st, 'an explicit key is never swapped', api.key(p, k), k);
         row(st, 'the run key', api.baseUrl(p, '', k), want);
         row(st, 'the caller\'s key with no run key (a hub\'s secrets(), the fallback loop, the catalog)', api.baseUrl(p, '', undefined, k), want);
         row(st, 'a record handing it back', api.baseUrl(p, '', k, k), want);
@@ -577,15 +577,15 @@ function pairRows() {
       }
       // ---- no key sent: a body or a record naming an endpoint, and a keyless run ----
       row(st, 'a keyless caller naming an endpoint', api.baseUrl(p, U.ex), namedOk && !choice.key ? U.ex : home);
-      if (p !== 'starnet') row(st, 'a keyless run', api.baseUrl(p, '', ''), pairHome(st, ''));
+      if (p !== 'vultron') row(st, 'a keyless run', api.baseUrl(p, '', ''), pairHome(st, ''));
       if (!HAS_STORE) continue;
       // ---- the one resolution says the same, and what is missing ----
-      const source = p === 'starnet' ? 'linked' : signIn(p) ? 'sign-in' : choice.layer;
+      const source = p === 'vultron' ? 'linked' : signIn(p) ? 'sign-in' : choice.layer;
       const r = api.credStore.resolve(p);
       row(st, 'resolve', [r.key, r.baseUrl, r.keyPool, r.source, r.endpointSource, r.rank, r.complete, r.missing],
         [choice.key, home, pairPool(st, choice.key), source, pairHomeOf(st, choice.key)[1], (choice.key && choice.key === 'kc') ? 'primary' : 'gap',
           !missingOf(st, choice, choice.key, home, source), missingOf(st, choice, choice.key, home, source)]);
-      if (p !== 'starnet') {
+      if (p !== 'vultron') {
         const own = api.credStore.resolve(p, { explicitKey: 'fo' });
         row(st, 'resolve, a caller\'s own key', [own.key, own.baseUrl, own.keyPool, own.source, own.missing, own.rank],
           ['fo', pairHome(st, 'fo'), [], 'explicit', missingOf(st, null, 'fo', pairHome(st, 'fo'), 'explicit'), 'gap']);
@@ -691,7 +691,7 @@ const FEEDERS = { 'channel hubs': ['channelRunConfigFor'], 'group turns': ['grou
 function channelRows() {
   const OWN = 'bot-own-key-0123456789abcdef', OWNU = 'http://bot-own.test/v1';
   const PROVIDERS = ['anthropic', 'openrouter', 'custom', 'ollama'];
-  const STATION = p => ({ env: { [{ anthropic: 'ANTHROPIC_API_KEY', openrouter: 'OPENROUTER_API_KEY', custom: 'CUSTOM_OPENAI_KEY', ollama: 'OLLAMA_API_KEY' }[p]]: 'en', [{ anthropic: 'ANTHROPIC_BASE_URL', openrouter: 'OPENROUTER_BASE', custom: 'CUSTOM_OPENAI_BASE_URL', ollama: 'OLLAMA_BASE_URL' }[p]]: U.en, ['STARNET_KEY_POOL_' + p.toUpperCase()]: 'en.p' },
+  const STATION = p => ({ env: { [{ anthropic: 'ANTHROPIC_API_KEY', openrouter: 'OPENROUTER_API_KEY', custom: 'CUSTOM_OPENAI_KEY', ollama: 'OLLAMA_API_KEY' }[p]]: 'en', [{ anthropic: 'ANTHROPIC_BASE_URL', openrouter: 'OPENROUTER_BASE', custom: 'CUSTOM_OPENAI_BASE_URL', ollama: 'OLLAMA_BASE_URL' }[p]]: U.en, ['VULTRON_KEY_POOL_' + p.toUpperCase()]: 'en.p' },
     page: { [p]: { key: 'pg', baseUrl: U.pg, keyPool: ['pg.p'], rev: 'r1' } }, pushes: [[p, { key: 'kc', keyPool: ['kc.p'] }]] });
   const stationFor = (p, q) => {
     const sc = STATION(p), other = q === p ? {} : STATION(q);
@@ -767,8 +767,8 @@ function channelRows() {
     'a key a station layer holds as its key is the station\'s, on every path; a backup key in a pool is the bot\'s own, on every path');
   A.eq(judged.length, 16, 'fixture: every path and every key ran');
   A.eq(api.credStore.putChannel('slack', { provider: 'anthropic', key: 'kc' }).credential.ref, 'channel', 'the same value on another provider is another key');
-  // StarNet's linked account and a sign-in take no channel credential, in any shape
-  for (const p of ['starnet', 'codex', 'grok', 'kimi']) {
+  // Vultron's linked account and a sign-in take no channel credential, in any shape
+  for (const p of ['vultron', 'codex', 'grok', 'kimi']) {
     const r = api.credStore.putChannel('matrix', { provider: p, key: OWN, baseUrl: OWNU });
     A.eq([r.credential, r.keyPersisted, api.credStore.channel('matrix', { provider: p, credential: r.credential })], [{ ref: 'station' }, undefined, { key: '', baseUrl: '', keyLost: '' }], p + ': takes no channel credential');
   }

@@ -54,7 +54,7 @@ async function pack(file,dest,rot){
   const rotationText=row.detail.split('rotations:\n')[1]?.split('\n\n')[0]||'';
   const rotations=Object.fromEntries([...rotationText.matchAll(/^  ([a-z-]+): (https:\/\/\S+)/gm)].map(m=>[m[1],m[2]]));
   const replacement=motion[row.id]||{};
-  const walks={...animations(row.detail,'walking'),...animations(row.detail,'starnet-walk'),...animations(row.detail,'starnet-walk-front')},sits={...animations(row.detail,'starnet-sit'),...replacement.sit},typing={...animations(row.detail,'starnet-type'),...replacement.type};
+  const walks={...animations(row.detail,'walking'),...animations(row.detail,'vultron-walk'),...animations(row.detail,'vultron-walk-front')},sits={...animations(row.detail,'vultron-sit'),...replacement.sit},typing={...animations(row.detail,'vultron-type'),...replacement.type};
   const stats={id:row.id,rotations:0,walkDirections:0,seatedDirections:0,typingFrames:0};
   for(const d of DIRS){
    if(!rotations[d])throw Error('Missing rotation '+row.id+' '+d);
@@ -64,7 +64,7 @@ async function pack(file,dest,rot){
     if(walks[d].length!==6)throw Error('Expected six walk frames '+row.id+' '+d);
     const files=[];
     for(let i=0;i<walks[d].length;i++){
-     const name='walk_'+d+'_'+i+'.png',frame=await download(walks[d][i],path.join(cache,(animations(row.detail,'starnet-walk-front')[d]?'front_':'')+name));
+     const name='walk_'+d+'_'+i+'.png',frame=await download(walks[d][i],path.join(cache,(animations(row.detail,'vultron-walk-front')[d]?'front_':'')+name));
      await pack(frame,path.join(dir,name),anchor);files.push(set+'/'+name);
     }
     sprites[set+'.walk.'+d]=files;stats.walkDirections++;

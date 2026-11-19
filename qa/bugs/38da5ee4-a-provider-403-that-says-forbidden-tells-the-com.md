@@ -26,7 +26,7 @@ When a provider (or a proxy in front of a custom endpoint) refuses a request wit
 
 Before (vm-loaded browser friendlyerror): `"openai-compatible http 403 - Forbidden" | browser: stale_session | The station restarted — reload this page to reconnect. | node: auth` (same for the openrouter and Anthropic variants).
 
-Cause: `frontend/app/friendlyerror.js` kindFromRaw `if (s === 403 && (/sidecar http/.test(low) || /\bforbidden\b/.test(low))) return 'stale_session';` — any 403 text containing "forbidden" was taken for StarNet's own stale page token. The sidecar's own token gate always reads "sidecar HTTP 403".
+Cause: `frontend/app/friendlyerror.js` kindFromRaw `if (s === 403 && (/sidecar http/.test(low) || /\bforbidden\b/.test(low))) return 'stale_session';` — any 403 text containing "forbidden" was taken for Vultron's own stale page token. The sidecar's own token gate always reads "sidecar HTTP 403".
 
 After: provider-labelled 403s ("<adapter> http 403") are never stale_session; "sidecar HTTP 403 — forbidden" still is. Regression: `test/provider-403-truth.test.js` (RED 18 problems across this and 7d396570, GREEN 30).
 

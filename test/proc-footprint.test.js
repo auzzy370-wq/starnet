@@ -1,7 +1,7 @@
 /* node test/proc-footprint.test.js — the attribution + validity rules of the whole-app idle measurement
    (scripts/lib/proc-footprint.mjs, 2026-10-20). The process table is copied from the shapes on the box the tools were
-   built on: StarNet's tree beside SearchHost's and GoogleDriveFS's own WebView2 trees, which a name filter charged to
-   StarNet. Also pins the PowerShell sampler to the same thresholds/patterns (it cannot import the module). */
+   built on: Vultron's tree beside SearchHost's and GoogleDriveFS's own WebView2 trees, which a name filter charged to
+   Vultron. Also pins the PowerShell sampler to the same thresholds/patterns (it cannot import the module). */
 'use strict';
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -13,13 +13,13 @@ const path = require('node:path');
   const WV = 'C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\155.0.4283.62\\msedgewebview2.exe';
   const UDD = '--user-data-dir="C:\\Users\\u\\AppData\\Local\\ai.skynet.harness\\EBWebView"';
   const rows = [
-    { pid: 100, ppid: 4, name: 'skynet-desktop.exe', cmd: '"C:\\Users\\u\\AppData\\Local\\StarNet\\skynet-desktop.exe"', created: T0 },
+    { pid: 100, ppid: 4, name: 'skynet-desktop.exe', cmd: '"C:\\Users\\u\\AppData\\Local\\Vultron\\skynet-desktop.exe"', created: T0 },
     { pid: 101, ppid: 100, name: 'msedgewebview2.exe', cmd: `"${WV}" --embedded-browser-webview=1 --webview-exe-name=skynet-desktop.exe ${UDD} --noerrdialogs`, created: later(1) },
     { pid: 102, ppid: 101, name: 'msedgewebview2.exe', cmd: `"${WV}" --type=gpu-process --noerrdialogs ${UDD} --gpu-preferences=UAAAAAAAAADgAAAEAAAAAAAAAAAAAAAAAABgAAEAAAA`, created: later(2) },
     { pid: 103, ppid: 101, name: 'msedgewebview2.exe', cmd: `"${WV}" --type=renderer --noerrdialogs ${UDD} --renderer-client-id=5`, created: later(2) },
     { pid: 104, ppid: 101, name: 'msedgewebview2.exe', cmd: `"${WV}" --type=utility --utility-sub-type=network.mojom.NetworkService --lang=en-US ${UDD}`, created: later(2) },
     { pid: 105, ppid: 101, name: 'msedgewebview2.exe', cmd: `"${WV}" --type=crashpad-handler ${UDD} /prefetch:4`, created: later(2) },
-    { pid: 110, ppid: 100, name: 'node.exe', cmd: '"C:\\Users\\u\\AppData\\Local\\StarNet\\node.exe" "C:\\Users\\u\\AppData\\Local\\StarNet\\sidecar\\index.js"', created: later(1) },
+    { pid: 110, ppid: 100, name: 'node.exe', cmd: '"C:\\Users\\u\\AppData\\Local\\Vultron\\node.exe" "C:\\Users\\u\\AppData\\Local\\Vultron\\sidecar\\index.js"', created: later(1) },
     { pid: 111, ppid: 110, name: 'node.exe', cmd: 'node.exe C:\\mcp\\server.js', created: later(5) },
     { pid: 112, ppid: 110, name: 'cmd.exe', cmd: 'cmd.exe /d /s /c "git status"', created: later(6) },
     { pid: 200, ppid: 4, name: 'SearchHost.exe', cmd: 'SearchHost.exe -ServerName:CortanaUI.AppX', created: T0 },
@@ -32,11 +32,11 @@ const path = require('node:path');
       rows.push({ pid: base + 1 + i, ppid: base, name: 'msedgewebview2.exe', cmd: `"${WV}" --type=${t} --user-data-dir="${udd}"`, created: later(2) }));
   }
 
-  // 1. the walk from the app's own pid: exactly StarNet's processes, none of the 2xx / 3xx WebView2 trees
+  // 1. the walk from the app's own pid: exactly Vultron's processes, none of the 2xx / 3xx WebView2 trees
   const tree = F.walkTree(rows, [100]);
   assert.deepEqual(tree.map(r => r.pid).sort((a, b) => a - b), [100, 101, 102, 103, 104, 105, 110, 111, 112]);
-  assert.ok(!tree.some(r => r.pid >= 200), 'no foreign msedgewebview2 is charged to StarNet');
-  assert.equal(rows.filter(r => r.name === 'msedgewebview2.exe').length, 17, 'a name filter would have charged 17 webview processes, 5 of them StarNet\'s');
+  assert.ok(!tree.some(r => r.pid >= 200), 'no foreign msedgewebview2 is charged to Vultron');
+  assert.equal(rows.filter(r => r.name === 'msedgewebview2.exe').length, 17, 'a name filter would have charged 17 webview processes, 5 of them Vultron\'s');
   // pid reuse: an orphan whose dead parent's pid was handed to a NEWER process is not that process's child
   const reused = rows.concat([{ pid: 500, ppid: 110, name: 'old.exe', cmd: 'old.exe', created: '2026-10-19T00:00:00.000Z' }]);
   assert.ok(!F.walkTree(reused, [100]).some(r => r.pid === 500), 'a child born before its "parent" is a pid-reuse orphan');
@@ -152,10 +152,10 @@ const path = require('node:path');
     SKYNET_OPENROUTER_KEY: 'sk-or-real', ANTHROPIC_API_KEY: 'sk-ant-real', NODE_OPTIONS: '--require evil.js', HERMES_HOME: 'C:\\Users\\andro\\.hermes' };
   const runDir = path.join('C:', 'tmp', 'run1');
   const { env, dirs } = F.hermeticEnv({ baseEnv: base, runDir, ws: path.join(runDir, 'ws'), port: 41234 });
-  for (const k of ['USERPROFILE', 'HOME', 'APPDATA', 'LOCALAPPDATA', 'XDG_DATA_HOME', 'TEMP', 'TMP', 'HERMES_HOME', 'CODEX_HOME', 'CLAUDE_CONFIG_DIR', 'SKYNET_WORKSPACES', 'STARNET_WORKSPACES'])
+  for (const k of ['USERPROFILE', 'HOME', 'APPDATA', 'LOCALAPPDATA', 'XDG_DATA_HOME', 'TEMP', 'TMP', 'HERMES_HOME', 'CODEX_HOME', 'CLAUDE_CONFIG_DIR', 'SKYNET_WORKSPACES', 'VULTRON_WORKSPACES'])
     assert.ok(env[k].startsWith(runDir), k + ' lives inside the run dir (' + env[k] + ')');
   for (const k of ['SKYNET_OPENROUTER_KEY', 'ANTHROPIC_API_KEY', 'NODE_OPTIONS']) assert.equal(env[k], undefined, k + ' never reaches the bench sidecar');
-  assert.equal(env.PATH, 'C:\\bin'); assert.equal(env.SKYNET_DEV, '1'); assert.equal(env.STARNET_DEV, '1');
+  assert.equal(env.PATH, 'C:\\bin'); assert.equal(env.SKYNET_DEV, '1'); assert.equal(env.VULTRON_DEV, '1');
   assert.equal(env.SKYNET_PORT, '41234'); assert.equal(env.SKYNET_LIVE_PRICES, '0'); assert.equal(env.SKYNET_OPENROUTER_BASE, 'http://127.0.0.1:9/');
   assert.equal(dirs.length, 4); assert.ok(dirs.every(d => d.startsWith(runDir)));
 

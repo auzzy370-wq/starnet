@@ -235,7 +235,7 @@ function makeRunExecutionState(options) {
   function completionEvidence() {
     return completion && typeof completion.snapshot === 'function'
       ? completion.snapshot()
-      : { schemaVersion: 'starnet.completion-evidence.v1', completionVerdict: 'not_assessed', effectVerdict: 'no_observed_effects', effects: [], evidence: [] };
+      : { schemaVersion: 'vultron.completion-evidence.v1', completionVerdict: 'not_assessed', effectVerdict: 'no_observed_effects', effects: [], evidence: [] };
   }
 
   async function assessCompletion(input) {
