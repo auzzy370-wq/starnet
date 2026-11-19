@@ -76,6 +76,44 @@
   /* a dragged window keeps its inline left/top; the sheet wins on a phone */
   #terms .term[style] { left: 0 !important; top: 0 !important; }
 
+  /* ---------- CONSOLES (SETTINGS / SKILLS / CONFIG): the rail is a strip, the pane is the page ----------
+     app.css already turns .term-console-body into a column at this width, but it wraps the rail
+     (.con-rail-list { flex-wrap: wrap }) while every .con-rail-item is width: 100%. Seven sections therefore
+     stacked into a full-height wall of bars and .con-pane — flex: 1 1 auto, min-height: 0 — was squeezed to
+     zero height. Tapping AI & MODELS did switch the section, but the section it switched TO had no height, so
+     every menu in Settings looked dead. The rail is one sideways-scrolling strip now and the pane keeps every
+     pixel the rail does not need. */
+  .term.console .term-body.term-console-body { flex-direction: column; }
+  .con-rail {
+    flex: 0 0 auto;
+    max-height: 30dvh;
+    border-right: 0;
+    border-bottom: 1px solid var(--ph-dim);
+  }
+  .con-rail-list {
+    flex: 1 1 auto;
+    flex-direction: row;
+    flex-wrap: nowrap;          /* never wrap: a wrapped 100%-wide item is a wall, not a strip */
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: 4px;
+    padding: 6px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .con-rail-list::-webkit-scrollbar { display: none; }
+  .con-rail-item {
+    width: auto;               /* the desktop rail is width: 100%; in a row strip that is the bug */
+    flex: 0 0 auto;
+    min-height: 44px;          /* tap target */
+    padding: 8px 12px;
+    white-space: nowrap;
+  }
+  .con-rail-item.active { box-shadow: 0 0 12px var(--ph-glow2), inset 0 -3px 0 var(--ph-bright); }
+  .con-rail-label { flex: 0 0 auto; }
+  /* the pane owns the rest of the sheet — never a zero-height content area */
+  .con-pane { flex: 1 1 auto; min-height: 0; }
+
   /* ---------- the dock coach mark: a toast, not a wall ---------- */
   #nav-coach {
     left: 8px;
