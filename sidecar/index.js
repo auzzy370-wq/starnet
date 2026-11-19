@@ -546,6 +546,11 @@ const SPECIALIST_CLASSES = (sharedSpecialties.BUILTINS || []).map(s => ({ id: s.
 function ENV(suffix) { const k = 'VULTRON_' + suffix; return (k in process.env) ? process.env[k] : process.env['SKYNET_' + suffix]; }
 
 const PORT = Number(ENV('PORT') || process.env.PORT) || 8787;
+/* Where the station listens. Loopback by default — that is the whole product promise: the engine, the
+   keys and the workspace stay on your machine. Set BIND_HOST=0.0.0.0 ONLY when something in front of
+   it terminates TLS and enforces identity (a container host's proxy, or the relay). Unset it and the
+   engine is unreachable from any other host, exactly as before. */
+const BIND_HOST = String(ENV('BIND_HOST') || '127.0.0.1');
 const API_TOKEN = String(ENV('API_TOKEN') || crypto.randomBytes(32).toString('hex'));
 // DEV fast-path (the `npm run dev:seed` launcher sets this): when on, the served index.html carries a small
 // boot payload (window.__VULTRON_DEV__ = {model, prov}) so a fresh browser origin auto-resumes the server-
@@ -785,7 +790,7 @@ if (!workspaceOwnerClaim.ok) {
     console.error('✗ degraded holding listener could not bind :' + PORT + ' (' + String(e && e.code || e) + ') — exiting 73');
     process.exit(73);
   });
-  holding.listen(PORT, '127.0.0.1', () => {
+  holding.listen(PORT, BIND_HOST, () => {
     console.error('  degraded holding listener on http://127.0.0.1:' + PORT + ' — /api/health answers 503 with the reason; no store is open');
   });
   process.on('SIGTERM', () => process.exit(0));
@@ -13806,7 +13811,7 @@ server.on('error', (e) => {
   else console.error('✗ sidecar listen error:', e);
   process.exit(1);
 });
-server.listen(PORT, '127.0.0.1', async () => {
+server.listen(PORT, BIND_HOST, async () => {
   verdictReview.resumeHeld(launchVerdictReview);
   const url = 'http://127.0.0.1:' + PORT;
   const bar = '═'.repeat(58);
