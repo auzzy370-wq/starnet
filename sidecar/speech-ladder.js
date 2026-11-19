@@ -64,7 +64,7 @@ const SURFACE_DEFAULTS = Object.freeze({
    style for the desk's playback shell; the conformance test holds the two equal. The model is the sidecar's. */
 const STATION_VOICE = Object.freeze({
   voice: 'Algenib',
-  style: 'A low, smooth American male voice with a subtle gravelly rasp and clean, crisp articulation. Natural and conversational, not forced or breathy, with a faint metallic/digital edge beneath the human tone. Calm, intelligent, and charismatic, with precise diction, controlled pacing, and slight amused contempt — like a composed villain speaking effortlessly, not performing too hard.'
+  style: 'A deep, powerful, commanding American male voice: cold, calculated, absolutely authoritative. Smooth, articulate and unnervingly intelligent, with a subtle synthetic undertone beneath the human tone, rich bass and crystal-clear pronunciation. Measured conversational pacing at a normal tempo — deliberate pauses, never slow, never shouting, never emotional. Cinematic, futuristic and ominous: an all-knowing intelligence vastly superior to what it addresses.'
 });
 
 const KEYED_ENGINES = Object.freeze(['openrouter', 'gemini', 'openai']);

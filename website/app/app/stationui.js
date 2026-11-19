@@ -6111,6 +6111,12 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       const readiness = h && h.readiness ? h.readiness(p.id) : { credential: { present: false, status: 'unknown' }, endpoint: { configured: false }, cached: true };
       const codexDead = isOAuthProvider(p.id) && readiness.credential.status === 'expired';
       const credentialSaved = readiness.credential.present && !codexDead;
+      // GROK IS TWO PATHS, like OPENAI on the connect screen: its SuperGrok / X Premium+ device-code sign-in, OR a
+      // plain xAI API key pasted right on this card. An API key belongs to the XAI profile (api.x.ai), so it is
+      // STORED there — which is why this card also reads the XAI key's presence: a saved key must never sit under
+      // "○ NOT SIGNED IN" while the agents can already run Grok on it.
+      const keyTarget = p.id === 'grok' ? 'xai' : p.id;
+      const xaiKeySaved = p.id === 'grok' && !credentialSaved && (typeof keysFor === 'function') && keysFor('xai').length > 0;
       const endpointConfigured = !!readiness.endpoint.configured;
       const configured = readiness.unattendedReady === true;
       const health = providerHealth[p.id];
@@ -6138,6 +6144,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
         : isClaude ? claudeStat : keyless ? localStat : credentialSaved ? keyStat : (isOAuthProvider(p.id) ? '○ NOT SIGNED IN' : (p.id === 'custom' ? '○ NO ENDPOINT' : '○ NO KEY'));
       if (readiness.cached) stat += ' · CACHED STATION STATUS';
       if (readiness.persistenceError) stat += ' · CHECK NOT SAVED';
+      if (xaiKeySaved) stat = '● XAI API KEY SAVED · GROK MODELS READY';   // see keyTarget above: a pasted key is a real connection
       // #62: NOT VERIFIED / CHECK FAILED says WHY (the probe's own reason: "credential probe HTTP 401", a station
       // refusal, a timeout) — a bare verdict left a valid-key user with nothing to act on.
       // org P03: a probe that gave no reason still says what it saw — never a bare NOT VERIFIED / CHECK FAILED.
@@ -6149,7 +6156,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       const n = ks.length;
       // NO-KEY cards that accept a key get an inline, collapsible paste-and-save row so the user never has to hunt
       // for where keys live. It reuses the SAME save path (Harness.setKey) as the key list below — no duplicate logic.
-      const wantsInline = p.live && !credentialSaved && providerAcceptsKey(p.id);
+      const wantsInline = p.live && !credentialSaved && !xaiKeySaved && providerAcceptsKey(keyTarget);
       // A never-signed-in device-code provider (codex/grok/kimi) gets its FIRST sign-in right on the card.
       // Codex is NOT exempt: its connect-screen block only exists on the overseer/brain screen, so after a
       // ✕ DISCONNECT (or on a machine that never signed in there) this button is the ONLY reachable sign-in —
@@ -6180,8 +6187,9 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
         (wantsInline
           ? '<div class="key-edit prov-key-edit" id="prov-key-edit-' + esc(p.id) + '" hidden>' +
             (p.id === 'custom' ? customEndpointInputHtml('prov-base-in-custom') : '') +
-            '<input type="password" class="key-input" id="prov-key-in-' + esc(p.id) + '" placeholder="paste ' + esc(p.name) + ' key' + (p.id === 'custom' ? ' (optional)' : '') + '…" autocomplete="off" spellcheck="false">' +
-            '<button class="bb sm" data-act="prov-add-save" data-provider="' + esc(p.id) + '">SAVE</button>' +
+            '<input type="password" class="key-input" id="prov-key-in-' + esc(p.id) + '" placeholder="' + (p.id === 'grok' ? 'paste xAI API key…' : 'paste ' + esc(p.name) + ' key' + (p.id === 'custom' ? ' (optional)' : '') + '…') + '" autocomplete="off" spellcheck="false">' +
+            (p.id === 'grok' ? '<span class="dim">no SuperGrok subscription? a Grok API key from console.x.ai runs the Grok models on api.x.ai — it is kept on the XAI card below too</span>' : '') +
+            '<button class="bb sm" data-act="prov-add-save" data-provider="' + esc(p.id) + '"' + (keyTarget !== p.id ? ' data-key-provider="' + esc(keyTarget) + '"' : '') + '>SAVE</button>' +
             '</div>'
           : '') +
         (wantsClaudeSignin && !claudeCard.account ? claudeFlowBoxHtml(claudeFlowing, claudeBox) : '') +
@@ -6577,17 +6585,27 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
   /* ============== SETTINGS — connections + real CRT / theme / audio toggles ============== */
   function wireProviderActions(body) {
     // save a pasted key from a NO-KEY card's inline row, reusing the SAME store path as the key list (Harness.setKey).
-    const saveInline = (provider) => {
+    // `provider` is where the key is STORED; `cardProvider` is the card it was pasted on. They differ only on the GROK
+    // card, whose key path is an xAI key (keyTarget in providerCardHtml) — the input still lives on that card.
+    const saveInline = (provider, cardProvider) => {
       if (provider === 'custom') return saveCustomEndpoint(body.querySelector('#prov-base-in-custom'), body.querySelector('#prov-key-in-custom'));
       const h = H();
-      const inp = body.querySelector('#prov-key-in-' + provider);   // provider ids are simple slugs — safe to interpolate
+      const inp = body.querySelector('#prov-key-in-' + (cardProvider || provider));   // provider ids are simple slugs — safe to interpolate
       const v = inp ? inp.value.trim() : '';
       if (!v) { sfx('bad'); if (inp) inp.focus(); return; }
       if (!h || !h.setKey) { sfx('bad'); return; }
       // same proven-store contract as the key-list paths: success UI only after setKey resolves.
       Promise.resolve(h.validateAndSetKey ? h.validateAndSetKey(v, provider) : h.setKey(v, provider)).then(res => {
         invalidateProviderHealth(provider);
-        notify('✓ connected ' + provName(provider) + ' API key — ' + keyStoreClause(res), 'good');
+        // A KEY PASTED ON THE GROK CARD IS AN XAI KEY: it is stored under XAI, and XAI becomes the station's provider —
+        // the same two calls a tap on the XAI card makes. Otherwise the key would sit saved while the agents kept the
+        // provider they were on, which is the opposite of "add my Grok key for the agents".
+        const switched = !!(cardProvider && provider !== cardProvider);
+        if (switched) {
+          if (h.setProv) h.setProv(provider);
+          if (typeof App !== 'undefined' && App.setStationProvider) App.setStationProvider(provider);
+        }
+        notify('✓ connected ' + provName(provider) + ' API key — ' + keyStoreClause(res) + (switched ? ' · agents now run on ' + provName(provider) : ''), 'good');
         warnIfStationLacksKey(res);
         if (typeof ModelDock !== 'undefined' && ModelDock.reconcile) ModelDock.reconcile().catch(() => ModelDock.reflect && ModelDock.reflect());
         else if (typeof ModelDock !== 'undefined' && ModelDock.reflect) ModelDock.reflect();
@@ -6842,7 +6860,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
         if (inlineEdit) { inlineEdit.hidden = !inlineEdit.hidden; if (!inlineEdit.hidden && inlineInput) inlineInput.focus(); }
         sfx('click');
       });
-      if (inlineSave) inlineSave.addEventListener('click', ev => { ev.stopPropagation(); saveInline(card.dataset.provider); });
+      if (inlineSave) inlineSave.addEventListener('click', ev => { ev.stopPropagation(); saveInline(inlineSave.dataset.keyProvider || card.dataset.provider, card.dataset.provider); });
       // VULTRON MANAGED: both LINK STATION and STORE land in the same place — the STORE section owns the
       // pairing flow, and duplicating it on this card would be a second implementation to keep in step.
       const toStore = card.querySelector('[data-act="credits-store"]');

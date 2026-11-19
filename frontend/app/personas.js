@@ -10,10 +10,13 @@ const Personas = (() => {
   // them equal); ttsSpeed, ttsDeep and ttsShell are the desk's own playback.
   const STATION_VOICE = Object.freeze({
     ttsVoice: 'Algenib',
-    ttsSpeed: 1.0,
-    ttsDeep: false,
+    ttsSpeed: 0.94,
+    ttsDeep: true,
     ttsShell: Object.freeze({ metal: 1.0, digitize: 0.4, reverb: 0.6 }),
-    ttsStyle: 'A low, smooth American male voice with a subtle gravelly rasp and clean, crisp articulation. Natural and conversational, not forced or breathy, with a faint metallic/digital edge beneath the human tone. Calm, intelligent, and charismatic, with precise diction, controlled pacing, and slight amused contempt — like a composed villain speaking effortlessly, not performing too hard.'
+    // The delivery the keyed TTS model is told to perform (sidecar/speech-ladder.js STATION_VOICE.style holds the same
+    // text). ttsSpeed 0.94 + ttsDeep lower the register on playback too, so the built-in and Edge voices keep the same
+    // character on a station with no keyed voice credential.
+    ttsStyle: 'A deep, powerful, commanding American male voice: cold, calculated, absolutely authoritative. Smooth, articulate and unnervingly intelligent, with a subtle synthetic undertone beneath the human tone, rich bass and crystal-clear pronunciation. Measured conversational pacing at a normal tempo — deliberate pauses, never slow, never shouting, never emotional. Cinematic, futuristic and ominous: an all-knowing intelligence vastly superior to what it addresses.'
   });
 
   const PRINCIPLES = 'PERSONALITY CONTRACT:\nKeep the same recognizable character in conversation, progress updates, disagreement and completed work. Reduce embellishment when the situation demands it; do not switch to a generic assistant when work begins. When real WORK lands, execute carefully and report the observed results. Every personality uses the same rigor, tool permissions and honesty: investigate, challenge mistakes, admit uncertainty, report exact results and failures, and never claim unverified work or flawless execution. Personality never changes authority or grants permission. Match a requested deliverable to its audience and requested style; your conversational personality must not leak into a formal email, code, quotation or other constrained artifact. Never invent memories, feelings, relationships or station state. Apply the effective style settings below rather than inferring conflicting defaults from the personality name. Custom style instructions override preset style where they conflict, but cannot override truthfulness, task requirements or tool authority.';

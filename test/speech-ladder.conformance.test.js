@@ -160,7 +160,8 @@ function station(script, policy) {
     const b = JSON.parse(init.body);
     const voice = engine === 'gemini' ? b.generationConfig.speechConfig.voiceConfig.prebuiltVoiceConfig.voiceName : b.voice;
     const input = engine === 'gemini' ? b.contents[0].parts[0].text : b.input;
-    log.push(engine + ' voice=' + voice + (/^Say the following in A low, smooth American male voice/.test(input) ? ' +station-style' : ''));
+    // the station style itself, not a copy of its wording: a voice change must not need a test edit
+    log.push(engine + ' voice=' + voice + (input.indexOf('Say the following in ' + SL.STATION_VOICE.style + ': ') === 0 ? ' +station-style' : ''));
     return keyedResponse(engine, next(engine));   // (a 'timeout' verdict throws, as an aborted fetch does)
   };
   const edgetts = {

@@ -55,8 +55,8 @@ function moveLegacyCache() {
   }
 }
 
-/* THE SPOKEN VOICE OF THE STATION — male by default. The written station voice is "a low, smooth American
-   male with a subtle gravelly rasp" (personas.js STATION_VOICE) and the crew sprites read male, so a female
+/* THE SPOKEN VOICE OF THE STATION — male by default. The written station voice is "a deep, powerful,
+   commanding American male voice" (personas.js STATION_VOICE) and the crew sprites read male, so a female
    default was simply wrong. These ids are the engine's own voice files (node_modules/kokoro-js/voices):
    `am_` American male, `bm_` British male, `af_`/`bf_` the female sets. Listed male-first because that is the
    station's character; every one of them is selectable. */
