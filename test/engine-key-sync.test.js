@@ -59,7 +59,7 @@ function sandbox(opts) {
       return { ok: r.status >= 200 && r.status < 300, status: r.status, text: async () => JSON.stringify(r.body) };
     }
   };
-  const api = vm.runInNewContext(helpers + keyFns + '\n({ setKey, setKeyPool, setDesktopConfigured, syncEngineKey, syncEngineKeysOnBoot, engineConfigOf })', scope);
+  const api = vm.runInNewContext(helpers + keyFns + '\n({ setKey, setKeyPool, setDesktopConfigured, syncEngineKey, syncEngineKeysOnBoot, engineConfigOf, healStationKeys })', scope);
   const sync = p => { const v = store.get(SYNC + p); return v == null ? null : JSON.parse(v); };
   return { api, posts, warns, store, sync };
 }
@@ -163,6 +163,39 @@ function sandbox(opts) {
     A.eq([by.anthropic.boot, by.anthropic.ifRev], [true, 'a3'], 'each boot hand-over carries the revision this page last proved');
     A.ok(!s.posts.some(p => !p.body.key && !p.body.baseUrl && !p.body.keyPool.length), 'boot never sends a REMOVE that is not pending');
   }
+  /* ---- a HOSTED station that forgot its copy gets this page's key back, without a reload ---- */
+  {
+    // A container host keeps the workspace on the container's disk: a cold start (or a fresh instance) answers
+    // credential present:false while this page still holds the Commander's key. A readiness refresh re-hands it.
+    const s = sandbox({ storage: {
+      'vultron.byok.key.xai': 'xai-page-key',
+      [SYNC + 'xai']: JSON.stringify({ rev: 'x1', pending: false }),
+      'vultron.byok.key.anthropic': 'sk-ant-page'
+    } });
+    const lost = [
+      { id: 'xai', credential: { present: false, required: true }, unattendedReady: false },
+      { id: 'anthropic', credential: { present: true, required: true }, unattendedReady: true },   // the station still holds it
+      { id: 'grok', credential: { present: false, required: true }, unattendedReady: false },       // sign-in provider: no page key
+      { id: 'mistral', credential: { present: false, required: true }, unattendedReady: false },    // this page holds nothing
+      { id: 'ollama', credential: { present: false, required: false }, unattendedReady: true }      // keyless: never a credential
+    ];
+    const out = await s.api.healStationKeys(lost);
+    A.eq(s.posts.length, 1, 'only the provider the station lost AND this page holds is re-handed');
+    A.eq(s.posts[0].body, { provider: 'xai', key: 'xai-page-key', keyPool: [], baseUrl: '', boot: true, ifRev: 'x1' },
+      'a BOOT hand-over: the station takes it only if it still holds what this page last proved');
+    A.ok(Array.isArray(out) && out.length === 1 && out[0].ok === true, 'resolves the hand-over\'s answer (readiness never awaits it)');
+    const again = await s.api.healStationKeys(lost);
+    A.eq(s.posts.length, 1, 'throttled: a station that keeps answering the same way is not hammered');
+    A.ok(Array.isArray(again) && again.length === 0, 'the throttled pass hands over nothing');
+    const stale = sandbox({
+      storage: { 'vultron.byok.key.openrouter': 'sk-or-v1-old-origin', [SYNC + 'openrouter']: JSON.stringify({ rev: 'r1', pending: false }) },
+      respond: () => ({ status: 200, body: { ok: true, provider: 'openrouter', applied: false, stale: true, changed: false } })
+    });
+    const [st] = await stale.api.healStationKeys([{ id: 'openrouter', credential: { present: false, required: true }, unattendedReady: false }]);
+    A.ok(st.ok === true && st.stale === true, 'a key the Commander removed in another page is never resurrected (the station answers stale)');
+    A.eq(stale.sync('openrouter'), { rev: 'r1', pending: false }, 'and this page keeps its own old revision');
+  }
+
   /* ---- a stale answer: the station kept a newer change; this page never adopts its revision ---- */
   {
     const s = sandbox({
@@ -177,6 +210,7 @@ function sandbox(opts) {
   /* ---- wiring the sandbox can't see ---- */
   const initBody = harness.slice(harness.indexOf('async function init()'), harness.indexOf('function normalizeProviderId'));
   A.ok(/if \(!DESKTOP\) \{ syncEngineKeysOnBoot\(\)\.then\(refreshProviderReadiness\); return; \}/.test(initBody), 'init() hands the saved configs over once per page boot, without awaiting it');
+  A.ok(/else lost = j\.providers;[\s\S]{0,400}if \(lost\) healStationKeys\(lost\);/.test(harness), 'every readiness refresh heals a station that reports it lost a key (a cold start under an open page needs no reload)');
   A.ok(/const stored = await Promise\.resolve\(setKey\(candidate, p\)\);[\s\S]{0,200}engine: stored\.engine/.test(harness), 'validateAndSetKey passes the station\'s answer to SETTINGS');
   A.ok(/writeScoped\(LS\.baseUrl, p, u \|\| ''\);[\s\S]{0,700}return syncEngineKey\(p\)\.then\(async engine => \{ readinessCache\.invalidate\(p\); await refreshProviderReadiness\(\); return \{ engine \}; \}\);/.test(harness), 'an endpoint saved in the browser reaches the station, invalidates pre-write reads, refreshes readiness, and resolves its answer');
   const station = read('frontend', 'app', 'stationui.js');

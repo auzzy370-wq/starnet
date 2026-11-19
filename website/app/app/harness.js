@@ -481,17 +481,20 @@ const Harness = (() => {
     readinessFlight = (async () => {
       const ctl = new AbortController();
       const timer = setTimeout(() => ctl.abort(), 5000);
+      let lost = null;   // providers this station says it holds no credential for — healed once this flight clears
       try {
         const r = await fetch('/api/providers', { cache: 'no-store', signal: ctl.signal });
         if (!r.ok) throw new Error('station status unavailable');
         const j = await r.json();
         if (!readinessCache.accept(j.providers, ticket)) readinessCache.offline();
+        else lost = j.providers;
       } catch (_) { readinessCache.offline(); }
       finally {
         clearTimeout(timer);
         readinessFlight = null;
         if (ticket !== readinessCache.ticket()) return refreshProviderReadiness();
       }
+      if (lost) healStationKeys(lost);
     })();
     return readinessFlight;
   }
@@ -674,6 +677,42 @@ const Harness = (() => {
       if (c.key || c.keyPool.length || c.baseUrl || engineSyncState(p).pending) jobs.push(syncEngineKey(p, true));
     }
     return Promise.all(jobs);
+  }
+  /* A HOSTED STATION FORGETS ITS COPY. A container host keeps the workspace on the container's own disk, so a station
+     that idles out and cold-starts (or answers from a fresh instance) comes back holding no provider keys — while this
+     page still has the Commander's key in localStorage. The boot hand-over above heals that once per page load; a
+     station that restarted UNDER an open page used to wait for a reload, so SETTINGS read ○ NO KEY and every
+     unattended surface refused. Every readiness refresh now re-hands a key the station says it lost, with the SAME
+     boot semantics (boot + ifRev): a station holding a newer change — a key the Commander removed in another page —
+     answers stale, and this page never resurrects it. Throttled per provider, so a station that keeps refusing is not
+     hammered, and never for the sign-in / managed providers (they carry no page key). */
+  const ENGINE_HEAL_MS = 15000;
+  const engineHealedAt = Object.create(null);
+  let healingStationKeys = false;
+  function stationLostCredential(entry) {
+    const c = entry && entry.credential;
+    return !!c && c.present === false && c.required !== false && entry.unattendedReady !== true;
+  }
+  function healStationKeys(providers) {
+    if (DESKTOP || DEVMODE || healingStationKeys || !Array.isArray(providers)) return Promise.resolve([]);
+    const now = Date.now();
+    const jobs = [];
+    for (const entry of providers) {
+      const p = normalizeProviderId(String((entry && entry.id) || ''));
+      if (!p || ENGINE_SYNC_SKIP[p] || !stationLostCredential(entry)) continue;
+      if (now - (engineHealedAt[p] || 0) < ENGINE_HEAL_MS) continue;
+      const c = engineConfigOf(p);
+      if (!(c.key || c.keyPool.length || c.baseUrl)) continue;   // this page holds nothing to hand over
+      engineHealedAt[p] = now;
+      jobs.push(syncEngineKey(p, true));
+    }
+    if (!jobs.length) return Promise.resolve([]);
+    healingStationKeys = true;
+    return Promise.all(jobs).then(out => {
+      healingStationKeys = false;
+      if (out.some(r => r && r.ok && !r.stale)) refreshProviderReadiness();   // the card reads the station's copy again
+      return out;
+    }, () => { healingStationKeys = false; return []; });
   }
   /* #137 DESKTOP ENDPOINT HAND-OVER. On the desktop app the OS keychain holds provider KEYS only; a provider's endpoint
      (a CUSTOM base URL, an Ollama that is not on this machine, a cloud provider's override such as an OpenRouter-compatible
