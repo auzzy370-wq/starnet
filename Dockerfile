@@ -5,9 +5,9 @@
 # writable disk for the workspace, and child processes.
 #
 #   docker build -t vultron-station .
-#   docker run --rm -p 8080:8080 -e VULTRON_SITE_PASSWORD='a-long-password' -v station:/data vultron-station
+#   docker run --rm -p 8080:8080 -v station:/data vultron-station
 #
-# then open http://127.0.0.1:8080 and log in as "vultron".
+# then open http://127.0.0.1:8080 — no login.
 
 FROM node:22-bookworm-slim AS deps
 WORKDIR /app

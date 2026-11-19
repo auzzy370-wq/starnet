@@ -2,10 +2,10 @@
 #
 #   fly launch --no-deploy --copy-config --name vultron-station     (once, to create the app)
 #   fly volumes create station_data --size 10 --region iad          (the workspace, saves and ledger)
-#   fly secrets set VULTRON_SITE_PASSWORD='a-long-password'
 #   fly deploy
 #
-# The app is then at https://vultron-station.fly.dev, behind HTTP Basic (user "vultron").
+# The app is then at https://vultron-station.fly.dev with no login. Anyone with the URL reaches the station,
+# so delete any leftover VULTRON_SITE_PASSWORD secret (it is no longer read) and host it accordingly.
 #
 # Why a machine and not a serverless function: the station is one long-lived process holding the workspace
 # on disk, spawning tools, and streaming runs over SSE. Nothing in it survives being cut into 10-second
