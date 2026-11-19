@@ -1,0 +1,51 @@
+# A hosted Vultron station — the FULL app (UI + agent engine), one always-on machine with a disk.
+#
+#   fly launch --no-deploy --copy-config --name vultron-station     (once, to create the app)
+#   fly volumes create station_data --size 10 --region iad          (the workspace, saves and ledger)
+#   fly secrets set VULTRON_SITE_PASSWORD='a-long-password'
+#   fly deploy
+#
+# The app is then at https://vultron-station.fly.dev, behind HTTP Basic (user "vultron").
+#
+# Why a machine and not a serverless function: the station is one long-lived process holding the workspace
+# on disk, spawning tools, and streaming runs over SSE. Nothing in it survives being cut into 10-second
+# invocations, so this deploy keeps it whole.
+app = "vultron-station"
+primary_region = "iad"
+kill_signal = "SIGTERM"
+kill_timeout = 20
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "8080"
+  HOME = "/data"
+  VULTRON_WORKSPACES = "/data/workspaces"
+
+[[mounts]]
+  source = "station_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  # agents keep running after the browser tab closes: never scale this machine to zero
+  auto_stop_machines = "off"
+  auto_start_machines = false
+  min_machines_running = 1
+  [http_service.concurrency]
+    type = "connections"
+    hard_limit = 200
+
+[[vm]]
+  memory = "2gb"
+  cpus = 2
+
+[checks.health]
+  type = "http"
+  port = 8080
+  path = "/api/health"
+  interval = "30s"
+  timeout = "5s"
+  grace_period = "90s"
