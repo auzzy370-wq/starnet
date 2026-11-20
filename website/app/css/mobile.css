@@ -140,3 +140,24 @@
   }
   #left { display: none; }
 }
+
+/* ---------- CINEMA on a narrow frame: the station fills the PHONE, not a 0px column ----------
+   warroom.css fills the frame with `grid-template-columns: 0 1fr 0 !important`. That is the desktop
+   template, where #stage-wrap sits in the middle column. Every narrow reflow — this sheet's phone frame
+   and app.css's 860px one — puts the stage in the FIRST column instead ("top" "center" "chat" "bot"),
+   so cinema sized that column to 0px: tapping ▣ CINEMA blanked the station and left an empty screen,
+   which is why cinema mode looked dead on a phone. Restate the frame as ONE full-bleed column that still
+   names every area, so the stage keeps the whole viewport and no other region can come back as an
+   implicit track. The rows keep the desktop idea — chrome 0, stage 1fr, chrome 0 — for phones both ways
+   up (the landscape frame's "center chat" row becomes the same single column here). */
+@media (max-width: 900px) {
+  #screen-game.cinema.active {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: 0 minmax(0, 1fr) 0 0 !important;
+    grid-template-areas: "top" "center" "chat" "bot" !important;
+    padding: 0 !important;
+    gap: 0 !important;
+  }
+  /* a phone has no Escape key: ▣ EXIT is the only way out, so it must be a thumb target, not a caption */
+  #stage-wrap .cam-cine { min-height: 44px; min-width: 52px; padding: 8px 12px; }
+}

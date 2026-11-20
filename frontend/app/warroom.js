@@ -69,6 +69,13 @@
   }
 
   /* ---------------- CINEMA mode ---------------- */
+  // A touch screen has no Escape key, so the desktop hint would name an exit that does not exist there:
+  // on a coarse pointer the way out is the ▣ EXIT button beside the feed (css/mobile.css makes it a
+  // thumb target). The mode itself is the same on both; only the sentence differs.
+  function cinemaHintText() {
+    try { if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) return 'CINEMA — tap ▣ EXIT to leave'; } catch (_) {}
+    return 'CINEMA — press ESC to exit';
+  }
   function buildCinema() {
     const hud = $('#stage-wrap .cam-hud');
     if (hud && !hud.querySelector('.cam-cine')) {
@@ -77,7 +84,7 @@
       b.addEventListener('click', toggleCinema); hud.appendChild(b);
     }
     if (!$('#wr-cine-hint')) {
-      const hint = document.createElement('div'); hint.id = 'wr-cine-hint'; hint.textContent = 'CINEMA — press ESC to exit';
+      const hint = document.createElement('div'); hint.id = 'wr-cine-hint'; hint.textContent = cinemaHintText();
       document.body.appendChild(hint);
     }
   }
