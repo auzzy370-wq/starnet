@@ -21,10 +21,13 @@ COPY package.json package-lock.json ./
 RUN npm ci --ignore-scripts --no-audit --no-fund && npm rebuild node-pty --no-audit --no-fund
 
 FROM node:22-bookworm-slim
+# ML.ai speaks the OpenAI wire, so the station's "custom" provider slot points there by default.
+# Only the key is missing: set CUSTOM_OPENAI_KEY (or OPENAI_COMPATIBLE_KEY) in the Vercel project.
 ENV NODE_ENV=production \
     HOME=/data \
     PORT=8080 \
-    VULTRON_WORKSPACES=/data/workspaces
+    VULTRON_WORKSPACES=/data/workspaces \
+    CUSTOM_OPENAI_BASE_URL=https://api.ml.ai/v1
 WORKDIR /app
 RUN mkdir -p /data/workspaces
 COPY --from=deps /app/node_modules ./node_modules
