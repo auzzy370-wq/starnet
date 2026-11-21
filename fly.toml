@@ -1,15 +1,27 @@
-# A hosted Vultron station — the FULL app (UI + agent engine), one always-on machine with a disk.
+# Hosted Vultron station on Fly.io, sized to stay cheap when idle.
 #
-#   fly launch --no-deploy --copy-config --name vultron-station     (once, to create the app)
-#   fly volumes create station_data --size 10 --region iad          (the workspace, saves and ledger)
+# One shared-cpu machine in iad (the cheapest region). Fly Proxy suspends it after the
+# open connections go away and starts it again on the next request. CPU and RAM are
+# billed only while it is running. A suspended machine is billed for its rootfs only
+# ($0.15/GB/month). The 1GB volume is billed all month ($0.15) because that disk is
+# the workspace, saves and ledger: a suspend snapshot is not guaranteed across a
+# deploy or a host migration, and the rootfs is wiped on a real cold start.
+#
+#   curl -L https://fly.io/install.sh | sh          # install flyctl
+#   fly auth signup                                 # or: fly auth login
+#   fly launch --no-deploy --copy-config --ha=false --name vultron-station --region iad --yes
+#   fly volumes create station_data --region iad --size 1 -y
+#   fly secrets set VULTRON_API_TOKEN=...           # optional, see below
 #   fly deploy
 #
-# The app is then at https://vultron-station.fly.dev with no login. Anyone with the URL reaches the station,
-# so delete any leftover VULTRON_SITE_PASSWORD secret (it is no longer read) and host it accordingly.
+# The station is then at https://vultron-station.fly.dev with no login. Anyone with
+# the URL reaches it. Do not allocate a dedicated IPv4 (`fly ips allocate-v4` without
+# --shared is $2/month). The shared anycast address behind *.fly.dev is free.
 #
-# Why a machine and not a serverless function: the station is one long-lived process holding the workspace
-# on disk, spawning tools, and streaming runs over SSE. Nothing in it survives being cut into 10-second
-# invocations, so this deploy keeps it whole.
+# One machine only. The volume attaches to a single machine, and [deploy] strategy
+# "immediate" replaces that machine in place. `fly scale count` above 1 will not
+# mount the disk on the extras.
+
 app = "vultron-station"
 primary_region = "iad"
 kill_signal = "SIGTERM"
@@ -17,6 +29,10 @@ kill_timeout = 20
 
 [build]
   dockerfile = "Dockerfile"
+
+[deploy]
+  # Rolling would boot a second machine first. The volume cannot attach to both.
+  strategy = "immediate"
 
 [env]
   PORT = "8080"
@@ -26,26 +42,49 @@ kill_timeout = 20
 [[mounts]]
   source = "station_data"
   destination = "/data"
+  # Used only when `fly launch` / `fly deploy` has to create the volume. 1GB is Fly's minimum.
+  initial_size = "1GB"
 
 [http_service]
   internal_port = 8080
   force_https = true
-  # agents keep running after the browser tab closes: never scale this machine to zero
-  auto_stop_machines = "off"
-  auto_start_machines = false
-  min_machines_running = 1
+  # "suspend" is scale-to-zero for billing (no CPU/RAM while suspended) and resumes
+  # this same process. "stop" also scales to zero, but it cold-boots the engine and
+  # drops in-memory runs. Suspend allows <= 2GB, no swap, no schedule; this machine
+  # is inside that. An open SSE run or terminal socket counts as a connection, so
+  # the machine stays up while someone is actually using it.
+  auto_stop_machines = "suspend"
+  auto_start_machines = true
+  min_machines_running = 0
+
   [http_service.concurrency]
+    # connections, not requests: an agent run is one long-lived SSE stream
+    # (keepalive every 25s) and the terminal is a WebSocket.
     type = "connections"
-    hard_limit = 200
+    soft_limit = 20
+    hard_limit = 25
 
+  # Above the 25s SSE keepalive so a live run is not cut for silence.
+  [http_service.http_options]
+    idle_timeout = 120
+
+  # Service check only. A top-level [checks] block is a separate prober and is the
+  # wrong tool for a machine that is supposed to suspend.
+  [[http_service.checks]]
+    grace_period = "120s"
+    interval = "30s"
+    timeout = "5s"
+    method = "GET"
+    path = "/api/health"
+
+# Smallest size that ran reliably. Measured 2026-11-21 on this image: idle cgroup
+# ~120 MiB and /api/health in about 2s, but a parallel load of the larger UI files
+# peaked at ~259 MiB under a hard 256 MiB cap (no headroom, and a Fly guest's RAM
+# also includes its kernel). 512mb shared-cpu-1x is $3.69/month in iad if it ran
+# the whole month, which is still under the personal-org bill waiver, and $0 of
+# CPU/RAM while suspended.
 [[vm]]
-  memory = "2gb"
-  cpus = 2
-
-[checks.health]
-  type = "http"
-  port = 8080
-  path = "/api/health"
-  interval = "30s"
-  timeout = "5s"
-  grace_period = "90s"
+  size = "shared-cpu-1x"
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1
