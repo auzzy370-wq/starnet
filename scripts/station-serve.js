@@ -92,6 +92,28 @@ function probe() {
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
+let engineChild = null;
+let doorClosing = false;
+
+/* Fly stop, suspend-fallback, and deploy send SIGTERM to PID 1. The engine is the process that holds the
+   workspace lock and the child shells; it already drains those on SIGTERM (about 3s). Forward the signal
+   and leave when it does. Re-raising SIGTERM at this process does not exit — a handler is installed — so
+   Fly would wait out kill_timeout and SIGKILL, skipping that drain. */
+function shutdown(sig) {
+  if (doorClosing) return;
+  doorClosing = true;
+  console.error('[station] ' + sig + ' — closing the door');
+  try { server.close(); } catch (_) {}
+  const child = engineChild;
+  if (child && child.exitCode == null && child.signalCode == null) {
+    try { child.kill(sig); } catch (_) { process.exit(0); return; }
+    const giveUp = setTimeout(() => process.exit(0), 8000);
+    if (giveUp.unref) giveUp.unref();
+    return;
+  }
+  process.exit(0);
+}
+
 (async () => {
   const engine = spawn(process.execPath, [path.join(__dirname, '..', 'sidecar', 'index.js')], {
     stdio: 'inherit',
@@ -100,8 +122,10 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
       VULTRON_BIND_HOST: ENGINE_HOST      // loopback, always: the door is the only public surface
     })
   });
+  engineChild = engine;
   engine.on('exit', (code, signal) => {
     console.error('[station] engine exited (' + (code == null ? signal : code) + ') — closing the door with it');
+    if (doorClosing) process.exit(0);
     process.exit(code == null ? 1 : code);
   });
 
@@ -120,6 +144,5 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
   });
 })();
 
-const shutdown = sig => { try { server.close(); } catch (_) {} process.kill(process.pid, sig); };
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT', () => shutdown('SIGINT'));
