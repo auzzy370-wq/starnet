@@ -1,0 +1,33 @@
+# Caddy is the public edge: it gets a Let's Encrypt certificate for the host below and forwards everything
+# to the station, which does its own HTTP Basic authentication.
+#
+# VULTRON_HOST is set in deploy/oracle/.env. setup.sh fills it with <public-ip-with-dashes>.sslip.io, which
+# is a free hostname that resolves to the instance's address — no domain to buy. If you own a domain, point
+# an A record at the instance and put that name here instead.
+
+{$VULTRON_HOST} {
+	encode zstd gzip
+
+	reverse_proxy station:8080 {
+		# Agent runs and terminal output are Server-Sent Events. Never buffer or batch them.
+		flush_interval -1
+		# A run can outlive any sane proxy timeout; the station closes the stream itself.
+		transport http {
+			response_header_timeout 0
+			read_timeout 0
+			write_timeout 0
+		}
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	log {
+		output stdout
+		format console
+	}
+}

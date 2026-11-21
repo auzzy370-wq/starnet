@@ -17,3 +17,4 @@ relay
 .DS_Store
 .env
 .env.*
+deploy

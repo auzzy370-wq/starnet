@@ -1,0 +1,55 @@
+# Vultron station on Oracle Cloud Always Free (Ampere A1, Ubuntu 24.04 arm64).
+#
+#   sudo deploy/oracle/setup.sh          # from the repo root, once
+#
+# Two containers: the station (UI + engine, unchanged from the Dockerfile) and Caddy, which terminates TLS
+# and is the only thing listening on 80/443. The station is never published on the host, so the public
+# surface is Caddy -> door (HTTP Basic) -> engine (loopback + per-launch token).
+#
+# `flush_interval -1` in the Caddyfile is what keeps agent runs streaming; buffering would turn SSE into a
+# response that arrives all at once, which looks like a hung run.
+
+name: vultron-station
+
+services:
+  station:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    image: vultron-station:latest
+    restart: unless-stopped
+    stop_grace_period: 20s
+    environment:
+      PORT: "8080"
+      HOME: /data
+      VULTRON_WORKSPACES: /data/workspaces
+      VULTRON_SITE_PASSWORD: ${VULTRON_SITE_PASSWORD:?put VULTRON_SITE_PASSWORD in deploy/oracle/.env}
+      VULTRON_SITE_USER: ${VULTRON_SITE_USER:-vultron}
+    volumes:
+      # The workspace, chats, saves, transcripts and spend ledger all live here. Without this, every restart
+      # starts from an empty station.
+      - station_data:/data
+    expose:
+      - "8080"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      station:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      VULTRON_HOST: ${VULTRON_HOST:?put VULTRON_HOST in deploy/oracle/.env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  station_data:
+  caddy_data:
+  caddy_config:
