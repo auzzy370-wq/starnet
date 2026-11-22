@@ -23,6 +23,7 @@ const { spawnSync, spawn } = require('node:child_process');
 const LOG = path.join(__dirname, 'boot.log');
 const log = m => fs.appendFileSync(LOG, '[' + new Date().toISOString() + '] ' + m + '\n');
 const DIR = path.join(__dirname, 'starnet');
+const PW_FILE = path.join(__dirname, 'vultron-data', 'station-password');
 const fd = fs.openSync(LOG, 'a');
 const PORT = process.env.PORT || process.env.SERVER_PORT || 8080;
 const BRANCH = process.env.VULTRON_BRANCH || 'feat/harness-backend';
@@ -63,8 +64,8 @@ child.on('exit', (code, sig) => log('station exited ' + (sig || code)));
 
 // Self-check from inside the box: an allocation port is not reachable from most of the internet, so the only
 // reliable proof the door answers is a request from here. Result goes to boot.log.
-const probe = p => new Promise((res, rej) => {
-  const q = http.get({ host: '127.0.0.1', port: PORT, path: p, timeout: 5000 }, r => { r.resume(); res(r.statusCode); });
+const probe = (p, headers) => new Promise((res, rej) => {
+  const q = http.get({ host: '127.0.0.1', port: PORT, path: p, timeout: 5000, headers: headers || {} }, r => { r.resume(); res(r.statusCode); });
   q.on('error', rej);
   q.on('timeout', () => { q.destroy(); rej(new Error('timeout')); });
 });
@@ -74,8 +75,15 @@ const probe = p => new Promise((res, rej) => {
     try {
       const health = await probe('/api/health');
       const door = await probe('/');
-      log('CHECK /api/health=' + health + ' /(no auth)=' + door);
-      if (health === 200) return;
+      // The password file sits next to this script, so the check proves the station accepts what was written
+      // — the one thing a person needs to actually get in. Only the status code is logged, never the value.
+      let authed = 'no-password-file';
+      try {
+        const pw = fs.readFileSync(PW_FILE, 'utf8').trim();
+        authed = await probe('/', { authorization: 'Basic ' + Buffer.from('vultron:' + pw).toString('base64') });
+      } catch (e) { /* keep the marker */ }
+      log('CHECK /api/health=' + health + ' /(no auth)=' + door + ' /(auth)=' + authed);
+      if (health === 200 && authed === 200) return;
     } catch (e) { if (i % 5 === 0) log('waiting: ' + e.message); }
   }
   log('CHECK gave up');
