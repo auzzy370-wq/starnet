@@ -97,7 +97,7 @@ module.exports = async function selftest({ log, post, open, token, cfg, dataDir 
 
   /* 3 — a real agent turn through the station, so the answer is not an inference about the adapter. */
   try {
-    const run = await open('/api/run', { provider, model, messages: [{ role: 'user', content: prompt }], agentId: 'agent' }, auth, 150000);
+    const run = await open('/api/run', { provider, model, messages: [{ role: 'user', content: prompt }], agentId: 'agent' }, auth, 90000);
     const body = run.body || '';
     say('turn http=' + run.status + ' bytes=' + body.length
       + ' tool=' + /tool/i.test(body) + ' approval=' + /approv/i.test(body) + ' saidError=' + /"error"|error:/i.test(body)

@@ -81,15 +81,20 @@ const get = (p, headers) => new Promise((res, rej) => {
    self-test below reads its SHAPE (did a tool get called, did it ask for approval, did it error), never its prose. */
 const post = (p, payload, headers, timeoutMs) => new Promise((res, rej) => {
   const body = JSON.stringify(payload || {});
-  const q = http.request({ host: '127.0.0.1', port: PORT, path: p, method: 'POST', timeout: timeoutMs || 60000,
+  let out = '';
+  let settled = false;
+  let q = null;
+  const finish = v => { if (settled) return; settled = true; clearTimeout(deadline); res(v); };
+  /* A hard wall-clock deadline, not a socket-idle timeout: `/api/run` streams, and a stream that sends keepalives never
+     goes idle, so a socket timeout would wait forever. Whatever arrived by the deadline is enough to judge the shape. */
+  const deadline = setTimeout(() => { if (q) q.destroy(); finish({ status: 'deadline', body: out, partial: true }); }, timeoutMs || 60000);
+  q = http.request({ host: '127.0.0.1', port: PORT, path: p, method: 'POST',
     headers: Object.assign({ 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }, headers || {}) }, r => {
-    let out = '';
     r.setEncoding('utf8');
     r.on('data', d => { if (out.length < 400000) out += d; });
-    r.on('end', () => res({ status: r.statusCode, body: out }));
+    r.on('end', () => finish({ status: r.statusCode, body: out }));
   });
-  q.on('error', rej);
-  q.on('timeout', () => { q.destroy(); rej(new Error('timeout')); });
+  q.on('error', e => { if (settled) return; settled = true; clearTimeout(deadline); rej(e); });
   q.end(body);
 });
 const open = post;
