@@ -1,64 +1,70 @@
 # Running a Vultron station on Enzonic Cloud
 
-Enzonic's free tier is **2 GB RAM, 200% CPU, 10 GB SSD, online 24/7** — a persistent process with a real
-filesystem, which is what the station needs. No Docker, no card.
+This is the path the station actually runs on: **Quiet Valley**, an Enzonic Cloud server (node egg, 4 GB RAM,
+15 GB SSD, `na-one.enzonic.com:26656`) — one persistent process, no Docker.
 
 Use **Cloud**, not **Enzonic Deploy**: Deploy builds static/framework output and scales functions to zero, so
-the engine (a long-lived process holding a workspace on disk) and its SSE runs would not survive. Cloud runs
-one process that stays up.
+the engine (a long-lived process holding a workspace on disk) and its SSE runs would not survive.
+
+## How the box is wired
+
+The egg launches exactly one file, `node /home/container/index.js`, after running `npm install` against
+`/home/container/package.json`. Its git/startup variables (`GIT_ADDRESS`, `BRANCH`, `MAIN_FILE`) are **not
+editable through the panel's client API** — every write method answers `405` — so the deploy does not use them.
+Instead, [entry.js](entry.js) is pasted over `/index.js` in the panel's File Manager.
+
+`entry.js` then, on every boot:
+
+| Step | Why |
+| --- | --- |
+| `git clone --depth 1` into `./starnet` | the branch is ~3.6 GB of working tree; depth 1 avoids another ~1.9 GB of history |
+| `git pull --ff-only` on later boots | restart = deploy; `VULTRON_PULL=0` disables it |
+| rebuild `node-pty` if the binary is missing | npm 12 silently skips undeclared install scripts and reports success (see below) |
+| exec `deploy/enzonic/boot.js` | which owns the data dir, password and port, then starts `scripts/station-serve.js` |
+| self-check `/api/health` and `/` | an allocation port is not reachable from most of the internet, so the proof has to come from inside the box |
+
+Everything is appended to `/home/container/boot.log`, readable in the File Manager.
+
+Leave `/home/container/package.json` as the egg created it. If you copy the station's own `package.json` to the
+root, the egg's install step will try to install the entire dependency tree there on every boot.
 
 ## Size it honestly
-
-The station is not small. Measured on this repo:
 
 | | |
 | --- | --- |
 | App files (`sidecar`, `scripts`, `frontend`, `shared`, `bin`) | ~1.38 GB — almost all of it `frontend/assets` |
 | Dependencies (`npm ci`) | ~873 MB — ~754 MB of that is the voice stack |
-| Git checkout + history | ~1.9 GB |
+| Git checkout, depth 1 | ~3.6 GB of tree plus the pack |
 
-Plan for **≥5 GB of free disk** and **2 GB RAM**. A 512 MB / 2.5 GB server does not fit and will fill up
-mid-clone.
-
-## Panel fields
-
-| Field | Value |
-| --- | --- |
-| Egg / template | `node.js generic` |
-| Region | USA or Spain |
-| `GIT_ADDRESS` | `https://github.com/auzzy370-wq/starnet.git` |
-| `BRANCH` | `feat/harness-backend` |
-| `MAIN_FILE` | `deploy/enzonic/boot.js` |
-
-`MAIN_FILE` matters: this egg launches a **JavaScript** file with `node`, so the entry point is
-`deploy/enzonic/boot.js`, not the shell wrapper. `start.sh` is the same thing for when you are in the panel
-console — `bash deploy/enzonic/start.sh` — and does nothing except exec `boot.js`.
-
-On first boot `boot.js` installs dependencies (~1 minute), generates the site password into
-`~/vultron-data/station-password`, and hands the process to `scripts/station-serve.js`.
+Plan for **≥8 GB of disk** and **2 GB RAM**. A 512 MB / 2.5 GB server does not fit and fills up mid-clone.
 
 ## Logging in
 
-Open the server's URL from the panel and log in as `vultron`. The password is in
-`~/vultron-data/station-password` — read it in the panel's file manager, or `cat` it in the console. Then add
-model provider keys in the app; they live on the server, never in the repo.
+`http://na-one.enzonic.com:26656` — user `vultron`, password in `~/vultron-data/station-password` (File
+Manager). Change it by editing that file and restarting; `boot.js` reads it fresh on every boot. Then add model
+provider keys in the app; they live on the server, never in the repo.
+
+## Two things that bit us on the real box
+
+- **The terminal was silently dead.** npm 12 blocks install scripts not declared in `package.json`
+  (`allowScripts`) and still exits 0, so `npm rebuild node-pty` reported success while producing no `pty.node`.
+  Both `boot.js` and `entry.js` now check for the binary itself and rebuild with
+  `--dangerously-allow-all-scripts`. Without it the station boots and looks fine, but every terminal is dead.
+- **`version.git.attempt` noise.** `git describe`'s dirty check has a 15 s timeout and the 49k-file tree can
+  exceed it, so the log shows a few failopen retries at startup. Harmless — it only affects the version string.
 
 ## Updating
 
-Pull in the panel console (or re-clone) and restart. `~/vultron-data` is untouched, so chats, saves and the
-spend ledger survive.
+Panel → Restart. `entry.js` pulls the branch; `~/vultron-data` is untouched, so chats, saves and the spend
+ledger survive. For a clean slate, delete `/home/container/starnet` and restart — it re-clones.
 
 ## Caveats
 
-- **Voice is unavailable.** The install skips package scripts (the voice stack's `onnxruntime-node` fetch
-  404s on Linux) and rebuilds only `node-pty`, which the terminal needs. Chat, tools, terminal, files, saves
-  and everything browser-independent work; TTS does not.
+- **TTS is unlikely.** The voice stack's `onnxruntime-node` binaries are not installed (install scripts are
+  skipped), though the free Edge voice passed its startup check on the box.
 - **Single tenant.** One Basic password in front of the engine, no accounts. Anyone with the URL and the
   password drives your station with your provider keys — set a spend cap in the app.
 - **The door is the security boundary.** `scripts/station-serve.js` refuses to start without
-  `VULTRON_SITE_PASSWORD`; `/api/health` is the only unauthenticated path, for the platform's health check.
-- **Restart the whole server, not just the script.** The engine holds a workspace claim; stopping only the
-  parent process leaves it behind and the next boot refuses with `WORKSPACE_BUSY`. A panel restart kills the
-  container, which is fine.
-- **Backups.** Copy `~/vultron-data` (file manager, SFTP, or the panel's backup feature). That directory plus
-  the password is the whole station state.
+  `VULTRON_SITE_PASSWORD`; `/api/health` is the only unauthenticated path.
+- **Backups.** Copy `~/vultron-data` (File Manager, SFTP, or the panel's backup feature — the server has 4
+  backup slots). That directory plus the password is the whole station state.
