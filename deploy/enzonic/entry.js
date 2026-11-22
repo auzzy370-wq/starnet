@@ -24,6 +24,7 @@ const LOG = path.join(__dirname, 'boot.log');
 const log = m => fs.appendFileSync(LOG, '[' + new Date().toISOString() + '] ' + m + '\n');
 const DIR = path.join(__dirname, 'starnet');
 const PW_FILE = path.join(__dirname, 'vultron-data', 'station-password');
+const OPEN = fs.existsSync(path.join(__dirname, 'vultron-data', 'OPEN-ACCESS'));
 const fd = fs.openSync(LOG, 'a');
 const PORT = process.env.PORT || process.env.SERVER_PORT || 8080;
 const BRANCH = process.env.VULTRON_BRANCH || 'feat/harness-backend';
@@ -75,6 +76,11 @@ const probe = (p, headers) => new Promise((res, rej) => {
     try {
       const health = await probe('/api/health');
       const door = await probe('/');
+      if (OPEN) {
+        log('CHECK /api/health=' + health + ' /(open, no password)=' + door);
+        if (health === 200 && door === 200) return;
+        continue;
+      }
       // The password file sits next to this script, so the check proves the station accepts what was written
       // — the one thing a person needs to actually get in. Only the status code is logged, never the value.
       let authed = 'no-password-file';

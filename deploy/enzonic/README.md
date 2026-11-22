@@ -44,6 +44,17 @@ Plan for **≥8 GB of disk** and **2 GB RAM**. A 512 MB / 2.5 GB server does not
 Manager). Change it by editing that file and restarting; `boot.js` reads it fresh on every boot. Then add model
 provider keys in the app; they live on the server, never in the repo.
 
+## Turning the password off
+
+Create an empty file at `~/vultron-data/OPEN-ACCESS` (File Manager → New File) and restart. `boot.js` passes
+`VULTRON_ALLOW_UNAUTHENTICATED=1` when it exists, the door stops checking credentials, and the startup log says
+`(OPEN — no password: anyone with this URL drives this station)`. Delete the file and restart to put the
+password back; `~/vultron-data/station-password` is still there.
+
+This is **this deployment's** setting, not the product's default: `scripts/station-serve.js` still refuses to
+start without a password unless that flag is explicitly set. With the door open, anyone who has the URL — an
+allocation port that is publicly reachable — reaches the engine with your provider keys and your workspace.
+
 ## Two things that bit us on the real box
 
 - **The terminal was silently dead.** npm 12 blocks install scripts not declared in `package.json`

@@ -28,15 +28,18 @@ const ENGINE_PORT = Number(process.env.VULTRON_ENGINE_PORT) || 8787;
 const ENGINE_HOST = '127.0.0.1';
 const SITE_USER = String(process.env.VULTRON_SITE_USER || 'vultron').trim() || 'vultron';
 const SITE_PASSWORD = String(process.env.VULTRON_SITE_PASSWORD || '');
+/* Explicit opt-out for a station the owner does not want gated. The default stays closed on purpose: an
+   unlocked station is the owner's agent, with the owner's provider keys, for whoever finds the URL. */
+const OPEN_ACCESS = process.env.VULTRON_ALLOW_UNAUTHENTICATED === '1';
 const OPEN_PATHS = new Set(['/api/health']);   // the platform health check — nothing else is open
 
-if (!SITE_PASSWORD) {
+if (!SITE_PASSWORD && !OPEN_ACCESS) {
   console.error('\n[station] ✗ VULTRON_SITE_PASSWORD is not set.');
   console.error('  A hosted station is the owner\'s agent with the owner\'s keys: the door stays shut rather than');
   console.error('  serving that to anyone who finds the URL. Set it (12+ characters) and start again.\n');
   process.exit(78);   // EX_CONFIG
 }
-if (SITE_PASSWORD.length < 12) {
+if (!OPEN_ACCESS && SITE_PASSWORD.length < 12) {
   console.error('[station] ! VULTRON_SITE_PASSWORD is shorter than 12 characters — this door faces the internet.');
 }
 
@@ -79,7 +82,7 @@ function upstreamHeaders(headers) {
 const agent = new http.Agent({ keepAlive: true, maxSockets: 128 });
 
 const server = http.createServer((req, res) => {
-  if (!OPEN_PATHS.has(pathOf(req.url)) && !authorized(req)) {
+  if (!OPEN_ACCESS && !OPEN_PATHS.has(pathOf(req.url)) && !authorized(req)) {
     res.writeHead(401, {
       'WWW-Authenticate': 'Basic realm="vultron", charset="UTF-8"',
       'Content-Type': 'text/plain; charset=utf-8',
@@ -106,7 +109,7 @@ const server = http.createServer((req, res) => {
    handshake, so a handshake is admitted with either the door's credentials or the page's own station
    token — the engine then applies its own gate to the socket. */
 server.on('upgrade', (req, socket, head) => {
-  if (!authorized(req) && !req.headers['x-vultron-token']) {
+  if (!OPEN_ACCESS && !authorized(req) && !req.headers['x-vultron-token']) {
     socket.write('HTTP/1.1 401 Unauthorized\r\nConnection: close\r\nContent-Length: 0\r\n\r\n');
     return socket.destroy();
   }
@@ -165,7 +168,9 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
   }
   server.listen(EDGE_PORT, '0.0.0.0', () => {
     console.log('\n[station] hosted station ready');
-    console.log('  door      http://0.0.0.0:' + EDGE_PORT + ' (HTTP Basic, user "' + SITE_USER + '")');
+    console.log('  door      http://0.0.0.0:' + EDGE_PORT + (OPEN_ACCESS
+      ? ' (OPEN — no password: anyone with this URL drives this station)'
+      : ' (HTTP Basic, user "' + SITE_USER + '")'));
     console.log('  engine    http://' + ENGINE_HOST + ':' + ENGINE_PORT + ' (loopback only, token-gated)');
     console.log('  health    /api/health (unauthenticated, for the platform check)\n');
   });

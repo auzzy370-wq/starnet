@@ -25,11 +25,15 @@ process.chdir(ROOT);
 const DATA = process.env.VULTRON_DATA_DIR || path.join(process.env.HOME || '/home/container', 'vultron-data');
 const WORKSPACES = path.join(DATA, 'workspaces');
 const PASS_FILE = path.join(DATA, 'station-password');
+/* Creating this file turns the password door off; deleting it turns it back on. A file rather than an env
+   var because the egg's variables are not writable from the panel API, and because it survives restarts. */
+const OPEN_FILE = path.join(DATA, 'OPEN-ACCESS');
+const OPEN = fs.existsSync(OPEN_FILE);
 const PORT = process.env.SERVER_PORT || process.env.PORT || '8080';
 
 fs.mkdirSync(WORKSPACES, { recursive: true });
 
-if (!fs.existsSync(PASS_FILE) || fs.statSync(PASS_FILE).size === 0) {
+if (!OPEN && (!fs.existsSync(PASS_FILE) || fs.statSync(PASS_FILE).size === 0)) {
   // base64url: no shell quoting hazards, no characters that break an HTTP Basic header
   fs.writeFileSync(PASS_FILE, crypto.randomBytes(24).toString('base64url'), { mode: 0o600 });
   console.log('[enzonic] generated the site password at ' + PASS_FILE);
@@ -39,7 +43,8 @@ const env = Object.assign({}, process.env, {
   HOME: DATA,
   VULTRON_WORKSPACES: WORKSPACES,
   VULTRON_SITE_USER: process.env.VULTRON_SITE_USER || 'vultron',
-  VULTRON_SITE_PASSWORD: fs.readFileSync(PASS_FILE, 'utf8').trim(),
+  VULTRON_SITE_PASSWORD: OPEN ? '' : fs.readFileSync(PASS_FILE, 'utf8').trim(),
+  VULTRON_ALLOW_UNAUTHENTICATED: OPEN ? '1' : '0',
   NODE_ENV: 'production',
   PORT
 });
@@ -75,7 +80,8 @@ if (!ptyOk()) {
 }
 
 console.log('[enzonic] data      ' + DATA);
-console.log('[enzonic] password  ' + PASS_FILE + '   (user is ' + env.VULTRON_SITE_USER + ')');
+if (OPEN) console.log('[enzonic] password  NONE — ' + OPEN_FILE + ' exists, the station is open to anyone with the URL');
+else console.log('[enzonic] password  ' + PASS_FILE + '   (user is ' + env.VULTRON_SITE_USER + ')');
 console.log('[enzonic] port      ' + PORT);
 
 const child = spawn(process.execPath, [path.join(ROOT, 'scripts', 'station-serve.js')], { stdio: 'inherit', env });
