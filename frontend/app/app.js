@@ -5829,21 +5829,33 @@ const App = (() => {
        its key is never papered over. */
     const TOKEN_BOOT = 'window.__VULTRON_API_TOKEN__=';
     const adoptFreshKey = async () => {
-      let html = '';
+      let fresh = '';
+      // The station's own key, on a request nothing can cache: this is what a document from a page cache needs.
       try {
-        const res = await fetch('/', { cache: 'no-store', credentials: 'same-origin' });
-        if (!res || !res.ok) return '';
-        html = String((await res.text()) || '');
-      } catch (_) { return ''; }                     // no page to read: the station is down, not rotated
-      // The station injects JSON.stringify(key) — a bare quoted hex string, no escapes — so read the literal directly
-      // rather than matching it. (A quote inside a regex character class also defeats test/_fnbody.js's brace scan.)
-      const at = html.indexOf(TOKEN_BOOT);
-      if (at < 0) return '';
-      const lit = html.slice(at + TOKEN_BOOT.length, at + TOKEN_BOOT.length + 200);
-      if (lit.charAt(0) !== '"') return '';          // withheld from this peer, or no key at all
-      const end = lit.indexOf('"', 1);
-      if (end < 2) return '';
-      const fresh = lit.slice(1, end);
+        const keyRes = await fetch('/api/session-key', { cache: 'no-store', credentials: 'same-origin' });
+        if (keyRes && keyRes.ok && typeof keyRes.json === 'function') {
+          const keyJson = await keyRes.json().catch(() => null);
+          fresh = (keyJson && keyJson.token) ? String(keyJson.token) : '';
+        }
+      } catch (_) { fresh = ''; }
+      if (!fresh) {
+        // An older station has no such route (404): read the key out of the page it is serving instead.
+        let html = '';
+        try {
+          const res = await fetch('/', { cache: 'no-store', credentials: 'same-origin' });
+          if (!res || !res.ok) return '';
+          html = String((await res.text()) || '');
+        } catch (_) { return ''; }                   // no page to read: the station is down, not rotated
+        // The station injects JSON.stringify(key) — a bare quoted hex string, no escapes — so read the literal
+        // directly. (A quote inside a regex character class also defeats test/_fnbody.js's brace scan.)
+        const at = html.indexOf(TOKEN_BOOT);
+        if (at < 0) return '';
+        const lit = html.slice(at + TOKEN_BOOT.length, at + TOKEN_BOOT.length + 200);
+        if (lit.charAt(0) !== '"') return '';        // withheld from this peer, or no key at all
+        const end = lit.indexOf('"', 1);
+        if (end < 2) return '';
+        fresh = lit.slice(1, end);
+      }
       const root = (typeof window !== 'undefined') ? window : null;
       const held = root ? String(root.__VULTRON_API_TOKEN__ || '') : '';
       if (!fresh || fresh === held) return '';       // no rotation proven: this is not a stale-key symptom
@@ -6306,6 +6318,22 @@ const App = (() => {
     // the agent back after a browser-cache wipe (local gone, the sidecar still holds it) and refreshes the
     // cache to match. Best-effort: an unreachable sidecar just falls back to the local cache.
     if (typeof CloudSave !== 'undefined') CloudSave.installUnloadFlush();
+    /* A CACHED DOCUMENT'S KEY — the root of "it works in a fresh browser and never on my phone". The per-launch key
+       arrived only inside the HTML, so any document a browser kept (its page cache, a back/forward-cache restore, a tab
+       opened before a restart) boots with a DEAD key: its first pull is refused, the reload it tries is handed the same
+       cached page, and it can never recover. Ask the station for the key on its own uncached request instead. A station
+       too old to have the route answers 404 and this is skipped, leaving the inline key in force. */
+    try {
+      const keyRes = await fetch('/api/session-key', { cache: 'no-store', credentials: 'same-origin' });
+      if (keyRes && keyRes.ok && typeof keyRes.json === 'function') {
+        const keyJson = await keyRes.json().catch(() => null);
+        const freshKey = (keyJson && keyJson.token) ? String(keyJson.token) : '';
+        if (freshKey && freshKey !== String(window.__VULTRON_API_TOKEN__ || '')) {
+          window.__VULTRON_API_TOKEN__ = freshKey;
+          try { if (typeof Harness !== 'undefined' && Harness.setToken) Harness.setToken(freshKey); } catch (_) {}
+        }
+      }
+    } catch (_) {}
     const saved = (typeof CloudSave !== 'undefined') ? await CloudSave.reconcile(Save.load()) : Save.load();
     // FORWARD-VERSION GATE (P0.3), step 2 — a durable REMOTE from a newer build. reconcile() refuses to adopt it
     // into the cache and hands back a future-save sentinel instead of a resumable doc. Same hard stop: gate, return,

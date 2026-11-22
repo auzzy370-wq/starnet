@@ -70,7 +70,10 @@ function pathOf(url) { const u = String(url || ''); const i = u.indexOf('?'); re
                              against the in-memory pending map) is its fence, exactly like the Spotify callback
    NOT exempt, but header-less: GET/HEAD /api/file (link/tab open), GET /api/channels/events (EventSource) and
    POST /api/save (unload beacon) may present a ?ticket= scoped to exactly that request — see ticketOk below. */
-const TOKEN_EXEMPT = new Set(['/api/key', '/api/channels/token', '/api/health', '/api/spotify/callback', '/api/connectors/oauth/callback']);
+/* /api/session-key is exempt for the same reason the page's own HTML needs no token to be read: it IS where the key comes
+   from. It answers only a process of this OS user (sidecar/peerowner.js), or through an OPEN-ACCESS door, exactly as the
+   inline injection does — and being uncached it is what lets a document served from a browser's page cache still boot. */
+const TOKEN_EXEMPT = new Set(['/api/key', '/api/channels/token', '/api/session-key', '/api/health', '/api/spotify/callback', '/api/connectors/oauth/callback']);
 function requiresApiToken(req) {
   if (!req || req.method === 'OPTIONS') return false;
   const p = pathOf(req.url);

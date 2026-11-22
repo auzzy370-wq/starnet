@@ -13636,6 +13636,21 @@ const ROUTES = [
     if (f) { res.writeHead(503, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' }); return res.end(processFault.healthLine()); }
     res.writeHead(200); return res.end('ok');
   } },
+  /* THE PAGE'S KEY, WITHOUT THE PAGE. The per-launch key used to reach a browser only inside the HTML it served, so any
+     document that came from a cache — a mobile browser's page cache, a back/forward-cache restore, a tab opened before a
+     restart — carried a DEAD key and could never recover: every request was refused and the reload it attempted handed
+     back the same cached page. Handing the key out on its own uncached request means the key can never be stale, whatever
+     the age of the document asking. Same rule as the injection: a process of THIS OS user, never a stranger.
+     The body names a refusal rather than lying with an empty token, so a page can say why it has no key. */
+  { m: 'GET', exact: '/api/session-key', h: async (req, res) => {
+    let peer = { ok: false, reason: 'unknown peer' };
+    try {
+      const sock = req.socket || {};
+      peer = await peerOwnerCheck({ remoteAddress: sock.remoteAddress, remotePort: sock.remotePort, localAddress: sock.localAddress, localPort: sock.localPort });
+    } catch (_) { peer = { ok: false, reason: 'peer lookup failed' }; }
+    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+    return res.end(JSON.stringify(peer.ok ? { token: API_TOKEN } : { withheld: String(peer.reason || 'not the owner') }));
+  } },
   { m: 'GET', exact: '/api/execution-profiles', h: (req, res) => {
     const backend = executionEnvironment.describe();
     const agents = [...agentRoster].map(([agentId, rec]) => {

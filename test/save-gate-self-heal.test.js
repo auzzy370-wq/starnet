@@ -23,7 +23,7 @@ const escAlias = (/^  const esc = [^\n]*;$/m.exec(appSrc) || [])[0];
 A.ok(escAlias && escAlias.includes('U.esc('), 'app.js still defines the module-level esc alias over the one U.esc owner');
 const tick = () => new Promise(r => setImmediate(r));
 
-function boot({ reason = 'forbidden', door = true, desktop = false, page = '', held = '', clock = { now: 1_000_000 } } = {}) {
+function boot({ reason = 'forbidden', door = true, desktop = false, page = '', held = '', keyEndpoint = '', clock = { now: 1_000_000 } } = {}) {
   const nodes = new Map();
   const el = id => { if (!nodes.has(id)) nodes.set(id, { textContent: '', innerHTML: '', hidden: false, disabled: false, onclick: null }); return nodes.get(id); };
   const store = new Map();
@@ -37,7 +37,14 @@ function boot({ reason = 'forbidden', door = true, desktop = false, page = '', h
     Date: { now: () => clock.now },
     sessionStorage: { getItem: k => (store.has(k) ? store.get(k) : null), setItem: (k, v) => store.set(k, String(v)), removeItem: k => store.delete(k) },
     window: { __VULTRON_API_TOKEN__: held },
-    fetch: async () => { if (!door) throw new Error('door down'); return { ok: true, status: 200, text: async () => page }; },
+    fetch: async (u) => {
+      if (!door) throw new Error('door down');
+      if (u === '/api/session-key') {
+        if (!keyEndpoint) return { ok: false, status: 404, json: async () => null };
+        return { ok: true, status: 200, json: async () => ({ token: keyEndpoint }) };
+      }
+      return { ok: true, status: 200, text: async () => page };
+    },
     Harness: { engineState: async () => ({ reason: '' }) },
     CloudSave: { reconcile: async () => ({ unknown: true, reason }), isUnknownSentinel: r => !!r && r.unknown === true },
     Diag: { copy(o) { o.onDone(true, 'fixture'); } }
@@ -116,6 +123,14 @@ function boot({ reason = 'forbidden', door = true, desktop = false, page = '', h
   await tick();
   await sameKey.retry();
   assert.equal(sameKey.seen.reloads, 1, 'an unchanged key is not a restart; the reload path still runs');
+
+  // 11. the key on its OWN request: a document from a page cache gets a live key even when its HTML can never be
+  //     re-fetched, which is the phone case (a reload hands back the same cached page, forever).
+  const viaEndpoint = boot({ reason: 'unreachable', held: KEY_OLD, keyEndpoint: KEY_NEW });
+  await tick();
+  await viaEndpoint.retry();
+  assert.equal(viaEndpoint.seen.reloads, 0, 'the station key is taken from /api/session-key without a reload');
+  assert.equal(viaEndpoint.ctx.window.__VULTRON_API_TOKEN__, KEY_NEW, 'and that is the key the page now holds');
 
   A.report('save gate self-heal: reload on a restarted station, bounded, never while down or under the shell');
 })().catch(e => { console.error(e); process.exitCode = 1; });
