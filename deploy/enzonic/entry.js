@@ -99,6 +99,18 @@ const post = (p, payload, headers, timeoutMs) => new Promise((res, rej) => {
 });
 const open = post;
 
+/* HTTPS. The station is served over plain http on an allocation port, so every browser calls the origin insecure and withholds
+   the microphone and the other [SecureContext] APIs. Once the door answers, dial out through a free Cloudflare quick tunnel:
+   the certificate lives in front of the port, the station is untouched, and the https hostname is written to boot.log and
+   ~/tunnel-url.txt. It is started once per launch; VULTRON_TUNNEL=0 turns it off. */
+let tunnelStarted = false;
+function startTunnel() {
+  if (tunnelStarted) return;
+  tunnelStarted = true;
+  try { require(path.join(DIR, 'deploy', 'enzonic', 'tunnel.js'))({ log, port: PORT, env: process.env }); }
+  catch (e) { log('TUNNEL unavailable ' + e.message); }
+}
+
 /* ONE-OFF DIAGNOSTIC. A file beside the station's state asks for it, and it is deleted after the answer is written, so a
    normal boot pays nothing. Used to settle a question about a provider without a shell on the box. */
 async function selftest(token) {
@@ -149,6 +161,7 @@ async function flow() {
       if (OPEN) {
         log('CHECK /api/health=' + health.status + ' /(open, no password)=' + door.status);
         if (health.status === 200 && door.status === 200) {
+          startTunnel();
           const t = await flow().catch(e => { log('FLOW error ' + e.message); return ''; });
           await selftest(t).catch(e => log('SELFTEST error ' + e.message));
           return;
