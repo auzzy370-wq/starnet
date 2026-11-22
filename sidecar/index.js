@@ -29243,10 +29243,13 @@ async function handleOAuthPoll(req, res, id) {
     entry.tokens = Object.assign({}, poll, entry.deviceId ? { device_id: entry.deviceId } : {}, pending.region ? { region: pending.region } : {});
     if (pending.region) { entry.region = pending.region; entry.auth = auth; }
     entry.authDead = null;
-    saveOAuthTokens(id, entry.tokens);
+    // The return value matters: a sign-in kept only in memory works until the station restarts and then looks exactly
+    // like a sign-in that was dropped. Report the truth to the page (it names it on the row) and log it loudly.
+    const stored = saveOAuthTokens(id, entry.tokens);
     entry.pending.delete(login_id);
-    console.log('  · ' + oauthLabel(id) + ' subscription connected (device OAuth) — agents can now run on it');
-    json(200, { status: 'connected' });
+    if (stored) console.log('  · ' + oauthLabel(id) + ' subscription connected (device OAuth) — agents can now run on it');
+    else console.error('  · ' + oauthLabel(id) + ' subscription connected but NOT SAVED (' + (entry.persistError || 'unknown') + ') — it works until the station restarts, then this provider will look disconnected again');
+    json(200, { status: 'connected', persisted: stored, persistError: stored ? '' : String(entry.persistError || 'the sign-in could not be written to disk') });
   } catch (e) {
     entry.pending.delete(login_id);
     json(502, { status: 'error', error: (e && e.message) || (oauthLabel(id) + ' sign-in failed'), code: (e && e.code) || 'device_code_poll_error' });
