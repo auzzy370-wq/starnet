@@ -3,15 +3,17 @@
 
    The egg runs exactly one file, /home/container/index.js, with `node`:
        export PORT=${SERVER_PORT}; ... node index.js
-   and it keeps /home/container as the app's home. So this shim does the three things that have to happen
-   before the station can run, then gets out of the way:
+   and it keeps /home/container as the app's home. So this shim does the things that have to happen before the
+   station can run, then gets out of the way:
 
      1. clone the branch once into ./starnet (re-cloned if it is missing or broken),
-     2. make sure node-pty has a compiled binary (the terminal; see boot.js for why npm 12 needs a nudge),
-     3. hand over to deploy/enzonic/boot.js, which owns the data dir, password, port and the engine.
+     2. pull on later boots, so a restart is a deploy,
+     3. make sure node-pty has a compiled binary (the terminal; see boot.js for why npm 12 needs a nudge),
+     4. hand over to deploy/enzonic/boot.js, which owns the data dir, password, port and the engine,
+     5. replay the browser's own boot requests from inside the box, because an allocation port cannot be
+        reached from most of the internet and `/api/save` is where a hosted station actually breaks.
 
-   It also appends to /home/container/boot.log, because the panel's console is the only other window into the
-   process and a log file survives restarts and can be read from the File Manager.
+   It appends to /home/container/boot.log, readable in the File Manager.
 */
 'use strict';
 
@@ -63,33 +65,51 @@ log('starting the station on port ' + PORT);
 const child = spawn(process.execPath, [path.join(DIR, 'deploy', 'enzonic', 'boot.js')], { cwd: DIR, stdio: ['ignore', fd, fd], env: process.env });
 child.on('exit', (code, sig) => log('station exited ' + (sig || code)));
 
-// Self-check from inside the box: an allocation port is not reachable from most of the internet, so the only
-// reliable proof the door answers is a request from here. Result goes to boot.log.
-const probe = (p, headers) => new Promise((res, rej) => {
-  const q = http.get({ host: '127.0.0.1', port: PORT, path: p, timeout: 5000, headers: headers || {} }, r => { r.resume(); res(r.statusCode); });
+/* ---- from here on: prove the app works from inside the box -------------------------------------------- */
+const get = (p, headers) => new Promise((res, rej) => {
+  const q = http.get({ host: '127.0.0.1', port: PORT, path: p, timeout: 12000, headers: headers || {} }, r => {
+    let body = '';
+    r.setEncoding('utf8');
+    r.on('data', d => { if (body.length < 500000) body += d; });
+    r.on('end', () => res({ status: r.statusCode, body }));
+  });
   q.on('error', rej);
   q.on('timeout', () => { q.destroy(); rej(new Error('timeout')); });
 });
+
+/* The page's real boot sequence, in order: load the document, take the per-launch station key out of it, then
+   use that key on /api/save (header x-vultron-token, same origin). If any step fails the app shows SAVE-NET
+   and the station looks dead even though it is running — so every boot records what each step actually did. */
+async function flow() {
+  const page = await get('/');
+  const m = page.body.match(/__VULTRON_API_TOKEN__=("(?:[^"\\]|\\.)*")/);
+  const token = m ? JSON.parse(m[1]) : '';
+  const withheld = /__VULTRON_TOKEN_WITHHELD__/.test(page.body);
+  log('FLOW page=' + page.status + ' bytes=' + page.body.length + ' token=' + (token ? token.length + ' chars' : 'MISSING') + (withheld ? ' WITHHELD' : ''));
+  const t0 = Date.now();
+  let save;
+  try { save = await get('/api/save', token ? { 'x-vultron-token': token } : {}); }
+  catch (e) { log('FLOW /api/save failed after ' + (Date.now() - t0) + 'ms — ' + e.message); return; }
+  log('FLOW /api/save=' + save.status + ' in ' + (Date.now() - t0) + 'ms ' + JSON.stringify(save.body.slice(0, 160)));
+  const bare = await get('/api/save').catch(e => ({ status: 'error ' + e.message }));
+  log('FLOW /api/save without token=' + bare.status);
+}
+
 (async () => {
   for (let i = 0; i < 30; i++) {
     await new Promise(r => setTimeout(r, 4000));
     try {
-      const health = await probe('/api/health');
-      const door = await probe('/');
+      const health = await get('/api/health');
+      const door = await get('/');
       if (OPEN) {
-        log('CHECK /api/health=' + health + ' /(open, no password)=' + door);
-        if (health === 200 && door === 200) return;
+        log('CHECK /api/health=' + health.status + ' /(open, no password)=' + door.status);
+        if (health.status === 200 && door.status === 200) { await flow().catch(e => log('FLOW error ' + e.message)); return; }
         continue;
       }
-      // The password file sits next to this script, so the check proves the station accepts what was written
-      // — the one thing a person needs to actually get in. Only the status code is logged, never the value.
-      let authed = 'no-password-file';
-      try {
-        const pw = fs.readFileSync(PW_FILE, 'utf8').trim();
-        authed = await probe('/', { authorization: 'Basic ' + Buffer.from('vultron:' + pw).toString('base64') });
-      } catch (e) { /* keep the marker */ }
-      log('CHECK /api/health=' + health + ' /(no auth)=' + door + ' /(auth)=' + authed);
-      if (health === 200 && authed === 200) return;
+      const auth = 'Basic ' + Buffer.from((process.env.VULTRON_SITE_USER || 'vultron') + ':' + fs.readFileSync(PW_FILE, 'utf8').trim()).toString('base64');
+      const authed = await get('/', { authorization: auth });
+      log('CHECK /api/health=' + health.status + ' /(no auth)=' + door.status + ' /(auth)=' + authed.status);
+      if (health.status === 200 && authed.status === 200) { await flow().catch(e => log('FLOW error ' + e.message)); return; }
     } catch (e) { if (i % 5 === 0) log('waiting: ' + e.message); }
   }
   log('CHECK gave up');
