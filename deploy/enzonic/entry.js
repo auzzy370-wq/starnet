@@ -128,6 +128,11 @@ async function flow() {
   log('FLOW /api/save=' + save.status + ' in ' + (Date.now() - t0) + 'ms ' + JSON.stringify(save.body.slice(0, 160)));
   const bare = await get('/api/save').catch(e => ({ status: 'error ' + e.message }));
   log('FLOW /api/save without token=' + bare.status);
+  /* The page's REAL pull carries ?agent= (frontend/app/cloudsave.js) and runs under a timeout, so a station can answer a
+     bare /api/save in 13 ms and still park the gate on SAVE-NET. Measure the URL the gate actually uses. */
+  const t1 = Date.now();
+  const pull = await get('/api/save?agent=agent', token ? { 'x-vultron-token': token } : {}).catch(e => ({ status: 'error ' + e.message, body: '' }));
+  log('FLOW /api/save?agent=agent=' + pull.status + ' in ' + (Date.now() - t1) + 'ms ' + JSON.stringify(String(pull.body || '').slice(0, 80)));
   // Proves the box is serving the COMMITTED frontend, not an older checkout: this marker only exists in the
   // build that self-heals the save gate after a restart.
   const js = await get('/app/app.js').catch(e => ({ status: 'error', body: '' }));

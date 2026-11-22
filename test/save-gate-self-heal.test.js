@@ -23,7 +23,7 @@ const escAlias = (/^  const esc = [^\n]*;$/m.exec(appSrc) || [])[0];
 A.ok(escAlias && escAlias.includes('U.esc('), 'app.js still defines the module-level esc alias over the one U.esc owner');
 const tick = () => new Promise(r => setImmediate(r));
 
-function boot({ reason = 'forbidden', door = true, desktop = false, clock = { now: 1_000_000 } } = {}) {
+function boot({ reason = 'forbidden', door = true, desktop = false, page = '', held = '', clock = { now: 1_000_000 } } = {}) {
   const nodes = new Map();
   const el = id => { if (!nodes.has(id)) nodes.set(id, { textContent: '', innerHTML: '', hidden: false, disabled: false, onclick: null }); return nodes.get(id); };
   const store = new Map();
@@ -36,7 +36,8 @@ function boot({ reason = 'forbidden', door = true, desktop = false, clock = { no
     location: { reload() { seen.reloads++; } },
     Date: { now: () => clock.now },
     sessionStorage: { getItem: k => (store.has(k) ? store.get(k) : null), setItem: (k, v) => store.set(k, String(v)), removeItem: k => store.delete(k) },
-    fetch: async () => { if (!door) throw new Error('door down'); return { ok: true }; },
+    window: { __VULTRON_API_TOKEN__: held },
+    fetch: async () => { if (!door) throw new Error('door down'); return { ok: true, status: 200, text: async () => page }; },
     Harness: { engineState: async () => ({ reason: '' }) },
     CloudSave: { reconcile: async () => ({ unknown: true, reason }), isUnknownSentinel: r => !!r && r.unknown === true },
     Diag: { copy(o) { o.onDone(true, 'fixture'); } }
@@ -99,6 +100,22 @@ function boot({ reason = 'forbidden', door = true, desktop = false, clock = { no
   await recovered.retry();
   assert.equal(recovered.seen.reloads, 2, 'a definitive answer still reloads into the station');
   assert.equal(recovered.store.has('vultron.gate.selfheal'), false, 'and clears the reload budget for the next restart');
+
+  // 9. IN PLACE: the served page carries a DIFFERENT key → adopt it and retry, with no reload at all. This is the
+  //    path a phone needs: a reload can be swallowed, restored from a back/forward cache, or run out of budget.
+  const KEY_OLD = 'a'.repeat(64), KEY_NEW = 'b'.repeat(64);
+  const rotating = boot({ reason: 'unreachable', held: KEY_OLD, page: '<script>window.__VULTRON_API_TOKEN__="' + KEY_NEW + '";</script>' });
+  await tick();
+  await rotating.retry();
+  assert.equal(rotating.seen.reloads, 0, 'a rotated key is adopted in place instead of reloading');
+  assert.equal(rotating.ctx.window.__VULTRON_API_TOKEN__, KEY_NEW, 'the page now holds the key the station is serving');
+  assert.match(rotating.el('unreachable-status').textContent, /picked up the station/, 'and it says what it did');
+
+  // 10. the SAME key back proves nothing: no false recovery, the reload path still runs
+  const sameKey = boot({ reason: 'forbidden', held: KEY_OLD, page: '<script>window.__VULTRON_API_TOKEN__="' + KEY_OLD + '";</script>' });
+  await tick();
+  await sameKey.retry();
+  assert.equal(sameKey.seen.reloads, 1, 'an unchanged key is not a restart; the reload path still runs');
 
   A.report('save gate self-heal: reload on a restarted station, bounded, never while down or under the shell');
 })().catch(e => { console.error(e); process.exitCode = 1; });
