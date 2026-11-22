@@ -97,11 +97,14 @@ module.exports = async function selftest({ log, post, open, token, cfg, dataDir 
 
   /* 3 — a real agent turn through the station, so the answer is not an inference about the adapter. */
   try {
-    const run = await open('/api/run', { provider, model, messages: [{ role: 'user', content: prompt }], agentId: 'agent' }, auth, 90000);
+    const turnMs = Number(cfg && cfg.turnMs) || 90000;
+    const run = await open('/api/run', { provider, model, messages: [{ role: 'user', content: prompt }], agentId: 'agent' }, auth, turnMs);
     const body = run.body || '';
-    say('turn http=' + run.status + ' bytes=' + body.length
-      + ' tool=' + /tool/i.test(body) + ' approval=' + /approv/i.test(body) + ' saidError=' + /"error"|error:/i.test(body)
-      + ' head="' + clip(body, 300) + '"');
+    const names = [...new Set((body.match(/"name":"[a-zA-Z_.-]+"/g) || []).map(s => s.slice(8, -1)))].slice(0, 14);
+    say('turn http=' + run.status + ' bytes=' + body.length + ' after=' + turnMs + 'ms'
+      + ' events=' + (names.join(',') || 'none')
+      + ' toolCall=' + /tool_calls|tool\.call|"fs_/i.test(body) + ' approval=' + /approv/i.test(body) + ' saidError=' + /"error"|error:/i.test(body)
+      + ' head="' + clip(body, 240) + '"');
   } catch (e) {
     say('turn FAILED ' + e.message);
   }
