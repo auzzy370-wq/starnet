@@ -1676,6 +1676,7 @@ test/run-stop-handles.test.js
 
 test/installation-integrity.test.js
 test/save-recovery-diagnosis.test.js
+test/save-gate-self-heal.test.js
 
 # Customer-backed memory and evaluated skill recovery
 test/trusted-learning.test.js

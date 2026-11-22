@@ -5803,6 +5803,34 @@ const App = (() => {
       else setStatus(BROWSER_HINT);
     }
     probeDegraded().then(r => { if (r) setStatus(r); });   // a live-but-degraded sidecar names its reason before the first poll
+    /* SELF-HEAL AFTER A RESTART (hosted stations). The engine mints a NEW per-launch key every time it starts,
+       and this document still carries the old one — so every save pull is refused (or refused at the door) until
+       the page itself is re-fetched. That is a definitive answer this document can never reach, which is exactly
+       why a restarted station parked on this screen until somebody reloaded by hand.
+
+       So reload ourselves, but only when reloading can actually help (the door answers /api/health, so a fresh
+       page gets a fresh key), only for the two restart-shaped reasons, and bounded + rate-limited through
+       sessionStorage — which survives the reload. A station that is genuinely down, or a save that is genuinely
+       unreadable, never reloads and keeps the 5s retry and the manual controls. */
+    const SELF_HEAL_KEY = 'vultron.gate.selfheal';
+    const SELF_HEAL_MAX = 6, SELF_HEAL_GAP_MS = 15000;
+    const readSelfHeal = () => { try { return JSON.parse(sessionStorage.getItem(SELF_HEAL_KEY) || '{}') || {}; } catch (_) { return {}; } };
+    const clearSelfHeal = () => { try { sessionStorage.removeItem(SELF_HEAL_KEY); } catch (_) {} };
+    const doorAnswers = async () => {
+      try { const res = await fetch('/api/health', { cache: 'no-store' }); return !!res.ok; } catch (_) { return false; }
+    };
+    const selfHeal = async () => {
+      if (core) return false;                        // desktop: the shell owns restarts (button below), never reload under it
+      if (!(await doorAnswers())) return false;      // nothing to pick up yet
+      const state = readSelfHeal();
+      const n = Number(state.n) || 0;
+      if (n >= SELF_HEAL_MAX) return false;          // give up cleanly, keep the manual exits
+      if (Date.now() - (Number(state.at) || 0) < SELF_HEAL_GAP_MS) return false;   // never a reload loop
+      try { sessionStorage.setItem(SELF_HEAL_KEY, JSON.stringify({ at: Date.now(), n: n + 1 })); } catch (_) {}
+      setStatus('the station is back — reloading to pick up its new key (' + (n + 1) + ' of ' + SELF_HEAL_MAX + ')…');
+      try { location.reload(); } catch (_) { return false; }
+      return true;
+    };
     const attempt = async () => {
       if (checking || resetting || browserResetBlocked) return;
       checking = true;
@@ -5815,10 +5843,14 @@ const App = (() => {
       // re-injected by a fresh page load, and reload re-runs every gate in order.
       if (!CloudSave.isUnknownSentinel(r)) {
         if (timer) clearInterval(timer);
+        clearSelfHeal();                             // a working station must not carry a reload budget forward
         setStatus('reconnected — resuming…');
         try { location.reload(); } catch (_) {}
         return;
       }
+      // checking:false on the way out — if this reload is a no-op (a webview that swallows it), the 5s retry
+      // must still be able to run rather than sit behind a latch nothing will ever clear.
+      if ((r.reason === 'forbidden' || r.reason === 'unreachable') && await selfHeal()) { checking = false; return; }
       paintDiagnosis(r.reason);
       const degraded = await probeDegraded();
       const unreadable = r.reason === 'unreadable', cacheFailed = r.reason === 'cache';

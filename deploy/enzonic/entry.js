@@ -93,6 +93,10 @@ async function flow() {
   log('FLOW /api/save=' + save.status + ' in ' + (Date.now() - t0) + 'ms ' + JSON.stringify(save.body.slice(0, 160)));
   const bare = await get('/api/save').catch(e => ({ status: 'error ' + e.message }));
   log('FLOW /api/save without token=' + bare.status);
+  // Proves the box is serving the COMMITTED frontend, not an older checkout: this marker only exists in the
+  // build that self-heals the save gate after a restart.
+  const js = await get('/app/app.js').catch(e => ({ status: 'error', body: '' }));
+  log('FLOW app.js=' + js.status + ' selfHeal=' + /vultron\.gate\.selfheal/.test(js.body));
 }
 
 (async () => {
