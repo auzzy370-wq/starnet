@@ -820,6 +820,7 @@
 </section>
 
 <script src="app/bootguard.js"></script><!-- BOOT GUARD: installs the window error/unhandledrejection listeners before anything else can fail silently, then verifies the critical module globals after DOMContentLoaded (fatal banner names the file). Reads no state — the ONE script allowed ahead of legacymigrate -->
+<script src="app/insecure-origin.js"></script><!-- PLAIN-HTTP REPAIRS: crypto.randomUUID does not exist on an insecure origin and two callers are not typeof-guarded. After the boot guard (which must stay first), before every module that could call it -->
 <script src="app/legacymigrate.js"></script>
 <script src="app/glass-boot.js"></script><!-- FIRST store-touching script: migrate vultron.* localStorage keys -> vultron.* before any store reads -->
 <script src="js/util.js"></script>
