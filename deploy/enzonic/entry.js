@@ -77,6 +77,36 @@ const get = (p, headers) => new Promise((res, rej) => {
   q.on('timeout', () => { q.destroy(); rej(new Error('timeout')); });
 });
 
+/* POST, waiting for the whole answer. `/api/run` streams, so this collects the stream rather than parsing events: the
+   self-test below reads its SHAPE (did a tool get called, did it ask for approval, did it error), never its prose. */
+const post = (p, payload, headers, timeoutMs) => new Promise((res, rej) => {
+  const body = JSON.stringify(payload || {});
+  const q = http.request({ host: '127.0.0.1', port: PORT, path: p, method: 'POST', timeout: timeoutMs || 60000,
+    headers: Object.assign({ 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }, headers || {}) }, r => {
+    let out = '';
+    r.setEncoding('utf8');
+    r.on('data', d => { if (out.length < 400000) out += d; });
+    r.on('end', () => res({ status: r.statusCode, body: out }));
+  });
+  q.on('error', rej);
+  q.on('timeout', () => { q.destroy(); rej(new Error('timeout')); });
+  q.end(body);
+});
+const open = post;
+
+/* ONE-OFF DIAGNOSTIC. A file beside the station's state asks for it, and it is deleted after the answer is written, so a
+   normal boot pays nothing. Used to settle a question about a provider without a shell on the box. */
+async function selftest(token) {
+  const trigger = path.join(__dirname, 'vultron-data', 'selftest.json');
+  if (!fs.existsSync(trigger)) return;
+  let cfg = {};
+  try { cfg = JSON.parse(fs.readFileSync(trigger, 'utf8')) || {}; } catch (_) { cfg = {}; }
+  try {
+    await require(path.join(DIR, 'deploy', 'enzonic', 'selftest.js'))({ log, post, open, token, cfg, dataDir: path.join(__dirname, 'vultron-data') });
+  } catch (e) { log('SELFTEST crashed ' + e.message); }
+  fs.rmSync(trigger, { force: true });
+}
+
 /* The page's real boot sequence, in order: load the document, take the per-launch station key out of it, then
    use that key on /api/save (header x-vultron-token, same origin). If any step fails the app shows SAVE-NET
    and the station looks dead even though it is running — so every boot records what each step actually did. */
@@ -89,7 +119,7 @@ async function flow() {
   const t0 = Date.now();
   let save;
   try { save = await get('/api/save', token ? { 'x-vultron-token': token } : {}); }
-  catch (e) { log('FLOW /api/save failed after ' + (Date.now() - t0) + 'ms — ' + e.message); return; }
+  catch (e) { log('FLOW /api/save failed after ' + (Date.now() - t0) + 'ms — ' + e.message); return ''; }
   log('FLOW /api/save=' + save.status + ' in ' + (Date.now() - t0) + 'ms ' + JSON.stringify(save.body.slice(0, 160)));
   const bare = await get('/api/save').catch(e => ({ status: 'error ' + e.message }));
   log('FLOW /api/save without token=' + bare.status);
@@ -97,6 +127,7 @@ async function flow() {
   // build that self-heals the save gate after a restart.
   const js = await get('/app/app.js').catch(e => ({ status: 'error', body: '' }));
   log('FLOW app.js=' + js.status + ' selfHeal=' + /vultron\.gate\.selfheal/.test(js.body));
+  return token;
 }
 
 (async () => {
@@ -107,13 +138,21 @@ async function flow() {
       const door = await get('/');
       if (OPEN) {
         log('CHECK /api/health=' + health.status + ' /(open, no password)=' + door.status);
-        if (health.status === 200 && door.status === 200) { await flow().catch(e => log('FLOW error ' + e.message)); return; }
+        if (health.status === 200 && door.status === 200) {
+          const t = await flow().catch(e => { log('FLOW error ' + e.message); return ''; });
+          await selftest(t).catch(e => log('SELFTEST error ' + e.message));
+          return;
+        }
         continue;
       }
       const auth = 'Basic ' + Buffer.from((process.env.VULTRON_SITE_USER || 'vultron') + ':' + fs.readFileSync(PW_FILE, 'utf8').trim()).toString('base64');
       const authed = await get('/', { authorization: auth });
       log('CHECK /api/health=' + health.status + ' /(no auth)=' + door.status + ' /(auth)=' + authed.status);
-      if (health.status === 200 && authed.status === 200) { await flow().catch(e => log('FLOW error ' + e.message)); return; }
+      if (health.status === 200 && authed.status === 200) {
+        const t = await flow().catch(e => { log('FLOW error ' + e.message); return ''; });
+        await selftest(t).catch(e => log('SELFTEST error ' + e.message));
+        return;
+      }
     } catch (e) { if (i % 5 === 0) log('waiting: ' + e.message); }
   }
   log('CHECK gave up');

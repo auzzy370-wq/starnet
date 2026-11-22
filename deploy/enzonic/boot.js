@@ -39,7 +39,24 @@ if (!OPEN && (!fs.existsSync(PASS_FILE) || fs.statSync(PASS_FILE).size === 0)) {
   console.log('[enzonic] generated the site password at ' + PASS_FILE);
 }
 
-const env = Object.assign({}, process.env, {
+/* PROVIDER CONFIGURATION lives beside the station's state — not in this repo, and not in the egg's variables, which
+   the panel API cannot write (PUT/POST/PATCH all answer 405). One KEY=VALUE per line; a variable already in the
+   environment wins. Only NAMES are logged: a key in this file must never reach boot.log, which the File Manager shows. */
+const PROVIDERS_FILE = path.join(DATA, 'providers.env');
+const fromFile = {};
+if (fs.existsSync(PROVIDERS_FILE)) {
+  for (const line of fs.readFileSync(PROVIDERS_FILE, 'utf8').split('\n')) {
+    const t = line.trim();
+    if (!t || t.startsWith('#')) continue;
+    const eq = t.indexOf('=');
+    if (eq < 1) continue;
+    const k = t.slice(0, eq).trim();
+    const v = t.slice(eq + 1).trim().replace(/^(['"])([\s\S]*)\1$/, '$2');
+    if (/^[A-Z][A-Z0-9_]*$/.test(k) && v) fromFile[k] = v;
+  }
+}
+
+const env = Object.assign({}, fromFile, process.env, {
   HOME: DATA,
   VULTRON_WORKSPACES: WORKSPACES,
   VULTRON_SITE_USER: process.env.VULTRON_SITE_USER || 'vultron',
@@ -83,6 +100,11 @@ console.log('[enzonic] data      ' + DATA);
 if (OPEN) console.log('[enzonic] password  NONE — ' + OPEN_FILE + ' exists, the station is open to anyone with the URL');
 else console.log('[enzonic] password  ' + PASS_FILE + '   (user is ' + env.VULTRON_SITE_USER + ')');
 console.log('[enzonic] port      ' + PORT);
+if (Object.keys(fromFile).length) {
+  const overridden = Object.keys(fromFile).filter(k => process.env[k] !== undefined);
+  console.log('[enzonic] providers ' + Object.keys(fromFile).map(k => k + (overridden.includes(k) ? ' (env wins)' : '')).join(', ')
+    + '   from ' + PROVIDERS_FILE);
+}
 
 const child = spawn(process.execPath, [path.join(ROOT, 'scripts', 'station-serve.js')], { stdio: 'inherit', env });
 
