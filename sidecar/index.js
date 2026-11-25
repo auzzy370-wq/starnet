@@ -32067,14 +32067,36 @@ function assetVersion() {
 function urlVersion(rawUrl) {
   const q = String(rawUrl || '').indexOf('?');
   if (q < 0) return '';
-  const m = /(?:^|&)v=([^&]*)/.exec(String(rawUrl).slice(q + 1));
-  return m ? m[1] : '';
+  let version = '';                                                            // the LAST v wins, so an appended token can never be shadowed
+  for (const part of String(rawUrl).slice(q + 1).split('#')[0].split('&')) {
+    if (part === 'v' || part.startsWith('v=')) version = part.slice(2);
+  }
+  return version;
+}
+/* Stamp a URL by SETTING its `v` parameter, never by appending a second one. Half the stylesheets already carry a
+   hand-written ?v=N (css/settings.css?v=5), and the first cut appended the token after it — `?v=5&v=<token>` — so the
+   server read 5, the match failed, and those files silently stayed on the revalidate-every-load path they were
+   supposed to leave. Replacing the value keeps one parameter (and one cache key) per URL. */
+function stampedUrl(url, v) {
+  const hash = url.indexOf('#');
+  const frag = hash < 0 ? '' : url.slice(hash);
+  const base = hash < 0 ? url : url.slice(0, hash);
+  const q = base.indexOf('?');
+  const pathname = q < 0 ? base : base.slice(0, q);
+  const params = (q < 0 ? '' : base.slice(q + 1)).split('&').filter(Boolean);
+  let found = false;
+  const next = params.map((p) => {
+    if (p === 'v' || p.startsWith('v=')) { found = true; return 'v=' + v; }
+    return p;
+  });
+  if (!found) next.push('v=' + v);
+  return pathname + '?' + next.join('&') + frag;
 }
 function stampedUrls(html, v) {
   if (!v) return html;
   return html.replace(/\b(src|href)="([^"]*)"/g, (all, attr, url) => {
     if (!url || /^(?:[a-z][a-z0-9+.-]*:|\/\/|#)/i.test(url) || url.startsWith('/api/')) return all;
-    return attr + '="' + url + (url.includes('?') ? '&' : '?') + 'v=' + v + '"';
+    return attr + '="' + stampedUrl(url, v) + '"';
   });
 }
 
