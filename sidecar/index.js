@@ -31966,13 +31966,127 @@ function noteTokenWithheld(peer) {
     ') — only a process of this OS user receives it. Set VULTRON_TRUST_LOCAL_PEERS=1 only if your own browser is being refused.');
 }
 
+/* STATIC DELIVERY (2026-11-24): the app page boots ~282 separate script files — 12.5 MiB of JS read from disk and
+   shipped in full on EVERY load, and each one answered `no-store`, so a reload (or the hosted station's tunnel) sent
+   all of it again. Two changes, neither of which alters what the bytes mean:
+     • gzip a compressible file when the client says it accepts gzip (12.5 -> 4.1 MiB measured over the whole boot set),
+       reusing one compressed copy per file until its size or mtime moves;
+     • give static files a validator (`Cache-Control: no-cache` + a weak ETag), so a repeat load revalidates with a
+       304 instead of re-downloading. `no-cache` means revalidate, never serve a stale build.
+   The app page itself stays `no-store` and is never compressed: it carries the per-launch API token and a
+   per-response CSP nonce, both of which change inside the same file. */
+const zlib = require('node:zlib');
+const gzipAsync = require('node:util').promisify(zlib.gzip);   // callback form: `zlib.gzip(buf, opts)` with no callback is not a promise on every Node line
+const brotliAsync = require('node:util').promisify(zlib.brotliCompress);
+const STATIC_GZIP_MAX = 2400, STATIC_MIN_GZIP = 1024;
+const STATIC_GZIP_TYPES = new Set(['.js', '.css', '.html', '.htm', '.svg', '.json', '.txt', '.xml', '.md', '.map']);
+const staticGzipCache = new Map();    // '<abs>|<enc>' -> { stamp: '<size>:<mtime>', buf } — one page load's set (hundreds of files, two encodings) fits
+const staticGzipPending = new Map();  // '<abs>|<enc>' -> { stamp, promise } — concurrent requests for one file share a single compress
+function staticGzipCached(abs, stamp, enc) {
+  const hit = staticGzipCache.get(abs + '|' + enc);
+  return hit && hit.stamp === stamp ? hit.buf : null;
+}
+/* A page load asks for hundreds of files at once, so compressing on the request path must not run on the event loop:
+   gzipSync on the biggest bundles (world.js alone is ~1 MiB) held the loop long enough to push other responses a
+   frame or three late — measured as a 47 ms /api/health stall mid-load. zlib's async form does the work on the
+   threadpool, and concurrent requests for the same file wait on the one compression already in flight. */
+function staticGzip(abs, stamp, data, enc) {
+  const key = abs + '|' + enc;
+  const hit = staticGzipCached(abs, stamp, enc);
+  if (hit) return Promise.resolve(hit);
+  const pend = staticGzipPending.get(key);
+  if (pend && pend.stamp === stamp) return pend.promise;
+  const entry = { stamp, promise: null };
+  // BROTLI FIRST (2026-11-25): 12% smaller than gzip on this tree, and every phone pays the download in real seconds.
+  // Quality 5 (not 9) because it lands within a few percent of 9 on JS here and costs about the same as gzip level 6
+  // on the threadpool, so a cold page load never queues behind compression.
+  const work = enc === 'br'
+    ? brotliAsync(data, { params: {
+        [zlib.constants.BROTLI_PARAM_QUALITY]: 5,
+        [zlib.constants.BROTLI_PARAM_LGWIN]: 22,
+        [zlib.constants.BROTLI_PARAM_SIZE_HINT]: data.length } })
+    : gzipAsync(data, { level: 6 });
+  entry.promise = work.then((buf) => {
+    if (staticGzipPending.get(key) === entry) staticGzipPending.delete(key);
+    if (staticGzipCache.size >= STATIC_GZIP_MAX) staticGzipCache.clear();   // a different build starts clean rather than evicting one by one
+    staticGzipCache.set(key, { stamp, buf });
+    return buf;
+  }, (e) => {
+    if (staticGzipPending.get(key) === entry) staticGzipPending.delete(key);
+    throw e;
+  });
+  staticGzipPending.set(key, entry);
+  return entry.promise;
+}
+function acceptsEncoding(req, enc) {
+  const raw = String((req.headers && req.headers['accept-encoding']) || '').toLowerCase();
+  return raw.split(',').some(part => part.trim().split(';')[0] === enc);
+}
+/* COMMENT-FREE JS ON THE WIRE (2026-11-25): the boot set is 282 script files / 12.5 MiB, and 24% of it is the prose
+   that explains the code (see sidecar/jssource.js — code bytes pass through verbatim, line numbers are preserved).
+   12.51 -> 9.50 MiB raw, 4.13 -> 2.86 MiB gzipped: less to download, tokenize and compile on a phone, same program. */
+const { stripJsComments } = require('./jssource.js');
+const staticStrippedCache = new Map();      // abs -> { stamp, buf }
+function staticStripped(abs, stamp, data) {
+  const hit = staticStrippedCache.get(abs);
+  if (hit && hit.stamp === stamp) return hit.buf;
+  let buf = data;
+  try { buf = Buffer.from(stripJsComments(data.toString('utf8')), 'utf8'); } catch (e) { buf = data; }   // a delivery trim must never fail a response
+  if (staticStrippedCache.size >= STATIC_GZIP_MAX) staticStrippedCache.clear();
+  staticStrippedCache.set(abs, { stamp, buf });
+  return buf;
+}
+/* ONE VERSION TOKEN FOR THE BOOT SET (2026-11-25): `Cache-Control: no-cache` on every static file meant a reload
+   revalidated 282 scripts + ~55 stylesheets, one round trip each — on a phone link that is several seconds before the
+   first byte of the app can even start. The app page now stamps every same-origin src/href with this token, and a
+   request whose token still matches is served `immutable` (a year). The token is a hash of the size+mtime of every
+   file the page references, so editing ANY of them mints a new token on the next page load and the browser misses the
+   old URLs instead of trusting stale bytes. Everything unversioned keeps the old always-revalidate behaviour. */
+const ASSET_VERSION_TTL_MS = 2000;
+let assetVersionMemo = { at: 0, stamp: '' };
+function assetVersion() {
+  const now = Date.now();
+  if (assetVersionMemo.stamp && now - assetVersionMemo.at < ASSET_VERSION_TTL_MS) return assetVersionMemo.stamp;
+  const hash = crypto.createHash('sha1');
+  let html = '';
+  try { html = fs.readFileSync(path.join(FRONTEND, 'index.html'), 'utf8'); } catch (e) { html = ''; }
+  const urls = new Set();
+  for (const m of html.matchAll(/(?:src|href)="([^"]+)"/g)) {
+    const u = m[1];
+    if (u && !/^(?:[a-z][a-z0-9+.-]*:|\/\/|#)/i.test(u)) urls.add(u.split('?')[0]);
+  }
+  for (const u of [...urls].sort()) {
+    try {
+      const s = fs.statSync(path.resolve(FRONTEND, u.replace(/^\/+/, '')));
+      hash.update(u + ':' + s.size + ':' + Math.round(s.mtimeMs) + ';');
+    } catch (e) { hash.update(u + ':absent;'); }
+  }
+  assetVersionMemo = { at: now, stamp: hash.digest('hex').slice(0, 12) };
+  return assetVersionMemo.stamp;
+}
+function urlVersion(rawUrl) {
+  const q = String(rawUrl || '').indexOf('?');
+  if (q < 0) return '';
+  const m = /(?:^|&)v=([^&]*)/.exec(String(rawUrl).slice(q + 1));
+  return m ? m[1] : '';
+}
+function stampedUrls(html, v) {
+  if (!v) return html;
+  return html.replace(/\b(src|href)="([^"]*)"/g, (all, attr, url) => {
+    if (!url || /^(?:[a-z][a-z0-9+.-]*:|\/\/|#)/i.test(url) || url.startsWith('/api/')) return all;
+    return attr + '="' + url + (url.includes('?') ? '&' : '?') + 'v=' + v + '"';
+  });
+}
+
 async function serveStatic(req, res) {
   try {
     const url = decodeURIComponent((req.url || '/').split('?')[0]);
     const rel = (url === '/' ? 'index.html' : url.replace(/^\/+/, ''));
     const abs = path.resolve(FRONTEND, rel);
     if (abs !== FRONTEND && abs.indexOf(FRONTEND + path.sep) !== 0) { res.writeHead(403); return res.end('forbidden'); }
-    let data = await fsp.readFile(abs);
+    // Read lazily: a revalidation (304) needs only the stat, and a gzip-cache hit needs no plain bytes at all.
+    let data = null;
+    const readData = async () => (data = data || await fsp.readFile(abs));
     const isAppPage = abs.toLowerCase() === path.resolve(FRONTEND, 'index.html').toLowerCase();
     let scriptNonce = '';
     if (isAppPage ||
@@ -31992,7 +32106,9 @@ async function serveStatic(req, res) {
       // the seeded pair is the ENVIRONMENT rule every surface's last level reads (runWireEnv), never a hand-copied one
       if (DEV_MODE) { const envWire = runWireEnv(); boot += 'window.__VULTRON_DEV__=' + JSON.stringify({ model: envWire.model || '', prov: envWire.provider, hasKey: !!credStore.key(envWire.provider, '') }) + ';'; }
       boot += '</script>';
-      data = Buffer.from(String(data).replace(/<\/head>/i, boot + '\n</head>'), 'utf8');
+      await readData();
+      const pageHtml = isAppPage ? stampedUrls(String(data), assetVersion()) : String(data);   // version-stamp the boot set so it can be cached hard (see assetVersion)
+      data = Buffer.from(pageHtml.replace(/<\/head>/i, boot + '\n</head>'), 'utf8');
     }
     // ANTI-FRAMING (2026-09-23 security audit): a foreign site must not frame the live app (the framed page passes
     // Host/Origin with its own requests, so a clickjacking overlay could drive consent cards and toggles).
@@ -32003,8 +32119,47 @@ async function serveStatic(req, res) {
        no plugins, no <base> hijack. Other static files keep the framing-only policy. */
     const csp = "frame-ancestors 'self'; frame-src 'self' http://127.0.0.1:" + PORT + ' http://localhost:' + PORT +
       (scriptNonce ? "; script-src 'self' 'nonce-" + scriptNonce + "'; object-src 'none'; base-uri 'none'; worker-src 'self' blob:" : '');
-    res.writeHead(200, { 'Content-Type': MIME[path.extname(abs).toLowerCase()] || 'application/octet-stream', 'Cache-Control': 'no-store',
-      'X-Frame-Options': 'SAMEORIGIN', 'Content-Security-Policy': csp, 'X-Content-Type-Options': 'nosniff' });
-    res.end(data);
+    const ext = path.extname(abs).toLowerCase();
+    if (!isAppPage) {
+      const st = await fsp.stat(abs);
+      const stamp = st.size + ':' + Math.round(st.mtimeMs);
+      const compressible = st.size >= STATIC_MIN_GZIP && STATIC_GZIP_TYPES.has(ext);
+      const enc = compressible && acceptsEncoding(req, 'br') ? 'br' : (compressible && acceptsEncoding(req, 'gzip') ? 'gzip' : '');
+      const slim = ext === '.js';
+      const fresh = urlVersion(req.url) === assetVersion();   // content-addressed by the boot-set token: safe to cache for a year
+      const cacheControl = fresh ? 'public, max-age=31536000, immutable' : 'no-cache';
+      const etag = 'W/"' + Number(st.size).toString(16) + '-' + Math.round(st.mtimeMs).toString(16) + (slim ? '-s' : '') + (enc ? '-' + enc : '') + '"';
+      const inm = String((req.headers && req.headers['if-none-match']) || '');
+      if (!fresh && inm && (inm.trim() === '*' || inm.split(',').some(t => t.trim() === etag))) {
+        res.writeHead(304, { 'ETag': etag, 'Cache-Control': cacheControl, 'Vary': 'Accept-Encoding' });
+        return res.end();
+      }
+      const plain = slim ? staticStripped(abs, stamp, await readData()) : await readData();
+      const body = (enc && staticGzipCached(abs, stamp, enc)) || (enc ? await staticGzip(abs, stamp, plain, enc) : plain);
+      const head = { 'Content-Type': MIME[ext] || 'application/octet-stream', 'Cache-Control': cacheControl, 'ETag': etag,
+        'Vary': 'Accept-Encoding', 'Content-Length': body.length,
+        'X-Frame-Options': 'SAMEORIGIN', 'Content-Security-Policy': csp, 'X-Content-Type-Options': 'nosniff' };
+      if (enc) head['Content-Encoding'] = enc;
+      res.writeHead(200, head);
+      return res.end(body);
+    }
+    // The app page itself is `no-store` (it carries this launch's API token and a per-response nonce) but it is NOT
+    // uncompressed any more: it is ~105 KB of markup on the critical path of every single load, ahead of every script.
+    // Compression is per response here because the bytes differ per response — nothing is cached, only encoded.
+    let pageBody = await readData();
+    let pageEnc = '';
+    const wantEnc = acceptsEncoding(req, 'br') ? 'br' : (acceptsEncoding(req, 'gzip') ? 'gzip' : '');
+    if (wantEnc && pageBody.length >= STATIC_MIN_GZIP) {
+      pageBody = wantEnc === 'br'
+        ? await brotliAsync(pageBody, { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 5, [zlib.constants.BROTLI_PARAM_SIZE_HINT]: pageBody.length } })
+        : await gzipAsync(pageBody, { level: 6 });
+      pageEnc = wantEnc;
+    }
+    const pageHead = { 'Content-Type': MIME[ext] || 'application/octet-stream', 'Cache-Control': 'no-store',
+      'X-Frame-Options': 'SAMEORIGIN', 'Content-Security-Policy': csp, 'X-Content-Type-Options': 'nosniff',
+      'Vary': 'Accept-Encoding', 'Content-Length': pageBody.length };
+    if (pageEnc) pageHead['Content-Encoding'] = pageEnc;
+    res.writeHead(200, pageHead);
+    res.end(pageBody);
   } catch (e) { res.writeHead(404); res.end('not found'); }
 }
