@@ -1,0 +1,128 @@
+/* ============================================================
+   PHONE (2026-11-24) — ONE COLUMN, PHONE-SIZED CHROME
+   ============================================================
+   Measured at 390x844 before this file existed: the three-column station gave the CREW rail
+   half the width (196px of 390px) and left the station view — the thing the app exists to
+   show — a 178px sliver next to it, while the dock's four triggers could not fit one row and
+   wrapped onto a second 30px row of stray chrome (74px of bar where 44px was designed).
+   Nothing was broken; there was simply no phone arrangement, only the desktop one, squeezed.
+
+   So below 600px the game screen stops being a cockpit and becomes a page with a pinned dock:
+
+       TOPBAR
+       STATION   full width, sized off the phone's width (the view is the point)
+       CREW      full width, capped — its own inner scrollers (leftrail.js) keep working
+       COMMS     full width, with a floor a transcript can actually be read in
+       DOCK      one row, stuck to the bottom of the glass
+
+   The station view is sized off the phone's WIDTH (it is a wide room, so 42vw frames it better
+   than a share of the height), CREW takes a fixed slice and COMMS owns the rest, with a floor.
+   Measured at 390x844: 188px of station, 252px of crew and 332px of COMMS, where before there
+   were 178x300 of station, 300px of crew and a transcript cut to a two-line peephole. Tapping
+   the rail's ◂ turns the crew band off entirely and hands its height to the conversation
+   (COMMS 547px, transcript 324px at the same size). A very short phone (or a text size that
+   inflates the rows past it) scrolls instead of crushing the transcript into a sliver —
+   `overflow-y: auto` is the fallback, never the plan.
+   Sized in `* var(--cz)` like every other cabinet dimension so TEXT SIZE stays a type dial
+   rather than a magnifying glass (see app.css), and `--sn-unzoom` is not needed here because
+   nothing in this file is a fixed hardware box that type would otherwise inflate.
+
+   Landscape phones are untouched: at 844x390 the ≤860 two-column row layout is correct there,
+   because height rather than width is the scarce axis.
+   ============================================================ */
+
+@media (max-width: 600px) {
+  /* ---------- 1. the screen: one column, content-sized, scrolls under the dock ---------- */
+  body #screen-game.active {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows:
+      calc(42px * var(--cz))                                    /* topbar */
+      clamp(calc(140px * var(--cz)), 42vw, calc(240px * var(--cz)))  /* station view */
+      minmax(calc(150px * var(--cz)), 26vh)                     /* CREW */
+      minmax(calc(230px * var(--cz)), 1fr)                      /* COMMS: the rest, with a floor */
+      calc(44px * var(--cz));                                   /* dock */
+    grid-template-areas: "top" "center" "left" "chat" "bot";
+    padding: calc(4px * var(--cz));
+    gap: calc(5px * var(--cz));
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  /* the rail keeps its own measured roster/SESSIONS split inside its row (leftrail.js reads the
+     real column height, so a short band shrinks the roster window rather than clipping it) */
+  body #screen-game.active #left { max-height: 26vh; }
+
+  /* crew rail hidden (◂ in its header): three regions and one dock, no empty row left behind */
+  body.crew-rail-off #screen-game.active {
+    grid-template-rows:
+      calc(42px * var(--cz))
+      clamp(calc(140px * var(--cz)), 42vw, calc(240px * var(--cz)))
+      minmax(calc(300px * var(--cz)), 1fr)
+      calc(44px * var(--cz));
+    grid-template-areas: "top" "center" "chat" "bot";
+  }
+
+  /* ---------- 2. the dock: four triggers, one row, pinned to the glass ---------- */
+  body #screen-game #bottombar {
+    position: sticky; bottom: 0; z-index: 3;
+    flex-wrap: nowrap;
+    gap: 3px;
+    padding-inline: calc(4px * var(--cz));
+  }
+  body #screen-game #bottombar .bb-group { flex: 1 1 0; min-width: 0; }
+  body #screen-game #bottombar .bb-group > .bb-grp {
+    width: 100%; min-width: 0; justify-content: center;
+    padding-inline: 3px; gap: 4px;
+    font-size: 15px; letter-spacing: 1px;
+  }
+  body #screen-game #bottombar .bb-gi { width: 14px; }
+  /* the pinned-widget rail and the CTX gauge are desktop instruments. On a phone they were the
+     second row of the bar — chrome that pushed the four docks off one line and read as clutter */
+  body #screen-game #bottombar #wr-bot,
+  body #screen-game #bottombar .bb-right { display: none; }
+  /* minimized-window chips still dock, but they give way to the four triggers */
+  body #screen-game #bottombar #term-strip { flex: 0 1 auto; min-width: 0; }
+
+  /* ---------- 3. chrome that only pays rent on a big screen ---------- */
+  /* the tube's CAM / REC / FEED captions: fine print over a phone-sized station view. The corner
+     brackets stay — they are the frame, not a label */
+  body #screen-game .cam-hud :is(.cam-label, .cam-rec, .cam-feed) { display: none; }
+  /* the COMMS seam resizes a side-by-side column; stacked, there is no seam to drag */
+  body #screen-game #comms-resizer { display: none; }
+  /* COMMS identity line: one compact row, because every pixel it gives up here is transcript.
+     The portrait goes: the agent's name in the select is the identity, and the roster one band
+     up already wears that face */
+  body #screen-game #chat-panel .comms-idbar {
+    padding: 3px 6px; margin: 0 0 3px; gap: 8px;
+  }
+  body #screen-game #chat-panel .comms-portrait { display: none; }
+  body #screen-game #chat-panel .comms-overline { display: none; }
+  body #screen-game #chat-panel > h3 #chat-elapsed { display: none; }
+  /* the composer keeps its two rows (edit line, then the control cluster) but at phone padding */
+  body #screen-game #chat-panel #chat-inputrow { padding: 4px; gap: 4px; }
+  body #screen-game #chat-panel .chat-tools { gap: 5px; }
+  body #screen-game #chat-panel #chat-input { min-height: 30px; }
+}
+
+/* SHORT PHONES (a 360x740 or an SE): the same column, but height is scarce, so the conversation
+   keeps its reading height and the station view and crew band give theirs back. Both stay whole —
+   the stage keeps a framing height and the rail keeps its header, roster row and view tabs —
+   because a region that is present but clipped is worse than one that is short. */
+@media (max-width: 600px) and (max-height: 760px) {
+  body #screen-game.active {
+    grid-template-rows:
+      calc(42px * var(--cz))
+      clamp(calc(110px * var(--cz)), 34vw, calc(170px * var(--cz)))
+      minmax(0, 22vh)
+      minmax(calc(260px * var(--cz)), 1fr)
+      calc(44px * var(--cz));
+  }
+  body #screen-game.active #left { max-height: 22vh; }
+  body.crew-rail-off #screen-game.active {
+    grid-template-rows:
+      calc(42px * var(--cz))
+      clamp(calc(110px * var(--cz)), 34vw, calc(170px * var(--cz)))
+      minmax(calc(260px * var(--cz)), 1fr)
+      calc(44px * var(--cz));
+  }
+}
