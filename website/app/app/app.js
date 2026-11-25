@@ -5803,6 +5803,78 @@ const App = (() => {
       else setStatus(BROWSER_HINT);
     }
     probeDegraded().then(r => { if (r) setStatus(r); });   // a live-but-degraded sidecar names its reason before the first poll
+    /* SELF-HEAL AFTER A RESTART (hosted stations). The engine mints a NEW per-launch key every time it starts,
+       and this document still carries the old one — so every save pull is refused (or refused at the door) until
+       the page itself is re-fetched. That is a definitive answer this document can never reach, which is exactly
+       why a restarted station parked on this screen until somebody reloaded by hand.
+
+       So reload ourselves, but only when reloading can actually help (the door answers /api/health, so a fresh
+       page gets a fresh key), only for the two restart-shaped reasons, and bounded + rate-limited through
+       sessionStorage — which survives the reload. A station that is genuinely down, or a save that is genuinely
+       unreadable, never reloads and keeps the 5s retry and the manual controls. */
+    const SELF_HEAL_KEY = 'vultron.gate.selfheal';
+    const SELF_HEAL_MAX = 6, SELF_HEAL_GAP_MS = 15000;
+    const readSelfHeal = () => { try { return JSON.parse(sessionStorage.getItem(SELF_HEAL_KEY) || '{}') || {}; } catch (_) { return {}; } };
+    const clearSelfHeal = () => { try { sessionStorage.removeItem(SELF_HEAL_KEY); } catch (_) {} };
+    const doorAnswers = async () => {
+      try { const res = await fetch('/api/health', { cache: 'no-store' }); return !!res.ok; } catch (_) { return false; }
+    };
+    /* IN-PLACE KEY RE-READ — preferred over a reload, and the reason a hosted station no longer needs a manual one.
+       A reload is a blunt instrument: it drops whatever is unsaved on the page, it can be swallowed by a webview or
+       restored verbatim out of a back/forward cache, and it spends the bounded budget below. The document can instead
+       read the page the station is serving NOW, take the per-launch key out of it, and retry the pull in place — the
+       same recovery harness.js already performs for a 403 (#39), reached here for the gate's own save pull because
+       cloudsave.js fetches raw and a restart can surface as `unreachable` rather than `forbidden`.
+       Only a DIFFERENT key is adopted, so a station that is genuinely down (no page to read) or one that never rotated
+       its key is never papered over. */
+    const TOKEN_BOOT = 'window.__VULTRON_API_TOKEN__=';
+    const adoptFreshKey = async () => {
+      let fresh = '';
+      // The station's own key, on a request nothing can cache: this is what a document from a page cache needs.
+      try {
+        const keyRes = await fetch('/api/session-key', { cache: 'no-store', credentials: 'same-origin' });
+        if (keyRes && keyRes.ok && typeof keyRes.json === 'function') {
+          const keyJson = await keyRes.json().catch(() => null);
+          fresh = (keyJson && keyJson.token) ? String(keyJson.token) : '';
+        }
+      } catch (_) { fresh = ''; }
+      if (!fresh) {
+        // An older station has no such route (404): read the key out of the page it is serving instead.
+        let html = '';
+        try {
+          const res = await fetch('/', { cache: 'no-store', credentials: 'same-origin' });
+          if (!res || !res.ok) return '';
+          html = String((await res.text()) || '');
+        } catch (_) { return ''; }                   // no page to read: the station is down, not rotated
+        // The station injects JSON.stringify(key) — a bare quoted hex string, no escapes — so read the literal
+        // directly. (A quote inside a regex character class also defeats test/_fnbody.js's brace scan.)
+        const at = html.indexOf(TOKEN_BOOT);
+        if (at < 0) return '';
+        const lit = html.slice(at + TOKEN_BOOT.length, at + TOKEN_BOOT.length + 200);
+        if (lit.charAt(0) !== '"') return '';        // withheld from this peer, or no key at all
+        const end = lit.indexOf('"', 1);
+        if (end < 2) return '';
+        fresh = lit.slice(1, end);
+      }
+      const root = (typeof window !== 'undefined') ? window : null;
+      const held = root ? String(root.__VULTRON_API_TOKEN__ || '') : '';
+      if (!fresh || fresh === held) return '';       // no rotation proven: this is not a stale-key symptom
+      if (root) root.__VULTRON_API_TOKEN__ = fresh;
+      try { if (typeof Harness !== 'undefined' && Harness.setToken) Harness.setToken(fresh); } catch (_) {}
+      return fresh;
+    };
+    const selfHeal = async () => {
+      if (core) return false;                        // desktop: the shell owns restarts (button below), never reload under it
+      if (!(await doorAnswers())) return false;      // nothing to pick up yet
+      const state = readSelfHeal();
+      const n = Number(state.n) || 0;
+      if (n >= SELF_HEAL_MAX) return false;          // give up cleanly, keep the manual exits
+      if (Date.now() - (Number(state.at) || 0) < SELF_HEAL_GAP_MS) return false;   // never a reload loop
+      try { sessionStorage.setItem(SELF_HEAL_KEY, JSON.stringify({ at: Date.now(), n: n + 1 })); } catch (_) {}
+      setStatus('the station is back — reloading to pick up its new key (' + (n + 1) + ' of ' + SELF_HEAL_MAX + ')…');
+      try { location.reload(); } catch (_) { return false; }
+      return true;
+    };
     const attempt = async () => {
       if (checking || resetting || browserResetBlocked) return;
       checking = true;
@@ -5815,9 +5887,24 @@ const App = (() => {
       // re-injected by a fresh page load, and reload re-runs every gate in order.
       if (!CloudSave.isUnknownSentinel(r)) {
         if (timer) clearInterval(timer);
+        clearSelfHeal();                             // a working station must not carry a reload budget forward
         setStatus('reconnected — resuming…');
         try { location.reload(); } catch (_) {}
         return;
+      }
+      // checking:false on the way out — if this reload is a no-op (a webview that swallows it), the 5s retry
+      // must still be able to run rather than sit behind a latch nothing will ever clear.
+      if (r.reason === 'forbidden' || r.reason === 'unreachable') {
+        // In place first: it survives a cached document, a bfcache restore, and a spent reload budget, and it keeps
+        // anything unsaved. A reload is the fallback for the case where the page itself is stale code.
+        if (await adoptFreshKey()) {
+          clearSelfHeal();
+          setStatus('picked up the station\'s new key — retrying…');
+          checking = false;
+          setTimeout(() => { attempt(); }, 250);
+          return;
+        }
+        if (await selfHeal()) { checking = false; return; }
       }
       paintDiagnosis(r.reason);
       const degraded = await probeDegraded();
@@ -6231,6 +6318,22 @@ const App = (() => {
     // the agent back after a browser-cache wipe (local gone, the sidecar still holds it) and refreshes the
     // cache to match. Best-effort: an unreachable sidecar just falls back to the local cache.
     if (typeof CloudSave !== 'undefined') CloudSave.installUnloadFlush();
+    /* A CACHED DOCUMENT'S KEY — the root of "it works in a fresh browser and never on my phone". The per-launch key
+       arrived only inside the HTML, so any document a browser kept (its page cache, a back/forward-cache restore, a tab
+       opened before a restart) boots with a DEAD key: its first pull is refused, the reload it tries is handed the same
+       cached page, and it can never recover. Ask the station for the key on its own uncached request instead. A station
+       too old to have the route answers 404 and this is skipped, leaving the inline key in force. */
+    try {
+      const keyRes = await fetch('/api/session-key', { cache: 'no-store', credentials: 'same-origin' });
+      if (keyRes && keyRes.ok && typeof keyRes.json === 'function') {
+        const keyJson = await keyRes.json().catch(() => null);
+        const freshKey = (keyJson && keyJson.token) ? String(keyJson.token) : '';
+        if (freshKey && freshKey !== String(window.__VULTRON_API_TOKEN__ || '')) {
+          window.__VULTRON_API_TOKEN__ = freshKey;
+          try { if (typeof Harness !== 'undefined' && Harness.setToken) Harness.setToken(freshKey); } catch (_) {}
+        }
+      }
+    } catch (_) {}
     const saved = (typeof CloudSave !== 'undefined') ? await CloudSave.reconcile(Save.load()) : Save.load();
     // FORWARD-VERSION GATE (P0.3), step 2 — a durable REMOTE from a newer build. reconcile() refuses to adopt it
     // into the cache and hands back a future-save sentinel instead of a resumable doc. Same hard stop: gate, return,

@@ -67,7 +67,7 @@
     };
   })();
   var DEMO_REV_KEY = 'vultron.website.demo.rev';
-  var DEMO_REV = 'starter-c54335278c0daa68';
+  var DEMO_REV = 'starter-b6096ee1d4117592';
   try {
     var demoSave = JSON.parse(SEED['vultron.save']);
     if (demoSave && DEMO_STATION.rooms) {

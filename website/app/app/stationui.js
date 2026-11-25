@@ -5676,15 +5676,24 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
   function oauthMaskLabel(pid) { return oauthLabels[pid] || (provName(pid) + ' OAuth'); }
   const oauthStatus = { grok: null, kimi: null };       // last /api/auth/<pid>/status truth per provider
   const oauthChecking = { grok: false, kimi: false };
+  const oauthRetry = { grok: 0, kimi: 0 };              // bounded re-reads of a status the station did not answer
   function refreshOAuthStatus(pid) {
     if (oauthChecking[pid] || typeof fetch !== 'function') return;
     oauthChecking[pid] = true;
     fetch('/api/auth/' + pid + '/status', { cache: 'no-store' })
-      .then(r => r.ok ? r.json() : { connected: false })
+      // A REFUSED OR FAILED READ PROVES NOTHING (2026-11-22): this used to turn any non-ok answer into
+      // {connected:false}, so a read that raced the station's boot — or carried a key from before a restart — drew the
+      // row as NOT SIGNED IN while the station still held a perfectly good sign-in, and nothing re-read it. That is the
+      // "it disconnects whenever I refresh" report. Only the station's own answer may say disconnected; a failure keeps
+      // the last truth and asks again shortly, a bounded number of times.
+      .then(r => (r.ok ? r.json() : null))
       .then(j => {
+        if (!j) { retryOAuthStatus(pid); return; }
+        oauthRetry[pid] = 0;
         // carry the WHOLE truth shape (connected + expired + reason), exactly like codex — a lone bool can't
         // distinguish "never signed in" from the dead-refresh-token death the row must render differently.
-        const next = { connected: !!(j && j.connected), expired: !!(j && j.expired), reason: (j && j.reason) || '', region: (j && j.region) || '' };
+        const unsaved = (j.connected && j.persistError) ? ('SIGN-IN NOT SAVED — ' + String(j.persistError).slice(0, 120) + '; it will be gone after a restart') : '';
+        const next = { connected: !!(j && j.connected), expired: !!(j && j.expired), reason: (j && j.reason) || unsaved || '', region: (j && j.region) || '' };
         // kimi (#70): the stored sign-in's region seeds the next sign-in's default (unless the Commander picked one)
         if (pid === 'kimi' && next.region && typeof KimiRegion !== 'undefined') KimiRegion.noteSignedIn(next.region);
         // Same rule as codex above: compare what the row will actually DRAW, so a cold "not connected" answer
@@ -5695,6 +5704,11 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       })
       .catch(() => {})
       .finally(() => { oauthChecking[pid] = false; });
+  }
+  function retryOAuthStatus(pid) {
+    if (oauthRetry[pid] >= 6) return;                    // bounded: a station that stays down is not polled forever
+    oauthRetry[pid] += 1;
+    setTimeout(() => refreshOAuthStatus(pid), 4000);
   }
   function refreshExtraOAuthStatus() { OAUTH_EXTRA.forEach(refreshOAuthStatus); }
   function oauthProvConnected(pid) {
