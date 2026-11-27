@@ -13841,6 +13841,8 @@ server.listen(PORT, BIND_HOST, async () => {
   // start a checkout's git describe now (async, never blocks), so the first /api/version or run reads it answered
   try { versionSource.read(); } catch (e) { failNote('version.boot', e); }
   media.startFloorProbe();   // one background check of the free Edge voice floor, logged + kept in /api/tts/status
+  // the boot set's read/strip/brotli caches, hot before the Master's first load (see warmStaticCaches)
+  try { warmStaticCaches(); } catch (e) { failNote('static.warm', e); }
   // VULTRON REMOTE: reopen the phone door only if the Master left Remote switched on
   try {
     if (remoteDevices.enabled()) remoteStartDoors().then(
@@ -32098,6 +32100,40 @@ function stampedUrls(html, v) {
     if (!url || /^(?:[a-z][a-z0-9+.-]*:|\/\/|#)/i.test(url) || url.startsWith('/api/')) return all;
     return attr + '="' + stampedUrl(url, v) + '"';
   });
+}
+
+/* FIRST LOAD AFTER A RESTART (2026-11-27): the boot set is ~330 files, and on a COLD process the first page load pays
+   to read, comment-strip and brotli every one of them while also shipping ~11 MB — measured 10.5 s cold against 5.0 s
+   once those same caches were warm, and a restart is exactly when the Master opens the page (a new tunnel hostname also
+   throws the browser's copy away). Warm the request-path caches in the background with the SAME helpers, so the first
+   load finds them hot. Low concurrency (this box is also mid-boot), never on the request path, never fatal. */
+let staticWarmStarted = false;
+function warmStaticCaches() {
+  if (staticWarmStarted) return;
+  staticWarmStarted = true;
+  const walk = async () => {
+    let html;
+    try { html = await fsp.readFile(path.resolve(FRONTEND, 'index.html'), 'utf8'); } catch (e) { return; }
+    // exactly the files the page asks for, in the order it asks for them
+    const rels = [...new Set(Array.from(html.matchAll(/(?:src|href)="([^"]+\.(?:js|css))(?:\?[^"]*)?"/g), (m) => m[1].replace(/^\/+/, '')))];
+    const queue = rels.slice();
+    const one = async (rel) => {
+      const abs = path.resolve(FRONTEND, rel);
+      if (abs !== FRONTEND && abs.indexOf(FRONTEND + path.sep) !== 0) return;
+      const ext = path.extname(abs).toLowerCase();
+      if (!STATIC_GZIP_TYPES.has(ext)) return;
+      const st = await fsp.stat(abs);
+      if (!st.isFile() || st.size < STATIC_MIN_GZIP) return;
+      const stamp = st.size + ':' + Math.round(st.mtimeMs);
+      const plain = ext === '.js' ? staticStripped(abs, stamp, await fsp.readFile(abs)) : await fsp.readFile(abs);
+      await staticGzip(abs, stamp, plain, 'br');   // phones send br; the gzip twin is built on demand for anyone who cannot
+    };
+    await Promise.all(Array.from({ length: 2 }, async () => {
+      while (queue.length) { const rel = queue.shift(); try { await one(rel); } catch (e) { /* one unreadable file must not stop the warm */ } }
+    }));
+  };
+  const t = setTimeout(() => { walk().catch(() => {}); }, 3000);
+  if (t.unref) t.unref();
 }
 
 async function serveStatic(req, res) {
