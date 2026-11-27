@@ -63,5 +63,30 @@ function key(k, o) {
   const f6b = key('F6'); vp.fire('keydown', f6b);
   A.eq(left, 3, '…even while you are typing in the page');
   s.stop();
+
+  /* A PHONE (2026-11-27, "can't type in browser when on phone"): its keyboard only appears for a real text field, so the
+     picture carries one. Tapping focuses it, and what it receives is sent as text — once, never twice. */
+  {
+    const vp2 = target(), img2 = target();
+    const kbd = target();
+    kbd.value = '';
+    let focused = 0; kbd.focus = () => { focused++; };
+    const out = [];
+    const s2 = BrowserStream.create({ vp: vp2, img: img2, kbd,
+      poll: () => new Promise(() => {}),
+      send: evs => { out.push(...evs); return Promise.resolve({ status: 200 }); } });
+    s2.start();
+    vp2.fire('pointerdown', key(''));
+    A.eq(focused, 1, 'a tap on the picture focuses the text field (that is what raises a phone keyboard)');
+    kbd.value = 'hello';
+    kbd.fire('input', {});
+    await tick();
+    A.eq(out.filter(e => e.type === 'text').map(e => e.text).join(''), 'hello', 'what the phone keyboard types reaches the page as text');
+    A.eq(kbd.value, '', '…and the field is emptied, so the next letter is not a repeat of the last');
+    kbd.value = 'x';
+    kbd.fire('input', {}); await tick();
+    A.eq(out.filter(e => e.type === 'text').length, 2, 'each input event sends its own text once');
+    s2.stop();
+  }
   A.report('browserstream.keys.test');
 })().catch(e => { console.log('FAIL: browserstream.keys.test threw — ' + (e && e.stack || e)); process.exit(1); });

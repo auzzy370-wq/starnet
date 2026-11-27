@@ -131,7 +131,10 @@
       + '<button type="button" class="bb sm ob-out">OPEN OUTSIDE</button></div>'
       + '<div class="ob-stage">'
       + '<iframe class="ob-frame" title="Agent-made page" sandbox="allow-scripts allow-forms allow-modals allow-pointer-lock" referrerpolicy="no-referrer" hidden></iframe>'
-      + '<div class="ob-vp" tabindex="0" role="application" aria-label="Live browser picture" hidden><img class="ob-live" alt="" draggable="false"></div>'
+      + '<div class="ob-vp" tabindex="0" role="application" aria-label="Live browser picture" hidden><img class="ob-live" alt="" draggable="false">'
+      // the phone's keyboard only opens for a real text field: the picture is an <img>, and a focused div raises none
+      // (browserstream.js opts.kbd sends what the field receives; it is invisible and never a tap target)
+      + '<input class="ob-kb" type="text" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="sentences" spellcheck="false" enterkeyhint="send" aria-hidden="true" tabindex="-1"></div>'
       + '<div class="ob-empty"></div>'
       + '</div>'
       + '<p class="ob-note" role="status"></p>'
@@ -139,13 +142,13 @@
     const q = s => body.querySelector(s);
     const ui = state.ui = { body, root: q('.ob'), bar: q('.ob-bar'), back: q('.ob-back'), fwd: q('.ob-fwd'), reload: q('.ob-reload'),
       who: q('.ob-who'), url: q('.ob-url'), front: q('.ob-front'), follow: q('.ob-follow'), out: q('.ob-out'), recent: q('.ob-recent'),
-      frame: q('.ob-frame'), vp: q('.ob-vp'), img: q('.ob-live'), empty: q('.ob-empty'), note: q('.ob-note'), watchStream: null, liveStream: null };
+      frame: q('.ob-frame'), vp: q('.ob-vp'), img: q('.ob-live'), kb: q('.ob-kb'), empty: q('.ob-empty'), note: q('.ob-note'), watchStream: null, liveStream: null };
     if (typeof BrowserStream !== 'undefined') {
       const ended = mode => b => { if (state.mode === mode) streamEnded(b || {}); };
       const onPage = p => { state.page = p; paintBar(); };
       ui.watchStream = BrowserStream.create({ vp: ui.vp, img: ui.img, onPage, onEnd: ended('watch'),
         poll: (seq, signal) => getJson('/api/browser/view/frame?target=' + encodeURIComponent(state.watch ? state.watch.target : '') + '&after=' + seq, signal) });
-      ui.liveStream = BrowserStream.create({ vp: ui.vp, img: ui.img, onPage, onEnd: ended('live'),
+      ui.liveStream = BrowserStream.create({ vp: ui.vp, img: ui.img, kbd: ui.kb, onPage, onEnd: ended('live'),
         // every picture says who is driving: that is what the address bar and the status line report
         poll: (seq, signal) => getJson('/api/browser/view/frame?target=station&after=' + seq, signal).then(r => {
           if (r.status === 200 && r.body && r.body.ok) setDriver(r.body.driver || null);

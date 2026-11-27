@@ -35,6 +35,7 @@
 
   function create(opts) {
     const vp = opts.vp, img = opts.img;
+    const kbd = opts.kbd || null;   // an invisible text field inside vp: the only thing a phone raises a keyboard for
     const canSend = typeof opts.send === 'function';
     const s = { on: false, gen: 0, seq: 0, frame: null, abort: null, pending: [], inflight: false, lastMove: null, moveAt: 0, moveTimer: 0 };
 
@@ -103,7 +104,7 @@
     if (canSend) {
       img.addEventListener('mousedown', e => {
         const p = pagePoint(e); if (!p || !s.on) return;
-        e.preventDefault(); try { vp.focus(); } catch (_) { /* focus is best-effort */ }
+        e.preventDefault(); focusSink();
         push({ type: 'mouse', action: 'move', x: p.x, y: p.y });
         push({ type: 'mouse', action: 'down', x: p.x, y: p.y, button: BTN[e.button] || 'left', clickCount: Math.min(3, e.detail || 1), modifiers: mods(e) });
       });
@@ -153,6 +154,28 @@
         const t = e.clipboardData ? e.clipboardData.getData('text/plain') : '';
         if (t) push({ type: 'text', text: t.slice(0, 4000) });
       });
+      /* A PHONE TYPES THROUGH opts.kbd (2026-11-27: "can't type in browser when on phone"). Nothing raises an on-screen
+         keyboard for a focused div, so a tap on the picture focuses an invisible text field and that field's text is sent
+         to the page. The named keys (Backspace, Enter, Tab, arrows, Esc) need nothing extra: the field's keydown bubbles
+         to the viewport, where those handlers already live, and they keep the field empty. Anything that still arrives as
+         an input event — a keyboard that composes without a keydown, an autocorrect replacement, a paste into the field —
+         is sent as TEXT and then cleared, so nothing can be typed twice. */
+      if (kbd) {
+        vp.addEventListener('pointerdown', focusSink);   // a tap on the picture raises the keyboard
+        vp.addEventListener('click', focusSink);
+        kbd.addEventListener('input', () => {
+          const t = String(kbd.value || '');
+          kbd.value = '';
+          if (!t || !typing()) return;
+          push({ type: 'text', text: t.slice(0, 4000) });
+        });
+        kbd.addEventListener('focus', () => { try { if (vp.classList) vp.classList.add('kb-typing'); } catch (_) { /* decoration only */ } });
+        kbd.addEventListener('blur', () => { try { if (vp.classList) vp.classList.remove('kb-typing'); } catch (_) { /* decoration only */ } });
+      }
+      function focusSink() {
+        const el = kbd || vp;
+        try { el.focus({ preventScroll: true }); } catch (_) { try { el.focus(); } catch (e) { /* focus is best-effort */ } }
+      }
     }
     return { start, stop, active: () => s.on, seq: () => s.seq, _pagePoint: pagePoint };
   }
