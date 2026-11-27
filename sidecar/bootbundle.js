@@ -63,11 +63,21 @@ async function buildBootBundle(opts) {
     jsSet.add(rel);
   }
 
+  const min = (opts && opts.minify) || null;
   const bundles = runs.map((run, index) => {
-    const text = "'use strict';\n" + run.parts.join('\n;\n') + '\n';
+    const source = "'use strict';\n" + run.parts.join('\n;\n') + '\n';
     let error = null;
-    try { new vm.Script(text, { filename: 'boot-bundle-' + index + '.js' }); } catch (e) { error = e; }
-    return { index, urls: run.urls, text, error };
+    try { new vm.Script(source, { filename: 'boot-bundle-' + index + '.js' }); } catch (e) { error = e; }
+    /* Minify only a bundle that already parses, and only keep the smaller text if IT parses too. A minifier that
+       breaks a bundle is not allowed to reach the page: the source is served instead. */
+    let text = source;
+    if (!error && min && min.js) {
+      const small = min.js(source);
+      if (small && small.length < source.length) {
+        try { new vm.Script(small, { filename: 'boot-bundle-' + index + '.min.js' }); text = small; } catch (e) { text = source; }
+      }
+    }
+    return { index, urls: run.urls, text, source, error };
   });
 
   const cssParts = [];
@@ -78,11 +88,18 @@ async function buildBootBundle(opts) {
     catch (e) { apart.push({ rel, why: 'absent' }); }
   }
 
+  let cssText = cssParts.join('\n');
+  let cssSource = cssText;
+  if (min && min.css) { const small = min.css(cssText); if (small && small.length < cssText.length) cssText = small; }
+
   const error = bundles.find((b) => b.error) || null;
+  const sourceBytes = bundles.reduce((s, b) => s + (b.source || b.text).length, 0) + cssSource.length;
+  const jsBytes = bundles.reduce((s, b) => s + b.text.length, 0);
   return {
-    bundles, cssText: cssParts.join('\n'), jsSet, cssSet, apart,
+    bundles, cssText, cssSource, jsSet, cssSet, apart,
     error: error && error.error, jsCount: jsSet.size, cssCount: cssSet.size,
-    jsBytes: bundles.reduce((s, b) => s + b.text.length, 0)
+    jsBytes, sourceBytes, minified: !!min,
+    savedBytes: Math.max(0, sourceBytes - (jsBytes + cssText.length))
   };
 }
 

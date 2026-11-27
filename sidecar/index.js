@@ -32029,6 +32029,10 @@ function acceptsEncoding(req, enc) {
    12.51 -> 9.50 MiB raw, 4.13 -> 2.86 MiB gzipped: less to download, tokenize and compile on a phone, same program. */
 const { stripJsComments } = require('./jssource.js');
 const { buildBootBundle, applyBootBundle, bootLinks } = require('./bootbundle.js');
+const { makeMinifier } = require('./minify.js');
+const textureWebp = require('./texturewebp.js');
+/* The boot set's minifier (esbuild when installed, else null — see sidecar/minify.js). Built once per process. */
+const BOOT_MINIFIER = makeMinifier();
 const staticStrippedCache = new Map();      // abs -> { stamp, buf }
 function staticStripped(abs, stamp, data) {
   const hit = staticStrippedCache.get(abs);
@@ -32116,7 +32120,7 @@ const bootJsUrl = (i) => '/__boot.' + i + '.js';
 let bootBundleMemo = { version: null, promise: null };
 function bootBundleFor(version) {
   if (bootBundleMemo.version === version && bootBundleMemo.promise) return bootBundleMemo.promise;
-  const promise = buildBootBundle({ frontendDir: FRONTEND, stripJsComments }).catch((e) => {
+  const promise = buildBootBundle({ frontendDir: FRONTEND, stripJsComments, minify: BOOT_MINIFIER }).catch((e) => {
     failNote('bootbundle.build', e);   // never fatal: the page then keeps every tag it already has
     return { bundles: [], cssText: '', jsSet: new Set(), cssSet: new Set(), apart: [], error: e, jsCount: 0, cssCount: 0 };
   });
@@ -32193,7 +32197,8 @@ function warmStaticCaches() {
       }
     }));
     console.log('  · static warm: ' + warmed + ' assets ready in ' + ((Date.now() - t0) / 1000).toFixed(1) + 's' +
-      (skipped ? ' (' + skipped + ' skipped)' : ''));
+      (skipped ? ' (' + skipped + ' skipped)' : '') +
+      (bundle.savedBytes ? ' · ' + (bundle.savedBytes / 1e6).toFixed(1) + 'MB minified away' : ' · not minified (esbuild ' + (BOOT_MINIFIER ? 'failed' : 'not installed') + ')'));
   };
   run().catch(() => {});
 }
@@ -32259,6 +32264,23 @@ async function serveStatic(req, res) {
       if (!fresh && inm && (inm.trim() === '*' || inm.split(',').some(t => t.trim() === etag))) {
         res.writeHead(304, { 'ETag': etag, 'Cache-Control': cacheControl, 'Vary': 'Accept-Encoding' });
         return res.end();
+      }
+      /* A TEXTURE IS A PICTURE, NOT A PNG (2026-11-27): the industrial albedos arrive as ~3 MB PNGs and the renderer asks
+         for seventy of them, which was 154 MB of a cold load. When the browser takes WebP, serve the encoded copy (see
+         sidecar/texturewebp.js) — same URL, same cache rules, a tenth of the bytes. Anything else is untouched. */
+      if (textureWebp.eligible(abs, st, ext, req)) {
+        const webp = await textureWebp.webpFor(abs, st);
+        if (webp) {
+          const wtag = 'W/"w' + webp.length.toString(16) + '-' + Math.round(st.mtimeMs).toString(16) + '"';
+          if (!fresh && inm && (inm.trim() === '*' || inm.split(',').some(t => t.trim() === wtag))) {
+            res.writeHead(304, { 'ETag': wtag, 'Cache-Control': cacheControl, 'Vary': 'Accept, Accept-Encoding' });
+            return res.end();
+          }
+          res.writeHead(200, { 'Content-Type': 'image/webp', 'Cache-Control': cacheControl, 'ETag': wtag,
+            'Vary': 'Accept, Accept-Encoding', 'Content-Length': webp.length,
+            'X-Frame-Options': 'SAMEORIGIN', 'Content-Security-Policy': csp, 'X-Content-Type-Options': 'nosniff' });
+          return res.end(webp);
+        }
       }
       const plain = slim ? staticStripped(abs, stamp, await readData()) : await readData();
       const body = (enc && staticGzipCached(abs, stamp, enc)) || (enc ? await staticGzip(abs, stamp, plain, enc) : plain);

@@ -225,3 +225,6 @@ dev/.scratch-workspace-usl-proof/
 dev/.scratch-workspace.recovery-owner.json.generations/
 # local gate/sweep logs and scratch output moved out of the repo root. Never committed.
 /logs/
+
+# encoded texture cache (sidecar/texturewebp.js) — rebuilt on demand, never committed
+.webp-cache/
