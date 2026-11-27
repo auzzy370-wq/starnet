@@ -724,7 +724,7 @@ const Voice = (() => {
       const air = natCtx.createBiquadFilter(); air.type = 'highshelf'; air.frequency.value = 8500; air.gain.value = -1.5;
       const comp = natCtx.createDynamicsCompressor();
       comp.threshold.value = -24; comp.knee.value = 12; comp.ratio.value = 2.5; comp.attack.value = 0.012; comp.release.value = 0.25;
-      const makeup = natCtx.createGain(); makeup.gain.value = 1.12;
+      const makeup = natCtx.createGain(); makeup.gain.value = 1.05;   // a touch less forward, never louder than dry
       const room = natCtx.createConvolver(); room.buffer = makeRoomIR(natCtx, 0.45);
       const roomMix = natCtx.createGain(); roomMix.gain.value = 0.06;
       const out = natCtx.createGain(); out.gain.value = 1.0;
@@ -764,6 +764,26 @@ const Voice = (() => {
     if (want) localStorage.setItem(VOICE_EFFECT_KEY, want); else localStorage.removeItem(VOICE_EFFECT_KEY);
     try { armAudio(); } catch (_) {}   // inside the click: the newly needed chain starts running
     return { effect: want || 'auto', appliesOn: 'the next spoken reply' };
+  }
+  /* VOLUME — how loud the station speaks, 0..1, saved per app/browser beside the effect pick. It scales every
+     spoken clip's own volume (a quiet aside stays quieter than a reply), so 0 mutes speech without turning the
+     speaker off. A drag is audible at once: the clip already playing is rescaled, not just the next one. */
+  const VOICE_VOLUME_KEY = 'vultron.voice.volume.v1';
+  let lastPlayVolume = 1;   // the last clip's own volume, so a drag can rescale what is already playing
+  function voiceVolume() {
+    try {
+      const raw = localStorage.getItem(VOICE_VOLUME_KEY);
+      if (raw == null) return 1;
+      const v = Number(raw);
+      return Number.isFinite(v) ? Math.max(0, Math.min(1, v)) : 1;
+    } catch (_) { return 1; }
+  }
+  function setVoiceVolume(level) {
+    const n = Math.max(0, Math.min(1, Number(level)));
+    if (!Number.isFinite(n)) return voiceVolume();
+    localStorage.setItem(VOICE_VOLUME_KEY, String(n));
+    try { if (currentAudio) currentAudio.volume = Math.max(0, Math.min(1, lastPlayVolume * n)); } catch (_) {}
+    return n;
   }
   // Also takes a reply's pinned local engine ('local-kokoro' | 'edge'): a request locked to it is only ever served
   // by that engine, so a clip whose header is unreadable is still that engine, never the keyed recipe.
@@ -811,7 +831,8 @@ const Voice = (() => {
       url = URL.createObjectURL(blob);
       a = new Audio(url); currentAudio = a;
       currentAudioCleanup = cleanup;
-      a.volume = (volume == null ? 1 : volume);
+      lastPlayVolume = (volume == null ? 1 : volume);
+      a.volume = Math.max(0, Math.min(1, lastPlayVolume * voiceVolume()));
       if (rate && rate > 0) a.playbackRate = Math.max(0.5, Math.min(2, rate));
       if (deep) { try { a.preservesPitch = false; } catch (_) {} try { a.webkitPreservesPitch = false; } catch (_) {} try { a.mozPreservesPitch = false; } catch (_) {} }
       // add the station "transmission" color (guarded; dry playback if WebAudio routing fails). When routed
@@ -2228,7 +2249,7 @@ const Voice = (() => {
     canListen, canSpeak, startCoordinator, stopCoordinator, pauseCoordinator, resumeCoordinator, attachCoordinator, detachCoordinator,
     canOAuthLive: () => !!SR || typeof fetch !== 'undefined', personaId: () => activePersonaId,
     setLocalTts, voiceChoice, localVoiceId, setVoiceChoice, voiceLabel, rememberVoiceLabels, currentAgentId, microphoneHelp,
-    voiceEffect, setVoiceEffect, playbackChain: () => lastChain,
+    voiceEffect, setVoiceEffect, voiceVolume, setVoiceVolume, playbackChain: () => lastChain,
     /* LIVE VOICE MUST ARRIVE AUDIBLE. Opening a hands-free session with the speaker muted is a room where you talk and
        nothing answers. Hands-free leases the speaker in toggleVoiceMode(); Local Live leases it for its call. A lease is
        its owner's alone and never saved: giving it back returns the speaker to the Commander's own choice (one made

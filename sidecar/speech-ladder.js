@@ -64,7 +64,7 @@ const SURFACE_DEFAULTS = Object.freeze({
    style for the desk's playback shell; the conformance test holds the two equal. The model is the sidecar's. */
 const STATION_VOICE = Object.freeze({
   voice: 'Sulafat',
-  style: 'A warm, soft-spoken young woman talking easily with a friend: relaxed pace with real pauses, natural breathing, gentle and a little playful, subtle vocal fry. Conversational and spontaneous, never scripted, sugary, or robotic.'
+  style: 'A warm, soft-spoken young woman talking easily with a friend: quiet and unhurried, close and gentle, with real pauses, natural breathing, a little playful, subtle vocal fry. Relaxed and spontaneous, never loud, sugary, scripted, or robotic.'
 });
 
 const KEYED_ENGINES = Object.freeze(['openrouter', 'gemini', 'openai']);

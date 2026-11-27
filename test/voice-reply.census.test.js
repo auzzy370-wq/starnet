@@ -132,6 +132,8 @@ const ROWS = [
   V('microphoneHelp', '', e => e.Voice.microphoneHelp(), 'spoken'),
   V('voiceEffect', '', e => e.Voice.voiceEffect(), 'spoken'),
   V('setVoiceEffect', '', e => e.Voice.setVoiceEffect('natural'), 'spoken'),
+  V('voiceVolume', '', e => e.Voice.voiceVolume(), 'spoken'),
+  V('setVoiceVolume', '', e => e.Voice.setVoiceVolume(0.5), 'spoken'),
   V('playbackChain', '', e => e.Voice.playbackChain(), 'spoken'),
   V('leaseSpeaker', 'a Live call borrows the speaker', e => e.Voice.leaseSpeaker('live'), 'spoken'),
   V('releaseSpeaker', "the call gives it back to the Commander's choice (on)", e => e.Voice.releaseSpeaker('live'), 'spoken', e => { e.Voice.leaseSpeaker('live'); }),

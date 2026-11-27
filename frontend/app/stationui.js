@@ -8408,6 +8408,8 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       '</div>' +
       '<div id="vcm-msg" class="msg"></div>';
     const customSw = deriveCustomTheme(s.themeHue, s.themeSat, 100)['--ph'];   // swatch tint for the CUSTOM chip
+    // the spoken volume lives with the effect pick (per app/browser), not in the settings store
+    const stationVol = Math.round((typeof Voice !== 'undefined' && Voice.voiceVolume ? Voice.voiceVolume() : 1) * 100);
     /* LIVE VOICE — which of the provider's voices speaks in hands-free mode. This lived only in a console
        call, which is not a setting. The list is fetched from the sidecar (status().voices) rather than
        hardcoded here, so it can never drift from what the provider actually offers. */
@@ -8428,7 +8430,12 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
          ['machine', 'MACHINE', 'The station shell: metallic, digitized, robotic.']]
           .map(([v, label, tip]) => '<button type="button" class="set-theme" data-lv-effect="' + v + '" aria-pressed="false" title="' + esc(tip) + '">' + label + '</button>').join('') +
       '</div>' +
-      '<p id="set-lv-effect-msg" class="msg" aria-live="polite"></p>';
+      '<p id="set-lv-effect-msg" class="msg" aria-live="polite"></p>' +
+      // VOLUME — how loud the station speaks. Drag while it is talking to hear the change.
+      '<h4 class="ms-h">VOICE VOLUME</h4>' +
+      '<p class="set-about">How loud spoken replies play. Drag it while the station is speaking to hear the change; 0% silences replies without turning the speaker off. Saved in this app or browser.</p>' +
+      '<label class="set-slider"><span class="set-slider-name">VOLUME</span><input type="range" id="set-voice-vol" aria-describedby="set-voice-vol-help" min="0" max="100" step="1" value="' + stationVol + '"><span class="set-slider-val" id="set-voice-vol-val">' + stationVol + '%</span></label>' +
+      '<p class="set-about" id="set-voice-vol-help">Scales every spoken voice, so a quiet aside stays quieter than a reply.</p>';
 
     const secAppearance =
       '<h4 class="ms-h">PHOSPHOR THEME</h4><div class="set-themes">' +
@@ -8831,6 +8838,17 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     wireSlider(glowIn, v => { s.themeGlow = clampN(v, 0, 150, 100); sliderVal('#set-glow-val', s.themeGlow + '%'); });
     wireSlider(brightIn, v => { s.panelBright = clampN(v, -100, 100, 0); sliderVal('#set-bright-val', s.panelBright + '%'); });
     wireSlider(host.querySelector('#set-static'), v => { s.staticLevel = clampN(v, 0, 200, 100); sliderVal('#set-static-val', s.staticLevel + '%'); });
+    // VOICE VOLUME — applied on every drag tick (a clip already playing is rescaled), stored beside the effect.
+    const volIn = host.querySelector('#set-voice-vol');
+    if (volIn) {
+      const applyVol = v => {
+        const n = clampN(v, 0, 100, 100);
+        if (typeof Voice !== 'undefined' && Voice.setVoiceVolume) Voice.setVoiceVolume(n / 100);
+        sliderVal('#set-voice-vol-val', n + '%');
+      };
+      volIn.addEventListener('input', ev => applyVol(ev.target.value));
+      volIn.addEventListener('change', () => { sfx('click'); flashSaved(appMsg()); });
+    }
     const bind = (id, key) => host.querySelector(id).addEventListener('change', ev => { s[key] = ev.target.checked; applySettings(); save(); flashSaved(appMsg()); });
     bind('#set-flicker', 'flicker'); bind('#set-sound', 'sound'); bind('#set-sound-hum', 'soundHum'); bind('#set-sound-heartbeat', 'soundHeartbeat'); bind('#set-hints', 'hints');
     const roomLightIn = host.querySelector('#set-room-light');
