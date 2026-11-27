@@ -598,9 +598,9 @@ const Voice = (() => {
     } catch (_) { return false; }   // routing failed → dry playback (the element still outputs normally)
   }
 
-  /* ---- MACHINE SHELL — a persona's cold-metal body (personas.js: ttsShell {metal,digitize,reverb}) --------
-     Ultron's voice: a low raspy human (Algenib) pushed through a metal shell. Tuned live in the voicelab and
-     ported here VERBATIM so in-game == what was auditioned. Layers, each 0..1:
+  /* ---- MACHINE SHELL — the optional "machine" effect (LOOK & SOUND › VOICE EFFECT) -------------------------
+     A human voice pushed through a metal shell. Tuned live in the voicelab and ported here VERBATIM so the
+     MACHINE pick == what was auditioned; the station voice itself wears none. Layers, each 0..1:
        metal    → two parallel comb resonators (~278Hz body + ~870Hz sheen) = the metallic ring
        digitize → a bit-depth quantizer (11→4 bits) + a 47Hz ring-mod shimmer = the "synthesized" edge
        reverb   → a synthetic metal-chamber impulse (rings ~950Hz) = voice inside the chassis
