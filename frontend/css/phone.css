@@ -18,7 +18,12 @@
    The station view is sized off the phone's WIDTH (it is a wide room, so 42vw frames it better
    than a share of the height), CREW takes a fixed slice and COMMS owns the rest, with a floor.
    Measured at 390x844: 188px of station, 252px of crew and 332px of COMMS, where before there
-   were 178x300 of station, 300px of crew and a transcript cut to a two-line peephole. Tapping
+   were 178x300 of station, 300px of crew and a transcript cut to a two-line peephole.
+
+   RETUNED 2026-11-27 — the transcript was still a peephole in practice: measured at 390x844 it had
+   87px (less than one message) against 188px of station and 252px of crew. The bands now give that
+   height back (station 135, crew 175, COMMS 421, transcript 219 at the same size; 49 -> 153 at
+   375x667), and a very short phone drops the crew band to keep the conversation readable. Tapping
    the rail's ◂ turns the crew band off entirely and hands its height to the conversation
    (COMMS 547px, transcript 324px at the same size). A very short phone (or a text size that
    inflates the rows past it) scrolls instead of crushing the transcript into a sliver —
@@ -35,11 +40,15 @@
   /* ---------- 1. the screen: one column, content-sized, scrolls under the dock ---------- */
   body #screen-game.active {
     grid-template-columns: minmax(0, 1fr);
+    /* READ THE CONVERSATION FIRST (2026-11-27): measured at 390x844 this gave COMMS 289px and its transcript 87px —
+       less than one message — while the station view took 188px and the crew rail 252px. On a phone the transcript is
+       the thing being read, so the room and the rail give their height back: 188/252 -> 117/152 and the transcript
+       goes 87 -> ~280px, three or four readable messages instead of half of one. Both regions stay whole. */
     grid-template-rows:
       calc(42px * var(--cz))                                    /* topbar */
-      clamp(calc(140px * var(--cz)), 42vw, calc(240px * var(--cz)))  /* station view */
-      minmax(calc(150px * var(--cz)), 26vh)                     /* CREW */
-      minmax(calc(230px * var(--cz)), 1fr)                      /* COMMS: the rest, with a floor */
+      clamp(calc(104px * var(--cz)), 30vw, calc(170px * var(--cz)))  /* station view */
+      minmax(calc(96px * var(--cz)), 18vh)                      /* CREW */
+      minmax(calc(320px * var(--cz)), 1fr)                      /* COMMS: the rest, with a floor */
       calc(44px * var(--cz));                                   /* dock */
     grid-template-areas: "top" "center" "left" "chat" "bot";
     padding: calc(4px * var(--cz));
@@ -50,14 +59,14 @@
   }
   /* the rail keeps its own measured roster/SESSIONS split inside its row (leftrail.js reads the
      real column height, so a short band shrinks the roster window rather than clipping it) */
-  body #screen-game.active #left { max-height: 26vh; }
+  body #screen-game.active #left { max-height: 18vh; }
 
   /* crew rail hidden (◂ in its header): three regions and one dock, no empty row left behind */
   body.crew-rail-off #screen-game.active {
     grid-template-rows:
       calc(42px * var(--cz))
-      clamp(calc(140px * var(--cz)), 42vw, calc(240px * var(--cz)))
-      minmax(calc(300px * var(--cz)), 1fr)
+      clamp(calc(104px * var(--cz)), 30vw, calc(170px * var(--cz)))
+      minmax(calc(360px * var(--cz)), 1fr)
       calc(44px * var(--cz));
     grid-template-areas: "top" "center" "chat" "bot";
   }
@@ -112,17 +121,44 @@
   body #screen-game.active {
     grid-template-rows:
       calc(42px * var(--cz))
-      clamp(calc(110px * var(--cz)), 34vw, calc(170px * var(--cz)))
-      minmax(0, 22vh)
-      minmax(calc(260px * var(--cz)), 1fr)
+      clamp(calc(88px * var(--cz)), 24vw, calc(150px * var(--cz)))
+      minmax(0, 12vh)
+      minmax(calc(320px * var(--cz)), 1fr)
       calc(44px * var(--cz));
   }
-  body #screen-game.active #left { max-height: 22vh; }
+  body #screen-game.active #left { max-height: 12vh; }
+  /* one line of composer, not two and a half: every row the composer keeps is a row the transcript loses */
+  body #screen-game #chat-panel .chat-editline { padding: 3px; }
+  body #screen-game #chat-panel #chat-input { min-height: calc(28px * var(--cz)); max-height: calc(64px * var(--cz)); }
   body.crew-rail-off #screen-game.active {
     grid-template-rows:
       calc(42px * var(--cz))
-      clamp(calc(110px * var(--cz)), 34vw, calc(170px * var(--cz)))
-      minmax(calc(260px * var(--cz)), 1fr)
+      clamp(calc(88px * var(--cz)), 24vw, calc(150px * var(--cz)))
+      minmax(calc(340px * var(--cz)), 1fr)
       calc(44px * var(--cz));
+  }
+}
+
+/* VERY SHORT PHONES (a landscape sliver, or a phone whose browser chrome eats half the screen): below
+   ~560px of height no arrangement keeps a room strip, a crew band, a composer and a readable transcript
+   at once, and the transcript is the one being read. The room keeps a thin strip so orientation
+   survives; the crew band steps out of the column entirely (the dock's CREW tab still opens the roster).
+   Measured at 447x444: transcript 116 -> ~210px. */
+@media (max-width: 600px) and (max-height: 560px) {
+  body #screen-game.active {
+    grid-template-rows:
+      calc(38px * var(--cz))
+      calc(76px * var(--cz))
+      minmax(0, 1fr)
+      calc(40px * var(--cz));
+    grid-template-areas: "top" "center" "chat" "bot";
+  }
+  body #screen-game.active #left { display: none; }
+  body.crew-rail-off #screen-game.active {
+    grid-template-rows:
+      calc(38px * var(--cz))
+      calc(76px * var(--cz))
+      minmax(0, 1fr)
+      calc(40px * var(--cz));
   }
 }
