@@ -88,5 +88,34 @@ function key(k, o) {
     A.eq(out.filter(e => e.type === 'text').length, 2, 'each input event sends its own text once');
     s2.stop();
   }
+  /* A CLICK ON A DESKTOP (reported 2026-11-27: "the browser is slow and I can't click anywhere and type"). One
+     gesture is one request (it used to be move, press and release as three round trips); it maps through the picture
+     into the page's own 1440x900 space; and a picture whose stream stopped no longer eats the click — the click brings
+     it back. */
+  {
+    const vp3 = target(), img3 = target();
+    img3.setAttribute = () => {};
+    img3.getBoundingClientRect = () => ({ left: 0, top: 0, width: 720, height: 450 });
+    img3.naturalWidth = 1440; img3.naturalHeight = 900;
+    const calls = []; let polls = 0;
+    const s3 = BrowserStream.create({ vp: vp3, img: img3,
+      poll: () => { polls++; return polls === 1 ? Promise.resolve({ status: 200, body: { ok: true, frame: { seq: 1, mime: 'image/jpeg', width: 1440, height: 900, data: 'x' } } }) : new Promise(() => {}); },
+      send: evs => { calls.push(evs.slice()); return Promise.resolve({ status: 200 }); } });
+    s3.start();
+    await tick(); await tick();
+    const md = { clientX: 360, clientY: 225, button: 0, detail: 1, preventDefault() {} };
+    img3.fire('mousedown', md); await tick();
+    A.eq(calls.length, 1, 'a click is ONE request, not one per event');
+    A.eq(calls[0].map(e => e.type + ':' + e.action).join(','), 'mouse:move,mouse:down', 'the move and the press go together');
+    A.eq(calls[0][1].x + ',' + calls[0][1].y, '720,450', 'the middle of the picture is the middle of the 1440x900 page');
+    img3.fire('mouseup', md); await tick();
+    A.eq(calls.length, 2, 'the release follows in its own request');
+    s3.stop();
+    const before = polls;
+    img3.fire('mousedown', md); await tick();
+    A.ok(polls > before, 'a click on a picture whose stream stopped brings the stream back');
+    A.eq(calls.length, 3, '…and that click is still sent instead of being thrown away');
+    s3.stop();
+  }
   A.report('browserstream.keys.test');
 })().catch(e => { console.log('FAIL: browserstream.keys.test threw — ' + (e && e.stack || e)); process.exit(1); });

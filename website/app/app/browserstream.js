@@ -37,7 +37,7 @@
     const vp = opts.vp, img = opts.img;
     const kbd = opts.kbd || null;   // an invisible text field inside vp: the only thing a phone raises a keyboard for
     const canSend = typeof opts.send === 'function';
-    const s = { on: false, gen: 0, seq: 0, frame: null, abort: null, pending: [], inflight: false, lastMove: null, moveAt: 0, moveTimer: 0 };
+    const s = { on: false, gen: 0, seq: 0, frame: null, abort: null, pending: [], inflight: false, queued: false, lastMove: null, moveAt: 0, moveTimer: 0 };
 
     async function loop(gen) {
       let fails = 0;
@@ -65,7 +65,10 @@
     }
     function start() {
       stop();
-      s.on = true; s.seq = 0; s.frame = null; s.pending.length = 0;
+      /* s.frame is KEPT across a restart: it is the page viewport the last picture was drawn at, and the pointer maths
+         needs it. Resetting it meant every click made in the second before the new picture arrived mapped nowhere and
+         was silently dropped. */
+      s.on = true; s.seq = 0; s.pending.length = 0;
       s.abort = (typeof AbortController !== 'undefined') ? new AbortController() : null;
       loop(++s.gen);
     }
@@ -77,7 +80,20 @@
     }
 
     // ---- hands (only when a send function was given) ----
-    function push(ev) { if (!canSend || !s.on) return; s.pending.push(ev); flush(); }
+    /* A PICTURE THAT STOPPED IS NOT A DEAD WINDOW (reported 2026-11-27: "the browser is slow and I can't click anywhere
+       and type"). push() used to require a running stream and closed over nothing else: once the stream had stopped —
+       a dropped poll, a minimized window, a slow tunnel — the picture still sat there looking alive while every click
+       and every key was thrown away without a word. Your first hand now brings the picture back. And the events of one
+       gesture are queued into a single request (a click used to be move, press and release in three round trips), so a
+       click lands as one thing instead of arriving in pieces. */
+    function push(ev) {
+      if (!canSend) return;
+      if (!s.on) start();
+      s.pending.push(ev);
+      if (s.queued) return;
+      s.queued = true;
+      Promise.resolve().then(() => { s.queued = false; flush(); });
+    }
     async function flush() {
       if (s.inflight || !s.pending.length) return;
       s.inflight = true;
@@ -103,13 +119,13 @@
     }
     if (canSend) {
       img.addEventListener('mousedown', e => {
-        const p = pagePoint(e); if (!p || !s.on) return;
+        const p = pagePoint(e); if (!p) return;   // deliberately not gated on s.on: a press brings a stopped picture back (see push)
         e.preventDefault(); focusSink();
         push({ type: 'mouse', action: 'move', x: p.x, y: p.y });
         push({ type: 'mouse', action: 'down', x: p.x, y: p.y, button: BTN[e.button] || 'left', clickCount: Math.min(3, e.detail || 1), modifiers: mods(e) });
       });
       img.addEventListener('mouseup', e => {
-        const p = pagePoint(e); if (!p || !s.on) return;
+        const p = pagePoint(e); if (!p) return;
         e.preventDefault();
         push({ type: 'mouse', action: 'up', x: p.x, y: p.y, button: BTN[e.button] || 'left', clickCount: Math.min(3, e.detail || 1), modifiers: mods(e) });
       });
@@ -122,7 +138,7 @@
       });
       img.addEventListener('contextmenu', e => e.preventDefault());
       img.addEventListener('wheel', e => {
-        const p = pagePoint(e); if (!p || !s.on) return;
+        const p = pagePoint(e); if (!p) return;
         e.preventDefault();
         const k = e.deltaMode === 1 ? 40 : e.deltaMode === 2 ? 800 : 1;
         push({ type: 'wheel', x: p.x, y: p.y, dx: e.deltaX * k, dy: e.deltaY * k, modifiers: mods(e) });
@@ -130,7 +146,8 @@
       /* NO KEYBOARD TRAP (release review 2026-09-30): keys are taken for the page only while you can actually type in
          it (opts.canType — not while an agent drives and every key would be refused anyway), so Tab and Esc move on as
          everywhere else in the station. And F6 / Ctrl+L always leave the page for the address bar, like any browser. */
-      const typing = () => s.on && (typeof opts.canType !== 'function' || !!opts.canType());
+      // keys are taken while you can type — not only while a picture happens to be streaming (push revives it)
+      const typing = () => (typeof opts.canType !== 'function' || !!opts.canType());
       vp.addEventListener('keydown', e => {
         if ((e.key === 'F6' || ((e.ctrlKey || e.metaKey) && (e.key === 'l' || e.key === 'L'))) && typeof opts.onLeave === 'function') {
           e.preventDefault(); e.stopPropagation(); opts.onLeave(); return;

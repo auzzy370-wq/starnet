@@ -135,7 +135,7 @@
       + '<button type="button" class="bb sm ob-out">OPEN OUTSIDE</button></div>'
       + '<div class="ob-stage">'
       + '<iframe class="ob-frame" title="Agent-made page" sandbox="allow-scripts allow-forms allow-modals allow-pointer-lock" referrerpolicy="no-referrer" hidden></iframe>'
-      + '<div class="ob-vp" tabindex="0" role="application" aria-label="Live browser picture" hidden><img class="ob-live" alt="" draggable="false">'
+      + '<div class="ob-vp" tabindex="0" role="application" aria-label="Live browser picture" hidden><img class="ob-live" alt="" draggable="false" decoding="async">'
       // the phone's keyboard only opens for a real text field: the picture is an <img>, and a focused div raises none
       // (browserstream.js opts.kbd sends what the field receives; it is invisible and never a tap target)
       + '<input class="ob-kb" type="text" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="sentences" spellcheck="false" enterkeyhint="send" aria-hidden="true" tabindex="-1"></div>'
@@ -160,7 +160,9 @@
           return r;
         }),
         // the station refuses input while an agent drives (409): the picture is then simply view-only
-        send: events => postJson('/api/browser/view/input', { events }),
+        send: events => postJson('/api/browser/view/input', { events })
+          .catch(() => ({ status: 0, body: {} }))
+          .then(r => { if (r.status !== 200) refuseInput(r); return r; }),
         canType: () => true,   // the Master's hands are never refused (sidecar/browser-view.js driving)
         onLeave: () => { try { ui.url.focus(); } catch (_) { /* focus is best-effort */ } } });
     }
@@ -204,6 +206,17 @@
   }
   function mounted() { return !!(state.ui && state.ui.body && state.ui.body.isConnected); }
   function setNote(text) { state.note = String(text || ''); if (mounted() && state.ui.note.textContent !== state.note) state.ui.note.textContent = state.note; }
+  /* A HAND THE STATION DID NOT TAKE IS SAID OUT LOUD. Input used to fail into silence (a 409, a dropped request, a
+     station that stopped answering), so the window looked alive while nothing you did arrived — the report on
+     2026-11-27 was "I can't click anywhere and type". Throttled: one line per ten seconds, never over a message
+     about the page itself. */
+  function refuseInput(r) {
+    const now = Date.now();
+    if (state.mode !== 'live' || now - (state.refusedAt || 0) < 10000) return;
+    state.refusedAt = now;
+    const why = (r && r.body && r.body.error) || (r && r.status === 0 ? 'the station did not answer' : 'the station refused it');
+    setNote('That click or key did not reach the page: ' + why + '.');
+  }
   function stopStreams() { const ui = state.ui; if (!ui) return; if (ui.watchStream) ui.watchStream.stop(); if (ui.liveStream) ui.liveStream.stop(); }
   function stage(which) {   // 'frame' | 'live' | 'empty'
     const ui = state.ui;
