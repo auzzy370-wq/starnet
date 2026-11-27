@@ -153,7 +153,7 @@
       calc(40px * var(--cz));
     grid-template-areas: "top" "chat" "bot";
   }
-  body #screen-game.active :is(#left, #stage-wrap) { display: none; }
+  body #screen-game.active:not(.cinema) :is(#left, #stage-wrap) { display: none; }   /* cinema still gets the feed */
   body.crew-rail-off #screen-game.active {
     grid-template-rows:
       calc(38px * var(--cz))

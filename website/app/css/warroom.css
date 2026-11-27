@@ -50,6 +50,16 @@
 }
 .cam-cine:hover { color: var(--ph-bright); border-color: var(--ph); }
 #screen-game.cinema.active { grid-template-columns: 0 1fr 0 !important; grid-template-rows: 0 1fr 0 !important; gap: 0 !important; padding: 0 !important; }
+/* CINEMA ON A PHONE (2026-11-27): the rule above hard-codes the desktop cockpit's three columns and rows. The phone
+   grid (css/phone.css) is ONE column with its own named areas, so "0 1fr 0" put the stage in a 0px column and the
+   cinema frame came up empty — measured at 390x844: stage width 0. One column, one row, the feed. */
+@media (max-width: 600px) {
+  #screen-game.cinema.active {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: minmax(0, 1fr) !important;
+    grid-template-areas: "center" !important;
+  }
+}
 #screen-game.cinema #topbar, #screen-game.cinema #left, #screen-game.cinema #chat-panel, #screen-game.cinema #bottombar { display: none !important; }
 #screen-game.cinema #stage-wrap { border-radius: 0; }
 #wr-cine-hint {
