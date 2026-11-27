@@ -32111,27 +32111,30 @@ function stampedUrls(html, v) {
 /* THE BOOT SET IS A FEW REQUESTS NOW (2026-11-27): the page asks for one JS bundle, one CSS bundle and the handful
    of files that must stay separate (see sidecar/bootbundle.js for which, and why). One bundle per asset version, so a
    deploy — or any edited boot file — mints a new URL and the old one is never served stale. */
-const BOOT_JS_URL = '/__boot.js', BOOT_CSS_URL = '/__boot.css';
+const BOOT_JS_RE = /^\/__boot\.(\d+)\.js$/, BOOT_CSS_URL = '/__boot.css';
+const bootJsUrl = (i) => '/__boot.' + i + '.js';
 let bootBundleMemo = { version: null, promise: null };
 function bootBundleFor(version) {
   if (bootBundleMemo.version === version && bootBundleMemo.promise) return bootBundleMemo.promise;
   const promise = buildBootBundle({ frontendDir: FRONTEND, stripJsComments }).catch((e) => {
     failNote('bootbundle.build', e);   // never fatal: the page then keeps every tag it already has
-    return { jsText: '', cssText: '', jsSet: new Set(), cssSet: new Set(), apart: [], error: e, jsCount: 0, cssCount: 0 };
+    return { bundles: [], cssText: '', jsSet: new Set(), cssSet: new Set(), apart: [], error: e, jsCount: 0, cssCount: 0 };
   });
   bootBundleMemo = { version, promise };
   return promise;
 }
 /* Same caching rules as any other boot asset: immutable once the URL carries this build's version token. */
-async function serveBootBundle(kind, req, res) {
+async function serveBootBundle(kind, index, req, res) {
   const version = assetVersion();
-  const bundle = await bootBundleFor(version);
-  const text = kind === 'js' ? bundle.jsText : bundle.cssText;
-  if (!text || bundle.error) { res.writeHead(404, { 'Cache-Control': 'no-store' }); return res.end('not found'); }
+  const set = await bootBundleFor(version);
+  const run = kind === 'js' ? (set.bundles || [])[index] : null;
+  const text = kind === 'js' ? (run && run.text) : set.cssText;
+  if (!text || set.error || (run && run.error)) { res.writeHead(404, { 'Cache-Control': 'no-store' }); return res.end('not found'); }
+  const key = kind === 'js' ? 'bundle:js.' + index : 'bundle:css';
   const plain = Buffer.from(text, 'utf8');
   const stamp = version + ':' + plain.length;
   const enc = acceptsEncoding(req, 'br') ? 'br' : (acceptsEncoding(req, 'gzip') ? 'gzip' : '');
-  const body = enc ? await staticGzip('bundle:' + kind, stamp, plain, enc) : plain;
+  const body = enc ? await staticGzip(key, stamp, plain, enc) : plain;
   const fresh = urlVersion(req.url) === version;
   const head = {
     'Content-Type': kind === 'js' ? 'text/javascript; charset=utf-8' : 'text/css; charset=utf-8',
@@ -32155,16 +32158,18 @@ function warmStaticCaches() {
     const version = assetVersion();
     const bundle = await bootBundleFor(version);
     let warmed = 0, skipped = 0;
-    for (const [kind, text] of [['js', bundle.jsText], ['css', bundle.cssText]]) {
-      if (!text || bundle.error) { skipped++; continue; }
+    const warmOne = async (key, text) => {
+      if (!text) { skipped++; return; }
       const plain = Buffer.from(text, 'utf8');
       const stamp = version + ':' + plain.length;
       try {
-        await staticGzip('bundle:' + kind, stamp, plain, 'gzip');   // the tunnel strips `br`, so gzip is what a phone gets
-        await staticGzip('bundle:' + kind, stamp, plain, 'br');
+        await staticGzip(key, stamp, plain, 'gzip');   // the tunnel strips `br`, so gzip is what a phone gets
+        await staticGzip(key, stamp, plain, 'br');
         warmed++;
       } catch (e) { skipped++; }
-    }
+    };
+    for (const run of (bundle.bundles || [])) await warmOne('bundle:js.' + run.index, run.text);
+    await warmOne('bundle:css', bundle.cssText);
     let html = '';
     try { html = await fsp.readFile(path.resolve(FRONTEND, 'index.html'), 'utf8'); } catch (e) { html = ''; }
     const { js = [], css = [] } = bootLinks(html);
@@ -32196,8 +32201,9 @@ function warmStaticCaches() {
 async function serveStatic(req, res) {
   try {
     const url = decodeURIComponent((req.url || '/').split('?')[0]);
-    if (url === BOOT_JS_URL) return await serveBootBundle('js', req, res);
-    if (url === BOOT_CSS_URL) return await serveBootBundle('css', req, res);
+    const bootJs = url.match(BOOT_JS_RE);
+    if (bootJs) return await serveBootBundle('js', Number(bootJs[1]), req, res);
+    if (url === BOOT_CSS_URL) return await serveBootBundle('css', 0, req, res);
     const rel = (url === '/' ? 'index.html' : url.replace(/^\/+/, ''));
     const abs = path.resolve(FRONTEND, rel);
     if (abs !== FRONTEND && abs.indexOf(FRONTEND + path.sep) !== 0) { res.writeHead(403); return res.end('forbidden'); }
@@ -32227,7 +32233,7 @@ async function serveStatic(req, res) {
       const version = assetVersion();
       let pageHtml = isAppPage ? stampedUrls(String(data), version) : String(data);   // version-stamp the boot set so it can be cached hard (see assetVersion)
       // ...then collapse that boot set into the bundles the browser actually asks for (the page is a badge of what ran)
-      if (isAppPage) pageHtml = applyBootBundle(pageHtml, await bootBundleFor(version), version, { js: BOOT_JS_URL, css: BOOT_CSS_URL });
+      if (isAppPage) pageHtml = applyBootBundle(pageHtml, await bootBundleFor(version), version, { jsFor: bootJsUrl, css: BOOT_CSS_URL });
       data = Buffer.from(pageHtml.replace(/<\/head>/i, boot + '\n</head>'), 'utf8');
     }
     // ANTI-FRAMING (2026-09-23 security audit): a foreign site must not frame the live app (the framed page passes

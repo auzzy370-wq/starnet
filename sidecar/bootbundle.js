@@ -1,18 +1,16 @@
 'use strict';
-/* THE BOOT SET, AS A FEW REQUESTS (2026-11-27).
-   index.html asks for ~330 separate files. Over a quick tunnel that is one round trip per file, and each small
-   response pays its own compression header — so the first load cost seconds of latency rather than seconds of
-   transfer. This module reads the page's own script/link tags IN DOCUMENT ORDER and concatenates them.
+/* THE BOOT SET, AS FEWER REQUESTS (2026-11-27).
+   index.html asks for ~330 separate files, and over a quick tunnel that is one round trip per file. This module reads
+   the page's own script/link tags IN DOCUMENT ORDER and concatenates them.
 
-   What it refuses to touch, because concatenation would change behaviour:
-     · sloppy files  — a bundle is strict or sloppy as a whole. Putting a file that is sloppy today into a strict
-                       bundle would turn implicit globals into ReferenceErrors, so those stay individual tags.
-     · document.currentScript — inside a bundle that answers "which element is running", and the answer would be the
-                       bundle, not the file. Those stay individual tags too.
-     · anything outside the frontend root, and anything unreadable.
+   ORDER IS THE WHOLE PROBLEM. The page mixes strict files with a handful that are sloppy or that ask
+   document.currentScript which element is running. Those cannot go into a bundle (a bundle is strict or sloppy as a
+   whole, and inside a bundle currentScript answers "the bundle"). Putting one big bundle at the first strict file's
+   position would run every strict file BEFORE the sloppy files that used to sit between them — measured in jsdom as a
+   real breakage (a strict file reading a helper an earlier sloppy file had not defined yet). So the set is cut into
+   runs: one bundle per contiguous run of strict files, each bundle emitted exactly where its first file was, and the
+   files in between left as individual tags. Same order, same strictness, same globals, a fraction of the requests.
 
-   Every included file already begins with 'use strict', and the bundle states it once at the top, so each file runs
-   exactly as strictly as it does on its own today. Order is preserved, so cross-file globals resolve as before.
    A bundle that does not PARSE is never served: the caller falls back to the untouched page. */
 const fs = require('node:fs');
 const fsp = fs.promises;
@@ -36,10 +34,13 @@ function bootLinks(html) {
   return { js, css };
 }
 
-/* Cross-file top-level declarations are legal across separate classic scripts (var/function land on the global
-   object) but a `const`/`let`/`class` at top level goes into the shared global lexical scope — so a duplicate is
-   already a SyntaxError on the page today, and the same duplicate would be a SyntaxError in the bundle. That is why
-   a parse check is enough to catch the whole class: vm.Script parses exactly like a classic script. */
+/* Why a file cannot join a bundle. `null` means it can. */
+function whyApart(rel, src) {
+  if (/document\.currentScript/.test(src)) return 'currentScript';
+  if (!STRICT_PROLOGUE.test(src)) return 'sloppy';
+  return null;
+}
+
 async function buildBootBundle(opts) {
   const frontendDir = path.resolve((opts && opts.frontendDir) || 'frontend');
   const strip = (opts && opts.stripJsComments) || ((s) => s);
@@ -47,17 +48,29 @@ async function buildBootBundle(opts) {
   if (html == null) html = await fsp.readFile(path.join(frontendDir, 'index.html'), 'utf8');
   const { js, css } = bootLinks(html);
 
-  const jsSet = new Set(), cssSet = new Set(), apart = [], jsParts = [], cssParts = [];
+  const runs = [], apart = [], jsSet = new Set(), cssSet = new Set();
+  let open = null;
   for (const rel of js) {
     const abs = path.resolve(frontendDir, rel);
-    if (abs.indexOf(frontendDir + path.sep) !== 0) { apart.push({ rel, why: 'outside' }); continue; }
-    let src;
-    try { src = await fsp.readFile(abs, 'utf8'); } catch (e) { apart.push({ rel, why: 'absent' }); continue; }
-    if (/document\.currentScript/.test(src)) { apart.push({ rel, why: 'currentScript' }); continue; }
-    if (!STRICT_PROLOGUE.test(src)) { apart.push({ rel, why: 'sloppy' }); continue; }
-    jsParts.push('/* ' + rel + ' */\n' + strip(src));
+    let src = null, why = null;
+    if (abs.indexOf(frontendDir + path.sep) !== 0) why = 'outside';
+    else { try { src = await fsp.readFile(abs, 'utf8'); } catch (e) { why = 'absent'; } }
+    if (!why && src != null) why = whyApart(rel, src);
+    if (why) { apart.push({ rel, why }); open = null; continue; }   // a run ENDS at anything left behind
+    if (!open) { open = { urls: [], parts: [] }; runs.push(open); }
+    open.urls.push(rel);
+    open.parts.push('/* ' + rel + ' */\n' + strip(src));
     jsSet.add(rel);
   }
+
+  const bundles = runs.map((run, index) => {
+    const text = "'use strict';\n" + run.parts.join('\n;\n') + '\n';
+    let error = null;
+    try { new vm.Script(text, { filename: 'boot-bundle-' + index + '.js' }); } catch (e) { error = e; }
+    return { index, urls: run.urls, text, error };
+  });
+
+  const cssParts = [];
   for (const rel of css) {
     const abs = path.resolve(frontendDir, rel);
     if (abs.indexOf(frontendDir + path.sep) !== 0) { apart.push({ rel, why: 'outside' }); continue; }
@@ -65,32 +78,37 @@ async function buildBootBundle(opts) {
     catch (e) { apart.push({ rel, why: 'absent' }); }
   }
 
-  const jsText = jsParts.length ? "'use strict';\n" + jsParts.join('\n;\n') + '\n' : '';
-  const cssText = cssParts.join('\n');
-  let error = null;
-  if (jsText) { try { new vm.Script(jsText, { filename: 'boot-bundle.js' }); } catch (e) { error = e; } }
-  return { jsText, cssText, jsSet, cssSet, apart, error, jsCount: jsSet.size, cssCount: cssSet.size };
+  const error = bundles.find((b) => b.error) || null;
+  return {
+    bundles, cssText: cssParts.join('\n'), jsSet, cssSet, apart,
+    error: error && error.error, jsCount: jsSet.size, cssCount: cssSet.size,
+    jsBytes: bundles.reduce((s, b) => s + b.text.length, 0)
+  };
 }
 
-/* Rewrite the page's own tags: the bundled files collapse into one tag at the position of the FIRST one, so the
-   remaining (unbundled) tags keep their exact order around them. A bundle that failed to parse is never referenced. */
-function applyBootBundle(html, bundle, version, urls) {
-  if (!bundle || bundle.error || !bundle.jsSet || !bundle.jsSet.size) return html;
+/* Rewrite the page's own tags: each run's tags collapse into one tag at the position of its FIRST file, so every
+   remaining tag keeps its exact place relative to the bundles. A set that failed to parse is never referenced. */
+function applyBootBundle(html, set, version, urls) {
+  if (!set || set.error || !set.bundles || !set.bundles.length) return html;
   const q = '?v=' + version;
-  const jsUrl = (urls && urls.js) || '/__boot.js';
-  const cssUrl = (urls && urls.css) || '/__boot.css';
-  let jsDone = false, cssDone = false;
+  const byUrl = new Map();
+  for (const b of set.bundles) for (const u of b.urls) byUrl.set(u, b);
+  const emitted = new Set();
   let out = String(html).replace(/<script\b[^>]*\bsrc="([^"]+)"[^>]*><\/script>/g, (tag, u) => {
     const rel = String(u).split('?')[0].replace(/^\/+/, '');
-    if (!bundle.jsSet.has(rel)) return tag;
-    if (jsDone) return '';
-    jsDone = true;
-    return '<script src="' + jsUrl + q + '"></script>';
+    const b = byUrl.get(rel);
+    if (!b) return tag;
+    if (emitted.has(b.index)) return '';
+    emitted.add(b.index);
+    const src = (urls && urls.jsFor) ? urls.jsFor(b.index) : ('/__boot.' + b.index + '.js');
+    return '<script src="' + src + q + '"></script>';
   });
-  if (bundle.cssSet && bundle.cssSet.size) {
+  if (set.cssSet && set.cssSet.size) {
+    const cssUrl = (urls && urls.css) || '/__boot.css';
+    let cssDone = false;
     out = out.replace(/<link\b[^>]*\bhref="([^"]+)"[^>]*>/g, (tag, u) => {
       const rel = String(u).split('?')[0].replace(/^\/+/, '');
-      if (!bundle.cssSet.has(rel)) return tag;
+      if (!set.cssSet.has(rel)) return tag;
       if (cssDone) return '';
       cssDone = true;
       return '<link rel="stylesheet" href="' + cssUrl + q + '">';
