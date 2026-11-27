@@ -32028,6 +32028,7 @@ function acceptsEncoding(req, enc) {
    that explains the code (see sidecar/jssource.js — code bytes pass through verbatim, line numbers are preserved).
    12.51 -> 9.50 MiB raw, 4.13 -> 2.86 MiB gzipped: less to download, tokenize and compile on a phone, same program. */
 const { stripJsComments } = require('./jssource.js');
+const { buildBootBundle, applyBootBundle, bootLinks } = require('./bootbundle.js');
 const staticStrippedCache = new Map();      // abs -> { stamp, buf }
 function staticStripped(abs, stamp, data) {
   const hit = staticStrippedCache.get(abs);
@@ -32107,47 +32108,96 @@ function stampedUrls(html, v) {
    once those same caches were warm, and a restart is exactly when the Master opens the page (a new tunnel hostname also
    throws the browser's copy away). Warm the request-path caches in the background with the SAME helpers, so the first
    load finds them hot. Low concurrency (this box is also mid-boot), never on the request path, never fatal. */
+/* THE BOOT SET IS A FEW REQUESTS NOW (2026-11-27): the page asks for one JS bundle, one CSS bundle and the handful
+   of files that must stay separate (see sidecar/bootbundle.js for which, and why). One bundle per asset version, so a
+   deploy — or any edited boot file — mints a new URL and the old one is never served stale. */
+const BOOT_JS_URL = '/__boot.js', BOOT_CSS_URL = '/__boot.css';
+let bootBundleMemo = { version: null, promise: null };
+function bootBundleFor(version) {
+  if (bootBundleMemo.version === version && bootBundleMemo.promise) return bootBundleMemo.promise;
+  const promise = buildBootBundle({ frontendDir: FRONTEND, stripJsComments }).catch((e) => {
+    failNote('bootbundle.build', e);   // never fatal: the page then keeps every tag it already has
+    return { jsText: '', cssText: '', jsSet: new Set(), cssSet: new Set(), apart: [], error: e, jsCount: 0, cssCount: 0 };
+  });
+  bootBundleMemo = { version, promise };
+  return promise;
+}
+/* Same caching rules as any other boot asset: immutable once the URL carries this build's version token. */
+async function serveBootBundle(kind, req, res) {
+  const version = assetVersion();
+  const bundle = await bootBundleFor(version);
+  const text = kind === 'js' ? bundle.jsText : bundle.cssText;
+  if (!text || bundle.error) { res.writeHead(404, { 'Cache-Control': 'no-store' }); return res.end('not found'); }
+  const plain = Buffer.from(text, 'utf8');
+  const stamp = version + ':' + plain.length;
+  const enc = acceptsEncoding(req, 'br') ? 'br' : (acceptsEncoding(req, 'gzip') ? 'gzip' : '');
+  const body = enc ? await staticGzip('bundle:' + kind, stamp, plain, enc) : plain;
+  const fresh = urlVersion(req.url) === version;
+  const head = {
+    'Content-Type': kind === 'js' ? 'text/javascript; charset=utf-8' : 'text/css; charset=utf-8',
+    'Cache-Control': fresh ? 'public, max-age=31536000, immutable' : 'no-cache',
+    'ETag': 'W/"' + plain.length.toString(16) + (enc ? '-' + enc : '') + '"',
+    'Vary': 'Accept-Encoding', 'Content-Length': body.length, 'X-Content-Type-Options': 'nosniff'
+  };
+  if (enc) head['Content-Encoding'] = enc;
+  res.writeHead(200, head);
+  res.end(body);
+}
+/* FIRST LOAD AFTER A RESTART (2026-11-27): a restart is exactly when the Master opens the page, and a new tunnel
+   hostname throws the browser's copy away — so the first request must never be the one that builds the bundles.
+   Runs the moment the port opens (not seconds in), never on the request path, and never fatal. */
 let staticWarmStarted = false;
 function warmStaticCaches() {
   if (staticWarmStarted) return;
   staticWarmStarted = true;
-  const walk = async () => {
-    let html;
-    try { html = await fsp.readFile(path.resolve(FRONTEND, 'index.html'), 'utf8'); } catch (e) { return; }
-    // exactly the files the page asks for, in the order it asks for them
-    const rels = [...new Set(Array.from(html.matchAll(/(?:src|href)="([^"]+\.(?:js|css))(?:\?[^"]*)?"/g), (m) => m[1].replace(/^\/+/, '')))];
-    const queue = rels.slice();
-    const one = async (rel) => {
-      const abs = path.resolve(FRONTEND, rel);
-      if (abs !== FRONTEND && abs.indexOf(FRONTEND + path.sep) !== 0) return;
-      const ext = path.extname(abs).toLowerCase();
-      if (!STATIC_GZIP_TYPES.has(ext)) return;
-      const st = await fsp.stat(abs);
-      if (!st.isFile() || st.size < STATIC_MIN_GZIP) return false;
-      const stamp = st.size + ':' + Math.round(st.mtimeMs);
-      const plain = ext === '.js' ? staticStripped(abs, stamp, await fsp.readFile(abs)) : await fsp.readFile(abs);
-      await staticGzip(abs, stamp, plain, 'br');   // phones send br; the gzip twin is built on demand for anyone who cannot
-      return true;
-    };
+  const run = async () => {
     const t0 = Date.now();
+    const version = assetVersion();
+    const bundle = await bootBundleFor(version);
     let warmed = 0, skipped = 0;
+    for (const [kind, text] of [['js', bundle.jsText], ['css', bundle.cssText]]) {
+      if (!text || bundle.error) { skipped++; continue; }
+      const plain = Buffer.from(text, 'utf8');
+      const stamp = version + ':' + plain.length;
+      try {
+        await staticGzip('bundle:' + kind, stamp, plain, 'gzip');   // the tunnel strips `br`, so gzip is what a phone gets
+        await staticGzip('bundle:' + kind, stamp, plain, 'br');
+        warmed++;
+      } catch (e) { skipped++; }
+    }
+    let html = '';
+    try { html = await fsp.readFile(path.resolve(FRONTEND, 'index.html'), 'utf8'); } catch (e) { html = ''; }
+    const { js = [], css = [] } = bootLinks(html);
+    const queue = [...js, ...css].filter((rel) => !bundle.jsSet.has(rel) && !bundle.cssSet.has(rel));
     await Promise.all(Array.from({ length: 2 }, async () => {
       while (queue.length) {
         const rel = queue.shift();
-        try { const did = await one(rel); if (did) warmed++; else skipped++; }
-        catch (e) { skipped++; }   // one unreadable file must not stop the warm
+        try {
+          const abs = path.resolve(FRONTEND, rel);
+          if (abs.indexOf(FRONTEND + path.sep) !== 0) { skipped++; continue; }
+          const ext = path.extname(abs).toLowerCase();
+          if (!STATIC_GZIP_TYPES.has(ext)) { skipped++; continue; }
+          const st = await fsp.stat(abs);
+          if (!st.isFile() || st.size < STATIC_MIN_GZIP) { skipped++; continue; }
+          const stamp = st.size + ':' + Math.round(st.mtimeMs);
+          const plain = ext === '.js' ? staticStripped(abs, stamp, await fsp.readFile(abs)) : await fsp.readFile(abs);
+          await staticGzip(abs, stamp, plain, 'gzip');
+          await staticGzip(abs, stamp, plain, 'br');
+          warmed++;
+        } catch (e) { skipped++; }   // one unreadable file must not stop the warm
       }
     }));
-    console.log('  · static warm: ' + warmed + ' files ready in ' + ((Date.now() - t0) / 1000).toFixed(1) + 's' +
+    console.log('  · static warm: ' + warmed + ' assets ready in ' + ((Date.now() - t0) / 1000).toFixed(1) + 's' +
       (skipped ? ' (' + skipped + ' skipped)' : ''));
   };
-  const t = setTimeout(() => { walk().catch(() => {}); }, 3000);
-  if (t.unref) t.unref();
+  run().catch(() => {});
 }
 
 async function serveStatic(req, res) {
   try {
     const url = decodeURIComponent((req.url || '/').split('?')[0]);
+    if (url === BOOT_JS_URL) return await serveBootBundle('js', req, res);
+    if (url === BOOT_CSS_URL) return await serveBootBundle('css', req, res);
     const rel = (url === '/' ? 'index.html' : url.replace(/^\/+/, ''));
     const abs = path.resolve(FRONTEND, rel);
     if (abs !== FRONTEND && abs.indexOf(FRONTEND + path.sep) !== 0) { res.writeHead(403); return res.end('forbidden'); }
@@ -32174,7 +32224,10 @@ async function serveStatic(req, res) {
       if (DEV_MODE) { const envWire = runWireEnv(); boot += 'window.__VULTRON_DEV__=' + JSON.stringify({ model: envWire.model || '', prov: envWire.provider, hasKey: !!credStore.key(envWire.provider, '') }) + ';'; }
       boot += '</script>';
       await readData();
-      const pageHtml = isAppPage ? stampedUrls(String(data), assetVersion()) : String(data);   // version-stamp the boot set so it can be cached hard (see assetVersion)
+      const version = assetVersion();
+      let pageHtml = isAppPage ? stampedUrls(String(data), version) : String(data);   // version-stamp the boot set so it can be cached hard (see assetVersion)
+      // ...then collapse that boot set into the bundles the browser actually asks for (the page is a badge of what ran)
+      if (isAppPage) pageHtml = applyBootBundle(pageHtml, await bootBundleFor(version), version, { js: BOOT_JS_URL, css: BOOT_CSS_URL });
       data = Buffer.from(pageHtml.replace(/<\/head>/i, boot + '\n</head>'), 'utf8');
     }
     // ANTI-FRAMING (2026-09-23 security audit): a foreign site must not frame the live app (the framed page passes
