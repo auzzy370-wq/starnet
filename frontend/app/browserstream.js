@@ -161,7 +161,10 @@
          an input event — a keyboard that composes without a keydown, an autocorrect replacement, a paste into the field —
          is sent as TEXT and then cleared, so nothing can be typed twice. */
       if (kbd) {
-        vp.addEventListener('pointerdown', focusSink);   // a tap on the picture raises the keyboard
+        // a tap on the picture raises the keyboard. Three doors on purpose: iOS is pickiest about WHICH gesture a
+        // programmatic focus may follow, and a repeat focus is harmless.
+        vp.addEventListener('pointerdown', focusSink);
+        vp.addEventListener('touchend', focusSink);
         vp.addEventListener('click', focusSink);
         kbd.addEventListener('input', () => {
           const t = String(kbd.value || '');
