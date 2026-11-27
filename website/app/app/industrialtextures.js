@@ -28,6 +28,30 @@ const IndustrialTextures = (() => {
     lazyArt = q != null ? (q === '1' || q === 'on') : (typeof localStorage !== 'undefined' && localStorage.getItem('vultron.idleRenderer') === '1');
   } catch (_) {}
   const ART_LRU_MAX = 24;
+  /* A PHONE HOLDS THE PACK SMALL (2026-11-27: "when I zoom into the page it reloads" — iPhone Safari was killing the
+     page for memory and reloading it, exactly when pinch-zoom made it re-raster at a bigger scale). This pack is ~350
+     MiB of albedo decoded plus a painted canvas of every atlas: about 700 MiB before the station itself. Every reader
+     of these atlases samples them PROPORTIONALLY (a fraction of im.width / im.height — wall runs, floor tiles, seats,
+     emitters alike), so a smaller bitmap is the same picture, just softer. A phone draws the station into ~1200 device
+     px, so half size still oversamples every material it shows. Desktop keeps the authored pixels, untouched. */
+  const ART_SCALE = (() => {
+    try {
+      const phone = (typeof matchMedia === 'function' && matchMedia('(max-width: 820px)').matches)
+        || (typeof navigator !== 'undefined' && navigator.maxTouchPoints > 1 && (typeof innerWidth === 'number' && innerWidth < 1024));
+      return phone ? 0.5 : 1;
+    } catch (_) { return 1; }
+  })();
+  // the same albedo at fewer pixels — the source of every painted material (and of every repaint after a restore)
+  function shrink(img, k) {
+    const cv = document.createElement('canvas');
+    cv.width = Math.max(1, Math.round(img.width * k));
+    cv.height = Math.max(1, Math.round(img.height * k));
+    const g = cv.getContext('2d');
+    if (!g) throw new Error('no 2d context for the material pack');
+    try { g.imageSmoothingQuality = 'high'; } catch (_) { /* best-effort: an old engine just uses its default */ }
+    g.drawImage(img, 0, 0, cv.width, cv.height);
+    return cv;
+  }
   const artStats = { painted: 0, evicted: 0 };
   function lazyImages() {
     const held = new Map();   // name -> painted canvas, oldest use first
@@ -128,8 +152,11 @@ const IndustrialTextures = (() => {
     const img = new Image();
     img.onload = () => {
       try {
-        originals[name] = img;
-        if (!lazyArt) images[name] = paintOriginal(name, img);   // LAZY ART paints it the first time it is drawn
+        // decode once at the size this device draws (ART_SCALE): the full-size bitmap is never kept, so the shrunken
+        // copy is what every material, tint and repaint is cut from
+        const src = ART_SCALE < 1 ? shrink(img, ART_SCALE) : img;
+        originals[name] = src;
+        if (!lazyArt) images[name] = paintOriginal(name, src);   // LAZY ART paints it the first time it is drawn
       } catch (_) { failed.push(name); }
       resolve();
     };
@@ -652,6 +679,9 @@ const IndustrialTextures = (() => {
     _dbgArtTouch: name => !!images[name],   // probes/tests: draw-side read of one material (LAZY ART paints it here)
     drawBase, floor, wall, wallStrip, wallPatch, crown, doorReturn, viewportFrame, shell, shellPlate, propPanel, workstation, workstationEmitter, chair, crate,
     furniture, workstationNext: () => wsChangeAt, supportsWall: id => enabled() && (wallIds.includes(id)||wallMaterials.includes(id)),
-    status: () => ({ requested, loaded, failed: failed.slice(), assets: Object.keys(lazyArt ? originals : images), lazyArt, artHeld: lazyArt ? Object.keys(images).length : Object.keys(images).length, artPainted: artStats.painted, artEvicted: artStats.evicted }) });
+    status: () => ({ requested, loaded, failed: failed.slice(), assets: Object.keys(lazyArt ? originals : images), lazyArt, artScale: ART_SCALE,
+      // the pixels this device is actually holding for the pack (4 bytes each) — a phone's ART_SCALE shows up here
+      artPx: lazyArt ? null : Object.keys(images).reduce((n, k) => n + (images[k] && images[k].width ? images[k].width * images[k].height : 0), 0),
+      artHeld: lazyArt ? Object.keys(images).length : Object.keys(images).length, artPainted: artStats.painted, artEvicted: artStats.evicted }) });
 })();
 if (typeof module !== 'undefined' && module.exports) module.exports = IndustrialTextures;
