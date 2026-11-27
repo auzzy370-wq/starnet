@@ -20,8 +20,9 @@ const { randomBytes, randomUUID } = require('node:crypto');
 // The public trusted-client token + Chromium version string the Edge read-aloud client presents.
 const TRUSTED_TOKEN = '6A5AA1D4EAFF4E9FB37E23D68491D6F4';
 const CHROMIUM_VER = '143.0.3650.96';
-// Nearest Edge neural voice to the station's locked Algenib identity (low gravelly male bass).
-const DEFAULT_VOICE = 'en-US-ChristopherNeural';
+// Nearest Edge neural voice to the station's own voice: af_heart's mapped neural (personas.js STATION_VOICE,
+// local-voice.js LOCAL_VOICES) — a warm American woman, so the free floor does not change the speaker's sex.
+const DEFAULT_VOICE = 'en-US-JennyNeural';
 // Edge outputs mp3 for this format (matches what the browser <audio> plays natively).
 const OUTPUT_FORMAT = 'audio-24khz-48kbitrate-mono-mp3';
 // WebSocket GUID (RFC 6455) — only needed by a peer that VALIDATES the handshake accept; the raw
@@ -174,7 +175,7 @@ function secMsGec(nowMs) {
   return gecCs64(data, digest).toString('hex').toUpperCase() + '-' + digest.toString('hex').toUpperCase();
 }
 
-// Which Edge voice to use — explicit opt wins, else SKYNET_EDGE_TTS_VOICE, else the Algenib-nearest default.
+// Which Edge voice to use — explicit opt wins, else SKYNET_EDGE_TTS_VOICE, else the station's nearest default.
 function resolveVoice(opts) {
   return String((opts && opts.voice) || env('EDGE_TTS_VOICE') || DEFAULT_VOICE).trim() || DEFAULT_VOICE;
 }

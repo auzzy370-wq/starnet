@@ -610,7 +610,7 @@ function makeMediaService(options) {
   }
 
   /* The spoken voice for a paired device (remote/voice.js `speak`): the 'device' surface. Its identity is the built-in
-     engine's DEFAULT voice (am_onyx), then that voice's mapped Edge neural voice, then the station's keyed voice
+     engine's DEFAULT voice (af_heart), then that voice's mapped Edge neural voice, then the station's keyed voice
      (policy.keyedAfterFloor). Voice picks (station and per-agent) live in the desk page's storage and `speak` carries
      no agentId, so the companion does not follow them. Never throws.
      opts.provider pins one reply to the engine that spoke its first sentence (the one continuity rule). The built-in

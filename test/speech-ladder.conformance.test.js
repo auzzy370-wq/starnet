@@ -122,7 +122,7 @@ const SL = require('../sidecar/speech-ladder.js');
 const { makeMediaService } = require('../sidecar/media-service.js');
 const SO = require('../sidecar/speech-outcome.js');
 
-A.eq(SL.STATION_VOICE.voice, 'Algenib', 'the station voice');
+A.eq(SL.STATION_VOICE.voice, 'Sulafat', 'the station voice');
 {
   const personas = new Function(read('frontend/app/personas.js') + '\nreturn Personas;')();
   A.eq([personas.STATION_VOICE.ttsVoice, personas.STATION_VOICE.ttsStyle], [SL.STATION_VOICE.voice, SL.STATION_VOICE.style], 'the desk\'s copy of the station voice is the sidecar\'s (personas.js)');
@@ -160,7 +160,7 @@ function station(script, policy) {
     const b = JSON.parse(init.body);
     const voice = engine === 'gemini' ? b.generationConfig.speechConfig.voiceConfig.prebuiltVoiceConfig.voiceName : b.voice;
     const input = engine === 'gemini' ? b.contents[0].parts[0].text : b.input;
-    log.push(engine + ' voice=' + voice + (/^Say the following in A low, smooth American male voice/.test(input) ? ' +station-style' : ''));
+    log.push(engine + ' voice=' + voice + (/^Say the following in A warm, soft-spoken young woman/.test(input) ? ' +station-style' : ''));
     return keyedResponse(engine, next(engine));   // (a 'timeout' verdict throws, as an aborted fetch does)
   };
   const edgetts = {
@@ -244,16 +244,16 @@ function same(label, out) {
 (async () => {
   // keyed identity (the desk, voice_generate): a blip on the first account is retried, spaced, in the station's voice
   let r = same('a 429 then audio', await across(['desk', 'agent'], { openrouter: ['429', 'ok'] }));
-  A.eq(r.calls, ['openrouter voice=Algenib +station-style', 'wait 400', 'openrouter voice=Algenib +station-style'], 'retried once after 400 ms, in the station voice');
+  A.eq(r.calls, ['openrouter voice=Sulafat +station-style', 'wait 400', 'openrouter voice=Sulafat +station-style'], 'retried once after 400 ms, in the station voice');
   A.eq(r.result, 'spoke:openrouter', '...and the reply speaks');
   r = same('an empty wallet', await across(['desk', 'agent'], { openrouter: ['402'] }));
-  A.eq(r.calls, ['openrouter voice=Algenib +station-style', 'gemini voice=Algenib +station-style'], 'a terminal refusal is never retried; the policy walks to the next account');
+  A.eq(r.calls, ['openrouter voice=Sulafat +station-style', 'gemini voice=Sulafat +station-style'], 'a terminal refusal is never retried; the policy walks to the next account');
   r = same('every leg down', await across(['desk', 'agent'], { openrouter: ['402'], gemini: ['402'], edge: ['timeout', 'timeout', 'timeout'] }));
   A.eq(r.calls.filter(c => /^wait/.test(c)), ['wait 400', 'wait 1200'], 'the transient floor is retried twice, 400 ms then 1200 ms apart');
   A.eq(r.result, 'failed:billing', 'the outcome names the empty wallet on every surface');
   // pinned: only that leg, never another speaker
   r = same('pinned to gemini', await across(['desk', 'agent'], { gemini: ['500', '500', '500'] }, 'gemini'));
-  A.eq(r.calls.filter(c => !/^wait/.test(c)), ['gemini voice=Algenib +station-style', 'gemini voice=Algenib +station-style', 'gemini voice=Algenib +station-style'], 'a pinned reply tries only its own engine (retried), never Edge');
+  A.eq(r.calls.filter(c => !/^wait/.test(c)), ['gemini voice=Sulafat +station-style', 'gemini voice=Sulafat +station-style', 'gemini voice=Sulafat +station-style'], 'a pinned reply tries only its own engine (retried), never Edge');
   A.eq(r.result, 'failed:upstream_unavailable', '...and fails typed rather than change speaker');
 
   // local identity (Live, the device): the built-in voice, its mapped Edge voice, then the station's keyed voice
@@ -261,7 +261,7 @@ function same(label, out) {
   A.eq(r.calls, ['local voice=am_onyx', 'wait 400', 'local voice=am_onyx', 'wait 1200', 'local voice=am_onyx', 'edge voice=en-US-ChristopherNeural'],
     'the built-in engine is retried twice, then its mapped Edge voice speaks');
   r = same('the floor refuses too', await across(['live', 'device'], { local: ['x', 'x', 'x'], edge: ['refused'], openrouter: ['ok'] }));
-  A.eq(r.calls.slice(-1), ['openrouter voice=Algenib +station-style'], 'the keyed tail speaks the station voice (never a stock voice)');
+  A.eq(r.calls.slice(-1), ['openrouter voice=Sulafat +station-style'], 'the keyed tail speaks the station voice (never a stock voice)');
   r = same('pinned to edge', await across(['live', 'device'], { edge: ['refused'] }, 'edge'));
   A.eq(r.calls, ['edge voice=en-US-ChristopherNeural'], 'an Edge-pinned sentence tries only Edge, in the mapped voice');
   A.eq(r.result, 'failed:refused', '...and fails typed');
@@ -275,8 +275,8 @@ function same(label, out) {
   // DEFAULT policies, as shipped: the desk spends one account, the device and voice_generate walk (Andrew's spend call)
   {
     const shipped = await across(['desk', 'agent'], { openrouter: ['402'] }, '', null);
-    A.eq(shipped.desk.calls, ['openrouter voice=Algenib +station-style', 'edge voice=en-US-AndrewNeural'], 'the desk, as shipped: one keyed account, then the free floor');
-    A.eq(shipped.agent.calls, ['openrouter voice=Algenib +station-style', 'gemini voice=Algenib +station-style'], 'voice_generate, as shipped: it walks to the next keyed account');
+    A.eq(shipped.desk.calls, ['openrouter voice=Sulafat +station-style', 'edge voice=en-US-AndrewNeural'], 'the desk, as shipped: one keyed account, then the free floor');
+    A.eq(shipped.agent.calls, ['openrouter voice=Sulafat +station-style', 'gemini voice=Sulafat +station-style'], 'voice_generate, as shipped: it walks to the next keyed account');
     const devLive = await across(['live', 'device'], { local: ['x', 'x', 'x'], edge: ['refused'] }, '', null);
     A.eq(devLive.live.calls.filter(c => /openrouter|gemini/.test(c)), [], 'Live, as shipped: a station that chose the built-in voice never spends on a keyed one');
     A.eq(devLive.device.calls.filter(c => /openrouter/.test(c)).length, 1, 'the device, as shipped: its keyed tail is tried');
@@ -316,7 +316,7 @@ function same(label, out) {
     const st = station({ openrouter: ['timeout'], gemini: ['ok'] }, null);
     const api = await st.make();
     const r = await api.agent('Hello there.');
-    A.eq(st.log.filter(l => /^openrouter|^wait/.test(l)), ['openrouter voice=Algenib +station-style'], 'a keyed timeout on voice_generate is not retried (no second bill)');
+    A.eq(st.log.filter(l => /^openrouter|^wait/.test(l)), ['openrouter voice=Sulafat +station-style'], 'a keyed timeout on voice_generate is not retried (no second bill)');
     A.eq(r.ok, true, '...the next account speaks');
   }
 
@@ -331,7 +331,7 @@ function same(label, out) {
   // the plan itself: leg order is a function of identity, pin and policy, never of the surface
   {
     const keyed = [{ provider: 'openrouter', key: 'k' }, { provider: 'gemini', key: 'k' }];
-    const ids = { engine: 'keyed', voice: 'Algenib', model: 'm', style: 's', edgeVoice: 'e' };
+    const ids = { engine: 'keyed', voice: 'Sulafat', model: 'm', style: 's', edgeVoice: 'e' };
     A.eq(SL.plan({ identity: ids, policy: { walkKeyed: false }, keyed }).map(l => l.engine), ['openrouter', 'edge'], 'one account, then the floor');
     A.eq(SL.plan({ identity: ids, policy: { walkKeyed: true }, keyed }).map(l => l.engine), ['openrouter', 'gemini', 'edge'], 'walking is the policy field');
     A.eq(SL.plan({ identity: ids, policy: {}, keyed: [] }).map(l => l.engine), ['keyed', 'edge'], 'no credential: a structural no_key, then the floor');

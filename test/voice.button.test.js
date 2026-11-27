@@ -241,6 +241,9 @@ async function opensWithin(t, ms) {
     }
     const t = boot({ Audio: AutoEndAudio, AudioContext: DeviceAC,
       fetch: async () => ({ ok: true, headers: { get: () => 'audio/wav' }, blob: async () => ({ size: 1 }) }) });
+    // AUTO picks NATURAL now; a build without a leveller cannot build that graph, so the second pass names the
+    // transmission chain — the one that still wires without it — rather than measuring a chain nobody selected.
+    if (!shell) t.Voice.setVoiceEffect('comms');
     t.Voice.setSpeakReplies(true);
     t.Voice.speak('Before device change.', 'agent');
     await until(() => captured.length === 1 && !t.Voice.isReplyPending(), 1000);
@@ -249,7 +252,7 @@ async function opensWithin(t, ms) {
     await first.close();
     t.Voice.speak('After device change.', 'agent');
     await until(() => captured.length === 2 && !t.Voice.isReplyPending(), 1000);
-    A.ok(captured[1] !== first && captured[1].state === 'running', 'device recovery: closed graph replaced for ' + (shell ? 'shell' : 'transmission'));
+    A.ok(captured[1] !== first && captured[1].state === 'running', 'device recovery: closed graph replaced for ' + (shell ? 'natural' : 'transmission'));
     for (const state of ['suspended', 'interrupted']) {
       deviceState = state;
       for (const ctx of contexts) if (ctx.state !== 'closed') ctx.state = state;
@@ -1273,9 +1276,9 @@ async function opensWithin(t, ms) {
   }
 
   // --- VOICE EFFECT: a clip plays through the chain its ENGINE and the setting call for ------------------
-  // The Ultron machine shell (bit-crusher, ring-mod, comb resonators) was tuned for the keyed Algenib recipe
-  // and used to wrap EVERY voice — it is what made the built-in voices robotic (2026-10-10). AUTO: built-in
-  // engines (Kokoro, the Edge floor) play natural; the keyed recipe keeps its locked shell.
+  // The machine shell (bit-crusher, ring-mod, comb resonators) once wrapped EVERY voice — it is what made the
+  // built-in voices robotic (2026-10-10). AUTO: every engine plays natural, the keyed station voice included;
+  // the shell is only ever the MACHINE pick.
   {
     const node = () => new Proxy({ connect() {}, disconnect() {}, start() {} }, {
       get(target, key) { return key in target ? target[key] : (target[key] = { value: 0 }); }
@@ -1312,7 +1315,7 @@ async function opensWithin(t, ms) {
     A.eq((await say('The mapped Edge floor speaks.')).chain, 'natural', 'AUTO: the built-in Edge floor plays natural too');
     t.Voice.setVoiceChoice('', 'agent');
     served = '';
-    A.eq((await say('The keyed station voice speaks.')).chain, 'machine', 'AUTO: the keyed station recipe keeps its locked machine shell');
+    A.eq((await say('The keyed station voice speaks.')).chain, 'natural', 'AUTO: the keyed station voice plays natural too (no shell unless asked)');
     A.eq(t.Voice.setVoiceEffect('natural').effect, 'natural', 'effect: a choice is saved');
     A.eq(t.sandbox.localStorage.getItem('vultron.voice.effect.v1'), 'natural', 'effect: the choice persists in app storage');
     A.eq((await say('Natural for every voice now.')).chain, 'natural', 'a chosen effect applies to the keyed voice too');
@@ -1338,11 +1341,11 @@ async function opensWithin(t, ms) {
     const keyedReply = t.Voice.openReply({ owner: 'general' });
     t.Voice.speakChunk(keyedReply, 'Keyed first sentence.', 'agent');
     await until(() => audios.length > played, 1000);
-    A.eq(t.Voice.playbackChain(), 'machine', 'the reply opens on the keyed engine (machine shell)');
+    A.eq(t.Voice.playbackChain(), 'natural', 'the reply opens on the keyed engine (natural)');
     served = 'edge:en-US-ChristopherNeural';
     t.Voice.speakChunk(keyedReply, 'Floor second sentence.', 'agent'); t.Voice.endReply(keyedReply);
     await until(() => !t.Voice.isReplyPending(), 1000);
-    A.eq(t.Voice.playbackChain(), 'machine', 'one reply keeps one effect across an engine blip');
+    A.eq(t.Voice.playbackChain(), 'natural', 'one reply keeps one effect across an engine blip');
 
     // a later sentence whose X-Voice-Provider is unreadable (a cross-origin desktop page sees no unexposed header)
     // still came from the engine this reply pinned: a Kokoro clip is never re-paced as keyed on top of the engine

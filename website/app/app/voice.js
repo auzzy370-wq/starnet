@@ -420,20 +420,20 @@ const Voice = (() => {
     return { key: '', provider: '' };
   }
   function ttsConfig() {
-    // ONE LOCKED VOICE (Andrew, 2026-07-12): every agent, every persona, speaks as ULTRON —
-    // Personas.STATION_VOICE (Algenib + machine shell). Personality changes the WORDS only; the
-    // literal fallback below keeps the same identity if personas.js isn't loaded (tests, tools).
+    // ONE LOCKED VOICE: every agent, every persona, speaks as the station — Personas.STATION_VOICE
+    // (Sulafat, a warm young woman, delivered in a natural conversational style). Personality changes the
+    // WORDS only; the literal fallback below keeps the same identity if personas.js isn't loaded (tests, tools).
     // ttsStyle is the natural-language delivery instruction the sidecar folds into the input (and the
-    // cache key). ttsShell is the "machine shell" FX chain ({metal,digitize,reverb} in 0..1) applied on
-    // playback — Ultron's cold-metal body; a shell bypasses the transmission color (below).
+    // cache key). ttsShell is the optional "machine shell" FX chain ({metal,digitize,reverb} in 0..1) that the
+    // MACHINE effect wears; the station voice ships with none, so AUTO plays it natural.
     const v = (typeof Personas !== 'undefined' && Personas.STATION_VOICE) || null;
     return {
       model: TTS_MODEL,
-      voice: (v && v.ttsVoice) || 'Algenib',
+      voice: (v && v.ttsVoice) || 'Sulafat',
       speed: (v && v.ttsSpeed) || 1.0,
       style: (v && v.ttsStyle) || '',
       deep: !!(v && v.ttsDeep),
-      shell: (v && v.ttsShell) || { metal: 1.0, digitize: 0.4, reverb: 0.6 }
+      shell: (v && v.ttsShell) || null
     };
   }
   /* PRE-WARM the voice cache: when the speaker turns on, quietly synthesize the active persona's stock lines
@@ -687,7 +687,7 @@ const Voice = (() => {
   }
 
   /* ---- NATURAL — a person in the room, not a radio and not a robot ----------------------------------------
-     The machine shell above was tuned for ONE voice: the keyed Algenib station recipe. Run over the built-in
+     The machine shell above was tuned against ONE voice (the keyed station recipe). Run over the built-in
      voices (Kokoro, and the Edge floor they map to) its bit-crusher, 47 Hz ring-mod and comb resonators made
      every one of them sound like a robot — the complaint, by ear, 2026-10-10. Natural keeps the voice itself
      and only finishes it: rumble cut, a little chest, a little presence, the synthetic top end softened, a
@@ -749,8 +749,8 @@ const Voice = (() => {
 
   /* ---- which chain a clip plays through ----------------------------------------------------------------------
      A Settings choice (LOOK & SOUND › SPOKEN VOICE › EFFECT), saved per app/browser. Unset = AUTO: every voice
-     wears the effect it was made for — the keyed Algenib station recipe keeps its locked machine shell
-     (Andrew, 2026-07-12), the built-in voices play natural. A chosen effect applies to every voice. The chain is
+     plays natural — the station voice is a natural young woman, and the built-in voices were never the shell's.
+     MACHINE is a deliberate pick and applies to every voice. The chain is
      resolved from the engine that ACTUALLY answered (the sidecar's X-Voice-Provider), and pinned for the whole
      reply: a one-sentence provider blip onto the Edge floor must not change the effect mid-reply. */
   const VOICE_EFFECT_KEY = 'vultron.voice.effect.v1';
@@ -771,8 +771,10 @@ const Voice = (() => {
     const s = String(servedBy || '').toLowerCase();
     return s === 'local-kokoro' ? 'kokoro' : (s === 'edge' || s.indexOf('edge:') === 0) ? 'edge' : 'keyed';
   }
-  function effectFor(engine) {
-    return voiceEffect() || (engine === 'keyed' ? 'machine' : 'natural');
+  function effectFor(_engine) {
+    // AUTO is NATURAL for every engine: the station voice is a natural young woman and the built-in voices never
+    // asked for the shell. MACHINE stays a deliberate pick, never a default.
+    return voiceEffect() || 'natural';
   }
   let lastChain = '';       // what the most recent clip ACTUALLY routed through ('natural'|'comms'|'machine'|'dry')
 
@@ -816,15 +818,17 @@ const Voice = (() => {
       // through WebAudio, crossOrigin must be set before load for some engines — the blob is same-origin so
       // this is a no-op, but harmless. Routing an element captures its output into the graph → the element's
       // own output goes silent, so ONLY route when the graph actually wires up.
-      // A persona with a machine shell (Ultron) routes through the shell and SKIPS the transmission color; if
+      // A clip the MACHINE effect asked for routes through the shell and SKIPS the transmission color; if
       // the shell graph can't wire, fall back to transmission (best-effort) rather than nothing.
       // remember WHICH chain took this element — that chain's tap is what the live meter reads.
       // A natural clip whose chain cannot wire plays DRY, never through a harsher chain it did not ask for.
       const want = effect || (shell ? 'machine' : 'comms');
+      // MACHINE must work for ANY voice, including the station's shell-less one: the tuned amounts are its default.
+      const shellAmt = shell || { metal: 1.0, digitize: 0.4, reverb: 0.6 };
       if (want === 'natural') {
         if (routeThroughNatural(a)) { outAnalyser = natAnalyser; lastChain = 'natural'; }
         else { outAnalyser = null; lastChain = 'dry'; }
-      } else if (want === 'machine' && shell && routeThroughShell(a, shell)) { outAnalyser = shAnalyser; lastChain = 'machine'; }
+      } else if (want === 'machine' && routeThroughShell(a, shellAmt)) { outAnalyser = shAnalyser; lastChain = 'machine'; }
       else if (routeThroughFx(a)) { outAnalyser = fxAnalyser; lastChain = 'comms'; }
       else { outAnalyser = null; lastChain = 'dry'; }   // dry playback: no tap, so the meter reports nothing rather than lying
       // PLAYBACK WATCHDOG: an element captured into a WebAudio graph that suspends (device change, WebKit) can

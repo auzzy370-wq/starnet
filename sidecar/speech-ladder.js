@@ -63,8 +63,8 @@ const SURFACE_DEFAULTS = Object.freeze({
 /* The station's ONE voice on the keyed providers. frontend/app/personas.js STATION_VOICE carries the same voice and
    style for the desk's playback shell; the conformance test holds the two equal. The model is the sidecar's. */
 const STATION_VOICE = Object.freeze({
-  voice: 'Algenib',
-  style: 'A low, smooth American male voice with a subtle gravelly rasp and clean, crisp articulation. Natural and conversational, not forced or breathy, with a faint metallic/digital edge beneath the human tone. Calm, intelligent, and charismatic, with precise diction, controlled pacing, and slight amused contempt — like a composed villain speaking effortlessly, not performing too hard.'
+  voice: 'Sulafat',
+  style: 'A warm, soft-spoken young woman talking easily with a friend: relaxed pace with real pauses, natural breathing, gentle and a little playful, subtle vocal fry. Conversational and spontaneous, never scripted, sugary, or robotic.'
 });
 
 const KEYED_ENGINES = Object.freeze(['openrouter', 'gemini', 'openai']);

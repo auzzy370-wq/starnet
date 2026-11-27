@@ -105,7 +105,7 @@ function packageOnDisk(name) {
     }
     // unknown/empty picks resolve through the DEFAULT voice — always a real name, never undefined and never
     // some other provider's identity.
-    const def = voices.find(v => v.id === 'am_onyx').edge;
+    const def = voices.find(v => v.id === localVoice.defaultVoice()).edge;
     assert.equal(localVoice.edgeVoiceFor(''), def, 'an empty pick maps through the default voice');
     assert.equal(localVoice.edgeVoiceFor('not-a-voice'), def, 'an unknown pick maps through the default voice');
   }
@@ -169,7 +169,7 @@ function packageOnDisk(name) {
     assert.ok(Math.abs(seconds - expectS) < 0.02, `edges trimmed and sentence pauses inserted (${seconds.toFixed(3)}s vs ${expectS.toFixed(3)}s)`);
     calls.length = 0;
     await localVoice._renderSpeech(stub, 'hello', { voice: 'not-a-voice' });
-    assert.equal(calls[0].opts.voice, 'am_onyx', 'an unknown voice id speaks in the default voice');
+    assert.equal(calls[0].opts.voice, 'af_heart', 'an unknown voice id speaks in the default voice');
 
     const before = process.env.VULTRON_KOKORO_DTYPE;
     delete process.env.VULTRON_KOKORO_DTYPE;

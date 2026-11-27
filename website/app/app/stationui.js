@@ -8422,10 +8422,10 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       // EFFECT — what the voice is played through. One choice for every voice; AUTO lets each wear its own.
       '<h4 class="ms-h">VOICE EFFECT</h4>' +
       '<div class="set-themes" id="set-lv-effect">' +
-        [['', 'AUTO', 'Each voice wears its own effect: built-in voices sound natural, the Ultron station voice keeps its machine shell.'],
+        [['', 'AUTO', 'Each voice wears its own effect: every voice speaks natural, the station voice included.'],
          ['natural', 'NATURAL', 'The voice itself, with a light room around it.'],
          ['comms', 'COMMS', 'A subtle station comms-channel colour.'],
-         ['machine', 'MACHINE', 'The Ultron machine shell: metallic, digitized, robotic.']]
+         ['machine', 'MACHINE', 'The station shell: metallic, digitized, robotic.']]
           .map(([v, label, tip]) => '<button type="button" class="set-theme" data-lv-effect="' + v + '" aria-pressed="false" title="' + esc(tip) + '">' + label + '</button>').join('') +
       '</div>' +
       '<p id="set-lv-effect-msg" class="msg" aria-live="polite"></p>';

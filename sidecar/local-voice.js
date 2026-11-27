@@ -55,12 +55,11 @@ function moveLegacyCache() {
   }
 }
 
-/* THE SPOKEN VOICE OF THE STATION — male by default. The written station voice is "a low, smooth American
-   male with a subtle gravelly rasp" (personas.js STATION_VOICE) and the crew sprites read male, so a female
-   default was simply wrong. These ids are the engine's own voice files (node_modules/kokoro-js/voices):
-   `am_` American male, `bm_` British male, `af_`/`bf_` the female sets. Listed male-first because that is the
-   station's character; every one of them is selectable. */
-const DEFAULT_LOCAL_VOICE = 'am_onyx';
+/* THE SPOKEN VOICE OF THE STATION — the warm young woman the station's own voice describes (personas.js
+   STATION_VOICE, the keyed Sulafat recipe), so the offline engine opens on the same identity instead of a
+   man's. These ids are the engine's own voice files (node_modules/kokoro-js/voices): `af_`/`bf_` the female
+   sets, `am_`/`bm_` the male; every one of them is selectable. */
+const DEFAULT_LOCAL_VOICE = 'af_heart';
 /* `edge` on every row: the nearest Microsoft Edge read-aloud neural to that voice. This is the built-in
    fallback identity when the bundled offline engine is disabled, damaged, or unavailable, and before this
    mapping existed /api/tts silently fell through to the KEYED provider voice:
