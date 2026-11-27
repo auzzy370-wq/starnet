@@ -83,8 +83,15 @@
 .ob-empty .bb { margin-top: 6px; }
 
 .ob-note { flex: none; margin: 0; font-size: 13px; color: var(--ph-dim); min-height: 1em; }
-/* ZOOM 2× is a phone control (css/phone.css shows it at ≤600px): on a desktop screen the picture is already big. */
-.ob .ob-zoom { display: none; }
+/* ENLARGE (ZOOM 2× / FIT WIDTH). Measured on the real window 2026-11-27: a 1440x900 page in a 959x303 stage is drawn
+   484x303 with dead black bars either side — a strip you cannot read and can barely hit, which is exactly where "I can't
+   click on it" comes from (a click on the bars is outside the page and is correctly dropped). Enlarging the picture alone
+   and letting the stage scroll fixes the target without touching the pointer maths: browserstream.js measures the
+   picture's own rect, so a scrolled, oversized picture still maps every tap. Shown at every width (it was phone-only). */
+.ob .ob-zoom { display: inline-flex; }
+.ob[data-zoom="2"] .ob-stage { overflow: auto; -webkit-overflow-scrolling: touch; }
+.ob[data-zoom="2"] .ob-vp { display: block; }
+.ob[data-zoom="2"] .ob-live { width: 225%; height: auto; max-width: none; flex: none; }
 /* the doors a sign-in handoff puts in the empty stage, and HAND BACK (shown only while you hold an agent's browser) */
 .ob-empty .ob-ask-doors { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 6px; }
 .ob .ob-handback[hidden] { display: none; }

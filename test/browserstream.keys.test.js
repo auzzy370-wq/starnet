@@ -117,5 +117,25 @@ function key(k, o) {
     A.eq(calls.length, 3, '…and that click is still sent instead of being thrown away');
     s3.stop();
   }
+  /* A CLICK THAT MEETS A BUSY STATION IS SENT AGAIN (measured 2026-11-27: a cold station page answers bursts of requests
+     with 429, which is "busy" — the station did nothing yet, so the same batch is safe to repeat; anything else is a
+     real answer and must never be repeated, or one click becomes two). */
+  {
+    const vp4 = target(), img4 = target();
+    img4.setAttribute = () => {};
+    img4.getBoundingClientRect = () => ({ left: 0, top: 0, width: 1440, height: 900 });
+    img4.naturalWidth = 1440; img4.naturalHeight = 900;
+    let n = 0; const sent = [];
+    const s4 = BrowserStream.create({ vp: vp4, img: img4,
+      poll: () => (++n === 1 ? Promise.resolve({ status: 200, body: { ok: true, frame: { seq: 1, mime: 'image/jpeg', width: 1440, height: 900, data: 'x' } } }) : new Promise(() => {})),
+      send: evs => { sent.push(evs.map(e => e.type + ':' + e.action).join(',')); return Promise.resolve({ status: sent.length === 1 ? 429 : 200 }); } });
+    s4.start();
+    await tick(); await tick();
+    img4.fire('mousedown', { clientX: 10, clientY: 10, button: 0, detail: 1, preventDefault() {} });
+    await new Promise(r => setTimeout(r, 450));
+    A.eq(sent.length, 2, 'a click the station answered as busy (429) is sent again');
+    A.eq(sent[1], 'mouse:move,mouse:down', '…with the same events, not a new gesture');
+    s4.stop();
+  }
   A.report('browserstream.keys.test');
 })().catch(e => { console.log('FAIL: browserstream.keys.test threw — ' + (e && e.stack || e)); process.exit(1); });

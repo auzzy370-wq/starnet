@@ -52,6 +52,11 @@
         }
         fails = 0;
         if (!s.on || gen !== s.gen) return;
+        if (r.status === 429) {   // busy, not gone: the picture waits it out instead of dying under a burst
+          if (++fails > 12) { stop(); if (opts.onEnd) opts.onEnd({ code: 'busy', error: 'The station is busy (rate limited).' }); return; }
+          await new Promise(res => setTimeout(res, 300 * fails));
+          continue;
+        }
         if (r.status !== 200 || !r.body || !r.body.ok) { stop(); if (opts.onEnd) opts.onEnd(r.body || { code: 'lost', error: 'The station stopped answering.' }); return; }
         if (r.body.page && opts.onPage) opts.onPage(r.body.page);
         const f = r.body.frame;
@@ -94,13 +99,25 @@
       s.queued = true;
       Promise.resolve().then(() => { s.queued = false; flush(); });
     }
+    /* A 429 IS "BUSY", NOT "NO" (measured 2026-11-27: a cold station page over the tunnel answers bursts of requests with
+       429, and every click and key that met one was thrown away — "I can't click or type"). The station answers 429 before
+       it does anything, so the same batch is safe to send again; anything else is a real answer and is never repeated (a
+       click must not become two). */
+    const BUSY_RETRY_MS = [200, 500, 1000, 1600];
+    async function sendBatch(batch) {
+      for (let i = 0; ; i++) {
+        let r; try { r = await opts.send(batch); } catch (_) { r = { status: 0 }; }
+        if (!(r && r.status === 429) || i >= BUSY_RETRY_MS.length) return r;
+        await new Promise(res => setTimeout(res, BUSY_RETRY_MS[i]));
+      }
+    }
     async function flush() {
       if (s.inflight || !s.pending.length) return;
       s.inflight = true;
       const gen = s.gen;
       while (s.pending.length && s.on && gen === s.gen) {
         const batch = s.pending.splice(0, 48);
-        let r; try { r = await opts.send(batch); } catch (_) { r = { status: 0 }; }
+        const r = await sendBatch(batch);
         if (!r || r.status !== 200) { s.pending.length = 0; break; }
       }
       s.inflight = false;
