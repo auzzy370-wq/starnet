@@ -28,6 +28,13 @@ ok(/if\s*\(active\s*!==\s*'openrouter'\)\s*addProvider\('openrouter'\)/.test(sta
 ok(/const\s+addProvider\s*=\s*active\s*===\s*'codex'\s*\?\s*'openrouter'\s*:\s*active/.test(station), 'Codex-active add-key row targets OpenRouter');
 ok(/id="key-in-new"/.test(station) && /data-act="add"/.test(station) && /data-provider=/.test(station), 'add-key controls carry their target provider');
 ok(/const\s+provider\s*=\s*b\.dataset\.provider\s*\|\|\s*activeProv\(\)/.test(station), 'add-key save writes to the row provider, not necessarily the active provider');
+// A card key that belongs to ANOTHER provider (the GROK card's paste field is an xAI key) names its store in
+// data-key-provider. ENTER must ride the SAME path as SAVE — saving under the card's own id made the station refuse a
+// valid xAI key with "this provider does not accept an API key" (grok is the keyless device sign-in).
+ok(/data-key-provider=/.test(station), 'a card whose key belongs to another provider names that provider on its SAVE');
+ok(/const\s+inlineKeyProvider\s*=\s*\(\)\s*=>\s*\(inlineSave\s*&&\s*inlineSave\.dataset\.keyProvider\)\s*\|\|\s*card\.dataset\.provider/.test(station),
+  'a card key field resolves its store provider the way SAVE does');
+ok(/saveInline\(inlineKeyProvider\(\),\s*card\.dataset\.provider\)/.test(station), 'Enter on a card key field saves through the key provider, not the card id');
 
 for (const id of hostedProviders) {
   ok(index.includes('data-prov="' + id + '"'), id + ' appears in the connect provider picker');

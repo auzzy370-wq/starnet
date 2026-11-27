@@ -6876,7 +6876,11 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       });
       if (inlineInput) {
         inlineInput.addEventListener('click', ev => ev.stopPropagation());   // don't select the provider when focusing the field
-        inlineInput.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); ev.stopPropagation(); saveInline(card.dataset.provider); } });
+        // ENTER TAKES THE SAVE BUTTON'S PATH, not the card's id: a card whose key belongs to ANOTHER provider
+        // (the GROK card's key is an xAI key, named in data-key-provider) used to save under its own id, so the
+        // station answered "this provider does not accept an API key" and a perfectly good xAI key was refused.
+        const inlineKeyProvider = () => (inlineSave && inlineSave.dataset.keyProvider) || card.dataset.provider;
+        inlineInput.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); ev.stopPropagation(); saveInline(inlineKeyProvider(), card.dataset.provider); } });
       }
       // Provider selection is its own native button. Card-local key and OAuth actions are siblings, never
       // interactive descendants of a role=button card (invalid accessibility tree / conflicting activation).
