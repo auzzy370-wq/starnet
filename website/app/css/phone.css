@@ -141,23 +141,22 @@
 
 /* VERY SHORT PHONES (a landscape sliver, or a phone whose browser chrome eats half the screen): below
    ~560px of height no arrangement keeps a room strip, a crew band, a composer and a readable transcript
-   at once, and the transcript is the one being read. The room keeps a thin strip so orientation
-   survives; the crew band steps out of the column entirely (the dock's CREW tab still opens the roster).
-   Measured at 447x444: transcript 116 -> ~210px. */
+   at once, and the transcript is the one being read. The room and the crew band both step out of the
+   column here — the station is a sliver at this height and the dock's CREW/WORK/BUILD tabs still open
+   everything they hold — so COMMS is the screen. Measured at 447x444: transcript 63 -> 144px, and
+   390x500: 119 -> 200px. */
 @media (max-width: 600px) and (max-height: 560px) {
   body #screen-game.active {
     grid-template-rows:
       calc(38px * var(--cz))
-      calc(76px * var(--cz))
       minmax(0, 1fr)
       calc(40px * var(--cz));
-    grid-template-areas: "top" "center" "chat" "bot";
+    grid-template-areas: "top" "chat" "bot";
   }
-  body #screen-game.active #left { display: none; }
+  body #screen-game.active :is(#left, #stage-wrap) { display: none; }
   body.crew-rail-off #screen-game.active {
     grid-template-rows:
       calc(38px * var(--cz))
-      calc(76px * var(--cz))
       minmax(0, 1fr)
       calc(40px * var(--cz));
   }
