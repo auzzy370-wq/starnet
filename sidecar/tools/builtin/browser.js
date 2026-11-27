@@ -751,6 +751,27 @@
       return String(read('/proc/sys/kernel/apparmor_restrict_unprivileged_userns')).trim() === '1';
     } catch (_) { return false; }   // no such setting: user namespaces are not restricted, the sandbox works
   }
+  /* A HOST WITH NO USABLE SANDBOX (2026-11-27: the hosted station's BROWSER window was a black rectangle — "I can't see
+     the browser" — and the station was spawning Chromium 111 times, every launch ending in SIGABRT). Chrome for Testing
+     on a panel/container host aborts before CDP with "No usable sandbox!": the container blocks the unprivileged user
+     namespace the sandbox needs, and the AppArmor probe above cannot see it (that sysctl is simply not the reason).
+     One abort on OUR OWN downloaded build proves the sandbox cannot work on this machine, so the retry adds what every
+     containerised Chromium runs with (Playwright passes the same flags to its own build): --no-sandbox and
+     --disable-dev-shm-usage. An INSTALLED Chrome keeps its sandbox; this never touches it. */
+  let sandboxFallback = false;
+  function ownLinuxChromium(chromePath) {
+    if (process.platform !== 'linux' || !chromePath) return false;
+    let own = null; try { own = extraChrome(); } catch (_) { own = null; }
+    return !!(own && P.resolve(String(own)) === P.resolve(String(chromePath)));
+  }
+  /* WHY a launch ended, in Chromium's own words. The process used to be spawned with stdio ignored, so every failure
+     read "ended by SIGABRT" and nothing said what aborted. The loudest line (FATAL/ERROR/Check failed) is the reason a
+     person can act on; the first line stands in when Chrome said nothing loud. */
+  function stderrReason(text) {
+    const lines = String(text || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+    const loud = lines.find(l => /FATAL|ERROR|Check failed|cannot|failed/i.test(l)) || lines[0] || '';
+    return loud.replace(/^\[[^\]]*\]\s*/, '').slice(0, 300);
+  }
   function resolveChrome(wantHeaded, existsSync) {
     existsSync = existsSync || FS.existsSync;
     const exists = (c) => { try { return existsSync(c.path); } catch (_) { return false; } };
@@ -901,6 +922,7 @@
     let headed = wantHeaded && !binIsHeadlessOnly;
 
     let proc = null, procExited = false, procError = null, procClosePromise = null, cdp = null, consoleLog = [], dialog = null, attachedPort = null;
+    let chromeStderr = '';   // the tail of the launched browser's own stderr: HOW it died, in its own words
     let networkProxy = null, proxyFailed = false;
     const proxyCloseResults = new WeakMap();   // retain each proxy's pending/failed cleanup across close callers
     // true once tab 0's target went away and no other tab was left to take its place (see openerLost)
@@ -1278,6 +1300,9 @@
         catch (e) {
           lastErr = e;
           if (attachPort !== null || !/exited before CDP ownership|could not attach to Chromium/.test(String((e && e.message) || ''))) throw e;
+          /* A REAL ABORT on our own Linux build is a sandbox the host cannot give us, not a profile hand-off: the next
+             attempt carries the container flags (see sandboxFallback). A hand-off keeps its own path unchanged. */
+          if (!sandboxFallback && ownLinuxChromium(chromePath) && /ended by SIG[A-Z]+|no usable sandbox/i.test(String((e && e.message) || ''))) sandboxFallback = true;
           failNote('browser.launch-retry', e);
           // our own attempt: its whole tree (a stuck one still holds the profile); a vanished one: sweep its orphans
           if (proc && !procExited) await killTree(proc.pid); else if (spawn === CP.spawn) await killProfileOrphans(profileDir);
@@ -1379,6 +1404,10 @@
       if (networkProxy) args.push('--proxy-server=http://127.0.0.1:' + networkProxy.port,
         '--proxy-bypass-list=<-loopback>');
       if (needsNoSandbox({ chromePath })) { args.push('--no-sandbox'); failNote('browser.no-sandbox', new Error('downloaded Chromium on a Linux host that restricts user namespaces: running without the Chromium sandbox')); }
+      else if (sandboxFallback && ownLinuxChromium(chromePath)) {
+        args.push('--no-sandbox', '--disable-dev-shm-usage');
+        failNote('browser.no-sandbox-fallback', new Error('the downloaded Chromium aborted before CDP ownership (this host has no usable sandbox): relaunching without the Chromium sandbox and without /dev/shm'));
+      }
       args.push('--lang=' + hostBrowserLocale(deps));
       if (headed) {
         // Visible window the user can watch (and hear — no --mute-audio in headed mode). No --new-window: on a profile
@@ -1399,12 +1428,21 @@
         args.push('--headless=new', '--hide-scrollbars', '--mute-audio');
       }
       args.push('about:blank');
-      proc = spawn(chromePath, args, { stdio: 'ignore', windowsHide: !headed });
+      chromeStderr = '';
+      proc = spawn(chromePath, args, { stdio: ['ignore', 'ignore', 'pipe'], windowsHide: !headed });
+      if (proc && proc.stderr && typeof proc.stderr.on === 'function') {
+        try { if (typeof proc.stderr.setEncoding === 'function') proc.stderr.setEncoding('utf8'); } catch (_) { /* a fake proc in tests has no encoding */ }
+        try { proc.stderr.on('data', d => { chromeStderr = (chromeStderr + String(d)).slice(-4000); }); } catch (_) { /* best-effort diagnostics */ }
+        try { proc.stderr.on('error', () => {}); } catch (_) { /* a closed pipe must never break a launch */ }
+      }
       procClosePromise = new Promise(resolve => {
         // how it exited rides the launch error (procError): "exited before CDP ownership" alone never said why (user report, 10-28)
         const child = proc;
         if (proc && proc.on) proc.on('close', (code, signal) => {
-          if (proc === child && procError === null && (code !== null || signal)) procError = signal ? 'ended by ' + signal : 'exit code ' + code;
+          if (proc === child && procError === null && (code !== null || signal)) {
+            const why = stderrReason(chromeStderr);
+            procError = (signal ? 'ended by ' + signal : 'exit code ' + code) + (why ? ' — ' + why : '');
+          }
           procExited = true; resolve(true);
         });
         else resolve(true);

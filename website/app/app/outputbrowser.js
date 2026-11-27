@@ -377,13 +377,16 @@
     if (state.mode === 'live') {
       if (code === 'handoff') { refreshLive(); return showHandoff(state.driver ? state.driver.agentId : (station().driver || {}).agentId); }
       // "closed" may be stale: the window was closed and has already been started again (by you or an agent). Ask the
-      // station before giving up the picture — only a browser the station says is closed shows as closed.
-      const why = code === 'closed' ? 'The browser is closed.' : ((b && b.error) || 'The picture stopped.');
+      // station before giving up the picture — only a browser the station says is closed shows as closed. When the
+      // station sends a REASON the browser itself could not start (no sandbox, a held profile, a missing build), say
+      // that reason instead of a bare black stage: restarting cannot fix it, and the words are the repair clue.
+      const startFailed = !!(b && b.error) && code === 'closed';
+      const why = (b && b.error) ? b.error : 'The browser is closed.';
       refreshLive().then(() => {
         if (!mounted() || state.mode !== 'live') return;
         const now = Date.now();
         state.liveRestarts = (state.liveRestarts || []).filter(t => now - t < 10000);
-        if (station().open && state.liveRestarts.length < 3) { state.liveRestarts.push(now); startLive(); return; }
+        if (!startFailed && station().open && state.liveRestarts.length < 3) { state.liveRestarts.push(now); startLive(); return; }
         state.driver = null;
         showEmpty(why);
       });
