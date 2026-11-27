@@ -32123,14 +32123,23 @@ function warmStaticCaches() {
       const ext = path.extname(abs).toLowerCase();
       if (!STATIC_GZIP_TYPES.has(ext)) return;
       const st = await fsp.stat(abs);
-      if (!st.isFile() || st.size < STATIC_MIN_GZIP) return;
+      if (!st.isFile() || st.size < STATIC_MIN_GZIP) return false;
       const stamp = st.size + ':' + Math.round(st.mtimeMs);
       const plain = ext === '.js' ? staticStripped(abs, stamp, await fsp.readFile(abs)) : await fsp.readFile(abs);
       await staticGzip(abs, stamp, plain, 'br');   // phones send br; the gzip twin is built on demand for anyone who cannot
+      return true;
     };
+    const t0 = Date.now();
+    let warmed = 0, skipped = 0;
     await Promise.all(Array.from({ length: 2 }, async () => {
-      while (queue.length) { const rel = queue.shift(); try { await one(rel); } catch (e) { /* one unreadable file must not stop the warm */ } }
+      while (queue.length) {
+        const rel = queue.shift();
+        try { const did = await one(rel); if (did) warmed++; else skipped++; }
+        catch (e) { skipped++; }   // one unreadable file must not stop the warm
+      }
     }));
+    console.log('  · static warm: ' + warmed + ' files ready in ' + ((Date.now() - t0) / 1000).toFixed(1) + 's' +
+      (skipped ? ' (' + skipped + ' skipped)' : ''));
   };
   const t = setTimeout(() => { walk().catch(() => {}); }, 3000);
   if (t.unref) t.unref();
