@@ -585,6 +585,41 @@ const Harness = (() => {
     // #89: the station's copy follows the backups too — resolves { count, engine } like setKey's { engine }
     return syncEngineKey(p).then(async engine => { readinessCache.invalidate(p); await refreshProviderReadiness(); return { count: cleaned.length, engine }; });
   }
+  /* A RUN DOES NOT NEED A KEY IN THIS WINDOW WHEN THE STATION HOLDS ONE (2026-11-27). The pre-flight guard in
+     chat() exists to fail fast with an honest sentence, but it read ONLY this browser's storage — while the station
+     keeps its own copy of every provider credential (#89) and a subscription sign-in lives on the station alone. So a
+     phone, a second browser or a cleared cache refused every run "no API key set" while SETTINGS showed GROK SIGNED IN
+     and /api/providers reported the provider ready. readiness() is the station's own verdict (credential present AND
+     endpoint configured), so it is the truer proof of whether a run can leave here. */
+  function runnableFromHere(provider) {
+    const p = normalizeProviderId(provider);
+    if (!p) return false;
+    if (getKey(p)) return true;                       // this browser's key rides the run
+    return readiness(p).unattendedReady === true;     // the station already holds the credential
+  }
+  /* THE SIGN-IN BOUGHT A BRAIN; IT SHOULD BE THE BRAIN. A device-code sign-in (Grok / ChatGPT / Kimi) is stored on the
+     STATION, while the provider pick lives in THIS browser's localStorage — so signing in on one device and opening the
+     station on another left the new device on the default keyed provider ("no API key set" on every ticket) even though
+     the sign-in was live. When the pick cannot run from here and a sign-in can, the sign-in takes over, with a model
+     from its own catalog (a model slug belongs to its provider). A pick that CAN run is never touched. */
+  const SIGNIN_BRAINS = ['grok', 'codex', 'kimi'];
+  async function adoptSignedInProvider(prefer) {
+    const first = prefer ? normalizeProviderId(prefer) : '';
+    const order = (first ? [first] : []).concat(SIGNIN_BRAINS.filter(p => p !== first));
+    if (runnableFromHere(getProv())) return { provider: getProv(), changed: false };
+    const pick = order.find(p => p && readiness(p).unattendedReady === true);
+    if (!pick) return { provider: getProv(), changed: false };
+    setProv(pick);
+    // the saved slug was picked for another provider: a grok endpoint answers it "model not found"
+    let model = getModel();
+    try {
+      const r = await fetch('/api/auth/' + pick + '/models', { cache: 'no-store' });
+      const j = r && r.ok ? await r.json() : null;
+      const ids = (j && Array.isArray(j.models) ? j.models : []).map(m => String((m && m.id) || m || '')).filter(Boolean);
+      if (ids.length && ids.indexOf(model) < 0) { model = String((j && j.default) || ids[0]); setModel(model); }
+    } catch (_) {}
+    return { provider: pick, model: model, changed: true };
+  }
   /* #89 THE STATION KEEPS A COPY. In the browser build a key lives in this page's localStorage and rides each
      interactive /api/run — so chat works — but a scheduled routine, Run Now, the night shift or a line hop runs with
      no page attached and resolves its key on the station. So whenever a provider's key, backups or endpoint change
@@ -1345,7 +1380,7 @@ const Harness = (() => {
     const model = getModel(), provider = getProv(), key = getKey(provider), reasoningEffort = getReasoningEffort(provider);
     // Codex authenticates by an OAuth token (server-side); the desktop build keeps the key in the
     // sidecar's env (keychain). Neither needs a key sent from here.
-    if (providerNeedsKey(provider) && !DESKTOP && !DEVMODE && !key) throw new Error('no API key set');
+    if (providerNeedsKey(provider) && !DESKTOP && !DEVMODE && !key && !runnableFromHere(provider)) throw new Error('no API key set');
     if (!model) throw new Error('no model selected');
 
     /* TRANSPORT PROVENANCE (night N2, 2026-10-15 — found by the GH#116 lane). A transport loss is known by WHERE an
@@ -2173,7 +2208,7 @@ const Harness = (() => {
     pingEngine, engineState, restartEngine,
     canRestartEngine: () => !!tauriCoreNow(),
     isDesktop: () => DESKTOP,   // lets the UI tell a desktop keychain-store failure (token saved locally) from a browser no-op
-    getSelectionRevision, getKey, setKey, setKeyPool, validateAndSetKeyPool, keyPoolSize, storeChannelToken, getModel, setModel, getProv, setProv, getBaseUrl, setBaseUrl, getReasoningEffort, setReasoningEffort, clearLegacyReasoningOff, clearReasoningEffort, normalizeReasoningEffort, init, configured, readiness, refreshProviderReadiness, refreshCreditsConfigured, creditsEpoch: () => creditsEpoch, hasStoredCredential, setDesktopConfigured,
+    getSelectionRevision, getKey, setKey, setKeyPool, validateAndSetKeyPool, keyPoolSize, storeChannelToken, runnableFromHere, adoptSignedInProvider, getModel, setModel, getProv, setProv, getBaseUrl, setBaseUrl, getReasoningEffort, setReasoningEffort, clearLegacyReasoningOff, clearReasoningEffort, normalizeReasoningEffort, init, configured, readiness, refreshProviderReadiness, refreshCreditsConfigured, creditsEpoch: () => creditsEpoch, hasStoredCredential, setDesktopConfigured,
     listModels, probeProvider, validateAndSetKey, priceOf, turnIdentityCaps, compactAtOf, contextLimitOf, runWindowOf, contextState, contextRevision: () => contextRev, chat, cancel, haltAll, consent, consentAck, consentArgs, consentAnswer, summonAck, notebook,
     runStreamState: () => runStream.state(),   // the page's ONE run stream: { open, id, runs, unsupported, heldBack }
     streamPost,   // a run a button starts (Run now / Retry / an app refresh / a workshop build), on the page's ONE run stream

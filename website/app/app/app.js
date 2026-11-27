@@ -6384,6 +6384,18 @@ const App = (() => {
     if (saved && saved.agent) migrateLegacyReasoning(saved);   // before any saved effort reaches the wire (0.12.5 reasoning migration)
     if (saved && savedStationProv(saved) && Harness.setProv) Harness.setProv(savedStationProv(saved));
     if (saved && saved.reasoningEffort && Harness.setReasoningEffort) Harness.setReasoningEffort(saved.reasoningEffort);
+    // A SIGN-IN LIVES ON THE STATION; THE PROVIDER PICK LIVES IN THIS BROWSER. A phone (or a second browser, or one whose
+    // cache was cleared) booted on the default keyed provider and refused every run "no api key set" while SETTINGS showed
+    // GROK SIGNED IN. When the saved brain cannot run from here and a sign-in can, the sign-in becomes the brain — before
+    // the resume decision, so the station still auto-resumes instead of asking for a key that already exists.
+    try {
+      const adopted = (Harness.adoptSignedInProvider) ? await Harness.adoptSignedInProvider() : null;
+      if (adopted && adopted.changed) {
+        // the hero's provider IS the station's truth, and its model pin rode with the provider that cannot run
+        if (saved && saved.agent) { saved.agent.provider = adopted.provider; if (adopted.model) saved.agent.model = adopted.model; }
+        if (typeof StationUI !== 'undefined' && StationUI.notify) StationUI.notify('your ' + providerLabel(adopted.provider) + ' sign-in is now the station’s brain', 'good');
+      }
+    } catch (_) {}
     if (saved && saved.agent) {
       // AUTO-RESUME: a saved station goes STRAIGHT back into the world when creds are available — an OpenRouter
       // key in hand, the desktop keychain holds one (configured, incl. the DEV fast-path), OR the Codex provider

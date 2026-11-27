@@ -6953,15 +6953,25 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
         // codex keeps its own literal status state (source-lock pinned); grok/kimi live in the shared cache.
         if (pid === 'codex') { codexStatusKnown = { connected: true, expired: false, reason: '' }; refreshCodexConnectionStatus(); }
         else { oauthStatus[pid] = { connected: true, expired: false, reason: '' }; refreshOAuthStatus(pid); }
-        if (typeof Harness !== 'undefined' && Harness.setDesktopConfigured) Harness.setDesktopConfigured(pid, true);   // desktop map learns mid-session (genesis feeds it; Settings must too)
-        // honest claim: runs ride the ACTIVE provider. A sign-in on a non-active card must say the extra
-        // step, not promise "your agents can run on your subscription" while runs continue elsewhere.
-        notify(activeProv() === pid
-          ? '✓ signed in to ' + provName(pid) + ' — your agents can run on your subscription'
-          : '✓ signed in to ' + provName(pid) + ' — click its card to make it your active brain', 'good');
-        if (typeof ModelDock !== 'undefined' && ModelDock.reflect) ModelDock.reflect();
-        if (typeof KeyCTA !== 'undefined' && KeyCTA.refresh) KeyCTA.refresh();
-        rerender('settings');
+        const settled = (typeof Harness !== 'undefined' && Harness.setDesktopConfigured) ? Harness.setDesktopConfigured(pid, true) : Promise.resolve();   // desktop map learns mid-session (genesis feeds it; Settings must too)
+        /* honest claim: runs ride the ACTIVE provider. A sign-in on a non-active card must say the extra step, not
+           promise "your agents can run on your subscription" while runs continue elsewhere — UNLESS the station's
+           current brain cannot run from here at all (a fresh browser whose pick is a keyed provider with no key
+           anywhere): then the sign-in just completed takes over, and the sentence says so. */
+        Promise.resolve(settled).then(() => (typeof Harness !== 'undefined' && Harness.adoptSignedInProvider)
+          ? Harness.adoptSignedInProvider(pid) : null).then(r => {
+          if (r && r.changed) {
+            if (typeof App !== 'undefined' && App.setStationProvider) App.setStationProvider(r.provider);
+            // the hero's model pin rode with the provider that cannot run: re-pin it to the catalog this one answered
+            if (r.model && typeof App !== 'undefined' && App.agentConfig && App.agentConfig.setModel && App.heroId) App.agentConfig.setModel(App.heroId(), r.model, r.provider);
+          }
+          notify(activeProv() === pid
+            ? '✓ signed in to ' + provName(pid) + ' — your agents can run on your subscription'
+            : '✓ signed in to ' + provName(pid) + ' — click its card to make it your active brain', 'good');
+          if (typeof ModelDock !== 'undefined' && ModelDock.reflect) ModelDock.reflect();
+          if (typeof KeyCTA !== 'undefined' && KeyCTA.refresh) KeyCTA.refresh();
+          rerender('settings');
+        }).catch(() => {});
       }
     });
   }

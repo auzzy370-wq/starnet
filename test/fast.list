@@ -405,6 +405,7 @@ test/credential-store.spawn-adoption.test.js
 test/credential-store.no-crossing.test.js
 test/loop.credential-live.test.js
 test/engine-key-sync.test.js
+test/brain-adoption.test.js
 test/kimi-region.test.js
 test/apitickets.test.js
 test/outputbrowser.test.js
