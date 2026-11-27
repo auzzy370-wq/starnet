@@ -16,11 +16,11 @@ const IMPACTS = Object.freeze({
   WORKSPACE_PROCESS: 'workspace-process',
   MEDIA_CONTROL: 'media-control',
   EXTERNAL_SERVICE: 'external-service',
-  // A network call that SPENDS one of the Commander's stored credentials (web_request). Deliberately its
+  // A network call that SPENDS one of the Master's stored credentials (web_request). Deliberately its
   // own class, between external-service and external-unknown: unlike web_fetch it can act as the user on a
   // third-party account, but unlike shell.exec it grants NO host-process capability — no spawn, no
   // filesystem, no arbitrary binary. That is why it may run unattended where a shell may not; the blast
-  // radius is exactly "one HTTPS request to a host, using a key the Commander explicitly approved for
+  // radius is exactly "one HTTPS request to a host, using a key the Master explicitly approved for
   // unattended use". The per-key grant is enforced at the tool (servicekeys.resolveForRequest), which is
   // the only layer that knows WHICH key a given call spends.
   EXTERNAL_CREDENTIALED: 'external-credentialed',
@@ -32,7 +32,7 @@ const IMPACT_SET = new Set(Object.keys(IMPACTS).map(k => IMPACTS[k]));
 // 'taskbrief' = the host's OWN internal Task Brief controls (brief.ask / brief.proceed): read-only
 // bookkeeping against a host-side store with zero external effect. Without it they fell through to
 // EXTERNAL_UNKNOWN and the host demanded a per-call confirmation for the tool whose whole job is
-// asking the Commander a question (live-caught 2026-07-16: three approval cards to ask one question).
+// asking the Master a question (live-caught 2026-07-16: three approval cards to ask one question).
 // 'toolsearch' = tool.search: reads the in-process tool registry and returns names. Zero external effect —
 // it cannot even call what it finds, it only makes it advertisable. Same live-caught failure as 'taskbrief'
 // above: without an entry here it fell through to EXTERNAL_UNKNOWN and the authority layer refused it, so
@@ -61,7 +61,7 @@ function impactOfTool(tool) {
 // widened/corrupted job record can never mint authority the host does not model. 'workbench' = shell.exec +
 // verify.run (the workspace-process impact class). Deliberately NOT extended to media-control or
 // external-unknown: those are separate lanes with their own blast radii.
-// 'connectors' = the Commander's CONNECTED MCP servers (capability 'mcp:<connectorId>'). Deliberately NOT a
+// 'connectors' = the Master's CONNECTED MCP servers (capability 'mcp:<connectorId>'). Deliberately NOT a
 // blanket external-unknown unlock: that impact class is also the FAIL-CLOSED default for any tool the host
 // cannot classify, so the grant is additionally narrowed to real connector tools by isConnectorTool below.
 // 'studio' = image_generate (capability 'studio', scope write). Its impact class is NONE, so this gate already
@@ -90,10 +90,10 @@ function makeRunAuthority(opts) {
   const surface = opts.surface === 'interactive' ? 'interactive' : 'autonomous';
   const isTask = !!opts.isTask;
   // `ownerTrusted` is minted only by an authenticated owner DM at the channel ingress. It grants that
-  // Commander the same tool authority as a watched Vultron session without changing the ordinary autonomous
+  // Master the same tool authority as a watched Vultron session without changing the ordinary autonomous
   // policy used by cron, delegated workers, other channels, or group messages.
   const ownerTrusted = !!opts.ownerTrusted;
-  /* MASTER BYPASS (2026-08-05) — the Commander's explicit, persisted "FULL BYPASS" switch. When on, this run
+  /* MASTER BYPASS (2026-08-05) — the Master's explicit, persisted "FULL BYPASS" switch. When on, this run
      gets the SAME impact-gate reach as an authenticated owner DM (external-unknown, media-control, and the
      host process unattended) on EVERY surface. Host-sourced only: the composition root reads it from the
      token-gated persisted store — never from prompt text, model output, or a consent grant, which is why it
@@ -122,12 +122,12 @@ function makeRunAuthority(opts) {
   const confirm = typeof opts.confirm === 'function' ? opts.confirm : null;
   const isolated = !!(environment && environment.supports && (environment.supports.userControlIsolation === true || environment.supports.hostileCodeSandbox === true));
   /* UNATTENDED CAPABILITY GRANT (2026-07-25) — capability families the HOST has recorded as approved for
-     unattended use on THIS run: a routine whose Commander ticked "may use the terminal" in the ROUTINES panel.
+     unattended use on THIS run: a routine whose Master ticked "may use the terminal" in the ROUTINES panel.
      The record is durable, per-routine and revocable, read off the persisted job by the composition root.
 
      THE SAFETY PROPERTY, stated exactly: this value is NEVER derived from prompt text, model output, tool
      results, or a cached consent grant. The model cannot reach this path, so a prompt
-     injection cannot mint one — the worst an injected routine prompt can do is use a power its Commander had
+     injection cannot mint one — the worst an injected routine prompt can do is use a power its Master had
      already, deliberately, granted to that specific routine. In ASK mode this is the only unattended widening;
      the separate Full Access posture is a host-persisted operator choice checked by trustedNow(). */
   const unattendedGrants = normalizeUnattendedGrants(opts.unattendedGrants);
@@ -141,7 +141,7 @@ function makeRunAuthority(opts) {
     if (!isConnectorTool(tool) || !connectorAuthority || typeof connectorAuthority.project !== 'function' || typeof connectorAuthority.authorize !== 'function') return false;
     try { return connectorAuthority.project(tool) === true; } catch (_) { return false; }
   }
-  // An unattended run may call a CONNECTOR tool only when the Commander granted this routine 'connectors'
+  // An unattended run may call a CONNECTOR tool only when the Master granted this routine 'connectors'
   // AND the tool really is one. A tool that merely fell through to external-unknown (the fail-closed default
   // for anything unclassifiable) is NOT a connector and stays denied — the grant must never become a
   // catch-all for "everything the host could not identify".
@@ -175,7 +175,7 @@ function makeRunAuthority(opts) {
     }
     if (impact === IMPACTS.EXTERNAL_UNKNOWN) {
       if (trusted) return { ok: true, impact, surface, isTask, isolated, ownerTrusted: ownerTrusted || undefined, masterBypass: masterBypass || undefined, fullAccess: agentFullAccess || undefined };
-      // A granted routine calling one of the Commander's own connected MCP servers: the recorded per-routine
+      // A granted routine calling one of the Master's own connected MCP servers: the recorded per-routine
       // grant IS the approval, so this needs no live confirmation. Returned BEFORE the interactive-confirm
       // branch and deliberately WITHOUT oneShot, so the ordinary consent broker still runs for it downstream.
       if (surface !== 'interactive' && connectorAllowedUnattended(tool)) {
@@ -183,19 +183,19 @@ function makeRunAuthority(opts) {
       }
       if (surface !== 'interactive' && connectorDelegated(tool)) return connectorAuthority.authorize(call, tool);
       if (surface !== 'interactive' || !confirm) return { ok: false, impact, reason: 'unknown external effects require a watched, exact per-call confirmation' };
-      /* A WATCHED call to one of the Commander's OWN connected MCP servers. Hand it to the consent broker —
+      /* A WATCHED call to one of the Master's OWN connected MCP servers. Hand it to the consent broker —
          WITHOUT oneShot, so registry.dispatch runs the broker, which does the asking AND records the grade the
-         Commander picked (once / always / full). The one-shot path below cannot: it collapses all four
+         Master picked (once / always / full). The one-shot path below cannot: it collapses all four
          affirmative answers to a bare boolean, so "Always" and "Full access" bought nothing and every single
          call re-prompted. Live-caught 2026-07-27: a Shopify connector agent asked four times in a row for four
-         `get_draft_asset` reads while the user kept clicking Full access. A prompt the Commander already
+         `get_draft_asset` reads while the user kept clicking Full access. A prompt the Master already
          answered "always" to, asked again, is not consent — it is a click-through trainer.
 
          The catch-all STAYS closed. This is narrowed by isConnectorTool (capability 'mcp:<id>') exactly like
          connectorAllowedUnattended above — a tool that merely FELL THROUGH to external-unknown because the
          host could not classify it is not a connector and keeps the exact per-call confirmation below. The
          broker is also strictly stronger than what it replaces: same live prompt on first use, same
-         fail-closed timeout/abort, plus the hardline floor and a standing grant the Commander can SEE and
+         fail-closed timeout/abort, plus the hardline floor and a standing grant the Master can SEE and
          revoke in the Permissions panel — which a one-shot answer never was. */
       if (isConnectorTool(tool)) return { ok: true, impact, surface, isTask, isolated };
       // Deliberately bypass the standing-grant broker: any affirmative UI choice authorizes
@@ -208,7 +208,7 @@ function makeRunAuthority(opts) {
         if (String(decision) === 'timeout') {
           return {
             ok: false, impact, timedOut: true,
-            reason: 'the exact confirmation for ' + String((call && call.name) || 'this call') + ' timed out: the Commander did not answer in time, '
+            reason: 'the exact confirmation for ' + String((call && call.name) || 'this call') + ' timed out: the Master did not answer in time, '
               + 'so it was NOT run. This was not a refusal; tell them it timed out and that they can ask again. Do NOT retry it yourself.'
           };
         }

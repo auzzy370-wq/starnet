@@ -47,7 +47,7 @@ function sameUrl(a, b) { return String(a || '').trim().replace(/\/+$/, '').toLow
 function isRegionalBaseUrl(url) { return Object.keys(REGIONS).some(r => sameUrl(url, REGIONS[r].baseUrl)); }
 // The inference base for a credential in `region`: an empty value or EITHER region's stock base resolves to the
 // credential's own region (a kimi.ai token must never be sent to api.kimi.com, nor the reverse). A genuinely
-// custom endpoint (a proxy the Commander configured) is left exactly as given.
+// custom endpoint (a proxy the Master configured) is left exactly as given.
 function resolveBaseUrl(region, url) {
   const u = String(url == null ? '' : url).trim();
   if (!u || isRegionalBaseUrl(u)) return baseUrlFor(region);

@@ -87,7 +87,7 @@ const CORPUS = [
   'Read the API docs at docs.example.com and write a short summary into docs/notes.md',
   'Read the API docs at docs.example.com and write a short summary into the notes folder',
   'Read the docs at docs.example.com/v1/api and write a short summary', 'Read https://docs.example.com/guide/intro and write a short summary',
-  'Read the API docs at docs.example.com and write a short summary to the Commander',
+  'Read the API docs at docs.example.com and write a short summary to the Master',
   'Read the API docs at docs.example.com and write a short summary in plain English',
   "Read example.com's pricing page", 'read the pricing page on example.com', 'check claude.ai and write a summary',
   "Read example.com's pricing page and write a short summary of the plans.", 'check the latest build on ci.example.com',

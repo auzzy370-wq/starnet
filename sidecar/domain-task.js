@@ -86,7 +86,7 @@
      example.com and save it into notes.md" left the lead unable to hand over the very work it was asked to hand over —
      the soak's own symptom with a real site. The classification is advice now and withholds nothing; this carve-out keeps
      that advice from telling the lead to keep work it was asked to hand over. How far a worker may go, and where, is the
-     lead's call (bounded:true, onlyHost). Crew are named by the Commander, not known here: "ask/tell/have/let/get <name> (to) <verb>", "have a worker / the
+     lead's call (bounded:true, onlyHost). Crew are named by the Master, not known here: "ask/tell/have/let/get <name> (to) <verb>", "have a worker / the
      team <verb>", "hand/give/pass this to <name>", "delegate", "dispatch a worker", "in the background". "have a (quick)
      look", "let me", "make sure", "have time to" are not. */
   const NOT_CREW = '(?:a|an|the|this|that|it|its|me|my|myself|us|our|you|your|yourself|sure|look|go|time|some)';
@@ -112,7 +112,7 @@
   const HTTP_METHOD_RE = /\b(?:GET|POST|PUT|PATCH|DELETE)\b/;   // case-sensitive: "read the latest post" stays a page read
   /* AN INTERACTIVE VISIT IS NOT A PAGE READ. "open amazon.com and search for usb cables" / "browse github.com and log
      in" / "visit example.com and click the pricing page" matched DIRECT_RE, so the run was confined to one host's
-     page read — and the next message without a host was not, which read to the Commander as tools that come and go.
+     page read — and the next message without a host was not, which read to the Master as tools that come and go.
      Clicking, typing, signing in and searching a site are browser work, not the typo-cascade case this module advises
      on. Imperative forms only: "the order status", "the press release", "what type of site" are still advised as
      one-host page reads. */
@@ -235,7 +235,7 @@
       // browser.navigate resolves the name in node before Chrome loads anything ("getaddrinfo ENOTFOUND <host>");
       // a later hop through the station proxy surfaces Chrome's own net::ERR_NAME_NOT_RESOLVED. Only a FAILED call
       // counts: a page that loaded fine can quote "getaddrinfo ENOTFOUND" (node/npm error docs, an issue thread),
-      // and stopping that run would tell the Commander a live host does not exist.
+      // and stopping that run would tell the Master a live host does not exist.
       || (failed && (/\benotfound\b/.test(content) || /\berr_name_not_resolved\b/.test(content)));
   }
 
@@ -266,7 +266,7 @@
   /* WHAT A SCOPED RUN MAY NOT DO: the run host's four refusals, moved out of runOnceCore's dispatch with their summaries.
      Null without a scope, so prose never refuses a call. withheld is the run's one predicate
      (ProjectTools.directDomainWithheld). Each text names who set the scope and the way out (review round 1): the base's
-     "This is a bounded check" read as bounded:true, and "unless the Commander asks" offered an exit a scoped worker
+     "This is a bounded check" read as bounded:true, and "unless the Master asks" offered an exit a scoped worker
      cannot take — only its lead can lift onlyHost, by re-dispatching. */
   const SCOPE_EXIT = 'report what is left so your lead can re-dispatch it without onlyHost';
   function refusalOf(c, scope, withheld) {
@@ -324,12 +324,12 @@
         + 'reports that the domain does not resolve / NXDOMAIN, that is terminal evidence: your tools stop, so report the unavailable '
         + 'host and say your lead should re-dispatch you with the corrected URL.';
     }
-    return '[DIRECT DOMAIN CHECK — ADVICE] The Commander named one exact host: ' + policy.host + '. '
+    return '[DIRECT DOMAIN CHECK — ADVICE] The Master named one exact host: ' + policy.host + '. '
       + 'Check that host yourself with web_fetch, or with the browser (browser.navigate to that host) when the page '
       + 'needs searching, clicking, or a bot wall blocks the fetch. If the fetch or navigation reports '
       + 'that the domain does not resolve / NXDOMAIN, that is terminal evidence for this request: make no more '
       + 'web, DNS, archive, WHOIS, certificate, or spelling-variant calls. Report the unavailable host and ask '
-      + 'for the corrected URL. Only search for alternatives when the Commander explicitly asked you to find them.';
+      + 'for the corrected URL. Only search for alternatives when the Master explicitly asked you to find them.';
   }
 
   function stopControl(policy) {

@@ -61,16 +61,16 @@ function startMockOpenRouter() {
           const dir = 'workshop/' + runId;
           if (prompt.indexOf(IMPLEMENT_MARK) === 0 && /Doomed plan/.test(prompt)) {
             // A BUILD THAT PRODUCES NOTHING — no files, no manifest. Drives the failure path that used to strand
-            // the Commander: the plan must survive it and stay pending.
+            // the Master: the plan must survive it and stay pending.
             text('I could not build this.');
           } else if (prompt.indexOf(IMPLEMENT_MARK) === 0) {
             // THE IMPLEMENT RUN — build the real thing the plan asked for.
             if (toolResults === 0) {
               // probe: did the prompt actually carry the plan's file path, forbid re-planning, and carry the
-              // Commander's typed steer (the "which of these five things" answer) as an overriding instruction?
+              // Master's typed steer (the "which of these five things" answer) as an overriding instruction?
               const sawSource = /workshop\/[A-Za-z0-9-]+\/automation-backlog\.md/.test(prompt);
               const forbidsPlan = /BUILD, DO NOT RE-PLAN/.test(prompt);
-              const sawSteer = /THE COMMANDER TOLD YOU WHAT TO BUILD/.test(prompt) && /do the PowerShell one first/.test(prompt);
+              const sawSteer = /THE MASTER TOLD YOU WHAT TO BUILD/.test(prompt) && /do the PowerShell one first/.test(prompt);
               const steerWins = /if the plan and their instruction\s*\n?\s*disagree, THEY win/.test(prompt);
               tool('i0', 'fs_write', { path: dir + '/probe.txt', content: 'SAW_SOURCE=' + sawSource + '\nFORBIDS_REPLAN=' + forbidsPlan + '\nSAW_STEER=' + sawSteer + '\nSTEER_WINS=' + steerWins + '\n' });
             } else if (toolResults === 1) {
@@ -232,10 +232,10 @@ fs.renameSync = function(src,dst){
     const probe = fs.readFileSync(path.join(implDir, 'probe.txt'), 'utf8');
     A.ok(/SAW_SOURCE=true/.test(probe), 'the implement prompt named the source plan file (the run reads the real plan)');
     A.ok(/FORBIDS_REPLAN=true/.test(probe), 'the implement prompt forbids delivering another plan');
-    // THE STEER: a plan lists several things; what the Commander typed on the card is how they pick one.
-    A.ok(/SAW_STEER=true/.test(probe), 'the Commander’s typed instruction reached the BUILD prompt (not the chat stream)');
+    // THE STEER: a plan lists several things; what the Master typed on the card is how they pick one.
+    A.ok(/SAW_STEER=true/.test(probe), 'the Master’s typed instruction reached the BUILD prompt (not the chat stream)');
     A.ok(/STEER_WINS=true/.test(probe), 'and it outranks the plan’s own ordering when the two disagree');
-    // it is also recorded as the build's provenance, so the delivery card can say WHY in the Commander's words.
+    // it is also recorded as the build's provenance, so the delivery card can say WHY in the Master's words.
     const implItem = ((await (await fetch(B + '/api/workshop/backlog?agent=builder', { headers })).json()).backlog || [])
       .find(b => b.id === 'impl-' + planRun);
     A.ok(implItem && /do the PowerShell one first/.test(String(implItem.grounds || '')), 'the steer is recorded as the build’s grounds (why-this provenance)');
@@ -268,7 +268,7 @@ fs.renameSync = function(src,dst){
     A.eq(againRes.reason, 'already-implemented', 're-implementing the same plan is refused honestly, never a double build');
 
     /* 6. A FAILED BUILD MUST LEAVE THE PLAN. The first cut kept-then-built: the plan was retired BEFORE the build
-          ran, so a build that produced nothing left the Commander with the card gone and a failure line telling
+          ran, so a build that produced nothing left the Master with the card gone and a failure line telling
           them to "press Implement again" at a deliverable that was no longer pending. Nothing is decided until a
           build actually lands. */
     await post('/api/workshop/queue', { agentId: 'builder', id: 'item-doomed', title: 'Doomed plan' });
@@ -292,10 +292,10 @@ fs.renameSync = function(src,dst){
     A.eq(rmImpl.status, 200, 'the failed implement’s unbuilt backlog item can be removed from the queue');
 
     /* 7. FREE (FULLY AUTONOMOUS) FINISHES THE JOB ITSELF. The whole point of away-work is that value arrives
-          while the Commander is gone, so a plan at the top rung is an INTERMEDIATE STEP, not a delivery: the
+          while the Master is gone, so a plan at the top rung is an INTERMEDIATE STEP, not a delivery: the
           shift chains straight into the build and hands back the finished thing. (An earlier cut REFUSED the
           plan and retried — which burned a run and delivered nothing. That is the failure this locks out.)
-          At 'leash' (BUILD DRAFTS) the same build stays a plan, because that rung is where the Commander wants
+          At 'leash' (BUILD DRAFTS) the same build stays a plan, because that rung is where the Master wants
           the approval beat. */
     await post('/api/autonomy/posture', { posture: { initiative: 'free', reach: 'sandbox' } });
     // prove the rung actually took — otherwise every assertion below silently tests the DEFAULT rung.
@@ -310,13 +310,13 @@ fs.renameSync = function(src,dst){
     A.eq((freeRes.manifest || {}).planOnly, false, 'what lands at FREE is the finished thing, not a plan');
     A.eq((freeRes.manifest || {}).implementOf, freeRes.chainedFrom, 'the build records the plan it came from');
     const freeDir = path.join(ws, 'builder', 'workshop', freeRes.runId);
-    A.ok(fs.existsSync(path.join(freeDir, 'snapshot.ps1')), 'the built artifact really exists on disk — the Commander wakes to a THING');
+    A.ok(fs.existsSync(path.join(freeDir, 'snapshot.ps1')), 'the built artifact really exists on disk — the Master wakes to a THING');
     const freePending = await (await fetch(B + '/api/workshop/pending?agent=builder', { headers })).json();
     A.ok(freePending.pending.some(m => m.runId === freeRes.runId), 'the finished build is what waits for a decision');
     A.ok(!freePending.pending.some(m => m.runId === freeRes.chainedFrom), 'the intermediate plan does not also nag for one');
 
     /* 7b. A FAILED CHAIN STILL DELIVERS THE PLAN. This is the guarantee that makes the whole feature safe to
-           automate: if the auto-build doesn't land, the Commander gets the plan rather than an empty morning —
+           automate: if the auto-build doesn't land, the Master gets the plan rather than an empty morning —
            and can press BUILD IT themselves. Never a wasted shift. */
     await post('/api/workshop/queue', { agentId: 'builder', id: 'item-freedoomed', title: 'Doomed plan at free' });
     const fbShift = await readNdjson(await post('/api/workshop/shift', { agentId: 'builder' }));
@@ -331,7 +331,7 @@ fs.renameSync = function(src,dst){
 
     /* 7c. THE CHAINED BUILD INHERITS THE PLAN'S LEARNING IDENTITY. nightshiftDecideLearn() early-returns on a run
            with no archetype, and the archetype is recorded against the run that PROPOSED the work. Without this,
-           a FREE beat would silently stop teaching: the Commander's verdict lands on the chained BUILD (no
+           a FREE beat would silently stop teaching: the Master's verdict lands on the chained BUILD (no
            archetype) while the plan is retired by the server with no verdict at all. Asserted through the
            nightshift acts file, which is the durable record both loops read. */
     const actsFile = path.join(ws, 'nightshift.acts.json');
@@ -350,7 +350,7 @@ fs.renameSync = function(src,dst){
     const leashShift = await readNdjson(await post('/api/workshop/shift', { agentId: 'builder' }));
     const leashRes = ((leashShift.find(e => e.name === 'workshop.shift.result') || {}).payload || {});
     A.eq(leashRes.reason, 'built', 'BUILD (DRAFTS) delivers too');
-    A.ok(!leashRes.chainedFrom, 'but it does NOT auto-chain — that rung is where the Commander presses the button');
+    A.ok(!leashRes.chainedFrom, 'but it does NOT auto-chain — that rung is where the Master presses the button');
     A.eq((leashRes.manifest || {}).planOnly, true, 'so what arrives is the plan, and the card offers to build it');
 
     // 8. gates.

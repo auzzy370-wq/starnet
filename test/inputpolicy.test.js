@@ -94,7 +94,7 @@ A.eq(autonomousAuthority.surface, 'autonomous', 'missing surface fails closed to
 A.ok(interactiveAuthority.authorize({}, { name: 'shell.exec', capability: 'workbench' }).ok, 'watched workspace commands remain available behind their command/consent floors');
 A.ok(!autonomousAuthority.authorize({}, { name: 'shell.exec', capability: 'workbench' }).ok, 'UNGRANTED unattended shell is denied above Full Access');
 
-/* UNATTENDED TERMINAL GRANT (2026-07-25) — a routine the Commander explicitly granted may use the terminal
+/* UNATTENDED TERMINAL GRANT (2026-07-25) — a routine the Master explicitly granted may use the terminal
    unattended. The grant is host-recorded (read off the durable cron job), never derivable from prompt text or
    Full Access; these lock both directions plus the whitelist that stops it widening. */
 const grantedAuthority = makeRunAuthority({ surface: 'autonomous', isTask: true, unattendedGrants: ['workbench'] });
@@ -123,7 +123,7 @@ A.ok(ownerAuthority.project({ name: 'shell.exec', capability: 'workbench' }), 'a
 A.ok(ownerAuthority.authorize({}, { name: 'shell.exec', capability: 'workbench' }).ok, 'an owner DM may execute shell commands');
 A.ok(ownerAuthority.authorize({}, { name: 'spotify_play', capability: 'jukebox' }).ok, 'an owner DM may control the active media session');
 A.ok(ownerAuthority.authorize({}, { name: 'mcp__demo__lookup', capability: 'mcp:demo' }).ok,
-  'an owner DM may call the Commander\'s connected tools');
+  'an owner DM may call the Master\'s connected tools');
 A.ok(ownerAuthority.authorize({}, { name: 'future.magic', capability: 'future-cap' }).ok,
   'an owner DM has the desktop surface\'s non-physical external authority');
 A.ok(!ownerAuthority.authorize({}, { name: 'computer.use', capability: 'physical-input' }).ok,
@@ -142,7 +142,7 @@ const fullPowerCtx = runInputContext('autonomous', true, false, true);
 A.eq(fullPowerCtx.inputMode, 'full-power', 'Full Power context is explicitly host-wide');
 A.ok(fullPowerCtx.physicalInputAuthorized && fullPowerCtx.unrestrictedHost, 'Full Power context carries physical and unrestricted host authority');
 
-/* UNATTENDED CONNECTOR GRANT — the Commander's own MCP servers, callable by a granted routine. The critical
+/* UNATTENDED CONNECTOR GRANT — the Master's own MCP servers, callable by a granted routine. The critical
    property: external-unknown is ALSO the fail-closed default for anything the host cannot classify, so the
    grant must reach connector tools ONLY (capability 'mcp:<id>'), never that catch-all. */
 const MCP_TOOL = { name: 'mcp__demo__lookup', capability: 'mcp:demo' };
@@ -223,7 +223,7 @@ A.eq(backgroundOwnsLoopbackUrl({ running: true, tail: 'Local: https://[::1]:4443
   A.eq(exactPrompts, 2, 'an unclassifiable tool re-asks every call — "full" is deliberately NOT recorded for it');
   A.eq(unknownRuns, 2, 'each confirmed unclassifiable call executes exactly once');
   // an UNANSWERED prompt (consentwait resolves 'timeout') is not a refusal: the model must not hear "denied" and tell
-  // the Commander they declined. An actual deny still says denied. (review threads-backend-06)
+  // the Master they declined. An actual deny still says denied. (review threads-backend-06)
   const askWith = (decision) => makeRunAuthority({ surface: 'interactive', isTask: true, environment: { supports: { hostileCodeSandbox: false } }, confirm: async () => decision })
     .authorize({ id: 'u3', name: 'future.magic', args: {} }, unknownRegistry.get('future.magic'));
   const timedOut = await askWith('timeout');
@@ -232,7 +232,7 @@ A.eq(backgroundOwnsLoopbackUrl({ running: true, tail: 'Local: https://[::1]:4443
   const denied = await askWith('deny');
   A.ok(denied.ok === false && /was denied/.test(denied.reason), 'an actual deny still reads as denied');
   // ...and what the MODEL reads through dispatch carries the consent path's guidance: it was not run, it was not a
-  // refusal, tell the Commander it timed out, do not retry it alone (review follow-up on threads-backend-06)
+  // refusal, tell the Master it timed out, do not retry it alone (review follow-up on threads-backend-06)
   const runsBeforeTimeout = unknownRuns;
   const timedOutAuthority = makeRunAuthority({ surface: 'interactive', isTask: true, environment: { supports: { hostileCodeSandbox: false } }, confirm: async () => 'timeout' });
   const timedOutDispatch = await unknownRegistry.dispatch({ id: 'u4', name: 'future.magic', args: {} }, { authorize: timedOutAuthority.authorize, consent: async () => ({ allow: true }) });
@@ -242,7 +242,7 @@ A.eq(backgroundOwnsLoopbackUrl({ running: true, tail: 'Local: https://[::1]:4443
   'the dispatched result says it timed out, was not run, was not a refusal, and not to retry alone: ' + timedOutDispatch.content);
   A.ok(!/denied/i.test(timedOutDispatch.content), 'a timed-out exact confirmation never reads as denied: ' + timedOutDispatch.content);
 
-  /* THE CONNECTOR TOOL (capability 'mcp:<id>') — a server the Commander deliberately connected. It routes to
+  /* THE CONNECTOR TOOL (capability 'mcp:<id>') — a server the Master deliberately connected. It routes to
      the consent BROKER instead, so the grade they pick is recorded and the next call is answered from cache.
      REGRESSION (2026-07-27): the one-shot path collapsed once/always/full to a boolean, so a user clicking
      "Full access" was re-prompted on every single connector call — four times in a row on a live Shopify run. */

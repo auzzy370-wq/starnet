@@ -1,5 +1,5 @@
 /* node test/manual.test.js — the Vultron operator manual appended to the system prompt so an agent
-   can guide a stuck Commander. Verifies it is deterministic, structurally defers to the authoritative
+   can guide a stuck Master. Verifies it is deterministic, structurally defers to the authoritative
    capabilities block (so it can never over-promise THIS agent's powers), and names props/UI with the
    SAME labels the live floor uses (guards label drift). */
 'use strict';
@@ -24,7 +24,7 @@ const { vultronManual } = require('../sidecar/manual.js');
   A.ok(/NOT a list of your own powers/i.test(m), 'disclaims being the agent\'s own capability list');
 
   // 4) prop → power pairings use the REAL live labels (worldmodel CAP_LABEL / capsummary). A mismatch here
-  //    means the manual would tell the Commander to place the wrong thing — exactly the drift we guard against.
+  //    means the manual would tell the Master to place the wrong thing — exactly the drift we guard against.
   A.ok(/DISH[^\n]*WEB/.test(m), 'pairing: DISH → WEB');
   A.ok(/INTEL CAB[^\n]*FILES/.test(m), 'pairing: INTEL CAB → FILES');
   A.ok(/WORKBENCH[^\n]*TERMINAL/.test(m), 'pairing: WORKBENCH → TERMINAL');
@@ -35,13 +35,13 @@ const { vultronManual } = require('../sidecar/manual.js');
   A.ok(/BUILD MODE/.test(m), 'names BUILD MODE (the builder)');
   A.ok(/COMMS/.test(m), 'names COMMS (where you task an agent)');
   A.ok(/SCHEDULES/.test(m), 'names SCHEDULES (built-in scheduled work, AUTOMATE)');
-  // the 0.13 dock (sweep 2026-10-02): every menu path the agent tells the Commander exists — no 0.12.5 dock buttons
+  // the 0.13 dock (sweep 2026-10-02): every menu path the agent tells the Master exists — no 0.12.5 dock buttons
   A.ok(!/⇄ ABILITIES|✉ CHANNELS|AUTOMATION \(dock|MCP CONNECTORS|Add a custom API key|BUILD STATION/.test(m), 'names no 0.12.5 dock button or removed tab');
   A.ok(/CONNECT › ABILITIES/.test(m) && /CONNECT › CHANNELS/.test(m) && /MY WORK/.test(m) && /AUTOMATE/.test(m), 'names the 0.13 menus');
   A.ok(/Recruitment Bay/.test(m), 'names the Recruitment Bay (summon)');
   A.ok(/APPROVAL/.test(m), 'names APPROVAL/APPROVALS');
 
-  // 6) troubleshooting cues a stuck Commander actually hits
+  // 6) troubleshooting cues a stuck Master actually hits
   A.ok(/NO COMPUTE/.test(m), 'troubleshoots the NO COMPUTE / needs-a-workstation case');
   A.ok(/CALL station\.inspect first/.test(m), 'live harness-state questions route to the authoritative inspector');
   A.ok(/needs no placed prop or approval/.test(m), 'self-inspection is correctly described as a base read');
@@ -49,7 +49,7 @@ const { vultronManual } = require('../sidecar/manual.js');
   A.ok(/place the matching prop/i.test(m), 'tells the agent to place the matching prop for a missing power');
   A.ok(/Windows Task Scheduler/.test(m) && /OS crontab/.test(m), 'routine guidance points away from OS schedulers');
 
-  /* 7) CONNECTING A PLATFORM (regression, 2026-07-28). A real Commander could not connect Google Drive and
+  /* 7) CONNECTING A PLATFORM (regression, 2026-07-28). A real Master could not connect Google Drive and
         their agent made it worse: the manual's NAVIGATION section named COMMS/ROUTINES/TASKS/REFIT/Recruitment
         Bay/APPROVALS and NEVER the window where platforms are actually connected, so a model asked "how do I
         connect X" had nothing true to say and invented a menu path. These assertions pin the surfaces. */
@@ -64,12 +64,12 @@ const { vultronManual } = require('../sidecar/manual.js');
         So the agent authoritatively sent Commanders into REFIT to place a portal that is both unnecessary and
         a dead end (a portal binds a connectorId that only exists after ABILITIES configured it). */
   A.ok(/ACCOUNT-LEVEL/.test(m), 'states that a connector is account-level, not a placed prop');
-  A.ok(/NEVER send the Commander to BUILD MODE to connect a platform/i.test(m), 'forbids the BUILD MODE dead end');
+  A.ok(/NEVER send the Master to BUILD MODE to connect a platform/i.test(m), 'forbids the BUILD MODE dead end');
   A.ok(!/CONNECTOR PORTAL → an MCP/.test(m), 'CONNECTOR PORTAL is no longer listed as a prop that grants a connector');
 
   /* 9) ANTI-INVENTION. The agent has no catalog in its prompt, so absent the connectors.list tool (block 10)
         any specific claim about what is or is not connectable is a guess. It must route to the search box
-        instead of improvising, and must not argue when the Commander reports that its suggestion failed. */
+        instead of improvising, and must not argue when the Master reports that its suggestion failed. */
   A.ok(/HONESTY RULE/.test(m), 'carries the honesty rule for connect questions');
   A.ok(/NEVER\s+(?:assert|invent)/.test(m), 'forbids inventing menu paths / asserting catalog contents');
   A.ok(/universal fallback/i.test(m), 'names KEYS + web_request as the always-works fallback');
@@ -84,7 +84,7 @@ const { vultronManual } = require('../sidecar/manual.js');
   A.ok(/If you have the connectors\.list tool, CALL IT/.test(m), 'tells the agent to call it rather than answer from memory');
   A.ok(/WITHOUT that tool you do NOT have a reliable/.test(m),
     'the anti-guessing rule is now scoped to the case where the tool is absent, not stated unconditionally');
-  /* and the specific lie a Commander reports as gaslighting: "Vultron can't do that" when the truth is
+  /* and the specific lie a Master reports as gaslighting: "Vultron can't do that" when the truth is
      "that isn't connected yet". Those are different claims and the manual must separate them. */
   A.ok(/not connected YET/.test(m), 'separates "cannot reach" from "not connected yet"');
 

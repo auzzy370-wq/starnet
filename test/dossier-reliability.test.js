@@ -1,7 +1,7 @@
 /* node test/dossier-reliability.test.js — S2: the GROWTH dossier renders the RELIABILITY meter honestly.
 
    Companion to the pure-engine coverage in test/xp.test.js: that suite locks WHAT the meter computes, this
-   one locks what the Commander actually SEES. The two things a rendered honest meter must never do are
+   one locks what the Master actually SEES. The two things a rendered honest meter must never do are
    (a) show a percentage it has not earned, and (b) quietly shrink its own denominator — a run excluded from
    the ratio has to be NAMED on screen, or "100%" is a lie of omission.
 
@@ -63,7 +63,7 @@ const faultTail = faulted.slice(faulted.indexOf('Reliability'));
 A.ok(/100<span style="font-size:18px;color:var\(--ph-dim\);">%/.test(faultTail), 'provider faults + cancellations stay out of the ratio');
 A.ok(/2 runs set aside/.test(faultTail), 'but the excluded runs are NAMED, never silently dropped from the denominator');
 A.ok(/1 the provider failed/.test(faultTail), 'a provider fault is attributed to the provider, in words');
-A.ok(/1 you stopped or it asked a question/.test(faultTail), 'a Commander stop is attributed to the Commander, in words');
+A.ok(/1 you stopped or it asked a question/.test(faultTail), 'a Master stop is attributed to the Master, in words');
 A.ok(/never charged to this agent/.test(faultTail), 'and the readout says plainly that neither is the agent\'s fault');
 A.ok(!/set aside/.test(cleanTail), 'an agent with nothing excluded shows no set-aside line at all');
 

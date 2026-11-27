@@ -1,6 +1,6 @@
 /* node test/deliverables-open.test.js — the DELIVERABLES library OPEN control must
  * use the same proven desktop artifact bridge as COMMS, and browser previews must
- * render inside the row the Commander clicked instead of below the whole library. */
+ * render inside the row the Master clicked instead of below the whole library. */
 'use strict';
 
 const A = require('./_assert.js');

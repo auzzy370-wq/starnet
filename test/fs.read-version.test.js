@@ -24,7 +24,7 @@ const absOf = (rel) => path.join(ROOT, 'ag', rel);
 const PRECONDITION = { code: 'fresh_read_required', requiredTool: 'fs.read', requiredState: 'current_file_observed' };
 const patchOf = (body) => '*** Begin Patch\n' + body + '\n*** End Patch';
 
-// another writer (a second run, the Commander's editor, a shell command) changes the file on disk
+// another writer (a second run, the Master's editor, a shell command) changes the file on disk
 async function externalChange(rel, text) { await fsp.writeFile(absOf(rel), text, 'utf8'); }
 // ...and one whose bytes carry an OLDER mtime (rsync -t, cp -p, an archive extract): an mtime clock cannot see it
 async function externalChangeOldMtime(rel, text) {

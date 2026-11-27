@@ -166,7 +166,7 @@ const run = (provider, extra) => runAgentLoop(Object.assign({
   }
   // ---- G. WIDENED announce detection (2026-10-11 user report: "they start a task and then stop repeatedly with no
   //         explanation"). Making/shipping announcements used to end the run 'done'; endings that WAIT on the
-  //         Commander (a question, a condition on their answer, an offer, a lesson) must still never nudge. ----
+  //         Master (a question, a condition on their answer, an offer, a lesson) must still never nudge. ----
   {
     const { announcesIntent } = require('../sidecar/loop.js')._internals;
     for (const p of [
@@ -214,7 +214,7 @@ const run = (provider, extra) => runAgentLoop(Object.assign({
       'Fixed! Now working as expected.',
       'Saving now works again.',
       'Done — uploading now succeeds.'
-    ]) A.ok(!announcesIntent(n), 'a reply that waits on the Commander or delivers is never nudged: ' + n);
+    ]) A.ok(!announcesIntent(n), 'a reply that waits on the Master or delivers is never nudged: ' + n);
   }
   // end to end: the commonest making-announcement now buys a nudge and the real work; a question still ends the run
   {
@@ -226,7 +226,7 @@ const run = (provider, extra) => runAgentLoop(Object.assign({
   {
     const provider = scripted([textTurn('I can build it with a dark hero and a pricing table. Want me to go ahead?')]);
     const res = await run(provider);
-    A.eq(res.reason, 'done', 'a question that waits on the Commander ends the run cleanly');
+    A.eq(res.reason, 'done', 'a question that waits on the Master ends the run cleanly');
     A.eq(provider.callCount(), 1, 'no nudge on a question');
   }
 
@@ -365,7 +365,7 @@ const run = (provider, extra) => runAgentLoop(Object.assign({
     A.ok(none.reason !== 'done', 'the same words with no hand-off at all are still caught (' + none.reason + ')');
   }
 
-  // ---- A REPLY THAT ENDS ON A CHOICE MARKER WAITS ON THE COMMANDER (rc walk 2026-10-14) ----
+  // ---- A REPLY THAT ENDS ON A CHOICE MARKER WAITS ON THE MASTER (rc walk 2026-10-14) ----
   // "Let me ask this the right way:" + a TASK_QUESTION marker read as an announce: the guard pushed "you called no tools",
   // the model answered it in COMMS ("You're right — I ended with a question card but didn't call any tools.") and dropped
   // the question. Bold-wrapped and glued markers are the same question.
@@ -386,14 +386,14 @@ const run = (provider, extra) => runAgentLoop(Object.assign({
     const failed = scripted([toolTurn(1), textTurn("Let me ask this the right way:\n\nTASK_QUESTION: personal or community? || Personal | Community"), textTurn('should never run')]);
     const fr = await run(failed, { dispatch: async () => ({ ok: false, isError: true, content: 'ERROR: tool brief.ask failed: a second question requires an answered first question' }) });
     A.eq(failed.callCount(), 2, 'a marker reply after a failed call ends the run (no failure-recovery turn)');
-    A.eq(fr.messages.filter(m => m.role === 'system' && /<failure_recovery>/.test(m.content)).length, 0, 'no failure-recovery nudge on a reply that asks the Commander');
+    A.eq(fr.messages.filter(m => m.role === 'system' && /<failure_recovery>/.test(m.content)).length, 0, 'no failure-recovery nudge on a reply that asks the Master');
     // a marker that is NOT the ending (prose after it announces work) is still an announce
     const after = scripted([textTurn('TASK_QUESTION: which? || a | b\n\nReading main.js now — then fixing.'), toolTurn(8), textTurn('Fixed.')]);
     const afterRes = await run(after);
     A.eq(afterRes.messages.filter(m => m.role === 'system' && /<continuation>/.test(m.content)).length, 1, 'an announce AFTER a marker is still nudged');
-    // the nudge says it is a host check the Commander never sees, so it is not answered in COMMS ("You're right —")
+    // the nudge says it is a host check the Master never sees, so it is not answered in COMMS ("You're right —")
     const nudge = afterRes.messages.find(m => m.role === 'system' && /<continuation>/.test(m.content));
-    A.ok(/automatic host check; the Commander never sees it\. Do not answer, acknowledge or apologize/.test(nudge.content), 'the continuation nudge tells the model not to answer it');
+    A.ok(/automatic host check; the Master never sees it\. Do not answer, acknowledge or apologize/.test(nudge.content), 'the continuation nudge tells the model not to answer it');
     // …and so does every other nudge that pushes back on a reply (rc review 2026-10-14: six of them did not)
     {
       const loopSrc = require('fs').readFileSync(require('path').join(__dirname, '..', 'sidecar', 'loop.js'), 'utf8');
@@ -402,14 +402,14 @@ const run = (provider, extra) => runAgentLoop(Object.assign({
         A.ok(line && line.indexOf("HOST_CHECK + '</" + tag + ">'") >= 0, 'the <' + tag + '> nudge says it is a host check, never answered');
       }
       const steer = loopSrc.split('\n').find(l => l.indexOf("'<steering_note>'") >= 0);
-      A.ok(steer && steer.indexOf('HOST_CHECK') < 0, 'a steering note (the Commander\'s own words) never carries it');
+      A.ok(steer && steer.indexOf('HOST_CHECK') < 0, 'a steering note (the Master\'s own words) never carries it');
     }
     // a HIDDEN tool's error tells the model the step is invisible (no "Let me fix that—sources needs to be an array:")
     const hiddenProv = scripted([[{ type: 'tool_start', index: 0, id: 'h1', name: 'brief_proceed' }, { type: 'tool_args', index: 0, chunk: '{}' }, { type: 'done', finishReason: 'tool_calls' }], textTurn('Done.')]);
     const hid = await run(hiddenProv, { tools: [{ name: 'brief_proceed', description: 'b', schema: { type: 'object' } }].concat(TOOLS), hiddenTools: ['brief_proceed'],
       dispatch: async () => ({ ok: false, isError: true, content: 'ERROR: invalid tool arguments: "sources" must be an array' }) });
     const tr = hid.messages.find(m => m.role === 'tool');
-    A.ok(/sources" must be an array \(This tool is invisible to the Commander: never mention this error or its fix\. Make the corrected call with no text before it — or, if you fall back to the TASK_QUESTION marker, reply with only that one marker line\.\)$/.test(String(tr && tr.content)), 'a hidden tool error carries the invisible-step note: ' + JSON.stringify(tr && tr.content));
+    A.ok(/sources" must be an array \(This tool is invisible to the Master: never mention this error or its fix\. Make the corrected call with no text before it — or, if you fall back to the TASK_QUESTION marker, reply with only that one marker line\.\)$/.test(String(tr && tr.content)), 'a hidden tool error carries the invisible-step note: ' + JSON.stringify(tr && tr.content));
     // A REPAIR TURN AFTER AN INVISIBLE STEP IS NOT CHAT: after a held call (the brief gate) the model's "let me settle the brief
     // first:" turn — whose only call is the hidden brief tool — is never streamed and never kept; a repair turn that makes a
     // visible call streams its text whole.
@@ -472,7 +472,7 @@ const run = (provider, extra) => runAgentLoop(Object.assign({
   }
   // ---- I. A QUEUED SEAT ENDS THE REPLY (review 10-14). station.control group.add on the lead's own running chat lands only
   //         when this reply ends, and the lead's next turn is already scheduled: the kickoff in the group, with the request.
-  //         The guard nudged the real Haiku reply below (one of two real seats) — the Commander got a second message
+  //         The guard nudged the real Haiku reply below (one of two real seats) — the Master got a second message
   //         answering an invisible nudge ("You're right… Per the tool response…"), and an exhausted guard fails the reply,
   //         which DROPS the join they approved. A seat that was refused or failed still earns nothing. ----
   {

@@ -339,7 +339,7 @@ function makeOpenAiCompat(deps) {
       broadcast: true,                            // light the station floor — a user SEES the external harness's run
       taskKey: 'v1:' + o.agentId, taskSource: 'api',
       // an externally-driven run is still this agent doing real work — it learns from it like any other, with each
-      // record stamped origin:'api' so the Commander can tell it apart from their own conversation.
+      // record stamped origin:'api' so the Master can tell it apart from their own conversation.
       reflect: !o.outputOnly, outputOnly: !!o.outputOnly, maxIters: o.outputOnly ? 1 : undefined
     }));
     return Promise.resolve(p).then(() => acc, (e) => { acc.reason = 'error'; acc.failureCode = acc.failureCode || RunOutcome.NO_TERMINAL; acc.errMsg = acc.errMsg || ('run failed: ' + ((e && e.message) || e)); return acc; });
@@ -442,7 +442,7 @@ function makeOpenAiCompat(deps) {
     const runModel = wire.model, provider = wire.provider, wireSource = wire.source, reasoningEffort = wire.reasoningEffort;
     // conversation for runOnce = prior turns (history) + the new user directive last (system passed separately).
     const messages = parsed.history.map(m => ({ role: m.role, content: m.content })).concat([{ role: 'user', content: parsed.lastUser }]);
-    let system = parsed.system || 'You are the Commander\'s Vultron agent, reached over an OpenAI-compatible API. Use your REAL tools when given a task and report what you actually did.';
+    let system = parsed.system || 'You are the Master\'s Vultron agent, reached over an OpenAI-compatible API. Use your REAL tools when given a task and report what you actually did.';
 
     if (contract.schema) system += '\nReturn ONLY strict JSON matching this schema: ' + JSON.stringify(contract.schema);
     const id = reservedId || 'chatcmpl-' + String(newId()).replace(/-/g, '').slice(0, 24);
@@ -642,7 +642,7 @@ function makeOpenAiCompat(deps) {
     { const refused = wireRefusal(wire); if (refused) return json(res, 503, refused); }
     const runModel = wire.model, provider = wire.provider, wireSource = wire.source, reasoningEffort = wire.reasoningEffort;
     const messages = history.map(m => ({ role: m.role, content: m.content })).concat([{ role: 'user', content: lastUser }]);
-    const sys = system || 'You are the Commander\'s Vultron agent, reached over an OpenAI-compatible API. Use your REAL tools when given a task and report what you actually did.';
+    const sys = system || 'You are the Master\'s Vultron agent, reached over an OpenAI-compatible API. Use your REAL tools when given a task and report what you actually did.';
 
     const ac = new AbortController();
     sweepRuns();

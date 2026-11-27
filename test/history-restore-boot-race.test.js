@@ -103,7 +103,7 @@ async function bootRaceSendsOnce(root) {
   assert.equal(await opened, false, root + ': the open-time read timed out (the soak S2 boot race)');
   assert.ok(h.requests[0].aborted, root + ': the open-time read was abandoned at its 8 s window');
   assert.ok(h.events().includes('history-unavailable'), root + ': an unanswered read is recorded as unavailable, never as loaded');
-  // The Commander's first message after the restart.
+  // The Master's first message after the restart.
   const s = h.send(new AbortController().signal);
   await h.advance(1000);
   assert.equal(s.error ? s.error.message : undefined, undefined, root + ': the first send does not fail on the open-time read that timed out');
@@ -211,7 +211,7 @@ async function serverErrorRefusesAtOnce(root) {
 }
 
 async function staleServerErrorAsksAgain(root) {
-  // The open-time read met a 500; the station has recovered by the time the Commander sends. The settled failure is
+  // The open-time read met a 500; the station has recovered by the time the Master sends. The settled failure is
   // not the answer to THIS send: it asks again at once and goes, exactly once.
   let failing = true;
   const h = harness(root, { busy: true, server: (req, io) => { if (failing) io.respond(500, null); } });

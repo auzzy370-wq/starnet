@@ -4,7 +4,7 @@
    .wf-panel and .refit-overlay, so this window restates them on its own root — then the panel's unscoped pieces (.wf-node tiles,
    .wf-belt joins, .wf-pill, .wf-io wells, .wf-fix cards, .wf-step-out rows, .wf-md prose) draw here exactly as they draw there.
    Keys are the panel's 8px glass keys (36px, 16px VT323, lit-glass primary); fields are the Build Library field (8px, recessed);
-   cards are 10px glass. Theme tokens only, so every phosphor set re-tints it. Nothing a Commander reads is under 14px. */
+   cards are 10px glass. Theme tokens only, so every phosphor set re-tints it. Nothing a Master reads is under 14px. */
 .term.wfw-win {
   --refit-glass: linear-gradient(125deg, rgba(var(--ph-bright-rgb),.09), rgba(var(--ph-rgb),.045) 48%, rgba(var(--ph-rgb),.015));
   --refit-edge: rgba(var(--ph-rgb),.2);
@@ -101,14 +101,14 @@ textarea.wfw-field { min-height: 76px; }
   border: 1px solid var(--wf-edge); border-radius: 10px; background: var(--refit-glass); box-shadow: var(--wf-light);
   transition: background-color var(--t-fast) var(--ease-soft), border-color var(--t-fast) var(--ease-soft); }
 .wfw-tile:hover { border-color: rgba(var(--ph-rgb),.45); background: var(--wf-hover); }
-/* (org P18, D2) the Commander's FOR YOUR GOAL line leads the starters on a row of its own, so the four below stay a whole grid */
+/* (org P18, D2) the Master's FOR YOUR GOAL line leads the starters on a row of its own, so the four below stay a whole grid */
 .wfw-tile.wfw-goal { grid-column: 1 / -1; }
 /* (org D2 polish) the Build Library's own shelf headings: gold FOR YOUR GOAL over the lead tile says why it is wide and first, and
    COMMON WORKFLOWS heads the four under it */
 .wfw-tgroup { grid-column: 1 / -1; margin: 6px 2px 0; font-size: 14px; letter-spacing: 1.2px; color: var(--ph-dim); text-transform: uppercase; }
 .wfw-tgroup:first-child { margin-top: 0; }
 .wfw-tgroup.wfw-goalhd { color: var(--gold); text-wrap: balance; }
-/* (org g7 D2, final round) the goal it names — the Commander's own words, in their own case — so the claim is on screen */
+/* (org g7 D2, final round) the goal it names — the Master's own words, in their own case — so the claim is on screen */
 .wfw-tgroup.wfw-goalhd .wfw-goalq { margin-left: 4px; font-size: 15px; letter-spacing: .3px; text-transform: none; color: var(--text); }
 .wfw-tile.on { border-color: var(--ph); background: var(--wf-on); box-shadow: var(--wf-light), inset 0 -2px 0 rgba(var(--ph-rgb),.65); }
 .wfw-tart { display: grid; place-items: center; width: 100%; height: 62px; border-radius: 8px; background: radial-gradient(ellipse 72% 70% at 50% 64%, rgba(130,170,150,.11), transparent 76%); }

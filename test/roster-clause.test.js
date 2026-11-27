@@ -1,5 +1,5 @@
 /* node test/roster-clause.test.js — the orchestrator's identity must never freeze a crew-size claim.
-   The old baked "right now its only agent" clause turned into an app-lie the moment the Commander
+   The old baked "right now its only agent" clause turned into an app-lie the moment the Master
    summoned a crew (truthful-telemetry law). The fix has three legs, all locked here:
      · identity.md gets a TIMELESS orchestrator clause (orchestratorClause) — no crew-size assertion
      · the LIVE crew truth rides rosterClause(), derived fresh in composeSystemPrompt like
@@ -38,9 +38,9 @@ X.stripLegacySoloClause(legacy);
 A.eq(legacy.docs.identity, fresh, 'migrated identity is BYTE-EQUAL to a fresh baseIdentity (rename default-detection preserved)');
 X.stripLegacySoloClause(legacy);
 A.eq(legacy.docs.identity, fresh, 'migration is idempotent (second pass is a no-op)');
-const reworded = { docs: { identity: 'You are ULTRA, hand-authored by the Commander.' } };
+const reworded = { docs: { identity: 'You are ULTRA, hand-authored by the Master.' } };
 X.stripLegacySoloClause(reworded);
-A.eq(reworded.docs.identity, 'You are ULTRA, hand-authored by the Commander.', 'a Commander-reworded identity is never touched');
+A.eq(reworded.docs.identity, 'You are ULTRA, hand-authored by the Master.', 'a Master-reworded identity is never touched');
 X.stripLegacySoloClause({});   // no docs at all
 A.ok(true, 'migration tolerates a doc-less agent');
 

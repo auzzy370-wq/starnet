@@ -1,4 +1,4 @@
-/* VULTRON — worksignal.js : the PURE capability-usage histogram (the "what work does the Commander actually do"
+/* VULTRON — worksignal.js : the PURE capability-usage histogram (the "what work does the Master actually do"
    substrate for adaptive recruitment).
 
    The recruiter's fuel. Where profile.js tracks the {code|research|general} INTEREST tag of every task, this
@@ -99,7 +99,7 @@
   // the decayed weight of one lane, normalized 0..1 — the matcher's kit-affinity term reads this per kit entry.
   function laneWeight(signal, lane, now) { return isLane(lane) ? (vector(signal, now)[lane] || 0) : 0; }
 
-  // the dominant interest tag OBSERVED IN A LANE (which kind of work the Commander does there), or null when the
+  // the dominant interest tag OBSERVED IN A LANE (which kind of work the Master does there), or null when the
   // lane has no tag tally yet. Used to detect "high research volume in the dish, no research specialist rostered".
   function laneTag(signal, lane, now) {
     const lo = signal.lanes && signal.lanes[lane];

@@ -84,7 +84,7 @@ function station(name, updatedAt, marker) {
     A.eq(body.lineage.recovery.recoverableCount, 2, 'both valid station generations are disclosed');
     A.eq(body.lineage.recovery.automaticCandidateId, null, 'real host refuses to guess between conflicting stations');
     const selected = body.lineage.recovery.candidates.find(row => row.stationName === 'ORION');
-    A.ok(selected && selected.id, 'Commander can identify the desired station without exposing save contents');
+    A.ok(selected && selected.id, 'Master can identify the desired station without exposing save contents');
 
     const reportRes = await fetch('http://127.0.0.1:' + first.port + '/api/lineage/report', { headers: { 'X-Vultron-Token': TOKEN } });
     const reportRaw = await reportRes.text();

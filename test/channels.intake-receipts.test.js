@@ -6,7 +6,7 @@
    outside that rule. An EDIT's receipt was keyed by its message alone ('…|edited'), so a second correction of one message
    was taken for the platform handing the first one over again and never ran (probe p2 B: the "table for 7" correction).
    A CHOICE TAP had no receipt at all: the button was spent and the tap answered before anything was durable, so a crash
-   while the chosen option ran lost the Commander's answer for good (p2 C), and a tap whose intake failed was acknowledged
+   while the chosen option ran lost the Master's answer for good (p2 C), and a tap whose intake failed was acknowledged
    anyway. Now an edit is keyed by when it was made ('|edited@<edit_date>'), and a choice tap writes its receipt
    ('…|cb:<callbackId>', the option's text as its message) before it spends the button or answers the tap, through an
    onCallback that is a sync function returning a promise, so a refused write throws out to the adapter.

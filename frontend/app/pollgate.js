@@ -7,7 +7,7 @@
    minute with nobody looking, each parsed on the UI thread.
 
    THE RULE. A poll registered here runs at its own cadence (unchanged) while the page can be seen, and slows to a 30 s floor
-   while the Commander is AWAY. It never stops: a loop that stops is a claim nobody can check. Coming back (visible again,
+   while the Master is AWAY. It never stops: a loop that stops is a claim nobody can check. Coming back (visible again,
    window focus, the first input, or the first frame drawn after being away) runs every loop that is overdue against its
    own live cadence at once, then fires onWake callbacks, so nothing on screen is older than it was before.
 
@@ -58,7 +58,7 @@
         A setTimeout chain that never overlaps a beat inside its deadline; a throw or rejection is re-raised outside the
         chain, which carries on. cadence() is the interval in force when the last run started; interval() is the one in
         force now.
-     PollGate.onWake(cb) → unsubscribe      cb runs when the Commander comes back after the gate was away
+     PollGate.onWake(cb) → unsubscribe      cb runs when the Master comes back after the gate was away
    Callers fall back to their old timers when PollGate is undefined (single-file node tests load them without it).
    Dependency-free and browser-global, with injection seams for node tests (module.exports). */
 'use strict';
@@ -173,7 +173,7 @@ const PollGate = (() => {
         p.then(() => settle(token, true), e => { settle(token, true); raiseRejection(e); });
       } else settle(token);
     }
-    // a beat still out when the Commander is back (or runNow asks): past the deadline of the cadence in force now it is
+    // a beat still out when the Master is back (or runNow asks): past the deadline of the cadence in force now it is
     // hung, so it is abandoned (→ true: free to run); inside it, it is awaited with that nearer deadline (→ false)
     function unstick() {
       if (!l.running) return true;

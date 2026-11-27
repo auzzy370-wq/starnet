@@ -3,7 +3,7 @@
    viewer or wireframe view should look better as well … a UX overhaul clean experience consistent with the rest of vultron").
 
    What that became, locked here so it cannot drift back:
-     · READABLE — the panel speaks at the station's size: 17px body, nothing a Commander reads under 14px, and the pieces it
+     · READABLE — the panel speaks at the station's size: 17px body, nothing a Master reads under 14px, and the pieces it
        borrows from other cards (trigger rows, the add forms, the WHEN picker) are restated on that scale;
      · ONE MATERIAL — the Build Library's glass keys (8px, 36px tall), matte: no glow anywhere in the sheet;
      · SIMPLER — the header says each thing once (a cost only once a step was really tested; no hint repeating the

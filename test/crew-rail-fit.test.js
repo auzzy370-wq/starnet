@@ -46,7 +46,7 @@ A.eq(crewCap([], { railH: 774, spare: 600 }), 0, 'an empty roster asks for no ca
 // fractional layout must never round DOWN into the row it is meant to reveal
 A.eq(crewCap([52.4, 101.6], { railH: 300, spare: 600 }), 102, 'a fractional row cut rounds UP so the last row stays whole');
 
-A.ok(ROWS_MIN >= 3 && ROWS_MIN <= 4, 'the rail promises 3-4 agents visible whole (Commander directive)');
+A.ok(ROWS_MIN >= 3 && ROWS_MIN <= 4, 'the rail promises 3-4 agents visible whole (Master directive)');
 A.ok(SHARE > 0 && SHARE < 1, 'the roster keeps a fractional share of the column, never all of it');
 A.ok(WS_FLOOR > 0, 'SESSIONS keeps a floor no matter how deep the crew gets');
 
@@ -80,7 +80,7 @@ A.ok(/\.crew-row \.crew-prog\s*\{[^}]*transition:\s*height/.test(fs.readFileSync
 A.ok(/new ResizeObserver\([\s\S]{0,40}observe\(left\)/.test(js), 're-measures when the rail itself resizes (window, TEXT SIZE, rail show/hide)');
 A.ok(/requestAnimationFrame/.test(js), 'the re-measure is coalesced into one frame, not run per mutation');
 
-/* ---- 3. THE ROSTER SEAM (2026-08-10) — the Commander may set that row count by dragging ----
+/* ---- 3. THE ROSTER SEAM (2026-08-10) — the Master may set that row count by dragging ----
    "users should have the option to raise the sessions way higher if they want more space to see
    their sessions." A dragged split replaces the automatic budget, and NOTHING else: rows stay
    whole, SESSIONS keeps its floor, and one whole row is still the bottom of the range. */

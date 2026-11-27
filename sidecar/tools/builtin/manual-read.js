@@ -16,7 +16,7 @@ function makeManualReadTool() {
   const tool = {
     name: 'manual.read', capability: 'stationinfo', impact: 'none', scope: 'read', requiresConsent: false,
     description: 'Read one section of the Vultron operator manual, verbatim: how the station works, for guiding the '
-      + 'Commander. navigation (every window and control), props (which prop grants which power), '
+      + 'Master. navigation (every window and control), props (which prop grants which power), '
       + 'troubleshooting (the fix for each stuck case), concepts (what each thing is), or all. Call it before naming any Vultron window, '
       + 'menu, button or prop. Read-only, local, consent-free.',
     schema: { type: 'object', properties: { section: { type: 'string', enum: IDS.concat(['all']) } } },

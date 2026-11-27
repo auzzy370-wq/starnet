@@ -168,7 +168,7 @@ for (const ch of CHANNELS) {
   const CODEX = { agent: { name: 'NOVA', provider: 'codex', model: 'gpt-5.5' } };
   const dead = station({ roster: CODEX, codex: 'dead', secrets: saved(ch, { provider: 'codex', model: 'gpt-5.5' }) });
   A.eq(dead.boot().map(x => x.ch), [ch], ch + ': a ChatGPT sign-in recorded dead still starts the bot (it answers with the expired-sign-in error)');
-  A.eq(dead.live(ch), 'refused', '...while its messages are refused on the live verdict until the Commander reconnects');
+  A.eq(dead.live(ch), 'refused', '...while its messages are refused on the live verdict until the Master reconnects');
   const moved = station({ roster: CODEX, codex: 'dead', secrets: saved(ch, { provider: 'openrouter', model: 'openai/gpt-5' }) });
   A.eq(moved.boot().map(x => x.ch), [ch], 'DEFECT ' + ch + ': saved under OpenRouter (no key left), its agent moved to a ChatGPT sign-in recorded dead: the bot starts');
   const none = station({ roster: CODEX, secrets: saved(ch, { provider: 'codex', model: 'gpt-5.5' }) });
@@ -202,7 +202,7 @@ for (const ch of CHANNELS) {
 
   // pre-merge review 1: an enabled record bound to an agent that cannot run, on a headless station whose Overseer can. The
   // env start, judged on the Overseer, replaced it with an unbound record (the start saves the agent, persona and name it is
-  // handed: none), so the bot answered as the Overseer and the binding stayed lost after the Commander added the key.
+  // handed: none), so the bot answered as the Overseer and the binding stayed lost after the Master added the key.
   const ROSTER2 = { agent: { name: 'NOVA', provider: 'openrouter', model: 'openai/gpt-5' }, coder: { name: 'CODER', provider: 'anthropic', model: 'claude-sonnet-5' } };
   const BOUND = { enabled: true, agentId: 'coder', name: 'CODER', system: 'coder persona', provider: 'openrouter', model: 'openai/gpt-5', ownerId: '77' };
   const binding = x => [x.model, (x.cfg || {}).agentId || null, (x.cfg || {}).name || null, (x.cfg || {}).system || null];
@@ -215,7 +215,7 @@ for (const ch of CHANNELS) {
     A.eq(JSON.stringify(s.channelSecrets[ch]), before, 'BINDING ' + ch + ': ...and its record, binding and owner, is unchanged');
     s.runtimeKeys.anthropic = 'sk-ant-KEYCHAIN';
     A.eq(s.boot().filter(x => x.ch === ch).map(binding), [['openai/gpt-5', 'coder', 'CODER', 'coder persona']],
-      'BINDING ' + ch + ': once the Commander adds the key, the bot starts from its saved config, bound as it was');
+      'BINDING ' + ch + ': once the Master adds the key, the bot starts from its saved config, bound as it was');
     A.eq(s.stationHubRunConfig('coder', s.channelCredential(ch)).provider, 'anthropic', '...and its messages run the bound agent\'s pair');
   }
   // as at e732831af: a DISABLED record holds the env start back no more than before (it is judged on the Overseer); and on a

@@ -1,6 +1,6 @@
 /* sidecar/quest-store.js — the station-wide, harness-owned, agent-aware QUEST LEDGER (QUEST V2, plan §A).
 
-   Quests are Vultron's retention spine: the game's progression must stay in sync with the Commander's REAL
+   Quests are Vultron's retention spine: the game's progression must stay in sync with the Master's REAL
    progression (goals, aspirations, work to automate). The v1 system was a frontend-only read projection with
    two fatal holes: completions celebrated unreliably, and any quest that wasn't mechanically observable was
    architecturally UNCOMPLETABLE (the agent couldn't even see it). V2 moves the ledger into the sidecar and
@@ -23,7 +23,7 @@
    Completion is CONTRACT-OWNED, never a claim:
      • prop / fact / artifact → completeByContract(type,key) when the harness proves the capability/fact/file.
      • run  → completeByContract('run', runId) when the bound run ends 'done'; a non-'done' end → stallRun.
-     • attest → the agent PROPOSES with evidence (attest); the Commander confirms (confirmAttest). Agent claim
+     • attest → the agent PROPOSES with evidence (attest); the Master confirms (confirmAttest). Agent claim
        alone NEVER completes. Confirm → done. Decline → attest cleared, declineNote stamped, quest stays open.
    Steps are PROGRESS DISPLAY only: ticking every step does NOT auto-complete a quest — the contract owns done. */
 'use strict';
@@ -56,7 +56,7 @@ function normTitle(s) { return String(s == null ? '' : s).toLowerCase().replace(
 
 // THE CONTRACT RULE, validated. A quest cannot exist without a valid completion contract. Returns a clean
 // {type,key} or null (reject). Mechanical types (prop/run/fact/artifact) REQUIRE a non-empty key; only 'attest'
-// may carry key '' (its completion is the Commander's confirm, not a keyed sweep).
+// may carry key '' (its completion is the Master's confirm, not a keyed sweep).
 function validContract(c) {
   if (!c || typeof c !== 'object') return null;
   const type = String(c.type || '');
@@ -236,7 +236,7 @@ function makeQuestStore(deps) {
     let out = { ok: false, error: 'mint failed' };
     return durable.update(STORE_KEY, (cur) => {
       const rec = normalize(cur);
-      // dismissed forever (anti-nag): a title the Commander waved off can never be re-minted.
+      // dismissed forever (anti-nag): a title the Master waved off can never be re-minted.
       if (nt && rec.deniedTitles.indexOf(nt) >= 0) { out = { ok: false, error: 'that quest was dismissed before and will not be offered again' }; return undefined; }
       // title-dedup vs OPEN quests — never re-mint a quest that is already live.
       if (nt) {
@@ -288,7 +288,7 @@ function makeQuestStore(deps) {
 
   /* forget(match) -> Promise<number>: the forget registry's purge. Every quest `match(quest)` names - a generated quest that quotes a deleted
      session, or one it cannot show was grounded elsewhere - goes, with its title, description, steps and grounding. The dismissed-forever
-     title list stays (a quest the Commander waved off must not come back). Written twice: the .bak holds the purged copy. */
+     title list stays (a quest the Master waved off must not come back). Written twice: the .bak holds the purged copy. */
   function forget(match) {
     let n = 0;
     return durable.update(STORE_KEY, (cur) => {
@@ -336,7 +336,7 @@ function makeQuestStore(deps) {
   // MECHANICAL SWEEP: complete EVERY open quest whose contract matches (type,key). Returns the completed ids.
   //   run → matches contract.key===key OR the bound runId===key (the run finishing 'done' is the done-signal).
   //   prop/fact/artifact → matches contract.key===key (harness proved the capability/fact/deliverable).
-  //   attest → NEVER completed here (attest completion is the Commander's confirm alone).
+  //   attest → NEVER completed here (attest completion is the Master's confirm alone).
   function completeByContract(type, key, now) {
     const t = String(type || '');
     const k = String(key == null ? '' : key);
@@ -387,7 +387,7 @@ function makeQuestStore(deps) {
   }
 
   // ATTEST: the agent PROPOSES completion with evidence (attest contracts only). Never completes — sets a
-  // pending attest the Commander confirms. Rejects a mechanical contract, a missing/short evidence, and a
+  // pending attest the Master confirms. Rejects a mechanical contract, a missing/short evidence, and a
   // quest that already has a pending attest. Returns { ok, error? }.
   function attest(id, d, now) {
     d = d || {};
@@ -398,7 +398,7 @@ function makeQuestStore(deps) {
       const q = rec.quests.find(x => x.id === String(id));
       if (!q || q.status !== 'open') { out = { ok: false, error: 'no such open quest' }; return undefined; }
       if (!q.contract || q.contract.type !== 'attest') { out = { ok: false, error: 'this quest completes mechanically, not by attestation' }; return undefined; }
-      if (q.attest && q.attest.confirmed == null) { out = { ok: false, error: 'this quest is already awaiting the Commander\'s confirmation' }; return undefined; }
+      if (q.attest && q.attest.confirmed == null) { out = { ok: false, error: 'this quest is already awaiting the Master\'s confirmation' }; return undefined; }
       if (evidence.length < MIN_EVIDENCE) { out = { ok: false, error: 'attesting completion needs real evidence of what was done' }; return undefined; }
       q.attest = {
         agentId: agentIdOrNull(d.agentId),
@@ -412,7 +412,7 @@ function makeQuestStore(deps) {
     }).then(() => out);
   }
 
-  // CONFIRM the attest verdict (Commander only). ok=true → done + completedAt (attest.confirmed=true kept for
+  // CONFIRM the attest verdict (Master only). ok=true → done + completedAt (attest.confirmed=true kept for
   // audit). ok=false → attest cleared, declineNote stamped (the agent sees it next run), quest STAYS open.
   // Returns true only when it actually resolved a pending attest.
   function confirmAttest(id, ok, note, now) {
@@ -435,7 +435,7 @@ function makeQuestStore(deps) {
     }).then(() => out);
   }
 
-  // Commander feedback is durable; paused quests stay in the ledger and title dedup set.
+  // Master feedback is durable; paused quests stay in the ledger and title dedup set.
   function setDisposition(id, d, now) {
     d = d || {};
     const type = String(d.disposition || '');
@@ -456,7 +456,7 @@ function makeQuestStore(deps) {
     }).then(() => out);
   }
 
-  // Owner HTTP surface only. Agent tools still require attest -> Commander confirm.
+  // Owner HTTP surface only. Agent tools still require attest -> Master confirm.
   function reportCompletion(id, evidence, now) {
     const text = String(evidence || '').trim();
     if (text.length < MIN_EVIDENCE) return Promise.resolve({ ok: false, error: 'describe what you did (at least 10 characters)' });

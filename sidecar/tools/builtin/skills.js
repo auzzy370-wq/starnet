@@ -22,12 +22,12 @@
     }
   }
   // The model's reply for a staged write. A brand-new skill is a proposed skill, not a "revision", and neither is
-  // something the skill guard held: it waits on the Commander's evaluation and approval.
+  // something the skill guard held: it waits on the Master's evaluation and approval.
   function proposedReply(r, isNew) {
     return {
       content: isNew
-        ? 'Proposed new skill "' + r.skill.name + '". It is not active until the Commander evaluates and approves it in ABILITIES > SKILLS.'
-        : 'Proposed revision for skill "' + r.skill.name + '". It is not active until the Commander evaluates and approves it in ABILITIES > SKILLS; the active version is unchanged.',
+        ? 'Proposed new skill "' + r.skill.name + '". It is not active until the Master evaluates and approves it in ABILITIES > SKILLS.'
+        : 'Proposed revision for skill "' + r.skill.name + '". It is not active until the Master evaluates and approves it in ABILITIES > SKILLS; the active version is unchanged.',
       summary: 'proposed'
     };
   }
@@ -66,7 +66,7 @@
     // countViews:false for the review/curator passes: a maintenance read is not a use, so it must not refresh a
     // skill's lastUsedAt (the 30/90-day aging clock) or its view count.
     const countViews = !(deps && deps.countViews === false);
-    /* BUNDLED RECIPES ON DEMAND (2026-09-23). The run prompt indexes the Commander's enabled library recipes
+    /* BUNDLED RECIPES ON DEMAND (2026-09-23). The run prompt indexes the Master's enabled library recipes
        instead of inlining their bodies; this is where a body is fetched. `bundled(name, ctx)` resolves a name
        against the recipes THIS run is offered and returns { name, content } or null. It is consulted ONLY after
        the agent's own store finds nothing, so every agent-authored lookup is unchanged, and it never touches the
@@ -90,7 +90,7 @@
     }
 
     /* THE READ-BEFORE-WRITE LEDGER (autonomous passes only).
-       The background review and curator forks are handed skill.write/manage over the Commander's
+       The background review and curator forks are handed skill.write/manage over the Master's
        whole skillbase with no human in the loop. Nothing tied a rewrite to a READ, so a pass could
        patch or archive a skill it had only INFERRED from the run transcript — the most expensive
        possible failure here, because the loss is silent and the original body is already gone from
@@ -116,12 +116,12 @@
       return {
         content: 'The skill "' + (skill && skill.name) + '" is withheld by the skill guard and its body was not loaded: '
           + ((decision && decision.reason) || 'held by the skill guard') + '.' + cats
-          + ' Do not recreate it and do not guess its contents; tell the Commander it needs review in ABILITIES > SKILLS.',
+          + ' Do not recreate it and do not guess its contents; tell the Master it needs review in ABILITIES > SKILLS.',
         summary: 'withheld'
       };
     }
     function decideFor(skill, withBody) {
-      if (skill && skill.pendingCandidate) return { visible: false, reason: 'proposed skill awaits behavior evaluation and Commander approval' };
+      if (skill && skill.pendingCandidate) return { visible: false, reason: 'proposed skill awaits behavior evaluation and Master approval' };
       if (!gate || !skill) return { visible: true };
       try {
         const d = (withBody && typeof gate.verify === 'function') ? gate.verify(skill)
@@ -139,7 +139,7 @@
       try { return (readBeforeWrite && store.pendingView && store.pendingView(agentId, nameOrId)) || store.view(agentId, nameOrId, { bump: false, includeArchived: true, hydrate: false }); } catch (_) { return null; }
     }
     // A staged write proposes a NEW skill when no active (or archived) version exists to revise. Read the active
-    // record only: a pending draft is not a version the Commander approved. Unknown counts as a revision.
+    // record only: a pending draft is not a version the Master approved. Unknown counts as a revision.
     function proposesNew(agentId, r) {
       if (typeof r.isNew === 'boolean') return r.isNew;
       if (!r.skill || !store || typeof store.view !== 'function') return false;
@@ -212,8 +212,8 @@
         if (!store || typeof store.manage !== 'function') return { content: 'The skill manager is unavailable.', summary: 'unavailable' };
         const aid = (ctx && ctx.agentId) || 'agent';
         const action = String((args && args.action) || 'create').toLowerCase();
-        // The pin is the Commander's lock against model writes (bug 97743dff): a run may add it, never take it off.
-        if (action === 'unpin') return { content: 'Refused: only the Commander can unpin a skill, in ABILITIES > SKILLS. Leave it pinned and tell the Commander what you would change.', summary: 'not saved' };
+        // The pin is the Master's lock against model writes (bug 97743dff): a run may add it, never take it off.
+        if (action === 'unpin') return { content: 'Refused: only the Master can unpin a skill, in ABILITIES > SKILLS. Leave it pinned and tell the Master what you would change.', summary: 'not saved' };
         if (readBeforeWrite && action !== 'create') {
           const prior = peek(aid, (args && (args.target != null ? args.target : (args.id != null ? args.id : args.name))));
           const unread = unreadRefusal(prior, action);
@@ -290,10 +290,10 @@
            off disk and can differ from what the scanner saw). A refused view is NOT a read — it must
            not reach onView (which would list it as a loaded skill in the run's telemetry) and must
            not satisfy the read-before-write ledger. */
-        // A proposal this run cannot read is waiting on the Commander, not held by the guard: say so, or the agent
+        // A proposal this run cannot read is waiting on the Master, not held by the guard: say so, or the agent
         // reports a guard hold that does not exist.
         if (v.pendingCandidate && !pending) return {
-          content: 'The skill "' + v.name + '" is a proposal awaiting the Commander\'s evaluation and approval in ABILITIES > SKILLS; it is not active and its body was not loaded. Do not recreate it.',
+          content: 'The skill "' + v.name + '" is a proposal awaiting the Master\'s evaluation and approval in ABILITIES > SKILLS; it is not active and its body was not loaded. Do not recreate it.',
           summary: 'pending'
         };
         const decision = pending && gate && typeof gate.verifyDraft === 'function' ? gate.verifyDraft(v) : decideFor(v, true);

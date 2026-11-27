@@ -1,6 +1,6 @@
 /* VULTRON — recommend.js : THE RECOMMENDATION SPINE (pure, node-testable, zero DOM / zero fetch).
 
-   The station used to talk to its Commander through ~9 independent proactive channels (study, arc, trust,
+   The station used to talk to its Master through ~9 independent proactive channels (study, arc, trust,
    thread, rate, suggestion, seed, routine, recruitment, curiosity), each with its own timer. Whoever armed
    EARLIEST won the one post-run beat, so the LOWEST-value ask usually spoke first and the priority order
    baked into beatcard.js was inert. This module is the single relevance bar they all pass through.
@@ -9,7 +9,7 @@
 
      1. ONE VOICE — pick() returns at most ONE candidate. Best-first, or silence.
      2. EVIDENCE OR SILENCE — a candidate with no non-empty `why` is DROPPED, never shown. The station may
-        only make a proactive offer it can justify out of real state (the Commander's own words, a real
+        only make a proactive offer it can justify out of real state (the Master's own words, a real
         streak count, a real targeted gap). No citable evidence means the channel stays quiet.
 
    A candidate is a plain object:
@@ -28,7 +28,7 @@
                   accepted offers really produced. Neutral 1, floored at 0.5 so quality alone can never silence
                   a channel — a dud channel gets quieter, never mute.
        preference — optional LEARNED PREFERENCE WEIGHT (−0.75..+0.75) from the durable cross-surface ledger
-                  (recledger.js): the Commander's own decayed accept/decline history for this kind. The one
+                  (recledger.js): the Master's own decayed accept/decline history for this kind. The one
                   TWO-SIDED modifier here, because it is their answers rather than the station's confidence.
        title    — optional plain-language name of the thing being proposed. Not scored: it is what the ledger
                   records and what the shared declined memory is matched against. A channel that proposes an
@@ -68,7 +68,7 @@
   const BANDS = [
     ['memory'],                                                 // the run reporting back — never an interruption
     ['study', 'arc', 'trust', 'thread'],                        // the turn-ins: real evidence the run just produced
-    ['rate'],                                                   // the control the Commander is asking FOR
+    ['rate'],                                                   // the control the Master is asking FOR
     ['suggest', 'seed', 'routine', 'recruit', 'curiosity']      // the gentle asides, one shared slot
   ];
   const PRIORITY = BANDS.reduce((a, b) => a.concat(b), []);
@@ -85,9 +85,9 @@
      one-per-session cap is still five interruptions. This is the spine-level ceiling on PROACTIVE asks.
      TUNABLE: raise/lower this one number to make the station more or less talkative.
      Two kinds are EXEMPT because the run itself earns them rather than the station choosing to interrupt:
-       · memory — the Commander's own reflection deck; it is the run reporting back, and it never routes
+       · memory — the Master's own reflection deck; it is the run reporting back, and it never routes
                   through the pass at all (it reserves the slot directly on memory.proposed).
-       · rate   — the primary leveling beat for work that was just done, and the one control the Commander
+       · rate   — the primary leveling beat for work that was just done, and the one control the Master
                   is asking FOR when they finish a task. */
   const SESSION_ASK_MAX = 4;
   const ASK_EXEMPT = { memory: true, rate: true };
@@ -142,7 +142,7 @@
      so a channel's real outcome record reorders it against its band siblings — which is the whole point. It does
      NOT clear a maximum-VOI promotion: forty real declines still leave a blank high-weight dimension the most
      valuable thing the station can ask about. That is deliberate and it is this module's stated law — silencing a
-     channel is the job of the per-channel caps and the Commander's own explicit "never", not of a number the
+     channel is the job of the per-channel caps and the Master's own explicit "never", not of a number the
      station computed. Raising this until quality could veto VOI was tried and reverted. */
   // …and the same SCALE-not-swing reading: the multiplier band is [0.5 .. 1.25], so the real term is −15 .. +7.5.
   // A dud channel loses 1.5 rank steps; a proven one gains under one. Both clear a tie, neither clears a band.
@@ -154,20 +154,20 @@
      `preference` is the DURABLE CROSS-SURFACE LEDGER's own learned weight for this candidate's kind and traits
      (sidecar/recommendation-ledger.js replay → foldPref → the Bayesian-smoothed, half-life-decayed weight in
      −0.75..+0.75; recledger.js carries it into the browser). Until now the spine could not see it at all: the
-     ledger had been recording what the Commander accepts and declines across the bay, the night shift, the
+     ledger had been recording what the Master accepts and declines across the bay, the night shift, the
      quests and the scout for months, and the one component that decides who speaks was ranking blind to all of it.
 
      WHY THIS ONE IS TWO-SIDED, when strength and quality are not. Those two are the STATION's readings about its
      own confidence, and the law there is that the station never promotes an offer for feeling sure — it only
      declines to shout about a thin one. This is not the station's reading. It is a decayed tally of the
-     COMMANDER'S OWN ANSWERS, and their yes deserves exactly as much weight as their no. Rejecting the positive
+     MASTER'S OWN ANSWERS, and their yes deserves exactly as much weight as their no. Rejecting the positive
      half would mean a kind they have accepted eight times running is ranked identically to one they have never
      seen — which is not caution, it is deafness.
 
      BOUNDED, LIKE EVERYTHING ELSE HERE. ±0.75 of ledger weight maps onto ±PREF_MAX, which is two rank steps: it
      reorders a band comfortably and cannot come near the band wall. A cold ledger, a paused personalization
      setting (the server sends `model: null` and recledger reports 0), or a kind with no history all read exactly
-     0 — the neutral contribution — so nothing changes until the Commander's real history says it should. */
+     0 — the neutral contribution — so nothing changes until the Master's real history says it should. */
   const PREF_MAX = 20;          // ±2 rank steps: enough to reorder a band, never enough to cross one
   const PREF_RANGE = 0.75;      // the ledger's own clamp (recommendation-ledger.js preferenceFor)
 
@@ -284,7 +284,7 @@
   }
 
   /* whyLine(candidate) → the normalized display string, one grammar for every card and the FOR YOU shelf:
-     "because <the evidence, in the Commander's own words>". Idempotent (an already-"because …" string is
+     "because <the evidence, in the Master's own words>". Idempotent (an already-"because …" string is
      not doubled), trailing sentence punctuation trimmed, never invents text. '' when there is nothing to
      cite — a caller that gets '' must render nothing. */
   function whyLine(candidate) {
@@ -296,7 +296,7 @@
     // a citation that already opens with its own preposition is a complete phrase ("from the task you gave me:
     // …") — "because from …" is not English. Return it as written; the framing is already there.
     if (/^(?:from|after)\b/i.test(s)) return s;
-    /* THE SPINE NEVER REWRITES THE COMMANDER'S WORDS (fixed 2026-08-04). This used to lower-case any plain
+    /* THE SPINE NEVER REWRITES THE MASTER'S WORDS (fixed 2026-08-04). This used to lower-case any plain
        leading capital so the clause joined mid-sentence — which quietly mangled the evidence itself: a belief
        citing "Python is your stack" rendered "because python…", and a RETIRE citation naming a person renamed
        them. The evidence is quoted material; only the FRAMING word the spine itself adds may be adjusted. So we

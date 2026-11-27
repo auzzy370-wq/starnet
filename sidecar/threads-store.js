@@ -1,9 +1,9 @@
-/* sidecar/threads-store.js — the durable THREAD LEDGER (NS-6): a server-side backlog of ideas the Commander
+/* sidecar/threads-store.js — the durable THREAD LEDGER (NS-6): a server-side backlog of ideas the Master
    floated but never acted on, so night-shift autonomy PROPOSES from real unfinished threads instead of
    re-improvising a fresh idea every beat.
 
    WHY THIS EXISTS — NS-0..NS-5 made the night shift reliable, safe, and (with the context pack) grounded in what
-   the Commander RECENTLY did. What it still lacked is DURABLE idea memory: "you mentioned X two weeks ago, here's
+   the Master RECENTLY did. What it still lacked is DURABLE idea memory: "you mentioned X two weeks ago, here's
    a prototype." Candidates were regenerated from scratch every beat and rejected-idea history lived only in the
    browser (suggeststore/curiositystore localStorage), invisible to autonomy. This store fixes that:
 
@@ -12,19 +12,19 @@
        · spec    — the verbatim evidence quote the mining pass extracted (grounds the idea in something REAL).
        · sourceRef — { streamId, runId, date } provenance of the conversation it was mined from.
        · state   — open | picked | delivered | declined  (the lifecycle).
-       · declineReason — why the Commander (or the beat) declined it; only set when state === 'declined'.
+       · declineReason — why the Master (or the beat) declined it; only set when state === 'declined'.
 
    DECLINED IS PERMANENT (denylist semantics, ported from workshop-store's discard + the memory-question
    "discard = never again" law): a declined thread is NEVER re-proposed AND a near-duplicate idea can never be
    re-minted under a fresh id. Dedup is by FINGERPRINT (the suggeststore token-set: lowercase alphanumeric tokens
    >= 3 chars, unique, sorted) so a reordered / padded restatement of a declined idea still matches. The `declined`
-   set also holds fingerprints of PROPOSALS the Commander discarded at turn-in that never became a thread.
+   set also holds fingerprints of PROPOSALS the Master discarded at turn-in that never became a thread.
 
    Pure over an injected durable store (makeDurableJsonStore) — crash-safe (fsync + .bak last-known-good),
    concurrency-safe (per-key async mutex + re-read-under-lock in update()), unit-testable against an in-memory fs.
    The Node host (index.js) injects the real fs/path + the WORKSPACES root. No ambient clock/rng: `now` is passed
    in by the caller, matching the workshop-store / memory-store discipline. Station-GLOBAL (one key, one file):
-   threads are the Commander's ideas, consumed by the single night-shift persona — the same scope as the dossier
+   threads are the Master's ideas, consumed by the single night-shift persona — the same scope as the dossier
    and goal arc, not per-agent. */
 'use strict';
 
@@ -207,7 +207,7 @@ function makeThreadsStore(deps) {
     }).then(() => changed);
   }
 
-  // DENYLIST a fingerprint directly (a mining proposal the Commander DISCARDED at turn-in that never became a
+  // DENYLIST a fingerprint directly (a mining proposal the Master DISCARDED at turn-in that never became a
   // thread). Permanent — the same idea is never re-mined. title may be the idea title OR a precomputed fingerprint;
   // we fingerprint it either way (fingerprint is IDEMPOTENT over its own output: the tokens are already
   // lowercase/unique/sorted, so re-fingerprinting a fingerprint returns it unchanged).

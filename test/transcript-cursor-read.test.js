@@ -203,7 +203,7 @@ try {
   seedDsp.close();
   const dspStore = storeOver(open('dispatch', 65536));
   const dspWhole = dspStore.view('display', 'dsp', { limit: 100 });
-  A.eq(dspWhole.map(r => r.content), ['PROMPT_FOR_DISPLAY', 'FINAL_ANSWER', 'AFTER_THE_RUN'], 'the whole stream shows the prompt as the Commander sees it and the accepted final, not the execution rows');
+  A.eq(dspWhole.map(r => r.content), ['PROMPT_FOR_DISPLAY', 'FINAL_ANSWER', 'AFTER_THE_RUN'], 'the whole stream shows the prompt as the Master sees it and the accepted final, not the execution rows');
   for (const size of [1, 2, 3, 4]) A.eq(readOn((at, n) => dspStore.pageAfter('dsp', at, n), size), dspWhole, 'pages of ' + size + ' cut through the dispatch run and still equal the whole-stream view');
   const dspById = dspStore.rowsByIds('dsp', ids(dsp));
   A.eq([dspById.rows, dspById.missing], [dspWhole, [dsp[1].rowId]], 'by id the prompt and the final are shown as in the stream and the execution row is not returned');

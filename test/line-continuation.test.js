@@ -112,7 +112,7 @@ deliveredBypass.publication = { outboxId: 'outbox-a', entryRunId: 'run-entry', t
 A.ok(C.inspect(deliveredBypass, job).ok, 'bypass control is otherwise complete terminal data');
 A.throws(() => C.checkpoint(held, job, 1, deliveredBypass), 'held work cannot publish directly without the human decision');
 const stopped = clone(deliveredBypass); stopped.publication = null; stopped.terminal.outcome = 'stopped';
-stopped.terminal.stop = { code: 'stopped', why: 'stopped by the Commander', agentId: 'reviewer', dockId: 'dock-reviewer' };
+stopped.terminal.stop = { code: 'stopped', why: 'stopped by the Master', agentId: 'reviewer', dockId: 'dock-reviewer' };
 A.ok(C.checkpoint(held, job, 1, stopped).phase === 'terminal_pending', 'owned STOP can settle held work without buying an approval or another run');
 for (const [name, change] of [
   ['taint upgrade', c => { c.restriction.entryUntrusted = false; }],

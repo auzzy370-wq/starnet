@@ -1,9 +1,9 @@
 /* VULTRON — studystore.js : the live wiring around the pure STUDY ENGINE (study.js) — the dossier's Phase B.
 
-   Where dossierstore.js only folds the Commander's OWN onboarding docs + panel edits (Phase A), this is the
+   Where dossierstore.js only folds the Master's OWN onboarding docs + panel edits (Phase A), this is the
    glue that lets the station LEARN from actual work: after a salient run the sidecar studies the transcript and
    stashes belief-update proposals; this store fetches them, gates them (session cap + anti-nag), and applies the
-   Commander's Keep / Edit / Discard verdict to the DOSSIER (Keep → DossierStore.upsert source:'study'; Discard →
+   Master's Keep / Edit / Discard verdict to the DOSSIER (Keep → DossierStore.upsert source:'study'; Discard →
    a PERMANENT studyDeclined denylist; ignore 2× → stop proposing that belief). It also owns the RATINGS→TASTE
    path (§4): consecutive 👍/👎 on one archetype mints ONE style-dim proposal, once per archetype ever.
 
@@ -112,9 +112,9 @@ const StudyStore = (() => {
     if ((state.ignores[fp] || 0) >= IGNORE_LIMIT) return true;
     return Study.isDeclined(text, state.declined);
   }
-  // the existing dossier belief a RETIRE proposal would delete — NEVER a pinned one (a pin is the Commander's
+  // the existing dossier belief a RETIRE proposal would delete — NEVER a pinned one (a pin is the Master's
   // explicit "this stays"; auto-retire must not be able to reach it). Returns { id, text } or null. Exposed so
-  // the chat card can show the Commander the ACTUAL belief that will be removed, and accept() deletes that same one.
+  // the chat card can show the Master the ACTUAL belief that will be removed, and accept() deletes that same one.
   function retireTarget(prop) {
     if (!prop || prop.kind !== 'retire' || typeof DossierStore === 'undefined' || !DossierStore.beliefs) return null;
     try {
@@ -179,7 +179,7 @@ const StudyStore = (() => {
         if (target && DossierStore.forget) { DossierStore.forget(dim, target.id); ok = true; }
       } else if (DossierStore.upsert) {
         // double-Keep guard: if the dossier ALREADY holds this belief (exact or paraphrase — e.g. a stale batch
-        // re-offered before the resolved set existed, or the Commander added it by hand), do not write a duplicate.
+        // re-offered before the resolved set existed, or the Master added it by hand), do not write a duplicate.
         const existing = (typeof DossierStore.beliefs === 'function') ? (DossierStore.beliefs(dim) || []) : [];
         let dup = false;
         for (const b of existing) { const t = b && b.text; if (t && (t.toLowerCase() === body.toLowerCase() || Study.jaccard(t, body) >= Study.SIM_THRESHOLD)) { dup = true; break; } }
@@ -204,8 +204,8 @@ const StudyStore = (() => {
     ledgerPost({ id: recommendationId(prop, agentId), state: 'declined', reason: 'wrong_thing' });
     resolveOnServer(prop, agentId, 'declined');   // carries the updated denylist to the sidecar
   }
-  // FORGET → DENYLIST (2026-07-16 resurrect audit): the COMMANDER panel's Forget must be as durable as a
-  // study discard — without this, the study loop re-proposed the exact belief the Commander just forgot
+  // FORGET → DENYLIST (2026-07-16 resurrect audit): the MASTER panel's Forget must be as durable as a
+  // study discard — without this, the study loop re-proposed the exact belief the Master just forgot
   // (forget spliced the dossier but fed no denylist). Text-only sibling of discard(): no proposal object
   // exists (the belief was already IN the dossier), so we append the text to the permanent denylist, save,
   // and mirror it to the sidecar via the same /api/study/resolve POST with no runId/id (a documented
@@ -226,7 +226,7 @@ const StudyStore = (() => {
     }
     return true;
   }
-  // IGNORE (the Commander left the card without deciding — it expired at the next run end / was replaced):
+  // IGNORE (the Master left the card without deciding — it expired at the next run end / was replaced):
   // tally it; IGNORE_LIMIT ignores stops the belief for good. NOT resolved server-side — an ignored-once belief
   // may legitimately re-offer at a later task end (that is the second chance the 2× limit exists to give).
   function ignore(prop) {
@@ -248,7 +248,7 @@ const StudyStore = (() => {
     const t = Study.tasteProposal(key, entry, { now: now });
     save();
     if (!t) return null;
-    // suppress a taste belief the Commander already declined/decided, and honour the ignore stop-forever tally.
+    // suppress a taste belief the Master already declined/decided, and honour the ignore stop-forever tally.
     if (Study.isDeclined(t.proposal.text, state.declined) || isExhausted('style', t.proposal.text)) { entry[t.mintedKey] = true; save(); return null; }
     entry[t.mintedKey] = true;   // mint ONCE — never re-raise this archetype/direction
     save();

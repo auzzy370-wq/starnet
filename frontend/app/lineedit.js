@@ -378,7 +378,7 @@
     },
   };
 
-  /* ---------- a layout answer, in the Commander's words ---------- */
+  /* ---------- a layout answer, in the Master's words ---------- */
   function why(L) {
     if (L.error === 'NO_ROOM') return fail('NO_ROOM', 'there is no clear floor big enough for this line — MAKE ROOM, or clear some space');
     if (L.error === 'NO_SPACE') return fail('NO_SPACE', 'there is no clear floor next to the line for the new machine — clear a little space round it and try again');
@@ -397,11 +397,11 @@
     for (const l of h.links) if (hasPath(l) && (all || (named ? named.has(l.id) : (hot.has(l.from.node) || hot.has(l.to.node))))) delete l.path;
     return h;
   }
-  /* the two moves that DO make room (R25 walkthrough: "give it a bigger room" sent the Commander to build a new room the line never
+  /* the two moves that DO make room (R25 walkthrough: "give it a bigger room" sent the Master to build a new room the line never
      moved into): grow the room the line stands in, or carry the whole line to clear floor — said with the gesture for each */
   const GROW_HOW = 'grow its room (click the room, then drag a gold handle on its edge out), or move the whole line (double-click it, then drag it to clear floor)';
   /* …and the same advice in the lead's own ops (opts.agent — stationbuilder's refit edit): it cannot click or drag, it resizes a room
-     with { op: "resize" } (repair: the gesture wording sent the lead to UI moves, or to telling the Commander to do it by hand) */
+     with { op: "resize" } (repair: the gesture wording sent the lead to UI moves, or to telling the Master to do it by hand) */
   const GROW_OPS = 'grow the room it stands in ({ op: "resize", room, x, y, w, h }: its whole new footprint, edges moved out)';
   const growHow = opts => (opts && opts.agent) ? GROW_OPS : GROW_HOW;
   function run(station, propId, op, args, opts) {

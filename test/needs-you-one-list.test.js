@@ -24,7 +24,7 @@ const NOW = 50 * 86400000;
 global.localStorage = { getItem: () => null, setItem() {} };
 global.document = undefined;
 const sessions = new Map([['home', { id: 'home', title: null, agentId: 'agent' }], ['other', { id: 'other', title: 'Launch plan', agentId: 'agent' }]]);
-const deleted = new Set();   // sessions the Commander deleted (Workstreams' tombstones)
+const deleted = new Set();   // sessions the Master deleted (Workstreams' tombstones)
 global.Workstreams = { get: id => sessions.get(id) || null, list: () => [...sessions.values()], unread: () => false, generalId: () => 'home', isDeleted: id => deleted.has(id) };
 global.App = { agentName: id => ({ agent: 'NOVA', writer: 'VEX', researcher: 'MIRA', designer: 'ROOK' })[id] || id, openWorkstream: id => opened.push(['ws', id]) };
 global.Chat = { consentPhrase: p => String(p.tool), consentInspect: () => null };
@@ -39,7 +39,7 @@ global.QuestLedgerStore = {
 };
 global.LoopsReview = { waiting: () => [{ id: 'L1', name: 'Tidy the docs', agentId: 'agent', count: 2, since: NOW - 20000 }] };
 // the sidecar-backed waits: builds (per agent) and extensions — answered by the station
-// …and the build's own session: ensureSession's contract (adopt it and return its id; null when the Commander deleted it, as
+// …and the build's own session: ensureSession's contract (adopt it and return its id; null when the Master deleted it, as
 // Workstreams.adopt refuses a tombstone), with the store's own id and name for it (workshopstore.js, run for real)
 const Shop = require('../frontend/app/workshopstore.js').WorkshopStore;
 const ensured = [];
@@ -111,7 +111,7 @@ const NY = require('../frontend/app/needsyou.js');
   A.eq(NY.openKey('build:b1'), { conversation: true }, 'a build opens its own session (NOTIFICATIONS steps aside for it)');
   A.eq(opened.pop(), ['ws', 'workshop-b1'], '…THAT build session, where its keep/discard card is');
   A.ok(ensured[0] === 'b1' && ui.terms.length === termsBefore, '…adopted through WorkshopStore, and DELIVERABLES is not opened');
-  // only a build whose session cannot be had (the Commander deleted it: ensureSession returns null, adopt refuses the
+  // only a build whose session cannot be had (the Master deleted it: ensureSession returns null, adopt refuses the
   // tombstone) falls back to DELIVERABLES › NEEDS A DECISION, and its row names DELIVERABLES before the click
   deleted.add('workshop-b1');
   A.eq(NY.items(NOW).find(i => i.key === 'build:b1').where, 'DELIVERABLES', 'a build whose session was deleted names DELIVERABLES, where its door now goes');
@@ -153,7 +153,7 @@ const NY = require('../frontend/app/needsyou.js');
     global.fetch = url => { const n = pendingNow; return gate ? gate.then(() => answer(n)(url)) : Promise.resolve(answer(n)(url)); };
     let release; gate = new Promise(r => { release = r; });
     const first = NY.refreshFeeds(true);          // e.g. opening the row: leaves while 1 extension still waits
-    pendingNow = 0;                               // …the Commander approves it while that read is still out
+    pendingNow = 0;                               // …the Master approves it while that read is still out
     const second = NY.refreshFeeds(true);
     A.ok(second && second !== first, 'a forced re-read during an in-flight read is queued, not handed the stale promise');
     A.eq(NY.refreshFeeds(true), second, 'several forced asks during one read share the one follow-up read');

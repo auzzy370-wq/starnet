@@ -12,7 +12,7 @@ const os = require('os');
 const fs = require('fs');
 const { spawn } = require('child_process');
 const { bootToken } = require('./_httpToken.js');
-// sentinels are read from the Commander's OWN words: a routine's run-context note (the leading text of the same user
+// sentinels are read from the Master's OWN words: a routine's run-context note (the leading text of the same user
 // message) quotes earlier chats as RECENT ACTIVITY, so a raw-content match would route a routine on a previous chat
 const { userWords } = require('./helpers/host-notes.js');
 const { allocatePort, BIND_REFUSED } = require('./helpers/ports.js');
@@ -523,7 +523,7 @@ async function readNdjson(res) {
 
     await sse.waitFor(events => events.some(e => e.name === 'agent.run.end' && e.payload && e.payload.agentId === 'mcp-agent'), 5000, 'SSE run end');
 
-    /* UNATTENDED CONNECTOR GRANT (2026-07-25) — the SAME routine shape, but the Commander ticked "let this
+    /* UNATTENDED CONNECTOR GRANT (2026-07-25) — the SAME routine shape, but the Master ticked "let this
        routine use your connected tools". Everything above proves the ungranted default is unchanged; this
        proves the grant actually reaches the real MCP server, end to end, with nobody watching. */
     const mcpCallsBefore = mcp.calls.filter(c => c.msg && c.msg.method === 'tools/call').length;

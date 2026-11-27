@@ -300,7 +300,7 @@ let clk = 1000; const clock = { now: () => clk };
     } finally { console.warn = originalWarn; }
   }
 
-  // A non-owner / group / delegated-worker run never reads the Commander's OTHER workstreams in ANY shape: default
+  // A non-owner / group / delegated-worker run never reads the Master's OTHER workstreams in ANY shape: default
   // search, scope:'all', a zero-local-hit auto-widen, browse, scroll. Pinned by the host-minted factory flag OR the
   // run's host-minted ctx.connectorAuthority.withholdTaste (tasteWithheld). Owner runs keep cross-chat recall.
   {
@@ -339,7 +339,7 @@ let clk = 1000; const clock = { now: () => clk };
     A.ok(/connectorAuthority: \{[\s\S]{0,2500}?withholdTaste: tasteWithheld,/.test(idx),
       'the host mints withholdTaste (non-owner, group, their workers) onto the run ctx the recall tool reads');
     A.ok(/makeRecallTool\(\{ transcriptStore, ownStreamOnly: \(\) => tasteWithheld(?:, quoteRoom: ids => execution\.quoteRoom\(ids\))? \}\)/.test(idx),
-      'the host pins recall to the run\'s own chat exactly when it withholds the Commander\'s taste (non-owner, group, their workers)');
+      'the host pins recall to the run\'s own chat exactly when it withholds the Master\'s taste (non-owner, group, their workers)');
     A.ok(/role: 'assistant', taint: 'scheduled script output'/.test(idx), 'a script-only routine\'s stdout is stamped untrusted, as its run is');
   }
 

@@ -64,7 +64,7 @@
 
   const KINDS = Object.freeze(['turn', 'station', 'goal-step', 'routine', 'group', 'hop', 'capture', 'steer', 'observed',
     'deliverable', 'delivery', 'retract', 'briefing', 'api', 'attachment']);
-  // stored role 'system': trunk's readers skip these, so a downgrade never replays one as the Commander's words.
+  // stored role 'system': trunk's readers skip these, so a downgrade never replays one as the Master's words.
   // 'delivery' is NOT here: it is a routine's reply, assistant speech, and stays role 'assistant'.
   // 'attachment' is the record of one file a turn carried (sidecar/turn-attachment.js): provenance, never dialogue.
   const SYSTEM_KINDS = Object.freeze(['steer', 'deliverable', 'retract', 'attachment']);

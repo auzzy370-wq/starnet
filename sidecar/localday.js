@@ -1,7 +1,7 @@
 /* sidecar/localday.js — the LOCAL calendar-day bucket every night-shift day key is computed from.
 
    THE PROBLEM THIS CLOSES (2026-10-05 night-shift audit, item 6): nightshift.js reset the daily leash at UTC
-   midnight (floor(now/86400000)). For a Commander in UTC-5 that is 7 PM local — the leash refilled in the middle
+   midnight (floor(now/86400000)). For a Master in UTC-5 that is 7 PM local — the leash refilled in the middle
    of the evening and "today's" beats straddled two of their real days. The leash, the night focus, and the
    "what you produced tonight" scope must all agree on ONE day, and it must be the user's calendar day.
 

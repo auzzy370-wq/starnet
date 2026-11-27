@@ -240,7 +240,7 @@ Implemented in `172acd77e`, with layout and review corrections through `e529f9dc
 - Actual milestone launches carry the goal, success condition, constraints, motivation, and
   latest reflection. Crew reviews also carry recorded steps and any reported final outcome.
 - A personal constellation derived from saved goals and acknowledged outcome records, linked
-  to crew review, with existing Commander progression and station evolution alongside it.
+  to crew review, with existing Master progression and station evolution alongside it.
 - A chapter archive with step evidence, user outcome reports, revisions, and reflections;
   JSON export through a real download. Adding goals no longer silently evicts old chapters.
 
@@ -436,8 +436,8 @@ Execution receipt: `qa/digests/2026-09-05-paid-first-run.md`.
 Owner request: plan and execute a goal-centered leveling and quest loop.
 
 1. Separate completed planned actions from achieved life outcomes. Store success conditions;
-   require explicit Commander outcome evidence; retain existing earned history.
-2. Give Commander progression its own durable, deduplicated achievement points and headline
+   require explicit Master outcome evidence; retain existing earned history.
+2. Give Master progression its own durable, deduplicated achievement points and headline
    level; keep crew feedback XP separate. Credit intermediate goal-linked actions/metrics.
 3. Feed goal metrics, evidence, and blocker feedback into quest refresh. Add bounded reactive
    refresh, durable later/blocked/too-big/resume, and explicit real-world action reporting.
@@ -448,10 +448,10 @@ Owner request: plan and execute a goal-centered leveling and quest loop.
 
 Done means a completed plan leaves the goal active; a reported real-world action advances
 the plan with labelled evidence; a recorded metric informs planning; explicit goal outcome
-confirmation advances Commander level and station evolution exactly once, surviving restart.
+confirmation advances Master level and station evolution exactly once, surviving restart.
 
 Implemented: explicit success conditions and goal confirmation, manual goal creation with one
-or more steps, focus switching, extending plans, user-performed action reports, Commander
+or more steps, focus switching, extending plans, user-performed action reports, Master
 achievement progression, metric checkpoint dedupe, adaptive quest evidence, and defer/resume.
 Independent review corrected assigned-agent attribution for user actions, lost registration
 responses, and active-plan preservation when history is capped.
@@ -459,7 +459,7 @@ responses, and active-plan preservation when history is capped.
 Live seeded proof (`node dev/life-goal-proof.mjs`, :9143): three action reports left the goal
 active at 100% of plan and 30 points; metrics reached the model directive; a generated quest
 paused, resumed, and completed from a user report; explicit goal confirmation produced 160
-points, Commander Lv 2, and evolution stage 1. Restart preserved those values and repeat
+points, Master Lv 2, and evolution stage 1. Restart preserved those values and repeat
 confirmation minted nothing. Browser warning/exception lists and native-control paint count
 were empty. The provider was a local deterministic mock, so real-provider recommendation
 quality and installed-desktop behavior remain unverified. Pre-merge gates passed: 722/722
@@ -710,7 +710,7 @@ at `5e7ff198`. The remote branch is now preserved under the unmistakable
 `archive/rc-0.10.13-rc.1-invalid` name, while the marker tag remains forensic evidence. Neither can be
 promoted. Its soak heartbeat is paused after a confirmed durable-store quarantine deadlock. The release
 repair lane fixes that deadlock, fails closed after an uncertain headed-browser teardown, retains rejected skill turn-ins,
-resets `vultron.tutorial.v1` for a genuinely new Commander, exposes screenshot-readable `SAVE-403` versus
+resets `vultron.tutorial.v1` for a genuinely new Master, exposes screenshot-readable `SAVE-403` versus
 `SAVE-NET` recovery diagnosis, and cleans rejected attachment uploads.
 
 The two unreviewed August 31 sweep batches (`5558a707a..422e38c6f` and
@@ -747,7 +747,7 @@ cleanup; the real-sidecar E2E proved restart persistence. The reporter's live Ba
 
 Plan: `docs/plans/CONSISTENCY_LOOP.md`. The user complaint is output consistency; the capture side (verdict,
 dossier belief) landed 08-21, the skill side is unconnected: `skillreview.js` auto-writes skills but triggers on
-run SIZE not on the Commander's verdict, writes are not approval-gated (memory is), the Commander's correction
+run SIZE not on the Master's verdict, writes are not approval-gated (memory is), the Master's correction
 after a miss is never captured, and no skill has a test. Four slices, each shippable: (1) verdict-triggered skill
 review, (3) skill turn-in card mirroring the memory deck, (2) correction capture on the next message, (4) per-skill
 goldens run through the replay-provider eval before a patch is offered. Needs ONE additive event `skill.proposed`
@@ -1062,7 +1062,7 @@ message, production-data mutation, integration-tree edit, push, PR, deploy, tag,
 
 READY TO MERGE. A Telegram Bot API poller could be genuinely healthy while owner enrollment was still
 unfinished. The adapter correctly refused every ordinary DM in that state, but CHANNELS rendered
-`CONNECTED — polling`, told the Commander to DM the bot, and could overwrite the one-time `/pair` command
+`CONNECTED — polling`, told the Master to DM the bot, and could overwrite the one-time `/pair` command
 when the asynchronous poll-up repaint landed. The in-station agent then also reported Telegram as unreachable
 because no admitted chat had ever reached the channel target store.
 
@@ -1257,7 +1257,7 @@ The second recommendation audit is implemented as one cross-surface fabric.
 new interest, workflow-context, ranking-ledger, scout, and night-shift learning. Forget clears every
 derived browser/server model and returns a verified inventory while preserving explicit dossier, goals,
 projects, threads, and task history. Seed-only fields no longer contribute readiness breadth, and quests
-generated under an inferred north star remain staged until the Commander confirms that direction.
+generated under an inferred north star remain staged until the Master confirms that direction.
 
 (2) Recipes, recruit picks, study updates, routines, recurring ideas, scout drafts, quests, and night-shift
 work now write the same bounded shown/opened/accepted/started/deferred/declined/completed lifecycle. Quest
@@ -1302,10 +1302,10 @@ model-facing E-STOP note. A reload initially exposed the beliefs-only resume esc
 and the follow-up `b7e18ce8` plus two real-host suites prove both boot posture and beliefs mirrors stay halted across sync and restart; only an explicit dial write carries resume consent. No external message,
 provider spend, push, PR, deploy, publish, credential, or production-data change was performed.
 
-## 2026-08-01 — UNIFIED COMMANDER RECOMMENDATIONS (`agent/recommendation-unify`)
+## 2026-08-01 — UNIFIED MASTER RECOMMENDATIONS (`agent/recommendation-unify`)
 
 READY TO MERGE. Three scoped commits implement the recommendation-system audit actions: `475aa6d3`
-adds the durable cross-surface lifecycle/evidence ledger, bounded Commander evidence composer, richer
+adds the durable cross-surface lifecycle/evidence ledger, bounded Master evidence composer, richer
 completed-task context, and replay CLI; `b882665b` gates recruitment and marketplace personalization on
 shared understanding readiness, labels cold shelves as starting points, preserves validated study evidence,
 and adds typed suggestion verdicts; `70afe07c` normalizes capability learning per completed run instead of
@@ -1371,7 +1371,7 @@ stopped. No push, PR, deploy, publish, credential, or production-data change was
 READY TO MERGE at `dd01c8d3` (five commits from `7b2550e0`). The station-owned Chromium launch now
 derives its UA generation from the installed binary, carries the host locale, removes the
 `HeadlessChrome` product token, and disables Chromium's AutomationControlled signal. Attached
-Commander-owned Chrome is never launched or modified by this posture. Challenge telemetry is one
+Master-owned Chrome is never launched or modified by this posture. Challenge telemetry is one
 conservative classifier across the honest reader and interactive browser; verification walls are a
 distinct outcome rather than successful page content. No CAPTCHA solving or wall-bypass claim exists.
 
@@ -1459,7 +1459,7 @@ updated workflow must be merged, pushed, and exercised before macOS support is c
 READY TO MERGE. The current Local Live stack passed a release-focused code, regression, and browser
 sweep. Two additional lifecycle defects were closed: a tab holding the pre-restart sidecar token
 could open a convincing but silent microphone session, and a microphone-start failure could leave
-the Commander's previous speaker mute force-enabled. Local Live now refuses a failed availability
+the Master's previous speaker mute force-enabled. Local Live now refuses a failed availability
 probe before touching the microphone, gives a stale tab an explicit reload instruction, and restores
 the speaker preference on every startup failure.
 
@@ -1520,7 +1520,7 @@ one menu with Rename focused; Escape removed it and restored General. Regression
 
 READY TO MERGE. The 07-29 token-leak fix rejected ordinary temporary workspaces, but its fallback
 still trusted any path whose tail was `Vultron/workspaces`; an isolated boot could therefore pull
-the Commander's ChatGPT OAuth token from a real legacy app-data home by choosing that directory
+the Master's ChatGPT OAuth token from a real legacy app-data home by choosing that directory
 shape. Reproduction returned `recognized:true`, four migration candidates, and the legacy token
 path for `C:\tmp\attacker\Vultron\workspaces`. Migration authority now requires an exact match
 against enumerated Local/Roaming/XDG app-data roots (plus the existing injected legacy/install
@@ -1558,7 +1558,7 @@ fallback) plus `shell-bg-io` 29 assertions. Final verification: touched-file syn
 ## 2026-07-29 — CHANNEL SETUP GUIDE REOPENS AFTER FORGET (`agent/quality-loop-0729f`)
 
 READY TO MERGE. The newly added CHANNELS auto-fold listener treated its own programmatic
-`guide.open = false` as a Commander toggle, deleted the one-shot flag, and left a later cold card
+`guide.open = false` as a Master toggle, deleted the one-shot flag, and left a later cold card
 collapsed after its configuration was forgotten. Live seeded Signal reproduction used an isolated
 localhost bridge config: saved/offline folded to 13.4 px, then confirmed removal returned the
 backend/UI to `not connected` but the guide stayed 13.4 px tall. The listener now treats only
@@ -2333,7 +2333,7 @@ doctrine bar rarely met). The fix is a standing harness refresh (the scout mint-
 - `sidecar/questrefresh.js` (pure) + index.js ambient half: 24h cadence + caught-up fast path (zero
   open ledger quests → refresh after 1h cooldown), 5-min tick + boot catch-up look (desktop sessions
   are short — the 24h mark usually passes while the app is closed).
-- Each cycle names the NORTH STAR (Commander's active goal ALWAYS outranks the model's inference),
+- Each cycle names the NORTH STAR (Master's active goal ALWAYS outranks the model's inference),
   then ONE aux model call proposes ≤3 step-quests toward it; parse enforces the contract rule at the
   seam (no `run`, prop keys clamp to placeables, fact keys sweepable, WHY must cite shown evidence,
   dedup vs open slate + denylist); mints ride `questStore.mint` (station-wide `kind:generated`).
@@ -2480,7 +2480,7 @@ W0 grep-verdict checkpoint (`ef16fa08`, 2026-07-12):
 - **PARTIAL:** child-environment isolation, DNS-safe controlled-browser navigation, recursive
   link/junction containment, Slack/Matrix keychain custody, channel pairing, the unified work
   ledger, Settings full export, post-onboarding base URL, capability enforcement across run
-  modes, Commander-context composition, and reason-aware learning.
+  modes, Master-context composition, and reason-aware learning.
 - **MISSING:** scoped Workshop/file URL capabilities, zero-unconsented boot egress, attended
   real integration lifecycle receipts, and complete point-of-use experimental labels.
 - **REFUTED:** work continuing after the desktop app closes, hallway-as-authorized-handoff,
@@ -3453,12 +3453,12 @@ Do not create new `*_PLAN.md` files for work under ~a week; use this queue.
 # READY TO MERGE 2026-07-18 — RELEASE BLOCKER CLEAN (`agent/release-blocker-clean`)
 
 Guardian on current trunk `e1407f5f` found three visual P1s. `crew-commander` was a genuine
-lost-work regression: later merges retained the Commander Dossier briefing/grid/starter markup
+lost-work regression: later merges retained the Master Dossier briefing/grid/starter markup
 from `9069a855`/`c77f6e52` but dropped its CSS. Branch commits `e43fbef3` + `4ea5666f` restore the
 coupled styles, add a 30-assertion fast-gate contract that prevents markup-without-CSS recurrence,
 review and re-bless the repaired golden frame, and re-stamp W0 release-surface authority.
 
-Live seeded DOM proof: the Commander window is 760px with `scrollWidth === clientWidth`, briefing
+Live seeded DOM proof: the Master window is 760px with `scrollWidth === clientWidth`, briefing
 text wraps with `scrollWidth === clientWidth`, the dimensions resolve to two 348px columns, and all
 16 starter chips carry the VT323/dashed-button styling. `build-skills` and `sys-rewind` were visually
 coherent animation-noise findings (immediate no-code recaptures crossed above/below 1.5); dismissed
@@ -3797,7 +3797,7 @@ JOURNEY MERGE CLAIM UPDATED — 2026-09-13: trunk advanced to 107c09ba4 during v
 JOURNEY MERGE COMPLETE — 2026-09-13: integrated at 2d81549483c1addad2349d51543bf378c783d242; pre/post fast gates 772/772 PASS and live journey checks passed. Prior journey integration claims are closed; reservation released after verification. Preview and evidence retained in journey-first-loop-0912.
 
 
-IN PROGRESS — 2026-09-14 agent/xp-status-0914 owns the next serialized XP repair merge from f1bae44d9 and its post-merge fast gate. Source 05a399cf0; synchronized candidate e064281ed. Live open-panel XP, skipped-rating recovery, restart persistence and Commander leveling verified; customer journeys 34/34 PASS; final fast gate in progress. Preserve existing operational edits. No installer rebuild or release.
+IN PROGRESS — 2026-09-14 agent/xp-status-0914 owns the next serialized XP repair merge from f1bae44d9 and its post-merge fast gate. Source 05a399cf0; synchronized candidate e064281ed. Live open-panel XP, skipped-rating recovery, restart persistence and Master leveling verified; customer journeys 34/34 PASS; final fast gate in progress. Preserve existing operational edits. No installer rebuild or release.
 
 XP MERGE COMPLETE — 2026-09-14: agent/xp-status-0914 integrated at b39c17cb8. Pre/post fast gates 780/780 PASS; customer journeys 34/34 PASS; live XP and leveling verified. XP merge reservation released. Isolated test processes stopped; worktree retained for local evidence and customer follow-up. Source integration only; installer/customer recovery remains unverified.
 

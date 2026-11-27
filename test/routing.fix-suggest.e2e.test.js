@@ -1,6 +1,6 @@
 'use strict';
 /* routing.fix-suggest.e2e — NOT RIGHT? on a real sidecar (2026-09-30, ease of use). A job ridden through a line names the BAY each
-   stage ran at (so the panel can show each step's own reply), and POST /api/routing/fix-suggest turns the Commander's "what's wrong"
+   stage ran at (so the panel can show each step's own reply), and POST /api/routing/fix-suggest turns the Master's "what's wrong"
    into checked changes to the line's step instructions: ONE call on the station default (the Overseer's roster model and
    credential), only fixes for steps it was sent, bad input refused before any spend. */
 const test = require('node:test');

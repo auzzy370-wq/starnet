@@ -136,7 +136,7 @@
   }
 
   // wave a cause off forever. Returns true only when it actually took (a known, not-already-dismissed quest).
-  // Always dismissible — a fix-it suggestion the Commander waves off must stop nagging (the sandbox law).
+  // Always dismissible — a fix-it suggestion the Master waves off must stop nagging (the sandbox law).
   function dismiss(state, id, now) {
     if (!state || !state.quests || !id) return false;
     const e = state.quests[id];

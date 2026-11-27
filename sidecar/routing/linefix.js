@@ -2,7 +2,7 @@
    wondering how the user can properly correct it and give it better context … how the user can fix the conveyor system to their
    liking of the output they are looking for").
 
-   A Commander who got a result they don't want says what is wrong in plain words; this turns that into CONCRETE changes to the
+   A Master who got a result they don't want says what is wrong in plain words; this turns that into CONCRETE changes to the
    line's step instructions — which step's DOES (its standing brief) or HANDS OFF (what it hands on) to rewrite, and why — for
    them to accept or skip one by one in the Workflow panel. Nothing is changed here: accepting a fix is the panel's ordinary brief
    edit (one undo), and the proof it worked is running the same job again.
@@ -98,10 +98,10 @@
     let o = null;
     try { o = JSON.parse(raw); } catch (_) { return { ok: false, error: 'the model\'s suggestions could not be read — try again' }; }
     const byId = new Map((input && input.steps || []).map(s => [s.dockId, s]));
-    // the Commander reads these lines: a step id that slips into them ("Step p13 …") becomes the step's NAME, else its role
+    // the Master reads these lines: a step id that slips into them ("Step p13 …") becomes the step's NAME, else its role
     const say = t => { let s = str(t); for (const [id, st] of byId) s = s.split(new RegExp('\\b(?:step\\s+)?"?' + id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '"?\\b', 'gi')).join('the ' + (st.name || st.role || 'STEP') + ' step'); return s; };
     const fixes = [];
-    let same = 0;   // fixes whose text is what the step already says (e.g. a fix the Commander already used)
+    let same = 0;   // fixes whose text is what the step already says (e.g. a fix the Master already used)
     for (const f of Array.isArray(o && o.fixes) ? o.fixes : []) {
       if (!f || typeof f !== 'object') continue;
       const id = oneLine(f.step != null ? f.step : f.dockId, 64), s = byId.get(id);

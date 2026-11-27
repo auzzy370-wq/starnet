@@ -44,7 +44,7 @@ function world(label, makeIo) {
 
 (async () => {
   for (const [label, makeIo] of [['ram', () => makeMemoryTranscriptIo()], ['segmented', dir => makeSegmentedTranscriptIo({ fs, path, root: path.join(dir, 'history'), segmentBytes: 700, recentPerStream: 4 })]]) {
-    // ---------------- 1. a pending delegated delivery in a session the Commander deleted ----------------
+    // ---------------- 1. a pending delegated delivery in a session the Master deleted ----------------
     {
       const w = world('delivery-' + label, makeIo);
       try {
@@ -55,7 +55,7 @@ function world(label, makeIo) {
         // the accepted answer landed durably, then the station stopped before the run envelope was finalized
         w.transcriptStore.appendStrict({ streamId: 'ws_gone', agentId: 'worker', role: 'assistant', sourceRunId: 'd1', content: text, dispatchState: 'final',
           dispatchPrompt: 'count the otters', dispatchReason: 'done', dispatchRepairRunId: '', textLength: text.length, textSha256: hash(text), taint: null });
-        w.tick(); w.ledger.observe(['ws_gone']); w.tick();   // the Commander deletes the session
+        w.tick(); w.ledger.observe(['ws_gone']); w.tick();   // the Master deletes the session
 
         A.eq(w.transcriptStore.history('ws_gone', { sourceRunId: 'd1' }).length, 0, label + ': an ordinary read of the deleted session forgets the accepted row');
         A.eq(w.transcriptStore.history('ws_gone', { sourceRunId: 'd1', dispatchState: 'final', limit: 1, strict: true, proof: true }).length, 1, label + ': a proof read still sees the durable accepted row');

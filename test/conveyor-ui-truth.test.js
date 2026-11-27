@@ -11,7 +11,7 @@ A.ok(hand.startsWith('[HAND-OFF — LINE A finished'), 'hand-off carries no dupl
 A.ok(hand.includes('full finished work itself'), 'receiving line must hand on the work rather than completion commentary');
 A.eq(P.parseHandoffInput(P.parseHandoff(P.handoffPrompt(hand, 'nova', 'revised body', 1)).original).original, 'write the report', 'nested later-stage hand-off retains the human job');
 /* M7 (2026-10-12): the old expectation {B:true,A:true} was WRONG — a run count is not a feed. A line's runs include the
-   Commander's own SEND IT A JOB and the lead's station.test_line, and neither starts the line by itself: counting them cleared
+   Master's own SEND IT A JOB and the lead's station.test_line, and neither starts the line by itself: counting them cleared
    the NO FEED nag and ticked the finish card's "what starts this line" for a line nothing is wired to start. Per-line feed
    evidence is a compiled hand-off into it (SEND TO); channels/routines/folders/webhooks come through the station-wide feed. */
 A.eq(P.fedLineIds({sendTo:{out:{toLine:'B'}}}, {known:true,byLine:{A:{runs:1},C:{runs:0}}}), {B:true}, 'a compiled hand-off proves a fed line; a run count does not');

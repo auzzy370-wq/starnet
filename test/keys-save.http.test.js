@@ -2,7 +2,7 @@
 /* node test/keys-save.http.test.js — a key pasted into chat becomes a KEYS entry, live (2026-10-25, Saleshandy report).
 
    Real sidecar + real /api/run against a local mock provider (no money spent). Proves the host half of keys.save:
-     1. a run whose Commander message holds a key ADVERTISES keys_save; the model calls it naming only the service
+     1. a run whose Master message holds a key ADVERTISES keys_save; the model calls it naming only the service
      2. the key lands in KEYS (masked list, never the value) and the stream carries servicekey.saved by NAME
      3. the tool result the model reads back never holds the value
      4. /api/servicekeys/scrub swaps the paste for the placeholder (what COMMS rewrites the bubble with)
@@ -20,7 +20,7 @@ const { bootToken } = require('./_httpToken.js');
 const root = path.resolve(__dirname, '..');
 const workspace = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-keys-save-'));
 const PASTE = '9c2f41d7a8e04b6f93a1c5d27e8b0f4a6d3c19e2';
-const PASTE_TEMPLATE = '3a9f0c7e2b5d8a1f4c6e9b0d2a7f5c3e8b1d4f6a';   // a key in text the Commander did not type (F9)
+const PASTE_TEMPLATE = '3a9f0c7e2b5d8a1f4c6e9b0d2a7f5c3e8b1d4f6a';   // a key in text the Master did not type (F9)
 const PASTE_ROTATED = 'c7e0a3f6b9d2e5a8c1f4b7d0e3a6c9f2b5d8e1a4';   // the new key that replaces PASTE (R11)
 const PASTE_LOST = 'f1e2d3c4b5a6978877665544332211aabbccddee';   // the key whose save the disk refuses
 let child, base, headers;
@@ -75,7 +75,7 @@ async function run(text, extra) {
     A.ok((await api('/api/roster', { agents: [{ agentId: 'agent', name: 'Hero', model: 'test/model', provider: 'openrouter' }] })).body.ok, 'roster saved');
 
     // 0. NEVER DESTROY THE LAST COPY: a KEYS write that cannot be proven on disk changes nothing — no key, no scrub, and
-    //    the paste survives in the transcript (the Commander's only copy besides their own memory)
+    //    the paste survives in the transcript (the Master's only copy besides their own memory)
     const blocker = path.join(workspace, 'connectors', 'servicekeys.json');
     fs.mkdirSync(blocker, { recursive: true });   // a directory where the store's file must go: every write fails
     const r0 = await run('my saleshandy key is ' + PASTE_LOST + ' please');

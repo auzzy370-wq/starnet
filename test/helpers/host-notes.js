@@ -6,7 +6,7 @@
    OpenRouter non-Claude models such as the fixtures' 'test/model', hosted openai-compatible profiles, Ollama) they are
    the fenced leading text of the NEWEST user message (provider.js userSideHostNotes — strict chat templates refuse a
    system message after index 0). The <crew_call> note (review 2026-10-12) trails instead: it is the fenced CLOSING text
-   of that user message. Tests that read the run identity or recall from a request, or route a mock on the Commander's
+   of that user message. Tests that read the run identity or recall from a request, or route a mock on the Master's
    own words, use these instead of assuming one placement. */
 
 const TAGS = ['run_context', 'recalled-memory', 'conversation_summary', 'crew_call'];
@@ -15,7 +15,7 @@ const text = c => typeof c === 'string' ? c : (Array.isArray(c) ? c.map(p => (ty
 const LEAD_BLOCK = new RegExp('^\\s*<(' + TAG_ALT + ')>[\\s\\S]*?</\\1>\\s*');
 const TRAIL_BLOCK = new RegExp('\\s*<(' + TAG_ALT + ')>(?:(?!<\\1>)[\\s\\S])*?</\\1>\\s*$');
 
-// a user text split into its leading host notes, the Commander's own words, and its trailing host notes. On the wire
+// a user text split into its leading host notes, the Master's own words, and its trailing host notes. On the wire
 // the user's own text carries no live host fence (provider.js INERT HOST FENCES), so a live block is host-authored.
 function splitUser(t) {
   const lead = [], trail = [];
@@ -30,7 +30,7 @@ function hostNotes(messages, tag) {
   const out = [];
   for (const m of Array.isArray(messages) ? messages : []) {
     if (!m || (m.role !== 'system' && m.role !== 'user')) continue;
-    // a user message only carries host notes as its LEADING or CLOSING text (anything between is the Commander's words)
+    // a user message only carries host notes as its LEADING or CLOSING text (anything between is the Master's words)
     const blocks = m.role === 'user' ? (s => s.lead.concat(s.trail))(splitUser(text(m.content))) : [text(m.content)];
     for (const b of blocks) for (const name of tags) {
       const re = new RegExp('<' + name + '>[\\s\\S]*?</' + name + '>', 'g');
@@ -42,12 +42,12 @@ function hostNotes(messages, tag) {
 }
 const runContextOf = messages => hostNotes(messages, 'run_context').join('\n');
 const recallOf = messages => hostNotes(messages, 'recalled-memory').join('\n');
-// the Commander's own words of a user message: its text without the leading and closing host notes
+// the Master's own words of a user message: its text without the leading and closing host notes
 function userWords(message) {
   return splitUser(text(message && message.content)).words;
 }
 // a copy of a user message without its host notes (string content -> the own words; a parts array loses its leading
-// and closing host-note text parts), so a test that inspects "what the Commander sent" keeps reading exactly that
+// and closing host-note text parts), so a test that inspects "what the Master sent" keeps reading exactly that
 function withoutHostNotes(message) {
   if (!message || message.role !== 'user') return message;
   const c = message.content;
@@ -68,7 +68,7 @@ function lastUserWords(messages) {
 
 // the run's OPENING prompt: the first user message's own words, skipping a user turn that is host notes alone. On a Claude
 // route (provider.js chatRoleProjection -> preserveClaudeContinuations) the <run_context> note and recall are their own
-// user turns BEFORE the Commander's message instead of leading it, so "the first user message" can be a host note.
+// user turns BEFORE the Master's message instead of leading it, so "the first user message" can be a host note.
 // A mock that routes on how a run opens (qa:journeys J4's [WORKSHOP_SHIFT]) reads this on every route.
 function firstUserWords(messages) {
   for (const m of Array.isArray(messages) ? messages : []) {

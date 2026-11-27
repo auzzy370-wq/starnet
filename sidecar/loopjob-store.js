@@ -84,7 +84,7 @@
   const RED_STREAK_MAX = 10;
   const EXIT_MODES = ['check-green', 'empty-digests', 'never'];
   const TEXT_CAP = 4000, TITLE_CAP = 140, SUM_CAP = 1200, NOTE_CAP = 800, FILE_CAP = 50;
-  /* A REVIEW DIFF IS HELD ONLY WHILE IT IS REVIEWABLE. The whole point is to let the Commander SEE the change
+  /* A REVIEW DIFF IS HELD ONLY WHILE IT IS REVIEWABLE. The whole point is to let the Master SEE the change
      before ruling on it, so it is stored on the iteration — but a diff per pass across a 200-entry ledger would
      bloat loops.json without limit. recordVerdict drops it the moment a verdict lands, so at most `queueCap`
      diffs are ever resident (≤12), and a ruled iteration keeps its title/summary/files as the durable record. */
@@ -93,7 +93,7 @@
   const iso = LJ._internals.iso;
   const dayOf = LJ._internals.dayOf;
 
-  // fields a Commander may edit. id / timestamps / run-state / ledger are NOT patchable here.
+  // fields a Master may edit. id / timestamps / run-state / ledger are NOT patchable here.
   const EDITABLE = ['name', 'objective', 'agentId', 'model', 'provider', 'gate',
     'queueCap', 'maxIterations', 'dryStopAfter', 'stallStopAfter', 'workdir', 'branch', 'baseCommit',
     'checkCmd', 'checkTimeoutMs', 'checkPaths', 'exitOn', 'redStopAfter'];
@@ -144,7 +144,7 @@
       model: spec.model != null ? str(spec.model, 200) : null,
       provider: spec.provider != null ? str(spec.provider, 60) : null,
       // REVIEW is the default and it is the safe one: nothing the loop makes is applied without a click.
-      // 'auto' is the Commander's explicit "you have full access to merge" choice, per-loop, never global.
+      // 'auto' is the Master's explicit "you have full access to merge" choice, per-loop, never global.
       gate: normGate(spec.gate),
       queueCap: LJ.queueCapOf({ queueCap: spec.queueCap }),
       maxIterations: maxIters,
@@ -246,7 +246,7 @@
   }
 
   /* resumeLoop — re-arm a loop from ANY quiet state. Resuming clears the dry streak and the fail streak:
-     the Commander looked at it and said keep going, which is new information the convergence counter must
+     the Master looked at it and said keep going, which is new information the convergence counter must
      not override. It does NOT clear the iteration ledger — the loop keeps its memory. */
   function resumeLoop(loops, id, ctx) {
     const now = (ctx && ctx.now) || 0;
@@ -258,7 +258,7 @@
   function stopLoop(loops, id, reason, ctx) {
     const now = (ctx && ctx.now) || 0;
     return mapLoop(loops, id, (loop) => Object.assign({}, loop, {
-      enabled: false, state: 'stopped', stopReason: reason != null ? str(reason, NOTE_CAP) : 'stopped by the Commander',
+      enabled: false, state: 'stopped', stopReason: reason != null ? str(reason, NOTE_CAP) : 'stopped by the Master',
       fireClaim: null, heartbeatAt: null, updatedAt: iso(now)
     }));
   }
@@ -281,7 +281,7 @@
     return mapLoop(loops, id, (loop) => (loop.fireClaim == null ? loop : Object.assign({}, loop, { heartbeatAt: now })));
   }
 
-  /* pruneIterations — cap the ledger, NEVER dropping anything the Commander still has to rule on. Only
+  /* pruneIterations — cap the ledger, NEVER dropping anything the Master still has to rule on. Only
      verdict-settled / noop / failed rows are eligible for eviction, oldest first. A pending candidate is
      unreviewed WORK; silently evicting it would strand a real artifact. */
   function pruneIterations(its) {
@@ -329,7 +329,7 @@
      result = { runId, status:'ok'|'error', text, title, summary, commit, files, usd, error, cancelled }
 
      Outcome resolution:
-       cancelled          -> 'cancelled'  (E-STOP / Commander stop mid-iteration; costs no streak either way)
+       cancelled          -> 'cancelled'  (E-STOP / Master stop mid-iteration; costs no streak either way)
        result.unfinished  -> 'unfinished' (review r8: the pass's run did not FINISH — it asked, was cut short, hit a limit, sent back nothing or
                                            was refused; unfinishedAs keeps which. Never a failed pass: unfinishedStreak++)
        status !== 'ok'    -> 'failed'     (failStreak++)
@@ -372,7 +372,7 @@
       else if (!ok && result.unfinished) outcome = 'unfinished';
       else if (!ok) outcome = 'failed';
       // A RED CHECK IS NOT A REVIEW ITEM. The run succeeded, the work just is not ready — so it feeds forward
-      // into the next iteration (carrying the failure output) instead of asking the Commander to approve
+      // into the next iteration (carrying the failure output) instead of asking the Master to approve
       // something the project's own tests reject. This is the difference between a feedback loop and a retry.
       else if (chk && !chk.passed) outcome = 'red';
       else outcome = LJ.nextOutcomeFor(result.text);
@@ -487,7 +487,7 @@
         next.failStreak = 0; next.unfinishedStreak = 0;
         /* A candidate that changed nothing is not progress, and three of them in a row is the runaway this
            counter exists for. 'paused' (not 'dormant'): the loop did NOT concede — it kept claiming work — so
-           the honest label is "parked for the Commander to look at", and RESUME clears the streak like every
+           the honest label is "parked for the Master to look at", and RESUME clears the streak like every
            other quiet state. The reason names the count so the panel needs no guesswork. */
         if (stall) {
           next.stallStreak = (loop.stallStreak || 0) + 1;
@@ -569,7 +569,7 @@
 
      REJECTED: this iteration is rejected AND every un-approved candidate stacked above it is marked
      'discarded', because they were built on top of it (THE STACKING LAW in the header). `note` is the
-     Commander's reason and is the single most valuable field in the whole subsystem — loopjob.digest leads
+     Master's reason and is the single most valuable field in the whole subsystem — loopjob.digest leads
      the next iteration's prompt with it. A rejection with no note still works, it just teaches nothing.
 
      Rejecting also clears the dry streak: the loop demonstrably still has work to do (it just did it wrong),

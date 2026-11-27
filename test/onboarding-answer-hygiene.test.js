@@ -117,7 +117,7 @@ function awakening(answerFor) {
   /* ---------- 3. THE MIRROR (deep meeting, live mind): a grabbed offer and a redirect ----------
      Live (2026-10-20): wakemind's directive REQUIRES offers phrased as the agent ("i could …"). Grabbing one stored
      the goal belief "Wants the station to: i could draft your launch checklist tonight." and prefilled the FIRST TASK
-     with the agent's own sentence, which Start sent as the Commander's message verbatim. And the redirect box
+     with the agent's own sentence, which Start sent as the Master's message verbatim. And the redirect box
      ("none of these — i'll say it") bypassed askStep, so an emoji-only reply landed as a STATED goal + first task. */
   function deep(mirrorPick, redirectText) {
     const upserts = [], armed = [];
@@ -154,7 +154,7 @@ function awakening(answerFor) {
   A.ok(!/^\s*i could\b/i.test(grab.armed[0] || ''), 'the first task is not the agent’s own sentence: ' + grab.armed[0]);
   A.ok(/draft your launch checklist tonight/.test(grab.armed[0] || ''), '…it still carries the offer they picked: ' + grab.armed[0]);
   const g = grab.upserts.find(u => u.dim === 'goals' && /launch checklist/.test(u.text));
-  A.ok(g && !/to: i could/i.test(g.text), 'the goal belief reads as a fact about the Commander, not "Wants the station to: i could …": ' + (g && g.text));
+  A.ok(g && !/to: i could/i.test(g.text), 'the goal belief reads as a fact about the Master, not "Wants the station to: i could …": ' + (g && g.text));
 
   const redir = deep('redirect', '🚀🔥💯🙏');
   await settle(() => redir.run.commits.some(c => c && c.purpose));

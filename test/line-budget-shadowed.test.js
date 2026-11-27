@@ -1,7 +1,7 @@
 /* test/line-budget-shadowed.test.js — a SECOND INBOX's LINE BUDGET is flagged, naming the one in force (quick win 29).
 
    A line has ONE budget: the oldest INBOX that carries limits speaks (pipeline.js budgetIntake). A second INBOX on the same
-   line could carry its own LINE BUDGET, show it in its card, and be silently ignored — the Commander raised "max stages"
+   line could carry its own LINE BUDGET, show it in its card, and be silently ignored — the Master raised "max stages"
    or the $ per job there and the line kept stopping at the other INBOX's numbers (memory: splitter-not-fixed-1010).
    Locked: compileRoutingPlan adds ONE warn finding on the ignored INBOX naming the INBOX whose budget is in force; it is
    advice (the plan still deploys), it never moves the budget the executor reads, and both floor-callout tables name it.

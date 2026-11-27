@@ -1,8 +1,8 @@
-/* node test/save-premigrate-backup.test.js — the browser's pre-migration copy of the save follows the Commander's deletes and does not live forever.
+/* node test/save-premigrate-backup.test.js — the browser's pre-migration copy of the save follows the Master's deletes and does not live forever.
 
    save.js keeps the raw save from before a migration (vultron.save.pre-migrate.backup) so a bad migration can be recovered by hand. That
    copy is every conversation the station held at the moment of the upgrade, written once. The v7 bump (history by reference) writes one
-   for every install that has none, so three things have to hold or a conversation the Commander deleted outlives the delete in this
+   for every install that has none, so three things have to hold or a conversation the Master deleted outlives the delete in this
    browser, and the copy outlives everything else:
      · it is KEPT as the way back: made once from the raw bytes, stamped with the day it was made, never overwritten by a later load;
      · a delete is FOLLOWED: the persist that records a conversation's deletion (the save's forgetIds, Workstreams.del({forget:true}))

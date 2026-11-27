@@ -12,7 +12,7 @@
        shape) grounded in the interest evidence, with a HARD parse (params must round-trip the task
        template, tags/category/gear clamp to the real vocab, near-duplicates + denylist rejected).
 
-   PROPOSE-AND-CONFIRM, ALWAYS: a staged draft only ever renders on a shelf with its WHY; the Commander
+   PROPOSE-AND-CONFIRM, ALWAYS: a staged draft only ever renders on a shelf with its WHY; the Master
    accepts (graduates it to a real custom class/recipe frontend-side) or dismisses (denylists its
    fingerprint so an equivalent never re-mints). Nothing auto-joins the roster or the library.
 
@@ -39,7 +39,7 @@
   const MINT_EVERY_RUNS = 3;                 // moderate loosening: a mint attempt every ~3 qualifying runs…
   const MINT_MIN_GAP_MS = 30 * 60 * 1000;    // …but never two attempts within half an hour…
   /* …and a per-kind ceiling on undecided drafts. RECIPES get a deeper shelf than PROSPECTS on purpose: a
-     recipe draft is a cheap, low-commitment offer the Commander skims and accepts or waves away, and the
+     recipe draft is a cheap, low-commitment offer the Master skims and accepts or waves away, and the
      shelf is the product's discovery surface — three at a time made it feel like a trickle. A prospect is a
      whole agent joining the crew, a much heavier decision, so a deep queue there would be nagging rather
      than helpful. liveCap() is the ONLY reader; MAX_LIVE remains the default for any kind added later. */
@@ -153,7 +153,7 @@
      (cold → cooldown → gap → full), most "not earned yet" first. warm comes from interests.warm().
      kind selection: the kind with FEWER live drafts wins; tie → alternate away from lastKind.
 
-     COLD-START (lane E): interests take days of use to warm, but a pushed Commander dossier (the awakening's
+     COLD-START (lane E): interests take days of use to warm, but a pushed Master dossier (the awakening's
      pain/ambition extraction) is real evidence on DAY ONE. When interests are cold, a non-empty dossier buys
      exactly ONE recipe attempt — forced kind:'recipe' (the personalized recipe is the wow moment) — after at
      least one qualifying run. The one-shot is spent by the ATTEMPT (stampAttempt {coldStart:true}: staged,
@@ -191,27 +191,27 @@
   function buildRecipeDirective(ctx) {
     ctx = ctx || {};
     const lines = [];
-    lines.push('You are the station\'s recipe author, drafting ONE new one-tap mission recipe tailored to what the Commander ACTUALLY keeps doing.');
+    lines.push('You are the station\'s recipe author, drafting ONE new one-tap mission recipe tailored to what the Master ACTUALLY keeps doing.');
     lines.push('');
     lines.push('WHAT THE STATION HAS LEARNED (real observed interests, with evidence):');
     lines.push(str(ctx.interestsBlock).trim() || '(nothing yet)');
-    if (ctx.dossierBlock) { lines.push(''); lines.push('COMMANDER DOSSIER:'); lines.push(str(ctx.dossierBlock).trim()); }
+    if (ctx.dossierBlock) { lines.push(''); lines.push('MASTER DOSSIER:'); lines.push(str(ctx.dossierBlock).trim()); }
     if (ctx.activityBlock) { lines.push(''); lines.push('RECENT ACTIVITY:'); lines.push(str(ctx.activityBlock).trim()); }
-    // FLAGSHIP CROSS-WIRE: the Commander's live quest slate + north star, so a draft SERVES their current direction
+    // FLAGSHIP CROSS-WIRE: the Master's live quest slate + north star, so a draft SERVES their current direction
     // instead of ignoring it. Part of "the evidence above" — a WHY may cite it (the caller folds it into grounding).
-    if (str(ctx.directionBlock).trim()) { lines.push(''); lines.push('THE COMMANDER\'S CURRENT DIRECTION (their open quests + north star — a recipe that ADVANCES one of these is especially valuable):'); lines.push(str(ctx.directionBlock).trim()); }
+    if (str(ctx.directionBlock).trim()) { lines.push(''); lines.push('THE MASTER\'S CURRENT DIRECTION (their open quests + north star — a recipe that ADVANCES one of these is especially valuable):'); lines.push(str(ctx.directionBlock).trim()); }
     const existing = (ctx.existingRecipes || []).map(r => '• ' + str(r.name) + ' — ' + str(r.tagline)).join('\n');
     lines.push('');
     lines.push('EXISTING RECIPE LIBRARY (do NOT propose anything an entry here already serves):');
     lines.push(existing || '(none)');
     if (Array.isArray(ctx.launchedOften) && ctx.launchedOften.length) {
-      lines.push('RECIPES THE COMMANDER LAUNCHES MOST: ' + ctx.launchedOften.join(', ') + ' (adjacent, deeper takes on these lanes are welcome — restatements are not).');
+      lines.push('RECIPES THE MASTER LAUNCHES MOST: ' + ctx.launchedOften.join(', ') + ' (adjacent, deeper takes on these lanes are welcome — restatements are not).');
     }
     lines.push('');
     lines.push('HARD CONSTRAINTS:');
     lines.push('- Propose EXACTLY ONE recipe, serving a SPECIFIC observed interest above — never a generic productivity template.');
-    lines.push('- The recipe must EARN ITS TAP: the TASK encodes method and judgment (steps, quality criteria, output shape) the Commander would never bother typing. A one-line paraphrase of the recipe\'s own name is worthless — do not propose it.');
-    lines.push('- Prefer a recipe that DRIVES THE STATION — reads the web or files, checks connected channels, or runs on a cadence — over one that asks the Commander to paste text in.');
+    lines.push('- The recipe must EARN ITS TAP: the TASK encodes method and judgment (steps, quality criteria, output shape) the Master would never bother typing. A one-line paraphrase of the recipe\'s own name is worthless — do not propose it.');
+    lines.push('- Prefer a recipe that DRIVES THE STATION — reads the web or files, checks connected channels, or runs on a cadence — over one that asks the Master to paste text in.');
     lines.push('- The TASK must LAND somewhere: it ends in a deliverable or a decision (a draft, a ranked call, a delta report), and if the use case naturally recurs it should keep notes in memory and report what CHANGED since last run, not restate the world.');
     lines.push('- TASK is one imperative directive line the agent will execute, containing a {token} for every PARAM you declare.');
     lines.push('- 1-' + MAX_PARAMS + ' PARAM lines; each is: key | Label | placeholder example. Keys are short lowercase identifiers.');
@@ -323,7 +323,7 @@
      The bay's default roster was trimmed to 12 majority-use classes; the demoted deep cuts live on as
      fully-specified ARCHETYPES (shared/specialties.js). On a prospect turn the cycle checks — BEFORE
      paying for an LLM authorship pass — whether a dormant archetype already covers what the station has
-     LEARNED the Commander keeps doing. Deterministic + truthful telemetry: an archetype only matches on
+     LEARNED the Master keeps doing. Deterministic + truthful telemetry: an archetype only matches on
      the real persisted interest-topic counters, and the WHY names the actual topic + its observed count.
      A match stages the archetype's FULL spec as a normal prospect (propose-and-confirm, same shelf, same
      accept/dismiss); no match falls through to the LLM path unchanged. */
@@ -347,7 +347,7 @@
 
   /* matchArchetype — pick the dormant archetype the learned interests point at, or null.
      inp = { topics: interests.summary() rows [{label, weight, count, ...}], existingNames: [name..]
-     (roster agents + custom classes + staged prospect drafts — an archetype the Commander already has is
+     (roster agents + custom classes + staged prospect drafts — an archetype the Master already has is
      never re-pitched), denylist: [fp] (dismissed shapes never re-mint) }.
      Returns { archetype, why, fingerprint, topic } — why is derived ONLY from the real topic counters. */
   function matchArchetype(archetypes, inp) {
@@ -412,7 +412,7 @@
   }
 
   /* drop(state, match) -> { state, removed }: take the staged drafts and ledger notes `match(item)` names out (the forget registry: they
-     quote a deleted session). The dismissed-shape denylist holds fingerprints only and stays: a draft the Commander waved off must not
+     quote a deleted session). The dismissed-shape denylist holds fingerprints only and stays: a draft the Master waved off must not
      come back. Pure: a NEW state, the input untouched. */
   function drop(state, match) {
     const s = normalize(state, 0);
@@ -496,7 +496,7 @@
   }
 
   /* ---- engagement telemetry (lane 5): per-recipe launch counters ----
-     What the Commander actually LAUNCHES is the strongest engagement signal there is: it feeds the FOR-YOU
+     What the Master actually LAUNCHES is the strongest engagement signal there is: it feeds the FOR-YOU
      rank (frontend) and the "launches most" hint in the recipe directive. Counters only — no content. */
   function noteLaunch(state, rec, opts) {
     const now = Number(opts && opts.now) || 0;
@@ -527,7 +527,7 @@
   }
 
   /* ---- outcome telemetry (lane B): rate-the-work verdicts folded per recipe ----
-     The Commander's 👍/👌/👎 on a recipe-launched run is the strongest quality signal there is — it feeds the
+     The Master's 👍/👌/👎 on a recipe-launched run is the strongest quality signal there is — it feeds the
      FOR-YOU rank (frontend rankRecipes outcome term) and the "rated well" hint in the drafting directive.
      Counters only, never content. A rating on an unseen id still creates its entry (n:0) — a rating implies a
      launch, but the counters must never silently drop a real verdict just because the launch ping was missed. */
@@ -552,7 +552,7 @@
     return Object.assign({}, s, { usage: { launches: launches } });
   }
   // the drafting-directive hint (lane B): top-launched names, each annotated when its own ratings say it landed —
-  // "(rated well)" only when the Commander's real verdicts earn it (>=2 great and more great than miss). A new
+  // "(rated well)" only when the Master's real verdicts earn it (>=2 great and more great than miss). A new
   // helper rather than a topLaunched change so the locked names-only contract stays byte-stable for old callers.
   function launchHints(state, limit) {
     const s = normalize(state, 0);

@@ -11,7 +11,7 @@
      is a genuine completion (a completed quest / an earned milestone) projected by the pure Trophies engine over
      the live quest view + the durable QuestState memory. Dates are honest — a completion with no knowable date
      (a resumed pre-fix save) renders "date unknown", NEVER 1969 (the whole point of the G3b hydrate fix). An
-     empty case shows honest dust, not placeholder trophies. The LIVING TOOLS shelf lists Commander-saved seeds
+     empty case shows honest dust, not placeholder trophies. The LIVING TOOLS shelf lists Master-saved seeds
      with their real lifetime + 7-day run counts (the seed-reuse aggregate). No XP is minted anywhere here. */
   function buildTrophies(body) {
     // fold the live memory first so a just-completed quest is a trophy the instant this opens (buildQuests idiom).

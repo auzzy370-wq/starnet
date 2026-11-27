@@ -1,7 +1,7 @@
 /* sidecar/tools/builtin/apps.js — the crew's side of APPS (sidecar/apps.js).
 
-   The Commander describes an app in their own words (a tracker, a timer, a dashboard, a game…); the lead builds it:
-     app.create    a new app (the APPS window's NEW APP does this for the Commander; the tool is for "make me an app…" in chat)
+   The Master describes an app in their own words (a tracker, a timer, a dashboard, a game…); the lead builds it:
+     app.create    a new app (the APPS window's NEW APP does this for the Master; the tool is for "make me an app…" in chat)
      app.read      what an app is made of: its files, its data keys, its schedule — or one file / one data value
      app.write     write one page file (index.html …) — the open window reloads onto it at once
      app.check     compile its scripts and look-check it against the station style (never runs anything)
@@ -13,19 +13,19 @@
 
 const GUIDE = [
   'HOW A VULTRON APP WORKS (keep to this):',
-  '- A Vultron app lives INSIDE Vultron. If the Commander asked for something to host, ship or run elsewhere (a website for Netlify, a React project, a script, an extension), this was the wrong tool: build real files instead, and tell the Commander this empty app can be removed from APPS.',
+  '- A Vultron app lives INSIDE Vultron. If the Master asked for something to host, ship or run elsewhere (a website for Netlify, a React project, a script, an extension), this was the wrong tool: build real files instead, and tell the Master this empty app can be removed from APPS.',
   '- The app is ONE page: index.html (put CSS/JS inline or in style.css / app.js beside it). It opens in a Vultron window.',
-  '- IT IS THE COMMANDER\'S APP — it can be ANYTHING: a dashboard, a tracker, a calculator, a timer, a game, a canvas toy. If they describe a look, layout, colours, fonts, animation or behaviour, build EXACTLY that with your own CSS/JS/canvas/SVG — their wish beats the station style. Only when they did not say how it should look, make it native:',
+  '- IT IS THE MASTER\'S APP — it can be ANYTHING: a dashboard, a tracker, a calculator, a timer, a game, a canvas toy. If they describe a look, layout, colours, fonts, animation or behaviour, build EXACTLY that with your own CSS/JS/canvas/SVG — their wish beats the station style. Only when they did not say how it should look, make it native:',
   '- DEFAULT LOOK (no look asked for): the station kit is injected automatically — build with its classes so the app looks native: sn-stack · sn-row-flex · sn-grid · sn-panel · sn-card · sn-sect (▮ header strip) + sn-list/sn-item rows · sn-stats/sn-stat (<b>value</b><span>LABEL</span>) · sn-table · sn-badge · dot ok|warn|bad · sn-title · sn-label · sn-hint · sn-muted · sn-btn (.primary .xs) · sn-input · sn-select · sn-tabs/sn-tab.on · sn-empty · sn-loading · sn-error. Colours via var(--ph), rgba(var(--ph-rgb),.2), var(--ok) --bad --warn; the page background stays transparent (the window glass shows through).',
-  '- INTERACTIVE apps keep the Commander\'s own input with vultron.store.set(key, value) / vultron.store.get(key) / vultron.store.delete(key) / vultron.store.keys() (JSON, saved on the station, survives reloads) — a tracker, a to-do, settings, a high score. Never localStorage (the sandbox has none).',
+  '- INTERACTIVE apps keep the Master\'s own input with vultron.store.set(key, value) / vultron.store.get(key) / vultron.store.delete(key) / vultron.store.keys() (JSON, saved on the station, survives reloads) — a tracker, a to-do, settings, a high score. Never localStorage (the sandbox has none).',
   '- Hard limits (the sandbox, not a style rule): the page has no network and loads nothing from the web (no CDN scripts, web fonts or remote images — inline everything, draw with CSS/SVG/canvas, images only as data: URIs); files are text.',
   '- TIME: your own sense of today\'s date is WRONG (it is your training era). app.read states the station\'s real date — anything current (news, prices, "today") is searched for THAT date, and every item you publish is from it.',
   '- The page has NO network: it never fetches anything. Its content is DATA you publish with app.publish(app, key, value) — any JSON (e.g. key "items": [{ title, detail, url }]).',
   '- In the page: const data = await vultron.store.get("items"); render it; and re-render when new data lands: vultron.onData(async () => { … }). Show an empty state (sn-empty) until the first data arrives, and a small "updated <time>" line (data._meta is kept by the station: await vultron.store.get("_meta") → { updatedAt }).',
-  '- Links: a plain <a href="https://…"> opens in the Commander\'s browser (the station catches the click) — just link. Never put a URL inside an inline onclick="…" attribute (its quotes break the attribute); for a whole clickable row, wrap it in the <a>.',
-  '- AUTOMATION: an app can update itself on any cadence ("every 15m", "every 1h", "0 8 * * *"). Each update is a crew run doing the `task` — publishing fresh data AND/OR changing the page itself (a new layout each week, a theme that follows the season). The Commander can also set or change this from AUTO-UPDATE under the app. Anything that must tick live (a clock, a timer, an animation) the page does itself in JS — never a run per second.',
-  '- If it should update by itself (daily, hourly…), call app.schedule with `every` and the `task` each refresh performs (e.g. "gather what the crew finished this week and publish it with app.publish key items"). Schedule FIRST, before you search or read anything from the web; then do the first refresh yourself (do the task, app.publish) so the Commander sees real content immediately.',
-  '- Build order: app.read → app.schedule (if it updates by itself — do this BEFORE any web research, or the station asks the Commander to approve it) → app.write index.html → app.check → research → app.publish real data. Tell the Commander in one or two sentences what the app does and when it refreshes.'
+  '- Links: a plain <a href="https://…"> opens in the Master\'s browser (the station catches the click) — just link. Never put a URL inside an inline onclick="…" attribute (its quotes break the attribute); for a whole clickable row, wrap it in the <a>.',
+  '- AUTOMATION: an app can update itself on any cadence ("every 15m", "every 1h", "0 8 * * *"). Each update is a crew run doing the `task` — publishing fresh data AND/OR changing the page itself (a new layout each week, a theme that follows the season). The Master can also set or change this from AUTO-UPDATE under the app. Anything that must tick live (a clock, a timer, an animation) the page does itself in JS — never a run per second.',
+  '- If it should update by itself (daily, hourly…), call app.schedule with `every` and the `task` each refresh performs (e.g. "gather what the crew finished this week and publish it with app.publish key items"). Schedule FIRST, before you search or read anything from the web; then do the first refresh yourself (do the task, app.publish) so the Master sees real content immediately.',
+  '- Build order: app.read → app.schedule (if it updates by itself — do this BEFORE any web research, or the station asks the Master to approve it) → app.write index.html → app.check → research → app.publish real data. Tell the Master in one or two sentences what the app does and when it refreshes.'
 ].join('\n');
 
 // the station's real date, in words — a model assumes its training-era date, so every app turn is told it
@@ -45,8 +45,8 @@ function makeAppTools(deps) {
         // the exclusions name no search words (tool_search matches description substrings, and the hit line shows only the
         // first sentence): listed as "a website, a React project, a browser extension…", they made tool_search REVEAL
         // app.create as the top hit for exactly those asks (sweep 2026-10-02). Same meaning, no trigger words.
-        + 'NOT for anything meant to run, be published or be shipped outside Vultron (something to put online, a framework codebase, a standalone program, an add-on for the Commander\'s own web browser, a phone or computer program): build those as real files with the file tools.',
-      schema: { type: 'object', required: ['name'], properties: { name: { type: 'string' }, description: { type: 'string', description: 'what it should do, in the Commander\'s words' } } },
+        + 'NOT for anything meant to run, be published or be shipped outside Vultron (something to put online, a framework codebase, a standalone program, an add-on for the Master\'s own web browser, a phone or computer program): build those as real files with the file tools.',
+      schema: { type: 'object', required: ['name'], properties: { name: { type: 'string' }, description: { type: 'string', description: 'what it should do, in the Master\'s words' } } },
       scope: 'write',
       run: async (a) => {
         const made = await apps.create({ name: a.name, description: a.description });
@@ -70,7 +70,7 @@ function makeAppTools(deps) {
           content: todayLine(deps.now) + 'App "' + meta.name + '" (id: ' + id + ')\nDescription: ' + (meta.description || '—') +
             '\nFiles: ' + files.map(f => f.path + ' (' + f.bytes + ' B)').join(', ') +
             '\nData keys: ' + (keys.join(', ') || 'none yet') +
-            '\nSchedule: ' + (d.schedule && d.schedule.missing ? 'its routine was removed — call app.schedule again to restore it' : d.schedule ? (d.schedule.display + ' — task: ' + (meta.schedule && meta.schedule.task) + (d.schedule.armed === false ? ' (routines are switched OFF on this station — it will not fire until the Commander turns them on)' : '')) : 'none') +
+            '\nSchedule: ' + (d.schedule && d.schedule.missing ? 'its routine was removed — call app.schedule again to restore it' : d.schedule ? (d.schedule.display + ' — task: ' + (meta.schedule && meta.schedule.task) + (d.schedule.armed === false ? ' (routines are switched OFF on this station — it will not fire until the Master turns them on)' : '')) : 'none') +
             '\n\n' + GUIDE,
           summary: 'app ' + id
         };
@@ -108,8 +108,8 @@ function makeAppTools(deps) {
             if (err) problems.push(f.path + ': ' + err);
           }
           if (/\.html?$/i.test(f.path)) {
-            if (/background(?:-color)?\s*:\s*(?:#fff\b|#ffffff\b|white\b)/i.test(text)) warnings.push(f.path + ': a white background — fine if the Commander asked for that look; otherwise leave the page transparent');
-            if (!/class="[^"]*\bsn-/.test(text)) warnings.push(f.path + ': no kit classes (sn-*) — fine for a custom look the Commander asked for; otherwise it will not look like Vultron');
+            if (/background(?:-color)?\s*:\s*(?:#fff\b|#ffffff\b|white\b)/i.test(text)) warnings.push(f.path + ': a white background — fine if the Master asked for that look; otherwise leave the page transparent');
+            if (!/class="[^"]*\bsn-/.test(text)) warnings.push(f.path + ': no kit classes (sn-*) — fine for a custom look the Master asked for; otherwise it will not look like Vultron');
             if (/<(?:script|link|img|iframe)\b[^>]*\b(?:src|href)=["']https?:/i.test(text) || /@import\s+(?:url\()?["']?https?:/i.test(text) || /\blocalStorage\b|\bsessionStorage\b/.test(text)) warnings.push(f.path + ': loads something from the web or uses localStorage — neither works in an app (no network, no browser storage); inline it, and keep data with vultron.store');
             if (/\bfetch\s*\(|XMLHttpRequest|new WebSocket/.test(text)) warnings.push(f.path + ': the page tries to use the network — it has none; publish data with app.publish instead');
             if (/onclick\s*=\s*"[^"]*\$\{\s*JSON\.stringify/i.test(text)) warnings.push(f.path + ': JSON.stringify inside an onclick="…" attribute — its quotes end the attribute and the handler never runs; use a plain <a href> (the station opens links) or addEventListener');
@@ -142,7 +142,7 @@ function makeAppTools(deps) {
         const r = await apps.schedule(id, { every: a.every, task: a.task, byAgent: true });   // a crew edit: a changed task drops the routine's unattended grants
         if (r.off) return { content: 'The app no longer refreshes on a schedule.', summary: 'app schedule off' };
         return {
-          content: 'Scheduled: ' + r.display + '.' + (r.armed === false ? ' NOTE: routines are switched OFF on this station, so it will not fire until the Commander turns them on — the app window offers a TURN ON button. Do the first refresh yourself now.' : ' Do the first refresh yourself now so the app has content.'),
+          content: 'Scheduled: ' + r.display + '.' + (r.armed === false ? ' NOTE: routines are switched OFF on this station, so it will not fire until the Master turns them on — the app window offers a TURN ON button. Do the first refresh yourself now.' : ' Do the first refresh yourself now so the app has content.'),
           summary: 'app scheduled ' + r.display
         };
       }

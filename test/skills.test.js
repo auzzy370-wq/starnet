@@ -358,7 +358,7 @@ const redact = (t) => String(t).replace(/sk-[A-Za-z0-9]{8,}/g, '[redacted]');
 // support-file pointer list) and used to bump that whole document into `latest` as the skill's `body`.
 // markUsed() runs on every run and persists from `latest`, so each cycle re-rendered '## Setup' in front
 // of a body that already had one — unbounded growth in RAM, in skills.jsonl and on disk, and a moving
-// contentDigest that invalidated the Commander's approval forever.
+// contentDigest that invalidated the Master's approval forever.
 {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vultron-skills-fp-'));
   const packages = makePackageStore({ fs, pathMod: path, root });
@@ -450,7 +450,7 @@ const redact = (t) => String(t).replace(/sk-[A-Za-z0-9]{8,}/g, '[redacted]');
   const g = runtimeSkills.composeIndex([], { emptyGuide: true, canManage: true }).text;
   A.ok(/## SAVED AGENT SKILLS/.test(g) && /no saved skills yet/.test(g), 'emptyGuide -> a zero-skill agent is told it has none and what a skill is');
   A.ok(g.indexOf('skill.manage (action create)') >= 0, 'the line names the create call the agent actually has');
-  A.ok(g.indexOf('It applies once approved in ABILITIES > SKILLS.') >= 0, 'the line never implies a saved skill applies before the Commander approves it');
+  A.ok(g.indexOf('It applies once approved in ABILITIES > SKILLS.') >= 0, 'the line never implies a saved skill applies before the Master approves it');
   A.ok(/skill.write/.test(runtimeSkills.composeIndex([], { emptyGuide: true, canManage: false }).text), 'without skill.manage the line names skill.write');
   A.eq(runtimeSkills.composeIndex([], { emptyGuide: true, canManage: true }).text, g, 'the line is a constant (rides the cached prefix)');
   const allArchived = runtimeSkills.composeIndex([{ name: 'Old', body: 'x', state: 'archived' }, { name: 'Older', body: 'y', state: 'archived' }], { emptyGuide: true, canManage: true }).text;
@@ -458,7 +458,7 @@ const redact = (t) => String(t).replace(/sk-[A-Za-z0-9]{8,}/g, '[redacted]');
   A.ok(allArchived.indexOf('no active saved skills (2 archived') >= 0 && allArchived.indexOf('action restore') >= 0, 'it is told how many are archived and how to restore one');
   A.ok(allArchived.indexOf('Old') < 0, 'archived rows still never enter the index');
 
-  // aging after use = loaded: only a MODEL-authored skill auto-archives; the Commander's own and installed ones only go stale
+  // aging after use = loaded: only a MODEL-authored skill auto-archives; the Master's own and installed ones only go stale
   {
     let ct = 1000;
     const cs = makeSkillStore({ io: memIo(), clock: { now: () => ct }, redact });

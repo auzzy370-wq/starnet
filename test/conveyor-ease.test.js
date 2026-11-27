@@ -64,7 +64,7 @@ A.ok(/const r = st\.setPropBrief\(x\.dockId, x\.does\);/.test(nr) && /st\.setPro
 A.ok(/↻ SEND IT AGAIN/.test(nr) && /S\.prevJob = \{ text: mine\.text, output: mine\.output, stamp: mine\.stamp \};/.test(nr) && /H\.runSample\(cc, \{ text: mine\.text/.test(nr), '…then the same job runs again');
 A.ok(/const prev = S\.prevJob && S\.prevJob\.stamp !== mine\.stamp && S\.prevJob\.text === mine\.text \? S\.prevJob : null;/.test(res) && /Last time, before your fix/.test(res), '…and what it gave last time stays one click away beside the new result');
 A.ok(/Suggested by ' \+ esc\(fx\.model/.test(nr) && /\$' \+ \(\+fx\.usd\)\.toFixed\(4\)/.test(nr), 'the suggestion says which model made it and what it cost');
-/* ---------- ★ KEEP AS THE EXAMPLE — consistency: the last step matches a result the Commander liked ---------- */
+/* ---------- ★ KEEP AS THE EXAMPLE — consistency: the last step matches a result the Master liked ---------- */
 const ex = at(panel, '  const EX_HEAD = ', '  // after a job\'s card is painted');
 A.ok(/const last = \(mine\.runs \|\| \[\]\)\[0\], dockId = last && last\.dockId/.test(ex) && /H\.station\(\)\.setPropBrief\(dockId, next\)/.test(ex),
   'KEEP AS THE EXAMPLE writes the result into the instructions of the step whose reply shipped (the delivered run), one UNDO');
@@ -72,7 +72,7 @@ A.ok(/replace\(\/\\n\*MATCH THIS EXAMPLE of a good result\[\\s\\S\]\*\$\/, ''\)/
   '…as one marked block that replaces any earlier example, bounded to fit the 2000-character brief');
 A.ok(/★ KEEP THIS STYLE/.test(res) && /★ STYLE KEPT/.test(res) && !/KEEP AS THE EXAMPLE</.test(res), '…a key under the result (★ KEEP THIS STYLE, the WORKFLOWS word), then a tag saying the style is kept');
 A.ok(/keepTaste\(mine, last\.runId\);/.test(ex) && /api\('\/api\/taste\/keep-style', 'POST', \{ runId \}\)/.test(ex),
-  '…and the same approval becomes the Commander\'s station-wide taste, with the delivered run\'s real reference (DESIGN ANCHOR 10-11)');
+  '…and the same approval becomes the Master\'s station-wide taste, with the delivered run\'s real reference (DESIGN ANCHOR 10-11)');
 A.ok(/k\.sent\.then\(stored => stored && api\('\/api\/taste\/keep-style', 'POST', \{ runId: k\.runId, undo: true \}\)/.test(ex) && /unkeepTasteIfUndone\(mine\);/.test(panel),
   '…and the panel\'s UNDO takes the crew\'s copy back too, only after the keep itself landed (the two can never cross)');
 /* ---------- the loop's machine note, in words ---------- */

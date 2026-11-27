@@ -127,7 +127,7 @@ const ids = list => list.map(r => r.rowId);
   A.ok(!around.some(r => gone.includes(r.rowId)), 'recall around: the window around a forgotten row holds no forgotten row');
   // owner-evidence: a clean owner USER row that quotes S (a held steer line, a composed brief) is not evidence once S is deleted
   ledger = { deleted: {}, latest: 0 };
-  const owner = store.appendStrict({ streamId: 'T', agentId: 'a', role: 'user', content: 'the ' + W + ' brief the Commander asked for', taint: null, kind: 'turn', turnId: 'turn-owner-0001', directive: true, sourceRunId: 'r_owner', quotes: ['S'], quotesAt: [50] });
+  const owner = store.appendStrict({ streamId: 'T', agentId: 'a', role: 'user', content: 'the ' + W + ' brief the Master asked for', taint: null, kind: 'turn', turnId: 'turn-owner-0001', directive: true, sourceRunId: 'r_owner', quotes: ['S'], quotesAt: [50] });
   A.ok(store.view('owner-evidence', 'T', { limit: 50 }).some(r => r.rowId === owner.rowId), 'before the delete the owner row is evidence');
   ledger = { deleted: { S: 60 }, latest: 60 };
   A.ok(!store.view('owner-evidence', 'T', { limit: 50 }).some(r => r.rowId === owner.rowId), 'owner-evidence: a clean owner row that quotes a deleted session is no longer evidence');

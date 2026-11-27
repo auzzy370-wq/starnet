@@ -8,7 +8,7 @@
        its product — the dock must not ALSO ship its own, or the same work is drawn leaving twice;
      • but the handoff is decided by the sidecar, LATER, against a plan that may have been re-posted in
        between (a floor edit re-keys the line and the chain gate then refuses to advance). Nothing is
-       placed, and the old code had already suppressed the dock's crate — so a run the Commander paid
+       placed, and the old code had already suppressed the dock's crate — so a run the Master paid
        for left NO mark on the floor at all.
    Never both, and NEVER NEITHER. The suppression is therefore a WAIT that the real handoff cancels and
    that ships the dock's own crate if the handoff never comes.

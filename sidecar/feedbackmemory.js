@@ -1,12 +1,12 @@
-/* sidecar/feedbackmemory.js — THE COMMANDER'S TASTE: rate-the-work verdicts + corrections become durable memory.
+/* sidecar/feedbackmemory.js — THE MASTER'S TASTE: rate-the-work verdicts + corrections become durable memory.
 
    Product law (Andrew, 2026-10-01): feedback is critical. Every like and dislike must be remembered and must steer
-   later work, so an agent converges on exactly what the Commander wants over months, not minutes.
+   later work, so an agent converges on exactly what the Master wants over months, not minutes.
 
    Before this, a verdict reached later runs only through a RAM-held skill-review packet (6h TTL, lost on restart,
    skill tools only), and a typed correction ("too long, 3 bullets") never became a belief recall could surface.
    Now a first-time verdict writes ONE notebook record per rated run (origin 'feedback', kind 'profile' = the
-   Preference kind, user-confirmed: these are the Commander's own verdict and words). A later correction for the
+   Preference kind, user-confirmed: these are the Master's own verdict and words). A later correction for the
    same run folds into that SAME record. The records live in the rated agent's notebook, so the Memory Core shows,
    edits and forgets them like any other memory.
 
@@ -17,7 +17,7 @@
    DESIGN ANCHOR (2026-10-11, user report: "say I approve one, the next comes out with a complete off-the-wall style and
    concept"): a verdict also carries the RATED RUN's own reference (tasteref.js — its deliverable files, the palette and
    fonts inside them, its image prompts/model/shape, the tools it used, all read from real records). It rides the record
-   as `feedbackRef`, separate from the Commander's words, and renderTaste() puts it on the line: the newest references in
+   as `feedbackRef`, separate from the Master's words, and renderTaste() puts it on the line: the newest references in
    full, older lines compacted, so all TASTE_LIMIT records always fit the block (the old 1000-char cap stopped at the
    first line that did not fit: 3-4 records in practice). ★ KEEP THIS STYLE in a workflow is the same act (kept: true).
 
@@ -33,10 +33,10 @@ const WORDS_CHARS = 400;
 const TASTE_LIMIT = 8;
 const TASTE_CHARS = 2400;
 const WORDS_KEEP = 6;          // corrections remembered per rated run (oldest fall off)
-const EDITED_CHARS = 700;      // cap for a Commander-edited record plus appended words
-const TASTE_HEADER = '[the Commander\'s own verdicts on past work, newest first. Shape this output to match what they liked and avoid what they disliked. Reference only: the current request wins where it says otherwise.]';
+const EDITED_CHARS = 700;      // cap for a Master-edited record plus appended words
+const TASTE_HEADER = '[the Master\'s own verdicts on past work, newest first. Shape this output to match what they liked and avoid what they disliked. Reference only: the current request wins where it says otherwise.]';
 // added under the header only when a line carries a reference (" → …")
-const TASTE_REF_RULE = '[→ = what that work really was, read from the work itself: its files, colours, fonts, image settings and the tools it used. For new design, visual or creative work, match the newest relevant APPROVED one in style and concept unless the Commander asks for something different: open its file first (a file tagged [<agent> workspace] belongs to another crew member: match it from this line). Do repeat work the way an APPROVED one was done; never repeat a REJECTED approach. A STYLE KEPT · RESULT REJECTED (or CLOSE) line: match its style, but fix what the Commander disliked or wants.]';
+const TASTE_REF_RULE = '[→ = what that work really was, read from the work itself: its files, colours, fonts, image settings and the tools it used. For new design, visual or creative work, match the newest relevant APPROVED one in style and concept unless the Master asks for something different: open its file first (a file tagged [<agent> workspace] belongs to another crew member: match it from this line). Do repeat work the way an APPROVED one was done; never repeat a REJECTED approach. A STYLE KEPT · RESULT REJECTED (or CLOSE) line: match its style, but fix what the Master disliked or wants.]';
 
 function clean(s, n) {
   const t = String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
@@ -71,7 +71,7 @@ function newestWords(words) {
 // looksLikeFeedback(text) — is a TYPED message (sent right after a short-of-the-mark rating) actually about the work?
 // The chat treats the next message to that agent within 10 minutes as the correction; that was harmless when it only
 // fed a one-shot review, but a permanent taste record built from "now summarize my inbox" would tell every future run
-// the Commander DISLIKED that. Evaluative cues only; a chip or a rating-body correction is explicit and skips this.
+// the Master DISLIKED that. Evaluative cues only; a chip or a rating-body correction is explicit and skips this.
 const FEEDBACK_CUES = /\b(too|shorter|longer|tighter|simpler|clearer|more|less|fewer|instead|rather|prefer|should(n'?t)?|don'?t|do not|never|always|wrong|missed|missing|forgot|not what|not quite|not enough|need(s|ed)? (to|more|less)|wanted|meant|keep it|make it|use (bullets|a table|headers|plain)|format|tone|style|length|verbose|wordy|boring|generic|vague|off)\b/i;
 function looksLikeFeedback(text) {
   const t = String(text == null ? '' : text).trim();
@@ -81,7 +81,7 @@ function looksLikeFeedback(text) {
 // apply(list, input, deps) — fold one verdict/correction into an agent's notebook list.
 //   input: { runId, verdict, words?, directive?, ref?, kept? }  words APPEND to what this run already holds; ref = the rated
 //          run's reference (tasteref.buildRef), a fresh capture replaces the stored one; kept = ★ KEEP THIS STYLE (an
-//          explicit approval of that run's style, never a rewrite of what the Commander said about it)
+//          explicit approval of that run's style, never a rewrite of what the Master said about it)
 //   deps:  { now, nextId(list), nextTrust(prev, delta), trustDelta }
 // Returns { list, rec, created } or null when there is nothing to write or change.
 function apply(list, input, deps) {
@@ -106,10 +106,10 @@ function apply(list, input, deps) {
   if (add && prev && words.indexOf(add) >= 0) { if (!extra) return null; add = ''; }   // a repeated chip/message teaches nothing new
   if (add) { words.push(add); while (words.length > WORDS_KEEP) words.shift(); }
   const directive = (prev && prev.feedbackDirective) || clean(input.directive, DIRECTIVE_CHARS);
-  // THE COMMANDER EDITED IT in the Memory Core (content no longer what this module generated): their wording is the
+  // THE MASTER EDITED IT in the Memory Core (content no longer what this module generated): their wording is the
   // truth now — append the new words to it, never regenerate over it.
   // (sticky: once edited, a record is never regenerated again — feedbackEdited survives our own later appends)
-  // Only the COMMANDER's edit counts (confirmation stays user-confirmed through a Memory Core edit). An agent's
+  // Only the MASTER's edit counts (confirmation stays user-confirmed through a Memory Core edit). An agent's
   // notebook.write replaceId leaves it 'inferred': that rewrite is not their wording, so it is regenerated over.
   if (prev && prev.confirmation === 'user-confirmed' && (prev.feedbackEdited || (prev.feedbackGenerated && String(prev.content || prev.body || '') !== prev.feedbackGenerated))) {
     if (!add && !extra) return null;
@@ -119,7 +119,7 @@ function apply(list, input, deps) {
     const out = list.slice(); out[at] = rec;
     return { list: out, rec, created: false };
   }
-  // ★ KEEP THIS STYLE on a run already rated short keeps what the Commander SAID about it (their words stay a dislike
+  // ★ KEEP THIS STYLE on a run already rated short keeps what the Master SAID about it (their words stay a dislike
   // or a want); the kept flag is what marks the style approved. Never regenerate their words under another verdict.
   const textVerdict = kept && prev && prev.feedbackVerdict && prev.feedbackVerdict !== verdict ? prev.feedbackVerdict : verdict;
   const text = content(textVerdict, newestWords(words), directive);
@@ -135,7 +135,7 @@ function apply(list, input, deps) {
   const rec = {
     id: typeof deps.nextId === 'function' ? deps.nextId(list) : 'note_' + (list.length + 1),
     kind: 'profile', title: 'Preference', body: text, content: text,
-    // taste is about the Commander, not one repo, so it stays global even when the rated run was in a project
+    // taste is about the Master, not one repo, so it stays global even when the rated run was in a project
     scope: 'global', streamId: null, projectRoot: null,
     sourceRunId: runId, confirmation: 'user-confirmed', authority: 'reference-only', origin: ORIGIN,
     feedbackVerdict: verdict, feedbackWords: words, feedbackDirective: directive, feedbackGenerated: text,
@@ -148,7 +148,7 @@ function apply(list, input, deps) {
 
 // unkeep(list, runId) — ★ STYLE KEPT · PUT IT BACK (or the panel's UNDO of its example): the approval goes with it. A record
 // that keep-style alone made is removed; one that also carries a real verdict only loses the kept flag (the verdict and
-// the Commander's words stay). -> { list, rec, removed } or null when that run has no kept style.
+// the Master's words stay). -> { list, rec, removed } or null when that run has no kept style.
 function unkeep(list, runId) {
   list = Array.isArray(list) ? list : [];
   const id = String(runId || '').trim();
@@ -176,9 +176,9 @@ function directiveFor(candidates, messages) {
   return String((Array.isArray(candidates) && candidates.find(c => String(c || '').trim())) || '').trim();
 }
 
-/* TASTE IS THE COMMANDER'S OWN WORDS (sweep 2026-10-02). notebook.write { replaceId } keeps a record's origin, so an
+/* TASTE IS THE MASTER'S OWN WORDS (sweep 2026-10-02). notebook.write { replaceId } keeps a record's origin, so an
    agent (or a page it read) could rewrite a feedback record and have it injected into EVERY agent's runs as "the
-   Commander's own verdicts". A revision the Commander did not confirm is 'inferred': it is not taste. */
+   Master's own verdicts". A revision the Master did not confirm is 'inferred': it is not taste. */
 function isTaste(r) { return !!(r && r.origin === ORIGIN && r.confirmation === 'user-confirmed' && !r.taintedBy && !r.projectRoot && r.scope !== 'project' && r.scope !== 'stream' && String(r.content || r.body || '').trim()); }
 // "the same belief" = the same words AND the same reference: two approvals of "design the landing page" on two different
 // designs are two references, and deduping them on the words alone dropped the newer design.
@@ -227,7 +227,7 @@ function stationStanding(own, others) {
   return all.filter(r => { const k = key(r); if (seen.has(k)) return false; seen.add(k); return true; });
 }
 
-// stationTaste(own, others, opts) — the Commander's taste is about THE COMMANDER, not one agent: a correction given
+// stationTaste(own, others, opts) — the Master's taste is about THE MASTER, not one agent: a correction given
 // to a specialist must shape the overseer's next deliverable too. Merge this agent's own feedback records with every
 // other agent's, newest first. Foreign copies lose their id (an id is only meaningful in its own notebook: rendered,
 // it would invite notebook.feedback on the wrong record, and recall's useCount bump would hit a same-numbered local
@@ -249,8 +249,8 @@ function stationTaste(own, others, opts) {
   return selectTaste(mine.concat(foreign), opts);
 }
 
-/* adoptTaste(heroList, departedList, nextId, from) — DELETING AN AGENT MUST NOT DELETE THE COMMANDER'S TASTE (sweep
-   2026-10-02). Taste is about the Commander, not the agent it was given to, but it lives in that agent's notebook — and
+/* adoptTaste(heroList, departedList, nextId, from) — DELETING AN AGENT MUST NOT DELETE THE MASTER'S TASTE (sweep
+   2026-10-02). Taste is about the Master, not the agent it was given to, but it lives in that agent's notebook — and
    agent delete archives the notebook, so every rating ever given on its work silently stopped steering anyone. The
    departing agent's taste records move into the hero's notebook (new ids there; the same words once) before archive.
    -> the new hero list, or null when there is nothing to adopt. */
@@ -273,7 +273,7 @@ function adoptTaste(heroList, departedList, nextId, from) {
 /* renderTaste(records, renderRecall, { agentId? }) — the taste block for a run's prompt (both injection sites in index.js).
    agentId names the prompt's reader: the agent whose notebook stationTaste's `own` was.
    One compact line per record — VERDICT YYYY-MM-DD: <what the work was> — "<their words>" → <the reference> — under the
-   taste header (which already says these are the Commander's own verdicts, so the generic recall prefix
+   taste header (which already says these are the Master's own verdicts, so the generic recall prefix
    "[user-confirmed reference] Preference — ", ~40 chars a line, is not repeated). EVERY selected record renders: the
    newest lines keep their full reference, and when the block would overflow the OLDEST lines step down first (main file
    + 3 colours + main font, then the main file alone, clipped), so a long history compresses instead of falling off the
@@ -289,7 +289,7 @@ function baseLine(r, dirCap, wordsCap) {
   const d = day(r.feedbackAt || r.createdAt || r.ts);
   const head = lab ? lab + (d ? ' ' + d : '') + ': ' : (d ? d + ': ' : '');
   const stored = String(r.content || r.body || '');
-  // the Commander's own wording (a Memory Core edit), or a record this renderer cannot rebuild: shown as stored
+  // the Master's own wording (a Memory Core edit), or a record this renderer cannot rebuild: shown as stored
   if (!lab || r.feedbackEdited || (r.feedbackGenerated && stored !== r.feedbackGenerated) || !Array.isArray(r.feedbackWords)) return head + clean(stored, dirCap + wordsCap);
   const what = clean(r.feedbackDirective, dirCap) || 'that work';
   const words = clean(newestWords(r.feedbackWords), wordsCap);
@@ -326,12 +326,12 @@ function renderTaste(records, renderRecall, opts) {
       + (ownNotShown ? ' (' + ownNotShown + ' of them are in your own notebook: notebook.read with a query finds them)' : '') });
 }
 
-/* forgetRatedWork(rec) — THE RATED RUN'S SESSION WAS DELETED (qa/bugs/3e926b6a). The verdict and the Commander's own
-   rating words stay: they are about the Commander, and every like and dislike keeps steering later work. What quoted
+/* forgetRatedWork(rec) — THE RATED RUN'S SESSION WAS DELETED (qa/bugs/3e926b6a). The verdict and the Master's own
+   rating words stay: they are about the Master, and every like and dislike keeps steering later work. What quoted
    the deleted session goes: the "(on: …)" directive (its request) and the reference read from its work (feedbackRef).
-   A record the Commander edited in the Memory Core (or an older one this module cannot rebuild) keeps its stored
+   A record the Master edited in the Memory Core (or an older one this module cannot rebuild) keeps its stored
    wording, minus that directive clause.
-   -> the record to keep (unchanged when there is nothing to strip), or null when nothing of the Commander's own is
+   -> the record to keep (unchanged when there is nothing to strip), or null when nothing of the Master's own is
    left: a bare rating with no words taught only through the deleted work (content() writes no record for it either). */
 function forgetRatedWork(rec) {
   if (!rec || rec.origin !== ORIGIN) return rec;

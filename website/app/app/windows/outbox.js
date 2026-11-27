@@ -226,7 +226,7 @@
         }
         const users = (turns || []).filter(m => m && m.role === 'user' && String(m.content || '').trim());
         const replies = (turns || []).filter(m => m && m.role === 'assistant' && String(m.content || '').trim() && String(m.content).trim() !== '[SILENT]');
-        // a work line's later stage was HANDED a machine prompt; the Commander asked for the ORIGINAL request (R2)
+        // a work line's later stage was HANDED a machine prompt; the Master asked for the ORIGINAL request (R2)
         const hand0 = (users.length && typeof Pipeline !== 'undefined' && Pipeline.parseHandoff) ? Pipeline.parseHandoff(users[0].content) : null;
         // SEND TO: a job another line handed on opens with that line's frame — title it by the job as it first arrived
         const inner = hand0 && Pipeline.parseHandoffInput ? Pipeline.parseHandoffInput(hand0.original) : null;

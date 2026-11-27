@@ -25,7 +25,7 @@ rd = Autopilot.readiness({ known: ['stack'], familiarity: 1 / 7 }, { stack: fres
 A.eq(rd.tier, 'warm', 'areas known but no goals → warm (knows something, not yet what they want — never acts)');
 
 rd = Autopilot.readiness({ known: ['goals'], familiarity: 1 / 7 }, { goals: fresh() }, t, {});
-A.eq([rd.tier, rd.groundedBy], ['hot', 'dossier'], 'a grounded goals belief alone → hot (a chosen posture acts on the aims the Commander gave)');
+A.eq([rd.tier, rd.groundedBy], ['hot', 'dossier'], 'a grounded goals belief alone → hot (a chosen posture acts on the aims the Master gave)');
 
 // ONLY CONFIRMED BELIEFS CROSS THE ACTING LINE (review of 41b2d015; AUTONOMY_DRIVER_PLAN §2 trust line; dossier.js
 // WEIGHTS): a goals area held only by SEEDS — the quick-setup chip's canned purpose, a thin run, a doc copy — is known

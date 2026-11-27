@@ -685,7 +685,7 @@ button:active {
 /* give the OPEN/DONE dividers a touch more air in the log */
 .gx-quests .gx-sec { margin-top: 15px; }
 
-/* Commander journal: a mission index and one generous briefing. Counts and state come from
+/* Master journal: a mission index and one generous briefing. Counts and state come from
    the existing quest projection; the visual hierarchy adds no rewards or progression rules. */
 .quests-win .term-body { container-type: inline-size; }
 .gx-quests { color: var(--ph-bright); text-shadow: none; font-size: 16px; }

@@ -8,8 +8,8 @@
        it un-pitched; stepping aside on the pitch itself is unanswered (un-pitched, nothing built); Esc on it is its own
        "something else" (pitched, nothing built);
      the routine proposals — open as an offer; stepping aside mid-call aborts it and leaves the proactive offer unspent; stepping
-       aside on a proposal records no answer for the Commander (its ledger row stays 'shown'), says no done-line over what the
-       Commander went to, schedules nothing;
+       aside on a proposal records no answer for the Master (its ledger row stays 'shown'), says no done-line over what the
+       Master went to, schedules nothing;
    and the review fixes (10-27):
      never a nag loop — an offer that stepped aside is not offered again this session: later run ends make no model call
        (a pitch that reached the screen also spends its unit of the session ask budget);
@@ -61,7 +61,7 @@ const PITCH = 'PITCH: a custom invoice sorter\nWHY: you do it by hand\nBUILD: wo
     A.eq(t.model.calls.length, 1, 'the reason-only call is out');
     const sig = t.model.calls[0] && t.model.calls[0].args.signal;
     A.ok(sig && typeof sig.aborted === 'boolean', 'the call carries an abort signal');
-    A.eq(t.s.D.preempt('session'), true, 'the Commander picking a conversation steps it aside');
+    A.eq(t.s.D.preempt('session'), true, 'the Master picking a conversation steps it aside');
     await Promise.race([fired, wait(200)]); await settle();
     A.ok(sig && sig.aborted, 'the model call still in flight is ABORTED (no tokens spent on a pitch nobody will see)');
     A.eq(t.s.D.isOpen(), false, 'the panel is gone');
@@ -74,7 +74,7 @@ const PITCH = 'PITCH: a custom invoice sorter\nWHY: you do it by hand\nBUILD: wo
     const fired = t.PitchStore._fire({ reason: 'done', agentId: 'agent', runId: 'r2' });
     await wait(320); await settle();
     A.ok(t.s.find('fnv-opt').some(e => /let.s build it/.test(e.textContent)), 'the pitch is on screen with its keys');
-    A.eq(t.s.D.preempt('ask'), true, 'an approval reaching the Commander steps the pitch aside');
+    A.eq(t.s.D.preempt('ask'), true, 'an approval reaching the Master steps the pitch aside');
     await Promise.race([fired, wait(200)]); await settle();
     A.eq(t.s.D.isOpen(), false, 'the panel is gone');
     A.eq(t.PitchStore.done(), false, 'unanswered is not a decline: still un-pitched');
@@ -131,7 +131,7 @@ const PITCH = 'PITCH: a custom invoice sorter\nWHY: you do it by hand\nBUILD: wo
     A.ok(t.s.inputUsable(), 'the message box stays usable while it thinks');
     const sig = t.model.calls[0] && t.model.calls[0].args.signal;
     A.ok(sig, 'the call carries an abort signal');
-    A.eq(t.s.D.preempt('turn'), true, 'the Commander’s own turn steps it aside');
+    A.eq(t.s.D.preempt('turn'), true, 'the Master’s own turn steps it aside');
     const r = await Promise.race([p, wait(200).then(() => 'still waiting')]);
     A.ok(sig && sig.aborted, 'the model call is aborted');
     A.eq(r && r.scheduled, 0, 'nothing scheduled');
@@ -151,15 +151,15 @@ const PITCH = 'PITCH: a custom invoice sorter\nWHY: you do it by hand\nBUILD: wo
     t.model.answer = { text: TWO };
     const p = t.AutoJobStore.propose({ proactive: true });
     await wait(320); await settle();
-    t.s.key(' ');   // the Commander reads the intro line on
+    t.s.key(' ');   // the Master reads the intro line on
     await wait(30); await settle();
     A.ok(t.s.find('fnv-opt').some(e => /schedule it/.test(e.textContent)), 'the first proposal is on screen');
     A.eq(t.s.D.preempt('session'), true, 'picking another conversation steps the proposals aside');
     const r = await Promise.race([p, wait(300).then(() => 'still waiting')]);
     A.eq(r && r.scheduled, 0, 'nothing scheduled');
-    A.eq(t.s.D.isOpen(), false, 'the panel is gone, with no done-line over the conversation the Commander chose');
+    A.eq(t.s.D.isOpen(), false, 'the panel is gone, with no done-line over the conversation the Master chose');
     A.ok(t.ledger.some(l => l.surface === 'routine' && !l.state), 'the proposal on screen was recorded as shown');
-    A.eq(t.ledger.filter(l => l.state).map(l => l.state), [], 'and NO answer is recorded for the Commander: not deferred, not declined (the row stays shown)');
+    A.eq(t.ledger.filter(l => l.state).map(l => l.state), [], 'and NO answer is recorded for the Master: not deferred, not declined (the row stays shown)');
     A.eq(t.lines, [], 'nothing was scheduled, so nothing is left in the transcript');
     A.eq(t.AutoJobStore._state().proposed, false, 'the proactive offer is not spent');
   }
@@ -182,7 +182,7 @@ const PITCH = 'PITCH: a custom invoice sorter\nWHY: you do it by hand\nBUILD: wo
     A.eq(t.s.D.isOpen(), true, 'the panel stays to say what happened (it used to close at once)');
     A.ok(onScreen(t, /scheduling is OFF/), 'the honest line is on screen: saved, but scheduling is OFF so it won’t run yet');
     const r = await Promise.race([p, wait(60).then(() => 'still waiting')]);
-    A.eq(r, 'still waiting', 'and waits for the Commander to read it');
+    A.eq(r, 'still waiting', 'and waits for the Master to read it');
     t.s.key(' '); await wait(30); await settle();
     const r2 = await Promise.race([p, wait(200).then(() => 'still waiting')]);
     A.eq(r2 && r2.scheduled, 1, 'read on, it closes: one routine scheduled');
@@ -199,7 +199,7 @@ const PITCH = 'PITCH: a custom invoice sorter\nWHY: you do it by hand\nBUILD: wo
     const yes = t.s.find('fnv-opt').find(e => /schedule it/.test(e.textContent));
     if (yes) yes.click();
     await wait(30); await settle();
-    A.eq(t.s.D.preempt('session'), true, 'the Commander picks another conversation on proposal 2');
+    A.eq(t.s.D.preempt('session'), true, 'the Master picks another conversation on proposal 2');
     const r = await Promise.race([p, wait(200).then(() => 'still waiting')]);
     A.eq(r && r.scheduled, 1, 'one routine scheduled');
     A.eq(t.s.D.isOpen(), false, 'the panel is gone over the conversation they chose');
@@ -239,17 +239,17 @@ const PITCH = 'PITCH: a custom invoice sorter\nWHY: you do it by hand\nBUILD: wo
       A.eq(t.s.D.owner(), 'offer', 'owned as an offer by the arbiter');
       A.ok(t.s.inputUsable(), 'the message box stays usable under it');
       A.eq(t.log(), ['asked'], 'the interview is asking its question');
-      A.eq(t.s.D.preempt('session'), true, 'the Commander picking another conversation steps it aside');
+      A.eq(t.s.D.preempt('session'), true, 'the Master picking another conversation steps it aside');
       await Promise.race([done, wait(200)]); await settle();
       A.eq(t.s.D.isOpen(), false, 'the panel is gone');
       A.eq(t.run(), false, 'the meeting stands down: Onboarding is no longer running (nothing else stays blocked behind it)');
       A.eq(t.store.mem['vultron.interview.deferred.v1'], '1', 'unanswered, never declined: the IOU is re-armed for a later boot');
-      A.eq(t.log(), ['asked'], 'and nothing was answered for the Commander');
+      A.eq(t.log(), ['asked'], 'and nothing was answered for the Master');
     }
     {
       const t = rigD();
       const { done } = await accept(t);
-      A.eq(t.s.D.preempt('ask'), true, 'an approval reaching the Commander steps it aside too');
+      A.eq(t.s.D.preempt('ask'), true, 'an approval reaching the Master steps it aside too');
       await Promise.race([done, wait(200)]); await settle();
       A.eq(t.s.D.isOpen(), false, 'the panel is gone, so the approval card is not under it');
     }
@@ -261,7 +261,7 @@ const PITCH = 'PITCH: a custom invoice sorter\nWHY: you do it by hand\nBUILD: wo
       await Promise.race([done, wait(200)]); await settle();
       A.eq(t.s.D.isOpen(), false, 'Esc closes it');
       A.eq(t.run(), false, 'and the meeting stands down');
-      A.eq(t.store.mem['vultron.interview.deferred.v1'], undefined, 'the Commander left it: the IOU stays spent (declining is answering)');
+      A.eq(t.store.mem['vultron.interview.deferred.v1'], undefined, 'the Master left it: the IOU stays spent (declining is answering)');
     }
   }
 

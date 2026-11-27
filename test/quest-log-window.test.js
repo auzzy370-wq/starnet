@@ -4,7 +4,7 @@
      1. NO FLASHING — journeystore compares a serialized SIGNATURE, never object identity, against
         polled JSON (identity never holds for a fresh JSON.parse; that guard was the 4s repaint loop).
         And every quest store's background poke is a DATA poke (rerender('quests', false)) — a poll
-        must never play the body crossfade over a panel the Commander is reading.
+        must never play the body crossfade over a panel the Master is reading.
      2. REFRESH FOLLOWS ITS CYCLE — the store runs a BOUNDED settle-watch on real status; the panel
         carries no blind setTimeout guess, and the outcome reads in plain language.
      3. A QUEST STARTS IN ITS OWN SESSION — work/ledger GO routes to 'session' (never the TASK BOARD),
@@ -100,7 +100,7 @@ A.ok(/the station had nothing it could honestly ground/.test(station), 'a reject
 const stationFns = station.slice(station.indexOf('function questGoDest'), station.indexOf('function buildQuests'));
 A.ok(/return 'session'/.test(station) && !/GO ▸ task board/.test(station), 'work/ledger quests route to their OWN session — the TASK BOARD misroute is dead');
 A.ok(/function questOpenSession/.test(station) && /\.find\(s => s && !s\.archived && s\.title === title\)/.test(station), 'START QUEST is idempotent by title (a second click returns to the same conversation)');
-A.ok(/Chat\.prefill\(/.test(station.slice(station.indexOf('function questOpenSession'), station.indexOf('function questSessionTitle') + 4000)), 'a quest the Commander performs, a revisit, or a busy COMMS keeps the PREFILL path');
+A.ok(/Chat\.prefill\(/.test(station.slice(station.indexOf('function questOpenSession'), station.indexOf('function questSessionTitle') + 4000)), 'a quest the Master performs, a revisit, or a busy COMMS keeps the PREFILL path');
 { const qos = station.slice(station.indexOf('function questOpenSession'), station.indexOf('function questOpenSession') + 3000);
   A.ok(/const startsWork = !existing && q\.executionMode === 'agent' && Chat\.send && !\(Chat\.isBusy && Chat\.isBusy\(\)\)/.test(qos), 'START QUEST sends only for an AGENT quest, only into its brand-new session, only when COMMS is free'); }
 A.ok(/q\.agentId && String\(q\.agentId\)/.test(station), 'a ledger quest binds its OWN agent; agent-less kinds fall to the hero');
@@ -147,7 +147,7 @@ A.ok(savedGoalRule && /color:\s*var\(--gold\)/.test(savedGoalRule[1]) && !/var\(
   'the saved goal title uses a visible track foreground, never the near-black inverted-text token');
 /* A FINISHED path is not an empty one. Goals.project surfaces nothing for a completed goal, so without
    this the band snapped back to "no goal path yet" the instant the last milestone landed — telling a
-   Commander who had just finished a goal that they never had one. */
+   Master who had just finished a goal that they never had one. */
 A.ok(/evo\.goalsReached/.test(trackFn) && /' reached<\/b>'/.test(trackFn),
   'a completed path is ACKNOWLEDGED with the engine’s real goals-reached count, never reset to "no goal yet"');
 A.ok(/SET THE NEXT GOAL/.test(trackFn), 'after a goal is reached the door invites the NEXT one');
@@ -228,7 +228,7 @@ const ctx = vm.createContext({ body, QuestStore: { view: () => ({ quests: questR
   systemsHtml: () => '', wireSystems: () => {}, stationPrestigeHtml: () => '', consoleSection: {},   // STATION SYSTEMS + prestige blocks + deep-link view (front doors)
   rerender: () => ctx.buildQuests(body)
 });
-const journalSource = station.slice(station.indexOf('  function buildQuests(body)'), station.indexOf('    // COMMANDER JOURNEY writes')) + '\n}';
+const journalSource = station.slice(station.indexOf('  function buildQuests(body)'), station.indexOf('    // MASTER JOURNEY writes')) + '\n}';
 vm.runInContext(journalSource, ctx);
 ctx.buildQuests(body);
 A.eq(body.dataset.questView, 'pass', 'the battle pass leads on first open (Andrew 2026-10-19)');
@@ -293,7 +293,7 @@ buttons['.q-mission'][0].click();
 A.ok(rendered.includes('First quest evidence'), 'returning to a quest restores its own evidence draft');
 ctx.JourneyStore = { status: () => ({ progression: { level: 7 } }) };
 ctx.buildQuests(body);
-A.ok(rendered.includes('<strong>7</strong><span>Commander'), 'journal level reads Commander progression, not crew XP or a fabricated score');
+A.ok(rendered.includes('<strong>7</strong><span>Master'), 'journal level reads Master progression, not crew XP or a fabricated score');
 vm.runInContext(station.slice(station.indexOf('  function windowDirty(w)'), station.indexOf('  function requestCloseTerm')), ctx);
 const draftWindow = { querySelector: selector => selector === '.term-body' ? body : null };
 body._questDrafts.set('q:first', { evidence: 'Unsaved result', dirty: true });

@@ -524,7 +524,7 @@ function station(label, up, tg, env) {
       }
       A.eq(holders(s.ws, K.lockOwn), OWN_FILES, 'unreadable: the key is still in both copies once the file is back: nothing claimed otherwise');
       const retried = await s.fx.json('POST', '/api/channels/telegram/disconnect', { purge: true });
-      A.eq([retried.status, retried.body.purged], [200, true], 'the file reads again: the Commander\'s retried forget claims it');
+      A.eq([retried.status, retried.body.purged], [200, true], 'the file reads again: the Master\'s retried forget claims it');
       A.eq(holders(s.ws, K.lockOwn), [], '...and the key is in no file at all, the channel file\'s .bak included');
     });
 

@@ -1,7 +1,7 @@
 /* node test/skill-export.test.js — skills written HERE can be shared (2026-09-29).
 
    Export used to refuse every skill without a sealed install package ("this skill has local changes"), i.e.
-   everything the Commander or their agents authored. Now:
+   everything the Master or their agents authored. Now:
      A. an authored skill exports as a standard Agent Skills package (spec name, description, metadata.title,
         setup + body, support files)
      B. it round-trips into another Vultron as a COMMUNITY install under its display title, scanned again

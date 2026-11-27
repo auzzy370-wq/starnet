@@ -88,7 +88,7 @@ A.ok(!build({}).providerHasCredential('custom', 'k', ''), 'a base-URL provider w
 }
 
 // ---- boot channel auto-start reads the STORED credential (review of quick win 9) ----
-// A saved bot on a sign-in recorded dead must still start at boot: nothing restarts a skipped bot when the Commander
+// A saved bot on a sign-in recorded dead must still start at boot: nothing restarts a skipped bot when the Master
 // reconnects (handleCodexPoll only clears the marker), so skipping it left Telegram/Discord/Slack offline until a restart.
 {
   A.ok(build({ codexTokens: tok, codexAuthDead: dead }).providerHasStoredCredential('codex', '', ''), 'a dead ChatGPT sign-in is still a STORED credential');

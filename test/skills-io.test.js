@@ -13,7 +13,7 @@
      • a use appends a small usage row (never the whole record); uses and the stale->active flip survive restart;
      • the file is compacted, never rotated: it stays bounded and no .1 is ever made;
      • a legacy .1 left by an older Vultron is read whole and folded back in by the boot compaction, then removed;
-     • a partial or failed load is never rewritten as the whole library, and refuses every write: the Commander's,
+     • a partial or failed load is never rewritten as the whole library, and refuses every write: the Master's,
        the model's staged proposals (agent / reflection / review), a rejection and curation;
      • a use re-scans under the current rules and stores a changed scan (new findings under the same verdict too);
      • a torn row's own nested object (a candidate's `skill`, a promotion's `entry`) is never loaded as the active skill;
@@ -287,7 +287,7 @@ const seed = (s) => { for (const n of names) A.ok(s.write({ agentId: 'a', name: 
   const file = path.join(dir, 'skills.jsonl');
   const mkIo = () => makeSkillsIo({ fs, file, writeDurable: (f2, b) => writeFileDurable({ fs, path }, f2, b) });
   let s = makeSkillStore({ io: mkIo(), clock, guard: realGuard, digest: digestOf });
-  A.ok(s.write({ agentId: 'a', name: 'Deploy', summary: 'deploy', body: '1. npm ci\n2. npm test\n3. ship', createdBy: 'user' }).ok, 'seeded the Commander\'s skill');
+  A.ok(s.write({ agentId: 'a', name: 'Deploy', summary: 'deploy', body: '1. npm ci\n2. npm test\n3. ship', createdBy: 'user' }).ok, 'seeded the Master\'s skill');
   const p = s.write({ agentId: 'a', name: 'Deploy', summary: 'deploy', body: '1. npm ci\n2. npm test\n3. ship\n4. VERIFY LIVE', createdBy: 'background-review' });
   A.ok(p.ok && p.pending, 'precondition: a review proposal is pending');
   const before = fs.readFileSync(file, 'utf8');
@@ -464,7 +464,7 @@ const seed = (s) => { for (const n of names) A.ok(s.write({ agentId: 'a', name: 
 
 // ---- 12. rollback safety: the live file never outgrows v0.13.5's read window between compactions ----
 // v0.13.5 reads only the last 16 MiB (LOG_MAX_BYTES) of skills.jsonl and boot-compacts that partial view, so a live
-// file past 16 MiB loses the skills at its head for good if the Commander downgrades. Real defaults (the host's
+// file past 16 MiB loses the skills at its head for good if the Master downgrades. Real defaults (the host's
 // SKILLS_COMPACT_BYTES is 4 MiB), sizes from an injected fs so no 16 MiB file is written.
 {
   const MiB = 1024 * 1024, WINDOW_0135 = 16 * MiB;

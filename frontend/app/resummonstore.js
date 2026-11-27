@@ -1,9 +1,9 @@
 /* VULTRON — resummonstore.js : P3.1 "RUN THIS AGAIN?" — the re-summon signal.
 
-   Retention fast-follow: right after the Commander rated the hero's work 👍 on a real interactive run, the station
+   Retention fast-follow: right after the Master rated the hero's work 👍 on a real interactive run, the station
    offers ONCE, lightly, to run that same shape of work again — tied to the SAME agent and the run's directive. One
    tap PRE-FILLS a fresh run (selects that agent's stream + seeds the composer with the directive) and NEVER auto-runs
-   it: the Commander edits and sends. It is not a new unearned suggestion surface — it rides a run the Commander just
+   it: the Master edits and sends. It is not a new unearned suggestion surface — it rides a run the Master just
    rated, so the work-earned floor is already satisfied.
 
    It is a READ-ONLY citizen modelled exactly on bottlestore.js (the R5 "bottle it?" offer):
@@ -105,7 +105,7 @@ const ResummonStore = (() => {
       ], item => {
         if (!item || item.value === 'dismiss') { latch(state, runId, 'dismissed'); save(); return; }   // wave-off → stop forever
         // RUN IT AGAIN: latch (so it never re-offers), then PRE-FILL a fresh run — select the run's agent + seed the
-        // composer with its directive. Nothing auto-sends: the Commander edits and hits send. Pre-fill is deps-injected.
+        // composer with its directive. Nothing auto-sends: the Master edits and hits send. Pre-fill is deps-injected.
         latch(state, runId, 'again'); save();
         try { if (deps.prefillRun) deps.prefillRun({ agentId: info.agentId || 'agent', directive: info.directive || '' }); } catch (_) {}
       });

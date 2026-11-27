@@ -70,7 +70,7 @@
     return text ? [{ text }] : [];
   }
   // USER ATTACHMENTS (COMMS): a user turn may carry image parts alongside its text — the run path expands a
-  // Commander's attached photo into an {type:'image_url', image_url:{url}} block before this adapter sees it.
+  // Master's attached photo into an {type:'image_url', image_url:{url}} block before this adapter sees it.
   // Gemini's inline-image shape is {inlineData:{mimeType, data(base64, no data: prefix)}}, so map image_url → that.
   // Only USER messages get this; an unrecognized part degrades to its text or is dropped — never throws.
   function geminiInlineData(url) {
@@ -303,7 +303,7 @@
     }
 
     /* THINKING (2026-07-27). Like the Anthropic adapter, this one published `['none']` and sent no thinking
-       parameter at all, so a Commander on their own Gemini key ran a NON-THINKING Gemini. Two contracts, and
+       parameter at all, so a Master on their own Gemini key ran a NON-THINKING Gemini. Two contracts, and
        the model decides which — sending BOTH to a Gemini 3 model is a documented error:
 
          MODERN (Gemini 3 and later)  ->  thinkingConfig.thinkingLevel: MINIMAL|LOW|MEDIUM|HIGH
@@ -394,7 +394,7 @@
             const part = parts[pi] || {};
             /* A THOUGHT PART IS NOT THE ANSWER. Gemini marks reasoning with `thought: true` on a part that
                ALSO carries `text`, so the old unconditional branch below shipped the model's scratchpad to the
-               Commander as its reply. This was reachable before any thinking parameter existed here: the
+               Master as its reply. This was reachable before any thinking parameter existed here: the
                `includeThoughts: false` default is documented as silently ignored on some models, so the only
                safe posture is to filter at the READER rather than trust the request. Emitted as `reasoning`
                (the loop parks it, never concatenating it into the answer) so nothing is lost either. */

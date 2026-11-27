@@ -1,7 +1,7 @@
 /* VULTRON — returns.js : the RETURN RITUAL engine (Game session, Phase G2 / Layer 5).
 
    Pure decision logic for the "while you were away" loop: which finished runs count as UNATTENDED
-   WORK the Commander hasn't collected yet, the durable lastSeenAt heartbeat that defines "away",
+   WORK the Master hasn't collected yet, the durable lastSeenAt heartbeat that defines "away",
    and the pending-crate ledger the OUTBOX renders from. No IO, no clock, no DOM — the caller
    (returnstore.js) owns localStorage + fetch + the live beat; node tests drive this directly.
 

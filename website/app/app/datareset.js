@@ -5,7 +5,7 @@
    the keychain. START FRESH (freshstart.js) keeps the old station in a quarantine on purpose. This door DELETES, through
    the desktop shell's `vultron_erase_everything` (src-tauri/src/erase_all.rs), behind a typed ERASE plus a second
    confirming click. It never claims more than the shell's receipt proves: what was removed, what could not be, and
-   whether this window's storage was cleared. Project folders the Commander trusted are recorded by path and are never
+   whether this window's storage was cleared. Project folders the Master trusted are recorded by path and are never
    inside Vultron's data, so they are never touched.
 
    WRITES ARE FROZEN while the erase runs and until the reload: this window still holds the OLD station in memory, and
@@ -14,7 +14,7 @@
    instance only; a reload ends it. If the erase is refused, the freeze is lifted again.
 
    RESET STATION BROWSER (#61, Settings > BROWSER). POST /api/browser/reset: closes the station browser, ends any
-   orphaned Vultron browser left running on the station profile by an earlier Vultron process (never the Commander's
+   orphaned Vultron browser left running on the station profile by an earlier Vultron process (never the Master's
    own Chrome), clears its stale locks. Saved sign-ins are kept.
 
    UMD: a `DataReset` global in the page; module.exports under node so the pure parts are unit-tested. */

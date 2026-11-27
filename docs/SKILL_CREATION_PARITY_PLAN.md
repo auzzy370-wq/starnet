@@ -18,7 +18,7 @@ pre-existing installed-exe smoke stamp, which nothing here touches.
    disk and OVERRIDES the stored body, so a package edited after the scan laundered content past
    the guard. `gate.verify()` re-digests at the delivery seam to catch it — and legacy records
    (written before the guard existed, carrying no verdict at all) are live-scanned there too.
-3. Mapping the Commander's own writes to the `trusted` tier made an unapprovable dead end once
+3. Mapping the Master's own writes to the `trusted` tier made an unapprovable dead end once
    verdicts were enforced. Human-authored content now has its own `user` tier that ASKS.
 
 **Found in passing and fixed (not in this plan):** the `/skill` preload path had never worked.

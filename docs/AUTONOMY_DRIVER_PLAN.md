@@ -45,7 +45,7 @@ Status: **PLAN ONLY — not started.** Lane: `autonomy`. Builds on `autonomy.js`
 | **Below the confidence floor** | **Earn context, then act** — spend the idle cycle asking one sharp question; graduate to doing work once confidence crosses the bar (the flywheel). |
 | **Confidence measure** | **Hybrid** — a deterministic floor (hard gate) + a model-judged per-candidate score that must cite a real belief (engine verifies the citation). |
 
-**The governing rule (ceiling vs earned):** the dial is the ceiling the Commander *permits*; confidence
+**The governing rule (ceiling vs earned):** the dial is the ceiling the Master *permits*; confidence
 is the level the station has *earned*; it operates at the **lower of the two and always says which is
 binding** ("you set me free, but I'm still learning you — here's a question instead of a guess").
 `WAIT` means nothing ever, regardless of confidence.
@@ -55,9 +55,9 @@ Andrew's ruling):** the deterministic floor's numbers moved from "goals + 4 doss
 one fresh *grounded* aim or one recent user run (`frontend/app/autopilot.js` `HOT_MIN` / `ACTIVITY_HOT_MIN` = 1).
 The trust line below still holds: a goals belief only counts when its weight is stated / synth / observed — a
 `seed` (the quick-setup chip's canned purpose, a thin run's synthesis and its BELIEF lines, a dig reply written
-before the Commander typed anything, any doc copy; `dossier.js` WEIGHTS; `onboarding.js` labels each write by what
-the Commander gave; a mission they TYPE at the fallback question — quick setup, a keyless wake, a synthesis that
-could not land — is `stated`) is known breadth, never acting grounds. So a Commander whose awakening gave nothing of their
+before the Master typed anything, any doc copy; `dossier.js` WEIGHTS; `onboarding.js` labels each write by what
+the Master gave; a mission they TYPE at the fallback question — quick setup, a keyless wake, a synthesis that
+could not land — is `stated`) is known breadth, never acting grounds. So a Master whose awakening gave nothing of their
 own still sees "earn context, then act" until they say what they want or run one task. Whether a chosen away posture may lift even
 that hold (the DECISIONS "no usage walls" conflict the bug names) is the owner's call, not this note's. The
 per-candidate half is unchanged: every job must cite a real belief or run, clear `MIN_ACT_SCORE`, and survive
@@ -103,7 +103,7 @@ The deterministic scaffold; the model fills only narrow reasoning slots.
   - `buildDoDirective(selected)` / `parseDeliverable(text)` — one self-contained reason/draft run that
     ends with a clear draft.
   - `buildCritiqueDirective(deliverable, spec, style, standingOrders)` / `parseCritique(text)` — the
-    self-review pass: adversarially check the draft against its own spec + the Commander's
+    self-review pass: adversarially check the draft against its own spec + the Master's
     `style`/`standing_orders` before it hits the desk; fail → revise once or drop.
   - `buildQuestionPick(blankAndStaleDims, observedAffinity)` — the **earn-context** branch: choose the
     highest-value dim to ask about, biased by observed affinity; reuse the existing curiosity question

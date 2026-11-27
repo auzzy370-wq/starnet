@@ -29,7 +29,7 @@ function startProvider() {
         const results = (body.messages || []).filter(message => message && message.role === 'tool');
         const worker = (body.messages || []).some(message => message.role === 'system' && String(message.content).includes('PROJECT_WORKER_PROOF'));
         let call = null;
-        // routed on the Commander's OWN words: a routine's run-context note quotes earlier chats as RECENT ACTIVITY
+        // routed on the Master's OWN words: a routine's run-context note quotes earlier chats as RECENT ACTIVITY
         // (the LAPSED_WRITE_PROOF chat above), and that note is the leading text of the same user message
         const routine = (body.messages || []).some(message => message.role === 'user' && userWords(message).includes('ROUTINE_WRITE_PROOF'));
         const lapsed = (body.messages || []).some(message => message.role === 'user' && userWords(message).includes('LAPSED_WRITE_PROOF'));

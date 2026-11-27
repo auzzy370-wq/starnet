@@ -239,7 +239,7 @@ const clock = { now: () => clk };
     deliveryPrompt: 'research three AI businesses',
     deliveryText: 'three sourced ideas'
   });
-  A.eq(e.sessionTitle, 'business research session', 'the Commander-visible session name is durable');
+  A.eq(e.sessionTitle, 'business research session', 'the Master-visible session name is durable');
   A.eq(e.deliveryPrompt, 'research three AI businesses', 'the delegated instruction is durable for the framing marker');
   A.eq(e.deliveryText, 'three sourced ideas', 'the final answer is durable for missed-page replay');
   A.eq(s.record({ runId: 'plain' }).sessionTitle, '', 'ordinary runs carry no fake delivery target');
@@ -406,7 +406,7 @@ const clock = { now: () => clk };
   A.ok(strict && /host disk failure/.test(strict.message), 'the actual host adapter reports strict finalization persistence failure');
 }
 
-// ---- ownerDirective (additive, 2026-10-12) — the host proved the Commander gave this run's directive ----
+// ---- ownerDirective (additive, 2026-10-12) — the host proved the Master gave this run's directive ----
 {
   const io = memIo();
   let s = makeRunStore({ io, clock });

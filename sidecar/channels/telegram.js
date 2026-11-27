@@ -144,7 +144,7 @@
   //   • the same shape appears on the service message that opened the topic.
   // Media on the quoted message rides through so the hub can ingest the actual photo the member long-pressed.
   /* FORWARD PROVENANCE (2026-09-23 security audit). A forward arrives with the OWNER's from.id, so without this
-     flag a stranger's text the Commander forwarded ("is this legit?") ran as the Commander's own directive with
+     flag a stranger's text the Master forwarded ("is this legit?") ran as the Master's own directive with
      owner trust. Bot API 7+ sends forward_origin; older payloads carry the forward_* family. Any of them means
      the words were authored by someone else — the hub turns that into an untrusted-content taint. */
   function isForwarded(m) {

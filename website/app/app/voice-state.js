@@ -22,10 +22,10 @@
    The handle a producer holds is a read-only view {id, owner, agentId, state, audible, cause}. voice.js keeps its own
    per-reply synthesis pins (voice, effect chain, fail streak) on the record; this module never reads them.
 
-     speaker(opts)    does the station speak its replies? pref is the Commander's own choice, the ONLY thing ever saved
+     speaker(opts)    does the station speak its replies? pref is the Master's own choice, the ONLY thing ever saved
                       (opts.key in opts.storage(), the '1'/'0' shape every build reads; absent is off). leases are the
                       sessions holding it on while they run (SPEAKER_LEASES: a room you talk to has to answer), memory
-                      only, so a page that dies mid-call comes back to the last choice the Commander made. on = pref ||
+                      only, so a page that dies mid-call comes back to the last choice the Master made. on = pref ||
                       a lease. apply(next) is its one transition: {pref} an explicit choice (saved; it ends every lease,
                       so no session's end can undo it), {lease: owner} / {release: owner} one session's hold. It answers
                       {was, on, explicit, changed}; the effects of a change are voice.js's. This is the key's one writer.
@@ -39,7 +39,7 @@
   'use strict';
 
   const CANCEL_CAUSES = Object.freeze([
-    'microphone_activity',   // the Commander started speaking over the call (Live VAD onset)
+    'microphone_activity',   // the Master started speaking over the call (Live VAD onset)
     'microphone_button',     // the mic button or the Live meter pressed to cut in
     'listen_start',          // a listen opened while the agent was talking
     'user_stop',             // asked to stop ('stop', 'stop speaking'), or a stop that named no cause

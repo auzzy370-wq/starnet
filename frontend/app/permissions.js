@@ -1,7 +1,7 @@
 /* VULTRON — permissions.js : the PURE engine for the PERMISSIONS PANEL (autonomy Stage B / B1).
 
    The user-facing "how autonomous" SPECTRUM + the curated catalog of standing capability grants. This is the
-   trust UX the Commander picked: an OS-style panel where they dial the station from "never acts on its own" all
+   trust UX the Master picked: an OS-style panel where they dial the station from "never acts on its own" all
    the way to "fully autonomous" (acts AND writes real local files), and where every standing grant is visible
    and revocable.
 
@@ -73,7 +73,7 @@
   // a past interactive prompt) still gets a truthful, revocable line so nothing the agent can do is hidden.
   function describeGrant(key) { const e = catalogEntry(key); return e ? e.desc : (String(key || '') + ' — granted earlier; you can revoke it here.'); }
 
-  /* A LEDGER ROW THE COMMANDER CAN ACT ON. The two non-curated families the sidecar actually persists are
+  /* A LEDGER ROW THE MASTER CAN ACT ON. The two non-curated families the sidecar actually persists are
      machine keys: `path:C:\Users\me\Projects` and `mcp:<connectorId>`. Printing the raw key is truthful but
      asks the reader to know the danger-key grammar to answer "what did I allow?" — on the one surface whose
      job is to make a standing permission revocable on sight. Return a plain title AND keep the exact key, so
@@ -136,7 +136,7 @@
   //   • a dotted capability like `shell.exec:exec`.
   // Filtered out here, they vanished from the Standing-Approvals ledger, which then printed the teaching
   // empty-state ("No standing approvals yet") while path trust was live and ENFORCED in the sidecar — a
-  // revocable permission the Commander could neither see nor revoke. Require a non-empty identifier-ish CLASS
+  // revocable permission the Master could neither see nor revoke. Require a non-empty identifier-ish CLASS
   // and a non-empty SCOPE, and reject control characters; everything else the sidecar blessed is real.
   const GRANT_KEY_RE = /^[A-Za-z0-9_.-]+:[^\u0000-\u001f]+$/;
   function normalizeGrants(arr) {

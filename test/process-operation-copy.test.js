@@ -3,7 +3,7 @@
    THE DEFECT (a5-consent-copy-and-broker-map.json; live walk W-A1 read cards): both classifiers keyed the words on the tool
    FAMILY. Desktop actionPhrase (frontend/app/chat.js) said "run a command" for every shell/terminal tool except a write;
    the phone's lock-screen push (sidecar/index.js remoteAskWords) said "wants to run a command" for the whole family,
-   writes included. So a terminal.read card — reading a session's output — asked the Commander to approve running a
+   writes included. So a terminal.read card — reading a session's output — asked the Master to approve running a
    command, which is a power that call does not have.
 
    THE CONTRACT: each operation in its own words — run a command (shell.exec, terminal.start), type into a running process,

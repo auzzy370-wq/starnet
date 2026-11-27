@@ -207,7 +207,7 @@ async function waitFor(pred, ms, label) {
     A.ok(photo.files[0].bytes.equals(SEEDED_PNG), 'the exact bytes of the workspace file');
     const words = telegram.calls.slice(mark).filter(c => c.method === 'sendMessage').map(c => String(c.fields.text || ''));
     A.ok(words.some(t => t.indexOf("Here is today's chart.") >= 0), 'the routine\'s words are delivered too');
-    A.ok(words.every(t => t.indexOf('ATTACH:') < 0), 'the ATTACH line is not shown to the Commander');
+    A.ok(words.every(t => t.indexOf('ATTACH:') < 0), 'the ATTACH line is not shown to the Master');
     const order = telegram.calls.slice(mark).map(c => c.method);
     A.ok(order.indexOf('sendMessage') >= 0 && order.indexOf('sendMessage') < order.indexOf('sendPhoto'), 'words first, then the file (a failed upload never costs the message)');
     const attachReq = model.requests.find(r => userOf(r).indexOf('ROUTINE_ATTACH') >= 0);
@@ -219,7 +219,7 @@ async function waitFor(pred, ms, label) {
     mark = telegram.calls.length;
     await runNow(missingJob);
     const missingMsg = await waitFor(() => telegram.calls.slice(mark).find(c => c.method === 'sendMessage' && String(c.fields.text || '').indexOf('Chart attached.') >= 0), 10000, 'the missing-chart message');
-    A.ok(String(missingMsg.fields.text).indexOf('ATTACH: charts/missing.png') >= 0, 'the line naming the file stays in the message, so the Commander sees which file was meant');
+    A.ok(String(missingMsg.fields.text).indexOf('ATTACH: charts/missing.png') >= 0, 'the line naming the file stays in the message, so the Master sees which file was meant');
     await sleep(500);
     A.ok(!telegram.calls.slice(mark).some(c => c.method === 'sendPhoto' || c.method === 'sendDocument'), 'nothing was uploaded for an unreadable path');
     A.ok(!telegram.calls.slice(mark).some(c => /could not be attached|saved in the workspace/.test(String(c.fields.text || ''))), 'and the station never claims a file it never saw is saved on it');
@@ -288,7 +288,7 @@ async function waitFor(pred, ms, label) {
 
     /* ---- 2. an image the run GENERATED rides the delivery without any ATTACH line ----
        Generation itself is a paid write that an unattended run in ASK may not self-approve (unchanged policy), so
-       this half runs under the Commander's live Full Access switch — the delivery path is the same either way. */
+       this half runs under the Master's live Full Access switch — the delivery path is the same either way. */
     const bypass = await sidecar.json('POST', '/api/permissions/bypass', { on: true });
     A.eq(bypass.status, 200, 'Full Access switched on for the render routine');
     const renderJob = await routine('Morning render', 'ROUTINE_RENDER make me a sunrise picture', { unattendedGrants: ['studio'] });

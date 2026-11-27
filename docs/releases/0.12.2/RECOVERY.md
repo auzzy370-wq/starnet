@@ -1,6 +1,6 @@
 # Corrected overhaul candidate 0.12.2
 
-The complete overhaul and accepted merges remain included. Neither 0.12.0 nor 0.12.1 was published. The former failed close-to-tray acceptance; the latter's official installed preservation check found loss of a saved Commander model. Built tags remain immutable, so this repair requires another patch version.
+The complete overhaul and accepted merges remain included. Neither 0.12.0 nor 0.12.1 was published. The former failed close-to-tray acceptance; the latter's official installed preservation check found loss of a saved Master model. Built tags remain immutable, so this repair requires another patch version.
 
 Catalog repair `20be5165b` distinguishes a proven live catalog from an error envelope or provider-marked fallback list. Unavailable catalogs preserve the saved choice; confirmed removal can still reconcile it. Targeted regression tests cover sibling providers, serialization and UI authority. A live isolated station retained the model under both failure fixtures and after a sidecar restart into a fresh browser profile. The rejected install's original failing evidence remains intact and its model was restored through the real UI.
 

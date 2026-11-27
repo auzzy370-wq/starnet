@@ -56,7 +56,7 @@ function tagWindow(window, alignment, rows, streamId) {
     const at = alignment.index[k];
     const row = at >= 0 ? list[at] : null;
     if (m.role === 'user') {
-      if (row && row.role === 'user') open = at;   // a Commander message placed on its row opens its exchange
+      if (row && row.role === 'user') open = at;   // a Master message placed on its row opens its exchange
       else if (!row) open = -1;                    // a user message nothing places: which exchange it opens is unknown, and so is the rest of it
       // a user-role message on a non-user row (a steering note) belongs to the exchange it interrupts
     }
@@ -129,7 +129,7 @@ function claimFold(i) {
   }
   if (!(end >= 0)) return refuse('nothing-placed');
   if (end <= prefix) return { ok: true, end: prefix, prefix, progress: false };
-  // 4. no skipped exchange: every Commander row the claim spans past the previous coverage was in the slice
+  // 4. no skipped exchange: every Master row the claim spans past the previous coverage was in the slice
   for (let u = prefix; u < end; u++) if (rows[u] && rows[u].role === 'user' && !opens.has(u)) return refuse('gap');
   if (rows[end] && rows[end].role !== 'user') return refuse('boundary-not-user-row');
   return { ok: true, end, prefix, progress: true };

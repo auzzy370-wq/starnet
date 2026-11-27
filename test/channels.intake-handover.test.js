@@ -7,7 +7,7 @@
    Discord's gateway buffer is spliced, Slack acks the socket envelope on arrival, Matrix advances `since`, signal-cli's
    receive drains its queue — and the poll loop broke out of the batch on the refusal and dropped that update and every
    one behind it. A transient EBUSY on delivery.json (an antivirus scan, an indexer), a full channel intake or an unread
-   ledger lost the Commander's messages with no reply and no notice, while the console said they were "NOT acknowledged".
+   ledger lost the Master's messages with no reply and no notice, while the console said they were "NOT acknowledged".
 
    THE INVARIANT, over the class: a transport that consumes what it hands over, behind the generic adapter's poll loop. Two
    real ones, each built the way index.js builds it (wireChannel over the REAL channel store and its delivery ledger, the

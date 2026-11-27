@@ -6,7 +6,7 @@
      - the stamp is claimed by the FIRST hero run after the accept, never by a worker's run, never twice
      - a clean finish folds a weak positive; a stop/error/limit folds NOTHING (an interrupted run is not the
        suggestion's fault, and the harness cannot honestly say otherwise)
-     - the Commander's 👍/👌/👎 on the attributed run is the strong signal; an UNattributed run says nothing
+     - the Master's 👍/👌/👎 on the attributed run is the strong signal; an UNattributed run says nothing
      - weights persist, hydrate clamped, and reset() clears them for a new hero
      - a dud channel gets quieter but is never silenced (the floor holds through the whole live path) */
 'use strict';
@@ -42,7 +42,7 @@ A.eq(S.weightFor('suggest'), NEUTRAL, 'accepting an offer that spawns work is no
 A.ok(S._pending() && S._pending().channel === 'suggest', 'the accept arms a pending attribution stamp');
 
 /* ── 3. the stamp is claimed by the first HERO run, once ── */
-A.eq(S.claimForRun('run-w', 'worker-2'), null, 'a summoned worker’s run never claims the Commander’s offer');
+A.eq(S.claimForRun('run-w', 'worker-2'), null, 'a summoned worker’s run never claims the Master’s offer');
 A.ok(S._pending(), 'and the pending stamp survives that');
 const stamp = S.claimForRun('run-1', 'agent');
 A.eq(stamp && stamp.channel, 'suggest', 'the next hero run claims the stamp');
@@ -60,7 +60,7 @@ A.ok(afterDone > NEUTRAL, 'a clean finish is a weak positive');
 bus.emit('agent.run.end', { runId: 'run-1', reason: 'done' });
 A.eq(S.weightFor('suggest'), afterDone, 'a re-fired run.end cannot double-credit the same completion');
 const afterGreat = S.noteVerdict('run-1', 'great');
-A.ok(afterGreat > afterDone, 'the Commander’s 👍 on the attributed work is the strong signal');
+A.ok(afterGreat > afterDone, 'the Master’s 👍 on the attributed work is the strong signal');
 A.ok(S.weightFor('suggest', 'goals') > NEUTRAL, 'and the dimension it targeted earns with it');
 A.eq(S.noteVerdict('run-1', 'shrug'), null, 'an unnamed verdict folds nothing');
 
@@ -143,7 +143,7 @@ S.reset();
 
 /* ── 8c. THE PENDING STAMP CANNOT FALSELY ATTRIBUTE (fixed 2026-08-04) ──
    Reproduced live: a "build it" accepted while the agent was mid-run launched NOTHING (Chat.send no-ops when
-   busy), the stamp stayed armed forever, and the Commander's next unrelated manual run claimed it — the channel's
+   busy), the stamp stayed armed forever, and the Master's next unrelated manual run claimed it — the channel's
    weight moved on work that offer never caused. Three independent holes, three locks. */
 S.reset(); CLOCK = 1780000000000; S.init({ now: () => CLOCK });
 // (a) an armed stamp EXPIRES: past the window the next run is not this offer's work
@@ -167,10 +167,10 @@ A.ok(S.weightFor('seed') < NEUTRAL, 'and the accept it displaced is SETTLED (def
 A.eq(S.weightFor('routine'), NEUTRAL, 'the new accept itself still credits nothing yet');
 /* (c) the caller-side gate, proved at the STORE level: when the launch is refused the caller never calls
    noteAccept at all (source-lock in §10), and this is the state that leaves behind — nothing armed, so the
-   Commander's next manual run claims nothing and no weight moves off a click that started no work. */
+   Master's next manual run claims nothing and no weight moves off a click that started no work. */
 S.reset(); CLOCK = 1780000000000; S.init({ now: () => CLOCK });
 A.eq(S._pending(), null, 'a refused launch arms NOTHING (the accept never reaches the store)');
-A.eq(S.claimForRun('run-unrelated', 'agent'), null, 'so the Commander’s next manual run claims no attribution');
+A.eq(S.claimForRun('run-unrelated', 'agent'), null, 'so the Master’s next manual run claims no attribution');
 A.eq(S.stampFor('run-unrelated'), null, 'and carries no stamp of its own');
 bus.emit('agent.run.end', { runId: 'run-unrelated', reason: 'done' });
 A.eq(S.weightFor('suggest'), NEUTRAL, 'its clean finish credits no channel — the click that started nothing moved nothing');
@@ -204,13 +204,13 @@ for (const [file, probe, what] of [
   ['frontend/app/suggeststore.js', /if \(deps\.launchDirective\) return deps\.launchDirective\(directive\) === true;/,
     'doBuild reports the launch result (fail-closed: an unprovable launch is not a launch)'],
   /* S6: …and a REFUSED launch is no longer silent. Detecting it was only half the fix — the loop learned
-     nothing from it and the Commander was told nothing (they tapped "let's build it" and the beat vanished). */
+     nothing from it and the Master was told nothing (they tapped "let's build it" and the beat vanished). */
   ['frontend/app/suggeststore.js', /acceptedRecommendation = null; acceptedRunId = null;\s*\n\s*ledgerPost\(\{ id: recommendationId, state: 'declined', reason: 'wrong_time' \}\);\s*\n\s*if \(rq && rq\.noteDecline\) \{ try \{ rq\.noteDecline\(\{ channel: 'suggest', dim: probe \? probe\.dim : '' \}, true\); \}/,
     'a refused launch folds "deferred" — right idea, wrong moment, which is all the harness can honestly say'],
   ['frontend/app/suggeststore.js', /ledgerPost\(\{ id: recommendationId, state: 'declined', reason: 'wrong_time' \}\);\s*\n\s*if \(rq && rq\.noteDecline\)/,
     'and the LEDGER hears the same truth — declined/wrong_time is its own neutral shape; a row left terminal at accepted would count a launch that never happened as positive preference forever'],
   ['frontend/app/suggeststore.js', /Chat\.localLine\('stream’s busy — ask me again after this run'\)/,
-    'and it TELLS the Commander why, in one short house line, instead of the beat just disappearing'],
+    'and it TELLS the Master why, in one short house line, instead of the beat just disappearing'],
   ['frontend/app/app.js', /let sent = false; if \(typeof Chat !== 'undefined' && Chat\.send && !Chat\.isBusy\(\)\) \{ Chat\.send\(text\); sent = true; \} persist\(\); return sent;/,
     'the real launchDirective dep answers truthfully instead of returning undefined'],
   ['frontend/app/seedstore.js', /noteAccept\(\{ channel: 'seed', spawnsWork: false/, 'a saved seed settles immediately (it authors a recipe, it does not run one)'],
@@ -254,12 +254,12 @@ A.ok(/RecQualityStore\.denyBelief\(fp\)/.test(cardBody), 'and fingerprints the q
    the same signal eae2011a proved false for the strength read still fired the staleness read: confirming only
    re-stamped updatedAt, the dimension stayed exactly as under-confirmed, and the SAME question came back at the
    next 21-day mark — two or three times over a couple of months. Confirming now re-stamps the PROVENANCE too,
-   which is simply true: the Commander just stated it, in answer to a direct question. */
+   which is simply true: the Master just stated it, in answer to a direct question. */
 A.ok(/DossierStore\.upsert\(dim, \{ id: belief\.id, text: live\.text, source: 'commander', weight: 'stated', evidenceRef: \{ kind: 'confirmed' \} \}\)/.test(cardBody),
-  'CONFIRM records the belief as Commander-STATED evidence — the only thing that actually ends the re-ask loop');
+  'CONFIRM records the belief as Master-STATED evidence — the only thing that actually ends the re-ask loop');
 /* …and it writes back the LIVE text, not the render-time capture (B1, 2026-08-04). The card sits in the feed
-   while the COMMANDER panel stays editable; writing the captured string reverted an edit made in between AND
-   stamped the reverted wording as something the Commander had just stated. */
+   while the MASTER panel stays editable; writing the captured string reverted an edit made in between AND
+   stamped the reverted wording as something the Master had just stated. */
 A.eq(/text: text,/.test(cardBody), false,
   'the confirm never writes the RENDER-TIME text back (that silently reverted a mid-card edit)');
 A.ok(cardBody.indexOf('const live = liveBelief();') < cardBody.indexOf('text: live.text'),
@@ -274,7 +274,7 @@ const DossierPure = require('../frontend/app/dossier.js');
   A.eq(DossierPure.beliefs(d, 'goals')[0].weight, 'seed', 'an upsert that declares no provenance changes none');
   d = DossierPure.upsert(d, 'goals', { id: id, text: 'ship the billing rewrite', source: 'commander', weight: 'stated' }, now0 + 2000);
   const b = DossierPure.beliefs(d, 'goals')[0];
-  A.eq(b.weight, 'stated', 'a declared weight RE-STAMPS an existing belief (a seed the Commander confirmed is no longer a seed)');
+  A.eq(b.weight, 'stated', 'a declared weight RE-STAMPS an existing belief (a seed the Master confirmed is no longer a seed)');
   A.eq(b.source, 'commander', 'and so does the declared source');
   A.eq(b.updatedAt, now0 + 2000, 'the confirmation is also what freshness measures');
   A.eq(DossierPure.beliefs(d, 'goals').length, 1, 'and it updates in place — a confirm never mints a second belief');
@@ -284,7 +284,7 @@ const DossierPure = require('../frontend/app/dossier.js');
   A.eq(DossierPure.beliefs(d2, 'goals').length, 2, 'an upsert on a GONE id invents a brand-new belief (the hazard the card guards)');
 }
 /* ── 11b-i. THE MID-CARD EDIT SURVIVES THE CONFIRM (B1, 2026-08-04) ──
-   The Commander edits the belief in the COMMANDER panel while the re-confirm card is still sitting in the feed,
+   The Master edits the belief in the MASTER panel while the re-confirm card is still sitting in the feed,
    then taps "Still true". Writing the render-time capture reverted their edit — and recorded the reverted wording
    as commander/stated, i.e. a sentence they had just replaced, stamped as one they had just said. */
 {
@@ -350,7 +350,7 @@ A.ok(/recAccept\('arc', 'goals', false\);/.test(offerArcBody) && /recDecline\('a
   'and the arc’s REAL confirm flow trains the channel too — it recorded nothing at all before');
 /* …but only when a goal tree really got built. GoalStore.confirm returns null on a path edited down to
    something Goals.makeGoal will not build — crediting the channel for that is the loop rewarding an offer that
-   produced nothing. It is not a decline either (the Commander did not refuse), so it folds NOTHING. */
+   produced nothing. It is not a decline either (the Master did not refuse), so it folds NOTHING. */
 {
   const iG = offerArcBody.indexOf('const g = GoalStore.confirm(');
   const iAccept = offerArcBody.indexOf("recAccept('arc', 'goals', false)");
@@ -386,7 +386,7 @@ A.ok(/recAccept\('recruit', '', false\);/.test(A.fnBody(chatSrc, 'function maybe
   bus.emit('agent.run.end', { runId: 'run-f1', reason: 'done' });
   A.eq(settles.join('|'), 'seed/completed/run-f1', 'a clean finish crosses to the durable ledger with its run');
   S.noteVerdict('run-f1', 'great');
-  A.eq(settles.join('|'), 'seed/completed/run-f1|seed/great/run-f1', 'so does the Commander’s own verdict');
+  A.eq(settles.join('|'), 'seed/completed/run-f1|seed/great/run-f1', 'so does the Master’s own verdict');
   S.noteDecline({ channel: 'seed' }, false);
   A.eq(settles.length, 2, 'a card decline does NOT cross here — that is the verdict path’s wire, not an outcome');
   // an accept whose run never came forwards the drop signal so the ledger can release the awaiting row

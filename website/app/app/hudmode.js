@@ -1,5 +1,5 @@
 /* VULTRON hudmode.js — HUD MODE: Vultron as a small always-on-top panel.
-   For the Commander who is gaming or doing something else on the PC and wants every piece of work the
+   For the Master who is gaming or doing something else on the PC and wants every piece of work the
    station is doing one glance away, with a hand on each of them, without the whole station on screen.
 
    The HUD is NOT a second app. It is this same page with the station hidden, the world renderer
@@ -189,8 +189,8 @@
     return Math.round(m / 60) + 'h ago';
   }
 
-  // run.end reasons in the HUD's words. 'clarifying' is the agent asking the Commander a question:
-  // the one finish a glancing Commander most needs to catch.
+  // run.end reasons in the HUD's words. 'clarifying' is the agent asking the Master a question:
+  // the one finish a glancing Master most needs to catch.
   // the deck's recent row per END word (onRunEnd: RunOutcome.reasonOf). Review 9.2: a run that did not finish (a limit, a refusal, an empty or a cut
   // reply, a hold, an interruption) is the warn tone, as RunOutcome.look says it — never the failure's 'bad' (its "one alarm colour" was the reason
   // review 9.1 struck from FINISH) — and the stop's 'dim' is a stop's alone
@@ -297,7 +297,7 @@
     .filter(Boolean).map(p => String(p).split(/[\\/]/).pop());
   const uniq = list => Array.from(new Set(list));
 
-  /** What a live run is about: the Commander's words in the conversation that owns it (its stream lists
+  /** What a live run is about: the Master's words in the conversation that owns it (its stream lists
       the run), else that conversation's title. '' when no conversation on this page owns the run. */
   function taskOfRun(runId, streams, streamId) {
     for (const s of arr(streams)) {
@@ -305,7 +305,7 @@
       const h = arr(s.history);
       for (let i = h.length - 1; i >= 0; i--) {
         if (h[i] && h[i].role === 'user') {
-          // a goal-loop step is not the Commander's words: the run's task is the GOAL it works toward (org P29-sys wiring)
+          // a goal-loop step is not the Master's words: the run's task is the GOAL it works toward (org P29-sys wiring)
           const step = (typeof GoalLoop !== 'undefined' && GoalLoop.stepOfTurn) ? GoalLoop.stepOfTurn(h[i]) : null;
           const t = oneLine(step != null ? step : textOf(h[i].content), 200);
           if (t) return { task: t, streamId: s.id || '' };
@@ -331,7 +331,7 @@
     for (const s of arr(streams)) {
       if (!s || !(s.id === streamId || arr(s.runIds).includes(runId))) continue;
       // a folded direction streams back as a '[steering] …' line inside the reply text (COMMS draws it as its own
-      // note row): it is the Commander's words, never the agent's result
+      // note row): it is the Master's words, never the agent's result
       const said = arr(s.history).filter(h => h && h.role === 'assistant' && h.sourceRunId === runId && !h.error)
         .map(h => textOf(h.content).replace(/(^|\n)\[steering\] [^\n]*/g, '$1')).join('\n\n').replace(/\n{3,}/g, '\n\n').trim();
       if (said) return said.length > 2000 ? said.slice(0, 1999) + '…' : said;
@@ -357,7 +357,7 @@
     const out = [];
 
     for (const r of feed.runs.values()) {
-      // the harness's own self-talk (a post-reply pass, a reflection) is real but it is not the Commander's work
+      // the harness's own self-talk (a post-reply pass, a reflection) is real but it is not the Master's work
       if (!r || r.internal || workerRuns.has(r.runId) || r.source === 'subagent') continue;
       const asking = feed.prompts.has(r.runId);
       const found = taskOfRun(r.runId, streams, r.streamId);
@@ -503,7 +503,7 @@
 
   /* OPEN CONVERSATION: the conversation that owns this work when this page has it, else the agent's own
      most recent conversation. Never App.selectAgent from a blank thread: that rebinds the thread on screen
-     to the picked agent and strands the one the Commander came back for. */
+     to the picked agent and strands the one the Master came back for. */
   function openConversation(item) {
     try {
       if (typeof App === 'undefined') return;
@@ -654,7 +654,7 @@
   const WIDGET_ZOOM = 4.5;   // the agent fills the small picture; the station's own lock is 3
   const WIDGET_SEAT_AT = 0.84;   // an agent at its desk: feet low in the frame, so its desk and screen show above it
   /* The framing: the agent is always shown at the same closeness (4.5, the agent cam Andrew liked); a picture the
-     Commander makes bigger shows MORE STATION round the agent, never a bigger agent (Andrew 09-30: "the agent cam
+     Master makes bigger shows MORE STATION round the agent, never a bigger agent (Andrew 09-30: "the agent cam
      is WAY TOO BIG" — it used to zoom up to a third closer as the window grew). A seated worker moves from low in
      the small frame (its desk and screen above it) toward the middle of a tall one. */
   function widgetFraming() {
@@ -741,7 +741,7 @@
       if (justMoved()) return;
       const row = e.target && e.target.closest && e.target.closest('[data-agent]');
       if (!row) return;
-      S.followPinned = row.getAttribute('data-agent');   // the Commander chose who to watch
+      S.followPinned = row.getAttribute('data-agent');   // the Master chose who to watch
       S.followId = '';
       follow(S.followPinned);
       renderWidget();
@@ -755,7 +755,7 @@
     const t = now();
     const agents = roster();
     const plan = widgetTiles(S.lastItems || [], onLineId(), agents);
-    // whom the camera watches: the Commander's pick while that agent is still listed, else the top row
+    // whom the camera watches: the Master's pick while that agent is still listed, else the top row
     if (S.followPinned && !plan.tiles.some(x => x.agentId === S.followPinned)) S.followPinned = '';
     const watch = S.followPinned || (plan.tiles[0] && plan.tiles[0].agentId) || '';
     follow(watch);
@@ -797,7 +797,7 @@
   function stopWidgetFrames() {}
 
   /* The widget's window. It opens at the DEFAULT size (a 300x190 picture + its rows); the picture fills whatever
-     the window is, so when the Commander drags the window bigger the station view grows with it — and that
+     the window is, so when the Master drags the window bigger the station view grows with it — and that
      size is theirs: it is kept (no auto-fit fights it) and remembered for the next time the HUD opens. */
   const WIDGET_VIEW_W = 300, WIDGET_VIEW_H = 190;
   function widgetDefaultSize() {
@@ -811,7 +811,7 @@
   function askWidgetSize(z) {
     if (!z) return Promise.resolve(null);
     S.widgetFit = z;
-    S.fitQuietUntil = now() + 900;   // the resize this request causes is ours, not the Commander's
+    S.fitQuietUntil = now() + 900;   // the resize this request causes is ours, not the Master's
     return invoke('vultron_hud_fold', { folded: true, height: z.h, width: z.w });
   }
   // default-sized: follow the rows (an agent starting or finishing adds or removes one); user-sized: hands off
@@ -821,7 +821,7 @@
     if (S.widgetFit && Math.abs(z.w - S.widgetFit.w) < 3 && Math.abs(z.h - S.widgetFit.h) < 3) return;
     askWidgetSize(z);
   }
-  // a resize we did not ask for, while the widget shows, is the Commander sizing it: keep and remember that size.
+  // a resize we did not ask for, while the widget shows, is the Master sizing it: keep and remember that size.
   // Only a REAL window resize counts: the synthetic 'resize' the HUD dispatches after every view change (so the
   // layout reflows) is untrusted, and the moments around a view change or an entry are quiet.
   function onWindowResize(e) {
@@ -1023,8 +1023,8 @@
     S.busy = true;
     const prefs = readPrefs(root.localStorage);
     S.pinned = prefs.pinned;
-    S.widgetUser = prefs.widget || null;   // the size the Commander last gave the widget, if they ever did
-    S.fitQuietUntil = now() + 3000;        // entering reshapes the window several times: none of that is the Commander
+    S.widgetUser = prefs.widget || null;   // the size the Master last gave the widget, if they ever did
+    S.fitQuietUntil = now() + 3000;        // entering reshapes the window several times: none of that is the Master
     S.view = 'widget';                       // the HUD opens SMALL: the agents at work, a click from everything else
     S.desktop = !!tauriCore(root);
     S.active = true;

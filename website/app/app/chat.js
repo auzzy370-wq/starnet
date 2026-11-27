@@ -23,7 +23,7 @@ const Chat = (() => {
   let attachInput = null, attachStrip = null;   // ATTACHMENTS: the hidden <input type=file> + the composer preview strip
   let pendingAtts = [];   // ATTACHMENTS: files staged in the composer for the NEXT send — { name, kind, localUrl, status, ref }
   let system = '', name = 'AGENT', activeWs = null;
-  let focusVersion = 0;   // invalidates run-owned navigation after the Commander leaves a session
+  let focusVersion = 0;   // invalidates run-owned navigation after the Master leaves a session
   // TIER D · D1 WARMTH (2026-07-02): COMMS is a persistent panel, so setChatFocus never clears — the focused
   // body would otherwise chat-stare (track your cursor) forever. world.js decays the stare after a random
   // 30-90s warmth window (drawn fresh per engagement — unpredictable by design); this re-warms it on the genuine
@@ -41,10 +41,10 @@ const Chat = (() => {
   let stationModes = { window: 'legacy' };   // no v2 station response means the old window contract
   // a turnId's randomness (TurnMerge mints with it): crypto.getRandomValues, which also works outside a secure context
   function turnRng() { const a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] / 4294967296; }
-  const interrupted = new Set();   // wsIds the Commander deliberately STOPPED this turn — send()'s catch reads this as a
+  const interrupted = new Set();   // wsIds the Master deliberately STOPPED this turn — send()'s catch reads this as a
                                    // graceful stop (keep the partial reply, log no error) rather than a disconnect. Consumed in finally.
   const interruptedStreams = new Set();   // wsIds whose in-flight run lost its stream; durable recovery decides
-  const stopSource = new Map();   // wsId -> 'esc' | 'you': HOW the Commander stopped it (the card names it); consumed with `interrupted`
+  const stopSource = new Map();   // wsId -> 'esc' | 'you': HOW the Master stopped it (the card names it); consumed with `interrupted`
                                    // whether work resumes automatically or stops for explicit review.
   const recoveryClaims = new Set();       // source run ids already being recovered by this page
   const recoveryNotices = new Set();      // review-required run ids already explained on this page
@@ -127,7 +127,7 @@ const Chat = (() => {
                                 // finished. Capped FIFO so a long session can't leak runIds.
 
   const el = id => document.getElementById(id);
-  let stick = true;   // STICKY-BOTTOM: auto-scroll only fires when the Commander is already at/near the bottom,
+  let stick = true;   // STICKY-BOTTOM: auto-scroll only fires when the Master is already at/near the bottom,
                       // so scrolling UP to re-read history mid-stream isn't yanked back down by every token.
   let historyPinSeq = 0, historyPinPending = 0;   // a load owns one final post-layout pin; a real user gesture cancels it
   let revealKey = '';   // selector of the last explicit reveal (revealHistory); a fresh load or the reader's own gesture forgets it
@@ -360,7 +360,7 @@ const Chat = (() => {
   function presenceVerb() {
     const p = runPendingOf(activeWs);
     // A clarify question rides the SAME consent transport as a permission grant, but it is not one:
-    // "AWAITING APPROVAL / approve brief.ask" told the Commander to approve an internal tool name when
+    // "AWAITING APPROVAL / approve brief.ask" told the Master to approve an internal tool name when
     // the run is simply waiting for them to answer a question (caught in shot review, 2026-08-14).
     if (p) return p.tool === 'brief.ask' ? 'AWAITING YOUR ANSWER' : 'AWAITING APPROVAL';
     const cs = (activeWs && typeof Channels !== 'undefined' && Channels.statusOf) ? Channels.statusOf(activeWs.id) : '';
@@ -375,7 +375,7 @@ const Chat = (() => {
     const started = (activeWs && typeof Channels !== 'undefined') ? Channels.startedAtOf(activeWs.id) : 0;
     if (!isBusy() || !started) return;   // teardown resolves/removes it; never draw an idle presence card
     const card = presenceCard(); if (!card) return;
-    // PAUSED-ON-APPROVAL: the run is stopped on the sidecar waiting for the Commander. Restyle the card so it
+    // PAUSED-ON-APPROVAL: the run is stopped on the sidecar waiting for the Master. Restyle the card so it
     // reads as a deliberate pause (no working pulse) and NAME the pending action — truth source is the same
     // Channels.pendingOf payload that renders the approval prompt, so this can never claim a pause that isn't real.
     const pend = runPendingOf(activeWs);
@@ -439,7 +439,7 @@ const Chat = (() => {
         note: String(p.note || '').slice(0, 240), limitMs: Number(p.limitMs) > 0 ? Number(p.limitMs) : 0, limitKind: String(p.limitKind || ''),
         retry: (p.phase === 'retry_backoff' && prev && prev.retry) ? prev.retry : null };
     }
-    if (name === 'agent.token') return p.delta ? null : prev;   // an empty delta shows the Commander nothing
+    if (name === 'agent.token') return p.delta ? null : prev;   // an empty delta shows the Master nothing
     if (name === 'agent.tool_call' || name === 'agent.tool_result' || name === 'provider.fallback'
       || name === 'agent.run.end' || name === 'agent.run.error') return null;   // output, a failover or the end: the wait is over
     return prev;
@@ -574,7 +574,7 @@ const Chat = (() => {
     interrupted: Object.freeze({ word: '■ INTERRUPTED', cls: 'cp-interrupted', tone: 'warn' }),
     failed: Object.freeze({ word: '■ RUN FAILED', cls: 'err', tone: 'bad' })
   });
-  // WHO stopped it (2026-10-11): the Commander's own Stop/Esc says so on the card — a bare "RUN STOPPED" after Esc
+  // WHO stopped it (2026-10-11): the Master's own Stop/Esc says so on the card — a bare "RUN STOPPED" after Esc
   // read as the run quitting on its own. opts.stoppedBy: 'esc' | 'you' (stopActive's record); absent = not proven.
   const PRESENCE_STOPPED_BY = Object.freeze({ esc: '■ STOPPED BY YOU (ESC)', you: '■ STOPPED BY YOU' });
   /* presenceLook(opts) -> { outcome, word, cls, tone }. The OUTCOME decides first: an error the run raised (opts.error: agent.run.error or a
@@ -643,16 +643,16 @@ const Chat = (() => {
     autoscroll();
   }
   /* THE SUMMARY IS THE REPLY'S FOOTER. The live card re-pins itself to the bottom on each elapsed tick, so where it
-     resolved depended on timing: a quick run left "■ RUN COMPLETE" wedged between the Commander's question and the
+     resolved depended on timing: a quick run left "■ RUN COMPLETE" wedged between the Master's question and the
      answer, a slow one left it under the answer. It now always settles directly under this run's last prose row
-     (with its fold), so a turn reads question → answer → quiet footer. Stops at the next Commander turn; a run
+     (with its fold), so a turn reads question → answer → quiet footer. Stops at the next Master turn; a run
      that spoke no prose leaves the card where it is. */
   function settleSummaryUnderReply(card) {
     if (!card || !card.parentNode) return;
     const fold = card.nextElementSibling && card.nextElementSibling.classList.contains('run-fold') ? card.nextElementSibling : null;
     let anchor = null;
     for (let n = (fold || card).nextElementSibling; n; n = n.nextElementSibling) {
-      // a note the Commander sent mid-run belongs to this run's stretch; only their next real turn ends it
+      // a note the Master sent mid-run belongs to this run's stretch; only their next real turn ends it
       if (!n.classList.contains('steer-echo') && n.classList.contains('user')) break;
       if (n.classList.contains('cmsg') && n.classList.contains('agent') && !n.matches('.nudge,.consent,.turnin,.tool,.deliverable')) anchor = n;
     }
@@ -685,7 +685,7 @@ const Chat = (() => {
   }
 
   // CRASH HONESTY (Theme 2) — after a run stream died on a network drop, poll /api/health until the sidecar is
-  // PROVABLY back, then tell the Commander their interrupted run can't resume. Truthful telemetry: the
+  // PROVABLY back, then tell the Master their interrupted run can't resume. Truthful telemetry: the
   // "connection restored" line renders ONLY after a real 200 from the respawned sidecar, never on hope. The
   // probe self-arms on the drop and self-clears once every interrupted stream has been reported.
   async function offerRecoveryReview(row, ws) {
@@ -1251,7 +1251,7 @@ const Chat = (() => {
     }, 1100);
   }
 
-  // INPUT HISTORY — terminal-style recall of what the Commander already sent this session. ArrowUp in an
+  // INPUT HISTORY — terminal-style recall of what the Master already sent this session. ArrowUp in an
   // EMPTY composer (or while already recalling) walks back; ArrowDown walks forward and lands back on the
   // in-progress draft. Typing anything exits recall mode (the 'input' listener resets histIdx), so a
   // multiline draft is never hijacked mid-edit. Session-scoped, never persisted.
@@ -1290,7 +1290,7 @@ const Chat = (() => {
     if (log) {
       log.addEventListener('scroll', () => {
         if (historyPinPending) return;   // row()-driven replay scroll events cannot cancel the load's final pin
-        /* ONLY THE COMMANDER UNSTICKS (2026-10-10). A scroll event also fires when the BROWSER moves the log — a reply
+        /* ONLY THE MASTER UNSTICKS (2026-10-10). A scroll event also fires when the BROWSER moves the log — a reply
            image decoding, a row re-rendering, scroll anchoring holding an old offset — and reading every one of those as
            "they scrolled up" stopped the follow mid-reply and lit "new messages" over a conversation nobody had left.
            Now: at the bottom = following; off the bottom right after a real gesture (wheel/touch/scrollbar/keys) =
@@ -1400,7 +1400,7 @@ const Chat = (() => {
     wireTrust();       // GROWTH Tier 3: after a clean run, offer ONE earned-autonomy raise at the LOWEST beat priority — below the arc (registers once)
     wireThreads();     // NS-6: after a mined task run, offer ONE thread turn-in (Keep/Edit/Discard) at the lowest beat priority — study wins the moment first (registers once)
     wireCrewCapture(); // P3.2: record each dispatched worker's forwarded run-end spend so a 👍 on a crew run splits XP honestly (registers once)
-    wireCuriosity();   // Commander Dossier: one gentle "tell me about X" nudge after a clean run (registers once)
+    wireCuriosity();   // Master Dossier: one gentle "tell me about X" nudge after a clean run (registers once)
     wireConnectorRequired();   // beginner seam Lane 1: a run that hit an unwired connector earns the ⇄ CONNECT chip
     wireKeySaved();    // keys.save: a key pasted into chat now lives in KEYS — its bubble + saved history show the placeholder (registers once)
     wireBgExit();     // E6: surface shell.bg.exit (a background dev-server/watcher ended) as a terse COMMS system line — was a zero-listener event (registers once)
@@ -1544,7 +1544,7 @@ const Chat = (() => {
     // things stand now. Files still uploading: it stands in this chat's queue, holding them, and goes when they are ready.
     // BUSY: type-ahead queues the message WITH its staged files (Andrew 10-31: photos used to wait in the strip and go out on
     // their own after the queue drained). IDLE WITH A QUEUE: it stands behind what is already waiting. A typed task queued here is
-    // the Commander's all the same: it completes a pending first-task hand-off now (the queue later sends it with no composer mark).
+    // the Master's all the same: it completes a pending first-task hand-off now (the queue later sends it with no composer mark).
     if (pendingAtts.some(e => e && e.status === 'uploading')) {
       const files = pendingAtts;
       pendingAtts = [];
@@ -1562,11 +1562,11 @@ const Chat = (() => {
       flushQueued(activeWs.id);   // idle with a queue: it drains from its head now (busy: this does nothing)
       return;
     }
-    send(t, { attachments: atts, composer: true });   // composer: the Commander typed this turn (a pending first task reads it)
+    send(t, { attachments: atts, composer: true });   // composer: the Master typed this turn (a pending first task reads it)
   }
 
   /* ── ATTACHMENTS ────────────────────────────────────────────────────────────────────────────────────
-     Photos/files the Commander attaches to a message (like Claude Code / Codex). Three ways in: the 📎
+     Photos/files the Master attaches to a message (like Claude Code / Codex). Three ways in: the 📎
      button (file picker), paste from the clipboard, and drag-drop onto the composer. Each file is uploaded
      to the sidecar (POST /api/attachments -> saved in the agent's workspace, jailed) and staged as a chip;
      on send, the READY refs ride the user turn as lightweight { id,name,path,mediaType,kind } records (never
@@ -1796,7 +1796,7 @@ const Chat = (() => {
     pendingAtts.splice(i, 1);
     renderAttachStrip();
   }
-  /* forgetSession(streamId, { runIds, files }) - the page's own copies of a session the Commander just deleted (turn identity commit 16, qa/bugs/3e926b6a).
+  /* forgetSession(streamId, { runIds, files }) - the page's own copies of a session the Master just deleted (turn identity commit 16, qa/bugs/3e926b6a).
      The station forgets what it holds; this drops what only this page holds: the run records (RUN_META, which carries the directive text), the
      SEND NOW lines kept for it (memory, the in-flight asks and the browser's disk copy), and the uploaded files its messages named that no other
      session names - posted to the station's own delete (the sidecar entry covers the rows it knows; refs on messages from before the transcript
@@ -1854,7 +1854,7 @@ const Chat = (() => {
 
   // COMPOSER auto-grow: the message field is a <textarea>, so keep its rendered height matched to its
   // content — one line at rest, growing with the message up to comms.css's max-height, then it scrolls.
-  // This is what lets the Commander SEE a whole long message being typed at any COMMS width (the old
+  // This is what lets the Master SEE a whole long message being typed at any COMMS width (the old
   // single-line <input> could only ever show a sliver). Called on every edit (typed, dictated, or
   // programmatically filled) and after a send resets the box. Cheap: height:'auto' lets scrollHeight
   // report the true wrapped content height before we pin it.
@@ -1880,7 +1880,7 @@ const Chat = (() => {
   }
 
   /* ── COMMS AGENT LINE ────────────────────────────────────────────────────────────────────────────────
-     The top-of-panel identity row: a <select> of every live roster agent (so the Commander picks who's on
+     The top-of-panel identity row: a <select> of every live roster agent (so the Master picks who's on
      the line) + a truthful readout of THAT agent's model. Both are filled from App.agents() — never
      hardcoded — so the header can only ever assert a real roster identity (truthful telemetry). Selecting
      an agent hands off to App.selectAgent, which switches to (or mints) a workstream bound to that agentId;
@@ -2082,7 +2082,7 @@ const Chat = (() => {
      rows left unmatched are asked and keyed redacted, so a row that matched as typed (a steered reply holding its parts
      included) is never re-keyed. At most REDACT_ASK_MAX texts go, newest first, within REDACT_ASK_CHARS of JSON (the
      route takes 500 and 8 MB); a row past that merges as typed. THE RETRY TARGET (the newest directive with no answer
-     after it) keeps the Commander's words, as one row, since retryLast re-sends it; the next open after an answer
+     after it) keeps the Master's words, as one row, since retryLast re-sends it; the next open after an answer
      redacts it. */
   const REDACT_ASK_MAX = 400;          // a station read returns at most 200 turns
   const REDACT_ASK_CHARS = 2000000;    // at most 6 MB of UTF-8
@@ -2110,7 +2110,7 @@ const Chat = (() => {
      boots holding only the rows the page keeps itself (Workstreams: ws.historyRef is the saved history, ws.history its inline rows).
      hydrateHistory asks the station for the named rows (POST /api/transcript/rows: the display view a GET shows, undo and forget
      applied), lays them out in place with the page-only fields back on them (HistoryRef.expand), and hands that to
-     Workstreams.hydrate, which keeps every row the page added meanwhile after them and refuses a read the Commander has since
+     Workstreams.hydrate, which keeps every row the page added meanwhile after them and refuses a read the Master has since
      cleared, undone or replaced. A run the station can neither return nor prove undone or forgotten stays PACKED: a row is never
      guessed and never dropped, and the caller reports the existing 'history-unavailable' note (a send is then held by
      ensureHistoryReady, as it is for any history it cannot read). One read per session at a time; a second caller shares it.
@@ -2160,7 +2160,7 @@ const Chat = (() => {
     const startedAt = Date.now(), windowMs = read.timeoutMs > 0 ? read.timeoutMs : 8000;   // a send's read may wait longer (ensureHistoryReady)
     /* A PACKED HISTORY COMES BACK FIRST (hydrateHistory): the rows the save names are read before anything is merged into them, so the
        merge below sees the conversation the page held when it saved. A run the station could not return leaves the history unrestored
-       (the existing note, a send held), whatever else it could read; a session the Commander cleared meanwhile is left cleared. */
+       (the existing note, a send held), whatever else it could read; a session the Master cleared meanwhile is left cleared. */
     let readBack = null;
     if (ws.historyRef) {
       readBack = await hydrateHistory(ws, { windowMs });
@@ -2273,7 +2273,7 @@ const Chat = (() => {
   }
 
   // swap the rendered conversation to a workstream (its history). Used on enter/resume and when the
-  // Commander clicks another stream in the rail — re-renders without re-wiring the input row.
+  // Master clicks another stream in the rail — re-renders without re-wiring the input row.
   function loadGroupConversation(ws) {
     GroupChat.bind(ws);
     clearNudge(); clearChoices();
@@ -2368,7 +2368,7 @@ const Chat = (() => {
     // GOAL LOOP: returned to an idle stream with an ACTIVE standing goal (its moment was blocked / it was
     // backgrounded mid-loop) → continue it. kickGoal no-ops when busy/blocked/paused, so this is always safe.
     if (activeWs && typeof GoalLoop !== 'undefined' && goalOf(activeWs)) { const w = activeWs; setTimeout(() => { if (isActiveWs(w)) kickGoal(w); }, 0); }
-    // TIER D · D1 ATTENTIVE AUDIENCE: announce which agent the Commander now has COMMS focus on. load(ws) is the
+    // TIER D · D1 ATTENTIVE AUDIENCE: announce which agent the Master now has COMMS focus on. load(ws) is the
     // sole conversation-rebind boundary (open + every switch), and the persistent COMMS panel has no separate
     // close — so this one hook covers focus on/switch, and null when there's no active stream. world.js owns all
     // behavior: the focused body, while idle, stops wandering and holds its attention on you (faces you, tracks the
@@ -2397,10 +2397,10 @@ const Chat = (() => {
 
   /* THE SEAL PASS (save v7, history by reference). A save names a row instead of repeating it only for rows this page has PROVED the
      station holds (Workstreams.sealTurns), and the page proves them by reading: the open-time reconcile does, at open. A run that
-     ends leaves its own rows — the Commander's directive and the reply — unproven until the conversation is opened again, so a save
+     ends leaves its own rows — the Master's directive and the reply — unproven until the conversation is opened again, so a save
      carries them in full for as long as it stays closed. This reads them as soon as the run is over: the open-time read itself (the
      same GET, the same merge, the same retraction proof, the same save at its end), minus the repaint. It waits SEAL_PASS_MS after the
-     run ends (a burst of runs is one read), never reads a conversation a run is live in, and never one the Commander is looking at:
+     run ends (a burst of runs is one read), never reads a conversation a run is live in, and never one the Master is looking at:
      a repaint under their eyes is worse than a longer save, so that one is read when they leave it (load). A read that fails leaves
      the rows inline and the mark standing. */
   const SEAL_PASS_MS = 2000;
@@ -2476,7 +2476,7 @@ const Chat = (() => {
   //     ROWS (a user message, a reply and a tool row each count as one), not 100 turns.
   //   • The page keeps 120 ROWS (HistoryFit.HISTORY_CAP: user and assistant rows alike), more than that seed reads.
   //     What a long chat's window leaves out is not gone: the earlier-conversation note (index.js,
-  //     sidecar/earlier-conversation.js) rebuilds it free from the durable transcript on every run — the Commander's
+  //     sidecar/earlier-conversation.js) rebuilds it free from the durable transcript on every run — the Master's
   //     dropped messages verbatim, the replies as heads — and, once a fold has summarized that range, the persisted
   //     summary (sidecar/summary-ledger.js) carries it too.
   //   • Within a run, loop.js token-auto-compacts the working array, so older turns beyond the model's context are
@@ -2840,8 +2840,8 @@ const Chat = (() => {
     else renderStarterIdeas(d, hint, result, ctx);
   }
 
-  /* THE ONE STEP A HAND-SUMMONED AGENT LEAVES TO THE COMMANDER (2026-08-03).
-     A specialist summoned from the Recruitment Bay arrives with NO desk — deliberately, so the Commander chooses
+  /* THE ONE STEP A HAND-SUMMONED AGENT LEAVES TO THE MASTER (2026-08-03).
+     A specialist summoned from the Recruitment Bay arrives with NO desk — deliberately, so the Master chooses
      where it sits — and until it has one it cannot take floor work. That required step used to be printed ONCE by
      summonAgent: a DOM-only line, so the first stream switch or reload erased the only place it was ever stated
      (load() rebuilds the log from ws.history, and a local line is not history), and any live beat dropped it
@@ -2889,7 +2889,7 @@ const Chat = (() => {
      (a forced layout of the whole transcript), so a long session got monotonically slower.
      Past LOG_DOM_CAP rows the oldest DOM rows are shed; the turns themselves stay in
      ws.history (already capped) and re-render on the next load(). Pruning only runs while
-     stick=true (Commander at the bottom): a reader scrolled up into old rows never has the
+     stick=true (Master at the bottom): a reader scrolled up into old rows never has the
      content shifted out from under them. The live presence card halts the sweep as a
      belt-and-braces guard (it is always among the newest rows anyway). */
   const LOG_DOM_CAP = 400;
@@ -2945,7 +2945,7 @@ const Chat = (() => {
     // which was true while one agent owned every turn — a work line breaks that: stages 2..N are other agents
     // and labelling their work with the entry dock's name is a fabricated attribution (the same law that
     // stopped the hub writing a downstream stage's reply into the entry dock's transcript).
-    who.textContent = role === 'user' ? ((opts && opts.brief) || 'COMMANDER') : role === 'system' ? 'SYSTEM' : ((opts && opts.who) || name);
+    who.textContent = role === 'user' ? ((opts && opts.brief) || 'MASTER') : role === 'system' ? 'SYSTEM' : ((opts && opts.who) || name);
     const body = document.createElement('span'); body.className = 'body';
     // TIMESTAMP TRUTH (P0): opts.stamp is `true` for a row created LIVE (real wall-clock now), a number/Date for a
     // stored turn's REAL recorded time, or falsy for a legacy turn that carries no time — in which case we render
@@ -2970,7 +2970,7 @@ const Chat = (() => {
     } else {
       d.appendChild(who); d.appendChild(body);
     }
-    // COPY: a hover-revealed copy button on MESSAGE rows (agent + Commander). CSS hides it on the work-log beats
+    // COPY: a hover-revealed copy button on MESSAGE rows (agent + Master). CSS hides it on the work-log beats
     // (tool / consent / turn-in / nudge / deliverable) — those aren't prose to copy. One delegated handler
     // in init() reads the row's .body text, so a streamed reply gains the button the moment its row exists.
     if (role === 'agent' || role === 'user') {
@@ -3039,7 +3039,7 @@ const Chat = (() => {
   }
   // stamp: omitted → live now (real); a number/Date → the turn's stored real time; false → no stamp (replay of a
   // legacy turn that carries no time — never fabricate the current clock).
-  // brief: the agent that delegated this turn (a worker thread's directive) — named as the speaker, never COMMANDER
+  // brief: the agent that delegated this turn (a worker thread's directive) — named as the speaker, never MASTER
   function addUser(t, atts, stamp, brief) {
     const r = row('user', { stamp: stamp === undefined ? true : stamp, brief: brief ? briefLabel(brief) : '' });
     if (brief) r.d.classList.add('brief');
@@ -3051,11 +3051,11 @@ const Chat = (() => {
     const nm = (typeof App !== 'undefined' && App.agentName && App.agentName(id)) || String(id || 'agent').toUpperCase();
     return String(nm).toUpperCase() + ' · BRIEF';
   }
-  /* A NOTE SENT MID-RUN IS THE COMMANDER'S OWN MESSAGE (Andrew 10-26: "[steering] u seem to be adding just new rooms…" sat
-     under ULTRON's name, so the agent read as saying it). The run's '[steering] …' echo is drawn on the Commander's side,
+  /* A NOTE SENT MID-RUN IS THE MASTER'S OWN MESSAGE (Andrew 10-26: "[steering] u seem to be adding just new rooms…" sat
+     under ULTRON's name, so the agent read as saying it). The run's '[steering] …' echo is drawn on the Master's side,
      labelled MID-RUN, the wire marker stripped. One row for the live echo and every replay of it. */
   function steerRow(text, stamp) {
-    const r = row('user', { stamp: stamp, brief: 'COMMANDER · MID-RUN' });
+    const r = row('user', { stamp: stamp, brief: 'MASTER · MID-RUN' });
     r.d.classList.add('steer-echo');
     const wire = String(text == null ? '' : text).replace(/^\[steering\] /, '');
     const message = typeof SteeringMessage !== 'undefined' ? SteeringMessage.decode(wire) : null;
@@ -3118,9 +3118,9 @@ const Chat = (() => {
     return r.d;
   }
   /* A GOAL STEP IS THE STATION'S WORDS (org P29-sys, 2026-10-14). The goal loop sends each continuation as a user-role turn
-     (GoalLoop.continuationPrompt — that wire text is unchanged), but the Commander never typed it: COMMS shows the step as ONE
+     (GoalLoop.continuationPrompt — that wire text is unchanged), but the Master never typed it: COMMS shows the step as ONE
      compact system line naming the goal — live (send) and on every replay (renderHistory) — never the station's internal prompt
-     as the Commander's speech. goalStepOf reads the stored turn's own text — GoalLoop.continuationGoal accepts the current head
+     as the Master's speech. goalStepOf reads the stored turn's own text — GoalLoop.continuationGoal accepts the current head
      AND the pre-org-pass "standing goal" head — so history written before this change replays the same way. */
   function goalStepOf(text) {
     return (typeof GoalLoop !== 'undefined' && GoalLoop.continuationGoal) ? GoalLoop.continuationGoal(text) : null;
@@ -3207,7 +3207,7 @@ const Chat = (() => {
   }
   // drain ONE queued broadcast (oldest first) then reschedule until the queue empties — each drained line still
   // respects the one-per-window rate limit, so a burst plays out as an ordered trickle instead of stacking. A
-  // queued line that turned invalid mid-wait (Commander left the station) is dropped, but the rest keep draining.
+  // queued line that turned invalid mid-wait (Master left the station) is dropped, but the rest keep draining.
   function drainBroadcasts() {
     broadcastDrainTimer = null;
     if (!broadcastQueue.length) return;
@@ -3242,7 +3242,7 @@ const Chat = (() => {
     clearEmptyState();
     // COALESCE INTO ONE BLOCK: consecutive station lines share a single broadcast row (a centered stack
     // inside the same hairline chrome) instead of each claiming a full transcript row — four trophies
-    // land as one quiet moment, not four rows wedged between the Commander and their agent.
+    // land as one quiet moment, not four rows wedged between the Master and their agent.
     const raw = String(text == null ? '' : text);
     // ONE MOMENT, ONE TROPHY LINE (first-hour walk 2026-09-28: three TROPHY EARNED rows landed back to back after the
     // first good answer). A trophy that joins a block whose last line is already a trophy line folds into it —
@@ -3370,7 +3370,7 @@ const Chat = (() => {
     return s.replace(/^mcp__/, '').replace(/_/g, '.');   // mcp__x__y → x.y, readable
   };
   // A1: skill-flavored tool beats. The skill.* tools ride the ordinary agent.tool_call chip, but a raw
-  // "skill.view {name:…}" reads as noise. Re-label them in the agent's own voice so the Commander SEES the
+  // "skill.view {name:…}" reads as noise. Re-label them in the agent's own voice so the Master SEES the
   // agent consulting/writing its skillbase — pure rendering over the existing event (no new bus traffic).
   //   skill.view  → consulting skill: <name>      skill.list   → scanning skill index
   //   skill.manage(create/edit/patch) → wrote skill <name> → SKILLS menu   (write actions only)
@@ -3495,7 +3495,7 @@ const Chat = (() => {
      This used to also `pendingChips.clear()`, and that quietly double-listed the work trail of every run
      that wrote a file. Order of events for one `fs.write`: the CALL opens a rail and registers its chip →
      the sidecar's `deliverable` event fires and calls breakLive() → endToolRail() wiped the map → the tool
-     RESULT arrives, finds no pending chip, and takes resolveChip's ORPHAN path. The Commander was left
+     RESULT arrives, finds no pending chip, and takes resolveChip's ORPHAN path. The Master was left
      with the same single call rendered twice, in two different rails: a `pending` chip stuck forever
      holding the raw arguments, and a second resolved chip that had lost them. Closing the rail only means
      "the next chip starts a new one"; a call stays pairable until its result lands or the next run
@@ -3576,7 +3576,7 @@ const Chat = (() => {
   /* AN APPROVAL NOT GIVEN IS NOT A FAILURE (releases#9, 2026-10-17). The consent broker answers a call nobody approved —
      a Deny on its card, an unanswered card, an unattended default-deny — with the one summary 'denied' (tools/registry.js).
      The call did not run and nothing broke: the agent carries on and the run ends on its own terms. It drew the red ✗ and
-     "failed" an error draws, so the Commander's own No read as a fault in COMMS and in the run's history. */
+     "failed" an error draws, so the Master's own No read as a fault in COMMS and in the run's history. */
   const deniedResult = ev => !!(ev && ev.isError && ev.summary === 'denied');
   // fold a tool RESULT into a chip (✓/✗ + duration + result summary). ev: { summary, isError, ms }
   function foldChipResult(chip, ev) {
@@ -4127,7 +4127,7 @@ const Chat = (() => {
   }
 
   // a live consent prompt: the agent wants to do something that needs approval (a file write today). The run is
-  // PAUSED on the sidecar until the Commander answers — once / always (this kind) / full access (everything this
+  // PAUSED on the sidecar until the Master answers — once / always (this kind) / full access (everything this
   // session) / deny. Answering resumes the stream automatically.
   /* THE GLANCE LINE (user report 10-08). argsSummary is the WHOLE request now (consentSummary stopped clipping it at
      77 chars, which hid a long command's tail), so it never goes into a phrase, a toast or a notification raw: those
@@ -4225,7 +4225,7 @@ const Chat = (() => {
       const p = host && host.list ? host.list().find(x => x.id === pm[1] || san(x.id) === pm[1]) : null;
       return 'use the ' + ((p && p.name) || pm[1]) + ' plugin tool “' + pm[2] + '”' + leadText(ev.argsSummary, ': ');
     }
-    // the crew INSTALLING a plugin it wrote: say that it stays off until the Commander's own approval
+    // the crew INSTALLING a plugin it wrote: say that it stays off until the Master's own approval
     if (/^plugin[._]submit$/.test(t)) {
       let id = '';
       try { id = JSON.parse(ev.argsSummary || '{}').id || ''; } catch (_) {}
@@ -4252,7 +4252,7 @@ const Chat = (() => {
     // NS-5 conversational path trust: a file was referenced OUTSIDE the agent's workspace — "Always" blesses
     // the whole project folder for future reads (revocable in Permissions); argsSummary is the proposed root.
     if (t === 'path.trust') return 'work with files in ' + (ev.argsSummary || 'a project folder') + ' (reads; "Always" or "Full access" trusts it for later)';
-    // ATTENDED BROWSER LOGIN: two-phase takeover. Phase 1 asks to open a visible Chrome window the COMMANDER
+    // ATTENDED BROWSER LOGIN: two-phase takeover. Phase 1 asks to open a visible Chrome window the MASTER
     // drives; phase 2 holds the run until they click Done. Password honesty is part of the card copy.
     if (t === 'browser.login') return 'open a browser window so YOU can log in to ' + (ev.argsSummary || 'a website') + ' (you type your password in that window — the agent never sees it)';
     if (t === 'browser.login.done') return 'wait while you log in to ' + (ev.argsSummary || 'the website') + ' in the browser window — click Done here when you\'ve finished';
@@ -4366,9 +4366,9 @@ const Chat = (() => {
      resumes with the decision — the run never ends. Ignoring the card is safe: the sidecar's fail-closed
      timer falls back to today's durable end-run question. Joins the consent card's lifecycle contract:
      decided chips vanish into a verdict tag, pending-span bookkeeping excludes the wait from run time, and
-     focus is never stolen from a mid-typing Commander. */
+     focus is never stolen from a mid-typing Master. */
   /* THE COMPOSER ANSWERS THE QUESTION (live walkthrough 2026-10-13). NOVA asked "what are you launching?"; the
-     Commander typed the answer in the COMMS box like any chat — and it became a queued chip, the run sat on
+     Master typed the answer in the COMMS box like any chat — and it became a queued chip, the run sat on
      "awaiting your answer", and ~15 min later the chip fired as a NEW message that restarted the whole job. While the
      open conversation waits on exactly ONE of its lead's questions, a composer send is that question's answer.
      promptId -> { wsId, answer(text) -> Promise<bool> } — registered by clarifyRow, removed once answered. */
@@ -4427,7 +4427,7 @@ const Chat = (() => {
       }
       status('awaiting your context…');revealCard(r.d);return;
     }
-    // A batched ask shows its place ("asks (2 of 3)") so the Commander knows one more tap ends it —
+    // A batched ask shows its place ("asks (2 of 3)") so the Master knows one more tap ends it —
     // three unannounced sequential cards would read as an interrogation with no visible bottom.
     const seq = (Number(q.total) > 1 && Number(q.ordinal) > 0) ? ' (' + q.ordinal + ' of ' + q.total + ')' : '';
     // WHO asks on its own line, the question at reading size (Andrew 2026-10-13: "▣ NOVA asks: …" ran the asker into a
@@ -4444,7 +4444,7 @@ const Chat = (() => {
     // measured after layout and again whenever COMMS changes size: the key shows exactly while the question is clamped
     fitWhole(qText, whole, () => r.d.classList.contains('cq-open'));
     // TWO KINDS of suggestion, and the same law the end-run card obeys: GROUNDED comes from the
-    // Commander's own answered history (>=2 times) and is PROVABLE, so it outranks the model's guess and
+    // Master's own answered history (>=2 times) and is PROVABLE, so it outranks the model's guess and
     // states its count; `recommended` is a guess with a rationale and stands only when nothing was observed.
     const gOpts = (q.grounded && Array.isArray(q.grounded.options)) ? q.grounded.options.filter(o => (q.options || []).indexOf(o) >= 0) : [];
     const gCount = Number(q.grounded && q.grounded.count) || 0;
@@ -4504,7 +4504,7 @@ const Chat = (() => {
     if (ws && p.promptId && !p.workerStreamId) askAnswerers.set(String(p.promptId), { wsId: ws.id, answer: (text) => answer(text, '✓ ' + glance(text, 60)), isDone: () => decided });
     const opts = Array.isArray(q.options) ? q.options.slice(0, 6) : [];
     if (q.multiSelect === true && opts.length > 1) {
-      // NON-EXCLUSIVE options: chips toggle, a confirm chip fires. The answer is the Commander's picks
+      // NON-EXCLUSIVE options: chips toggle, a confirm chip fires. The answer is the Master's picks
       // joined as plain text — a typed multi-answer was always legal downstream, so the store and the
       // model see exactly what free text would have said.
       const picked = new Set();
@@ -4862,13 +4862,13 @@ const Chat = (() => {
     status('awaiting your approval…');
     const asker = (p && p.workerAgentId) ? askerName(p, ws) : name;   // a delegated worker's ask names the worker
     // ONE APPROVAL, ONE PLACE YOU ARE LOOKING (live walkthrough 2026-10-13: one file write was announced in 7 places). The
-    // Commander already has this card in front of them when its conversation is open and the page is visible: the bell
+    // Master already has this card in front of them when its conversation is open and the page is visible: the bell
     // still files it (NEEDS YOU, the SYSTEM badge) but quietly — no corner toast, no chime. BUILD MODE hides COMMS, so
     // there (and in any other conversation, or a hidden window) it still toasts.
     const seenHere = !!(ws && isActiveWs(ws) && typeof document !== 'undefined' && !document.hidden && log && log.getClientRects && log.getClientRects().length);
     if (ws && !announcedPrompt(p.promptId, ws) && typeof StationUI !== 'undefined') StationUI.notify(asker + ' wants to ' + actionPhrase(p), 'warn', 'needsApproval', { kind: 'needs', go: { ws: ws.id }, key: 'needs:' + ws.id, prompt: p.promptId, quiet: seenHere });
     else if (!ws && typeof StationUI !== 'undefined') StationUI.notify(asker + ' wants to ' + actionPhrase(p), 'warn', 'needsApproval');   // P1-8 category: consent prompt
-    // FOCUS-STEAL GUARD (P0): a consent prompt must NEVER hijack focus from a Commander who is mid-typing or holds
+    // FOCUS-STEAL GUARD (P0): a consent prompt must NEVER hijack focus from a Master who is mid-typing or holds
     // a draft — a stolen focus + a reflexive Enter could approve a file write they never read. Only follow the
     // scroll when they were already at the bottom (honor stick), and only take focus (onto the row CONTAINER, so
     // Esc=deny works but Enter can't approve) when the composer is idle. Esc still denies either way: an idle
@@ -4987,7 +4987,7 @@ const Chat = (() => {
     syncStatus();
   }
 
-  // ── "RATE THE WORK" — the PRIMARY leveling beat. After a run that actually DID work, the Commander gives a
+  // ── "RATE THE WORK" — the PRIMARY leveling beat. After a run that actually DID work, the Master gives a
   //    one-tap verdict on the OUTPUT (👍 nailed it / 👌 close / 👎 missed). 👍 mints size-weighted XP; 👌/👎 only
   //    nudge the satisfaction meter (never a penalty, never XP). The server durably records one verdict per run,
   //    then XpStore folds its canonical synthetic feedback entries — never the bus/memory store, so memory trust is untouched.
@@ -5013,7 +5013,7 @@ const Chat = (() => {
     // canonical feedback entries; XpStore folds those only after fsync acknowledgement.
     const entries = [{ agentId: agentId || 'agent', id: 'work:' + runId, runId: runId, delta: delta, reason: reason, size: size }];
     // P3.2 CREW-RUN RATEABILITY — named worker run-end receipts prove participation. Every proven persistent
-    // contributor receives the same Commander verdict value; cost/tool volume never weights it. The sidecar
+    // contributor receives the same Master verdict value; cost/tool volume never weights it. The sidecar
     // rebuilds the canonical list from durable child runs, so these entries remain hints only. Only hero-lead runs
     // carry crew (runCrew is populated only for agentId 'agent'). Fail-open — a missing split never blocks the rating.
     try {
@@ -5043,7 +5043,7 @@ const Chat = (() => {
     // calibration/TRUSTED beats must be told here, AFTER the meter folded). Speaks at most twice, ever; mints nothing.
     if (typeof ConfBeats !== 'undefined' && ConfBeats.onFeedback) { try { ConfBeats.onFeedback({ agentId: agentId || 'agent', id: 'work:' + runId, delta: delta, reason: reason }); } catch (_) {} }
     // GROWTH Tier 1 §4 — RATINGS → TASTE: fold this verdict into the per-archetype streak; a fresh 3-streak mints
-    // ONE style-dim study proposal (Commander consistently likes/dislikes <archetype> work), surfaced at the same
+    // ONE style-dim study proposal (Master consistently likes/dislikes <archetype> work), surfaced at the same
     // one beat. The archetype is classified from the run's directive (RUN_META.title). Fail-open.
     try { const rm = runMeta(runId); maybeTasteBeat(agentId, runId, rm && rm.title, verdict); } catch (_) {}
     // R2: same DIRECT hand-off; 👍 corroborates / 👎 counter-evidences the style-model confidence (re-aims the VOI ask).
@@ -5082,12 +5082,12 @@ const Chat = (() => {
     // clicked. Missing meta (ledger evicted / page reloaded) → no rating recorded, never guessed. Fail-open.
     try { const rmp = runMeta(runId); if (rmp && rmp.recipeId && typeof ProspectStore !== 'undefined' && ProspectStore.noteRated) ProspectStore.noteRated(rmp.recipeId, verdict); } catch (_) {}
     // THE OUTCOME LOOP (quality loop, Q2): if THIS run was spawned by an accepted recommendation (the `rec` stamp
-    // written onto RUN_META at run start), the Commander's verdict on the work is the strongest honest evidence
+    // written onto RUN_META at run start), the Master's verdict on the work is the strongest honest evidence
     // there is about whether that channel's offers are worth making. Unattributed runs say nothing. Fail-open.
     try { if (typeof RecQualityStore !== 'undefined' && RecQualityStore.noteVerdict) RecQualityStore.noteVerdict(runId, verdict); } catch (_) {}
     try { if (typeof StarterStore !== 'undefined') StarterStore.rated(runId, verdict); } catch (_) {}
     // CORRECTION CAPTURE (consistency loop, slice 2): a short-of-the-mark verdict opens a window in which the
-    // Commander's next message to this agent is treated as the CORRECTION of that run and handed to the held
+    // Master's next message to this agent is treated as the CORRECTION of that run and handed to the held
     // skill review in their own words (POST /api/growth/ratings/correction). Praise opens nothing.
     if (saved && saved.ok && !saved.duplicate && (verdict === 'ok' || verdict === 'miss')) lastShortVerdict = { runId: runId, agentId: agentId || 'agent', streamId: ((runMeta(runId) || {}).streamId) || awayStreams.get(runId) || null, at: Date.now() };
     return saved;
@@ -5105,7 +5105,7 @@ const Chat = (() => {
   const WORKRATE_COACH_KEY = 'vultron.workrate.seen';
   function workRateControl(host, agentId, runId, onSettle) {
     host.setAttribute('data-rate-run', runId);
-    // one-time explainer: the FIRST rate surface a Commander ever sees gets one honest line about what a
+    // one-time explainer: the FIRST rate surface a Master ever sees gets one honest line about what a
     // verdict does (👍 mints size-weighted XP + raises satisfaction/trust; 👌/👎 only move the satisfaction
     // meter, never XP, never a penalty — see xp.js scoreEvent/verdictQuality). Retired permanently after one
     // render via the house one-shot pattern (cf. navcoach.seen / modeldock.seen). Fail-open — a storage
@@ -5201,11 +5201,11 @@ const Chat = (() => {
     return true;
   }
 
-  /* G2.4 — CLOSE THE RATE-STARVE HOLE. The rate control used to reach the Commander on exactly two
+  /* G2.4 — CLOSE THE RATE-STARVE HOLE. The rate control used to reach the Master on exactly two
      paths: embedded in a turn-in card, or the standalone beat — and the standalone beat stood down the
      moment memory.proposed fired (proposalRunsSeen). Three ways that starved rating forever:
        1. reflection proposed but the batch fetch came back EMPTY -> no card, no control;
-       2. the turn-in deck rendered WITH the embedded control, but the Commander decided every memory
+       2. the turn-in deck rendered WITH the embedded control, but the Master decided every memory
           without rating -> finishBatch vanished the whole card, control and all;
        3. the batch landed on a NON-displayed stream -> a soft notify, no card, no control.
        4. a focused panel (the tutorial's Dialogue on the FIRST command, an intake interview) held the
@@ -5302,12 +5302,12 @@ const Chat = (() => {
     const name = rw.routine ? ('“' + rw.routine + '” ran on its own') : (rw.title || 'an unnamed run');
     const who = (rw.agentId && rw.agentId !== 'agent') ? (' · ' + String(rw.agentId).slice(0, 12)) : '';
     const usd = (+rw.usd > 0) ? (' · ' + U.usd(+rw.usd)) : '';
-    // G3a seed callout: an unattended run that reuses a Commander-saved seed credits it inline (rw.seed is
+    // G3a seed callout: an unattended run that reuses a Master-saved seed credits it inline (rw.seed is
     // annotated by ReturnStore via SeedCredit — provenance-matched, never guessed). A credit line, not a beat.
     const seed = rw.seed ? (' · from the seed you saved — “' + rw.seed + '”') : '';
     return '◷ ' + name + who + usd + seed;
   }
-  // the "↗ read the work" affordance (2026-07-16 UX fix): every review surface must let the Commander SEE
+  // the "↗ read the work" affordance (2026-07-16 UX fix): every review surface must let the Master SEE
   // the run's actual output before rating it — the old beat showed only the raw prompt title and a rate
   // control, which read as a context-free popup ("what is this? where's the work?"). opts.openWork(rw)
   // (ReturnStore.openWork) opens the run's transcript session in COMMS; an unreachable transcript says so
@@ -5436,7 +5436,7 @@ const Chat = (() => {
      real, clearly-labeled sample job through the REAL dispatch path (POST /api/routing/sample): the router
      picks the dock, the run spends real budget through runOnce, the shared chain runner walks the drawn line,
      and the reply lands on the OUTBOX as a collectable crate (ReturnStore.foldRow of the sidecar's real
-     recorded run row — never synthesized). Same Commander-initiated gold-inset card family as awayReview —
+     recorded run row — never synthesized). Same Master-initiated gold-inset card family as awayReview —
      it renders immediately (the click asked for it) and never touches the shared post-run beat slot.
      Honest states only: in-flight reads "riding the line…" while the request is genuinely open; a refusal
      shows the SERVER's reason verbatim; success shows who delivered, the real cost, and a glance of the reply.
@@ -5452,9 +5452,9 @@ const Chat = (() => {
   function sampleCard(opts) {
     opts = opts || {};
     if (!log) return;
-    // the Commander asked for this card by clicking the INBOX: a quick tour covering COMMS steps aside so it is not posted unseen
+    // the Master asked for this card by clicking the INBOX: a quick tour covering COMMS steps aside so it is not posted unseen
     try { if (typeof Dialogue !== 'undefined' && Dialogue.yieldTour && Dialogue.isOpen && Dialogue.isOpen()) Dialogue.yieldTour(); } catch (_) {}
-    /* …any OTHER open conversation is the Commander's to answer — never answered for them (its "not now" is a real decline
+    /* …any OTHER open conversation is the Master's to answer — never answered for them (its "not now" is a real decline
        the learning loop records). The card still posts below it, so SAY where it went: a silent click read as a dead INBOX
        (2026-09-28 retest, the goal-path question covering COMMS). */
     const covered = () => { try { return typeof Dialogue !== 'undefined' && Dialogue.isOpen && Dialogue.isOpen(); } catch (_) { return false; } };
@@ -5501,7 +5501,7 @@ const Chat = (() => {
       feed.onclick = () => StationUI.openTerm('messaging');
       btns.appendChild(feed);
     }
-    // review r8: a job the Commander STOPPED (the route's stopped:true — its own stop, or a STOP on one of its steps) is no failure: the plain line
+    // review r8: a job the Master STOPPED (the route's stopped:true — its own stop, or a STOP on one of its steps) is no failure: the plain line
     const fail = (msg, stopped) => {
       const err = document.createElement('span'); err.className = stopped ? 'consent-result' : 'consent-result err';
       err.textContent = stopped ? '■ ' + msg : msg;
@@ -5560,7 +5560,7 @@ const Chat = (() => {
   }
 
   /* W3 — THE DELIVERY CARD (reshaped 2026-07-15). WorkshopStore adopts one SESSION per idle-work
-     deliverable ('workshop-<runId>', unread in the rail) and calls this ONLY when the Commander opens that
+     deliverable ('workshop-<runId>', unread in the rail) and calls this ONLY when the Master opens that
      session — opts.sessionId pins the card to it, so a delivery can never paint into an unrelated stream.
      Simple by design: the headline, the honest verification line, the link that RUNS it FIRST (when a
      web entry exists — open-not-read law), then WHAT it did / WHY / check-yourself, the files, and ONE action row — an optional message to the agent plus three one-click
@@ -5574,7 +5574,7 @@ const Chat = (() => {
      block; absent → honest not-tested copy. The card never asserts status the manifest doesn't prove.
      opts: { sessionId, onDecide(decision, destPath?, extra?) -> Promise<{ok,destPath?,applied?,branch?,root?,error?}>,
              onImplement(note) -> Promise<{fired,reason,runId?,manifest?}> (absent → Implement stays a plain keep;
-                                  note = the Commander's typed build instruction, which part of the plan to build),
+                                  note = the Master's typed build instruction, which part of the plan to build),
              readFile(agentId,runId,path) -> Promise<string>, runUrl(relPath), openFile(relPath),
              noteDecision(text) }. */
   function workshopReturn(m, opts, _try) {
@@ -5582,7 +5582,7 @@ const Chat = (() => {
     opts = opts || {};
     const onDecide = opts.onDecide || (() => Promise.resolve({ ok: true }));
     // SESSION PIN: render only while the card's OWN delivery session is on screen. Switched away → just
-    // stop (no retry) — chat.js load() re-fires WorkshopStore.presentFor when the Commander comes back.
+    // stop (no retry) — chat.js load() re-fires WorkshopStore.presentFor when the Master comes back.
     const inOwnSession = () => !opts.sessionId || !!(activeWs && activeWs.id === opts.sessionId);
     if (!inOwnSession()) return;
     const blocked = isBusy() || interview || activeTurnin || activeNudge || taskQuestionLive()
@@ -5600,7 +5600,7 @@ const Chat = (() => {
     try { const stale = log.querySelector('.workshop-return[data-wsrun="' + String(m.runId).replace(/["\\]/g, '') + '"]'); if (stale) stale.remove(); } catch (_) {}
     const agentId = m.agentId || 'agent';
     const who = (agentId === 'agent') ? name : agentId;
-    // W7 — the Commander receives a TOOL, not a repo. If the deliverable has a web entry point (index.html
+    // W7 — the Master receives a TOOL, not a repo. If the deliverable has a web entry point (index.html
     // preferred, else the first .html), the PRIMARY action becomes "Open it": it opens the RUNNING tool in a
     // browser tab from the jailed /workshop-run/ static route. No html → no runnable entry, so Keep stays primary.
     const files = Array.isArray(m.files) ? m.files.filter(f => f && f.path) : [];
@@ -5648,7 +5648,7 @@ const Chat = (() => {
     const title = document.createElement('span'); title.className = 'turnin-title';
     title.textContent = '◈ while you were away — ' + who + ' ' + didVerb + ' ' + String(m.title || 'a deliverable');
     // a declared plan is labelled 'plan' — more use than its raw kind ('doc'), which says nothing about the
-    // decision in front of the Commander.
+    // decision in front of the Master.
     const chipText = (m.planOnly === true) ? 'plan' : ((m.kind && m.kind !== 'other') ? String(m.kind) : '');
     if (chipText) {
       const chip = document.createElement('span'); chip.className = 'ws-kindchip'; chip.textContent = chipText;
@@ -5685,11 +5685,11 @@ const Chat = (() => {
     r.body.appendChild(ver);
 
     // ── TRY IT FIRST (2026-07-17, deliverable = open-not-read law) — when a web entry exists, the RUN
-    // action leads the card: the Commander opens the thing, the prose below is supporting context, not a
+    // action leads the card: the Master opens the thing, the prose below is supporting context, not a
     // gate in front of the click. Jailed /workshop-run/ route, same as before — only the position moved.
     if (htmlEntry) {
       // disk-proven by validateWorkshopManifest (never the model's claim): this deliverable requests pointer
-      // lock / fullscreen, i.e. opening it will capture the Commander's REAL mouse. Say so BEFORE the click.
+      // lock / fullscreen, i.e. opening it will capture the Master's REAL mouse. Say so BEFORE the click.
       if (m.capturesInput) {
         const warn = document.createElement('div'); warn.className = 'ws-line ws-capture-warn';
         warn.textContent = 'Heads up: it captures your mouse and keyboard when opened (pointer lock). Press Esc to release it.';
@@ -5739,7 +5739,7 @@ const Chat = (() => {
         d.appendChild(kk); d.appendChild(vv); r.body.appendChild(d);
       }
     }
-    // ── why this — server-stamped provenance (workshopBecause): the grounds quote or the Commander's own
+    // ── why this — server-stamped provenance (workshopBecause): the grounds quote or the Master's own
     // ask that queued the build. Real recorded data only; absent → no line. This is the adaptation made
     // visible: the card says WHY in your terms, not just WHAT in the agent's.
     if (m.because) {
@@ -5873,7 +5873,7 @@ const Chat = (() => {
     /* THE INPUT HAS TWO MEANINGS, and the card must not lie about which one is live:
          • ordinary card  → a MESSAGE. It rides the decision as a REAL user turn in this session (the session id is
            the shift's durable streamId, so the agent replies with the build's actual transcript behind it).
-         • buildable card → a BUILD STEER. A plan usually lists several things and this is the Commander's ONLY
+         • buildable card → a BUILD STEER. A plan usually lists several things and this is the Master's ONLY
            chance to say WHICH, so the text goes into the implement prompt instead of the chat stream.
        Why not both (2026-08-14): sending it as a chat turn AND starting a build fires TWO model runs at once — the
        agent answers in COMMS while the build that needed the instruction never hears it. The steer path wins. */
@@ -5973,7 +5973,7 @@ const Chat = (() => {
     // gold PRIMARY when the click really implements; a fallback save stays neutral so the gold always means "accept"
     const implBtn = document.createElement('button'); implBtn.className = 'consent-btn' + (patchSaveOnly ? '' : ' ws-primary');
     // THE LABEL STATES THE CONSEQUENCE. One word "Implement" covered three different outcomes (apply a patch,
-    // save files, run a build), so the button taught the Commander nothing and the explanatory line below had to
+    // save files, run a build), so the button taught the Master nothing and the explanatory line below had to
     // carry all of it. On a plan the action IS a build — say so.
     const implLabel = buildable ? 'Build it' : patchSaveOnly ? 'Save patch file' : 'Implement';
     implBtn.textContent = implLabel;
@@ -5981,7 +5981,7 @@ const Chat = (() => {
       : patchSaveOnly ? 'saves the .patch file only — it will NOT be applied to your project'
       : buildable ? ('has ' + who + ' BUILD what this describes — nothing is copied to a folder')
       : ('saves the files to ' + ((plan && plan.dest) || 'your Vultron deliverables folder'));
-    // why a build can be refused, in the Commander's words — never a raw reason code.
+    // why a build can be refused, in the Master's words — never a raw reason code.
     const implFailCopy = (reason) => {
       const r = String(reason || '');
       if (r === 'no-capability') return 'no model or key is available for unattended runs — set one in KEYS, then press ' + implLabel + ' again';
@@ -6004,7 +6004,7 @@ const Chat = (() => {
 
       /* IMPLEMENT-AS-BUILD — a plan is NOT the deliverable, so this path never keeps: no file copy, and NO
          DECISION IS RECORDED YET. That second part is the important one. Keeping first retired the backlog item
-         BEFORE the build ran, so a build that failed left the Commander with the plan already decided and the
+         BEFORE the build ran, so a build that failed left the Master with the plan already decided and the
          card gone — while the failure line told them to "press Implement again" at a card that no longer existed.
          Now the plan stays PENDING until a build actually lands; the SERVER retires it on success (it is the only
          side that knows the build landed). Failure leaves the card to try again, which is what the copy promises. */
@@ -6069,7 +6069,7 @@ const Chat = (() => {
     autoscroll();
   }
 
-  // Cortex (M-mem.5b) — THE TURN-IN BEAT. After a run, reflection proposes durable memories; the Commander
+  // Cortex (M-mem.5b) — THE TURN-IN BEAT. After a run, reflection proposes durable memories; the Master
   // decides Keep / Edit / Discard. Keep/Edit commit a real memory (the click IS the consent, §5.6); every
   // verdict feeds the agent's confidence. This is the gamified formation loop — the agent learns, you approve.
   function proposalCard(batch, ws) {
@@ -6080,7 +6080,7 @@ const Chat = (() => {
     // beat-slot arbiter is consulted so a memory deck can never stack on a study card — it renders the moment
     // the card resolves; memory keeps priority via the queue-first drain in the study card's done()). A deck
     // arriving over a FOCUSED FLOW (awakening/intake question, Dialogue panel) queues too — memory wins the
-    // post-run moment, but never by stacking on top of a question the Commander is mid-answering.
+    // post-run moment, but never by stacking on top of a question the Master is mid-answering.
     if (activeTurnin || turninBlocked() || slotMemoryDeck() === 'queue') {
       turninQueue.push(batch);
       updateTurninQueueNote();
@@ -6161,7 +6161,7 @@ const Chat = (() => {
       beatHandle.decide();
       beatHandle.finish({ onGone: () => {
         showNextTurnin();
-        // G2.4 starve hole 2: the deck (and its embedded control) just vanished — if the Commander
+        // G2.4 starve hole 2: the deck (and its embedded control) just vanished — if the Master
         // curated the memories but never rated the WORK, the standalone beat picks the rating up.
         if (batch.runId) maybeStandaloneRate(batch.agentId || 'agent', batch.runId);
       } });
@@ -6361,9 +6361,9 @@ const Chat = (() => {
   }
 
   // R1 MID-TASK FORK — the answer that IS work: render the agent's preference fork as one-tap chips. The
-  // pick does double duty — it banks as a Commander-authored STYLE belief (full confidence weight: given in
+  // pick does double duty — it banks as a Master-authored STYLE belief (full confidence weight: given in
   // context, about a real decision, immediately acted on; + the R4 receipt proves it stuck) AND continues
-  // the conversation as the Commander's next message so the task proceeds with it. "you decide" banks
+  // the conversation as the Master's next message so the task proceeds with it. "you decide" banks
   // nothing and hands the choice back. One fork per reply by construction (parse reads the first marker).
   function offerFork(fk, runId) {
     clearNudge();   // same law as offerTaskQuestion: the fork claims the moment; a live nudge leaves WITH its chips
@@ -6398,7 +6398,7 @@ const Chat = (() => {
   // Is an unanswered Task Brief question up on the DISPLAYED stream? The run itself stopped to ask it, so it
   // OWNS the COMMS moment: no gentle beat (curiosity / suggestion / north-star / quest-attest nudge) may claim
   // the slot while it waits — nudge()'s choices() would clearChoices() the question's own answer chips, leaving
-  // the question as dead text and forcing the Commander to re-ask the task (live-caught 2026-07-19). Cleared by
+  // the question as dead text and forcing the Master to re-ask the task (live-caught 2026-07-19). Cleared by
   // the next send() on that stream (answering OR typing anything releases the moment).
   function taskQuestionLive() {
     return !!(pendingTaskQuestion && activeWs && pendingTaskQuestion.streamId === activeWs.id);
@@ -6419,12 +6419,12 @@ const Chat = (() => {
       taskQuestionDoor(r.body, tq.runId);
       autoscroll();return;
     }
-    // TWO KINDS of suggestion, and they must never be confused. GROUNDED comes from the Commander's own
+    // TWO KINDS of suggestion, and they must never be confused. GROUNDED comes from the Master's own
     // answered history (taskBriefStore.groundedFor: same question, same option, >=2 times, no tie) — provable,
     // so it outranks the model's assertion and states its count. The model's brief_ask recommendation is a
     // guess with a rationale; it stands only when nothing was actually observed.
     // NOTE: a marker-path question stores no `recommended`, but it CAN still carry a grounded suggestion —
-    // that one is derived from the Commander's answers, not from the unvalidated question, so it stays honest.
+    // that one is derived from the Master's answers, not from the unvalidated question, so it stays honest.
     // Only the model's own guess is gated on the validated path.
     const g = (tq.grounded && tq.grounded.option && Number(tq.grounded.count) >= 2) ? tq.grounded : null;
     const has = v => !!v && tq.options.some(o => o.toLowerCase() === String(v).trim().toLowerCase());
@@ -6497,7 +6497,7 @@ const Chat = (() => {
     });
   }
   /* SPENT-BRIEF FOLD (2026-07-27). The "my read" card is a PRE-RUN contract: its meta rows, its assumption
-     chips and its steer box all exist so the Commander can argue with the read BEFORE the work happens. Once
+     chips and its steer box all exist so the Master can argue with the read BEFORE the work happens. Once
      the run it describes has resolved, none of that can act any more — but the card kept its full height
      forever, so a finished run left ~40% of the visible transcript occupied by a control surface that no
      longer controls anything (and whose chips still said "tap to correct", a promise only send() ever
@@ -6512,7 +6512,7 @@ const Chat = (() => {
   /* ⛔ LIVE VOICE RENDERS NO CLICKABLE PROMPTS (Andrew, 2026-07-30: "it should not give the same clickable
      popups, it should just directly ask the user — live mode is different from regular session mode").
      While a call is live, the interactive beats — the tap-to-correct brief card and choice-chip rows — are
-     SUPPRESSED, not narrated: the agent's own spoken words are the ask, and the Commander's spoken words
+     SUPPRESSED, not narrated: the agent's own spoken words are the ask, and the Master's spoken words
      are the answer. The consent/approval card is deliberately NOT suppressed: it is the durable record of a
      permission decision, and live mode asks it aloud (voice-live announceWaits) and answers it by voice. */
   function liveVoiceCall() {
@@ -6630,7 +6630,7 @@ const Chat = (() => {
   // before rendering the chips. Safe ordering: the sidecar persists the question BEFORE it emits the buffered
   // task run-end, so one fetch here always sees the stored row. Fail-open on every path — offline sidecar,
   // mismatched text, or a marker-path question (no MODEL recommendation stored) renders exactly the plain
-  // chips — though a marker question may still carry a grounded suggestion, which comes from the Commander's
+  // chips — though a marker question may still carry a grounded suggestion, which comes from the Master's
   // own answered history rather than from the unvalidated question.
   async function presentTaskQuestion(ws, tq) {
     let recommended = '', reason = '', grounded = null, multiSelect = false, options = null, conversation = {};
@@ -6654,7 +6654,7 @@ const Chat = (() => {
         }
       }
     } catch (_) { /* enrichment only — the question itself never depends on this fetch */ }
-    if (!isActiveWs(ws)) return;   // the Commander switched away mid-fetch; restoreTaskQuestion re-presents on return
+    if (!isActiveWs(ws)) return;   // the Master switched away mid-fetch; restoreTaskQuestion re-presents on return
     offerTaskQuestion(Object.assign({}, tq, { recommended, reason, grounded, multiSelect }, options ? { options } : {},conversation));
   }
 
@@ -6662,7 +6662,7 @@ const Chat = (() => {
   // feeding the station visibly pays off. Truthful by construction: the dossier block folds into EVERY agent's
   // system prompt (DossierStore.composeBlock), so "every agent now knows" states the wiring, not a wish. Same
   // passive gold-inset receipt family as renderReceipts — never claims the beat slot, carries no input. No veto:
-  // the dossier belief it points at is edited/forgotten in the COMMANDER panel, which stays the one owner of undo.
+  // the dossier belief it points at is edited/forgotten in the MASTER panel, which stays the one owner of undo.
   function briefingReceipt(dim) {
     try {
       const d = (typeof Dossier !== 'undefined' && Dossier.DIMS) ? Dossier.DIMS.find(x => x.key === dim) : null;
@@ -6737,10 +6737,10 @@ const Chat = (() => {
   }
   /* ══ THE ONE OFFER CARD (recommendation spine, S4) ═══════════════════════════════════════════════════
      Seven proactive channels grew seven card shapes. Every proactive CONSENT offer now reads the same way,
-     in this order, so the Commander learns the grammar once:
+     in this order, so the Master learns the grammar once:
 
         ◈ NOTICED               the eyebrow — the station SAW something; it is not making this up
-        because you said “…”    the EVIDENCE, in the Commander's own words (Recommend.whyLine — the exact
+        because you said “…”    the EVIDENCE, in the Master's own words (Recommend.whyLine — the exact
                                 grammar the FOR YOU shelf speaks, so COMMS and the shelf never disagree)
         <the proposal>          what it wants to do about it, tagged with its KIND
         [ do it ]  [ no ]       one tap either way
@@ -6807,7 +6807,7 @@ const Chat = (() => {
   // /api/study/resolve inside StudyStore). Returns true iff the card actually rendered.
   function studyCard(prop, agentId, runId) {
     if (!log || !prop || typeof StudyStore === 'undefined') return false;
-    // a RETIRE card must show the Commander the ACTUAL belief it will delete — re-resolve the (never-pinned)
+    // a RETIRE card must show the Master the ACTUAL belief it will delete — re-resolve the (never-pinned)
     // target at render time; if the dossier changed and nothing (unpinned) matches anymore, there is no card.
     let target = null;
     if (prop.kind === 'retire') {
@@ -6817,7 +6817,7 @@ const Chat = (() => {
     clearNudge();                      // claim the one post-run beat slot, retiring any gentle nudge
     if (typeof StudyStore.markShown === 'function') StudyStore.markShown(prop, agentId);   // spend one session-cap slot + record the shown recommendation
     const dimName = (typeof Dossier !== 'undefined' && Dossier.DIMS) ? ((Dossier.DIMS.find(d => d.key === prop.dim) || {}).label || prop.dim) : prop.dim;
-    // the EVIDENCE is the Commander's own words — the verbatim directive this belief was observed from. A
+    // the EVIDENCE is the Master's own words — the verbatim directive this belief was observed from. A
     // retire's grounding is the model's reasoning about the stored belief instead.
     const evLine = prop.evidence ? recWhy(recCite(prop.evidence, prop.evidenceRef && prop.evidenceRef.kind))
       : (prop.kind === 'retire' ? recWhy(prop.text) : '');
@@ -6925,7 +6925,7 @@ const Chat = (() => {
     // night-shift runs, but this lane only ever asked about the run it had just watched end, so those batches
     // were never offered and aged out of the stash. On open and on return, queue every undecided batch through
     // the SAME consent card (FIFO, deduped by run, one card per moment, the session cap still binds): nothing
-    // reaches the dossier without the Commander's Keep.
+    // reaches the dossier without the Master's Keep.
     setTimeout(lookForAwayStudy, AWAY_STUDY_FIRST_LOOK_MS);
     try {
       document.addEventListener('visibilitychange', () => {
@@ -6952,11 +6952,11 @@ const Chat = (() => {
   }
 
   /* GROWTH Tier 2 — THE GOAL-ARC CONFIRM BEAT (understanding → direction). When a goals-dim belief exists with no
-     goal tree, the station proposes a decomposition (3-5 milestones) and asks the Commander to Confirm / Edit /
+     goal tree, the station proposes a decomposition (3-5 milestones) and asks the Master to Confirm / Edit /
      Not-now — a focused Dialogue panel, exactly like the First Pitch. It is staged as an 'arc' CANDIDATE by the
      one collection pass (recommendPass) and speaks only if the spine ranks it first (memory > study > arc), and
      only into a WHOLLY FREE beat slot (slotCanArc() === 'free'), obeying the SAME stand-down guards as the
-     study/curiosity beats (studyBlocked). Its citation is the Commander's OWN goal belief, read synchronously —
+     study/curiosity beats (studyBlocked). Its citation is the Master's OWN goal belief, read synchronously —
      the paid decomposition call happens only after the arc has actually won the moment. Confirm persists the tree (GoalStore.confirm); Not-now re-offers only when the belief
      changes (GoalStore.declineDecomposition). One confirm per task end, never stacked (the shared arbiter). */
   function arcBlocked() {
@@ -6966,7 +6966,7 @@ const Chat = (() => {
     if (typeof studyBlocked === 'function') return studyBlocked();
     return isBusy() || interview;
   }
-  // does an ask wait on the Commander — an approval / question card live in COMMS, a run that ended on a question, or any ask
+  // does an ask wait on the Master — an approval / question card live in COMMS, a run that ended on a question, or any ask
   // the station holds open (a background worker's approval outlives the run that handed the work off)?
   function askWaiting() {
     if (taskQuestionLive()) return true;
@@ -6974,9 +6974,9 @@ const Chat = (() => {
     return !!(typeof Channels !== 'undefined' && Channels.allPending && Channels.allPending().length);
   }
   /* AN ASK OWNS COMMS OVER AN OFFER PANEL (soak 2026-10-15). The goal-path panel opened over COMMS at a run end and stayed: the
-     Commander's next message went out from the box it covered, the run asked for a team.dispatch approval, and the card landed
+     Master's next message went out from the box it covered, the run asked for a team.dispatch approval, and the card landed
      UNDER the panel — 19 approve clicks hit the panel's line. An offer panel (Dialogue.open({ offer })) now steps aside,
-     unanswered, the moment an approval or question reaches the Commander — asked-for or not, since a paused run is waiting on
+     unanswered, the moment an approval or question reaches the Master — asked-for or not, since a paused run is waiting on
      them — and when they send a turn of their own (its reply would stream under it). Never a decline: it is offered again. */
   // the arbiter (Dialogue.preempt / OWNER_RULES) decides who yields: an offer always does, the quick tour yields a session pick,
   // the awakening never — COMMS never decides that per call site
@@ -6986,7 +6986,7 @@ const Chat = (() => {
     return !!(Dialogue.stepAside && Dialogue.stepAside(why));
   }
   function noteAskLanding() { return stepOfferAside('ask'); }
-  /* A TASK THE COMMANDER TYPED COMPLETES A PENDING FIRST-TASK HAND-OFF (gh#158), on the composer paths that never reach send()'s
+  /* A TASK THE MASTER TYPED COMPLETES A PENDING FIRST-TASK HAND-OFF (gh#158), on the composer paths that never reach send()'s
      own check: a group conversation (GroupChat.sendText) and the busy type-ahead queue. Same classifier as send() (the agent's
      last reply as context), and PitchStore.noteCommsTask keeps the first task pending on a station that cannot run it. */
   function typedTaskCompletesHandoff(t, ws) {
@@ -6997,14 +6997,14 @@ const Chat = (() => {
     if (!(typeof Classify !== 'undefined' && Classify.isTaskDirective && Classify.isTaskDirective(t, { priorAgentTurn: prior }))) return false;
     try { return !!PitchStore.noteCommsTask(t); } catch (_) { return false; }
   }
-  // ANY approval or question raised for the Commander (a run's own, a delegated worker's, a group's, a background one) steps an
+  // ANY approval or question raised for the Master (a run's own, a delegated worker's, a group's, a background one) steps an
   // offer panel aside before its card draws: "defer while an ask waits" (askWaiting keeps it from re-opening meanwhile)
   if (typeof U !== 'undefined' && U.bus && U.bus.on) U.bus.on('permission.prompt', noteAskLanding);
   /* A DELIVERY LANDING OWNS COMMS OVER THE ARC (rc review 2026-10-14). deliveryLanding() stands the arc down at offer time, but
      the offer then waits seconds on the decomposition call, and the panel stays up until it is answered: a worker's hand-back
      (deliverTurns) or a saved file that lands in that window was hidden behind it. Every landing bumps deliveryLandSeq; an
      offer in flight stands down when it moved, and an open panel steps aside — unanswered, never a decline, so the arc is
-     offered again at a later run end. A panel the Commander opened themselves (PLAN A PATH) stays until they answer it. */
+     offered again at a later run end. A panel the Master opened themselves (PLAN A PATH) stays until they answer it. */
   let deliveryLandSeq = 0, arcYield = null;
   const STEPPED_ASIDE = { steppedAside: true }, NOT_NOW = { notNow: true };
   function noteDeliveryLanding() {
@@ -7036,7 +7036,7 @@ const Chat = (() => {
       if (!arcBeat) return;
       let path = res.texts.slice();
       /* the panel's ways out besides its own keys — `left` resolves the wait it is in: it STEPS ASIDE, unanswered, for an ask
-         reaching the Commander or their own turn (Dialogue.stepAside, see noteAskLanding) and — an unasked panel only — for a
+         reaching the Master or their own turn (Dialogue.stepAside, see noteAskLanding) and — an unasked panel only — for a
          delivery landing (noteDeliveryLanding); Esc answers it NOT NOW, exactly like its key. It is an offer, so it ends above
          the message box (Dialogue armOffer). */
       let leave = null;
@@ -7075,11 +7075,11 @@ const Chat = (() => {
           /* THE FOLD IS GATED ON THE REAL RESULT. GoalStore.confirm returns null when the path was edited down to
              something Goals.makeGoal will not build — no goal tree was created, so recording an ACCEPT would be
              the loop crediting this channel for an offer that produced nothing. It is not a decline either (the
-             Commander did not refuse; their edit was unusable), so it folds NOTHING at all — the same silence the
+             Master did not refuse; their edit was unusable), so it folds NOTHING at all — the same silence the
              loop keeps for every outcome the harness cannot name. */
           if (g) {
             if (typeof SFX !== 'undefined' && SFX.quest) { try { SFX.quest(); } catch (_) {} }
-            // NO StationUI.notify (notification diet): the Commander just SET this path in a card they were
+            // NO StationUI.notify (notification diet): the Master just SET this path in a card they were
             // reading — the sting confirms; the goal tree is where they were told it lives (⚑ QUESTS).
             recAccept('arc', 'goals', false);
           }
@@ -7229,7 +7229,7 @@ const Chat = (() => {
     });
   }
   /* NS-6 — THE THREAD TURN-IN BEAT (mined ideas → the durable thread ledger). After a salient task run the
-     sidecar MINES "threads" — ideas the Commander floated but never acted on, each grounded by a VERBATIM quote —
+     sidecar MINES "threads" — ideas the Master floated but never acted on, each grounded by a VERBATIM quote —
      and STASHES the candidates (/api/threads/proposals; never auto-commits). Here we fetch them on agent.run.end
      and offer ONE for Keep / Edit / Discard: the click IS the consent — keep/edit commits an OPEN thread on the
      ledger (POST /api/threads/turnin; the night shift's propose step draws open threads FIRST), discard
@@ -7382,8 +7382,8 @@ const Chat = (() => {
     }, 300);
   }
 
-  /* JUST-IN-TIME CURIOSITY (Commander Dossier, Phase B slice 2): after a clean run, the station may ask
-     about ONE thing it still doesn't know about its Commander — gentle, budgeted (curiosity.js caps it at
+  /* JUST-IN-TIME CURIOSITY (Master Dossier, Phase B slice 2): after a clean run, the station may ask
+     about ONE thing it still doesn't know about its Master — gentle, budgeted (curiosity.js caps it at
      one per session), never after a stop/error. Mirrors the wireProposals turn-in beat. A "sure" launches a
      one-question intake interview for just that dimension; "not now" dismisses it for good. */
   function dimLabel(dim) {
@@ -7401,8 +7401,8 @@ const Chat = (() => {
     else vanish(a.row);
   }
   /* VERDICT FOLLOW-UP (momentum loop, 2026-08-21). `◆ close` / `▼ missed` used to end in the word "noted" — the
-     Commander said the work fell short and nothing changed. Now the beat asks ONE thing — what missed? — and every
-     chip is a Commander Dossier belief (VerdictFollowup.belief), so the answer rides into every later agent's
+     Master said the work fell short and nothing changed. Now the beat asks ONE thing — what missed? — and every
+     chip is a Master Dossier belief (VerdictFollowup.belief), so the answer rides into every later agent's
      briefing. Popup law: never on `▲ nailed it`, never twice for one run, skip writes nothing. Same gold-inset
      post-run slot + one-beat-at-a-time discipline as the curiosity nudge (it IS a nudge, keyed to a run). */
   const followedUp = new Set();   // runIds already asked — one follow-up per run, ever (page lifetime)
@@ -7542,7 +7542,7 @@ const Chat = (() => {
     return { row: r.d, choiceRow: choiceRow };
   }
 
-  // ADAPTIVE RECRUITMENT beat: propose the single NEW teammate the Commander's real workflow points to, ONCE per
+  // ADAPTIVE RECRUITMENT beat: propose the single NEW teammate the Master's real workflow points to, ONCE per
   // session, through the shared gentle nudge (so it rides the same one-beat-at-a-time lifecycle + vanish()). The
   // WHY is the exact same honest, counter-derived line the bay's CURATED shelf shows (both read RecruiterStore) —
   // so the beat and the shelf can never disagree. Accepting deep-links into the recruitment bay's summon flow.
@@ -7571,7 +7571,7 @@ const Chat = (() => {
 
   /* INTENT OFFER — the discovery seam. The bay holds 38 preconfigured classes and the library ~50 ready-made
      jobs, and BOTH live two clicks deep inside a bottom-bar popover, so most Commanders never learn they exist.
-     Rather than move those doors, the station answers from the side the Commander is already on: when what they
+     Rather than move those doors, the station answers from the side the Master is already on: when what they
      just typed is plainly a class's or a recipe's job, it says so ONCE, inline, and the accept deep-links
      straight to it.
 
@@ -7655,7 +7655,7 @@ const Chat = (() => {
   /* A2 — THE SKILL ASIDE. When the quiet background review distills a completed run into a saved skill it fires
      the EXISTING `deliverable` (kind:'skill') event (see skillreview.makeReviewObserver). Here we surface ONE
      gentle, NON-interactive gold-inset aside — "◈ <agent> distilled this run into skill: <name>" — so the
-     Commander SEES the agent grow its own skillbase. HARD anti-nag / one-beat discipline:
+     Master SEES the agent grow its own skillbase. HARD anti-nag / one-beat discipline:
        • it is INFORMATIONAL (no choice row), so it never claims the post-run ask slot; if a real beat
          (memory turn-in / study card / suggestion / curiosity nudge) is live or in flight, the aside is DROPPED
          — never queued, never stacked over another beat (COMMS beat rules).
@@ -7683,7 +7683,7 @@ const Chat = (() => {
     r.body.textContent = '◈ ' + who + ' distilled this run into skill: ' + brief(String(skillName || 'a new skill'));
     autoscroll();
     /* SKILL TURN-IN (consistency loop, slice 3, 2026-08-22). A version the background/verdict review wrote is
-       WITHHELD by the sidecar (skillstore provenance ask) until the Commander approves those bytes — so this aside
+       WITHHELD by the sidecar (skillstore provenance ask) until the Master approves those bytes — so this aside
        is no longer a fleeting FYI: when the sidecar reports the skill as approvable-and-unapproved, the card
        carries the decision (use it / discard), exactly like the memory turn-in card. Popup law: the chips
        appear only when a real decision is pending, and each tap changes station state (gate or archive).
@@ -7817,7 +7817,7 @@ const Chat = (() => {
 
      A candidate must carry two things or it does not exist:
        • kind — its place in the one priority order (Recommend.PRIORITY).
-       • why  — its evidence, derived from REAL state: the Commander's own words, a real persisted counter,
+       • why  — its evidence, derived from REAL state: the Master's own words, a real persisted counter,
                 or the dimension actually being targeted. Recommend.pick() DROPS anything that can't cite.
                 A channel that cannot say WHY stays silent — truthful telemetry, applied to recommendations.
 
@@ -7830,7 +7830,7 @@ const Chat = (() => {
 
        · MEMORY WINS was a fiction. memory.proposed is emitted only after the sidecar's reflection aux call
          returns — SECONDS after the run ends. At 1.6s the slot was still free, a turn-in claimed it, and the
-         consent deck the Commander actually cares about queued behind a lower-value card, invisible.
+         consent deck the Master actually cares about queued behind a lower-value card, invisible.
        · THE STUDY STASH WASN'T WRITTEN YET. /api/study/proposals falls back to the agent's PREVIOUS batch
          when this run's isn't stashed, so at 1.6s every study card offered the LAST run's belief and each
          run's own batch never got offered at its own moment. Same for the thread mine.
@@ -7838,7 +7838,7 @@ const Chat = (() => {
      So the pass runs TWICE per run end, and each channel collects at the arm where its evidence is real:
 
        FAST (1.6s) — the RATE beat only. It needs nothing but the run's own work counters, which are already
-         on hand, and it is the beat the Commander is waiting for; this also restores the precedence the old
+         on hand, and it is the beat the Master is waiting for; this also restores the precedence the old
          650ms ladder gave it, without letting it win by being early (it is still ranked, not raced).
        SLOW (12s)  — everything the run must first PRODUCE: the fetch-backed turn-ins (study, thread), the
          arc and trust offers, and the gentle channels. 12s is the old STUDY_ARM_MS reality — by then
@@ -7932,7 +7932,7 @@ const Chat = (() => {
   /* ── THE OUTCOME LOOP (quality loop, Q2) ─────────────────────────────────────────────────────────────
      The station's own suggestions are held to the standard everything else here is: what did they actually
      PRODUCE? recQualityOf reads the channel's earned weight (recqualitystore.js) for the scorer; recAccept /
-     recDecline record what the Commander really did with the card. An accept that spawns a run records
+     recDecline record what the Master really did with the card. An accept that spawns a run records
      NOTHING yet — the run's own outcome is the evidence, and a click is not a result. Fail-open everywhere:
      no store → null → the spine treats the channel as neutral. */
   function recQualityOf(kind, dim) {
@@ -7942,7 +7942,7 @@ const Chat = (() => {
   /* ── THE ONE MEMORY (one-memory lane, 2026-08-05; stated honestly, dead-wires lane 2026-08-28) ───────
      A verdict below lands in BOTH places, and they answer different questions:
        · RecQualityStore — "how well does THIS CHANNEL do?" Browser-local, an EWMA over outcomes, read only here.
-       · RecLedger       — "did the Commander already answer THIS THING, anywhere?" The durable cross-surface
+       · RecLedger       — "did the Master already answer THIS THING, anywhere?" The durable cross-surface
                            ledger the bay, the scout, the night shift, the quest minter and reflection all
                            already write and read. Until this lane it had never heard a single COMMS verdict, so
                            an idea waved off at a card could be built overnight and shelved the next morning.
@@ -7977,7 +7977,7 @@ const Chat = (() => {
       }
     } catch (_) {}
   }
-  // the ledger's learned weight for a candidate — the Commander's own decayed accept/decline history for this
+  // the ledger's learned weight for a candidate — the Master's own decayed accept/decline history for this
   // kind, across every surface. Absent module / cold ledger / personalization paused → 0 → no adjustment at all.
   function recPreferenceOf(kind, dim) {
     try {
@@ -8000,7 +8000,7 @@ const Chat = (() => {
   }
   /* ── THE STALENESS GUARD (quality loop, Q3) ──────────────────────────────────────────────────────────
      A belief that is OLD and UNCORROBORATED may not be ASSERTED in an offer ("because you said X") — the
-     station would be claiming something the Commander last confirmed a season ago as if it were current. But
+     station would be claiming something the Master last confirmed a season ago as if it were current. But
      it is a perfectly good QUESTION ("still true that X?"). These read the state; the transformation happens
      in the candidate builder, and the ask rides the SAME slot, the same session budget and the same card
      grammar as the offer it replaces — no new surface, no new concept. Fail-open: no module, no reading, no
@@ -8022,7 +8022,7 @@ const Chat = (() => {
   /* THE RE-CONFIRM CARD. The same recCard grammar every other offer uses — eyebrow → evidence, cited by the
      belief's OWN provenance → proposal → taps — with the proposal phrased as a QUESTION instead of a proposal,
      because that is the only honest thing this card can say. Consent writes through the EXISTING store paths:
-       still true  → the belief is re-stamped COMMANDER-STATED through DossierStore.upsert (they just said so,
+       still true  → the belief is re-stamped MASTER-STATED through DossierStore.upsert (they just said so,
                      out loud, in answer to a direct question — that is exactly what 'stated' evidence is) plus
                      one unit of positive evidence on its dimension. Re-stamping the WEIGHT is what ends the
                      re-ask loop: a seed-weighted belief contributes 0 confidence by design (understanding.js
@@ -8088,30 +8088,30 @@ const Chat = (() => {
       }
       /* THE RESURRECT GUARD. If the belief was retired or deleted between render and click, DossierStore.upsert
          with an unknown id does NOT update anything — it PUSHES A BRAND-NEW belief, stamped commander/stated,
-         inventing a Commander assertion that never happened. (forget on a gone id is a harmless no-op, but the
+         inventing a Master assertion that never happened. (forget on a gone id is a harmless no-op, but the
          -1 evidence would still land on a dimension for a belief that no longer exists.) Settle quietly instead:
          the question was overtaken by events, and the station has nothing honest to record about it. */
       const live = liveBelief();
       if (!live) { settle('✓ already handled', false); return; }
       const confirmed = answer === 'confirm';
-      // A PINNED belief is Commander-asserted-durable; this card may never forget one. (staleness() never marks a
+      // A PINNED belief is Master-asserted-durable; this card may never forget one. (staleness() never marks a
       // pinned belief stale, so this only fires when it was pinned AFTER the card rendered — but the card must
       // not be the one path that quietly overrides a pin.)
       if (!confirmed && live.pinned) { settle('✕ it’s pinned — kept', true); return; }
       try {
         if (confirmed) {
-          /* CONFIRMED OUT LOUD → the belief IS now Commander-stated evidence, and is recorded as such. Without the
+          /* CONFIRMED OUT LOUD → the belief IS now Master-stated evidence, and is recorded as such. Without the
              weight re-stamp a seed-weighted belief stays at confidence 0 and this exact question returns forever.
              THE TEXT WRITTEN BACK IS THE LIVE ONE, NEVER THE RENDER-TIME CAPTURE (fixed 2026-08-04). This card can
-             sit in the feed for minutes, and the COMMANDER panel is editable the whole time. Writing the captured
-             `text` silently REVERTED an edit the Commander made after the card rendered — and then stamped the
+             sit in the feed for minutes, and the MASTER panel is editable the whole time. Writing the captured
+             `text` silently REVERTED an edit the Master made after the card rendered — and then stamped the
              reverted wording commander/stated, i.e. recorded a sentence they had just replaced as one they had
              just said. `live` is the belief as it stands at CLICK time; its text is the only honest thing to
              re-affirm. (The card's own citation still quotes what it SHOWED — that part is history.)
              THE WEIGHT UPGRADE IS DELIBERATE, INCLUDING THE seed→stated JUMP: answering "still true?" with "still
              true" IS a statement of the CONTENT, not merely of the paraphrase, so 'stated' is the truthful weight
              and it is the only thing that ends the three-weekly re-ask. What it is NOT is a claim that these were
-             the Commander's WORDS — a station-authored belief was paraphrased by the station. So the confirmation
+             the Master's WORDS — a station-authored belief was paraphrased by the station. So the confirmation
              also stamps evidenceRef.kind='confirmed', and beliefCiteKind reads that FIRST, so every later card
              cites it as `you confirmed "…"` rather than `you said "…"`. Affirmation and authorship, kept apart. */
           DossierStore.upsert(dim, { id: belief.id, text: live.text, source: 'commander', weight: 'stated', evidenceRef: { kind: 'confirmed' } });
@@ -8149,10 +8149,10 @@ const Chat = (() => {
      The card used to say `because you said "…"` about every citation it had. But a study proposal falls back to
      the run's DIRECTIVE when the model returns no QUOTE line (study.js stamps evidenceRef.kind='directive'), and a
      directive is very often machine-composed — a routine, a recipe, a scheduled brief. Presenting that as the
-     Commander's own speech is the app asserting something the harness cannot prove. So each source gets its own
+     Master's own speech is the app asserting something the harness cannot prove. So each source gets its own
      honest phrasing, and anything unlabelled falls back to a neutral quote that claims nothing about who spoke.
-       verbatim     — words the Commander really typed (a located, grounded quote)
-       confirmed    — the station's OWN wording, which the Commander then affirmed out loud (the re-confirm card).
+       verbatim     — words the Master really typed (a located, grounded quote)
+       confirmed    — the station's OWN wording, which the Master then affirmed out loud (the re-confirm card).
                       Affirming a paraphrase is real evidence about the CONTENT and no evidence at all about the
                       authorship, so it gets its own verb: `you confirmed "…"`, never `you said "…"`.
        directive    — the task text that drove the run; it may have been composed for them
@@ -8169,20 +8169,20 @@ const Chat = (() => {
   /* A DOSSIER BELIEF'S OWN CITATION KIND (truthful telemetry, 2026-08-04). The arc and the re-confirm card cited
      every goals belief as `you said "…"` — but the dossier holds beliefs the STATION observed from work (study
      writes source:'study', weight:'observed') and beliefs synthesised during onboarding, and quoting those back as
-     the Commander's speech is the card asserting something the harness cannot prove. So the belief's OWN recorded
-     provenance picks the phrasing recCite already has: only Commander-authored evidence may be rendered as speech;
+     the Master's speech is the card asserting something the harness cannot prove. So the belief's OWN recorded
+     provenance picks the phrasing recCite already has: only Master-authored evidence may be rendered as speech;
      an observed belief cites the work it was observed from; anything unlabelled claims no speaker at all. */
   function beliefCiteKind(b) {
     const ref = String((b && b.evidenceRef && b.evidenceRef.kind) || '');
     /* CONFIRMED BEATS STATED, AND IS CHECKED FIRST (2026-08-04). The re-confirm card upgrades a station-authored
        belief to commander/stated — truthfully, because affirming "still true?" IS a statement of the content. But
        the WORDS are still the station's paraphrase, so falling through to the 'stated' clause below would have
-       every later card quote the Commander saying something they never said. The confirmation stamp is the more
+       every later card quote the Master saying something they never said. The confirmation stamp is the more
        specific fact, so it wins. */
     if (ref === 'confirmed') return 'confirmed';
     const w = String((b && b.weight) || '');
     const src = String((b && b.source) || '');
-    // NB: NOT source:'curiosity'. A curiosity answer is 'stated' when the Commander TYPED it (caught by the weight
+    // NB: NOT source:'curiosity'. A curiosity answer is 'stated' when the Master TYPED it (caught by the weight
     // clause) and 'seed' when they tapped a canned chip (interview.js beliefFromAnswer) — and a canned chip is the
     // station's own sentence, which this clause was rendering back at them as `you said "…"`.
     if (w === 'stated' || src === 'commander') return 'verbatim';
@@ -8190,7 +8190,7 @@ const Chat = (() => {
     return '';   // observed / study / onboarding-synth / seed → the neutral 'from "…"' quote (claims no speaker)
   }
   // a mined thread's quote is located in the whole exchange, which includes the AGENT's turns — threadmine
-  // stamps speaker:'user' only when it also matched the Commander's own turns. Anything else is softened.
+  // stamps speaker:'user' only when it also matched the Master's own turns. Anything else is softened.
   function threadCiteKind(prop) { return (prop && prop.speaker === 'user') ? 'verbatim' : 'conversation'; }
 
   /* ── the candidate builders. Each is side-effect-free — it may only READ its store. The two fetch-backed
@@ -8205,7 +8205,7 @@ const Chat = (() => {
         (offerStudy / offerThread) consume the SAME token before rendering, so a run can never be offered
         twice by the queue and the pass racing each other. ── */
 
-  // ARC — the goal-arc confirm. Cited by the Commander's OWN goal belief, read synchronously; the paid
+  // ARC — the goal-arc confirm. Cited by the Master's OWN goal belief, read synchronously; the paid
   // decomposition call inside offerArc happens only if the arc actually wins the moment.
   function arcCandidate(runId) {
     if (typeof GoalStore === 'undefined' || typeof Dialogue === 'undefined') return null;
@@ -8217,7 +8217,7 @@ const Chat = (() => {
     if (!text) return null;                                  // nothing to cite → the arc stays silent
     if (arcSeen(runId)) return null;                         // one confirm per run — READ only (see the once law below)
     /* THE STALENESS GUARD (quality loop, Q3). Before building an arc on this belief, is it still true? A goal
-       the Commander stated a month ago that nothing since has corroborated is not something the station may
+       the Master stated a month ago that nothing since has corroborated is not something the station may
        ASSERT ("because you said X") — decomposing it into a milestone tree would be building a plan on a memory
        we cannot stand behind. So the SAME slot carries a QUESTION instead: "still true?". Confirm re-stamps the
        belief (and the arc proposal returns naturally at a later run, now grounded); deny retires it and is
@@ -8242,7 +8242,7 @@ const Chat = (() => {
     // A DELIVERY IS LANDING: the confirm panel takes over the whole COMMS panel, so it waits for a moment with nothing new on it.
     if (deliveryLanding(runId)) return null;
     // STRENGTH: the cited goal belief's OWN freshness × how well the goals dimension is corroborated. A goal the
-    // Commander stated last season, with nothing since to confirm it, is a weaker thing to build an arc on.
+    // Master stated last season, with nothing since to confirm it, is a weaker thing to build an arc on.
     return { kind: 'arc', dim: 'goals', why: recCite(text, beliefCiteKind(belief)), strength: recStrengthOfBelief(belief, 'goals'),
              title: text, fire: () => { if (arcOnce(runId)) offerArc(runId); } };
   }
@@ -8285,7 +8285,7 @@ const Chat = (() => {
              fire: () => { maybeStandaloneRate(agentId, runId); } };
   }
 
-  // ONGOING SUGGESTION — cited by what the Commander has actually told the station about themselves. An
+  // ONGOING SUGGESTION — cited by what the Master has actually told the station about themselves. An
   // idea with nothing learned behind it cannot cite, so it stays quiet.
   function suggestCandidate() {
     if (typeof SuggestStore === 'undefined' || !SuggestStore.willSuggest || !SuggestStore.fire) return null;
@@ -8335,7 +8335,7 @@ const Chat = (() => {
     const why = (pick && pick.spec) ? String(pick.why || '').trim() : '';
     if (!why) return null;                                                  // cold/thin signal → silence
     // STRENGTH: the recruiter ALREADY computes one — recruiter.js derives it from EVIDENCE VOLUME (the share of
-    // the Commander's real work this class's kit captures, lifted toward 1 as the sample count clears the floor)
+    // the Master's real work this class's kit captures, lifted toward 1 as the sample count clears the floor)
     // and recruiterstore.topPick carries it the whole way here. This beat then dropped it, so a pick standing on
     // three samples entered the spine indistinguishable from one standing on forty. recommend.js is explicit
     // that abstaining is a small RELATIVE ADVANTAGE over reporting a low reading honestly, and equally explicit
@@ -8454,7 +8454,7 @@ const Chat = (() => {
         // server's reflection gate (isTask) so chatter never triggers an ask. Fail-open if meta is unknown.
         const meta = runId ? runMeta(runId) : null;
         if (!meta || meta.isTask) {
-          // An intent offer is earned by the Commander's just-finished directive, so it is allowed before
+          // An intent offer is earned by the Master's just-finished directive, so it is allowed before
           // the accumulated-work floor. Consume the staged text exactly once on the slow post-run arm.
           const staged = meta && meta.intentOfferText; if (meta) meta.intentOfferText = null;
           // WORK-EARNED ASK FLOOR: a real task-run banks toward the session's ask budget, and no gentle
@@ -8509,15 +8509,15 @@ const Chat = (() => {
        the law. A never-rated channel reads neutral, so nothing changes until real outcomes exist. */
     for (const c of cands) { if (c && c.quality == null) c.quality = recQualityOf(c.kind, c.dim); }
     /* THE LEARNED PREFERENCE (one-memory lane). The same read, in the same place, from the OTHER memory: the
-       durable ledger's decayed tally of what the Commander has actually accepted and declined on every surface.
+       durable ledger's decayed tally of what the Master has actually accepted and declined on every surface.
        Two-sided and bounded (recommend.js PREF_MAX) — see that module for why this modifier, alone, may promote. */
     for (const c of cands) { if (c && c.preference == null) c.preference = recPreferenceOf(c.kind, c.dim); }
-    /* THE SESSION DECLINE COUNT (dead-wires lane): the third read, same place — a channel the Commander already
+    /* THE SESSION DECLINE COUNT (dead-wires lane): the third read, same place — a channel the Master already
        waved off this session gets structurally quieter for the rest of it (recommend.js DECLINE_STEP/DECLINE_MAX,
        populated for the first time here). Per-channel caps and the declined memory remain the real floor. */
     for (const c of cands) { if (c && c.declines == null) c.declines = recDeclinesOf(c.kind); }
 
-    /* AND THE HARD HALF OF THAT MEMORY: an offer whose exact proposal the Commander has already declined ANYWHERE
+    /* AND THE HARD HALF OF THAT MEMORY: an offer whose exact proposal the Master has already declined ANYWHERE
        is not re-ranked, it is REMOVED. That is the discipline every server-side propose filter already holds, and
        the spine was the last surface still able to re-raise a thing that had been explicitly waved off — the most
        visible place in the product to do it, since this one interrupts. A losing candidate is dropped BEFORE the
@@ -8558,7 +8558,7 @@ const Chat = (() => {
     });
   }
   // IDLE-DRIVEN curiosity (the autopilot EARN-CONTEXT branch, autonomy Slice A): the SAME gentle get-to-know-you
-  // ask the post-run slot makes, but triggered when the Commander goes IDLE with autonomy enabled — so turning the
+  // ask the post-run slot makes, but triggered when the Master goes IDLE with autonomy enabled — so turning the
   // dial up makes the station proactively LEARN about them between tasks. Shares the curiosity anti-nag (the
   // per-session CAP in CuriosityStore + the single activeNudge), so it can never stack with, or double-ask
   // alongside, the post-run nudge. Defined AFTER wireCuriosity so the post-run slot stays the first occurrence of
@@ -8631,18 +8631,18 @@ const Chat = (() => {
       // never `true` here (that would re-stamp replayed history with the current clock, the fabrication we're killing).
       const stamp = (m && m.ts != null) ? m.ts : false;
       // the station's own row for a note the run read (turn identity, commit 10; a reload, a wiped cache, another device): the same
-      // mid-run Commander row the live stream drew, from the row alone. Its text is the note; the wire marker is only ever a prefix.
+      // mid-run Master row the live stream drew, from the row alone. Its text is the note; the wire marker is only ever a prefix.
       if (m && m.role === 'system' && m.kind === 'steer') { if (String(m.content == null ? '' : m.content).trim()) steerRow(m.content, stamp); continue; }
       if (m.role === 'user') {
         const shownUser = m.typed != null ? m.typed : m.content;
-        const step = m.from ? null : goalStepOf(shownUser);   // a goal-loop continuation replays as the station's line, not the Commander's
+        const step = m.from ? null : goalStepOf(shownUser);   // a goal-loop continuation replays as the station's line, not the Master's
         if (step != null) goalStepLine(step); else addUser(shownUser, m.attachments, stamp, m.from);
         lastReal = m; continue;
       }
       // a SYSTEM STATUS marker (sys — e.g. an autosessions run-outcome framing line) renders as a system-styled
       // line, NOT as agent speech; it never seeds the model (historyWindow drops it) and it stays visible in-thread.
       // a SEND NOW line the station says its run read, filed after a reload lost the reply that showed it (showSentNowRead):
-      // the same mid-run Commander row the live stream drew
+      // the same mid-run Master row the live stream drew
       if (m && m.sys && m.steerEcho) { steerRow(m.content, stamp); continue; }
       if (m && m.sys) { if ((m.content || '').trim()) sysLine(m.content, !!m.error, m.tone); continue; }
       if (m.role !== 'assistant') continue;   // only dialogue turns render (a stray system marker never shows as an agent reply)
@@ -8657,7 +8657,7 @@ const Chat = (() => {
       const spoke = (m && m.agentId && typeof App !== 'undefined' && App.agentName) ? App.agentName(m.agentId) : null;
       if (stamp !== false) flushDeliverablesBefore(stamp);   // the files this reply's run produced were shown BEFORE the reply landed
       // a steering note folded mid-run is saved inside the reply as a '[steering] …' line (the token stream carried it):
-      // replay it as the same mid-run Commander row the live stream drew, never as a line of the agent's own prose
+      // replay it as the same mid-run Master row the live stream drew, never as a line of the agent's own prose
       const parts = /(^|\n)\[steering\] /.test(shownText) ? shownText.split(/(?:^|\n)\[steering\] ([^\n]*)\n?/) : [shownText];
       const files = turnFileRefs(m);   // one resolver per reply, like the live stream: every paragraph came from the same run
       for (let pi = 0; pi < parts.length; pi++) {
@@ -8673,7 +8673,7 @@ const Chat = (() => {
     flushDeliverablesBefore(null);   // files newer than the last stored turn (or from turns without a stamp)
     } finally { renderingHistory = false; }   // future LIVE rows animate again
     // STRANDED-USER LAW: a reload/switch onto a stream whose LAST turn failed (error:true) must not leave the
-    // Commander with a dead thread and no way out — load() wiped the live recovery chips. Re-offer a plain retry
+    // Master with a dead thread and no way out — load() wiped the live recovery chips. Re-offer a plain retry
     // (offerRetry's context-aware verdict isn't stored per-turn, so the safe universal recovery is a re-run).
     if (!onlyTurns && lastReal && lastReal.role === 'assistant' && (lastReal.error || lastReal.stopped) && !isBusy()) {
       if (lastReal.stopped) offerTryAgain();
@@ -8810,7 +8810,7 @@ const Chat = (() => {
       seg = null; raw = '';
     }
     // A folded /steer note echoes back from the sidecar as a '\n[steering] …\n' token delta. It is the
-    // Commander's note, not agent prose — render it as the Commander's own mid-run row and CLOSE the paragraph
+    // Master's note, not agent prose — render it as the Master's own mid-run row and CLOSE the paragraph
     // around it, so it never sits in a caret'd row that reads as the agent typing it.
     function steerNote(text) {
       endToolRail();
@@ -8859,7 +8859,7 @@ const Chat = (() => {
 
   // task-vs-chat classification lives in app/classify.js (pure + unit-tested); see Classify.isTaskDirective.
 
-  // ── in-app WORK-ITEM lifecycle (WIRING_AUDIT P1, slice 1): make the directive the Commander sends RIDE A
+  // ── in-app WORK-ITEM lifecycle (WIRING_AUDIT P1, slice 1): make the directive the Master sends RIDE A
   //    BELT the same way an admitted Telegram message does. workitem.placed / queue.status / workitem.delivered
   //    have NO NDJSON twin (harness.js streams only agent.* / token / tool / deliverable), so emitting them
   //    locally on U.bus animates the inbound box + the outbound product crate and folds INTAKE/THRU/DWELL/QUEUE
@@ -8966,7 +8966,7 @@ const Chat = (() => {
   // The sidecar did NOT confirm the stop: un-flag the stream (never mark it stopped on a claim the harness can't
   // back), leave the run streaming, and print the friendly transport verdict measured the same way send()'s catch
   // does (Harness.pingEngine → Friendly.friendlyError), so a dead service reads LINK DOWN and a refused stop names
-  // its status. STOP stays available — the Commander can press it again.
+  // its status. STOP stays available — the Master can press it again.
   function stopFailed(id, v) {
     interrupted.delete(id);
     stopSource.delete(id);
@@ -8985,7 +8985,7 @@ const Chat = (() => {
 
   // The sidecar did NOT record that this approval card is on screen: the fail-closed auto-deny timer keeps
   // running against a prompt it cannot prove anyone saw. Keep the card pending (it IS pending) and warn the
-  // Commander to answer now rather than let it silently deny.
+  // Master to answer now rather than let it silently deny.
   function consentAckFailed(ws, ev, v) {
     if (!isActiveWs(ws)) return;
     localLine('⚠ The station did not confirm it saw this approval card (' + ((v && v.error) || 'no answer') + '). Answer it now — an unseen prompt auto-denies on a timer.');
@@ -9099,7 +9099,7 @@ const Chat = (() => {
     });
     /* SENT, NOT READ YET (Andrew 10-26: a SYSTEM line announced every send-now, then the note showed up under the agent's
        name). A line the run holds stays in the strip, keyless, until the run's echo shows the agent read it; the transcript
-       then shows it as the Commander's own MID-RUN message. A 200 proves only that the run holds it, so that is all it says. */
+       then shows it as the Master's own MID-RUN message. A 200 proves only that the run holds it, so that is all it says. */
     const held = (typeof sentNow !== 'undefined' && activeWs && sentNow.get(activeWs.id)) || [];
     for (const n of held) {
       if (n.landed) continue;
@@ -9532,7 +9532,7 @@ const Chat = (() => {
   // a line the run read, filed as ONE station row after that run's dialogue (before the station's own lines about it);
   // renderHistory draws it as the live stream's steer-echo row. The station-row shape every other station row uses (role
   // 'system' + sys): it never seeds the model (historyWindow drops sys rows), and nothing that reads the agent's last turn
-  // (copy last reply, the next send's prior-turn hint, /history, the starter suggestions) takes the Commander's note for the agent's words.
+  // (copy last reply, the next send's prior-turn hint, /history, the starter suggestions) takes the Master's note for the agent's words.
   function showSentNowRead(ws, read) {
     if (!ws) return;
     const h = Array.isArray(ws.history) ? ws.history : (ws.history = []);
@@ -9671,7 +9671,7 @@ const Chat = (() => {
       if (CONNECTOR_NEEDED.size > 40) CONNECTOR_NEEDED.delete(CONNECTOR_NEEDED.keys().next().value);
     });
   }
-  /* A KEY PASTED INTO CHAT, SAVED (keys.save, 2026-10-25). The agent stored a key the Commander pasted here in KEYS. The
+  /* A KEY PASTED INTO CHAT, SAVED (keys.save, 2026-10-25). The agent stored a key the Master pasted here in KEYS. The
      page holds the paste in two places the sidecar's redaction never reaches: the bubble on screen and this
      workstream's history (the desk save, and what the next turn re-sends to the model). On keys.save's OK result (the
      contract's own agent.tool_call + agent.tool_result, paired by callId — no new event) the sidecar swaps every saved
@@ -9694,7 +9694,7 @@ const Chat = (() => {
       if (p.ok && !p.isError) scrubSavedKeys(runId).catch(() => {});
     });
   }
-  // returns how many of the Commander's turns now show the placeholder (the number aids testing)
+  // returns how many of the Master's turns now show the placeholder (the number aids testing)
   async function scrubSavedKeys(runId) {
     let ws = null;
     if (typeof Workstreams !== 'undefined' && Workstreams.all) { try { ws = Workstreams.all().find(w => (w.runIds || []).indexOf(runId) >= 0) || null; } catch (_) {} }
@@ -9730,7 +9730,7 @@ const Chat = (() => {
   }
   // The values the sidecar swapped, read back out of one (raw, scrubbed) pair: the scrubbed text is the raw text with
   // each saved key replaced by its placeholder, so the raw text between the literal pieces IS the key. The page
-  // already held these values (the Commander typed them); nothing secret comes back from the sidecar. [] on any doubt.
+  // already held these values (the Master typed them); nothing secret comes back from the sidecar. [] on any doubt.
   function swappedKeys(raw, scrubbed) {
     const re = /\[[A-Z][A-Z0-9_]* saved in (?:API )?KEYS\]/g;   // "API KEYS" since R15; the older "KEYS" still reads back
     const names = scrubbed.match(re) || [], parts = scrubbed.split(re), out = [];
@@ -9779,8 +9779,8 @@ const Chat = (() => {
     return true;
   }
   /* A run that ends on a TASK_QUESTION owns the one post-run slot, so the connect chip cannot take a row of its own —
-     but connectors.list has already told the model "the Commander now has a ⇄ CONNECT chip", and the model tells
-     the Commander to tap it (first-hour walk 2026-09-28: said three times, no chip anywhere). Record the handoff
+     but connectors.list has already told the model "the Master now has a ⇄ CONNECT chip", and the model tells
+     the Master to tap it (first-hour walk 2026-09-28: said three times, no chip anywhere). Record the handoff
      exactly as offerConnectorDoor would; offerTaskQuestion then draws the door INSIDE the question card. */
   function holdConnectorDoor(runId, originWs) {
     const ev = runId ? CONNECTOR_NEEDED.get(runId) : null;
@@ -9815,7 +9815,7 @@ const Chat = (() => {
     const ws = Workstreams.get(streamId), h = Workstreams.connectorHandoff(streamId);
     if (!ws || !h || connectorContinuing.has(streamId) || Channels.isBusy(streamId)) return false;
     // The run that raised this door ended on a question that is still open: a continuation prompt would be taken
-    // as its answer. Take the Commander back to the question instead; answering it continues with the connection.
+    // as its answer. Take the Master back to the question instead; answering it continues with the connection.
     if (h.awaitingAnswer) {
       App.openWorkstream(streamId);
       if (typeof StationUI !== 'undefined') StationUI.notify('Answer the open question in this task to continue with ' + h.connectorId + '.', 'info');
@@ -9834,7 +9834,7 @@ const Chat = (() => {
       if (!c || c.state !== 'up' || !c.enabled || c.authRequired) throw new Error('Connect ' + h.connectorId + ' before continuing.');
       if (h.toolName && !(c.tools || []).includes(h.toolName)) throw new Error('This connection does not offer the operation the task requested. Inspect its tools in ABILITIES.');
       if (Workstreams.connectorHandoff(streamId) !== h || Channels.isBusy(streamId)) return false;
-      // Checking/refreshing a connection yields to the Commander. A later response must not
+      // Checking/refreshing a connection yields to the Master. A later response must not
       // override new navigation, typing, or an attachment; leave the handoff available to retry.
       if (focusVersion !== continuationFocusVersion || isComposerEngaged() || Workstreams.get(streamId) !== ws) {
         if (typeof StationUI !== 'undefined') StationUI.notify('Connection checked. Continue the task when you are ready.', 'info');
@@ -10326,7 +10326,7 @@ const Chat = (() => {
       try {
         const sys = GoalLoop.judgeSystem();
         const usr = GoalLoop.judgeUser(s, reply, { now: new Date().toISOString() });
-        // keepEffort: a verdict that ends the Commander's loop runs on their reasoning effort, never the cheap aux one
+        // keepEffort: a verdict that ends the Master's loop runs on their reasoning effort, never the cheap aux one
         const res = await Harness.chat({ system: sys, messages: [{ role: 'user', content: usr }], agentId: ws.agentId || 'agent', isTask: false, placed: [], quotesStream: ws.id, internal: true, keepEffort: true });   // the verdict is composed from this session's reply: the station stamps it as a quote of the session
         raw = (res && !res.error && (!res.outcome || res.outcome === 'succeeded')) ? (res.text || '') : '';   // a succeeded verdict only (review r7)
       } catch (_) { raw = ''; }
@@ -11090,7 +11090,7 @@ const Chat = (() => {
       });
   }
   // drop a recipe's directive into the input: apply each OPTIONAL param's default, but leave REQUIRED blanks
-  // visible as {tokens} so the Commander can see what to fill — and pre-select the first one to type over.
+  // visible as {tokens} so the Master can see what to fill — and pre-select the first one to type over.
   function insertRecipe(r, values) {
     if (!input) return;
     let directive = (r && r.task) || (r && r.name) || '';
@@ -11487,7 +11487,7 @@ const Chat = (() => {
     const wiId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : ('wi-' + Date.now() + '-' + (++wiSeq));
     const wiPlacedTs = Date.now();
     let wiPlaced = false;   // set below iff a crate actually rode — every wi* beat downstream gates on it
-    stepOfferAside('turn');   // the Commander's own turn: an offer panel over COMMS steps aside so the exchange shows
+    stepOfferAside('turn');   // the Master's own turn: an offer panel over COMMS steps aside so the exchange shows
     stick = true;   // sending a message means you want to watch the exchange — re-follow the bottom
     // TIMESTAMP TRUTH (P0): stamp the turn with its REAL wall-clock time at push, and render the same instant on
     // screen — so a later replay/switch shows this turn's actual time, never the reload clock.
@@ -11505,16 +11505,16 @@ const Chat = (() => {
     const priorAgentTurn = (() => { for (let i = ws.history.length - 2; i >= 0; i--) { const m = ws.history[i]; if (m && m.role === 'assistant') return typeof m.content === 'string' ? m.content : ''; if (m && m.role === 'user') return ''; } return ''; })();
     const isTask = recoveryResume || !!pending || Classify.isTaskDirective(text, { priorAgentTurn });
     // the WORDS of a "yes" are not the work: the task is the agent's offer it accepted. So an accepted offer runs WITH
-    // tools, but never feeds what reads the Commander's own wording (the profile, the recurring-job miner, the intent
+    // tools, but never feeds what reads the Master's own wording (the profile, the recurring-job miner, the intent
     // offer) — two "yes please" acceptances must not look like a recurring job called "yes please".
     const acceptedOffer = !!(isTask && Classify.isAffirmation && Classify.isAffirmation(text));
-    // a task the Commander typed into the message box completes a pending first-task hand-off (gh#158). Never a retry, a goal
+    // a task the Master typed into the message box completes a pending first-task hand-off (gh#158). Never a retry, a goal
     // step, or a send made for them (the tour's file example, a recipe launch, a hand-off Start): those carry no `composer`.
     if (opts && opts.composer && isTask && !retry && !goalContinuation && typeof PitchStore !== 'undefined' && PitchStore.noteCommsTask) { try { PitchStore.noteCommsTask(text); } catch (_) {} }
-    // INTENT OFFER: a real, fresh directive is the one moment the Commander has stated what they want in their
+    // INTENT OFFER: a real, fresh directive is the one moment the Master has stated what they want in their
     // own words — the only honest place to say "there is a class built for exactly this". Gated to genuine new
     // work: never a retry (already offered on the original), never a recipe launch (they came FROM the library),
-    // never a goal-loop continuation (the station wrote that text, not the Commander), never a reply to a
+    // never a goal-loop continuation (the station wrote that text, not the Master), never a reply to a
     // pending task question. Stage it on this run's metadata so concurrent sessions can never consume each
     // other's offer; the slow post-run arm reads and clears it after the answer and its own choice rows settle.
     const intentOfferText = (isTask && !acceptedOffer && !retry && !fromRecipe && !goalContinuation && !pending) ? String(text || '') : null;
@@ -11535,7 +11535,7 @@ const Chat = (() => {
     if (!retry && isTask && !acceptedOffer && !pending && typeof ProfileStore !== 'undefined') ProfileStore.observeMessage(text);
     if (!retry && isTask && !acceptedOffer && !pending && typeof MintStore !== 'undefined') MintStore.observe(text);   // notice recurring jobs → propose minting them as one-tap missions
     // CORRECTION CAPTURE (slice 2): the first message to this agent after a short-of-the-mark verdict IS the
-    // correction of that run — hand it to the held skill review in the Commander's words (final: fires now) and
+    // correction of that run — hand it to the held skill review in the Master's words (final: fires now) and
     // stamp the new run as correctionOf so the runs ledger can relate them. One message per verdict; a stale
     // window (>10 min) is just a new task. Never on retry (the same text re-sent is not a second correction).
     let correctionOf = null;
@@ -11559,11 +11559,11 @@ const Chat = (() => {
     const willSpeak = speechOwner()
       && typeof Voice !== 'undefined' && Voice.isOn && Voice.isOn();
     // REACTIVE DESK TRIP — the honest signal. We no longer pre-commit the walk on the classifier's GUESS:
-    // every turn the agent first turns to face the Commander (listen), and it only gets up and walks to its
+    // every turn the agent first turns to face the Master (listen), and it only gets up and walks to its
     // workstation the instant it ACTUALLY reaches for a tool (web / files / terminal) — see walkToDesk(),
     // fired from onToolCall / onPermission below. So a basic question, an opinion, or a one-word answer the
     // agent handles from its own knowledge NEVER runs to the PC; the desk trip now means "real tool-work is
-    // happening", not "the Commander typed something". isTask still gates TOOL AVAILABILITY (so a genuine
+    // happening", not "the Master typed something". isTask still gates TOOL AVAILABILITY (so a genuine
     // task is never left tool-less) — it just no longer forces the walk. Voice/speaker state can't touch it.
     const turnAgentId = ws.agentId || 'agent';
     let walkedToDesk = false;
@@ -11576,7 +11576,7 @@ const Chat = (() => {
       if (typeof Channels !== 'undefined' && Channels.setStatus && Channels.runIdOf(ws.id)) Channels.setStatus(ws.id, 'working…');
       if (isActiveWs(ws)) syncStatus();
     }
-    // turn to face the Commander and listen (no camera yank); a spoken CHAT also softly frames the agent.
+    // turn to face the Master and listen (no camera yank); a spoken CHAT also softly frames the agent.
     if (World.setActivityFor) World.setActivityFor(turnAgentId, 'talk'); else World.setActivity('talk');
     // A TASK ALWAYS WORKS AT THE WORKSTATION (Andrew's ruling, 2026-07-05, supersedes the reactive-only
     // rule): a turn the classifier reads as a task sends the agent to its desk IMMEDIATELY — even if the
@@ -11594,7 +11594,7 @@ const Chat = (() => {
     const sys = system
       + (isTask ? ' If this needs real work — searching the web, reading or writing files, running a tool — do it and report the result clearly. If you can answer it directly from what you already know, just answer; don\'t reach for tools you don\'t need.' : '')
       // agents told users "this chat can't show my workspace images" and linked them instead (user reports 10-20): say how
-      + (willSpeak ? '' : ' To show the Commander an image file (a PNG, JPG, GIF, WebP or SVG you saved), put ![short caption](path) in your reply, using the relative path you saved it under — this chat shows it as the picture.')
+      + (willSpeak ? '' : ' To show the Master an image file (a PNG, JPG, GIF, WebP or SVG you saved), put ![short caption](path) in your reply, using the relative path you saved it under — this chat shows it as the picture.')
       + (willSpeak ? voiceModeRules() : '');
 
     const before = Object.assign({}, Harness.totals());   // COPY (totals is a mutated singleton) so the per-stream diff is real
@@ -11626,13 +11626,13 @@ const Chat = (() => {
     let busyRefusal = null;   // race-time server mutex refusal: restore the directive instead of minting failed turns
     let goalJudgeReply = null;   // GOAL LOOP: set to the clean assistant reply when a turn should be judged; fired in finally
     let goalStall = null;        // GOAL LOOP: WHY this step is not judgeable (stopped/failed/cut short/asked) — the loop pauses and says it
-    let presenceStoppedBy = null;   // 'esc' | 'you' when the Commander's own Stop ended this run cleanly (the card names it)
+    let presenceStoppedBy = null;   // 'esc' | 'you' when the Master's own Stop ended this run cleanly (the card names it)
     // VOICE-AWARE CHOICES: never let TTS read the FORK:/TASK_QUESTION: choice markers (they render as
     // one-tap chips; spoken aloud they come out as "TASK QUESTION … pipe pipe …" + every option verbatim).
     // speakSafe truncates the spoken view at the first marker LINE, and holds back a still-streaming
     // partial prefix at the buffer tail ("TASK_QU…" hasn't matched yet but must not be flushed).
     const SPEAK_MARKER = /(^|\n)\s*(?:FORK|TASK_QUESTION)\s*:/i;
-    const SPEAK_STEER = /(?:^|\n)\[steering\] [^\n]*/g;   // a folded steering note's echo is the Commander's words, never the agent's (it arrives whole, so offsets hold)
+    const SPEAK_STEER = /(?:^|\n)\[steering\] [^\n]*/g;   // a folded steering note's echo is the Master's words, never the agent's (it arrives whole, so offsets hold)
     const speakSafe = (s) => {
       s = String(s == null ? '' : s).replace(SPEAK_STEER, '');
       const m = SPEAK_MARKER.exec(s);
@@ -11643,7 +11643,7 @@ const Chat = (() => {
       return s;
     };
     const speech = willSpeak ? Voice.openReply({ owner: ws.id, agentId: ws.agentId }) : null;   // this run's spoken reply, a handle from send on
-    // Close THIS run's spoken reply exactly once. If the Commander switches sessions mid-reply, the run stops
+    // Close THIS run's spoken reply exactly once. If the Master switches sessions mid-reply, the run stops
     // feeding speech — but the reply it opened must still close, or Voice reads "speaking" forever (hands-free
     // never re-opens, the next reply inherits its failures).
     let speechClosed = false;
@@ -11658,7 +11658,7 @@ const Chat = (() => {
       // older run is still streaming; none of its late words may leak into the new call owner.
       if (typeof Voice === 'undefined' || !willSpeak || !Voice.speakChunk) return;
       if (!speechOwner()) { closeSpeech(); return; }
-      // Once closed (the Commander switched away mid-reply), this run never re-opens speech — coming back would
+      // Once closed (the Master switched away mid-reply), this run never re-opens speech — coming back would
       // re-open a reply nothing closes again (the finally skips a closed reply), wedging hands-free on 'speaking'.
       if (speechClosed) return;
       // spokenIdx is an offset into what was STREAMED. A final text that isn't a continuation of it (a work line's
@@ -11709,7 +11709,7 @@ const Chat = (() => {
         recovery: recoveryResume ? opts.recovery : undefined,
         retryUserRunId: retry ? ((opts && opts.retryUserRunId) || (retryDirectiveTurn && retryDirectiveTurn.sourceRunId)) : undefined,
         ...turnIds,
-        goalContinuation: (goalContinuation && !recoveryResume) || undefined,   // the goal loop's own step: the station files it as one (kind goal-step), never as the Commander's wording
+        goalContinuation: (goalContinuation && !recoveryResume) || undefined,   // the goal loop's own step: the station files it as one (kind goal-step), never as the Master's wording
         connectorContinuationOf: opts && opts.connectorContinuationOf,
         recipeId: recipeId || undefined,   // provenance spine: the launching recipe rides to the durable run row (undefined for non-recipe runs)
         projectRoot: runRoot || undefined,   // project-anchored session: the sidecar injects the folder context ONLY if the root is still a standing blessed grant (truthful)
@@ -11965,7 +11965,7 @@ const Chat = (() => {
         if (isActiveWs(ws) && taskQuestion) presentTaskQuestion(ws, Object.assign({ runId: thisRunId }, taskQuestion));   // enriches with the stored recommendation, then renders
         // Belt-and-braces (live-caught 2026-07-16): a run can end 'clarifying' with the marker unparseable
         // client-side (e.g. a malformed/glued reply line) while the DURABLE brief holds the real validated
-        // question — re-present from the store so the Commander is never left with a question-less pause.
+        // question — re-present from the store so the Master is never left with a question-less pause.
         else if (isActiveWs(ws) && endReason === 'clarifying') restoreTaskQuestion(ws);
         // R1 MID-TASK FORK: the agent may have ended this reply with one FORK marker (earned only while the
         // style model's confidence is low — the directive isn't even in the prompt otherwise). Render the
@@ -12011,7 +12011,7 @@ const Chat = (() => {
       }
     } catch (e) {
       const aborted = e && (e.name === 'AbortError' || /abort/i.test(String(e.message || e)));
-      const stopped = interrupted.has(ws.id);   // the Commander pressed Stop on THIS stream — a graceful interrupt, not a fault
+      const stopped = interrupted.has(ws.id);   // the Master pressed Stop on THIS stream — a graceful interrupt, not a fault
       if (stopped) {
         // keep whatever already streamed, mark it stopped, and log NO error (the stop was intentional).
         // No toolLine (2026-07-27): resolvePresence already prints "■ RUN STOPPED · …" — `⏹ stopped` echoed it.
@@ -12123,7 +12123,7 @@ const Chat = (() => {
       // (internal call, off the floor/telemetry) and fire-and-forget so it never delays this turn's teardown.
       // Not first-turn-only: a stream still wearing its machine placeholder (first attempt hiccuped, or the
       // session was saved by a pre-upgrade build) retries on this completed turn (needsModelTitle gates it).
-      // A turn the Commander stopped makes no title call (the conversation's Stop could not reach it); the next
+      // A turn the Master stopped makes no title call (the conversation's Stop could not reach it); the next
       // completed turn upgrades the placeholder instead.
       if (!stoppedHere && titleOk && (firstTurn || (typeof Workstreams !== 'undefined' && Workstreams.needsModelTitle && Workstreams.needsModelTitle(ws.id)))) maybeRetitle(ws, text, finalReply);
       // flush any trailing spoken text and CLOSE the speech stream — the last chunk's end re-arms the
@@ -12256,13 +12256,13 @@ const Chat = (() => {
     setTimeout(() => showNextTurnin(), 700);
   }
   function echoUser(text) { addUser(text); }
-  // scaffold the COMMS input with a starter the Commander finishes typing (the awakening's open CONTEXT
+  // scaffold the COMMS input with a starter the Master finishes typing (the awakening's open CONTEXT
   // question uses this so a chip seeds "what i'm building: …" instead of committing a half-empty answer).
   function prefill(t) {
     if (!input) return;
     const add = String(t == null ? '' : t);
     const cur = input.value;
-    // APPEND, never replace: tapping a 2nd facet chip must not wipe what the 1st started (or what the Commander
+    // APPEND, never replace: tapping a 2nd facet chip must not wipe what the 1st started (or what the Master
     // already typed). Separate with "; " unless the line already ends on a separator or is empty.
     if (cur.trim()) input.value = /[;:,]\s*$/.test(cur) ? cur.replace(/\s+$/, '') + ' ' + add : cur.replace(/\s+$/, '') + '; ' + add;
     else input.value = add;
@@ -12278,7 +12278,7 @@ const Chat = (() => {
   function choices(items, onPick, opts) {
     if (!log) return;
     // in a live voice call, chips never render (see liveVoiceCall) — no pick means the producer's optional
-    // beat simply goes unanswered, exactly as if the Commander never clicked, which every caller tolerates
+    // beat simply goes unanswered, exactly as if the Master never clicked, which every caller tolerates
     if (liveVoiceCall()) return;
     clearEmptyState();
     clearChoices();   // chips are a focused prompt, never a background layer behind the next question
@@ -12381,7 +12381,7 @@ const Chat = (() => {
       (typeof document !== 'undefined' && document.activeElement === input))));
   }
   // Only a still-current foreground run may honor model-driven navigation. Tool arguments alone
-  // cannot establish that the Commander is still looking at the conversation that asked for it.
+  // cannot establish that the Master is still looking at the conversation that asked for it.
   function canFocusSession(origin) {
     if (!origin || !activeWs || origin.streamId !== activeWs.id || !origin.runId) return false;
     const meta = RUN_META.get(origin.runId);

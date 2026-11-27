@@ -1,6 +1,6 @@
 /* node test/taskbrief.refused-answer.http.test.js — ANSWER HOLD through the REAL run path (runOnceCore).
 
-   The bug: a run ends with a durable question ("Include the budget figures? || yes | no"); the Commander
+   The bug: a run ends with a durable question ("Include the budget figures? || yes | no"); the Master
    answers "yes"; the run carrying that answer fails BEFORE the model says anything (here: the provider
    answers HTTP 400 on turn 0 — the same shape as an expired sign-in or a tool-less model refusal). prepare()
    had already stamped the answer and flipped the brief to 'ready', so the re-sent "yes" was no longer an
@@ -78,7 +78,7 @@ const briefsOf = (ws, key) => { const raw = briefs(ws); const rows = raw && (raw
   try {
     await fixture.start();
 
-    // RUN 1 — the task asks its one material question and ends waiting on the Commander.
+    // RUN 1 — the task asks its one material question and ends waiting on the Master.
     const asked = [{ role: 'user', content: ORIGINAL }];
     const r1 = await run(fixture, true, asked);
     A.eq(r1.status, 200, 'run 1 streams');
@@ -87,7 +87,7 @@ const briefsOf = (ws, key) => { const raw = briefs(ws); const rows = raw && (raw
     A.eq(rows[0] && rows[0].status, 'clarifying', 'run 1 left the brief waiting on its question');
     const briefId = rows[0] && rows[0].id;
 
-    // RUN 2 — the Commander answers "yes" (classify.js: chat, isTask false); the provider fails before output.
+    // RUN 2 — the Master answers "yes" (classify.js: chat, isTask false); the provider fails before output.
     const answer = asked.concat([{ role: 'assistant', content: MARKER }, { role: 'user', content: 'yes' }]);
     mock.state.mode = 'fail';
     const r2 = await run(fixture, false, answer);
@@ -98,7 +98,7 @@ const briefsOf = (ws, key) => { const raw = briefs(ws); const rows = raw && (raw
     A.eq(rows[0] && rows[0].status, 'clarifying', 'the failed answer run handed the question BACK (brief clarifying again)');
     A.eq(rows[0] && rows[0].questions && rows[0].questions[0] && rows[0].questions[0].answer, '', 'the unread answer is not recorded as a decision');
 
-    // RUN 3 — the Commander re-sends "yes". It must resume the ORIGINAL task with its tools and brief.
+    // RUN 3 — the Master re-sends "yes". It must resume the ORIGINAL task with its tools and brief.
     mock.state.mode = 'ok';
     const before = mock.state.main.length;
     const r3 = await run(fixture, false, answer);
@@ -108,7 +108,7 @@ const briefsOf = (ws, key) => { const raw = briefs(ws); const rows = raw && (raw
     let req = {}; try { req = JSON.parse(sent.body); } catch (_) {}
     A.ok(Array.isArray(req.tools) && req.tools.length > 0, 'the retry is TASK work: the model is offered its tools (got ' + (Array.isArray(req.tools) ? req.tools.length : 'none') + ')');
     A.ok(sent.body.indexOf('ORIGINAL REQUEST: ' + ORIGINAL) >= 0, 'the retry carries the task brief with the ORIGINAL request, not the one-word answer');
-    A.ok(sent.body.indexOf('DECISION: Include the budget figures? => yes') >= 0, 'and the decision the Commander made');
+    A.ok(sent.body.indexOf('DECISION: Include the budget figures? => yes') >= 0, 'and the decision the Master made');
     rows = briefsOf(fixture.workspace, 'stream:s1');
     A.eq(rows.length, 1, 'still exactly one brief on the conversation');
     A.eq(rows[0] && rows[0].id, briefId, 'the SAME brief carried the task through');

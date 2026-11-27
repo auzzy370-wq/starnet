@@ -1,7 +1,7 @@
 /* VULTRON — projects.js : pure display helpers for the PROJECTS rail view (NS-5c).
 
    The Projects rail is the SESSIONS↔PROJECTS toggle's second face. It renders GET /api/projects — every folder
-   the Commander has blessed as a trusted project root (the NS-5 known-projects store, joined against the live
+   the Master has blessed as a trusted project root (the NS-5 known-projects store, joined against the live
    path:<root> grant). This module owns ONLY the pure shaping so it is unit-testable headless like workstreams.js /
    classify.js: turning the API rows into rail rows, and the toggle's show/hide truth table. The DOM wiring
    (fetch, render, click→jump, remove→revoke, add→bless) lives in app.js.

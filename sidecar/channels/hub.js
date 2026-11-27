@@ -30,7 +30,7 @@
   // failopen.note — the tagged SYNC swallow (per-tag count + throttled warn): a fail-open catch must never be invisible.
   const { note: failNote, swallow } = (typeof require === 'function') ? require('../failopen.js') : { note: function (tag, e) { console.warn('[failopen] ' + tag + ':', (e && e.message) || e); }, swallow: function (tag) { return function (e) { console.warn('[failopen] ' + tag + ':', (e && e.message) || e); }; } };
 
-  const TASK_SUFFIX = ' The Commander has just messaged you a task — carry it out as best you can and report the result clearly.';
+  const TASK_SUFFIX = ' The Master has just messaged you a task — carry it out as best you can and report the result clearly.';
   /* dockSystem(persona, brief, isTask) — the system context an ENTRY dock runs under: its persona, the dock's
      standing brief (step editor — the SAME section header the chain handoff turn uses), and the task suffix.
      Pure + exported so the conveyor step-through test composes the identical entry run (2026-09-22). */
@@ -39,7 +39,7 @@
       + (brief ? '\n\nYOUR STANDING BRIEF FOR THIS STATION:\n' + String(brief).slice(0, 2000) : '')
       + (isTask ? TASK_SUFFIX : '');
   }
-  const DEFAULT_PERSONA = 'You are the Commander\'s AI agent, reachable over a messaging app. Address the user as "Commander", '
+  const DEFAULT_PERSONA = 'You are the Master\'s AI agent, reachable over a messaging app. Address the user as "Master", '
     + 'keep a spark of personality, and keep replies concise and chat-friendly. When given a task you have REAL tools '
     + '(web search/read, files, memory) — use them and report what you actually found.';
 
@@ -162,7 +162,7 @@
 
   // Map a TYPED reply onto a live choice keyboard: "2" / "2." / "2)" pick by position, and an exact
   // (case-insensitive) option text picks itself. Everything else returns null and passes straight through as a
-  // new instruction — a Commander who changes their mind mid-question must never have that silently re-read as
+  // new instruction — a Master who changes their mind mid-question must never have that silently re-read as
   // an answer to it. Typing and tapping therefore produce the IDENTICAL canonical option text downstream.
   function coerceChoice(options, raw) {
     const s = String(raw == null ? '' : raw).trim();
@@ -195,7 +195,7 @@
   //   'always' — owner-only in every form (state-changing, or reveals the owner's private spend/schedules)
   //   'write'  — the bare form is a read-only readout anyone may see; any argument (a change) is owner-only
   //   absent   — read-only, open to every admitted sender (status, agents, whoami, tools, help, start)
-  // Commander-defined commands (userCommandNames) are owner-only too — they run the owner's own aliases.
+  // Master-defined commands (userCommandNames) are owner-only too — they run the owner's own aliases.
   const { CHANNEL_COMMANDS: COMMANDS, CHANNEL_NOTE_COMMANDS } = require('../slash.js');
   const SLASH_CMDS = COMMANDS.reduce((m, c) => { if (c.slash) m[c.command] = 1; return m; }, {});
   const KNOWN_CMDS = COMMANDS.reduce((m, c) => { m[c.command] = 1; return m; }, {});
@@ -239,7 +239,7 @@
     return { cmd: head, arg: arg };
   }
 
-  /* parseUserCommand(text, names) — recognise one of the Commander's OWN commands (`names` = what the sidecar's
+  /* parseUserCommand(text, names) — recognise one of the Master's OWN commands (`names` = what the sidecar's
      usercommands.json defines). Returns { name, line }, where `line` is the canonical "/name args" the slash
      registry can read, or null when the text is not one of them.
 
@@ -251,7 +251,7 @@
                               the built-ins.
        '/disk_usage'          Telegram's command grammar has no '-', so a "/disk-usage" command can only be listed in
                               the "/" menu (and tapped) as "/disk_usage". Accepted as the same command — but an exact
-                              name always wins, so a Commander who defined both keeps both.
+                              name always wins, so a Master who defined both keeps both.
      The head must end at whitespace or the end of the text: "/standup/notes.md" is a path, not a command. */
   function parseUserCommand(text, names) {
     const s = String(text == null ? '' : text).trim();
@@ -390,7 +390,7 @@
     const entryTaint = (typeof o.entryTaint === 'string' && o.entryTaint.trim()) ? o.entryTaint.trim().slice(0, 80) : null;
     /* SEND TO VERDICTS (review finding conveyor-backend-04, 2026-10-13). A hub whose inbound is a SEND TO hand-off (the handoff
        runner's trigger hub, index.js makeTriggerHub) is told the SENDING job's own verdicts instead of inferring them from its taint
-       label, so a job the Commander typed into LINE A keeps Full Access on LINE B exactly as an in-line hop does. Both only NARROW:
+       label, so a job the Master typed into LINE A keeps Full Access on LINE B exactly as an in-line hop does. Both only NARROW:
          entryUntrusted(msg) -> is this entry third-party content? Read only on an entryTaint hub; anything but a literal false, or a
                                 throw, is untrusted. Absent -> today's rule (an entryTaint hub's entry is untrusted). An attachment or
                                 a forwarded message stays untrusted whatever it answers.
@@ -432,7 +432,7 @@
     // palette uses, in-process (no self-HTTP, no api token). Injected so this module stays testable and so a
     // wire-up that has no slash layer simply reports the command as unavailable rather than crashing.
     const runSlashFn = typeof o.runSlash === 'function' ? o.runSlash : null;
-    // names of the Commander's own commands, so this hub can recognise one without owning the list
+    // names of the Master's own commands, so this hub can recognise one without owning the list
     const userCommandNames = typeof o.userCommandNames === 'function' ? o.userCommandNames : (() => []);
     // desktopCommand(token) -> true when the shared registry's BUILT-IN table knows this name or alias (slash.resolve):
     // a desktop palette command this hub has no row for (/version, /q, /retry…). Optional; absent = the old fall-through.
@@ -445,7 +445,7 @@
     /* OWNER IDENTITY for control commands and Full Power inheritance (2026-09-25, sec-owner-gates).
        isOwner(msg) answers "is this sender the bound owner?" in ANY chat type (the owner may /model from their own
        group); it is minted by the composition root from the adapter's paired owner id, never from message text.
-       ownerSurface:true marks a hub whose every inbound is already the Commander (the local dev/sample routes and
+       ownerSurface:true marks a hub whose every inbound is already the Master (the local dev/sample routes and
        the owner-configured line triggers behind the launch token) — it keeps those surfaces byte-identical.
        Absent both, the fallback is ownerTrusted (owner DM) — fail closed: a hub that cannot name its owner
        grants the owner-only commands to nobody. */
@@ -528,7 +528,7 @@
     // FIRE-AND-FORGET BY CONTRACT: the host calls onPrompt synchronously while registering the prompt, and its
     // fail-closed deny timer is ALREADY running. So this must never throw back into that path and never be
     // awaited by it. If the keyboard fails to send, the prompt simply goes unanswered and the host denies it on
-    // schedule — the safe direction, and the same outcome as a Commander who never looks at their phone.
+    // schedule — the safe direction, and the same outcome as a Master who never looks at their phone.
     function sendConsentPrompt(chatId, runId, promptId, fields, ask) {
       (async () => {
         const f = fields || {};
@@ -546,7 +546,7 @@
         if (!entry) return;
         if (ask) { ask.entry = entry; ask.id = 'consent:' + runId + ':' + promptId; }
         // argsSummary is the WHOLE request now (consentSummary): fit it under a chat message's limit, and say when it
-        // doesn't fit — a silent cut would ask for an approval of words the Commander never saw
+        // doesn't fit — a silent cut would ask for an approval of words the Master never saw
         const ARGS_MAX = 3000;
         const args = String(f.argsSummary || '').trim();
         const shown = args.length > ARGS_MAX ? args.slice(0, ARGS_MAX) + '\n… (' + (args.length - ARGS_MAX) + ' more characters: open Vultron to read the whole request before you allow it)' : args;
@@ -563,7 +563,7 @@
           return;
         }
         // THE KEYBOARD NEVER LANDED. Retire the token, then DENY IMMEDIATELY instead of letting the host's
-        // fail-closed timer run its full course. The Commander was never actually asked, so making them wait out
+        // fail-closed timer run its full course. The Master was never actually asked, so making them wait out
         // CONSENT_TIMEOUT_MS for the answer that is already certain would turn an undeliverable prompt into a
         // two-minute stall — strictly worse than the autonomous floor this chat opted IN from. Same decision,
         // no wait. (No apology message here: the send path is the thing that just failed.)
@@ -884,7 +884,7 @@
     /* WHAT BACKPRESSURE MAY HOLD BACK (review round 1). A chat that owes too many undelivered replies has its new messages
        kept (deferred) until its lane drains: it starts no new paid run meanwhile. A message that starts no run is never held
        — its own answer is ephemeral and adds nothing to the lane — and holding one took the chat's controls away: a deferred
-       /stop or "stop" never reached the run still working and spending. Those are: a hub command, the Commander's own or a
+       /stop or "stop" never reached the run still working and spending. Those are: a hub command, the Master's own or a
        desktop command (not a note command, which may start a run), a stop word or a follow-up to the run this chat has
        working (it joins that run), an overheard group line, an admission or pairing message, and an edit of an older
        message. Everything else may start a run, and waits its turn. Read at intake, before the receipt is written. */
@@ -1325,7 +1325,7 @@
 
        FENCED AND LABELLED, on purpose. A transcript is a MACHINE's reading of speech: it mishears names, it
        drops negations, and an agent that quotes it back as verbatim user text will eventually put words in the
-       Commander's mouth. Naming it as a transcription is what lets the model hedge when the text reads oddly —
+       Master's mouth. Naming it as a transcription is what lets the model hedge when the text reads oddly —
        and it is the difference between "you said X" and "I heard X". */
     function transcriptBlock(list) {
       const arr = (Array.isArray(list) ? list : []).filter(t => String(t || '').trim());
@@ -1410,7 +1410,7 @@
       const how = (a && a.restart === false) ? 'An earlier request in this chat stopped on an error' : 'Vultron restarted while an earlier request in this chat was being worked on';
       return '\n\nHOST NOTE — AN EARLIER REQUEST WAS INTERRUPTED: ' + how + ', '
         + 'after that attempt had begun ' + stepsWord(n) + '. It was not run again. Any tool result of it in this conversation '
-        + 'already happened. If the Commander asks to continue it, finish only what is still missing: never repeat a step whose result '
+        + 'already happened. If the Master asks to continue it, finish only what is still missing: never repeat a step whose result '
         + 'is already here, and check the current state before redoing a step whose result is not.';
     }
 
@@ -1586,10 +1586,10 @@
       // Control commands are intercepted BEFORE any run starts — they must never spawn an LLM run. Replies go out
       // through the SAME deliver() path so chunking/limits apply. Channel-agnostic: this lives in the hub, so
       // Telegram/Discord/any future adapter get identical behavior.
-      // A FORWARDED "/away on" is a third party's words, not the Commander's command — never parse it as one.
+      // A FORWARDED "/away on" is a third party's words, not the Master's command — never parse it as one.
       let parsed = carriesThirdPartyText(msg) ? null : parseCommand(msg.text);
-      /* THE COMMANDER'S OWN /allow OR /deny KEEPS RUNNING IN A DM. Both became built-ins in 0.14.0 and the built-ins are
-         parsed first, so a command of that name the Commander defined earlier silently stopped running over messaging
+      /* THE MASTER'S OWN /allow OR /deny KEEPS RUNNING IN A DM. Both became built-ins in 0.14.0 and the built-ins are
+         parsed first, so a command of that name the Master defined earlier silently stopped running over messaging
          ("/allow and /deny are for groups"). The built-in means something only in a group; in a direct chat theirs
          runs, exactly as before (the user-command path below, owner-gated the same way). */
       if (parsed && (parsed.cmd === 'allow' || parsed.cmd === 'deny') && String(msg.chatType || '') !== 'group' && runSlashFn) {
@@ -1626,18 +1626,18 @@
         return;
       }
 
-      // COMMANDER-DEFINED commands are not in this hub's table (the sidecar owns them), so a "/standup" would
+      // MASTER-DEFINED commands are not in this hub's table (the sidecar owns them), so a "/standup" would
       // otherwise fall through and be answered by the MODEL — spending a turn to say it doesn't understand.
       // Match only against the names the sidecar actually reports, so an ordinary message that happens to start
       // with a slash (a path, say) still reaches the agent untouched. The registry itself decides what a given
       // command may do here: an alias resolves and runs, a shell exec runs only in the owner's trusted DM.
       // Same provenance rule as the built-in table above: forwarded / forward-quoting text is a third party's words,
-      // never the Commander's command — it flows on to the (tainted) run as ordinary text.
-      // The name list is read only for a slash-led message: it re-reads the Commander's file.
+      // never the Master's command — it flows on to the (tainted) run as ordinary text.
+      // The name list is read only for a slash-led message: it re-reads the Master's file.
       const userCmd = (runSlashFn && !carriesThirdPartyText(msg) && String(msg.text || '').trim().charAt(0) === '/')
         ? parseUserCommand(msg.text, userCommandNames()) : null;
       if (userCmd) {
-        // the Commander's own commands run the Commander's own aliases — owner-only, same gate as the table above
+        // the Master's own commands run the Master's own aliases — owner-only, same gate as the table above
         if (!senderIsOwner) { await deliver(chatId, ownerOnlyReply('/' + userCmd.name), '', 'command'); return; }
         // resolve the agent the SAME way handleCommand does, so a user command is scoped to whoever this chat
         // is actually talking to rather than a default
@@ -1660,7 +1660,7 @@
       /* A DESKTOP COMMAND typed here (bug 6cd531b1): "/version", "/q", "/retry" are the shared registry's own built-ins
          with no row in this hub's table, so they fell through to the model — a paid run whose answer was a guess at
          what the command does. The registry answers instead (for a desktop-only command: "That command only works in
-         the Vultron desktop app."), for free. Owner-only like the Commander's own commands: every one of them acts
+         the Vultron desktop app."), for free. Owner-only like the Master's own commands: every one of them acts
          on the owner's station. Same provenance rule: a forwarded "/version" is a third party's words. */
       let deskCmd = (runSlashFn && desktopCommandFn && !carriesThirdPartyText(msg)) ? parseDesktopCommand(msg.text) : null;
       /* THE NOTE COMMANDS are the exception: the words after /steer, /queue (/q) and /background (/bg, /btw) are the
@@ -1747,7 +1747,7 @@
          this is a plain follow-up to the SAME agent, it goes into that run's steer buffer — the loop reads it at its
          next step, exactly like a COMMS mid-run steer — and nothing is aborted. Only in a DIRECT chat with no
          forwarded/quoted text and no media: the run's trust and taint were decided from its first sender, so a group
-         member or third-party text must never ride into it as a Commander instruction. A plain "stop"/"cancel" from
+         member or third-party text must never ride into it as a Master instruction. A plain "stop"/"cancel" from
          the owner IS /stop (below). A refused steer (the run already finished its work, or has no id yet) falls
          through to the old path, which now says the earlier run was stopped. */
       const liveRun = inflight.get(chatId);
@@ -1853,7 +1853,7 @@
          own INBOX feeds, this IS that line running and its drawn stages may follow. Asked of the FINAL
          agentId — however it was resolved — because the per-agent bots deliberately hard-lock stage one to
          their bound agent and never consult floor routing; keying this on the resolution would have said
-         "no line" for exactly the floor the Commander drew. The seam is injected (router.lineOriginFor) so
+         "no line" for exactly the floor the Master drew. The seam is injected (router.lineOriginFor) so
          the compiled plan stays the only authority; absent -> null -> every dock terminal, which is the
          safe direction. It rides `resolvedInfo` (so the host stamps the crate with it) and the chain seed
          below (so the gate can read it). */
@@ -2016,7 +2016,7 @@
       // UNTRUSTED ENTRY (run-origin.js entryUntrusted): the same three provenances that start the entry run tainted —
       // a trigger payload (entryTaint), a chat attachment, a forwarded/quoted third-party message. Decided ONCE per
       // message so the entry run and every hop of its line carry one verdict. A SEND TO hand-off's entryTaint is read through
-      // the sending job's own verdict (entryUntrusted above): a Commander-typed job stays trusted on the next line.
+      // the sending job's own verdict (entryUntrusted above): a Master-typed job stays trusted on the next line.
       const lineEntryUntrusted = !!((entryTaint && entryVerdictUntrusted(msg)) || mediaIngest.attachments.length || carriesThirdPartyText(msg));
       // the label the entry run starts tainted under (the entry run's own initialTaint below is this very expression; the restrictive taint
       // a saved hold of this job keeps rides the line's seed: taints)
@@ -2126,7 +2126,7 @@
       // ONE run per conversation: the prev.abort.abort() above told this chat's prior run to stop. But its host-side
       // workspace-mutex slot (index.js concurrencyGate) releases in an async finally as the aborted run unwinds — so
       // the FIRST attempt of the replacement can lose that race and get a TRANSIENT "already running a task" refusal.
-      // Retry ONLY that class, up to supersedeRetries times with backoff, so the Commander's message is never
+      // Retry ONLY that class, up to supersedeRetries times with backoff, so the Master's message is never
       // silently dropped. Any OTHER outcome (a real reply, a budget/config/capdenied error, an unrelated transient,
       // or a supersede by a still-newer message) exits the loop immediately.
       //
@@ -2276,7 +2276,7 @@
             lineId: lineId || undefined, dockId: dockId || undefined,
             // A channel task is real work the agent should learn from, exactly like a COMMS task. Admission is
             // already owner-gated upstream (adapter.js ownerOk: a non-owner DM never reaches this host, a group
-            // must be whitelisted), and each record is stamped with its origin (channel:<name>) so the Commander
+            // must be whitelisted), and each record is stamped with its origin (channel:<name>) so the Master
             // can see in Memory Core which surface formed a belief.
             reflect: true,
             station: bayStation || undefined,
@@ -2310,7 +2310,7 @@
         break;
       }
 
-      /* ---- THE WORK LINE: run every stage the Commander drew downstream of this dock -------------------
+      /* ---- THE WORK LINE: run every stage the Master drew downstream of this dock -------------------
          resolveAgent picked WHICH dock; the belts past it say what happens to its output. Deliberately INSIDE
          the inflight try: myRec stays registered for the whole line, so E-STOP (halt.js reads this record) and
          a superseding message reach the downstream stages too — a chain that outlived its own abort handle
@@ -2413,7 +2413,7 @@
             const pre = taskIntent.strip(reply);
             // Carry the durable brief's REAL recommendation (brief_ask path) into the channel text. Marker-path
             // questions store no recommendation, so this line simply doesn't render — never fabricated here.
-            // A GROUNDED suggestion (the Commander's own answered history, with a count) is provable, so it
+            // A GROUNDED suggestion (the Master's own answered history, with a count) is provable, so it
             // outranks the model's guess here exactly as it does in COMMS — the surfaces must not disagree.
             let suggested = '';
             try {
@@ -2562,7 +2562,7 @@
          whether the decision was still live — so a tap that lost the race with the fail-closed timer (or with
          E-STOP, or with a superseding message) left the permission message permanently rewritten to end
          "▸ ✅ Allow once" on a request the harness had DENIED. A follow-up correction was sent, so the chat
-         read in order was honest, but the permanent record of a security decision — the thing a Commander
+         read in order was honest, but the permanent record of a security decision — the thing a Master
          scrolls back to — said the opposite of what happened.
          resolveConsent is a local in-memory settle (consentwait.js), not a network hop, so asking first costs
          nothing against the spinner deadline the early ack exists for. */
@@ -2589,7 +2589,7 @@
       if (entry.kind === 'consent') return;
 
       // A CHOICE tap re-enters the NORMAL inbound path carrying the option's own text — byte-identical to the
-      // Commander having typed that option. So history, agent routing, Task Brief continuity and the run itself
+      // Master having typed that option. So history, agent routing, Task Brief continuity and the run itself
       // are all exactly the typed-answer path; there is no second, divergent "button answer" code path to keep
       // in sync — under the receipt written above, settled or answered like any message's (never batched: it is one
       // decision). The guard keeps a throw out of the poll loop.

@@ -1,7 +1,7 @@
 /* VULTRON — questrefreshstore.js : the QUEST V3 standing-refresh engine's frontend citizen.
 
    The sidecar owns a standing quest-refresh engine (sidecar/questrefresh.js + the ambient half in
-   sidecar/index.js): every 24h (and on the caught-up fast path) it re-derives the Commander's NORTH STAR
+   sidecar/index.js): every 24h (and on the caught-up fast path) it re-derives the Master's NORTH STAR
    and mints step-quests toward it, recording an honest ledger of every attempt (minted / rejected: why /
    skipped: why). Two routes expose it:
      • GET  /api/quests/refresh      → { northStar, lastCycleAt, dueAt, due, why, binding, inFlight, ledger }
@@ -163,7 +163,7 @@ const QuestRefreshStore = (() => {
     return out;
   }
 
-  // ---- write: the Commander's verdict on a PROPOSED (inferred) north star (POST /api/quests/refresh/northstar).
+  // ---- write: the Master's verdict on a PROPOSED (inferred) north star (POST /api/quests/refresh/northstar).
   // confirm → it becomes the adopted star; decline → denylisted + dropped. Immediate refetch so the card/label
   // reflect the verdict now. Returns { ok, applied, northStar, northStarProposed }.
   async function verdict(decision) {
@@ -180,7 +180,7 @@ const QuestRefreshStore = (() => {
 
   // init on enter-game: a clean fetch so the first quest-log render already has the status (the tick keeps it fresh).
   function init() { cache = null; lastFetch = 0; running = false; beaten.clear(); refetch(); }
-  // a fresh Commander inherits no cached status (mirrors the sibling stores' reset).
+  // a fresh Master inherits no cached status (mirrors the sibling stores' reset).
   function reset() { cache = null; lastFetch = 0; running = false; watching = false; beaten.clear(); }
 
   return { init, sync, status, isRunning, run, verdict, reset, _shape: shape };

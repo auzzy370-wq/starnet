@@ -1,6 +1,6 @@
 /* sidecar/mcp/oauth-fetch.js — the ONE fetch every connector-OAuth leg uses (probe, protected-resource + AS
    metadata, dynamic client registration, code exchange, refresh, Google userinfo, GitHub device flow), and the check
-   of a custom server's authorization endpoint before the Commander's browser opens it.
+   of a custom server's authorization endpoint before the Master's browser opens it.
 
    Those URLs come from an untrusted MCP server's metadata. This module owns their guard: the outbound boundary's
    connectorOauth row (sidecar/net/safe-egress.js: a public host, https, no embedded credentials), ONE DNS question per

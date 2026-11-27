@@ -285,7 +285,7 @@ Each is one revertable commit, ≤3 files, gating test written first, fast suite
 
 ## 6. Open design decisions that need the user's call
 
-1. **Consent surface default.** Ship autonomous default-deny (§3.6a, MVP) and treat interactive Telegram-keyboard consent (§3.6b, Commit 6) as opt-in per chat? Or make interactive the default for DMs (the bot owner is "the Commander watching")? Autonomous is the safe floor; interactive preserves the browser-parity UX at the cost of a 120s timeout risk.
+1. **Consent surface default.** Ship autonomous default-deny (§3.6a, MVP) and treat interactive Telegram-keyboard consent (§3.6b, Commit 6) as opt-in per chat? Or make interactive the default for DMs (the bot owner is "the Master watching")? Autonomous is the safe floor; interactive preserves the browser-parity UX at the cost of a 120s timeout risk.
 
 2. **Identity → agentId granularity.** One agent **per chat** (`tg_<chatId>`, MVP — isolated notebook/workspace/persona per conversation) vs one per **user** (shared memory across that user's chats) vs a single shared `telegram` agent (all chats share memory/workspace — simplest, collision-prone). Per-chat is the proposed default.
 

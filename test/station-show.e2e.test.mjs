@@ -1,10 +1,10 @@
 /* node test/station-show.e2e.test.mjs — station.show END TO END, in real Chromium (2026-10-04, "so it can basically use
    itself instead of the user having to navigate").
 
-   The unit suite proves the tool and the page verb against a recorded StationUI. Only this proves the chain a Commander
+   The unit suite proves the tool and the page verb against a recorded StationUI. Only this proves the chain a Master
    meets: they TYPE "show me …" into COMMS → a MOCK model finds the deferred tool with tool_search and calls station_show
    → the REAL sidecar tool → the REAL station bridge → stationcommands.js station.show → StationUI's own doors → the window
-   is really on screen, raised, on the right tab. Then the guard: a run the Commander is NOT watching (a direct /api/run,
+   is really on screen, raised, on the right tab. Then the guard: a run the Master is NOT watching (a direct /api/run,
    like a routine or a phone turn) is refused and opens nothing.
 
    Isolated exactly like station-control.e2e: fresh seeded workspace, APPDATA/LOCALAPPDATA/USERPROFILE/HOME/HERMES_HOME in
@@ -109,9 +109,9 @@ try {
   const before = await evalJS(cdp, SCREEN);
   check('no window is open before the ask', Array.isArray(before) && before.length === 0, JSON.stringify(before));
 
-  // ---- the Commander TYPES the ask into COMMS; the lead shows four places, then one that cannot exist ----
+  // ---- the Master TYPES the ask into COMMS; the lead shows four places, then one that cannot exist ----
   mock.script = [
-    { name: 'tool_search', args: { query: 'open a window to show the Commander' } },
+    { name: 'tool_search', args: { query: 'open a window to show the Master' } },
     { name: 'station_show', args: { place: 'deliverables' } },
     { name: 'station_show', args: { place: 'settings-spending' } },
     { name: 'station_show', args: { place: 'agent-config', agent: String(hero || '').toLowerCase() } },
@@ -123,11 +123,11 @@ try {
   const R = mock.results;
   check('the model received every result', R.length === mock.script.length, R.length + ' of ' + mock.script.length + (R.length === mock.script.length ? '' : ' :: model saw ' + JSON.stringify(mock.seen.slice(-8)) + ' :: COMMS ' + JSON.stringify(await evalJS(cdp, `(() => ({ busy: !!(Chat.isBusy && Chat.isBusy()), input: (document.getElementById('chat-input') || {}).value, lines: [...document.querySelectorAll('#chat .msg, #chat-log > *')].slice(-4).map(x => x.innerText.slice(0, 120)) }))()`))));
   check('tool_search reveals station_show', /station[._]show/.test(R[0] || ''), (R[0] || '').slice(0, 300));
-  check('shown: MY WORK › DELIVERABLES', /^OPEN on the Commander's screen: MY WORK › DELIVERABLES/.test(R[1] || ''), (R[1] || '').slice(0, 200));
-  check('shown: SETTINGS › SPENDING LIMITS', /^OPEN on the Commander's screen: SETTINGS › SPENDING LIMITS/.test(R[2] || ''), (R[2] || '').slice(0, 200));
-  check('shown: the hero\'s CONFIG (by name, any case)', new RegExp('^OPEN on the Commander\'s screen: CREW › AGENTS › CONFIG for ' + hero).test(R[3] || ''), (R[3] || '').slice(0, 200));
+  check('shown: MY WORK › DELIVERABLES', /^OPEN on the Master's screen: MY WORK › DELIVERABLES/.test(R[1] || ''), (R[1] || '').slice(0, 200));
+  check('shown: SETTINGS › SPENDING LIMITS', /^OPEN on the Master's screen: SETTINGS › SPENDING LIMITS/.test(R[2] || ''), (R[2] || '').slice(0, 200));
+  check('shown: the hero\'s CONFIG (by name, any case)', new RegExp('^OPEN on the Master\'s screen: CREW › AGENTS › CONFIG for ' + hero).test(R[3] || ''), (R[3] || '').slice(0, 200));
   check('an agent that does not exist is refused with the real crew', /^REFUSED: no agent called "Nobody-Here" \(crew: /.test(R[4] || ''), (R[4] || '').slice(0, 200));
-  check('shown: the Recruitment Bay', /^OPEN on the Commander's screen: CREW › RECRUIT/.test(R[5] || ''), (R[5] || '').slice(0, 200));
+  check('shown: the Recruitment Bay', /^OPEN on the Master's screen: CREW › RECRUIT/.test(R[5] || ''), (R[5] || '').slice(0, 200));
 
   // ---- the screen really shows it ----
   await sleep(600);
@@ -141,7 +141,7 @@ try {
   check('screen: the dossier is open on CONFIG', !!dos && dos.active.some(t => /^CONFIG/.test(t)), JSON.stringify(dos));
   check('screen: the last place shown (the Recruitment Bay) is on top', !!bay && /RECRUITMENT BAY/.test(bay.title), JSON.stringify(bay));
 
-  // a buried window is RAISED when shown again — the Commander sees it, not a window behind another
+  // a buried window is RAISED when shown again — the Master sees it, not a window behind another
   mock.results = []; mock.phase = MARK + '-AGAIN';
   mock.script = [{ name: 'station_show', args: { place: 'deliverables' } }];
   for (let i = 0; i < 360 && await evalJS(cdp, 'Chat.isBusy && Chat.isBusy()'); i++) await sleep(500);   // the first ask's run has ended
@@ -153,7 +153,7 @@ try {
   const count = ((await evalJS(cdp, SCREEN)) || []).filter(w => /^MY WORK/.test(w.title)).length;
   check('raised, not duplicated', count === 1, count + ' DELIVERABLES windows');
 
-  // ---- ⛔ a run the Commander is NOT watching (a direct /api/run: a routine, a phone turn) moves nothing ----
+  // ---- ⛔ a run the Master is NOT watching (a direct /api/run: a routine, a phone turn) moves nothing ----
   await evalJS(cdp, `(() => { document.querySelectorAll('.term .term-x, .term [aria-label^="Close"]').forEach(b => { try { b.click(); } catch (_) {} }); return true; })()`);
   // a window's close is not instant (a fixed 800 ms lost that race on a CI run), so SETTINGS has to be gone before "none appeared" can mean anything
   const settingsOpen = async () => ((await evalJS(cdp, SCREEN)) || []).some(w => /^SETTINGS/.test(w.title));
@@ -161,11 +161,11 @@ try {
   const cleared = ((await evalJS(cdp, SCREEN)) || []).length;
   check('premise: the earlier SETTINGS window has closed', !(await settingsOpen()), cleared + ' windows left');
   mock.results = []; mock.phase = MARK + '-UNWATCHED';
-  mock.script = [{ name: 'tool_search', args: { query: 'open a window to show the Commander' } }, { name: 'station_show', args: { place: 'settings' } }];
+  mock.script = [{ name: 'tool_search', args: { query: 'open a window to show the Master' } }, { name: 'station_show', args: { place: 'settings' } }];
   const headers = { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: base };
   const res = await fetch(base + '/api/run', { method: 'POST', headers, body: JSON.stringify({ key: 'sk-or-v1-fake', model: 'test/model', agentId: 'agent', isTask: true, messages: [{ role: 'user', content: MARK + '-UNWATCHED open my settings' }] }) });
   await res.text();
-  check('unwatched run: the model was told the screen was left alone', /^REFUSED: the Commander is not looking at this conversation/.test(mock.results[1] || ''), (mock.results[1] || '').slice(0, 200));
+  check('unwatched run: the model was told the screen was left alone', /^REFUSED: the Master is not looking at this conversation/.test(mock.results[1] || ''), (mock.results[1] || '').slice(0, 200));
   const after = ((await evalJS(cdp, SCREEN)) || []).filter(w => /^SETTINGS/.test(w.title));
   check('unwatched run: no SETTINGS window appeared', after.length === 0, 'cleared to ' + cleared + ' windows; settings now ' + after.length);
 

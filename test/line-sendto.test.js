@@ -285,7 +285,7 @@ const lineOf = (pl, id) => pl.lineOfProp[id];
   A.ok(/<span class="wfw-k">The job<\/span>/.test(wfw) && /' handed in<\/summary>/.test(wfw) && /\(typeof job\.handedIn === 'string' && job\.handedIn\) \? \{ original: job\.text, output: job\.handedIn \}/.test(wfw), 'a handed-on job shows the job as it first arrived, and what the sending line handed in (its record’s own field), apart');
   A.ok(/>Sent on to ' \+ esc\(lineWord\(job\.sentTo\)\)/.test(wfw) && /'From ' \+ esc\(lineWord\(job\.from\)\)/.test(wfw) && /'<p class="wfw-why wfw-sent warn">NOT sent on to ' \+ esc\(lineWord\(job\.sentTo\)\)/.test(wfw), 'WORKFLOWS: each result says where it came from / went on to — or that it was NOT sent on');
   A.ok(/handoffRunningHTML\(l, runningHandoff\(l\.key\)\)/.test(wfw),
-    'a running hand-off is not the Commander’s sample: no "You sent", no sample STOP, never blocks sending — it has its own view');
+    'a running hand-off is not the Master’s sample: no "You sent", no sample STOP, never blocks sending — it has its own view');
   const runningJobSource = wfw.split('\n').find(line => line.includes('const runningJob ='));
   const chooseSample = jobs => require('node:vm').runInNewContext(runningJobSource + '\nrunningJob();', { S: { jobs } });
   const background = ['channel', 'schedule', 'trigger', 'steptest'].map(entry => ({ status: 'running', entry }));

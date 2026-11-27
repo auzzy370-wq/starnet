@@ -2,12 +2,12 @@
 
 Added 2026-09-29. The plan is at https://claude.ai/artifact/CcFcnYcEJraKFMEaXHQiYv.
 
-When the Commander asks, the lead agent can change the floor in these ways:
+When the Master asks, the lead agent can change the floor in these ways:
 - **lay out a whole station** (2026-09-30): a ring of rooms round the bridge or a concourse off it, every room furnished
   wall to wall in its style and every corridor planted and lit — beside what stands, or replacing it
-- **build** rooms and hallways where the Commander says (the spatial builder, 2026-09-30: "new rooms connected to the
+- **build** rooms and hallways where the Master says (the spatial builder, 2026-09-30: "new rooms connected to the
   bridge, and a giant conveyor room we will fill with workflows")
-- **design** a room the way the Commander describes it, part by part (vibe design: "a new room, the left side cozy, the
+- **design** a room the way the Master describes it, part by part (vibe design: "a new room, the left side cozy, the
   right side a line that builds and tests code")
 - **add** a ready-made assembly line (by default in a new room)
 - **add** a furnished room, or every room of a preset
@@ -24,7 +24,7 @@ The lead works two ways, mixed freely (Andrew 10-01: "the AI model should have t
   and what a weak model falls back on.
 
 Either way a plan is built on a copy, shown on a card, and lands as one change that one UNDO removes. A weak model's
-worst case is a change the Commander didn't want. It can't break the station.
+worst case is a change the Master didn't want. It can't break the station.
 
 ## How it works
 
@@ -54,7 +54,7 @@ rest. `station.map` shows the floor, `station.plan` plans, `station.build` build
 2. `station.build`: write access, the approval card, and a **taint lock** (step instructions persist and later runs
    obey them). It applies exactly that plan inside one `transact`: one undo slot, all or nothing. It refuses:
    - if the floor changed since the plan
-   - if Build mode is open, because the Commander owns the floor then
+   - if Build mode is open, because the Master owns the floor then
    - if the result would differ from the plan by a single tile, in which case it rolls itself back
 
    The approval card shows the plan's own summary and each step's instructions, including the steps of a kit's or a
@@ -107,7 +107,7 @@ reliably do this?"); this is those two layouts as patterns Vultron computes. `st
 **Designing a station** (`frontend/app/stationdesign.js`, added 2026-11-01): the art direction the planner works from.
 
 - `layout.theme` dresses the whole station in one palette: noir, observatory, biolab, neon, timber, foundry, solarpunk,
-  flagship or brutalist, by id or by a word in the Commander's own phrase ("a moody cyberpunk club" is neon). Each room
+  flagship or brutalist, by id or by a word in the Master's own phrase ("a moody cyberpunk club" is neon). Each room
   takes its family's floor and walls (living, work, heavy, play, green); corridors, hull, the hub and the field under each room's hero
   follow. The palettes use the jewel-tone swatches added to `FLOOR_STYLES` (royal, sapphire, plum, magenta, jade, oxblood,
   copper, honey), because the older swatches wash out to one brown under the warm lamp pass. A theme changes materials only, never a piece, so it never changes what a room can do. Which floor goes with
@@ -139,13 +139,13 @@ what stands on tables; plants in the corners; accents on the side walls. Every d
 nothing lands on a belt, and a piece nobody could walk up to is taken back out. **Dressing a corridor** (`dressHall`): planters, floor lights and benches every fourth tile along its edge rows, clear of the
 doorways on that row, always two rows clear to walk.
 
-## The spatial builder: rooms where the Commander says
+## The spatial builder: rooms where the Master says
 
 Added 2026-09-30, after a live test where the lead could not place a room, use a hallway, or build an empty one. The
 model still never sends a tile. It **looks**, then says where things go in words.
 
 `station.map` (read-only) is what the lead sees:
-- every room: its name, position and size in tiles, its type, which one is the main room (the Commander may say
+- every room: its name, position and size in tiles, its type, which one is the main room (the Master may say
   "bridge", "hub" or "main room")
 - what each is joined to, and how: "HOME (through a hallway)", "ANNEX (open to it)"
 - its lines, how many machines and pieces of furniture it holds, how much of its floor is clear
@@ -167,7 +167,7 @@ model still never sends a tile. It **looks**, then says where things go in words
 | `zones` | Parts of the room, as in vibe design below. |
 | `lines` | Instead of zones: 1 to 6 workflow lines laid anywhere in the room, each `{ line | purpose | shape, name, staff, dailyCap, tries }`. They are shelved (below), so they read as separate lines. |
 
-A room with neither zones nor lines is built **empty**, for the Commander to fill later ("put three lines in the
+A room with neither zones nor lines is built **empty**, for the Master to fill later ("put three lines in the
 conveyor hall" is then `{ into: "Conveyor Hall", lines: [...] }`).
 
 `hallways: [{ from, to }]` lays a hallway between two rooms (straight when they face each other across a gap; round ONE corner, out of one
@@ -202,7 +202,7 @@ centred on a wall (the top, then the bottom), split only when no row takes them 
 half keeps its floor) gets plants in its free corners, and the card says so ("two tall plants and two plants in the
 corners").
 
-## REFIT: the Commander's own tools
+## REFIT: the Master's own tools
 
 Added 2026-09-30 ("make it immensely more flexible, there should be no limits, it should be able to ambitiously use the
 refit mode itself"). `station.plan { refit: [ edits ] }` gives the lead every tool of Refit mode as an edit on exact
@@ -231,7 +231,7 @@ size, mount, turns, flips, yours), room types, floor styles and materials, wall 
 roles, lines and line edits.
 
 **The lead designs (2026-10-01).** The planner's instructions open with the design handed to the lead ("You are the
-station's designer: the Commander's words are the brief, and the design is yours to decide"), REFIT first and the forms
+station's designer: the Master's words are the brief, and the design is yours to decide"), REFIT first and the forms
 after it as SHORTCUTS. Until then they opened with "You never send a position" and listed REFIT last, for "anything
 the forms above do not say", so a capable model reached for the forms. A long refit's card names its first 25 edits and
 then every edit that removes, moves, resizes or briefs, up to 60. Past that it counts them by kind ("… and 7 more edits
@@ -285,7 +285,7 @@ and the lounge, cozy and library styles had both recliners backwards. Now:
 - **Wording:** the re-lay card counts the pieces leaving with the old hallways. The refusals name real rooms, not
   placeholders.
 
-**Limits raised at the same time:** recruits 3 → 12 a plan (still only when the Commander asks), named pieces 16 → 120
+**Limits raised at the same time:** recruits 3 → 12 a plan (still only when the Master asks), named pieces 16 → 120
 (40 of one kind), rooms in a rooms plan 6 → 24, lines in a room 6 → 16, a diamond 16 → 40 rooms, a concourse 8 → 24,
 rooms removed at once 8 → 60, a hallway 40 → 160 tiles (200 round a corner), a designed room 44 × 26 → 96 × 60. The
 bound left is the world model's own: a station spans at most 240 tiles.
@@ -332,7 +332,7 @@ the line runs unattended, within its budget.
 | --- | --- |
 | `{ line, schedule, tz?, job }` | a `runsLine` routine fired at the line's entry step (`createCronJobFromSpec` + arm on create). The routine's own tripwire scans the job's words. |
 | `{ line, folder, job }` | a folder trigger (the folder jail + baseline). |
-| `{ line, webhook: true, job }` | a webhook trigger. Its key is minted, hashed and dropped: the lead never sees one, and the Commander takes a key from the line's Workflow panel (NEW KEY). |
+| `{ line, webhook: true, job }` | a webhook trigger. Its key is minted, hashed and dropped: the lead never sees one, and the Master takes a key from the line's Workflow panel (NEW KEY). |
 | `{ line, off: a trigger id }` | turns a trigger off. A schedule is a routine, and `routine.manage` pauses it. |
 
 ## Making new props (Vultron credits)
@@ -363,12 +363,12 @@ ONE undo:
 | `{ remove: room \| [rooms] }` | Takes up to 8 rooms out with everything on them: furniture, and any workflow line (named on the card). A hallway that joined them and now joins nothing goes too (one that never touched them stays). An agent whose only seat stood there gets a desk in a tidy row elsewhere (`desksFor`). The main room never goes, and a removal that would cut another room off from the bridge is refused naming it ("That would cut LAB, GYM off from HOME…"). |
 | `{ refurnish: { room, style, name } }` | Clears the room's furniture and furnishes it in another whole-room style, floor and walls too (`dressRoom`). Its lines and agents' seats stay where they are. A room still named for what it was (LOUNGE, ROOM 3) takes the new style's name; a `name` given wins. |
 | `{ clear: room }` | Removes the room's furniture. Lines, agents' seats and fixtures stay. |
-| `{ add: { room, pieces } }` | Places NAMED pieces: `["a tv", "three plants", { "piece": "sofa", "count": 2 }]`, up to 16 a plan. Any piece of the page's catalog by its id, label, card name or a word for it ("sofa", "fridge", "fish tank"), and any prop the Commander made, by the name its maker gave it. A wall piece hangs on the back wall, a table piece (a lava lamp) stands on a table (or the refusal says to add one), a rug lies on the open floor, everything else stands against a wall first (the back, then the sides, then the front) and then the open floor; never on a belt or a doorway's lane, and never where it or anything already there could not be walked up to, or where a room would be cut off. Workflow machines are not pieces (lines bring them). |
+| `{ add: { room, pieces } }` | Places NAMED pieces: `["a tv", "three plants", { "piece": "sofa", "count": 2 }]`, up to 16 a plan. Any piece of the page's catalog by its id, label, card name or a word for it ("sofa", "fridge", "fish tank"), and any prop the Master made, by the name its maker gave it. A wall piece hangs on the back wall, a table piece (a lava lamp) stands on a table (or the refusal says to add one), a rug lies on the open floor, everything else stands against a wall first (the back, then the sides, then the front) and then the open floor; never on a belt or a doorway's lane, and never where it or anything already there could not be walked up to, or where a room would be cut off. Workflow machines are not pieces (lines bring them). |
 | `{ remove: { room, pieces } }` | Takes named pieces out ("the couch", "all plants"); what stood on a table that goes, goes with it. An agent's seat is not taken this way (seat the agent elsewhere). |
 | `{ remove: { line, room? } }` | Takes one workflow line out, its machines and belts, by its name ("build and test" finds BUILD + TEST). Every other line stays exactly. |
 | `{ seat: { agent, room } }` | Moves an agent's desk (or gives one) into the room, in a tidy spot against its wall. |
 | `{ move: { room, beside, side } }` | Moves a room with everything in it (furniture, lines, seats ride along, `WorldModel.moveRoom`): its old hallways that would join nothing go, a new corridor, planted and lit, joins it where it lands. The main room stays; a move that would strand a room is refused naming it. |
-| `{ undo: true }` | "No, undo that": takes back the lead's own last build (the page keeps a record of them per station, ten deep), only while the station is exactly as that build left it, so it never takes back the Commander's own edit; one step, as Build mode's UNDO, checked to land exactly on the station before the build. After a page reload the one-step history is gone, and the refusal says which edit takes it back instead. |
+| `{ undo: true }` | "No, undo that": takes back the lead's own last build (the page keeps a record of them per station, ten deep), only while the station is exactly as that build left it, so it never takes back the Master's own edit; one step, as Build mode's UNDO, checked to land exactly on the station before the build. After a page reload the one-step history is gone, and the refusal says which edit takes it back instead. |
 | `{ staff: { line, steps } }` | Restaffs an existing line where it stands: `[{ step, agent, instructions }]` by run order, `agent: "nobody"` clears a step. Recruiting is not done here. The card lists every step's instructions. |
 
 The card names every piece of equipment that goes ("Equipment that goes: a dish (WEB), a studio (IMAGES)"), so
@@ -404,7 +404,7 @@ because the old placement only ever grew east and south. Routing facts are now c
 - A line zone holds one line, laid out **inside the zone** by the Workflow panel's own layout engine
   (`LineLayout.layout`, written by `applyLineLayout`):
   - `line`: a shelf line, by id or name
-  - `purpose`: the Commander's words; Vultron picks the line, as `station.plan_line` does
+  - `purpose`: the Master's words; Vultron picks the line, as `station.plan_line` does
   - `shape`: a custom line, built through the panel's own graph edits (`LineEdit.OPS`). Its stages, in order: a role,
     `{ together: [roles] }` (each gets a copy), `{ turns: [roles] }`, `{ sort: { code: role, research: role } }`
     (everything else goes straight on), and `{ review: true, tries }` after a step
@@ -426,8 +426,8 @@ its side table, and what may stand on a table can. The tests install the same ru
 | Field | Accepts |
 | --- | --- |
 | `line` | One of the Lines shelf's tested lines, by id or plain name (read from `WorldModel.BLUEPRINTS`) |
-| `shape` | Instead of `line`: a line the Commander DESCRIBED, as stages in order (a role, `{ together }`, `{ turns }`, `{ sort }`, `{ review, tries }`: see Vibe design). It is laid out whole by the layout engine in a new room sized for it, or in an existing room (`where`) around what already stands there. `name` is the line's name, `steps` staff it in run order. |
-| `purpose` | The Commander's own words for what the line is for. With no `line`, Vultron picks one with `WorkflowLine.suggestLineFor`, the reader behind FOR YOUR GOAL (the shape of the work: research then writing, a draft and a reviewer, code with tests or a review, two takes), and the card says why. Words with no such shape are refused with the menu. Every step's standard instructions end with `This line is for: "…"`. |
+| `shape` | Instead of `line`: a line the Master DESCRIBED, as stages in order (a role, `{ together }`, `{ turns }`, `{ sort }`, `{ review, tries }`: see Vibe design). It is laid out whole by the layout engine in a new room sized for it, or in an existing room (`where`) around what already stands there. `name` is the line's name, `steps` staff it in run order. |
+| `purpose` | The Master's own words for what the line is for. With no `line`, Vultron picks one with `WorkflowLine.suggestLineFor`, the reader behind FOR YOUR GOAL (the shape of the work: research then writing, a draft and a reviewer, code with tests or a review, two takes), and the card says why. Words with no such shape are refused with the menu. Every step's standard instructions end with `This line is for: "…"`. |
 | `where` | `"new room"` (the default), or an existing room by name. In an existing room, every machine and belt must fit on clear floor **inside** it. |
 | `beside`, `side`, `hallway` | Where its new room goes, as in the spatial builder. |
 | `name` | What to call the line (on its Inbox), up to 48 characters |

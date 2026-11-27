@@ -21,7 +21,7 @@ const http = require('http');
 const Interests = require('../sidecar/interests.js');
 const { SidecarFixture } = require('./helpers/sidecar-fixture.js');
 // lean prompt (2026-10-12): the run's commander evidence rides the per-run <run_context> note, which this non-Claude chat
-// wire carries as the Commander's message's fenced leading text — read every host-authored prompt text, not one placement
+// wire carries as the Master's message's fenced leading text — read every host-authored prompt text, not one placement
 const { hostText } = require('./helpers/host-notes.js');
 
 (async () => {

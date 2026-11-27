@@ -33,7 +33,7 @@ const INDEX = path.resolve(__dirname, '..', 'sidecar', 'index.js');
 const ACT_MARK = '[NIGHTSHIFT_ACT]';
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-// the idea the Commander floats in chat but never acts on — the QUOTE the mining mock returns must be VERBATIM
+// the idea the Master floats in chat but never acts on — the QUOTE the mining mock returns must be VERBATIM
 // from this directive (the grounding veto checks it against the real conversation).
 const IDEA_QUOTE = 'I should build a GPU price watcher someday';
 const IDEA_TITLE = 'GPU price watcher';

@@ -58,7 +58,7 @@
 <!-- The ONLY screen that ships class="active": a neutral phosphor holding-card shown during init()'s async
      gap (Harness.init + CloudSave.reconcile) BEFORE the boot router picks a real screen. Every boot branch
      ends in show(<screen>) (splash / game / connect / future / recovery), which clears this veil — so a
-     returning Commander never flashes the CREATE console on the way to their station (the old bug: #screen-connect
+     returning Master never flashes the CREATE console on the way to their station (the old bug: #screen-connect
      carried the static .active). Truthful telemetry: it asserts nothing about state — just "connecting". -->
 <section id="screen-boot" class="screen active" aria-label="Vultron booting" aria-hidden="true">
   <div class="boot-veil">
@@ -71,7 +71,7 @@
 <!-- Shown ONLY on a genuine first run (no save anywhere): the key-art boot screen — starfield, a
      perspective grid floor, the big phosphor wordmark, and a blinking PRESS ANY KEY. Any key / click /
      tap advances into CREATE YOUR OVERSEER (app.js showSplash()). Resume/recovery paths never route
-     here — a returning Commander lands in the station or the RESUME console, not a title card. -->
+     here — a returning Master lands in the station or the RESUME console, not a title card. -->
 <section id="screen-splash" class="screen" aria-label="Vultron boot screen">
   <canvas id="sp-stars" aria-hidden="true"></canvas>
   <div class="sp-nebula" aria-hidden="true"></div>
@@ -515,9 +515,9 @@
       <!-- INSTRUMENT CLUSTER (topbar.js) — one cockpit gauge group: STATION (level + XP sliver) ·
            the session-status instruments (UPLINK / ONLINE / save) moved up from
            #bottombar .bb-right with their ids intact so their existing writers keep working. -->
-      <div class="tb-stat station tb-inst" id="tb-station" title="Your Commander level grows through recorded progress toward your life goals. Open the quest log to see the achievements behind it.">
+      <div class="tb-stat station tb-inst" id="tb-station" title="Your Master level grows through recorded progress toward your life goals. Open the quest log to see the achievements behind it.">
         <svg class="tb-station-mark" viewBox="0 0 24 28" aria-hidden="true"><path d="M12 2 22 8v12l-10 6-10-6V8Z"/><path d="m6 11 6-4 6 4M6 16l6-4 6 4M6 21l6-4 6 4"/></svg>
-        <span class="tb-lbl">COMMANDER</span>
+        <span class="tb-lbl">MASTER</span>
         <b class="tb-val" id="gt-station">—</b>
         <span class="tb-xp" aria-hidden="true"><i class="tb-xp-fill"></i></span>
       </div>
@@ -553,7 +553,7 @@
       <button id="ws-attention" class="ws-attention" type="button" aria-pressed="false" aria-controls="workstreams" hidden><span>Waiting for you</span><span id="ws-attention-count"></span><span id="ws-attention-clear" aria-hidden="true" hidden>✕</span></button>
       <!-- RAIL SEARCH (2026-07-17): the SESSION TOOLS window was retired — search lives ON the rail now
            (the one capability no other surface covered); per-session export moved into the row ⋯ menu.
-           The head above stays SESSIONS/PROJECTS + NEW only (Commander directive, 2026-07-08). -->
+           The head above stays SESSIONS/PROJECTS + NEW only (Master directive, 2026-07-08). -->
       <div id="ws-rail-search" class="ws-rail-search">
         <label><span class="sr-only">Search session titles and transcripts</span><input id="ws-search" type="search" placeholder="⌕ search sessions + transcripts" autocomplete="off"></label>
         <div id="ws-kind-filter" class="ws-kind-filter" role="group" aria-label="Session view"><button type="button" data-ws-kind="all" aria-pressed="true" title="Show all sessions">ALL</button><button type="button" data-ws-kind="automated" aria-pressed="false" title="Show only automation sessions">AUTOMATED</button></div>
@@ -609,7 +609,7 @@
     <div id="chat-inputrow">
       <!-- SLASH COMMANDS: a leading "/" opens this filterable palette of turn controls + the recipe library (chat.js) -->
       <div id="chat-slash" class="chat-slash" role="listbox" aria-label="Commands" hidden></div>
-      <!-- ATTACHMENTS: photos/files the Commander attaches (paperclip · paste · drag-drop) preview here as chips
+      <!-- ATTACHMENTS: photos/files the Master attaches (paperclip · paste · drag-drop) preview here as chips
            BEFORE the edit line; the hidden input feeds the file picker. chat.js uploads them + threads refs into send(). -->
       <div id="chat-attach-strip" class="chat-attach-strip" aria-label="Attachments" hidden></div>
       <input id="chat-attach-input" class="chat-attach-input" type="file" multiple accept="image/*,text/*,.md,.csv,.json,.log,.js,.ts,.py,.html,.css,.xml,.yml,.yaml,.svg" hidden aria-hidden="true" tabindex="-1">
@@ -678,11 +678,11 @@
          same Recruitment Bay in different modes — now a single #bb-recruit opens the bay once, and
          the class dossier offers BOTH verbs (summon new / deploy to current). -->
     <div class="bb-group" data-group="crew">
-      <button class="bb-grp" aria-haspopup="menu" aria-expanded="false" title="Your agents — dossiers, recruitment, and your own Commander file"><span class="bb-gi">☻</span>CREW</button>
+      <button class="bb-grp" aria-haspopup="menu" aria-expanded="false" title="Your agents — dossiers, recruitment, and your own Master file"><span class="bb-gi">☻</span>CREW</button>
       <div class="bb-menu" role="menu">
         <button class="bb" data-term="agents"><span class="bb-i">◉</span><span class="bb-tx"><b>AGENTS</b><small>each crew member's dossier — config, memory, record</small></span></button>
         <button class="bb" id="bb-recruit" data-hint="recruit"><span class="bb-i">＋</span><span class="bb-tx"><b>RECRUIT</b><small>grow the crew — summon a class, or re-spec your agent</small></span></button>
-        <button class="bb" data-term="commander"><span class="bb-i">◈</span><span class="bb-tx"><b>COMMANDER</b><small>what the station has learned about you</small></span></button>
+        <button class="bb" data-term="commander"><span class="bb-i">◈</span><span class="bb-tx"><b>MASTER</b><small>what the station has learned about you</small></span></button>
       </div>
     </div>
     <div class="bb-group" data-group="work">
@@ -808,7 +808,7 @@
 <script src="app/recruiter.js"></script><!-- pure adaptive-recruitment matcher: worksignal+profile+dossier+roster → which NEW class to recruit + honest why -->
 <script src="app/prospect.js"></script><!-- pure prospect generator: constrained draft directive + hard-validating parse (station authors bespoke new specs) -->
 <script src="app/dossier.js"></script>
-<script src="app/understanding.js"></script><!-- NORTH STAR: pure "how well the station understands its Commander" read-model over the dossier (per-dim + overall confidence, weakest = the VOI question target) -->
+<script src="app/understanding.js"></script><!-- NORTH STAR: pure "how well the station understands its Master" read-model over the dossier (per-dim + overall confidence, weakest = the VOI question target) -->
 <script src="app/fork.js"></script><!-- R1 MID-TASK FORK: pure engine for the earned preference-fork (directive + FORK-marker parser + confidence gate); self-retiring once style is well-grounded -->
 <script src="app/memtruth.js"></script><!-- memory-truth: the ONE similarity + subject key every memory writer shares (study.js reads it); MUST load before study.js -->
 <script src="app/study.js"></script><!-- GROWTH Tier 1: pure STUDY engine (dossier Phase B) — parse/salience/dedup for work→belief proposals + ratings-taste + archetype classifier -->
@@ -820,7 +820,7 @@
 <script src="app/verdictfollowup.js"></script>
 <script src="app/pitch.js"></script>
 <script src="app/quests.js"></script>
-<script src="app/journey.js"></script><!-- pure Commander-journey helpers: metrics/domain labels; separate from XP and never gates -->
+<script src="app/journey.js"></script><!-- pure Master-journey helpers: metrics/domain labels; separate from XP and never gates -->
 <script src="app/goals.js"></script><!-- GROWTH Tier 2: pure GOAL-TREE engine (understanding → direction) — decompose/parse/progress/chaining/evidence-fold/retire + arc projection -->
 <script src="app/goalloop.js"></script><!-- /goal AUTONOMOUS LOOP (Vultron's "Ralph loop"): pure judge-verdict parse + continuation/preemption/budget state machine; chat.js supplies the aux judge call + persistence -->
 <script src="app/stationquests.js"></script><!-- pure station-quest generator (G1b): capdenied/capability-gap → fix-it quest (dedup, completion-on-placement, dismiss-forever) -->
@@ -828,7 +828,7 @@
 <script src="app/maintquests.js"></script><!-- pure maintenance-quest generator (G1c): recurring slag cause / jammed routine → fix-it quest (threshold, dedup, clears-when-signal-clears) -->
 <script src="app/queststate.js"></script><!-- pure durable-quest-memory engine (G1a): firstSeen/completed/dismissed + open→done diff -->
 <script src="app/seeds.js"></script>
-<script src="app/seedcredit.js"></script><!-- pure seed-callout helper (G3a): credits a Commander-saved seed when a pitch/suggestion/digest reuses it -->
+<script src="app/seedcredit.js"></script><!-- pure seed-callout helper (G3a): credits a Master-saved seed when a pitch/suggestion/digest reuses it -->
 <script src="app/seedreuse.js"></script><!-- pure seed-reuse AGGREGATE engine (G3b): per-seed 7-day + lifetime run counts; window-crest callout at N=5 -->
 <script src="app/trophies.js"></script><!-- pure trophy-surface projection (G3b): completed quests+milestones (honest dates) + the living-tools shelf -->
 <script src="app/autonomy.js"></script>
@@ -952,10 +952,10 @@
 <script src="app/pitchstore.js"></script>
 <script src="app/recqualitystore.js"></script><!-- THE OUTCOME LOOP: per-channel quality weights earned from what accepted offers really produced (run stamp -> completion/verdict); read-only bus citizen -->
 <script src="app/recledger.js"></script><!-- ONE RECOMMENDATION MEMORY: the spine's writes into (and reads from) the durable cross-surface ledger — a decline made at a COMMS card is a decline everywhere -->
-<script src="app/discoverystore.js"></script><!-- ENVIRONMENT DISCOVERY: the bay's read of the sidecar's blessed-roots scan shelf — findings cited in the code's own words; nothing runs without the Commander -->
+<script src="app/discoverystore.js"></script><!-- ENVIRONMENT DISCOVERY: the bay's read of the sidecar's blessed-roots scan shelf — findings cited in the code's own words; nothing runs without the Master -->
 <script src="app/suggeststore.js"></script>
 <script src="app/goalstore.js"></script><!-- GROWTH Tier 2: GOAL-TREE wiring — decomposition confirm (aux model call), persist (own key) + sidecar mirror, milestone→work-quest binding, chaining/evidence/drift; never emits -->
-<script src="app/understandingstore.js"></script><!-- UNDERSTANDING: composes the honest "how well the station knows the Commander" read from live dossier beliefs + work-samples + active goal; drives curiosity targeting + the COMMANDER meter; read-only bus citizen -->
+<script src="app/understandingstore.js"></script><!-- UNDERSTANDING: composes the honest "how well the station knows the Master" read from live dossier beliefs + work-samples + active goal; drives curiosity targeting + the MASTER meter; read-only bus citizen -->
 <script src="app/queststore.js"></script>
 <script src="app/queststatestore.js"></script><!-- durable quest memory + completion celebration (G1a); self-persists (own key) -->
 <script src="app/stationqueststore.js"></script><!-- station-quest generator wiring (G1b): agent.tool_call → capability-gap detection → fix-it quest; self-persists (own key), never emits -->

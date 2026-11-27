@@ -46,7 +46,7 @@ A.eq(I.questionFor('nonsense'), null, 'questionFor returns null for an unknown d
 const b = I.beliefFromAnswer(q0, '  Rust and a little Go  ');
 A.eq(b, { dim: 'stack', text: 'Rust and a little Go', source: 'interview', weight: 'stated' }, 'beliefFromAnswer trims + stamps dim/source; typed words are weight stated');
 // V3 §5: an answer that IS a canned chip string is mechanically-produced — weight 'seed' (informs the prompt,
-// never opens the readiness gate). Only the Commander's own typed words are 'stated'.
+// never opens the readiness gate). Only the Master's own typed words are 'stated'.
 const cannedVal = (q0.chips.find(c => c.value) || {}).value;
 A.ok(cannedVal, 'the stack question still carries at least one canned chip (fixture guard)');
 A.eq(I.beliefFromAnswer(q0, cannedVal).weight, 'seed', 'a canned chip answer lands as weight seed');
@@ -57,14 +57,14 @@ A.eq(I.beliefFromAnswer(null, 'x'), null, 'no question yields no belief');
 
 /* a belief from the interview actually lands in the right dossier dimension (end-to-end with the engine) */
 const dossier = D.fresh();
-const belief = I.beliefFromAnswer(I.questionFor('goals'), 'Ship the Commander Dossier');
+const belief = I.beliefFromAnswer(I.questionFor('goals'), 'Ship the Master Dossier');
 D.upsert(dossier, belief.dim, { text: belief.text, source: belief.source }, 1);
-A.eq(dossier.dims.goals[0].text, 'Ship the Commander Dossier', 'an interview answer upserts into its dossier dimension');
+A.eq(dossier.dims.goals[0].text, 'Ship the Master Dossier', 'an interview answer upserts into its dossier dimension');
 A.eq(dossier.dims.goals[0].source, 'interview', 'the dossier records the interview provenance');
 
 /* ---------- a TYPED skip is a skip, never a belief (bug-sweep P0) ----------
    The interview's opening line invites it ("answer or tap, “skip” anything") and the chip is labelled
-   `skip`, so the typed word is the vocabulary the copy teaches. It used to land as the Commander's own
+   `skip`, so the typed word is the vocabulary the copy teaches. It used to land as the Master's own
    words at weight 'stated' — the strongest belief the station holds. */
 A.eq(I.beliefFromAnswer(q0, 'skip'), null, 'a typed "skip" yields no belief');
 A.eq(I.beliefFromAnswer(q0, 'Skip.'), null, 'punctuation + case do not smuggle a skip past the check');
@@ -76,7 +76,7 @@ A.eq(I.beliefFromAnswer(q0, 'skip the standup prep').weight, 'stated', 'a real a
 A.ok(!I.isSkipAnswer('none of the dashboards refresh'), 'a substring is not a skip');
 
 /* ---------- an answer with NO words is not an answer (sweep/onboarding 2026-10-20) ----------
-   Live on a fresh station: typing only emoji at the awakening's goal beat stored "🚀🔥💯🙏" as the Commander's
+   Live on a fresh station: typing only emoji at the awakening's goal beat stored "🚀🔥💯🙏" as the Master's
    STATED goal (and prefilled it as the first task); the intake's pain beat stored "😤😤😤" the same way. A reply
    with no letter or digit in any script carries nothing to extract — it is a non-answer, exactly like a typed skip. */
 A.ok(I.isSkipAnswer('🚀🔥💯🙏'), 'an emoji-only reply is a non-answer');

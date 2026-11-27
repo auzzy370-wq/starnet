@@ -16,7 +16,7 @@ const { makeSubagentManager } = require('../sidecar/subagents.js');
   assert.equal(isCoordinatorRun({ agentId: 'agent', surface: 'interactive', lead: true, internal: true }), false, 'internal helper requests do not coordinate the crew');
 
   /* station.read_session as the OVERSEER answers it (org P29-sys review): the interactive lead's session.peek reaches
-     overseerStation, never the page handler, so a goal-loop step (a user-role turn the Commander never typed) must read as
+     overseerStation, never the page handler, so a goal-loop step (a user-role turn the Master never typed) must read as
      the station's 'Goal step: <goal>' HERE too. The helper's explicit legacy fallback retains its labels separately. */
   {
     const { readSessionTurns } = require('../sidecar/overseer.js');
@@ -30,12 +30,12 @@ const { makeSubagentManager } = require('../sidecar/subagents.js');
       { role: 'assistant', content: 'Drafted the hero.' }
     ];
     const read = readSessionTurns(rows, []);
-    assert.deepEqual(read.map(t => t.speaker), ['user', 'station', 'station', 'assistant'], 'goal steps (current + pre-org-pass head) read as the station, never as the Commander');
+    assert.deepEqual(read.map(t => t.speaker), ['user', 'station', 'station', 'assistant'], 'goal steps (current + pre-org-pass head) read as the station, never as the Master');
     assert.equal(read[1].text, 'Goal step: ship the landing page', 'the step names its goal, never the internal continuation prompt');
     assert.equal(read[1].sys, true, 'flagged as a station line');
     assert.equal(read[2].text, 'Goal step: old goal', 'an old saved step too');
     assert.ok(!read.some(t => /Continue working toward this goal|\[Continuing toward/.test(t.text)), 'no continuation prompt text reaches the reading lead');
-    assert.equal(read[0].text, 'set up the launch', 'the Commander\'s own words are untouched');
+    assert.equal(read[0].text, 'set up the launch', 'the Master\'s own words are untouched');
     // the saved workstream history fallback (no transcript rows yet) reads the same way, and a delegated brief keeps its speaker
     const fb = readSessionTurns([], [
       { role: 'user', content: 'hidden', hidden: true },
@@ -182,7 +182,7 @@ const { makeSubagentManager } = require('../sidecar/subagents.js');
       assert.equal(sixth.title, 'Summarize my inbox (6)', 'a repeated ask counts up to a free title');
       assert.equal(loads, 1, 'a repeated title still costs one save load, not one per taken title');
       assert.equal(ov.create({ parentStreamId: 'home', agentId: 'researcher', requestId: 'plain-worker', title: 'Summarize my inbox', worker: true }).title, 'Summarize my inbox (7)', 'a worker thread picks a free title even without uniqueTitle (the production caller passes none)');
-      assert.throws(() => ov.create({ parentStreamId: 'home', agentId: 'researcher', title: 'Home' }), /already exists/, 'a session the Commander sees still refuses a taken title');
+      assert.throws(() => ov.create({ parentStreamId: 'home', agentId: 'researcher', title: 'Home' }), /already exists/, 'a session the Master sees still refuses a taken title');
       const long = 'x'.repeat(80);
       file(long, 7);
       assert.equal(file(long, 8).title, 'x'.repeat(76) + ' (2)', 'a suffix fits inside the 80-char title instead of being cut off');
@@ -191,7 +191,7 @@ const { makeSubagentManager } = require('../sidecar/subagents.js');
       const a = file('Weekly scan', 9), b = file('Weekly scan', 10);
       assert.match(a.title, /^Weekly scan · \d{4}-\d\d-\d\d \d\d:\d\d:\d\d$/, 'past 99 the time it was asked names it');
       assert.notEqual(a.title, b.title, 'two such workers in the same second still both get a thread');
-      // a thread the Commander deleted is dropped from overseer.json the next time a thread is filed
+      // a thread the Master deleted is dropped from overseer.json the next time a thread is filed
       page.deletedIds.push(sixth.id);
       file('After delete', 11);
       assert.ok(!JSON.parse(fs.readFileSync(cdeps.file, 'utf8')).value.threads.some(t => t.id === sixth.id), 'deleted thread rows do not pile up in overseer.json');

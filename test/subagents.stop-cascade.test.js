@@ -7,7 +7,7 @@
    cancels its workers — and theirs — through subagents.cancelChildren (index.js calls it when a run's signal
    aborts while its loop is live; a lead that ENDS normally detaches first). Honest state: `interrupted`,
    cancelledBy 'parent', a reason naming the parent run, resumable, and no overseer review turn for a stop the
-   Commander just made. Generation fences hold: a resumed worker follows the run that resumed it.
+   Master just made. Generation fences hold: a resumed worker follows the run that resumed it.
 
    Deterministic: the real subagents.js manager + the real orchestration tools over a fake run host, temp dirs. */
 'use strict';
@@ -36,7 +36,7 @@ const counter = (p) => { let n = 0; return () => (p || 'id_') + (++n); };
     const a = mgr.start({ leadId: 'agent', agentId: 'researcher', prompt: 'A', parentRunId: 'lead_run_1' }, hang('a'));
     const b = mgr.start({ leadId: 'agent', agentId: 'analyst', prompt: 'B', parentRunId: 'lead_run_1' }, hang('b'));
     const other = mgr.start({ leadId: 'agent', agentId: 'scribe', prompt: 'C', parentRunId: 'lead_run_2' }, hang('other'));
-    const orphan = mgr.start({ leadId: 'agent', agentId: 'scout', prompt: 'D' }, hang('orphan'));   // Commander-resumed shape: no parent run
+    const orphan = mgr.start({ leadId: 'agent', agentId: 'scout', prompt: 'D' }, hang('orphan'));   // Master-resumed shape: no parent run
     await tick();
     const grandchild = mgr.start({ leadId: 'researcher', agentId: 'helper', prompt: 'A.1', parentRunId: a.runId }, hang('grand'));
     await tick();
@@ -99,7 +99,7 @@ const counter = (p) => { let n = 0; return () => (p || 'id_') + (++n); };
       A.eq(reloaded.get(other.id).status, 'stale', 'while a worker that was genuinely running when the process died is staled as before');
     }
 
-    // ---- no overseer review turn for a Stop the Commander just pressed ----
+    // ---- no overseer review turn for a Stop the Master just pressed ----
     {
       const ov = makeOverseer({ fs, path, file: path.join(root, 'overseer.json'), now: () => T++, newId: counter('ws_'),
         sessions: () => ({ generalId: 'home', workstreams: [{ id: 'home', title: null, agentId: 'agent' }], deletedIds: [] }), hasAgent: () => true });

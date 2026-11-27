@@ -24,7 +24,7 @@ const Dialogue = (() => {
   let typer = null;            // active typewriter cancel handle
   let keyHandler = null;       // active option/number keydown handler
   let skipNow = null;          // active "reveal the rest of this beat now" handle (fires onDone, unlike typer)
-  let gate = null;             // armed read-gate: { resolve, onKey, onClick } — narration waits here for the Commander
+  let gate = null;             // armed read-gate: { resolve, onKey, onClick } — narration waits here for the Master
   let pendingSay = null;       // the in-flight say()'s idempotent finish — teardown flushes it even MID-TYPE
                                // (cancelType drops onDone by design, so without this a close during typing
                                // would strand the awaiting flow forever)
@@ -34,18 +34,18 @@ const Dialogue = (() => {
 
   /* THE COMMS OWNER ARBITER (wave-1 B8, gh#158). This panel is the one surface that stands over COMMS, and many modules open it
      (the awakening, the quick tour, the first-task hand-off, the First Pitch, the goal path, routine proposals). Who keeps COMMS
-     when the Commander acts is decided HERE, in one table, never by each caller. A panel's owner kind is fixed when it opens:
+     when the Master acts is decided HERE, in one table, never by each caller. A panel's owner kind is fixed when it opens:
        ceremony — the first-run awakening. It IS the conversation, and the message box answers its question (Dialogue.answer);
        tour     — the opt-in quick tour and its kit-out beats (opened with tour:true or owner:'tour'). It yields through its own way
                   out (yieldTour: its skip key, else the key it marks `yield`), with the reason, so the tutorial ends it quietly;
        offer    — anything offered mid-game (opened with an `offer`): it ends above the message box and steps aside unanswered.
-     The actions: 'session' (the Commander puts another conversation on screen), 'turn' (a turn is sent from COMMS), 'ask' (an
-     approval or question reaches the Commander). An explicit Commander action preempts every owner except the awakening. The tour
+     The actions: 'session' (the Master puts another conversation on screen), 'turn' (a turn is sent from COMMS), 'ask' (an
+     approval or question reaches the Master). An explicit Master action preempts every owner except the awakening. The tour
      holds a 'turn' (it covers the message box, so a send under it is its own lesson's file example) and an 'ask' (its file example
      closes the panel before it runs). test/comms-owner-rules.test.js executes every cell.
      One older door stays outside the table, on purpose: the INBOX click (chat.js sampleCard) calls yieldTour() with no reason, and
      that answers a quick-tour PAGE (tour:true) only — never a kit-out beat, never an offer (an offer's "not now" is a real answer
-     the Commander gives, so the INBOX card posts under it and says where it went). */
+     the Master gives, so the INBOX card posts under it and says where it went). */
   const OWNER_RULES = Object.freeze({
     ceremony: Object.freeze({ session: 'hold', turn: 'hold', ask: 'hold' }),
     tour: Object.freeze({ session: 'yield', turn: 'hold', ask: 'hold' }),
@@ -56,7 +56,7 @@ const Dialogue = (() => {
     if (opts && (opts.tour || opts.owner === 'tour')) return 'tour';
     return 'ceremony';
   }
-  // the one entry point: a Commander action (or an ask reaching them) asks the panel's owner to hand COMMS back. Returns true
+  // the one entry point: a Master action (or an ask reaching them) asks the panel's owner to hand COMMS back. Returns true
   // when the owner stepped aside, false when it holds (or nothing is open).
   function preempt(action) {
     if (!open || !owner) return false;
@@ -67,7 +67,7 @@ const Dialogue = (() => {
     return false;
   }
 
-  // GENESIS never leaves a mind nameless-yet-labelled. If the Commander wakes an overseer without typing a name,
+  // GENESIS never leaves a mind nameless-yet-labelled. If the Master wakes an overseer without typing a name,
   // the flow used to fall back to the bland literal 'AGENT' (name = n || name) with no nudge — a blank ceremony.
   // Instead, mint a station codename: eerie-not-cute, single-word, machine-designation flavour (matching the
   // seeded NOVA / VENOM / ULTRON tone), uppercased and clamped to the 18-char nameplate cap. Deterministic pool,
@@ -95,7 +95,7 @@ const Dialogue = (() => {
   const reduceMotion = () => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (_) { return false; } };
   function seg(text, cps, hold) { return { text: String(text == null ? '' : text), cps: cps || 46, holdAfter: hold || 0 }; }
   /* THE DOOR LAW (systems.js): a line that names a station system brings it online. COMMS lines already did; the awakening and
-     the quick tour speak HERE, so on a fresh station they sent the Commander to WORK › AUTOMATE › WORKFLOWS (or CONNECT ›
+     the quick tour speak HERE, so on a fresh station they sent the Master to WORK › AUTOMATE › WORKFLOWS (or CONNECT ›
      ABILITIES) while that dock button was still hidden. */
   function doorLaw(segs, extra) {
     if (typeof Systems === 'undefined' || !Systems.noticeReply) return;
@@ -125,7 +125,7 @@ const Dialogue = (() => {
     speakerEl = document.createElement('div'); speakerEl.className = 'fnv-speaker'; speakerEl.textContent = name;
     lineEl = document.createElement('div'); lineEl.className = 'fnv-line';
     // the read-gate cue: a quiet blinking prompt under the line. Hidden until a narration beat finishes typing;
-    // the beat then WAITS for the Commander (space / enter / click) instead of rolling on at machine speed.
+    // the beat then WAITS for the Master (space / enter / click) instead of rolling on at machine speed.
     moreEl = document.createElement('button'); moreEl.className = 'fnv-more'; moreEl.type = 'button';
     moreEl.textContent = 'Continue →';
     moreEl.setAttribute('aria-label', 'Continue conversation');
@@ -162,7 +162,7 @@ const Dialogue = (() => {
     armOffer(opts && opts.offer);
   }
 
-  /* AN OFFER NEVER STANDS OVER WHAT NEEDS THE COMMANDER (soak 2026-10-15). The goal-path confirm opened over COMMS mid-
+  /* AN OFFER NEVER STANDS OVER WHAT NEEDS THE MASTER (soak 2026-10-15). The goal-path confirm opened over COMMS mid-
      conversation, and inset:0 covered the transcript AND the message box: a team.dispatch approval that landed under it took
      19 approve clicks that all hit .fnv-line, a new conversation's message box sat under .fnv-opts, and Esc did nothing. The
      awakening and the quick tour still own the whole of COMMS — they ARE the conversation (the first-task hand-off is an offer
@@ -173,7 +173,7 @@ const Dialogue = (() => {
        stops a run, closes the / menu), never one on another key (the model dock's chips, Local Live, a transcript card), and
        never one a document-level owner marked used (the model dock closing, Local Live ending) — that would be a false decline;
      · Dialogue.stepAside(why) hands the moment back (offer.stepAside): COMMS calls it when an approval or question reaches the
-       Commander and when they send a turn, and the caller closes the panel unanswered, as a delivery landing already does. */
+       Master and when they send a turn, and the caller closes the panel unanswered, as a delivery landing already does. */
   function armOffer(o) {
     disarmOffer();
     offer = (o && typeof o === 'object') ? o : null;
@@ -232,7 +232,7 @@ const Dialogue = (() => {
     const top = composerTop();
     panel.style.bottom = (top != null && top > 0) ? Math.max(0, Math.round(host.clientHeight - top)) + 'px' : '';
   }
-  // hand the moment back to an open offer's caller (an approval / question landed, the Commander sent a turn). Returns whether
+  // hand the moment back to an open offer's caller (an approval / question landed, the Master sent a turn). Returns whether
   // an offer was there to step aside; a panel with no offer (the awakening, the tour) is never yanked here — the arbiter
   // (preempt, OWNER_RULES above) is the one place that decides whether a tour yields.
   function stepAside(why) {
@@ -283,7 +283,7 @@ const Dialogue = (() => {
     return !!(t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable));
   }
 
-  /* the READ GATE — after a narration beat finishes typing, hold it on screen until the Commander advances
+  /* the READ GATE — after a narration beat finishes typing, hold it on screen until the Master advances
      (space / enter, or a click on the panel). This is the fix for the onboarding "text rolls on before I can
      read it" complaint: a beat REPLACES the previous one, so auto-advance was destroying unread words.
      clearGate(true) fires the held resolve — teardown paths use it so an awaiting flow can never hang. */
@@ -350,7 +350,7 @@ const Dialogue = (() => {
     step();
   }
 
-  /* NARRATION — type a short beat, no options. By default the beat then WAITS for the Commander
+  /* NARRATION — type a short beat, no options. By default the beat then WAITS for the Master
      (space / enter / click, cue = the blinking ▸ row) before resolving — a beat replaces the previous
      one, so rolling on at machine speed was erasing words nobody had finished reading (the onboarding
      "text moves too fast" complaint). A tap mid-type reveals the full beat first, then a tap advances.
@@ -388,7 +388,7 @@ const Dialogue = (() => {
 
   // the COMMS composer path into the pending question (the awakening's "answer to wake your agent…" input).
   // While a free-text question (allowCustom) is on screen, text typed in the main composer resolves it exactly
-  // like the inline ✎ input would — the Commander's words must NEVER be silently swallowed just because they
+  // like the inline ✎ input would — the Master's words must NEVER be silently swallowed just because they
   // answered in the obvious box. Option-only nodes (the fork, the mirror picks) return false: a typed sentence
   // can't safely map onto a fixed choice, so the caller keeps its options up. No pending node → false (no-op).
   let pendingPick = null;
@@ -531,19 +531,19 @@ const Dialogue = (() => {
   }
 
   // codename() is also exported so the WAKE funnel (app.js) can persist a real minted name instead of the bland
-  // 'AGENT' when the Commander leaves the name blank — keeping the world nameplate / dossier consistent with the
+  // 'AGENT' when the Master leaves the name blank — keeping the world nameplate / dossier consistent with the
   // speaker label. isUnnamed() lets a caller cheaply detect the blank/placeholder case.
   /* THE TOUR YIELDS (2026-09-27 conveyor audit R3). The quick tour's panel covers the COMMS column, and it stays up until one of
-     its options is picked — so a card the Commander explicitly asked for elsewhere (clicking the INBOX on the floor posts the
+     its options is picked — so a card the Master explicitly asked for elsewhere (clicking the INBOX on the floor posts the
      ONE-REAL-JOB card into COMMS) landed hidden under it, and the click read as dead. yieldTour() answers the tour's own way
      out — its skip option, or the option it marks `yield` (the step that leaves the tour for the first task) — the same pick
      a click on that button makes, so no new state exists. Returns true when the tour stepped aside.
-     `why` (the arbiter's action, e.g. 'session') rides the pick as `preempted`: the Commander went somewhere else, so the tutorial
+     `why` (the arbiter's action, e.g. 'session') rides the pick as `preempted`: the Master went somewhere else, so the tutorial
      ends the tour quietly instead of re-offering the first task over the conversation they chose. */
   function yieldTour(why) {
     if (!open || !panel || owner !== 'tour' || !pendingPick || !pendingPick.cfg) return false;
     // no reason = the INBOX door: its old scope, a quick-tour page only. The kit-out beats are tour-owned for the arbiter (a
-    // session pick ends them quietly), but an INBOX click never picks their skip key for the Commander (review 10-27).
+    // session pick ends them quietly), but an INBOX click never picks their skip key for the Master (review 10-27).
     if (!why && !panel.classList.contains('fnv-tour')) return false;
     const opts = Array.isArray(pendingPick.cfg.options) ? pendingPick.cfg.options : [];
     const out = opts.find(o => o && o.skip) || opts.find(o => o && o.yield);

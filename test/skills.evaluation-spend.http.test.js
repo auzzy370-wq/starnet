@@ -119,7 +119,7 @@ const server = http.createServer((req, res) => {
     // a run nobody capped ($2, issue #53), never a fixed $0.08 that a premium model passes on its first call
     assert.equal(unsettled.runCapUsd, 2, 'an uncapped station gives each evaluation run the uncapped-run ceiling');
     // security-storage-07: the row says what it is (an evaluation, not an interrupted run) and the billing source the
-    // host knew (the Commander's own key here, so not Vultron credits)
+    // host knew (the Master's own key here, so not Vultron credits)
     assert.equal(unsettled.kind, 'evaluation');
     assert.equal(unsettled.title, 'skill evaluation (agent)');
     assert.equal(unsettled.managed, false, 'the billing source is known');
@@ -159,7 +159,7 @@ const server = http.createServer((req, res) => {
     assert.equal(fixture.child.pid, sidecarPid, 'explicit settlement restores evaluation without restarting');
     phases.push('explicit settlement restores known spend and complete-usage evaluation in the same process');
 
-    // skills-eval-06: a PER RUN cap the Commander saves in SPENDING LIMITS replaces that ceiling for the next evaluation
+    // skills-eval-06: a PER RUN cap the Master saves in SPENDING LIMITS replaces that ceiling for the next evaluation
     await api('POST', '/api/budget/caps', { perRun: 0.25 });
     includeUsage = false;
     const beforeCapped = requests.length;
@@ -168,7 +168,7 @@ const server = http.createServer((req, res) => {
     assert.equal(requests.length - beforeCapped, 1, 'the uncertain charge stops the evaluation after one call');
     const cappedStatus = await api('GET', '/api/budget/status');
     assert.equal(cappedStatus.unsettled.length, 1);
-    assert.equal(cappedStatus.unsettled[0].runCapUsd, 0.25, 'the evaluation run recorded the Commander\'s per-run cap');
+    assert.equal(cappedStatus.unsettled[0].runCapUsd, 0.25, 'the evaluation run recorded the Master\'s per-run cap');
     phases.push('a saved PER RUN cap bounds each evaluation run');
     assert.deepEqual(faults, [], 'the scripted provider served only the declared evaluation cases (no unrelated or background model work)');
     console.log(JSON.stringify({ status: 'PASS', test: 'skills.evaluation-spend.http', phases, modelCalls: requests.length }, null, 2));

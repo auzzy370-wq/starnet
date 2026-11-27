@@ -138,10 +138,10 @@ A.eq(projNow.lastFeedbackAt, 1000, 'projection surfaces lastFeedbackAt');
 A.eq(projectRecord(decayRec).effectiveTrust, undefined, 'no now -> no effectiveTrust (back-compat: callers/tests without a clock)');
 
 // ---- originOf: WHICH surface formed a belief ----
-// Memory used to form only on the watched browser run, so every record was self-evidently the Commander's own
+// Memory used to form only on the watched browser run, so every record was self-evidently the Master's own
 // conversation. Unattended runs reflect now, so "the agent believes this about me" and "this came off a group
 // chat at 3am" must be distinguishable in the Memory Core panel.
-A.eq(originOf({ taskSource: 'interactive', trigger: 'directive' }), 'commander', 'the browser COMMS run is the Commander in person');
+A.eq(originOf({ taskSource: 'interactive', trigger: 'directive' }), 'commander', 'the browser COMMS run is the Master in person');
 A.eq(originOf({ taskSource: 'telegram', trigger: 'event' }), 'channel:telegram', 'a channel names itself');
 A.eq(originOf({ taskSource: 'discord', trigger: 'event' }), 'channel:discord', '…including discord');
 A.eq(originOf({ taskSource: 'api', trigger: 'event' }), 'api', 'the local OpenAI-compatible endpoint is its own origin');
@@ -151,7 +151,7 @@ A.eq(originOf({}), 'commander', 'an unknown run context defaults to commander (t
 A.eq(originOf(), 'commander', 'and so does no context at all — the helper is total');
 A.eq(originOf({ taskSource: 'weird/../name' }), 'channel:weirdname', 'a channel id is sanitized before it becomes a stored label');
 A.ok(originOf({ taskSource: 'x'.repeat(200) }).length <= 32, 'and bounded, so a hostile source cannot bloat every record');
-// an untagged LEGACY record predates unattended memory — it can only have come from the Commander
+// an untagged LEGACY record predates unattended memory — it can only have come from the Master
 A.eq(projectRecord({ id: 'n1', body: 'x' }).origin, 'commander', 'a legacy record projects as commander, not unknown');
 A.eq(projectRecord({ id: 'n2', body: 'x', origin: 'channel:telegram' }).origin, 'channel:telegram', 'a stamped origin survives projection');
 

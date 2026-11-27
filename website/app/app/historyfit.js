@@ -55,7 +55,7 @@
   }
   function endOnUserTurn(messages) {
     const list = Array.isArray(messages) ? messages : [];
-    // the last turn the Commander started: a note that steered a run (a window's user '[steering] …' message, kind 'steer') is not one,
+    // the last turn the Master started: a note that steered a run (a window's user '[steering] …' message, kind 'steer') is not one,
     // or a retry would end on the replaced attempt's note instead of on the directive it re-runs
     const at = list.map(m => m && m.role === 'user' && m.kind !== 'steer' ? 'user' : '').lastIndexOf('user');
     if (at < 0) return list;

@@ -64,7 +64,7 @@ indefinitely while the hero collects everything.
 `veteran` (Lv 10), `centurion` (100 tasks).
 
 **5. It is frontend-only.** *(STILL OPEN — the only finding this lane did not close.)* Stats live in the save envelope and are folded in the browser. A Telegram-only
-Commander never levels anything until they open the desktop app (the return ritual back-fills, which is the
+Master never levels anything until they open the desktop app (the return ritual back-fills, which is the
 right design — but the dependency is real).
 
 ---
@@ -110,7 +110,7 @@ Add a **RELIABILITY** track fed by events the harness already proves, kept stric
 - A pure `reliability(stats)` in `xp.js` returning `{ known, pct, band, completed, attempted }`, honouring the
   same "no number before evidence" rule as confidence (`known:false` under a minimum sample count).
 - Render it in the dossier next to CONFIDENCE, labelled as what it is: *what the harness observed*, versus
-  CONFIDENCE which is *what the Commander said*. Two honest meters, never averaged into one score.
+  CONFIDENCE which is *what the Master said*. Two honest meters, never averaged into one score.
 
 Counter additions are additive to the persisted stats shape; `sanitize()` already defends non-finite values,
 and `fresh()`/`clone()` need the new keys defaulted for old saves.
@@ -157,7 +157,7 @@ the trophy case shows its unlock hint while locked. `test:fast` green.
 ### S5 — Levels that actually level (own lane, after S1–S4)
 
 > **SHIPPED, BUT NOT AS A REDEFINITION OF LEVEL.** Redefining the ladder would silently rewrite records the
-> Commander already earned under the user-approval-only rule, and level renders synchronously in the world
+> Master already earned under the user-approval-only rule, and level renders synchronously in the world
 > name tags and topbar where an async per-agent skill list cannot go. The idea ships intact as PRACTICE, a
 > fourth separately-labelled meter (`Xp.practice`), exactly as S2 did for RELIABILITY. A procedure counts only
 > when the AGENT wrote it, it is not archived, the guard is not withholding it, and it has actually been USED —
@@ -191,10 +191,10 @@ way: revert the gate change and watch the new regression go red.
 
 1. ~~S5 is a design fork (level-as-capability-readout vs level-as-track-record).~~ **Decided in the build:**
    level was left alone and the capability readout shipped beside it as PRACTICE. Rewriting the ladder would
-   have changed levels the Commander already earned. The fork's other half — should a LEVEL ever be recomputed
+   have changed levels the Master already earned. The fork's other half — should a LEVEL ever be recomputed
    from capability — is deliberately still unbuilt, and still Andrew's call.
 2. ~~Whether RELIABILITY (S2) belongs on the always-visible surfaces or only in the dossier.~~ **Decided:**
    dossier-only. It is a number that can look bad, and the always-visible chrome is not where an honest bad
    number belongs. PRACTICE (S5) sits in the same place for the same reason.
-3. **Still open:** finding 5 — stats are folded in the browser, so a Telegram-only Commander levels nothing
+3. **Still open:** finding 5 — stats are folded in the browser, so a Telegram-only Master levels nothing
    until they open the app. The return ritual back-fills, which is the right design; the dependency is real.

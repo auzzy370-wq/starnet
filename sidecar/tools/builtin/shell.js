@@ -1503,7 +1503,7 @@
     return new Promise(function (resolve, reject) {
       let child;
       // opts.env is ADDITIVE and optional: omitted (every existing caller) the child inherits this process's
-      // environment exactly as before. Commander-defined exec commands pass a sanitized copy, because the
+      // environment exactly as before. Master-defined exec commands pass a sanitized copy, because the
       // sidecar's env holds provider keys and a user snippet has no business reading them.
       const spawnOpts = { cwd: cwd, shell: true, windowsHide: true };
       if (opts.env) spawnOpts.env = opts.env;
@@ -1633,7 +1633,7 @@
       schema: { type: 'object', required: ['cmd'], properties: { cmd: { type: 'string' }, cwd: { type: 'string' }, timeoutMs: { type: 'number' }, timeout_ms: { type: 'number' }, background: { type: 'boolean' } } },
       run: function (args, ctx) {
         ctx = ctx || {};
-        // Host-minted at Telegram ingress: this is the paired Commander at the physical desktop, not a prompt
+        // Host-minted at Telegram ingress: this is the paired Master at the physical desktop, not a prompt
         // claim or a cached capability. It is the one path allowed to leave the agent workspace and use host tools.
         const remoteOwner = unrestrictedHost(ctx);
         const aid = safeAgentId((ctx && ctx.agentId) || 'agent');
@@ -1646,7 +1646,7 @@
         if (refusal) throw refusal;
         const deny = remoteOwner ? null : escapesWorkspace(cmd);
         /* FILES BEFORE THE SHELL (2026-10-25): "use paths inside your workspace" was the whole answer to `type C:\proj\notes.md`,
-           so a model holding the file tools told the Commander the file was inaccessible. A path refusal names the route that
+           so a model holding the file tools told the Master the file was inaccessible. A path refusal names the route that
            reaches it — only when the host says this run carries the file tools (ctx.fileToolsOnWire), and the cwd route only
            where cwd may leave the workspace (the local backend). */
         if (deny) throw new Error('refused: ' + deny + (/^(parent-directory|drive-absolute|drive-root)/.test(deny) && ctx.fileToolsOnWire === true
@@ -1679,7 +1679,7 @@
           if (!environment && !bg) return { content: 'Background processes are not available in this build.', summary: 'unavailable' };
           const started = environment && typeof environment.startBackground === 'function'
             // ctx.surface (host authority, from runInputContext) rides along so the backend hands this child only
-            // the service keys the Commander granted for unattended use — see servicekeys.runEnv.
+            // the service keys the Master granted for unattended use — see servicekeys.runEnv.
             ? environment.startBackground({ agentId: aid, cmd: cmd, cwd: cwd, isWin: isWin, surface: ctx.surface })
             : bg.start({ agentId: aid, cmd: cmd, cwd: cwd, isWin: isWin });
           return Promise.resolve(started).then(function (r) {
@@ -1861,7 +1861,7 @@
          of a background process, and those are keyed by AGENT, not by run, so as impact none it was offered, with no
          grant, to every run of that agent whose station holds the WORKBENCH (a delegated worker's kit, a bay room with
          one placed), on any surface and tainted or not, which could then page and repeat the log of a command the
-         Commander had that agent start. In this lane a watched run asks an exact per-call confirmation, an unattended
+         Master had that agent start. In this lane a watched run asks an exact per-call confirmation, an unattended
          ASK run is not offered it, a tainted run loses it, and an owner DM or Full Access keeps it. Declaring it none
          (quick win 8) was reverted in review and waits for Andrew's security sign-off. shell.bg.status/wait keep the
          impact none they had in 0.14.1 (each can show a short output tail); that lane is not changed here. briefExempt

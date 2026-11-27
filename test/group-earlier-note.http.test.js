@@ -73,8 +73,8 @@ function assertCarried(words, tag, lead, wire) {
     assert.ok(!window.includes(tag + '-msg-' + i + ';'), wire + ': and not in the window');
   }
   for (let i = 21; i < 100; i++) assert.ok(window.includes(tag + '-msg-' + i + ';') && !records.some(r => r.text === tag + '-msg-' + i + ';'), wire + ': window message ' + i + ' is in the window only');
-  assert.deepEqual([records[0].author, records[1].author], ['user', lead], wire + ": each record names its sender: the Commander's is 'user', the lead's its own id");
-  assert.ok(!/from the Commander/.test(words) && !/still holds/.test(words) && !/actual words/.test(words) && !/brief from/.test(words), wire + ": never worded as the Commander's standing instructions or as the user's own words");
+  assert.deepEqual([records[0].author, records[1].author], ['user', lead], wire + ": each record names its sender: the Master's is 'user', the lead's its own id");
+  assert.ok(!/from the Master/.test(words) && !/still holds/.test(words) && !/actual words/.test(words) && !/brief from/.test(words), wire + ": never worded as the Master's standing instructions or as the user's own words");
   assert.ok(window.includes('Current USER request: ' + tag + '-latest: summarize where we are'), wire + ': the live request rides the window records as before');
 }
 
@@ -94,7 +94,7 @@ function assertCarried(words, tag, lead, wire) {
     await fixture.json('POST', '/api/roster', { updatedAt: Date.now(), agents: [
       { agentId: 'agent', name: 'agent', model: 'test/model', provider: 'openrouter', approvalMode: 'full', system: 'IDENTITY_NOTE_LEAD' },
       { agentId: 'claude', name: 'claude', model: 'claude-test', provider: 'anthropic', approvalMode: 'full', system: 'IDENTITY_CLAUDE_LEAD' }] });
-    // a hundred earlier messages: the Commander, then the lead, in turn; each ends with a ';' so no number is a prefix of another
+    // a hundred earlier messages: the Master, then the lead, in turn; each ends with a ';' so no number is a prefix of another
     async function runGroup(agentId, tag) {
       const earlier = Array.from({ length: 100 }, (_, i) => i % 2 === 0 ? { role: 'user', content: tag + '-msg-' + i + ';' } : { role: 'assistant', agentId, content: tag + '-msg-' + i + ';' });
       const g = await request('POST', '', { op: 'create', members: [agentId], title: tag + ' long group', history: earlier });

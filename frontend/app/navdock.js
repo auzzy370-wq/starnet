@@ -92,7 +92,7 @@
   /* ---------- one-time "what now" coach: teach the new grouped-dock model ----------
      The interaction model changed (flat buttons -> dock popovers), so a brand-new station
      gets one dismissible hint pointing at the docks. Shown on first game-screen view, then
-     retired permanently the moment the Commander opens any dock or taps ✕. */
+     retired permanently the moment the Master opens any dock or taps ✕. */
   const COACH_KEY = 'vultron.navcoach.seen';
   const coach = document.getElementById('nav-coach');
   let coachTimer = 0;
@@ -113,7 +113,7 @@
   let coachShown = false;
   // NOT OVER THE ARRIVAL (org P31, 2026-10-14): #screen-game goes active while the awakening still owns the room
   // (World.beginAwakening), so the coach waited for nothing and talked over the first meeting. It now waits for
-  // World.releaseAwakening, which fires 'vultron:awakening-released'; a returning Commander (no awakening) is unchanged.
+  // World.releaseAwakening, which fires 'vultron:awakening-released'; a returning Master (no awakening) is unchanged.
   const awakeningHeld = () => typeof World !== 'undefined' && typeof World.awakeningHeld === 'function' && World.awakeningHeld();
   // NOT OVER A COVERED COMMS (org P31 review fix): closeOut releases the awakening while the Dialogue panel — mounted
   // over #chat-panel — still runs the first-task hand-off and the tour, so "Talk to your agent up in COMMS" would point

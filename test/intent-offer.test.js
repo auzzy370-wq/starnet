@@ -2,7 +2,7 @@
 
    The Recruitment Bay + recipe library hold 38 classes and 50 ready-made jobs behind a bottom-bar popover,
    so most of that catalog is never discovered. The intent offer closes the gap from COMMS: when what the
-   Commander typed is plainly a class's or a recipe's job, the station says so once, inline.
+   Master typed is plainly a class's or a recipe's job, the station says so once, inline.
 
    The ONLY thing that makes that feature worth shipping is precision — a discovery card that fires on a
    vague match is noise in the one COMMS beat slot, which is strictly worse than the undiscovered feature.
@@ -23,7 +23,7 @@ const RECIPES = require('../frontend/app/recipe-catalog/index.js');
 
 /* ---------- the candidate surface, built from the LIVE catalog exactly as chat.js builds it ---------- */
 // `text` is the matchable surface: name + tagline + blurb + starters/task. Deliberately NOT purpose/manual —
-// their shared vocabulary ("the Commander", "Output:", "notebook.write") blurs every class into every other.
+// their shared vocabulary ("the Master", "Output:", "notebook.write") blurs every class into every other.
 function candidates() {
   const out = [];
   for (const c of shared.BUILTINS.concat(shared.ARCHETYPES)) {
@@ -46,7 +46,7 @@ const C = candidates();
 A.ok(C.length >= 80, 'the live catalog surface loaded (' + C.length + ' classes + recipes)');
 
 /* ---------- 1. REAL ASKS land on the RIGHT class ---------- */
-// Each of these is a phrasing a Commander would actually type, and each names a class that owns that outcome.
+// Each of these is a phrasing a Master would actually type, and each names a class that owns that outcome.
 const HITS = [
   ['read this contract before I sign it', 'paralegal'],
   ['can you check this lease for anything that will bite me', 'paralegal'],
@@ -87,7 +87,7 @@ for (const [q, id] of HITS) {
     A.eq(m.id, id, 'the offer names the class that owns the outcome: "' + q + '"');
     A.ok(m.kind === 'class' || m.kind === 'recipe', 'the offer carries its kind');
     A.ok(Array.isArray(m.terms) && m.terms.length > 0, 'the offer reports the terms that earned it (an honest why)');
-    // the reason must be REAL: every reported term actually occurs in the Commander's message.
+    // the reason must be REAL: every reported term actually occurs in the Master's message.
     const asked = IO.terms(q);
     for (const t of m.terms) A.ok(asked.has(t), 'a reported reason term came from the message, not the catalog: ' + t);
   }
@@ -103,7 +103,7 @@ for (const [q, id] of [['i need a legal assistant to check this', 'paralegal'], 
 }
 
 /* ---------- 2. CHATTER produces SILENCE (the expensive direction) ---------- */
-// A false offer costs the one COMMS beat slot and trains the Commander to ignore the channel. Silence is the
+// A false offer costs the one COMMS beat slot and trains the Master to ignore the channel. Silence is the
 // default and the honest answer.
 const QUIET = [
   'hi', 'thanks!', 'ok cool', 'yes please', 'no worries',
@@ -165,7 +165,7 @@ function padded(subject) {
   // the rare term sits only in the BLURB → one hit, no corroboration → silence.
   const blurbOnly = padded({ kind: 'class', id: 'solo', name: 'Solo', label: 'a helper', headline: 'Solo a helper', text: 'Solo a helper that knows about zebrafish somewhere in its blurb' });
   A.eq(IO.match('tell me about zebrafish please', blurbOnly), null, 'one rare BLURB term alone never offers (corroboration required)');
-  // the SAME lone term, now the class's own name/tagline → the Commander named the thing outright → offer.
+  // the SAME lone term, now the class's own name/tagline → the Master named the thing outright → offer.
   const named = padded({ kind: 'class', id: 'solo', name: 'Zebrafish', label: 'zebrafish keeper', headline: 'Zebrafish zebrafish keeper', text: 'Zebrafish keeper tanks water' });
   const m = IO.match('tell me about zebrafish please', named);
   A.ok(!!m && m.id === 'solo', 'the same lone term DOES offer when it is the class\'s own name');
@@ -217,13 +217,13 @@ A.ok(stageIdx > 0 && fireIdx > 0, 'the staged directive is consumed by a separat
 A.ok(/intentOfferText:\s*intentOfferText/.test(chat), 'the staged directive is attached to its exact run (concurrent sessions cannot cross wires)');
 A.ok(/const staged = meta && meta\.intentOfferText; if \(meta\) meta\.intentOfferText = null;/.test(chat),
   'the staged directive is cleared as it is read — an offer can never leak onto a later, unrelated run');
-// it must sit INSIDE the post-run gentle-nudge chain, above the work-earned floor (the Commander's own words
+// it must sit INSIDE the post-run gentle-nudge chain, above the work-earned floor (the Master's own words
 // earned it, not accumulated session work) but below the isTask salience gate.
 const iTaskGate = chat.indexOf('if (!meta || meta.isTask) {');
 const iFloor = chat.indexOf('if (earned && !takeover)');
 const iRecruitBeat = chat.indexOf('const rc = recruitCandidate()');
 A.ok(iTaskGate > 0 && fireIdx > iTaskGate, 'the offer fires only after the isTask salience gate (never on chatter)');
-A.ok(iFloor > 0 && fireIdx < iFloor, 'the offer sits ABOVE the work-earned floor (a fresh Commander still discovers the catalog)');
+A.ok(iFloor > 0 && fireIdx < iFloor, 'the offer sits ABOVE the work-earned floor (a fresh Master still discovers the catalog)');
 A.ok(iRecruitBeat > 0 && fireIdx < iRecruitBeat, 'the offer is checked before adaptive recruitment (it is the more specific, message-derived ask)');
 A.ok(/if \(!takeover && staged && maybeIntentOffer\(staged\)\) return;/.test(chat), 'takeover has precedence; a fired catalog offer takes the slot and returns');
 A.ok(!/try \{ maybeIntentOffer\(text\); \}/.test(chat), 'send() never renders the offer before the run can replace its choice row');

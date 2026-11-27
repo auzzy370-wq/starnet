@@ -37,7 +37,7 @@
 
   /* NULL IS NOT ZERO (fixed 2026-08-04). `Number(null)`, `Number('')` and `Number(false)` are all a perfectly
      finite 0, so an explicit `conf: null` used to read as CONFIDENCE ZERO — which marked the belief stale and
-     asked the Commander to re-confirm it — while an ABSENT conf correctly failed open to neutral. The same
+     asked the Master to re-confirm it — while an ABSENT conf correctly failed open to neutral. The same
      unreadable state has to fail open the same way whichever shape it arrives in.
      ALLOWLIST, NOT DENYLIST (2026-08-04). Listing the bad shapes ('' / null / boolean) still let `' '`, `[]` and
      `[0]` through as a hard 0 — the identical bug one shape further out. Only a real finite number, or a string
@@ -73,7 +73,7 @@
   }
 
   /* a cited BELIEF's own strength: how fresh it still is, tempered by how well the dimension holding it is
-     corroborated. Freshness mirrors understanding.js exactly (60-day half-life; a PINNED belief is Commander-
+     corroborated. Freshness mirrors understanding.js exactly (60-day half-life; a PINNED belief is Master-
      asserted-durable and never decays; an undatable belief is treated as fresh — unknown age is not evidence of
      staleness). When the dim confidence is unavailable the freshness alone is the reading. */
   const HALF_LIFE_MS = 60 * DAY_MS;
@@ -86,7 +86,7 @@
   }
   /* FRESHNESS IS THE TRUNK; CORROBORATION ONLY MODULATES IT (reshaped 2026-08-04).
      This was the MEAN of the two readings, under a comment claiming "a well-understood dimension cannot rescue a
-     belief the Commander last touched a season ago". The mean does not enforce that: a FIVE-YEAR-OLD belief in a
+     belief the Master last touched a season ago". The mean does not enforce that: a FIVE-YEAR-OLD belief in a
      0.9-confidence dimension still measured 0.45 — a middling score for a citation with no life left in it — and
      the mean's floor means age can never take the reading below 0.5 at all. Documenting that as a law the code
      did not have would have been the app asserting something it cannot prove, so the CURVE was fixed instead of
@@ -110,7 +110,7 @@
        · OLD          — untouched for STALE_DAYS. Age alone is not doubt: a well-corroborated belief stays true.
        · UNDER-CONFIRMED — the dimension holding it reads below STALE_CONF (just under a single fresh authored
                         belief, ≈0.51 in understanding.js), i.e. nothing since has corroborated it.
-     A PINNED belief is never stale — the Commander pinned it as durable truth and the station does not
+     A PINNED belief is never stale — the Master pinned it as durable truth and the station does not
      second-guess that. An UNDATABLE belief is never stale either: unknown age is not evidence (fail-open to
      "fresh", the same law understanding.js's freshness() follows). No clock is read here — `now` is injected,
      and an absent `now` yields `stale:false` rather than a guess. */
@@ -139,7 +139,7 @@
        start NEUTRAL (1) — a channel is never presumed good or bad; it has to earn either.
        FLOOR (0.5)       — quality alone can NEVER silence a channel. A dud channel gets structurally quieter and
                            still speaks when nothing better is on the table. Silencing is the job of the per-channel
-                           caps and the Commander's own declines, never of a number the station computed.
+                           caps and the Master's own declines, never of a number the station computed.
        CAP (1.25)        — a proven channel earns a small edge, bounded well inside one priority tier (recommend.js
                            converts this whole range into a ±small WITHIN-TIER term), so no amount of good history
                            lets a gentle nudge outrank a turn-in. Priority order remains the spine's law.
@@ -153,7 +153,7 @@
     ok: 0.95,            // 👌 — a shrug is very slightly below neutral, not a punishment
     engaged: 1.1,        // accepted where no trackable work is spawned (a kept belief, an answered question)
     deferred: 0.9,       // "not now" — a real signal about timing, the mildest negative we record
-    declined: 0.75,      // "no" / "never" — the Commander did not want this
+    declined: 0.75,      // "no" / "never" — the Master did not want this
     miss: Q_FLOOR,       // 👎 on the work this offer spawned — the strongest honest negative there is
     abandoned: 0.85      // accepted, then the spawned work never ran / never finished (only when provable)
   };

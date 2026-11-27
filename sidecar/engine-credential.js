@@ -7,7 +7,7 @@
    task — resolves its key on the station (index.js providerRuntimeKey), which only ever knew the operator's env vars
    and the desktop shell's keychain push. So routines answered "no usable credential" while chat worked.
 
-   THE FIX: the page hands the station a copy when the Commander saves or removes a key (and once per page boot for
+   THE FIX: the page hands the station a copy when the Master saves or removes a key (and once per page boot for
    keys it already holds) — POST /api/providers/engine-key, gated like every other /api/* mutation. This module is
    the store behind that route: one record per provider { key, keyPool, baseUrl, rev }, kept in
    WORKSPACES/.secrets/provider-keys.json (the protected sibling of the fs jail that pre-update backups skip).
@@ -28,7 +28,7 @@
                                    o.boot + o.ifRev: a page BOOT re-hand-over. It applies only when the station holds
                                    nothing for that provider, or still holds the revision this page itself last saw
                                    (ifRev) — so an older origin's localStorage (localhost vs 127.0.0.1 are separate
-                                   stores) can never put back a key the Commander rotated or removed in another page.
+                                   stores) can never put back a key the Master rotated or removed in another page.
                                    An explicit save / REMOVE (no o.boot) is last-write-wins.
        store.secretValues()     -> every saved key (the known-value redaction source)
      credentialError(o)  -> the ONE refusal sentence (o = { id, label, kind, env, baseUrlEnv, what, keylessUrl, gone, unreadable, tool })
@@ -36,7 +36,7 @@
      UNATTENDED_REMEDY   -> its provider-less remedy clause (the night-shift report reuses it verbatim)
 
    A REMOVE leaves a tombstone { rev, removed: true } (no key): it is what lets a later boot hand-over from a page that
-   still holds the removed key see that the Commander's newer choice was "none".
+   still holds the removed key see that the Master's newer choice was "none".
 
    Precedence (credential-store.js): an explicit per-run key > the desktop keychain push / an operator env var
    (OPENROUTER_API_KEY …) > this page copy. A deployment that set an env var keeps it; the page copy only fills a gap, and

@@ -93,7 +93,7 @@ function boot(opts) {
     await until(() => !t.Voice.isListening(), 1000);
     A.eq(t.Voice.isListening(), false, 'the unanswered prompt times out and the button recovers');
     let stopped = 0;
-    gumPending[0].res({ getTracks: () => [{ stop() { stopped++; } }] });   // the Commander answers the prompt late
+    gumPending[0].res({ getTracks: () => [{ stop() { stopped++; } }] });   // the Master answers the prompt late
     await until(() => stopped > 0, 1000);
     A.eq(stopped, 1, 'the late grant is released at once (the stream stayed live until a reload before)');
   }

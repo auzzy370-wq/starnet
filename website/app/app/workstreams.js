@@ -54,12 +54,12 @@
   let undoCheckpoint = null;   // one durable, bounded recovery point for clear/bulk archive
   // DELETED-SESSION TOMBSTONES: adopt() is the seam that re-mints sessions from server-side state
   // (workshop deliverables, cron backfill) — without a durable record of the delete, every restart
-  // resurrected rows the Commander had deliberately removed. A deleted id lands here, rides
+  // resurrected rows the Master had deliberately removed. A deleted id lands here, rides
   // serialize()/init(), and adopt() refuses it unless the caller passes revive:true (a deliberate
   // human re-open, e.g. the OUTBOX crate's "review"). Bounded so the list can't grow unboundedly.
   const MAX_TOMBS = 500;
   let tombs = [];       // string ids of deleted workstreams, oldest first
-  // FORGOTTEN SESSIONS (qa/bugs/3e926b6a): the subset the Commander deleted AS A CONVERSATION (the rail's Delete, and
+  // FORGOTTEN SESSIONS (qa/bugs/3e926b6a): the subset the Master deleted AS A CONVERSATION (the rail's Delete, and
   // station.control session.delete, which asks them first) — del(id, { forget: true }). It rides the save as
   // `forgetIds`, and the sidecar forgets only these: their history, recall and the memory they wrote. A row removed as a
   // side effect (DELETE AGENT's removeByAgent, a task card's remove) is only hidden, as it always was: deleting an
@@ -304,7 +304,7 @@
         ? { kind: opts.automation.kind, id: clamp(opts.automation.id || '', 160), name: clamp(opts.automation.name || '', 160) } : null,
       createdAt: opts.createdAt || t,
       lastActiveAt: opts.lastActiveAt || t,
-      // when the Commander last had this stream OPEN. unread = lastActiveAt > lastReadAt (truthful:
+      // when the Master last had this stream OPEN. unread = lastActiveAt > lastReadAt (truthful:
       // both are real stored timestamps — no invented counts). A record saved before this field
       // existed defaults to its lastActiveAt so an upgrade never floods the rail with false unreads.
       lastReadAt: opts.lastReadAt != null ? opts.lastReadAt : (opts.lastActiveAt || t)
@@ -427,7 +427,7 @@
     if (opts.activate !== false) activeId = w.id;   // board "add" passes {activate:false} so it won't hijack the active chat
     return w;
   }
-  // The +NEW session seam. An untouched active chat is already the blank line the Commander
+  // The +NEW session seam. An untouched active chat is already the blank line the Master
   // asked for, so focus it instead of minting another durable row. This makes a burst of clicks
   // idempotent without a timer: the first legitimate create becomes active synchronously and the
   // rest observe that same blank. Project-scoped actions only reuse a blank carrying the exact
@@ -484,7 +484,7 @@
         return ex;
       }
       // a DELETED id stays deleted: the boot-time resurrection paths (workshop pending poll, cron
-      // backfill) must not re-mint a session the Commander removed. revive:true is the deliberate
+      // backfill) must not re-mint a session the Master removed. revive:true is the deliberate
       // human re-open (it clears the tombstone so the session behaves normally from then on).
       if (isDeleted(opts.id)) {
         if (opts.revive !== true) return null;
@@ -545,7 +545,7 @@
     if (w.archived && activeId === id) activeId = generalId;
     return true;
   }
-  // opts.forget === true: the Commander deleted this conversation (see `forgets` above); its workers' threads with it
+  // opts.forget === true: the Master deleted this conversation (see `forgets` above); its workers' threads with it
   function del(id, opts) {
     if (id === generalId) return false;
     const i = ws.findIndex(w => w.id === id);
@@ -573,9 +573,9 @@
   }
 
   // ---------- goal steps (org P29-sys wiring) ----------
-  // A goal-loop continuation rides history as a user-role turn, but the Commander never typed it. GoalLoop.stepOfTurn is
+  // A goal-loop continuation rides history as a user-role turn, but the Master never typed it. GoalLoop.stepOfTurn is
   // the ONE predicate every reader shares (a browser global; the sibling pure module under node). Every reader here that
-  // means "the Commander's words" (titles, export) asks it, so the internal prompt never names or speaks for a session.
+  // means "the Master's words" (titles, export) asks it, so the internal prompt never names or speaks for a session.
   function goalLoopApi() {
     if (typeof GoalLoop !== 'undefined' && GoalLoop && GoalLoop.stepOfTurn) return GoalLoop;
     if (typeof module !== 'undefined' && module.exports && typeof require === 'function') return require('./goalloop.js');
@@ -766,7 +766,7 @@
     return Array.isArray(members) && members.includes(agentId);
   }
   // ---------- session power tools: visible search/export + reversible cleanup ----------
-  // Only actual Commander/agent dialogue belongs in search or export. Local/system records can contain
+  // Only actual Master/agent dialogue belongs in search or export. Local/system records can contain
   // prompts, recovery markers, tool metadata, or other implementation state and must never leak through
   // a user-facing transcript surface.
   const isVisibleMessage = m => !!(m && !m.sys && !m.hidden && !m.internal
@@ -797,7 +797,7 @@
   function hasHistory(w) { w = idOrRecord(w); return !!w && (!!w.historyRef || (Array.isArray(w.history) && w.history.length > 0)); }
   // how many rows the session holds, packed ones included
   function turnCount(w) { w = idOrRecord(w); return !w ? 0 : (w.historyRef ? countPacked(composedHistory(w)) : (Array.isArray(w.history) ? w.history.length : 0)); }
-  // has the Commander said anything here? A packed run is user and assistant rows, so a session holding one has started
+  // has the Master said anything here? A packed run is user and assistant rows, so a session holding one has started
   function hasUserTurn(w) { w = idOrRecord(w); return !!w && (!!w.historyRef || (Array.isArray(w.history) && w.history.some(m => m && m.role === 'user'))); }
   // is part of the session's history still packed, i.e. named by row id and not read back?
   function needsHydration(w) { w = idOrRecord(w); return !!(w && w.historyRef); }
@@ -808,7 +808,7 @@
   /* Put the rows read back for a session's packed runs into it. `expanded` is HistoryRef.expand(historyRef).rows: the packed history
      with every run the station returned laid out as rows, in place, and every run it could not left as its element (so it stays packed
      and is saved as it was). opts.ref is the packed form the caller expanded: when the session no longer holds that very one (it was
-     cleared, undone or replaced while the rows were out) nothing is put back — a read can never bring back what the Commander removed.
+     cleared, undone or replaced while the rows were out) nothing is put back — a read can never bring back what the Master removed.
      The rows the page holds that the packed form did not name (pushed since boot) follow the expanded ones; an inline row the page
      dropped meanwhile stays dropped. Returns false when nothing could be put back (no such session, not packed, or a stale read). */
   function hydrate(id, expanded, opts) {
@@ -873,7 +873,7 @@
     opts = opts || {};
     const title = safeTitle(w);
     // a goal step keeps its record (role + the prompt the model received) and is NAMED as one: the readable export writes it
-    // as the station's line, never under "## Commander" (org P29-sys wiring)
+    // as the station's line, never under "## Master" (org P29-sys wiring)
     /* opts.rows = the station's DISPLAY view of this session (GET /api/transcript): the rows it will still show after any delete - a reply that quotes a
        deleted session is not in it. The page's own copy may still hold such a row, so an export reads the display view whenever the station answered;
        without it (an older station, a session the store never held) the page history is exported minus any row that carries a quote stamp. */
@@ -894,7 +894,7 @@
     const lines = ['# ' + title, '', '_Exported from Vultron. Hidden/system data and obvious credentials are excluded._', ''];
     for (const m of messages) {
       if (m.goalStep != null) { lines.push('## Station', '', 'Goal step: ' + m.goalStep, ''); continue; }
-      lines.push('## ' + (m.role === 'user' ? 'Commander' : 'Agent'), '', m.content, '');
+      lines.push('## ' + (m.role === 'user' ? 'Master' : 'Agent'), '', m.content, '');
     }
     return { format: 'markdown', mime: 'text/markdown', filename: 'vultron-' + slug + '.md', text: lines.join('\n') };
   }

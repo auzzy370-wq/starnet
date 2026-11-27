@@ -49,9 +49,9 @@
   const findSimilar = (records, text, opts) => MemTruth.findSimilar(records, text, opts);
 
   // ---- ORIGIN: which surface a memory was formed on ----
-  // Memory used to form ONLY on the watched browser run, so every record was self-evidently the Commander's own
+  // Memory used to form ONLY on the watched browser run, so every record was self-evidently the Master's own
   // conversation. Now that unattended runs reflect too, a belief can be learned from a scheduled routine, a
-  // night-shift shift, or a messaging channel — and the Commander must be able to SEE that, because "the agent
+  // night-shift shift, or a messaging channel — and the Master must be able to SEE that, because "the agent
   // believes this about me" and "someone in a group chat said this" are different claims. Channel DMs are
   // owner-gated upstream (channels/adapter.js ownerOk), so the real exposure is a whitelisted group chat; either
   // way the honest answer is to record where the belief came from rather than to flatten it.
@@ -61,7 +61,7 @@
     run = run || {};
     const src = String(run.taskSource == null ? '' : run.taskSource).toLowerCase().replace(/[^a-z0-9_-]/g, '');
     const trigger = String(run.trigger == null ? '' : run.trigger).toLowerCase();
-    if (src === 'interactive') return 'commander';   // the browser COMMS run — the Commander in person
+    if (src === 'interactive') return 'commander';   // the browser COMMS run — the Master in person
     if (src === 'api') return 'api';                 // the local OpenAI-compatible endpoint
     if (src) return 'channel:' + src.slice(0, ORIGIN_MAX);   // telegram / discord / … — the channel names itself
     if (trigger === 'nightshift') return 'nightshift';
@@ -122,7 +122,7 @@
     const c = String(content == null ? '' : content);
     let found = false;
     const out = (Array.isArray(records) ? records : []).map(r => {
-      // the Commander's own edit confirms a feedback record (taste is only their confirmed words — feedbackmemory.isTaste)
+      // the Master's own edit confirms a feedback record (taste is only their confirmed words — feedbackmemory.isTaste)
       if (!found && r && r.id === id) { found = true; return Object.assign({}, r, { content: c, body: c }, r.origin === 'feedback' ? { confirmation: 'user-confirmed' } : {}); }
       return r;
     });
@@ -151,7 +151,7 @@
       scope: r.scope || 'global', streamId: r.streamId || null,
       projectRoot: r.projectRoot || null,   // the project tier a 'project'-scoped belief is keyed to (memory-compound lane)
       sourceRunId: r.sourceRunId || null,
-      // an untagged legacy record predates unattended memory, so it can only have come from the Commander's own
+      // an untagged legacy record predates unattended memory, so it can only have come from the Master's own
       // COMMS run — 'commander' is the honest default, not a guess.
       origin: r.origin || 'commander',
       createdAt: r.createdAt || r.ts || 0, lastUsedAt: r.lastUsedAt || null,

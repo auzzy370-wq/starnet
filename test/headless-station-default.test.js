@@ -60,7 +60,7 @@ const signedInChatGPT = id => id === 'codex';
   A.eq(r.agents.map(a => a.agentId), ['agent'], 'the roster still rides along');
 }
 
-// ---- 1b. an editor run is told where the Commander is, after the roster persona (review of quick win 13) ----
+// ---- 1b. an editor run is told where the Master is, after the roster persona (review of quick win 13) ----
 // The roster persona is the desktop's (COMMS panel, Approve/Deny buttons, FORK rows); a terminal run gets TERMINAL_NOTE after
 // it, and an editor run (client:'editor') gets EDITOR_NOTE. The real composition lines from handleRun run over a fake roster.
 {
@@ -75,7 +75,7 @@ const signedInChatGPT = id => id === 'codex';
   const compose = (body) => new Function('agentRoster', 'TERMINAL_NOTE', 'body', noteSrc + '\n' + hr.slice(a, b) + '\nreturn body;')(
     new Map([['agent', { system: 'DESKTOP-PERSONA: press Approve in COMMS' }]]), '\n\n[TERMINAL] t', body);
   const ed = compose({ rosterSystem: true, client: 'editor', agentId: 'agent' }).system;
-  A.ok(ed.indexOf('DESKTOP-PERSONA') === 0 && ed.indexOf('[EDITOR] The Commander is talking to you from their code editor') > 0,
+  A.ok(ed.indexOf('DESKTOP-PERSONA') === 0 && ed.indexOf('[EDITOR] The Master is talking to you from their code editor') > 0,
     'an editor run gets the roster persona, then the [EDITOR] note: ' + ed.slice(0, 160));
   A.ok(ed.indexOf('no COMMS panel, no buttons') > 0 && ed.indexOf('allow once, allow for the rest of this session, or reject') > 0,
     "the note says there are no station buttons and names the editor's real three answers");

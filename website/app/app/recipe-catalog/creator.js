@@ -8,7 +8,7 @@
    Seven of its ten recipes failed the chat-box test outright: "draft me some hooks", "give me title
    ideas", "outline a script". A plain chat box does all of that just as well, so shipping them is what
    made the catalog read as a prompt list. The rebuild rests on the one thing a chat box does not have:
-   THE COMMANDER'S OWN ARCHIVE AND CHANNELS. Every recipe here reads what they actually published, what
+   THE MASTER'S OWN ARCHIVE AND CHANNELS. Every recipe here reads what they actually published, what
    their audience actually said, or what the live web now says about work they put out months ago.
 
    That reframing is also what makes these NON-OBVIOUS (bar 6). "Write me a hook" is a request anyone

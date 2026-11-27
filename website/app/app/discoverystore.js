@@ -1,13 +1,13 @@
 /* VULTRON — discoverystore.js : the browser's read of ENVIRONMENT DISCOVERY (sidecar/discovery.js's shelf).
 
-   The station's first organ that finds work the Commander never typed: the sidecar scans the BLESSED project
+   The station's first organ that finds work the Master never typed: the sidecar scans the BLESSED project
    roots on a slow tick and stages findings whose citations are the repo's own lines. This store is the thin
    wire the bay reads — same discipline as its siblings (recledger/prospectstore):
      · FAIL-OPEN EVERYWHERE: no route, a 500, a hung request → findings() answers [] and the bay simply has no
        discovery shelf. The frontend may never assert discovery state it cannot prove (scoutColdState law).
      · READ-ONLY CITIZEN of the event spine — no bus subscription; renderStage() pulls, decide() pushes.
      · NOTHING RUNS FROM HERE. accept posts the verdict; the caller scaffolds the composer (Chat.prefill) and
-       the Commander sends it themselves — propose-and-confirm, the whole product's law. */
+       the Master sends it themselves — propose-and-confirm, the whole product's law. */
 'use strict';
 const DiscoveryStore = (() => {
   const REFRESH_MIN_MS = 60 * 1000;
@@ -36,7 +36,7 @@ const DiscoveryStore = (() => {
   function get(id) { return findings().find(f => f && f.id === String(id || '')) || null; }
   function status() { return cache; }   // null until a real server read — the bay asserts nothing before that
 
-  /* the Commander's verdict. The staged row is dropped LOCALLY first so the shelf answers the click instantly,
+  /* the Master's verdict. The staged row is dropped LOCALLY first so the shelf answers the click instantly,
      then the server write lands and the coalesced refresh re-syncs — an offline decide degrades to a local
      hide for this session, never a thrown error. */
   function decide(id, decision) {
@@ -50,7 +50,7 @@ const DiscoveryStore = (() => {
     return true;
   }
 
-  // the Commander's own SCAN NOW — forces one server cycle, then re-reads. Resolves to the server's honest
+  // the Master's own SCAN NOW — forces one server cycle, then re-reads. Resolves to the server's honest
   // answer ({ok:false, reason:'busy'|'personalization-paused'|'disabled'} included), or null when unreachable.
   async function scanNow() {
     try {

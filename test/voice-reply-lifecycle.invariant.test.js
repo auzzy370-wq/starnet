@@ -103,7 +103,7 @@ function contract(Voice) {
   };
 }
 
-/* One row: hands-free on, the Commander's turn sent (the mic closes until the reply ends), then the reply.
+/* One row: hands-free on, the Master's turn sent (the mic closes until the reply ends), then the reply.
    o.chunks are offered before the event, o.late after it; o.closeFirst closes the reply before the event.
    o.event(api, reply, Voice) is the cancel (absent: the reply runs to its own end). o.waitAudible holds the event
    until the first clip plays. Expected: o.state/o.cause, the heartbeat count, the mic opens, and the chunk sum. */

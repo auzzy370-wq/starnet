@@ -1,5 +1,5 @@
 'use strict';
-/* node test/voice-speaker.property.test.js — I2: the speaker's saved setting is only ever the Commander's own choice, and
+/* node test/voice-speaker.property.test.js — I2: the speaker's saved setting is only ever the Master's own choice, and
    a voice session only borrows the speaker.
 
    THE PROPERTY. Seeded op sequences (shared/clock-rng.js makeRng) over the real voice-state.js, voice.js and
@@ -56,7 +56,7 @@ async function open(store) {
   return env;
 }
 
-// what the speaker SHOULD be: the Commander's last explicit choice, and the sessions holding it on
+// what the speaker SHOULD be: the Master's last explicit choice, and the sessions holding it on
 function model() {
   return { lastExplicit: false, leases: new Set(), live: false, convo: false,
     on() { return this.lastExplicit || this.leases.size > 0; },

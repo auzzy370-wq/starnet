@@ -9,7 +9,7 @@
 
    1. Two Run Now fires of one routine send a BYTE-IDENTICAL system prompt and tool array.
    2. That prompt carries the persona and the routine note — and none of the observed evidence or learned text (the
-      Commander's dossier rides the run-context note: token-efficiency lane); the evidence (here a real TRACK RECORD line folded from seeded run history) rides the run's own
+      Master's dossier rides the run-context note: token-efficiency lane); the evidence (here a real TRACK RECORD line folded from seeded run history) rides the run's own
       <run_context> note, which still differs per run.
    3. VULTRON_STABLE_PREFIX=0 puts the evidence back in the system prompt (the kill switch keeps the old shape).
    4. Every host site that feeds a server-composed persona into a run asks for the evidence (static pin), so a new site
@@ -26,7 +26,7 @@ const { hostNotes, runContextOf } = require('./helpers/host-notes.js');
 
 const HOST = '127.0.0.1';
 const MARK = 'CROSS_RUN_CACHE_PROBE';
-const DOSSIER = 'Commander dossier: CROSS_RUN_DOSSIER_MARK prefers terse status reports.';
+const DOSSIER = 'Master dossier: CROSS_RUN_DOSSIER_MARK prefers terse status reports.';
 const text = c => typeof c === 'string' ? c : (Array.isArray(c) ? c.map(p => (p && p.text) || '').join('') : '');
 const leadingSystem = body => { const m = (body.messages || [])[0]; return m && m.role === 'system' ? text(m.content) : ''; };
 
@@ -120,7 +120,7 @@ function staticPin() {
     // ---- 1 + 2: two fires of one routine ----
     st = await station(up);
     const f1 = await runNow(st.fixture, up, st.jobId);
-    // the Commander works in between: the station's observed evidence (RECENT ACTIVITY) changes before the next fire
+    // the Master works in between: the station's observed evidence (RECENT ACTIVITY) changes before the next fire
     const chat = await st.fixture.request('/api/run', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
       provider: 'openrouter', model: 'test/model', agentId: 'agent', isTask: true, streamId: 'owner-chat', surface: 'interactive',
       system: 'You are NOVA.', messages: [{ role: 'user', content: 'Draft the CROSS_RUN_ACTIVITY_MARK launch email for Friday' }] }) });
@@ -137,7 +137,7 @@ function staticPin() {
     const note1 = runContextOf(b1.messages), note2 = runContextOf(b2.messages);
     A.ok(note1.indexOf('<commander_evidence provenance="observed; weak; never override the current request">') >= 0, 'the evidence block rides the run-context note, fenced as weak evidence');
     A.ok(/TRACK RECORD: scheduled runs — finished clean \d+ of \d+ recent runs/.test(note1), 'the seeded run history reached the run as a TRACK RECORD line');
-    A.ok(note1.indexOf('CROSS_RUN_DOSSIER_MARK') >= 0, 'the Commander\'s dossier (standing context) rides the guarded run-context note, so learning never rewrites the cached system');
+    A.ok(note1.indexOf('CROSS_RUN_DOSSIER_MARK') >= 0, 'the Master\'s dossier (standing context) rides the guarded run-context note, so learning never rewrites the cached system');
     A.ok(sys1.indexOf('CROSS_RUN_DOSSIER_MARK') < 0, 'the dossier is not repeated in the system prompt (token-efficiency: learned text sits beside the newest turn)');
     A.eq(hostNotes(b1.messages, 'run_context').length, 1, 'exactly one run-context note');
     A.ok(note1 !== note2, 'each fire still gets its own run context');

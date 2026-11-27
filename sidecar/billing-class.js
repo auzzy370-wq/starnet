@@ -7,7 +7,7 @@
    burned through a day and a half of runs uncounted). Now the loop asks every booked attempt its class.
 
    FOUR PAYERS (billingClassOf):
-     'metered'       the Commander's own key: real dollars per call.
+     'metered'       the Master's own key: real dollars per call.
      'managed'       Vultron credits: the vultron relay on a linked station, or every metered run on an operator's
                      CREDITS_URL deployment (the operator fronts the keys there). Reserved and settled on that account.
      'subscription'  a sign-in plan: ChatGPT (Codex), Grok OAuth, Kimi OAuth, and Claude Code when its call reports a
@@ -58,7 +58,7 @@
   'use strict';
 
   const CLASSES = Object.freeze(['metered', 'managed', 'subscription', 'local']);
-  // most-paying first: a run that ran on several payers is booked as the one that costs the Commander most
+  // most-paying first: a run that ran on several payers is booked as the one that costs the Master most
   const PAYING_ORDER = Object.freeze(['managed', 'metered', 'subscription', 'local']);
   const POLICY = Object.freeze({
     metered: Object.freeze({ dollarCaps: true, managedAdmission: false, unpricedTokenCeiling: true, signInTokenCeiling: false, auxTokenCeiling: false, promptTier: true, mediaDollarsCrossRun: false, imageUnknownCaps: true, ledgerMetered: true }),
@@ -180,7 +180,7 @@
           billingClassOf: classifierFor(o.providerId)   // the loop classifies this route's attempts with it (the sign-in seatbelt)
         } };
     }
-    /* A SKILL EVALUATION's billing: its payer by the same rule as a run, and the cap each case run gets — the Commander's
+    /* A SKILL EVALUATION's billing: its payer by the same rule as a run, and the cap each case run gets — the Master's
        PER RUN, else the ceiling the station gives a run nobody capped (the managed default, issue #53), else the shipped
        default; a plan or local model gets no dollar cap. */
     function evaluationBillingFor(o) {
@@ -209,7 +209,7 @@
        an image (kind 'media')            budget.check whoever's run makes it: an image is paid in dollars (#164).
        a BACKGROUND kind                  first, the host's 24-hour background token gate for its route (auxgovernor.js, #105): the
                                           kinds whose rows that ceiling counts (CEILING_KINDS). The gate is route-level, so Claude
-                                          Code keeps it and a key or a local model never meets it. A call the Commander triggered
+                                          Code keeps it and a key or a local model never meets it. A call the Master triggered
                                           (trigger 'commander': a rating's review, REFRESH QUESTS) runs past it; its row still counts.
      A check that THROWS refuses (gate 'check'), never "not blocked": the refusal reads as unknown spend, so every reader of a
      verdict fails closed, and it names its exit. -> null (admitted), the pool's own verdict, or a refusal { gate: 'dollars' |
@@ -218,9 +218,9 @@
     run: Object.freeze({ background: false }),                    // a run's own calls, every turn (runOnceCore runBudget)
     media: Object.freeze({ background: false, dollars: true }),   // an image a run generates (makeMediaSpendCheck crossRun)
     aux: Object.freeze({ background: true }),                     // the run-end passes, decided together (auxgovernor.js decide)
-    'skill-review': Object.freeze({ background: true }),          // a run-end nudge; a rating's review is the Commander's
+    'skill-review': Object.freeze({ background: true }),          // a run-end nudge; a rating's review is the Master's
     'skill-curator': Object.freeze({ background: true }),
-    'quest-refresh': Object.freeze({ background: true }),         // the automatic look; REFRESH QUESTS is the Commander's
+    'quest-refresh': Object.freeze({ background: true }),         // the automatic look; REFRESH QUESTS is the Master's
     nightshift: Object.freeze({ background: false }),             // the pre-spend check; its beats are runs (the per-run seatbelt)
     oneshot: Object.freeze({ background: false }),                // NOT RIGHT? / SET IT UP FOR ME: a press
     'skill-evaluation': Object.freeze({ background: false })      // EVALUATE: before each case run and each of its calls

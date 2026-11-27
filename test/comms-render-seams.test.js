@@ -52,7 +52,7 @@ const { makeStationControlTools } = require('../sidecar/tools/builtin/station-co
   {
     global.TaskIntent = TaskIntent;
     const D = require('../frontend/app/deskscreen.js');
-    const gateBody = 'ERROR: Task Brief gate: nothing ran. Settle the Task Brief with brief_proceed, or ask the one material question with brief_ask, before consequential work, then make this same call again. This is a routine step: the Commander sees your brief as its own card, so make the brief call with no text before it and never mention the gate.';
+    const gateBody = 'ERROR: Task Brief gate: nothing ran. Settle the Task Brief with brief_proceed, or ask the one material question with brief_ask, before consequential work, then make this same call again. This is a routine step: the Master sees your brief as its own card, so make the brief call with no text before it and never mention the gate.';
     const rows = [
       { role: 'assistant', toolCalls: JSON.stringify([{ id: 'w1', function: { name: 'fs_write', arguments: '{"path":"a.md","content":"hello"}' } }]) },
       { role: 'tool', toolCallId: 'w1', content: gateBody },
@@ -150,7 +150,7 @@ const { makeStationControlTools } = require('../sidecar/tools/builtin/station-co
   A.eq(lines.map(l => l.textContent), ['↳ fs_write · 54ms · denied', '↳ fs_read · 3ms · failed'], 'the run\'s history says "denied" for the Deny and "failed" only for the real error');
   A.eq(lines.map(l => l.className), ['rt-tool denied', 'rt-tool err'], 'and only the real error is drawn red');
 
-  A.ok(/c\.reason === 'denied'\) return errResult\('consent denied for ' \+ call\.name \+ ': the Commander said no on the approval card[^\n]*'denied'\);/.test(read('sidecar/tools/registry.js')), 'the summary it keys on is the consent broker\'s own answer to a Deny on the card');
+  A.ok(/c\.reason === 'denied'\) return errResult\('consent denied for ' \+ call\.name \+ ': the Master said no on the approval card[^\n]*'denied'\);/.test(read('sidecar/tools/registry.js')), 'the summary it keys on is the consent broker\'s own answer to a Deny on the card');
   A.ok(/\.tool-chip\.denied \.tc-glyph,\s*\n\.tool-chip\.denied \.tc-stat \{ color: var\(--ph-dim\); \}/.test(read('frontend/css/comms.css')) && /\.tool-chip \.tc-d-res\.denied \{ color: var\(--ph-dim\); \}/.test(read('frontend/css/comms.css')), 'the denied chip is plain dim phosphor (no red)');
 }
 
@@ -278,7 +278,7 @@ const { makeStationControlTools } = require('../sidecar/tools/builtin/station-co
   A.ok(/head\.addEventListener\('click', \(\) => toggleChip\(head\)\)/.test(chat), 'a group chip toggles its own detail (#gc-log has no delegated handler)');
   A.ok(/renderProse, toolRailOf, openFile/.test(chat), 'Chat exports toolRailOf');
   A.ok(/function toolRailOf\(steps\)[\s\S]{0,400}if \(s && s\.callId\) chip\.dataset\.callId = String\(s\.callId\);/.test(chat), 'a group chip carries its call id');
-  /* D2. A CHIP THE COMMANDER OPENED STAYS OPEN WHILE THE REPLY STREAMS (rc review 2026-10-14): the draft rebuilds its flow on
+  /* D2. A CHIP THE MASTER OPENED STAYS OPEN WHILE THE REPLY STREAMS (rc review 2026-10-14): the draft rebuilds its flow on
      every token or poll, which collapsed an expanded chip mid-read. renderFlow is executed on a minimal DOM. */
   {
     const vm = require('vm');
@@ -305,7 +305,7 @@ const { makeStationControlTools } = require('../sidecar/tools/builtin/station-co
     const chip = id => body.querySelectorAll('.tool-chip').find(c => c.dataset.callId === id);
     chip('c1').classList.toggle('open');
     ctx.renderFlow(body, 'Look:\n\nWrite: done', steps, null, null, true);
-    A.ok(chip('c1') && chip('c1').has('open'), 'the chip the Commander opened is still open after the draft re-renders');
+    A.ok(chip('c1') && chip('c1').has('open'), 'the chip the Master opened is still open after the draft re-renders');
     A.eq(chip('c1').querySelector('.tc-head').attrs['aria-expanded'], 'true', 'and its disclosure says so');
     A.ok(!chip('c2').has('open'), 'a chip they did not open stays closed');
   }
@@ -355,16 +355,16 @@ const { makeStationControlTools } = require('../sidecar/tools/builtin/station-co
       t.ctx.noteDeliveryLanding();
       await p;
       A.ok(t.log.close >= 1, 'a delivery landing while the panel is open closes it, so the delivery shows');
-      A.eq(t.log.decline + t.log.recDecline, 0, 'stepping aside is not the Commander declining (no decline, no learning signal)');
+      A.eq(t.log.decline + t.log.recDecline, 0, 'stepping aside is not the Master declining (no decline, no learning signal)');
       A.eq(t.log.finished, 1, 'the beat slot is released');
       A.eq(t.log.firing.at(-1), false, 'and the arc lane is released');
     }
-    // (3) the Commander asked for it (PLAN A PATH): a landing does not yank a panel they opened themselves
+    // (3) the Master asked for it (PLAN A PATH): a landing does not yank a panel they opened themselves
     {
       const t = mk();
       const p = t.ctx.offerArc('manual:1');
       await tick(); t.ctx.noteDeliveryLanding(); t.aux(); await tick(); t.say(); await tick(); await tick();
-      A.eq(t.log.open, 1, 'a panel the Commander asked for still opens');
+      A.eq(t.log.open, 1, 'a panel the Master asked for still opens');
       t.ctx.noteDeliveryLanding(); await tick();
       A.eq(t.log.close, 0, 'and stays open until they answer it');
       void p;

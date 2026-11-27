@@ -77,7 +77,7 @@ async function main() {
   assert.equal(freeAborted.ledger.health().readError, null);
   assert.equal(freeAborted.rows.length, 1); assert.equal(freeAborted.rows[0].unmetered, true); assert.equal(freeAborted.rows[0].usd, 0);
   assert.equal(freeAborted.admission, null, 'an aborted free evaluation never blocks paid runs under a strict cap');
-  // METERED but unpriced usage stays unknown: no second paid attempt, receipt left for the Commander to settle.
+  // METERED but unpriced usage stays unknown: no second paid attempt, receipt left for the Master to settle.
   const meteredUnpriced = await evaluateUnpriced(false, readThenAnswer);
   assert.equal(meteredUnpriced.count, 1, 'unknown metered spend refuses the next paid attempt');
   assert.match(String(meteredUnpriced.error && meteredUnpriced.error.message), /incomplete/);
@@ -176,21 +176,21 @@ async function main() {
   }
   // EVALUATION LIMITS ARE SIZED, NOT FIXED (skills-eval-06): a fixed 120 s clock and $0.08 per run stopped every
   // evaluation on a slow reasoning model or a premium-priced one. The wall clock grows with the suite and each run
-  // gets the Commander's per-run cap.
+  // gets the Master's per-run cap.
   {
     const { evaluationLimits } = require('../sidecar/skill-evaluation-runner.js');
     assert.equal(typeof evaluationLimits, 'function', 'the runner exports its sizing rule');
     const two = evaluationLimits({ cases: 2, runCapUsd: 1 });
     assert.equal(two.runs, 4, 'every case runs once without and once with the proposal');
     assert.ok(two.wallClockMs >= 4 * 90000, 'four ~15 s x 6-call runs fit the clock (' + two.wallClockMs + ' ms)');
-    assert.equal(two.perRunUsd, 1, 'a run gets the Commander\'s per-run cap');
+    assert.equal(two.perRunUsd, 1, 'a run gets the Master\'s per-run cap');
     assert.equal(two.totalUsd, 4, 'the whole evaluation is bounded by runs x that cap');
     assert.equal(evaluationLimits({ cases: 12, runCapUsd: 1 }).wallClockMs, 20 * 60000, 'the clock never passes 20 minutes');
     assert.equal(evaluationLimits({ cases: 1 }).wallClockMs, 180000);
     assert.equal(evaluationLimits({}).perRunUsd, 0.08, 'no host cap keeps the old per-run default');
     assert.equal(evaluationLimits({ cases: 2, runCapUsd: -1 }).perRunUsd, 0.08, 'a nonsense cap is ignored');
     // A premium model: each provider call costs $0.10. Under the old fixed $0.08 a tool step plus the answer was
-    // refused mid-run; under the Commander's $1 run cap the run finishes and books both calls.
+    // refused mid-run; under the Master's $1 run cap the run finishes and books both calls.
     const premium = { type: 'usage', usage: { prompt_tokens: 12, completion_tokens: 4, cost: 0.10 } };
     const script = (_request, n) => n === 1
       ? (async function* () { yield { type: 'tool_start', index: 0, id: 'read', name: 'fs_read' }; yield { type: 'tool_args', index: 0, chunk: '{"path":"input.json"}' }; yield premium; yield { type: 'done', finishReason: 'tool_calls' }; })()

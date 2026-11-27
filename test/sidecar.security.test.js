@@ -111,7 +111,7 @@ async function tokenFromIndex(base) {
     const again = await rawGet('/', '127.0.0.1:' + port);
     A.ok(((/'nonce-([^']+)'/.exec(again.headers['content-security-policy'] || '') || [])[1] || '') !== nonce, 'the nonce is fresh per response');
     A.eq((await rawGet('/', 'localhost:' + port)).status, 200, 'localhost Host is loopback too');
-    // The ONE exemption: a line-trigger webhook may arrive through the Commander's own tunnel carrying its public
+    // The ONE exemption: a line-trigger webhook may arrive through the Master's own tunnel carrying its public
     // Host. It must reach the trigger's secret check (here: an unknown trigger), never the Host floor.
     const tunnelHook = await new Promise((resolve, reject) => {
       const req = require('http').request({ host: '127.0.0.1', port, path: '/api/hooks/trg_nosuchtrigger01', method: 'POST', headers: { Host: 'abc.trycloudflare.com', 'Content-Type': 'application/json' } }, (res) => {

@@ -64,7 +64,7 @@ function log() { try { process.stderr.write('[acp] ' + Array.prototype.join.call
 // ---- token discovery: explicit wins; else scrape the served page once (browser-identical) ------
 // ⛔ THE STATION'S API TOKEN IS PER-LAUNCH, SO A SCRAPED ONE GOES STALE (same defect as sidecar/mcp/serve.js).
 // An editor spawns this agent once and keeps it for the whole editing session, while Vultron is a desktop app the
-// Commander closes and reopens — every launch mints a NEW token. A token cached for the process lifetime meant the
+// Master closes and reopens — every launch mints a NEW token. A token cached for the process lifetime meant the
 // first station restart broke every prompt until the editor itself was restarted. An EXPLICIT token (--token= /
 // env) is the operator's choice and is never invalidated.
 const TOKEN_IS_EXPLICIT = !!CFG.token;
@@ -134,7 +134,7 @@ async function callSidecar(method, path, body) {
 
 /* ---- openRun: POST /api/run and stream its NDJSON into the core -------------------------------
 
-   /api/run needs an explicit model (the browser always knows which one the Commander picked), so the model +
+   /api/run needs an explicit model (the browser always knows which one the Master picked), so the model +
    provider come from GET /api/runtime/agent — the sidecar's OWN headless resolution, never a guess here. A
    station with no key or no model configured is reported as such rather than producing a bare 400.
 
@@ -148,7 +148,7 @@ function openRun(opts) {
 
       let info = await rawRequest('GET', '/api/runtime/agent', null, true, token);
       // A rejected token means the station restarted. Re-scrape the live one and retry ONCE, rather than telling
-      // the Commander to restart their editor — closing and reopening Vultron should not cost them that.
+      // the Master to restart their editor — closing and reopening Vultron should not cost them that.
       if (info.ok && (info.status === 401 || info.status === 403) && invalidateToken('HTTP ' + info.status)) {
         const fresh = await discoverToken();
         if (fresh && fresh !== token) { token = fresh; info = await rawRequest('GET', '/api/runtime/agent', null, true, token); }

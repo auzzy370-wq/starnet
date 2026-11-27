@@ -113,7 +113,7 @@ const Backup = (() => {
      transcript holds instead of repeating them (historyref.js), which only means something beside that transcript. This file leaves
      the station — for another browser, another machine — so the save in it carries its rows BY VALUE: every conversation that names
      rows is read back from the station (POST /api/transcript/rows, the reader the page hydrates with) and written out whole, the
-     page-only fields back on its rows; a turn the Commander undid or forgot is not brought back. A conversation the station cannot
+     page-only fields back on its rows; a turn the Master undid or forgot is not brought back. A conversation the station cannot
      return in full (it does not answer, it cannot find a row and cannot prove it undone) stops the export — a file that kept the
      reference would lose those turns on the machine that opens it — and exportAll says so. A save that names nothing is the very text
      it was (nothing is parsed, nothing is asked). The one-step undo of a CLEARED conversation (sessionUndo) goes the same way; one the
@@ -385,7 +385,7 @@ const Backup = (() => {
   // push the bundle's memory snapshot back to the sidecar so a restored/moved agent isn't amnesiac. The route
   // merges additively (existing notes win), so this is safe to call even over an agent that already has memory.
   // A refusal is a partial restore, never a fabricated zero-memory success.
-  // memory-truth: the sidecar skips a note the Commander FORGOT (its text is on the declined list) and reports how many
+  // memory-truth: the sidecar skips a note the Master FORGOT (its text is on the declined list) and reports how many
   // in `forgotten` — kept on the side so the status line can say so instead of a silent shortfall.
   async function restoreNotebook(notes) {
     if (typeof Harness === 'undefined' || !Harness.api) throw new Error('the station is not connected');
@@ -421,7 +421,7 @@ const Backup = (() => {
         if (raw) {
           const d = JSON.parse(raw); d.updatedAt = Date.now();
           localStorage.setItem(saveKeyNow(), JSON.stringify(d));
-          // { restore: true }: the Commander chose this backup, so a reset generation's empty station file takes it (a stale
+          // { restore: true }: the Master chose this backup, so a reset generation's empty station file takes it (a stale
           // browser copy from before the reset never does: savestore explicitRestore, review 10-23 #2)
           if (typeof CloudSave !== 'undefined' && CloudSave.push) CloudSave.push(d, { restore: true });
         }

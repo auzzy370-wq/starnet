@@ -1,4 +1,4 @@
-/* sidecar/growthratings.js - durable, idempotent Commander work verdicts.
+/* sidecar/growthratings.js - durable, idempotent Master work verdicts.
 
    A browser save is a projection, not the source of truth for acknowledged feedback. This append-only
    ledger records the canonical rating once per run so XP can be replayed after a stale tab, crash, or
@@ -53,7 +53,7 @@
   }
 
   // Derive attribution exclusively from durable run facts. Browser-supplied deltas/crew are hints at most.
-  // A Commander verdict has ONE fixed value: tool count, artifacts, tokens, and spend describe execution shape,
+  // A Master verdict has ONE fixed value: tool count, artifacts, tokens, and spend describe execution shape,
   // not value. Named child run records prove participation; every proven contributor receives the same verdict
   // delta. Size remains legacy receipt telemetry only and never changes XP.
   function deriveRating(run, children, verdict) {

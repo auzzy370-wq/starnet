@@ -55,14 +55,14 @@ const ReturnStore = (() => {
       const q = (typeof QuerySpine !== 'undefined' && QuerySpine.get) ? await QuerySpine.get('cron') : null;
       if (q && q.hasData) Returns.matchRoutines(rows, (q.data || {}).jobs || []);
     } catch (_) { /* routine names are cosmetic — rows stand on their honest titles */ }
-    // G3a seed callout: a row whose unattended run genuinely reuses a Commander-saved seed (seedborn custom
+    // G3a seed callout: a row whose unattended run genuinely reuses a Master-saved seed (seedborn custom
     // recipe — matched by routine name or by its task template) gets .seed = the seed's name; the digest
     // label credits it. Cosmetic annotation only — an unmatched row stands unchanged, never guessed.
     try {
       if (typeof SeedCredit !== 'undefined' && typeof Recipes !== 'undefined' && Recipes.customs) SeedCredit.annotate(rows, Recipes.customs());
     } catch (_) {}
     // G3b seed-reuse aggregate: each row now carrying a proven `.seed` is one genuine while-away reuse of a
-    // Commander-saved seed. Feed the aggregate (lifetime + 7-day per-seed counts → the TROPHY CASE living-tools
+    // Master-saved seed. Feed the aggregate (lifetime + 7-day per-seed counts → the TROPHY CASE living-tools
     // shelf; a window crest fires the once-per-week "ran 5× this week" callout). Digested rows are listed once
     // (returns.js never re-lists), so each reuse is counted exactly once. Provenance-only — unmatched rows skip.
     try { if (typeof SeedReuseStore !== 'undefined' && SeedReuseStore.recordAnnotatedRows) SeedReuseStore.recordAnnotatedRows(rows); } catch (_) {}
@@ -177,7 +177,7 @@ const ReturnStore = (() => {
     // (a session whose saved history names its rows, not read back yet, has output: opening it reads them)
     if (!w || !((w.history || []).some(m => m && m.role === 'assistant') || (Workstreams.needsHydration && Workstreams.needsHydration(w)))) {
       // no session yet (or an output-less shell) — adopt + fold the durable transcript so the work is readable.
-      // revive:true — this is a DELIBERATE Commander click ("review the work"), the one case that may
+      // revive:true — this is a DELIBERATE Master click ("review the work"), the one case that may
       // clear a deleted-session tombstone and bring the session back.
       w = Workstreams.adopt({ id: sid, title: (rw.routine || rw.title || 'finished run').slice(0, 80), agentId: rw.agentId || 'agent', lane: 'active', revive: true });
       if (!w) return false;
@@ -221,7 +221,7 @@ const ReturnStore = (() => {
   }
 
   /* foldRow(row) — PROOF crate (guided workflow Phase 4): fold ONE real finished-run row into the pending
-     ledger NOW, so the sample job the Commander just fired lands on the OUTBOX like any delivered run. The
+     ledger NOW, so the sample job the Master just fired lands on the OUTBOX like any delivered run. The
      row is the sidecar's real recorded outcome (runId/usd/ts/streamId straight from runs.jsonl via
      POST /api/routing/sample) — never synthesized here. Same Returns.fold/dedupe/caps as the away digest
      (the pending row itself prevents a later away digest from re-listing it); rating resolves the
@@ -244,7 +244,7 @@ const ReturnStore = (() => {
     return true;
   }
 
-  // S2/new-hero: a fresh Commander inherits no prior pending crates or attendance trail.
+  // S2/new-hero: a fresh Master inherits no prior pending crates or attendance trail.
   function reset() {
     ++recoveryGeneration; clearTimeout(recoveryTimer); clearInterval(hbTimer); hbTimer = 0;
     setState(null); fired = false; try { localStorage.removeItem(KEY); } catch (_) {}

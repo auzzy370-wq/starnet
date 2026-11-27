@@ -39,8 +39,8 @@
   const ANTI_RETRY = ' — do this yourself outside the agent; do not retry or rephrase.';
   // returned when an autonomous run reaches an ungranted mutation: the absence of a human yes is a NO.
   // The trailing hint is model-facing: line runs used to open their delivered result with "This is an unattended run,
-  // so file saves require explicit approval…" (live walkthrough 2026-10-13) — the Commander needs the content, not the rule.
-  const SILENCE = 'autonomous run cannot self-approve this action — silence is not consent. Put the content in your reply instead, and do not explain approval rules to the Commander.';
+  // so file saves require explicit approval…" (live walkthrough 2026-10-13) — the Master needs the content, not the rule.
+  const SILENCE = 'autonomous run cannot self-approve this action — silence is not consent. Put the content in your reply instead, and do not explain approval rules to the Master.';
 
   function scopeOf(tool) { return (tool && tool.scope) || 'read'; }
 
@@ -81,27 +81,27 @@
     const networkOf = typeof opts.networkOf === 'function' ? opts.networkOf : defaultNetworkOf;
     const surface = opts.surface || 'autonomous';
     const prompt = typeof opts.prompt === 'function' ? opts.prompt : null;                     // (call,tool) -> Promise<decision>
-    // AWAY WORKSHOP (W1): an injected predicate — the Commander's recorded "build things while I'm away" grant for
+    // AWAY WORKSHOP (W1): an injected predicate — the Master's recorded "build things while I'm away" grant for
     // THIS agent. When present and true, an AUTONOMOUS run may WRITE, but ONLY inside its own jail: the tool must be
     // a jail-scoped capability (cabinet = files, notebook = memory). This is a per-agent recorded consent, wired in
     // index.js (workshopOf), NOT a self-approval — the exec lockout below is UNTOUCHED, so an away run still can
     // never run a command. Pure: like hardline/networkOf, all state comes from the injected function. Default: none.
     const workshop = typeof opts.workshop === 'function' ? opts.workshop : null;
     const credentialed = typeof opts.credentialed === 'function' ? opts.credentialed : null;
-    // UNATTENDED TERMINAL GRANT (2026-07-25): the Commander's recorded per-ROUTINE "may use the terminal"
+    // UNATTENDED TERMINAL GRANT (2026-07-25): the Master's recorded per-ROUTINE "may use the terminal"
     // approval for THIS run. Injected like workshop/credentialed; index.js derives it from the durable cron job
     // record only. Default: none -> the exec lockout below is untouched and this file behaves exactly as before.
     const terminalGrant = typeof opts.terminalGrant === 'function' ? opts.terminalGrant : null;
     // the capability the terminal grant may unlock. 'workbench' = shell.exec + verify.run. Overridable for tests.
     const TERMINAL_CAP = opts.terminalCap || 'workbench';
-    // UNATTENDED CONNECTOR GRANT (2026-07-25): the Commander's recorded per-ROUTINE "may use my connected
+    // UNATTENDED CONNECTOR GRANT (2026-07-25): the Master's recorded per-ROUTINE "may use my connected
     // tools" approval. Same injection shape and same host-only sourcing as terminalGrant. Default: none.
     const connectorGrant = typeof opts.connectorGrant === 'function' ? opts.connectorGrant : null;
     // MCP connector tools are stamped capability 'mcp:<connectorId>' by sidecar/mcp/translate.js. Matching the
-    // PREFIX (not a fixed name) is what lets one grant cover every server the Commander has connected, while
+    // PREFIX (not a fixed name) is what lets one grant cover every server the Master has connected, while
     // still refusing every non-connector capability. Overridable for tests.
     const CONNECTOR_CAP_RE = opts.connectorCapRe || /^mcp:/;
-    // UNATTENDED IMAGES GRANT (2026-10-18): the Commander's recorded per-ROUTINE "may make images" approval. Same
+    // UNATTENDED IMAGES GRANT (2026-10-18): the Master's recorded per-ROUTINE "may make images" approval. Same
     // injection shape and same host-only sourcing as terminalGrant. Default: none.
     const studioGrant = typeof opts.studioGrant === 'function' ? opts.studioGrant : null;
     // the capability the images grant may unlock. 'studio' = image_generate. Overridable for tests.
@@ -137,7 +137,7 @@
     }
 
     /* UNATTENDED CREDENTIAL GRANT — an autonomous network call (web_request) that spends a platform key the
-       Commander explicitly approved for unattended use in TOOLSETS & CONNECTORS → KEYS. Same shape as the
+       Master explicitly approved for unattended use in TOOLSETS & CONNECTORS → KEYS. Same shape as the
        workshop tier above: a recorded, revocable, per-key approval IS consent, so this is not the "silence"
        the default-deny protects against. Deliberately narrow:
          • autonomous only (interactive already asks a live human)
@@ -158,7 +158,7 @@
          • autonomous only (interactive already asks a live human)
          • the tool's capability must be exactly TERMINAL_CAP ('workbench' = shell.exec / verify.run) — no
            other family, no wildcard
-         • the injected predicate must confirm THIS RUN carries the Commander's recorded per-routine grant
+         • the injected predicate must confirm THIS RUN carries the Master's recorded per-routine grant
        Unlike every other allow-tier this one is NOT reachable by a cached/permanent `always` grant, by prompt
        text, or by anything the model emits — index.js sources it from the persisted cron job alone. That is
        In ASK mode this is the explicit route for a routine to use shell. Full Access is evaluated earlier by
@@ -170,7 +170,7 @@
       try { return terminalGrant(call, tool) === true; } catch (_) { return false; }
     }
 
-    /* UNATTENDED CONNECTOR GRANT — lets a granted routine call the Commander's OWN connected MCP servers with
+    /* UNATTENDED CONNECTOR GRANT — lets a granted routine call the Master's OWN connected MCP servers with
        nobody watching. Narrowed exactly like terminalAutonomy:
          • autonomous only (interactive keeps its exact per-call confirmation, unchanged)
          • the capability must match CONNECTOR_CAP_RE ('mcp:…') — a tool that merely fell through to the
@@ -214,7 +214,7 @@
 
     function consent(call, tool) {
       const scope = scopeOf(tool);
-      // FULL POWER: the Commander's explicit host-wide authority outranks Vultron policy floors.
+      // FULL POWER: the Master's explicit host-wide authority outranks Vultron policy floors.
       // Input/schema validity, OS permissions and downstream service prerequisites still report normally.
       if (unrestrictedNow()) return { allow: true, scope: scope, reason: 'full-power' };
       // 1. HARDLINE — unreachable past any flag.
@@ -233,7 +233,7 @@
       // silently enable cron/headless command execution. Frozen FULL_ACCESS (tier 2) remains the other
       // deliberate machine-wide exception.
       if (surface === 'autonomous' && scope === 'execute') return { allow: false, scope: scope, reason: SILENCE };
-      // 2.6 AWAY WORKSHOP — an autonomous, jail-scoped WRITE by an agent the Commander granted "build things while
+      // 2.6 AWAY WORKSHOP — an autonomous, jail-scoped WRITE by an agent the Master granted "build things while
       // I'm away" is allowed. Sits ABOVE the cache tier (so it doesn't need a pre-seeded danger key) but BELOW the
       // exec lockout (execute is filtered out in workshopWritable, so this NEVER reaches shell) and BELOW the
       // hardline floor (tier 1, checked first — .env/.git stay unwritable). The fs-jail (realpath-scoped to
@@ -244,8 +244,8 @@
       if (studioAutonomy(call, tool)) return { allow: true, scope: scope, reason: 'per-routine unattended images grant' };
       // 3. CACHE — a prior session/permanent grant for this danger class. Never for a FRESH-CONSENT tool (sweep 2026-10-03):
       // widening the station's own leash (station.power: Full Power, FULL agents, caps, trusted folders, hook code) is a
-      // card the Commander answers per call when they are in ASK — one "always" used to approve every later escalation.
-      // Full Access (tier 2) is the Commander's zero-prompt posture and still covers it; taint.js keeps the lock on it.
+      // card the Master answers per call when they are in ASK — one "always" used to approve every later escalation.
+      // Full Access (tier 2) is the Master's zero-prompt posture and still covers it; taint.js keeps the lock on it.
       if (!(tool && tool.freshConsent === true) && granted(dangerKey(tool))) return { allow: true, scope: scope, reason: 'previously granted' };
       // 4. RESOLVE.
       if (scope === 'read' && !networkOf(call, tool)) return { allow: true, scope: scope, reason: 'read-only, non-network' };
@@ -265,7 +265,7 @@
       const key = dangerKey(tool);
       if (decision === 'once') return { allow: true, scope: scope, reason: 'granted once' };
       // nobody answered before the fail-closed timer (consentwait timeoutDecision): still NOT allowed, but marked so the
-      // tool result says "timed out", never "the Commander declined" — the model used to tell users they had refused
+      // tool result says "timed out", never "the Master declined" — the model used to tell users they had refused
       if (decision === 'timeout') return { allow: false, scope: scope, timedOut: true, reason: 'approval timed out — nobody answered in time' };
       // the ask was withdrawn before anyone answered (its run stopped: consentwait abortDecision) — CLOSED, and not a No
       if (decision === 'cancelled') return { allow: false, scope: scope, cancelled: true, reason: 'approval withdrawn — the request ended before anyone answered' };

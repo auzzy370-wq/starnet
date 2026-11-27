@@ -1,12 +1,12 @@
 /* node test/nightshift-contextpack.e2e.test.js — real sidecar proof for NS-2 (context pack + cold-leash fix).
 
    Boots the ACTUAL sidecar with a mock OpenRouter, SEEDS a fabricated runs.jsonl (user-initiated runs = "what the
-   Commander is working on") + a fabricated transcript.jsonl (recent user chats) + internal-stream noise that must be
+   Master is working on") + a fabricated transcript.jsonl (recent user chats) + internal-stream noise that must be
    EXCLUDED, plus a THIN dossier that cannot ground the proposed job — proving the ACTIVITY grounding path carries the beat. It
    drives the night shift via POST /api/nightshift/beat (attended test of the unattended pipeline) and asserts:
 
      · THE PROPOSE DIRECTIVE CARRIED PROVEN ACTIVITY — the reason-only PROPOSE prompt contains the fabricated clean
-       owner chat, not a raw run title. A run title is retained context, never proof of the Commander's own words.
+       owner chat, not a raw run title. A run title is retained context, never proof of the Master's own words.
      · INTERNAL NOISE EXCLUDED — a nightshift-/cron- streamed run never appears in the directive.
      · THE BUILT JOB GROUNDS IN ACTIVITY — a job citing only a raw run title is rejected before BUILD. The next job
        cites the proven owner chat and lands as a real deliverable + ledger 'act'; activity is load-bearing evidence.
@@ -238,7 +238,7 @@ function seedLogs(ws, now) {
       const token2 = await bootToken(B2, B2);
       const headers2 = { 'Content-Type': 'application/json', 'X-Vultron-Token': token2, Origin: B2 };
       // permit acting (initiative leash) so posture/present/leash/cooldown all clear — leaving READINESS as the only
-      // thing that can bind. Make the Commander AWAY by setting lastActivity far in the past is not exposed; instead
+      // thing that can bind. Make the Master AWAY by setting lastActivity far in the past is not exposed; instead
       // the status route's statusDecision surfaces the binding the tick would hit once away. With an empty dossier +
       // empty activity, the precheck returns not-ok → binding 'readiness'.
       await fetch(B2 + '/api/autonomy/posture', { method: 'POST', headers: headers2, body: JSON.stringify({ posture: { initiative: 'leash', reach: 'observe', leashPerDay: 12 }, beliefs: { known: [], beliefs: {} } }) });

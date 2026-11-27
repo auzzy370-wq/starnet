@@ -1,7 +1,7 @@
 /* StationBuilder — the lead agent builds a room and a ready-made line EXACTLY (2026-09-29, the Agent Station Builder plan).
 
    WHY IT IS SHAPED THIS WAY: models are bad at spatial layout, and a weak one laying belts by hand would break a
-   Commander's station. So the model never sends a position, a belt or a piece of furniture. It fills a FIXED MENU —
+   Master's station. So the model never sends a position, a belt or a piece of furniture. It fills a FIXED MENU —
    one of the Lines shelf's tested lines, where it goes, a name, what each step does and who works it, a daily spending
    cap, review tries — and Vultron does all the placing with the same code Build mode uses (roomSpots, stampBlueprint).
 
@@ -108,7 +108,7 @@
   }
   const lineList = WM => catalog(WM).map(l => l.id + ' (' + l.name + ')').join(', ');
 
-  // the Commander's existing crew, by id or name; "lead"/"me"/"you" is the lead
+  // the Master's existing crew, by id or name; "lead"/"me"/"you" is the lead
   function agentOf(env, raw) {
     const n = norm(raw), crew = (env.crew || []).filter(a => a && a.id);
     if (!n) return { ok: true, id: '' };
@@ -393,7 +393,7 @@
   }
   /* the line's steps in run order ({ step, role, brief, agentId }), told who works them and what to do (see above); "new"
      marks a recruit. A step left without instructions gets its role's standard ones (the Workflow panel's first starter
-     chip), carrying the Commander's purpose when there is one. ctx: { line: the line's id for the refusal's words, notes }. */
+     chip), carrying the Master's purpose when there is one. ctx: { line: the line's id for the refusal's words, notes }. */
   function staffSteps(stepsOut, reqSteps, env, purpose, ctx) {
     const used = {}, steps = stepsWord(stepsOut), how = ' ' + stepsHow(stepsOut, env, reqSteps), lineId = (ctx && ctx.line) || 'this line';
     const roleKey = l => String(l).toUpperCase().replace(/[^A-Z]/g, ''), asRole = l => ((env.WorldModel && env.WorldModel.BAY_ROLES) || {})[roleKey(l)] ? roleKey(l) : roleWordOf(l);
@@ -465,7 +465,7 @@
     }
     /* EVERY STEP IS ANOTHER LINE'S WORK (the second live re-run, 10-14): asked to "draft the post, then review it", the model
        planned research_line (Researcher → Writer) with right step numbers, so COPY drafted as a Researcher and STRATEGY reviewed
-       as a Writer — and it told the Commander "COPY drafts → STRATEGY reviews". When no step names its role and every step's
+       as a Writer — and it told the Master "COPY drafts → STRATEGY reviews". When no step names its role and every step's
        instructions are, in order, EXACTLY another ready-made line's steps (each read for the role it names first), with work this
        line has no step for, that line is named instead. Never a guess: no exact line, no refusal; a step's role keeps this line. */
     const cat = catalog(env.WorldModel), here = cat.find(l => l.id === lineId);
@@ -490,12 +490,12 @@
   /* THE NEXT STEP OF A PLAN WITH NOBODY ON A STEP (the third live re-run, 10-14): the lead planned Draft + review with no crew,
      built it, then staffed it with a second plan on guessed ids and a SECOND approval card. A plan whose steps (line, room or
      build) have nobody on them says, before anything is built, how to staff them in the same plan; null keeps the usual word.
-     Never staffs anyone itself: who works a step is the Commander's call, or the lead's on the Commander's words.
+     Never staffs anyone itself: who works a step is the Master's call, or the lead's on the Master's words.
      STOCK INSTRUCTIONS (the fix round's live run, 10-14): asked to "draft the post, then review it", the lead staffed Draft +
      review with no instructions, so COPY's Bay was told the Writer's stock "Turn the notes into a 200-word newsletter blurb…
      Keep every link" while the reply said "COPY drafts the post". A step with only its role's stock instructions (no
      instructions, no purpose) is named too, in the same one re-plan. */
-  const NEXT_WORD = 'Tell the Commander the summary in plain words, then call station.build with this planId. Nothing has been built yet.';   // = the page's usual next step
+  const NEXT_WORD = 'Tell the Master the summary in plain words, then call station.build with this planId. Nothing has been built yet.';   // = the page's usual next step
   function planNext(p, crewNames) {
     const steps = ((p && p.steps) || []).filter(s => s && s.step != null), stockAt = (p && Array.isArray(p.stock)) ? p.stock : [];
     const idle = steps.filter(s => !s.agent), stock = steps.filter(s => stockAt.indexOf(s.step) >= 0);
@@ -505,16 +505,16 @@
     const first = String((stock[0] || {}).instructions || '').replace(/\s+/g, ' ').trim(), quote = (first.match(/^[^.!?]{1,70}[.!?]/) || [first.slice(0, 60) + '…'])[0];
     const canned = stock.length ? ' only ' + (stock.length === 1 ? "its role's" : "their roles'") + ' stock instructions (step ' + stock[0].step + ': "' + quote + '")' : '';
     const form = '[ ' + steps.filter(s => idle.indexOf(s) >= 0 || stock.indexOf(s) >= 0).map(s => '{ "step": ' + s.step + ', "agent": ' + (s.agent ? JSON.stringify(String(s.agent)) : '"…"') + (stock.indexOf(s) >= 0 ? ', "instructions": "…"' : '') + ' }').join(', ') + ' ]';
-    const why = stock.length ? ' (instructions: what that step does in the workflow the Commander described)' : '';
+    const why = stock.length ? ' (instructions: what that step does in the workflow the Master described)' : '';
     // staffed, with stock instructions only: often right ("builds features and tests them" IS the Engineer's and Tester's stock work),
     // so it is the lead's call, said once; the usual next step stays, word for word
-    if (!idle.length) return said(stock) + (stock.length === 1 ? ' has' : ' have') + canned + '. If that is not the work the Commander described, plan again with the same request plus steps: '
+    if (!idle.length) return said(stock) + (stock.length === 1 ? ' has' : ' have') + canned + '. If that is not the work the Master described, plan again with the same request plus steps: '
       + form + why + ', so its Bays are told the real work and ONE approval builds it. Otherwise: ' + NEXT_WORD;
     const one = idle.length === 1, same = stock.length && stock.every(s => idle.indexOf(s) >= 0) && idle.every(s => stock.indexOf(s) >= 0);
     return 'Nothing is built yet. ' + said(idle) + (one ? ' has nobody to work it' : ' have nobody to work them') + ', so the line will not run'
       + (!stock.length ? '. ' : same ? '; ' + (one ? 'it also has' : 'they also have') + canned + '. ' : '. ' + said(stock) + (stock.length === 1 ? ' has' : ' have') + canned + '. ')
-      + 'If the Commander said who works ' + (one ? 'it' : 'them') + (names.length ? ', or someone on the crew (' + names.join(', ') + ') is right for ' + (one ? 'it' : 'them') : '') + ', plan again with the same request plus steps: '
-      + form + why + ', so ONE approval builds it ready to run. Otherwise tell the Commander the summary, call station.build with this planId, and say which steps still need crew.';
+      + 'If the Master said who works ' + (one ? 'it' : 'them') + (names.length ? ', or someone on the crew (' + names.join(', ') + ') is right for ' + (one ? 'it' : 'them') : '') + ', plan again with the same request plus steps: '
+      + form + why + ', so ONE approval builds it ready to run. Otherwise tell the Master the summary, call station.build with this planId, and say which steps still need crew.';
   }
 
   function plan(doc, req, env) {
@@ -531,7 +531,7 @@
       try { halls = worksHalls(WM.create(clone(doc))); } catch (_) { halls = []; }
       for (const h of halls) { const r = plan(doc, Object.assign({}, req, { where: h.name }), env); if (r.ok) return r; }
     }
-    /* a CUSTOM line the Commander described (a SHAPE of steps: in order, at once, taking turns, sorted, reviewed): the whole
+    /* a CUSTOM line the Master described (a SHAPE of steps: in order, at once, taking turns, sorted, reviewed): the whole
        of a room of its own, or of an existing room around what stands there, laid out by the layout engine through the
        same planner as a designed room's line zone */
     if (req.shape != null) {
@@ -562,9 +562,9 @@
       return { ok: true, plan: Object.assign(r.plan, { line: { id: null, name: l.plain || 'a custom line', label: l.label || null }, ready: !!l.ready, blocking: l.blocking || [] },
         unused ? { notes: (r.plan.notes || []).concat(unused) } : {}) };
     }
-    // purpose: the Commander's own words. With no line named, Vultron picks one with the reader behind FOR YOUR GOAL
+    // purpose: the Master's own words. With no line named, Vultron picks one with the reader behind FOR YOUR GOAL
     // (WorkflowLine.suggestLineFor: the SHAPE of the work), and every step's standard instructions carry those words
-    if (req.purpose != null && typeof req.purpose !== 'string') return refuse('purpose is the Commander\'s own words for what the line is for, as text.');
+    if (req.purpose != null && typeof req.purpose !== 'string') return refuse('purpose is the Master\'s own words for what the line is for, as text.');
     const purpose = typeof req.purpose === 'string' ? req.purpose.replace(/\s+/g, ' ').trim().slice(0, 300) : '';
     let bp = resolveLine(WM, req.line), picked = null;
     const lines = { lines: catalog(WM).map(l => ({ id: l.id, name: l.name, roles: l.roles })) };
@@ -575,7 +575,7 @@
         + purpose.slice(0, 80) + '" names no such shape. Choose a line: ' + lineList(WM) + '.', lines);
       picked = s.why;
     }
-    if (!bp) return refuse((req.line ? 'There is no line called "' + String(req.line).slice(0, 60) + '".' : 'Choose a line, or give its purpose in the Commander\'s words.') + ' The lines are: ' + lineList(WM) + '.', lines);
+    if (!bp) return refuse((req.line ? 'There is no line called "' + String(req.line).slice(0, 60) + '".' : 'Choose a line, or give its purpose in the Master\'s words.') + ' The lines are: ' + lineList(WM) + '.', lines);
     const plain = bp.plain || bp.label;
     const label = uniqueLineLabel(WM.create(clone(doc)), (typeof req.name === 'string' ? req.name : '').replace(/\s+/g, ' ').trim().slice(0, 48) || plain.toUpperCase(), WM);
     const notes = [];
@@ -689,7 +689,7 @@
     });
     const staffed = staffSteps(stepsOut, reqSteps, env, purpose, { line: bp.id, notes }); if (!staffed.ok) return staffed;
     const recruits = stepsOut.filter(x => x.recruit).map(x => ({ propIndex: x.propIndex, role: x.role }));
-    if (recruits.length > MAX_RECRUITS) return refuse('That plan recruits ' + recruits.length + ' new agents. Recruit only when the Commander asks for new crew, and at most ' + MAX_RECRUITS + ' in one plan: staff the other steps with "lead" or a crew member, or leave agent out (the card then lists them as still to do).');
+    if (recruits.length > MAX_RECRUITS) return refuse('That plan recruits ' + recruits.length + ' new agents. Recruit only when the Master asks for new crew, and at most ' + MAX_RECRUITS + ' in one plan: staff the other steps with "lead" or a crew member, or leave agent out (the card then lists them as still to do).');
     spec = Object.assign({}, spec, { steps: stepsOut.map(x => ({ propIndex: x.propIndex, brief: x.brief, agentId: x.agentId })), recruits });
 
     // the whole build on one more probe: its fingerprint is what apply() must reproduce exactly (the recruits' desks, a
@@ -1266,7 +1266,7 @@
     if (!key(raw)) return refuse('Say which line: its name (or the id of any machine on it). Lines: ' + (all.length ? all.join(', ') : 'none') + '.');
     let hits = named.filter(p => key(p.label) && key(p.label) === key(raw));
     // …or by the exact word the floor shows ('LINE F', 'line f' or 'F' is the unnamed line whose plate reads LINE F — the lead says
-    // what the Commander sees; final floor lane M25). One line answers once, whichever of its INBOXes matched.
+    // what the Master sees; final floor lane M25). One line answers once, whichever of its INBOXes matched.
     if (!hits.length && P.lineWord) { const want = P.lineWord(String(raw)); hits = named.filter(p => lineWordFor(live, P, p) === want); }
     // …or by whole words of it ("research" finds "Research + write"): letters inside a word never match ("email triage" is not the
     // line "AI", whose letters sit inside "email" — a schedule or a paid test landed on the wrong line)
@@ -1459,7 +1459,7 @@
       summary: 'Staff the line ' + ln.label + ': ' + out.map(r => 'step ' + r.step + ' (' + r.role + ')' + (r.agent ? ' → ' + r.agent : '') + (r.instructions ? (r.agent ? ', with' : ' gets') + ' new instructions' : '')).join('; ') + '. '
         + (rd.ready ? 'It will be ready to run.' : 'Still to do after: ' + rd.blocking.join('; ') + '.') + ' Nothing on the floor moves; one UNDO in Build mode puts the crew back.' };
   }
-  /* ================= BUILD MODE: the Commander's own tools, op by op =================
+  /* ================= BUILD MODE: the Master's own tools, op by op =================
      Every op names exact WORLD tiles (as station.map reports them: x grows east, y grows south) and is run by the very
      world-model call Build Mode makes for that tool, so it passes or fails on Build Mode's own checks. Props and rooms
      made earlier in the same plan are named with `as` and used by that name. Ops run in order; the first that fails
@@ -1718,7 +1718,7 @@
         return didA(r, 'a belt from ' + at(a.x, a.y) + ' to ' + at(b.x, b.y)); }
       case 'unbelt': { const tiles = (Array.isArray(o.tiles) ? o.tiles : []).map(tileOf).filter(Boolean).map(q => [q.x, q.y]); if (!tiles.length) return refuse('unbelt needs tiles: [[x, y], …]'); return did(st.removeBelts(tiles), tiles.length + ' belt tiles taken up'); }
       case 'connect': { const a = propRef(o.from); if (!a.ok) return a; const b = propRef(o.to); if (!b.ok) return b;
-        // an OUTBOX onto another line's INBOX is a SEND TO — the Commander's drop of one on the other makes the same (the target decides)
+        // an OUTBOX onto another line's INBOX is a SEND TO — the Master's drop of one on the other makes the same (the target decides)
         if (a.p.t === 'outbox' && b.p.t === 'intake') return sendOn(a.p, b.p, ' (an OUTBOX connected to an INBOX is a SEND TO, never a belt)');
         return didA(st.connectBelt(a.p.id, b.p.id), 'the ' + nm(a.p.t) + ' at ' + at(a.p.x, a.p.y) + ' belted to the ' + nm(b.p.t) + ' at ' + at(b.p.x, b.p.y)); }
       // SEND TO (2026-10-11): { op: "send", from: a line's OUTBOX, to: another line's INBOX, or null / "nowhere" }
@@ -1803,7 +1803,7 @@
         return did(st.swapJoinerMerger(t.p.id), 'the ' + t.p.t + ' at ' + at(t.p.x, t.p.y) + ' becomes a ' + to + (to === 'joiner' ? ' (the branches each get a copy and it waits for all of them)' : ' (the branches take turns)')); }
       case 'hands': { const t = propRef(o.prop); if (!t.ok) return t; if (t.p.t !== 'bay') return refuse('hands is for a bay: what that step hands on'); const txt = String(o.text == null ? '' : o.text).replace(/\s+/g, ' ').trim(); if (txt.length > 160) return refuse('hands text is up to 160 characters');
         return did(st.setPropHands(t.p.id, txt), 'the bay at ' + at(t.p.x, t.p.y) + (txt ? ' hands on: "' + txt + '"' : ' hands on its whole result')); }
-      case 'folder': { const t = propRef(o.prop); if (!t.ok) return t; const ip = intakeOf(t.p); if (!ip) return refuse('that piece is not on a line with an inbox'); if (!res || res.root == null) return refuse('the folder must be one of the Commander\'s trusted projects');
+      case 'folder': { const t = propRef(o.prop); if (!t.ok) return t; const ip = intakeOf(t.p); if (!ip) return refuse('that piece is not on a line with an inbox'); if (!res || res.root == null) return refuse('the folder must be one of the Master\'s trusted projects');
         return did(st.setPropProject(ip.id, res.root), 'the line at ' + at(ip.x, ip.y) + (res.root ? ' works in ' + res.name : ' works in no project folder')); }
       case 'bind': { const t = propRef(o.prop); if (!t.ok) return t; if (!res) return refuse('bind needs a service the station has'); const fn = t.p.t === 'plugin_terminal' ? 'bindPlugin' : 'bindConnector';
         if (t.p.t !== 'plugin_terminal' && !CONNECTOR_T.test(t.p.t)) return refuse('bind is for a connector portal (a connector) or a plugin terminal (a plugin)'); if (res.id && (fn === 'bindPlugin') !== (res.kind === 'plugin')) return refuse(fn === 'bindPlugin' ? 'a plugin terminal takes a plugin' : 'a connector portal takes a connector');
@@ -1845,9 +1845,9 @@
     const pick = (rows, want, keys) => { const w = String(want).trim().toLowerCase(); return rows.find(r => keys.some(k => r[k] != null && String(r[k]).trim().toLowerCase() === w)) || rows.find(r => keys.some(k => r[k] != null && String(r[k]).toLowerCase().replace(/\\/g, '/').split('/').pop() === w)) || null; };
     if (op === 'folder') {
       if (none(o.project)) return { root: '', name: '' };
-      if (!Array.isArray(sv.projects)) return { error: 'this page could not read the Commander\'s trusted projects; try again' };
+      if (!Array.isArray(sv.projects)) return { error: 'this page could not read the Master\'s trusted projects; try again' };
       const p = pick(sv.projects, o.project, ['name', 'root']);
-      return p ? { root: String(p.root), name: String(p.name || p.root) } : { error: '"' + String(o.project).slice(0, 60) + '" is not one of the Commander\'s trusted projects (' + (sv.projects.map(x => x.name || x.root).join(', ') || 'none yet') + '). The Commander trusts a folder under PROJECTS first' };
+      return p ? { root: String(p.root), name: String(p.name || p.root) } : { error: '"' + String(o.project).slice(0, 60) + '" is not one of the Master\'s trusted projects (' + (sv.projects.map(x => x.name || x.root).join(', ') || 'none yet') + '). The Master trusts a folder under PROJECTS first' };
     }
     const want = o.plugin != null ? ['plugin', o.plugin] : o.connector != null ? ['connector', o.connector] : null;
     if (!want || none(want[1])) return { id: '', name: '', kind: want ? want[0] : null };
@@ -1882,7 +1882,7 @@
       return refuse('The ' + pn(b.piece.t) + ' at (' + b.piece.x + ', ' + b.piece.y + ') would stand on the seat of the ' + pn(b.desk.t) + ' at (' + b.desk.x + ', ' + b.desk.y + '): a desk draws its own chair when an agent works it, so its seat row stays clear'
         + more + '. ' + (isSeatPiece(env)(b.piece.t) ? 'Never place a chair at a desk; put the piece elsewhere' : 'Put the ' + pn(b.piece.t) + ' elsewhere') + '. Nothing was built.');
     }
-    // what the Commander should know before approving: routing that breaks, rooms nobody can walk into any more
+    // what the Master should know before approving: routing that breaks, rooms nobody can walk into any more
     const after = floorFacts(probe, P), warn = [];
     const newErr = [...after.errs].filter(e => !before.errs.has(e));
     if (newErr.length) warn.push(newErr.length + (newErr.length === 1 ? ' routing problem' : ' routing problems') + ' on the floor after it (' + [...new Set(newErr.map(e => e.split(':')[0]))].join(', ') + ')');
@@ -1908,8 +1908,8 @@
      station is exactly as that build left it, so it never takes back someone else's edit; one step, as Build mode's UNDO. */
   function planUndo(doc, last, opts) {
     if (!doc) return refuse('the station builder is not loaded on this page');
-    if (!last) return refuse('There is nothing of the lead\'s to undo: Vultron only takes back a build the lead made on this station. The Commander can press UNDO in Build mode.');
-    if (sigOf(doc) !== last.resultSig) return refuse('The station has changed since the lead\'s last build, so Vultron will not undo it (that could take back someone else\'s edit). The Commander can press UNDO in Build mode.');
+    if (!last) return refuse('There is nothing of the lead\'s to undo: Vultron only takes back a build the lead made on this station. The Master can press UNDO in Build mode.');
+    if (sigOf(doc) !== last.resultSig) return refuse('The station has changed since the lead\'s last build, so Vultron will not undo it (that could take back someone else\'s edit). The Master can press UNDO in Build mode.');
     if (opts && opts.canUndo === false) return refuse('The page was reloaded since that build, so its one-step UNDO is gone. Take it back with an edit instead: a new room with { remove: room }, added pieces with { remove: { room, pieces } }, a new line with { remove: { line } }, a restaffing with { staff } as it was.');
     return { ok: true, plan: { floorSig: sigOf(doc), resultSig: last.floorSig, spec: { kind: 'undo' }, notes: [], steps: [], line: null, where: 'the undo of the last build', rooms: [],
       summary: 'Undo the last build (' + String(last.summary || 'the lead\'s last change').replace(/\s+/g, ' ').slice(0, 260).replace(/[.\s]+$/, '') + '): the station goes back exactly as it was before it.' + (last.recruited ? ' The agents it recruited stay on the crew (DELETE AGENT in a Dossier removes one).' : '') } };
@@ -2046,10 +2046,10 @@
       preview: previewOf(WM, doc, probe.serialize(), [], mark) } };
   }
 
-  /* ================= VIBE DESIGN (2026-09-29): the Commander describes the room, part by part =================
+  /* ================= VIBE DESIGN (2026-09-29): the Master describes the room, part by part =================
      "The left side cozy, the right side a line that builds and tests code." The lead turns the words into ZONES: a part of
      the room (an AREA on a 2 × 2 grid) and what goes there, either a STYLE (RoomStyles: Vultron furnishes it from a
-     hand-arranged set of the presets' own furniture) or a LINE (a shelf line, one picked from the Commander's words, or a
+     hand-arranged set of the presets' own furniture) or a LINE (a shelf line, one picked from the Master's words, or a
      custom SHAPE of steps), laid out inside that zone by the same layout engine the Workflow panel builds lines with. A new
      room is sized to hold what its zones need; an existing room is split down the middle. Lines go in first, then the
      furniture, which keeps doorways clear and every piece reachable. Every check the other plans run runs here too, on a
@@ -2152,7 +2152,7 @@
     return { ok: true, graph: g };
   }
 
-  // a LINE zone's graph: a custom shape, or a shelf line (by id or name, or picked from the Commander's words)
+  // a LINE zone's graph: a custom shape, or a shelf line (by id or name, or picked from the Master's words)
   /* a zone's line name, allocated when the plan is made (final floor lane M22): unique against the live floor AND every name this
      same plan already gave a zone — two build_test zones are 'BUILD + TEST' and 'BUILD + TEST 2', never two lines the floor's own
      rename refuses. The card, the preview and the auto room name all read it, so applying the plan changes no name. */
@@ -2164,7 +2164,7 @@
   }
   function zoneLine(live, env, z, notes) {
     const WM = env.WorldModel, W = env.WorkflowLine;
-    if (z.purpose != null && typeof z.purpose !== 'string') return refuse('purpose is the Commander\'s own words for what the line is for, as text.');
+    if (z.purpose != null && typeof z.purpose !== 'string') return refuse('purpose is the Master\'s own words for what the line is for, as text.');
     const purpose = typeof z.purpose === 'string' ? z.purpose.replace(/\s+/g, ' ').trim().slice(0, 300) : '';
     const named = typeof z.name === 'string' ? z.name.replace(/\s+/g, ' ').trim().slice(0, 48) : '';
     if (z.shape != null) {
@@ -2266,7 +2266,7 @@
     return false;
   }
 
-  /* ================= THE SPATIAL BUILDER (2026-09-30): rooms where the Commander says, joined by hallways =================
+  /* ================= THE SPATIAL BUILDER (2026-09-30): rooms where the Master says, joined by hallways =================
      The first builder could not say WHERE a room goes: every room landed flush against the station's east wall, and the
      station grew into one long strip with no hallways (Andrew's test, 09-30). Now a room is placed on a named SIDE of a
      named ROOM, at a named SIZE, joined by a HALLWAY the way the presets join their wings (or flush, open plan). With no
@@ -2285,12 +2285,12 @@
   const LINE_KEYS = ['line', 'purpose', 'shape', 'name', 'staff', 'dailyCap', 'tries'];
 
   const bboxOf = room => { let x1 = Infinity, y1 = Infinity, x2 = -Infinity, y2 = -Infinity; for (const r of room.rects) { x1 = Math.min(x1, r.x1); y1 = Math.min(y1, r.y1); x2 = Math.max(x2, r.x2); y2 = Math.max(y2, r.y2); } return { x1, y1, x2, y2 }; };
-  // the room every station starts from (the Commander may call it the bridge, the hub, the main room)
+  // the room every station starts from (the Master may call it the bridge, the hub, the main room)
   function mainRoom(st) {
     const d = st.serialize(), id = (d.meta && (d.meta.trunkRoomId || d.meta.spawnRoomId)) || d.order[0];
     return st.rooms().find(r => r.id === id && r.kind !== 'corridor') || st.rooms().find(r => r.kind !== 'corridor') || null;
   }
-  // a room by the name the Commander used: its own name, or a word for the main room when no room carries that name
+  // a room by the name the Master used: its own name, or a word for the main room when no room carries that name
   function roomNamed(st, raw) {
     const rooms = st.rooms().filter(r => r.kind !== 'corridor'), n = norm(raw), bare = n.replace(/^the /, '').replace(/ room$/, '');
     const m = rooms.filter(r => norm(r.name) === n || norm(r.name) === bare);
@@ -2389,7 +2389,7 @@
   // a plan's recruits, capped, each with its desk (by its line where it fits): the desks join the part that holds the line
   function seatRecruits(probe, env, spec, roomOfPart) {
     const recruits = spec.recruits || [];
-    if (recruits.length > MAX_RECRUITS) return refuse('That plan recruits ' + recruits.length + ' new agents. Recruit only when the Commander asks for new crew, and at most ' + MAX_RECRUITS + ' in one plan: staff the other steps with "lead" or a crew member, or leave agent out (the card then lists them as still to do).');
+    if (recruits.length > MAX_RECRUITS) return refuse('That plan recruits ' + recruits.length + ' new agents. Recruit only when the Master asks for new crew, and at most ' + MAX_RECRUITS + ' in one plan: staff the other steps with "lead" or a crew member, or leave agent out (the card then lists them as still to do).');
     const byPart = new Map();
     for (const rc of recruits) { if (!byPart.has(rc.part)) byPart.set(rc.part, []); byPart.get(rc.part).push(rc); }
     for (const [pi, list] of byPart) {
@@ -2469,7 +2469,7 @@
     }
     return { list: out, why: why || 'there is no floor there for it' };
   }
-  /* WHERE A NEW ROOM GOES. Beside the room T when the Commander named one, on the asked side, else on whichever side leaves
+  /* WHERE A NEW ROOM GOES. Beside the room T when the Master named one, on the asked side, else on whichever side leaves
      the station most COMPACT (the smaller long side of its outline, then the smaller area) — never just "to the east", which
      is how a station becomes one long strip. With no room named (T null) every room is a candidate, the main room first on
      a tie. Answers every spot in preference order, or why there is none and what does fit. */
@@ -3463,7 +3463,7 @@
     return { ok: true, halls, rooms, ring: ringFree };
   }
   /* THE NEXT PLACE ON THE GRID for one new room of W × H (the grid's own size when it fits in it, else a big room on a
-     wing, never smaller than the grid's own rooms either way; `exact` keeps the size the Commander asked): the room and the one hallway that joins it, as a placement candidate. Empty when the grid has no place left. */
+     wing, never smaller than the grid's own rooms either way; `exact` keeps the size the Master asked): the room and the one hallway that joins it, as a placement candidate. Empty when the grid has no place left. */
   function gridSpots(WM, st, W, H, hangs, exact) {
     const main = mainRoom(st); if (!main) return [];
     const big = W > CELL[0] || H > CELL[1];
@@ -3856,7 +3856,7 @@
     return { ok: true, halls: K.halls, rooms: K.rooms };
   }
   /* A MAIN ROOM'S DOORS BREATHE. A station laid out again keeps the main room's pieces, but a piece now crowding a new door moves along the wall,
-     the way a Commander would. A machine on a line, or a table with something standing on it, stays where it is. */
+     the way a Master would. A machine on a line, or a table with something standing on it, stays where it is. */
   function clearHubDoors(st, env, hubId) {
     const moves = [], g0 = st.projectGeometry(), doors = doorTiles(st, g0, hubId), hangs = hangsOf(env);
     if (!doors.length) return moves;
@@ -4236,7 +4236,7 @@
     const live = WM.create(clone(doc)), probe = WM.create(clone(doc)), before = floorFacts(live, P);
     const r = rearrangeOnto(probe, env, { links, shape });
     if (!r.ok) return r;
-    // nothing the Commander built stops working: the lines route as before, and every room can still be walked into
+    // nothing the Master built stops working: the lines route as before, and every room can still be walked into
     const after = floorFacts(probe, P), newErr = [...after.errs].filter(e => !before.errs.has(e));
     if (newErr.length) return refuse('Re-laying the station would leave ' + newErr.length + (newErr.length === 1 ? ' routing problem' : ' routing problems') + ' on its lines (' + [...new Set(newErr.map(e => e.split(':')[0]))].join(', ') + '), so nothing was changed.');
     // a line warning a line did not have (a source cut off from its bays …), judged by machine, not by tile (every tile moved)
@@ -4617,7 +4617,7 @@
     if (pl.spec.kind === 'undo') {
       const u = st.undo();
       if (!u || !u.ok) return refuse('There was nothing to undo.');
-      if (sigOf(st.serialize()) !== pl.resultSig) { try { st.redo(); } catch (_) {} return refuse('That undo did not bring the station back exactly as it was before the build, so it was put back. The Commander can press UNDO in Build mode.'); }
+      if (sigOf(st.serialize()) !== pl.resultSig) { try { st.redo(); } catch (_) {} return refuse('That undo did not bring the station back exactly as it was before the build, so it was put back. The Master can press UNDO in Build mode.'); }
       return { ok: true, kind: 'edit', summary: pl.summary, where: pl.where, rooms: [], hallways: [], lines: [], roomIds: [] };
     }
     const r = st.transact(() => {

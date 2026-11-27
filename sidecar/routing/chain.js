@@ -1,4 +1,4 @@
-/* sidecar/routing/chain.js — the AGENTIC GRAPH executor: run the pipeline the Commander DREW.
+/* sidecar/routing/chain.js — the AGENTIC GRAPH executor: run the pipeline the Master DREW.
 
    The router answers "which agent runs this message?" (one dock). This answers the other half: "and then
    what?" — a dock's output is the next dock's input, hop by hop along the belts, until the line ships out.
@@ -530,7 +530,7 @@ function makeChainRunner(o) {
            that entered somewhere else entirely). The line does not run and nothing downstream spends.
      Both returned `{ stopped: null }` — i.e. "the line ran to its end", which in case (b) is a lie, and
      this file's FIRST law says every stop delivers an honest note saying where the line stopped. A
-     silently-truncated work line is the single hardest thing to diagnose from the outside: the Commander
+     silently-truncated work line is the single hardest thing to diagnose from the outside: the Master
      drew four stages, paid for one, and every surface told them it finished.
 
      CONSERVATIVE BY CONSTRUCTION — it may only turn a KNOWN refusal into a note:

@@ -28,7 +28,7 @@ for (const content of ['Never commit directly to main.', 'Never ever push to mai
 // it must still be saved; only an inversion, a bare "Never again." or a remark verb after them drops the sentence.
 for (const content of ['Never again.', 'Never ever again.', 'Never once.', 'Never before have I seen this.', 'Never once did it work.', 'Never again do I want this.', 'Never mind the typo, ship it.', 'Never works on the first try.', 'Always happens after a deploy.', 'Never has been this slow.', 'Always does this on Mondays.', 'Never gets old.', 'Never noticed that before.', 'Never tried that.', 'Never used it.', 'Always wanted to try this.', 'Always seems to break.', 'Never fails to annoy me.']) assert.deepEqual(L.preferences(input(content)), [], content);
 for (const content of ['Never again push to main.', 'Never again delete my files without asking.', 'Always before committing, run the linter.', 'Always before you commit, run the linter.', 'Never once skip the tests.', 'Always mind the 80-column limit.', 'Always tabs, never spaces.', 'Never emojis in commit messages.', 'Always signed commits.', 'Never made-up numbers in reports.']) assert.deepEqual(L.preferences(input(content)).map(p => p.content), [content], content);
-// ...but an order that points back at the item in front of the Commander ("Never again do that.") cannot stand on its own
+// ...but an order that points back at the item in front of the Master ("Never again do that.") cannot stand on its own
 // later: it is a remark about this draft, like "Never do that again.", and nothing is saved (POINTS_BACK; 2026-10-12).
 assert.deepEqual(L.preferences(input('Never again do that.')), [], 'a pointing-back order is not a standing preference');
 const evidence=L.evidence({runId:'r',tainted:'web',trustedInput:input('I prefer concise replies.'),completion:{contract:{requirements:[{id:'test',type:'verification_passed',command:'npm test'}]},checks:[{id:'test',type:'verification_passed',status:'passed',code:'matching_verification_passed',arbitrary:'INJECT'}]}});
@@ -78,11 +78,11 @@ assert.equal('trustedOnly' in L.evidence({runId:'c'}),false,'a clean run keeps t
   }
 }
 // Review memory-learning-03: a saved owner sentence is written to the notebook, the Memory Core panel and the
-// COMMS receipt, so a key in it must never land there. preferences() returns the Commander's exact words; the host
+// COMMS receipt, so a key in it must never land there. preferences() returns the Master's exact words; the host
 // (captureTrustedLearning, executed below) scrubs them, and a statement the scrub changed is never saved silently: it
 // waits, scrubbed, on the deck. Lock that seam in sidecar/index.js: captureTrustedLearning saves what preferences()
 // returned with no content override, and writeMemoryRecord's user-stated stamp compares preferences() words with the
-// written text (so only an unscrubbed statement is stamped as the Commander's own).
+// written text (so only an unscrubbed statement is stamped as the Master's own).
 {
   const C = require('../sidecar/context.js');
   const key = 'sk-proj-' + 'A1b2C3d4E5f6G7h8I9j0';
@@ -157,7 +157,7 @@ for (const content of ['I prefer replies that get to the point.', 'I prefer usin
   assert.equal(L.cleanOwnerRows([row]).length, 0, 'no run records prove nothing');
   assert.equal(L.ownedBriefs([brief], [row], [run]).length, 0, 'a guest original cannot prove ownership of a brief');
 }
-// (2026-10-12, round two) Quoted material in replayed user turns is found; an assistant's code is not the Commander quoting.
+// (2026-10-12, round two) Quoted material in replayed user turns is found; an assistant's code is not the Master quoting.
 assert.equal(L.quotedTurns([{ role: 'user', content: 'The document says:\n> I prefer pasted instructions.' }, { role: 'assistant', content: 'ok' }]), true, 'a pasted document in replayed turns is quoted material');
 assert.equal(L.quotedTurns([{ role: 'user', content: [{ type: 'text', text: 'Fix this:\n```\nboom\n```' }] }]), true, 'a code fence in a content-block turn is quoted material');
 assert.equal(L.quotedTurns([{ role: 'user', content: 'Plan the launch.' }, { role: 'assistant', content: '```js\nx()\n```' }]), false, 'clean user turns are not quoted material');
@@ -224,7 +224,7 @@ assert.equal(L.quotedTurns(null), false);
     assert.equal(v.queued[2].content, 'From now on use https://deploy:[redacted-secret]@ci.example.com for builds.', 'a password in a URL is scrubbed, user and host stay readable');
   }
   await s.say('Always CC my wife at jane.doe@example.com on invoices.', 'r-pii');
-  assert.equal(s.notes().length, 0, 'personal data waits for the Commander too');
+  assert.equal(s.notes().length, 0, 'personal data waits for the Master too');
   assert.equal(s.queued.length, 2);
   await s.say('From now on, use tabs for indentation.', 'r-tabs');
   assert.equal(s.notes().length, 1, 'an ordinary owner preference still saves without a deck');
@@ -257,7 +257,7 @@ assert.equal(L.quotedTurns(null), false);
   assert.ok(restated && restated.statedBy.runId === 'c-2', 'a superseded preference stated again becomes an active record');
   // memory-truth-1027: stating it again retires the correction that replaced it — one active record, not two
   assert.deepEqual(Array.from(context.activeMemoryRecords(c.notes()), r => r.content).sort(), ['From now on, use tabs for indentation.'], 'the restatement is not retired by the old correction, and retires the belief that replaced it');
-  // (2026-10-12, round two) A restatement never downgrades a record the Commander kept through the deck, and leaves no
+  // (2026-10-12, round two) A restatement never downgrades a record the Master kept through the deck, and leaves no
   // receipt whose one-tap veto would delete (and permanently decline) that original.
   const k = station();
   const keptWrite = await k.api.writeMemoryRecord('nova', { kind: 'profile', content: 'From now on, use tabs for indentation.', scope: 'global', projectRoot: null, standing: true },

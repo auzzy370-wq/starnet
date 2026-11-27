@@ -548,7 +548,7 @@ function makeFakeSpawn() {
 
       cell = 'stopped';   // Docker Desktop restarted behind the station
       const ac = new AbortController();
-      onStart = () => ac.abort();   // the Commander presses Stop while the cell is being started again
+      onStart = () => ac.abort();   // the Master presses Stop while the cell is being started again
       const cmd = 'rm -rf build && make deploy';
       const stopped = await env.execute({ agentId: 's9', cmd, timeoutMs: 1000, signal: ac.signal });
       A.eq(cell, 'running', 'fixture: the revival itself still finished');

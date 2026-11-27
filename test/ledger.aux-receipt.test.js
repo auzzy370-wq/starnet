@@ -51,7 +51,7 @@ function embedFor(L, runId, usd) {
   A.eq([boot.health().complete, boot.health().readError], [false, 'UNSETTLED_SPEND'], 'its spend reads unknown, never as fully booked');
   A.ok(Math.abs(boot.totalUsd() - 0.002) < 1e-12, 'the embed\'s own known charge is kept');
   const settled = boot.settleUnsettled('live', 0.4);
-  A.eq([settled.attested, boot.unsettledRuns().length, boot.health().complete, disk.receipts.size], [true, 0, true, 0], 'the Commander can still settle it; that row (not the aux one) clears the receipt');
+  A.eq([settled.attested, boot.unsettledRuns().length, boot.health().complete, disk.receipts.size], [true, 0, true, 0], 'the Master can still settle it; that row (not the aux one) clears the receipt');
 }
 
 // ---- no crash: the aux row, then the run's own row — the run settles exactly as before ----
@@ -73,7 +73,7 @@ function embedFor(L, runId, usd) {
   L.beginRun('unpriced', 'agent');
   embedFor(L, 'unpriced', 0);
   A.eq(L.markUnsettled('unpriced'), true, 'an ended unpriced run still reaches the settlement path after an aux row');
-  A.eq(L.unsettledRuns().map(r => r.runId), ['unpriced'], 'and is listed for the Commander');
+  A.eq(L.unsettledRuns().map(r => r.runId), ['unpriced'], 'and is listed for the Master');
 }
 
 // ---- a FAILED aux append is the aux row's problem, not the run's booking ----

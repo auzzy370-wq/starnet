@@ -1,9 +1,9 @@
 /* node test/attachment-rows.test.js — attachment-rows-and-taint, step S3: A TURN'S FILES ARE ROWS OF THEIR OWN, AND THE
-   COMMANDER'S ROW HOLDS ONLY THE COMMANDER'S WORDS.
+   MASTER'S ROW HOLDS ONLY THE MASTER'S WORDS.
 
    THE FAMILY. The directive row used to be written with the turn's EXPANDED text: the typed words and the file's bytes in
-   one string, stamped 'user attachment'. A third party's document was stored as the Commander's own voice, so the
-   earlier-conversation note quoted it as "the Commander's words, verbatim, still holds", recall returned it as a Commander
+   one string, stamped 'user attachment'. A third party's document was stored as the Master's own voice, so the
+   earlier-conversation note quoted it as "the Master's words, verbatim, still holds", recall returned it as a Master
    message, and the stamp it carried re-tainted every later run. Now (sidecar/turn-attachment.js, transcript-run.js,
    turn-directive.js) the directive row holds the typed words (else the label) with taint null, and each file is a role-system,
    kind 'attachment' row beside it: id, name, mime, path, and the size and sha256 of the bytes the run actually read.
@@ -137,7 +137,7 @@ const liveAtt = (w, turnId) => (w.store.findTurn('S', turnId, {}).rows || []).fi
 
       // the views: neither shown nor replayed; kept for recall and proof
       const display = w.view('display');
-      A.eq(display.map(r => [r.role, r.content]), [['user', TYPED], ['assistant', 'I read both.']], 'display: the Commander\'s words and the answer, no attachment row (no new UI surface)');
+      A.eq(display.map(r => [r.role, r.content]), [['user', TYPED], ['assistant', 'I read both.']], 'display: the Master\'s words and the answer, no attachment row (no new UI surface)');
       for (const shape of ['prose', 'pairs']) for (const form of ['pre', 'post']) {
         A.eq(w.view('model-replay', { shape, form }).map(m => [m.role, m.content]), [['user', TYPED], ['assistant', 'I read both.']], 'model-replay ' + shape + '/' + form + ': the typed words, the answer, no attachment row');
       }
@@ -163,7 +163,7 @@ const liveAtt = (w, turnId) => (w.store.findTurn('S', turnId, {}).rows || []).fi
       const cut = EarlierConversation.windowCut(replay, [{ role: 'user', content: 'TURN_TWO_WORDS and then?' }, { role: 'assistant', content: 'Nothing more.' }], redact);
       A.eq(cut, 2, 'the page\'s window (it keeps the typed words) is placed in the stored rows');
       const note = EarlierConversation.render(replay.slice(0, cut), { windowTokens: 8000, searchTool: 'recall_conversation', ownerVoice: true });
-      A.ok(note && note.note.includes(TYPED + ' [attached: notes.txt] [attached: pixel.png]') && note.note.indexOf('FILE_BODY_SENTINEL') < 0 && note.note.indexOf('evil.example') < 0, 'the earlier-conversation note carries the Commander\'s typed words with \'[attached: name]\', and none of the file');
+      A.ok(note && note.note.includes(TYPED + ' [attached: notes.txt] [attached: pixel.png]') && note.note.indexOf('FILE_BODY_SENTINEL') < 0 && note.note.indexOf('evil.example') < 0, 'the earlier-conversation note carries the Master\'s typed words with \'[attached: name]\', and none of the file');
       A.eq(EarlierConversation.taintOf(replay.slice(0, cut)), null, 'and nothing of the attachment taints the note (its rows carry the bare stamp, which decays; the bytes are not in it)');
     }
 
@@ -194,7 +194,7 @@ const liveAtt = (w, turnId) => (w.store.findTurn('S', turnId, {}).rows || []).fi
       brief.setDirective('summarise what the file said');
       brief.start([]);
       const briefRow = w.rows().find(r => r.sourceRunId === 'run-0006');
-      A.eq([briefRow.from, briefRow.taint], ['lead', UA], 'a delegated brief written while the lead held the attachment keeps the attachment stamp (it is the lead\'s text, not the Commander\'s)');
+      A.eq([briefRow.from, briefRow.taint], ['lead', UA], 'a delegated brief written while the lead held the attachment keeps the attachment stamp (it is the lead\'s text, not the Master\'s)');
     }
 
     // ======================= 3. A FAILED ATTACHMENT APPEND IS RETRIED AT THE NEXT BOUNDARY AND NEVER BLOCKS THE RUN =======================
@@ -316,7 +316,7 @@ const liveAtt = (w, turnId) => (w.store.findTurn('S', turnId, {}).rows || []).fi
       A.eq(w.rows().slice(before2).map(r => [r.role, r.kind]), [['assistant', 'turn']], 'it adds neither a directive nor a file row');
 
       // (c) the source died BEFORE any row: the continuation must write the directive itself, from the source's TITLE; the prompt it
-      //     resumes holds the file text, which must never become the Commander's row
+      //     resumes holds the file text, which must never become the Master's row
       const w2 = world();
       const n2 = await w2.save('notes.txt', 'text/plain', Buffer.from(FILE_TEXT));
       const expanded = await w2.attachments.expandForRun([{ role: 'user', content: TYPED, attachments: [n2] }], 'agent', '');
@@ -449,7 +449,7 @@ const liveAtt = (w, turnId) => (w.store.findTurn('S', turnId, {}).rows || []).fi
     // ======================= 10. FORGOTTEN WITH THE TURN: an undo and a deleted session leave no file row to find =======================
     // The file rows are part of the turn (same stream, same turnId, after the directive), so whatever hides the turn hides them: the
     // undo of a turn retracts them with its directive, and a deleted session tombstones them by time. The name of a file the
-    // Commander deleted is a fact about their conversation; recall must not return it.
+    // Master deleted is a fact about their conversation; recall must not return it.
     {
       const tombstones = {};
       const w = world(tombstones);

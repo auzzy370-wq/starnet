@@ -34,7 +34,7 @@ Read `docs/BRAIN.md` first for project orientation, then this.
 ## Root cause (high confidence)
 
 **The visible fold is a one-shot 6s window; the durable record has no backfill.** If `station.deliver`
-misses — page briefly busy, SSE hiccup, Commander mid-navigation, sidecar under load, or the model
+misses — page briefly busy, SSE hiccup, Master mid-navigation, sidecar under load, or the model
 omitted/failed the `session` param so no fold was attempted — the session's `ws.history` stays empty
 FOREVER, even though the full conversation sits in the durable transcript under that exact stream id.
 Nothing ever reconciles page-visible session history from the durable store for dispatch-targeted
@@ -44,7 +44,7 @@ no equivalent.)
 
 Secondary suspects to rule out while you're in there:
 - The model may not have passed `session` on the dispatch at all (the tool description tells it to when
-  the Commander named one; verify from the run's tool-call args in the transcript). If it didn't, the
+  the Master named one; verify from the run's tool-call args in the transcript). If it didn't, the
   work runs under the lead's stream and no fold is attempted — same visible symptom.
 - A failed fold IS reported to the lead on the result row (`sessionNote`), which matches NOVA's
   "genuinely broken" remark — check the dispatch tool result in the lead's transcript for `sessionNote`.

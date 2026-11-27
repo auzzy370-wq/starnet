@@ -1,10 +1,10 @@
 /* VULTRON — study.js : the PURE STUDY ENGINE — the dossier's missing Phase B (work → understanding).
 
-   Phase A (dossier.js) is a one-time intake form: the dossier grows ONLY from the Commander's own onboarding
+   Phase A (dossier.js) is a one-time intake form: the dossier grows ONLY from the Master's own onboarding
    docs + explicit panel edits (dossierstore.js:9 — "folds nothing automatically"). This engine is Phase B:
    after a SALIENT completed run, the station STUDIES the work (its directive + a transcript slice + the
    existing dossier block) and proposes DOSSIER BELIEF UPDATES, tagged by dimension — observed goals, new pain,
-   stack facts, working-style, plus DRIFT/OBSOLETION ("goal X looks shipped — retire it?"). The Commander then
+   stack facts, working-style, plus DRIFT/OBSOLETION ("goal X looks shipped — retire it?"). The Master then
    consents via the same turn-in Keep/Edit/Discard beat (studystore.js + chat.js wire the live half).
 
    Mirrors sidecar/reflect.js discipline exactly — it is the dossier's counterpart to reflection:
@@ -13,7 +13,7 @@
    - Reuses reflection's salience philosophy (a real user turn + a reply OR real tool work; recurrence lets a
      terse run through), a value floor, and Jaccard near-dup dedup vs both the existing beliefs AND a permanent
      studyDeclined denylist (the memory-overhaul "discard = never again" rule, applied to the dossier).
-   - Auto-proposals are CANDIDATES ONLY — nothing is written until the Commander taps Keep (the consent §5.6).
+   - Auto-proposals are CANDIDATES ONLY — nothing is written until the Master taps Keep (the consent §5.6).
 
    Fail-open everywhere: a failed / empty / malformed study yields ZERO proposals and never touches the run. */
 'use strict';
@@ -117,7 +117,7 @@
     let body = turns.join('\n');
     const cap = Number.isFinite(o.cap) ? o.cap : PROMPT_CAP;
     if (body.length > cap) body = body.slice(body.length - cap);   // keep the most recent exchange
-    return 'You just finished a task for your Commander. From the WORK below, update what the station believes ' +
+    return 'You just finished a task for your Master. From the WORK below, update what the station believes ' +
       'about them. Propose ONLY durable, evidenced belief changes — one per line, tagged with a dimension and ' +
       'ADD (a new belief) or RETIRE (a belief that now looks stale/shipped), plus a short VERBATIM evidence quote. Dimensions: goals, pain, ambition, ' +
       'stack, style, identity, standing_orders, people, schedule. Examples:\n' +
@@ -181,7 +181,7 @@
     const evidenceHay = String(run.directive || '') + '\n' + (Array.isArray(run.messages) ? run.messages.map(m => (m && typeof m.content === 'string') ? m.content : '').join('\n') : '');
     const normEvidence = s => String(s == null ? '' : s).toLowerCase().replace(/\s+/g, ' ').trim();
     const evidenceBlob = normEvidence(evidenceHay);
-    /* ONLY THE COMMANDER'S OWN WORDS ARE SAID BACK AS THEIRS (2026-09-30). A quote found in a reply or a tool result is grounded — it
+    /* ONLY THE MASTER'S OWN WORDS ARE SAID BACK AS THEIRS (2026-09-30). A quote found in a reply or a tool result is grounded — it
        really is in the run — but it is not «you said»: it falls back to the directive receipt below, stamped kind:'directive'. The
        spoken words are the directive and the run's USER turns (threadmine's user-only rule). */
     const spokenBlob = normEvidence(String(run.directive || '') + '\n' + (Array.isArray(run.messages) ? run.messages.filter(m => m && m.role === 'user').map(m => (typeof m.content === 'string') ? m.content : '').join('\n') : ''));
@@ -198,11 +198,11 @@
       // New-format proposals must ground their quote in the real run. Old-format replies remain compatible and
       // fall back to the directive receipt while providers roll onto the stricter prompt.
       if (evidence && (evidence.length < 6 || evidenceBlob.indexOf(normEvidence(evidence)) < 0)) continue;
-      if (evidence && spokenBlob.indexOf(normEvidence(evidence)) < 0) evidence = '';   // in the run, but not in the Commander's words
+      if (evidence && spokenBlob.indexOf(normEvidence(evidence)) < 0) evidence = '';   // in the run, but not in the Master's words
       const spoken = !!evidence;
       // FALLBACK GROUNDING: no located quote → cite the run's DIRECTIVE instead, stamped kind:'directive' below so
-      // the card never presents a (possibly machine-composed) task as the Commander's own speech. A cut directive
-      // ends in an ellipsis so the quote can never read as a complete sentence the Commander never finished.
+      // the card never presents a (possibly machine-composed) task as the Master's own speech. A cut directive
+      // ends in an ellipsis so the quote can never read as a complete sentence the Master never finished.
       if (!evidence) {
         const dir = (typeof run.directive === 'string' && run.directive) ? String(run.directive) : '';
         evidence = dir.length > 140 ? (dir.slice(0, 139) + '…') : dir;
@@ -210,7 +210,7 @@
       if (lowValue(text)) continue;                       // trivia / run-narration floor
       const key = cand.dim + '::' + text.toLowerCase();
       if (seen[key]) continue;
-      // permanently-declined (studyDeclined denylist): never re-propose a belief the Commander rejected.
+      // permanently-declined (studyDeclined denylist): never re-propose a belief the Master rejected.
       let killed = false;
       for (const d of declined) { if (jaccard(d, text) >= SIM_THRESHOLD) { killed = true; break; } }
       if (killed) continue;
@@ -262,14 +262,14 @@
     if ((entry.up || 0) >= STREAK_N && !entry.upMinted) {
       return { mintedKey: 'upMinted', proposal: {
         id: 'taste_up_' + archetype, dim: 'style', kind: 'add',
-        text: 'Commander consistently likes ' + archetype + ' work — lean into it.',
+        text: 'Master consistently likes ' + archetype + ' work — lean into it.',
         evidence: STREAK_N + ' consecutive 👍 on ' + archetype, source: 'study', sourceRunId: null, createdAt: now
       } };
     }
     if ((entry.down || 0) >= STREAK_N && !entry.downMinted) {
       return { mintedKey: 'downMinted', proposal: {
         id: 'taste_down_' + archetype, dim: 'style', kind: 'add',
-        text: 'Commander has been unhappy with ' + archetype + ' work — take extra care there (verify before turning it in).',
+        text: 'Master has been unhappy with ' + archetype + ' work — take extra care there (verify before turning it in).',
         evidence: STREAK_N + ' consecutive 👎 on ' + archetype, source: 'study', sourceRunId: null, createdAt: now
       } };
     }

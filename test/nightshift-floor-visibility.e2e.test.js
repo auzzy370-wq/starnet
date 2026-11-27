@@ -46,7 +46,7 @@ function startMockOpenRouter() {
           if (/SELF-REVIEW/.test(prompt)) {
             text('VERDICT: ship\nNOTE: solid');
           } else if (/Do this ONE job now/.test(prompt)) {
-            text('TITLE: Beta launch checklist\nA real draft body the Commander can read.');
+            text('TITLE: Beta launch checklist\nA real draft body the Master can read.');
           } else if (/Propose up to/.test(prompt)) {
             text(['JOB: Beta launch checklist', 'KIND: advance-goal', 'GROUNDS: ship the Vultron beta to 100 users', 'CONFIDENCE: high', 'SPEC: a checklist draft toward the beta'].join('\n'));
           } else {

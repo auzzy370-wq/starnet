@@ -5,7 +5,7 @@
    reported how a run ended from the bare end word stayed PARKED in test/outcome-family.census.test.js. A reply the provider cut
    (reason 'done', finishReason 'length') COMPLETED its run-bound quest and its Task Brief, graded postconditions
    completed_verified, and reached a user's on_session_end hook as 'done'; a 'done' end the run's own late error outranked was
-   reflected on as a success and never failure-reviewed; a Commander's `miss` on a cut reply found no verdict-review packet; and
+   reflected on as a success and never failure-reviewed; a Master's `miss` on a cut reply found no verdict-review packet; and
    every up-front host refusal (a routine's pre-check script, too many agents at once, an empty Vultron wallet, a model that cannot
    call tools, an expired sign-in, a full disk) and the image task's late error left the outcome sink to stamp 'run_failure'.
 
@@ -240,7 +240,7 @@ async function postLoop(kind, opts) {
   A.eq(late.failure && [late.failure.reason, late.failure.outcome], ['error', 'failed'], 'aux inputs / own late error: the failure review is handed reason error, outcome failed');
   A.eq(late.stash && [late.stash.reason, late.stash.outcome, late.stash.failed], ['error', 'failed', true], 'aux inputs / own late error: the verdict-review packet says failed');
   const cutAux = aux({ reason: 'done', finishReason: 'length' }, null, []);
-  A.ok(!!cutAux.stash, 'aux inputs / cut: a provider-cut reply\'s packet is parked, so a Commander\'s `miss` on it arms the verdict review');
+  A.ok(!!cutAux.stash, 'aux inputs / cut: a provider-cut reply\'s packet is parked, so a Master\'s `miss` on it arms the verdict review');
   A.eq(cutAux.stash && [cutAux.stash.reason, cutAux.stash.outcome, cutAux.stash.failed], ['cut_short', 'cut_short', true], 'aux inputs / cut: the packet says cut_short');
   const okAux = aux({ reason: 'done' }, null, ['skill-review']);
   A.eq(okAux.skill && [okAux.skill.reason, okAux.skill.outcome], ['done', 'succeeded'], 'aux inputs / succeeded: the skill review carries the outcome beside done');
@@ -273,7 +273,7 @@ async function postLoop(kind, opts) {
 
   A.eq(LE.runOutcome({ reason: 'done', outcome: 'failed', reflect: true, task: true }).kind, 'failed', 'learning-eligibility: the base kind reads the outcome (failed)');
   A.eq(LE.runOutcome({ reason: 'done', outcome: 'cut_short', reflect: true, task: true }).kind, 'unfinished', 'learning-eligibility: a cut reply is unfinished');
-  A.eq(LE.runOutcome({ reason: 'done', outcome: 'stopped', reflect: true, task: true }).kind, 'cancelled', 'learning-eligibility: a stop is the Commander\'s own hand, never a failure');
+  A.eq(LE.runOutcome({ reason: 'done', outcome: 'stopped', reflect: true, task: true }).kind, 'cancelled', 'learning-eligibility: a stop is the Master\'s own hand, never a failure');
   A.eq(LE.runOutcome({ reason: 'done', denied: true, reflect: true, task: true }).kind, 'denied', 'learning-eligibility: its denied kind is unchanged (rel#9 is denied-outcome\'s)');
 
   const ev = LearningEvidence.buildLearningEvidence({ runId: 'r', agentId: 'a', reason: 'cut_short', outcome: 'cut_short', failed: true, messages: [] });

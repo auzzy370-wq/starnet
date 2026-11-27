@@ -1,7 +1,7 @@
 /* node test/station-call-shapes.test.js — the call shapes a REAL model sends (self-driving real-model run, 2026-10-08).
    Claude Haiku 4.5, asked "set a daily spending limit of $5", sent station.control {setting: "budget.set", limit: "5",
    period: "daily"} and station.show {target: "settings-spending"}; both were turned away as invalid arguments and the run
-   ended by opening the window for the Commander to do it by hand. Pins:
+   ended by opening the window for the Master to do it by hand. Pins:
      • station.control / station.power read the action from action | setting | name (a KNOWN action only) and its args
        flat beside it when there is no `args` object — and the approval card reads the call the SAME way;
      • an action with named fields (budget.set, limits.set) given none of them is REFUSED, never saved as an empty patch
@@ -89,7 +89,7 @@ const refused = r => /^REFUSED: /.test(r.content);
     A.ok(Array.isArray(j.toChange) && j.toChange.some(x => /^station\.power \{"action": "budget\.set", "args": \{perRun\?/.test(x)),
       'spending carries toChange: station.power budget.set with what it takes');
     A.ok(j.toChange.some(x => /^station\.control \{"action": "fallback\.set"/.test(x)), 'and station.control fallback.set');
-    A.ok(j.toChange.some(x => /settled by the Commander alone/.test(x)), 'and that an unsettled run is the Commander\'s');
+    A.ok(j.toChange.some(x => /settled by the Master alone/.test(x)), 'and that an unsettled run is the Master\'s');
     const keys = Object.keys(j); A.eq(keys[keys.length - 1], 'toChange', 'toChange comes last (a clipped answer loses the hint first)');
   }
   // ---- "pin this conversation": no session named = the run's own ----
@@ -175,7 +175,7 @@ const refused = r => /^REFUSED: /.test(r.content);
     const ctx = { streamId: 'ws1', runId: 'r1' };
     for (const k of ['place', 'target', 'id', 'window', 'page', 'section']) {
       const r = await t.run({ [k]: 'settings-spending' }, ctx);
-      A.ok(/^OPEN on the Commander's screen: SETTINGS › SPENDING LIMITS/.test(r.content), 'station.show {' + k + '} opens the place');
+      A.ok(/^OPEN on the Master's screen: SETTINGS › SPENDING LIMITS/.test(r.content), 'station.show {' + k + '} opens the place');
       A.ok(/opening it is not doing it/.test(r.content), 'and says opening is not doing a change');
     }
     A.eq(s.pages.map(p => p.args.place), Array(6).fill('settings-spending'), 'the page is asked for the catalog id every time');

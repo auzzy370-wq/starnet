@@ -523,7 +523,7 @@ const detail = async (o, line) => (await layout(o, { line: line || 'draft & revi
     const result = (await layout({ app: app(s, []) })).r;
     const source = result.lines.find(l => l.sendsWorkTo);
     // final floor lane M25 / R62: the unnamed target is named as the floor's plate and SEND TO chip name it (LINE <its INBOX letter>,
-    // worldmodel.lineName), and keeps its actionable lineId — 'an unnamed line' named nothing the Commander could see
+    // worldmodel.lineName), and keeps its actionable lineId — 'an unnamed line' named nothing the Master could see
     const shown = 'LINE ' + s.lineLetter(ids[1].intakes[0]);
     A.ok(source && source.sendsWorkTo[0] === shown + ' (lineId ' + ids[1].key + ')', 'unlabeled SEND TO says the floor name and keeps its actionable lineId — ' + JSON.stringify(source && source.sendsWorkTo));
     A.ok(source && new RegExp('sent on to ' + shown + ' [(]lineId ').test(source.howItRuns), '…and so does howItRuns — ' + (source && source.howItRuns));

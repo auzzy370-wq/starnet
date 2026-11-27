@@ -22,7 +22,7 @@ function makeEvaluationAccounting(options) {
     canContinue(caseSpent) { return !uncertain && spent + (Number(caseSpent) || 0) < (o.maxUsd || 0.40); },
     beforeRun({ runId }) {
       // An unmetered provider bills nothing per call, so there is no unknown charge to hold a receipt for (runOnce skips it too).
-      // managed: the billing source the host knew (Vultron credits vs the Commander's own key); the ledger keeps only a boolean.
+      // managed: the billing source the host knew (Vultron credits vs the Master's own key); the ledger keeps only a boolean.
       if (uncertain || (!unmetered && !ledger.beginRun(runId, o.agentId, { provider: o.provider, model: o.model, managed: o.managed, runCapUsd: o.runCapUsd || 0.08 }))) {
         uncertain = true;
         throw new Error('Evaluation dispatch could not be durably recorded.');
@@ -37,7 +37,7 @@ function makeEvaluationAccounting(options) {
     onRun({ result, runId }) {
       if (unmetered) {
         const r = result || {};
-        // Every outcome there (done, failed, timed out, cancelled) bills the Commander nothing per call, so none is
+        // Every outcome there (done, failed, timed out, cancelled) bills the Master nothing per call, so none is
         // unknown spend. Booked like the run host books an unmetered run: the row counts the run, its tokens and any
         // provider-reported figure, the ledger keeps it out of metered dollars (so out of every USD cap), and it never
         // adds to this evaluation's dollar ceiling.

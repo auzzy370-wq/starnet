@@ -1,7 +1,7 @@
 /* VULTRON — autopilotstore.js : the thin live wiring around the pure idle self-direction engine (autopilot.js).
    Slice A of the autonomy layer — the thing that makes the posture dial actually drive the floor.
 
-   It is the EDGE the pure engine isn't allowed to be: it owns the live clock, the "Commander is interacting"
+   It is the EDGE the pure engine isn't allowed to be: it owns the live clock, the "Master is interacting"
    stamping, the periodic idle check, the model runs, and the desk hand-off. Mirrors autonomystore.js /
    autojobstore.js discipline:
    - READ-ONLY citizen of the app — it takes NO U.bus dependency and NEVER emits (lint-emits stays green).
@@ -14,7 +14,7 @@
    - ACT (Slice A2): idle + the dial permits acting + the dossier is hot + today's leash has budget → run the pure
      anti-slop pipeline (propose grounded candidates → score-and-pick-best with the confidence gate → do the one
      job) as SILENT reason-only runs (internal:true, no tools — safe by construction). It then leaves a desk draft —
-     OR (B2) writes a REAL local file when the Commander has GRANTED cabinet:write AND placed a cabinet (server-side:
+     OR (B2) writes a REAL local file when the Master has GRANTED cabinet:write AND placed a cabinet (server-side:
      consent-gated, jailed, checkpointed/reversible). Still nothing is sent, published, or spent — writes stay local.
 
    Persists a small own-key slice (leash-per-day accounting + a capped draft log for the "while you were away"
@@ -24,14 +24,14 @@ const AutopilotStore = (() => {
   const KEY = 'vultron.autopilot.v1';
   let deps = {};
   let state = null;         // persisted: { v, day, acted, drafts:[{title,archetype,at,body}] }
-  let lastActivity = 0;     // wall-clock of the Commander's last interaction (set by noteActivity)
+  let lastActivity = 0;     // wall-clock of the Master's last interaction (set by noteActivity)
   let armed = false;        // false = this idle EPISODE still has its one autopilot beat; true = spent until next activity
   let acting = false;       // an async ACT run is in flight (guards re-entry across ticks)
   let installed = false;    // the DOM listeners + interval are installed exactly once
   let timer = null;
   // NS-1: the server-owned NIGHT-SHIFT driver now owns the ACT branch (restart-safe, leash-enforced). When it is
   // ACTIVE, this frontend loop must NOT double-act — it defers ACT to the sidecar and keeps only EARN (curiosity
-  // while the Commander is present) + activity stamping/beaconing. serverActs is a cached capability flag, refreshed
+  // while the Master is present) + activity stamping/beaconing. serverActs is a cached capability flag, refreshed
   // lazily from GET /api/nightshift/status; null = unknown (fail toward the OLD behavior so a missing route or a
   // node test is unaffected — the server no-ops its own beat when its posture gate is unmet, so a brief overlap on
   // first load is harmless). lastBeacon throttles the /api/activity beacon to ≥60s.
@@ -105,7 +105,7 @@ const AutopilotStore = (() => {
     try { fetch('/api/nightshift/status').then(r => r.ok ? r.json() : null).then(j => { if (j && typeof j.active === 'boolean') serverActs = j.active; }).catch(() => {}); } catch (_) {}
   }
 
-  // ONE autopilot beat per idle episode. Re-arms when the Commander next interacts (noteActivity).
+  // ONE autopilot beat per idle episode. Re-arms when the Master next interacts (noteActivity).
   function tick() {
     if (!ready() || armed || acting) return null;
     refreshServerActs();
@@ -134,9 +134,9 @@ const AutopilotStore = (() => {
     return out;
   }
 
-  // THE LEARN HOOK (A3): the Commander's per-draft useful/not feedback, tallied per archetype. learnWeights() turns
+  // THE LEARN HOOK (A3): the Master's per-draft useful/not feedback, tallied per archetype. learnWeights() turns
   // it into a small selection bias (capped below a confidence step) so scoreAndSelect gets better at picking FOR
-  // THIS Commander over time — the compounding, uncopyable moat. Wired now; the weighting stays deliberately gentle.
+  // THIS Master over time — the compounding, uncopyable moat. Wired now; the weighting stays deliberately gentle.
   function rate(archetype, useful) {
     if (!state || !archetype) return;
     state.learn = state.learn || {};
@@ -194,7 +194,7 @@ const AutopilotStore = (() => {
       if (!sel.selected) return { delivered: false, reason: sel.reason };
 
       // 3) DO — produce the finished draft (silent reasoning).
-      const dRes = await deps.chat({ system, messages: [{ role: 'user', content: Autopilot.buildDoDirective(sel.selected, { name }) }], agentId: 'agent', isTask: false, placed: [], internal: true, keepEffort: true });   // the draft IS work: the Commander's effort, not the aux effort
+      const dRes = await deps.chat({ system, messages: [{ role: 'user', content: Autopilot.buildDoDirective(sel.selected, { name }) }], agentId: 'agent', isTask: false, placed: [], internal: true, keepEffort: true });   // the draft IS work: the Master's effort, not the aux effort
       if (unfinishedReply(dRes)) return unfinishedAct(dRes);   // a cut or stopped draft is no finished deliverable
       let deliverable = succeededReply(dRes) ? Autopilot.parseDeliverable(dRes.text, { fallbackTitle: sel.selected.title }) : null;
       if (!deliverable) return { delivered: false, reason: 'no-deliverable' };
@@ -209,7 +209,7 @@ const AutopilotStore = (() => {
       if (crit.verdict === 'drop') return { delivered: false, reason: 'self-rejected' };
       if (crit.verdict === 'revise' && crit.revised) deliverable = crit.revised;
 
-      // 4) WRITE (B2) — if the Commander GRANTED cabinet:write AND placed a cabinet (object=capability), persist the
+      // 4) WRITE (B2) — if the Master GRANTED cabinet:write AND placed a cabinet (object=capability), persist the
       // finished, self-critiqued deliverable as a REAL local file (server-side: consent-gated + jailed +
       // checkpointed/reversible). Otherwise it stays a desk draft (Stage A). The write never sends/publishes/spends.
       let wrote = null;
@@ -234,7 +234,7 @@ const AutopilotStore = (() => {
     }
   }
 
-  // NS-1: the throttled PRESENCE beacon. A watching-but-not-running-a-task Commander still stamps the server-owned
+  // NS-1: the throttled PRESENCE beacon. A watching-but-not-running-a-task Master still stamps the server-owned
   // away-clock (POST /api/activity) so the night-shift driver doesn't mistake "reading" for "gone". Throttled to
   // ≥60s between beacons (interactions fire far more often than that). Guarded for node/test (no fetch → no-op).
   function beacon() {
@@ -245,17 +245,17 @@ const AutopilotStore = (() => {
     try { fetch('/api/activity', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }).catch(() => {}); } catch (_) {}
   }
 
-  // the Commander interacted — reset the idle clock, re-arm the next idle beat, and (if they were really away and
+  // the Master interacted — reset the idle clock, re-arm the next idle beat, and (if they were really away and
   // the autopilot worked) show the welcome-back digest.
   function noteActivity() {
     const prev = lastActivity;
     lastActivity = now();
     armed = false;
-    beacon();   // NS-1: tell the sidecar the Commander is PRESENT (throttled) so the server-owned away-clock is truthful
+    beacon();   // NS-1: tell the sidecar the Master is PRESENT (throttled) so the server-owned away-clock is truthful
     // GENUINE-RETURN HOOK (2026-07-14): fires on the first interaction after a real absence REGARDLESS of
     // the local draft log — the server-owned night-shift act path leaves NO local draft, so the digest
     // below is structurally blind to it. app.js uses this to re-offer undecided workshop deliverables
-    // that landed (and were announced to an empty room) while the Commander was away.
+    // that landed (and were announced to an empty room) while the Master was away.
     const thr = Number.isFinite(deps.digestAwayMs) ? deps.digestAwayMs : 300000;
     if (Number.isFinite(prev) && (lastActivity - prev) >= thr) {
       try { if (typeof deps.onReturn === 'function') deps.onReturn({ awaySince: prev, backAt: lastActivity, awayMs: lastActivity - prev }); } catch (_) {}

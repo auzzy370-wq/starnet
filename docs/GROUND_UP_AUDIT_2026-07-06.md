@@ -46,7 +46,7 @@ or real user-visible bug. **P2** = polish/hygiene. Each item: what, where, why i
   scripts run same-origin and can `fetch('/')` → read `window.__VULTRON_API_TOKEN__` → call any `/api/*`
   route (self-approve consent, write files via `/api/workshop/decide`, dump config). `/api/file` defends
   the identical files with `CSP: sandbox` + octet-stream; `/workshop-run/` does not.
-- **Why it matters:** A prompt-injected workshop shift → Commander clicks "Open it" → full harness
+- **Why it matters:** A prompt-injected workshop shift → Master clicks "Open it" → full harness
   compromise. This is the one confirmed *critical* security item.
 - **Fix (needs a small product decision):** Add `Content-Security-Policy: sandbox allow-scripts` (no
   `allow-same-origin`) to `serveWorkshopRun` responses so deliverables run isolated, OR serve them from a

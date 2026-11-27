@@ -217,7 +217,7 @@ const noteSha = notes => notes.map(sha).join(',');
       A.eq([again.calls, reusedEvent(again)], [0, 1], 'and reused from then on');
     }
 
-    // ---- an exchange the Commander UNDOES after the summary quoted it: the proof/raw views still hold its rows, the model-replay
+    // ---- an exchange the Master UNDOES after the summary quoted it: the proof/raw views still hold its rows, the model-replay
     //      view does not, and the digest is taken over the model-replay view, so the stored summary stops reaching the model ----
     {
       const rec = recordOnDisk();
@@ -227,7 +227,7 @@ const noteSha = notes => notes.map(sha).join(',');
       A.ok(victim > 1, 'control: the stored summary quotes a covered exchange word for word (Entry ' + victim + ')');
       const row = turns.find(r => r.role === 'user' && String(r.content).startsWith('Entry ' + victim + ':'));
       const undo = await fetch(base + '/api/turn-identity/retract', { method: 'POST', headers, body: JSON.stringify({ streamId: STREAM, turnId: row && row.turnId }) });
-      A.eq(undo.status, 200, 'the Commander undoes that exchange (the real retract route)');
+      A.eq(undo.status, 200, 'the Master undoes that exchange (the real retract route)');
       A.ok(!fs.existsSync(path.join(SUMMARIES, STREAM + '.json')) || !fs.readFileSync(path.join(SUMMARIES, STREAM + '.json'), 'utf8').includes('Entry ' + victim + ':'), 'at rest, right after the undo and before any send, the kept-summary file holds none of the undone words');
       const at = history.findIndex(m => m.role === 'user' && String(m.content).startsWith('Entry ' + victim + ':'));
       history.splice(at, 2);                                   // the page drops the undone turn from what it sends

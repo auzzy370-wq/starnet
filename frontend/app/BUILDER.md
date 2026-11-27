@@ -1,6 +1,6 @@
 # Station Builder — foundation contract
 
-The diegetic **REFIT** build mode: the Commander toggles it from the dock, then places rooms,
+The diegetic **REFIT** build mode: the Master toggles it from the dock, then places rooms,
 runs corridors, paints decks, and lays out their own station — rendered with v7's procedural art.
 This file is the contract the three new modules share. It implements the **"Structure + polish"**
 slice of `BUILDER_AND_WORLD_FOUNDATION.md` (the bible); read that for the long-range vision.

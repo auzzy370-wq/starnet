@@ -105,7 +105,7 @@ A.ok(dir.indexOf('Morning Brief') >= 0, 'the launch-history hint is embedded');
 /* ---------- FLAGSHIP CROSS-WIRE: the direction block (open quests + north star) rides the directive ---------- */
 const dirWithDirection = S.buildRecipeDirective({
   interestsBlock: '• stock research (seen 4×) — e.g. "NVDA earnings"',
-  directionBlock: 'NORTH STAR: automate my weekly stock brief\nOPEN QUESTS (the Commander\'s committed next steps — advance one, never duplicate one):\n• ship the earnings-day digest',
+  directionBlock: 'NORTH STAR: automate my weekly stock brief\nOPEN QUESTS (the Master\'s committed next steps — advance one, never duplicate one):\n• ship the earnings-day digest',
   existingRecipes: EXISTING, gearKeys: GEAR
 });
 A.ok(dirWithDirection.indexOf('automate my weekly stock brief') >= 0, 'the directive embeds the north star');
@@ -240,7 +240,7 @@ A.eq(legacy.usage.launches['fix-bug'].rated.great, 0, 'an old save without rated
 // rated counters survive a hydrate round-trip
 const rr = S.normalize(JSON.parse(JSON.stringify(rt)), T0);
 A.eq(rr.usage.launches['morning-brief'].rated.miss, 1, 'rated counters round-trip normalize');
-// launchHints: the directive hint annotates "(rated well)" only when the Commander's verdicts earn it
+// launchHints: the directive hint annotates "(rated well)" only when the Master's verdicts earn it
 A.eq(S.launchHints(rt, 5), ['Morning Brief (rated well)'], 'launchHints annotates >=2 great and great>miss');
 A.eq(S.launchHints(u, 5), ['Morning Brief', 'Fix a Bug'], 'launchHints without ratings matches topLaunched (no invented praise)');
 let rMiss = S.noteLaunch(S.fresh(T0), { id: 'x', name: 'X' }, { now: T0 });
@@ -301,7 +301,7 @@ A.ok(m2 && m2.archetype.id === 'translator', 'a translation habit matches the tr
 A.eq(S.matchArchetype(ARCH, { topics: [{ label: 'gpu price tracking', weight: 0.3, count: 1 }] }), null, 'a one-off mention (below the warm floor) matches nothing');
 A.eq(S.matchArchetype(ARCH, { topics: [] }), null, 'no learned topics -> no archetype match');
 A.eq(S.matchArchetype(ARCH, { topics: [{ label: 'daily general work', weight: 2, count: 9 }] }), null, 'generic-word topics are stopworded, never a match');
-// dedup: an archetype the Commander already HAS (roster/custom/staged name) is never re-pitched…
+// dedup: an archetype the Master already HAS (roster/custom/staged name) is never re-pitched…
 // derived from the LIVE catalog, never a hardcoded display name: the dedup is name-based, so a class rename
 // (2026-08-03 renamed broker -> "Deal Finder") would otherwise silently turn this assertion into a no-op.
 // Lower-cased on purpose — the dedup must be case-insensitive.
@@ -328,7 +328,7 @@ const scoutCycle = sidecarTopLevelFunction('runScoutCycle');
 const archetypeAt = scoutCycle.indexOf('Scout.matchArchetype'), directiveAt = scoutCycle.indexOf('ProspectGen.buildDirective');
 A.ok(archetypeAt >= 0 && directiveAt > archetypeAt, 'the archetype match runs BEFORE the LLM authorship pass');
 A.ok(/for \(const c of \(SharedSpecialties\.ARCHETYPES \|\| \[\]\)\)/.test(idxSrc), 'the LLM near-duplicate guard counts archetypes as existing classes (the model never re-authors one)');
-A.ok(/function scoutTakenNames\(\)/.test(idxSrc), 'the matcher dedups against the names the Commander actually HAS (not the catalog itself)');
+A.ok(/function scoutTakenNames\(\)/.test(idxSrc), 'the matcher dedups against the names the Master actually HAS (not the catalog itself)');
 
 /* ---------- normalize: corrupt saves degrade, never throw ---------- */
 const n = S.normalize({ staged: [{ id: 'ok', kind: 'recipe', draft: { name: 'x' } }, { id: '', kind: 'recipe', draft: {} }, { id: 'bad-kind', kind: 'zork', draft: {} }], denylist: [1, 'fp', ''], ledger: 'nope', runsSinceMint: 'NaN', lastMintAt: -5 }, T0);

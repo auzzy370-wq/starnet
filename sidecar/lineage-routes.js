@@ -3,7 +3,7 @@
    Routes (all behind the central /api auth gate; nothing here is reachable without the station token):
      GET  /api/lineage              the boot's bounded lineage evidence, its paths redacted for the page
      GET  /api/lineage/report       the redacted recovery report, as a download
-     POST /api/lineage/recover      {candidateId}   the Commander's chosen station, activated at the next boot
+     POST /api/lineage/recover      {candidateId}   the Master's chosen station, activated at the next boot
      POST /api/lineage/start-fresh  START FRESH, the gate's third exit
 
    publicLineage() is the same redacted view GET /api/save carries. index.js builds this group once, at boot, from the
@@ -86,7 +86,7 @@ function makeLineageRoutes(deps) {
     }
   }
 
-  /* START FRESH (the gate's third exit). The Commander has explicitly chosen a new station over prior-install evidence
+  /* START FRESH (the gate's third exit). The Master has explicitly chosen a new station over prior-install evidence
      nothing could recover. This takes the request and exits exactly like a recovery request; the next boot sets the whole
      generation aside in a quarantine folder (never deleted) and the desktop guardian's respawn lands in clean onboarding. If
      the workspace moved on or the rename failed, that boot says so in lineage.lastFresh. Refused while a verified recovery

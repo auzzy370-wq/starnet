@@ -124,7 +124,7 @@ function makeGroupSessions(d) {
     const asked = Object.assign({}, t.approval); delete asked.promptId;
     t.unansweredApproval = asked; delete t.approval;
   }
-  // A Commander upload belongs to the message that carries it. One no message links (the send that carried it was
+  // A Master upload belongs to the message that carries it. One no message links (the send that carried it was
   // refused, or never went out) is not shared: agents don't see it in context and group.read refuses it.
   function shared(g, a) { return !(a.agentId === 'user' && a.attachmentKey && !g.messages.some(m => (m.artifactIds || []).includes(a.id))); }
   // one clone, and the shared files' base64 is dropped BEFORE it (the same object, key for key, as cloning then stripping)
@@ -155,7 +155,7 @@ function makeGroupSessions(d) {
     const leadId = b.leadId || (ids.includes('agent') ? 'agent' : ids[0]);
     if (!ids.includes(leadId)) fail('Lead must be a participant');
     const conversionKey = b.conversionKey ? identifier(b.conversionKey) : null;
-    // crew an agent brought in at the Commander's request: the lead gets the next turn, to hand them their parts
+    // crew an agent brought in at the Master's request: the lead gets the next turn, to hand them their parts
     const kickoff = b.kickoff ? text(b.kickoff, 1000).trim() : '';
     const conversionFingerprint = conversionKey ? createHash('sha256').update(JSON.stringify({ history: b.history || [], originalAgentId: b.originalAgentId || leadId, members: ids, leadId, title: b.title || 'Group chat', instructions: b.instructions || '' })).digest('hex') : null;
     const sameConversion = g => conversionKey && g.conversionKey === conversionKey && g.conversionFingerprint === conversionFingerprint && !g.deleted;
@@ -307,7 +307,7 @@ function makeGroupSessions(d) {
       if (!q) { q = { id: d.id(), turnId, origin: t.origin, agentId: t.agentId, question, options,
         mode: fields.mode === 'conversation' ? 'conversation' : 'choice', sample: text(fields.sample, 2400), reason: text(fields.reason, 600),
         multiSelect: fields.multiSelect === true, recommended: options.includes(fields.recommended) ? fields.recommended : '',
-        // its place in a batch ("2 of 3") and the Commander's own usual pick (a real count): the same card as one-on-one
+        // its place in a batch ("2 of 3") and the Master's own usual pick (a real count): the same card as one-on-one
         ordinal: Math.max(0, Math.min(9, Number(fields.ordinal) || 0)), total: Math.max(0, Math.min(9, Number(fields.total) || 0)),
         grounded: fields.grounded && Array.isArray(fields.grounded.options) ? { options: fields.grounded.options.map(v => text(v, 120)).filter(v => options.includes(v)).slice(0, 6), count: Math.max(0, Number(fields.grounded.count) || 0) } : null,
         state: 'pending', createdAt: d.now() }; g.questions.push(q); }
@@ -339,7 +339,7 @@ function makeGroupSessions(d) {
       if (answers.has(q.id) || (controllers.has(id) && progress.has(t.id))) t.state = 'running';
       else {
         t.state = 'answered'; t.reason = 'Question answered; continuing in a new turn';
-        turn(g, q.origin, q.agentId, { questionId: q.id, allowance: g.turns.filter(x => x.origin === q.origin && !['queued', 'held'].includes(x.state)).length, request: 'The Commander answered ' + JSON.stringify(value) +
+        turn(g, q.origin, q.agentId, { questionId: q.id, allowance: g.turns.filter(x => x.origin === q.origin && !['queued', 'held'].includes(x.state)).length, request: 'The Master answered ' + JSON.stringify(value) +
           ' to ' + JSON.stringify(q.question) + '. Continue from the saved conversation; inspect previous effects before repeating any action.', parent: t.id });
       }
       g.paused = false;
@@ -431,7 +431,7 @@ function makeGroupSessions(d) {
     return { deleted: true };
   }
   /* forget(match) -> Promise<number>: the forget registry's purge. A group session is a conversation of its own whose id is its workstream's, so
-     the Commander's delete of that session (the rail's Delete) must take its messages, turns, questions, instructions and shared files like the
+     the Master's delete of that session (the rail's Delete) must take its messages, turns, questions, instructions and shared files like the
      group's own delete does: every live group `match({ streamIds: [id], at })` names is deleted through control(), which stops its running turns
      and leaves only the tombstone dedupe and membership need. Written once more afterwards so the store's .bak is the purged copy too. */
   async function forget(match) {
@@ -514,7 +514,7 @@ function makeGroupSessions(d) {
       system: 'You are a participant in a user-selected group DM. Speak as yourself. Do useful work with your own tools and permissions. ' +
         'Other participants: ' + JSON.stringify(roster().filter(a => g.members.includes(a.id))) + '. ' +
         'Use group.handoff for an explicit request to another participant; an @mention in prose does not launch anyone. ' +
-        'Ask material judgment questions using brief.ask; wait for the Commander instead of guessing their answer. ' +
+        'Ask material judgment questions using brief.ask; wait for the Master instead of guessing their answer. ' +
         'Only hand off when useful for the user request. Publish files with group.publish so peers can read the exact version using group.read. ' +
         'Do not claim another participant ran or reviewed anything until its actual response exists. ' +
         'Session instructions supplied by the user: ' + g.instructions };
@@ -654,10 +654,10 @@ function makeGroupSessions(d) {
             const answer = await new Promise(resolve => {
               let timer;
               const finish = value => { clearTimeout(timer); pending.delete(promptId); ac.signal.removeEventListener('abort', onAbort); resolve(value); };
-              // a stopped turn withdraws its ask: 'cancelled' (the broker's withdrawn result), never the Commander's "no"
+              // a stopped turn withdraws its ask: 'cancelled' (the broker's withdrawn result), never the Master's "no"
               const onAbort = () => { stoppedFirst = true; finish('cancelled'); };
               pending.set(promptId, { id, turnId: t.id, finish, tool: fields.tool, argsFull: argsFull && typeof argsFull.text === 'string' ? argsFull : null });
-              // nobody answered in 5 minutes: a TIMEOUT (the broker says "nobody answered in time"), never the Commander's "no"
+              // nobody answered in 5 minutes: a TIMEOUT (the broker says "nobody answered in time"), never the Master's "no"
               timer = setTimeout(() => finish('timeout'), 300000);
               ac.signal.addEventListener('abort', onAbort, { once: true });
               if (ac.signal.aborted) onAbort();
@@ -771,7 +771,7 @@ function makeGroupSessions(d) {
   return { ready, create, send, configure, control, forget, fork, invite, answerQuestion, sweep,
     list: async () => {
       await ready;
-      // updatedAt + what is waiting on the Commander, so a group you are NOT looking at can still light its rail row
+      // updatedAt + what is waiting on the Master, so a group you are NOT looking at can still light its rail row
       const row = g => ({ id: g.id, title: g.title, members: g.members.slice(), leadId: g.leadId, updatedAt: g.updatedAt, paused: !!g.paused,
         approvals: g.turns.filter(t => t.state === 'waiting for approval').length,
         questions: (g.questions || []).filter(q => q.state === 'pending').length,

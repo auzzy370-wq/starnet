@@ -82,7 +82,7 @@ function harness(hostEnv, getKeys) {
   A.eq(inter.UNGRANTED_API_KEY, 'u', 'a watched run still gets an ungranted key — the grant is about UNATTENDED use');
 
   const auto = K.runEnv(keys, host, { reservedEnv: RESERVED, surface: 'autonomous' });
-  A.eq(auto.GRANTED_API_KEY, 'g', 'an unattended run gets the key the Commander granted for unattended use');
+  A.eq(auto.GRANTED_API_KEY, 'g', 'an unattended run gets the key the Master granted for unattended use');
   A.ok(!('UNGRANTED_API_KEY' in auto), 'an unattended run NEVER receives a key without the unattended grant');
   // the same rule the request route already enforced — one key, one answer, both routes
   A.eq(K.resolveForRequest(keys, 'UNGRANTED_API_KEY', 'autonomous').reason, 'unattended',
@@ -123,7 +123,7 @@ function harness(hostEnv, getKeys) {
     'a KEYS-tab paste REACHES the shell child (the promptBlock promise) — and with NO sidecar restart, ' +
     'so the boot-time childEnv snapshot is not the source of truth');
 
-  // the general scrub must still hold for everything the Commander did NOT paste
+  // the general scrub must still hold for everything the Master did NOT paste
   A.ok(!('OPENROUTER_API_KEY' in withKey), 'a model-provider/billing key still never reaches a shell child');
   A.eq(withKey.PATH, 'p', 'ordinary inherited vars survive the merge');
 

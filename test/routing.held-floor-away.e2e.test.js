@@ -89,7 +89,7 @@ const frameOf = (r, name) => {
     SKYNET_DEV: '1', VULTRON_DEV: '1',
     SKYNET_OPENROUTER_BASE: mock.base, SKYNET_OPENROUTER_KEY: 'sk-or-v1-held-away-fake', SKYNET_DEFAULT_MODEL: 'test/model',
     SKYNET_FULL_ACCESS: '', VULTRON_FULL_ACCESS: '',
-    // the loop driver's own floor is a 5 s tick; the night shift never ticks on its own here (its status is read, its beat is forced), but the Commander
+    // the loop driver's own floor is a 5 s tick; the night shift never ticks on its own here (its status is read, its beat is forced), but the Master
     // counts as away after 1 ms so the status read reaches the precheck
     SKYNET_LOOP_TICK_MS: '5000', VULTRON_LOOP_TICK_MS: '5000',
     SKYNET_NIGHTSHIFT_AWAY_MS: '1', VULTRON_NIGHTSHIFT_AWAY_MS: '1', SKYNET_NIGHTSHIFT_TICK_MS: '3600000', VULTRON_NIGHTSHIFT_TICK_MS: '3600000',

@@ -20,7 +20,7 @@
 
   const KEYS = ['perRun', 'perAgent', 'perDay', 'global'];
   const CAP_MAX = 1e7;   // $10M ceiling — guards a fat-fingered / overflow value, far above any real budget
-  /* SHIPPED DEFAULTS — what a fresh install is governed by before the Commander saves anything and before any
+  /* SHIPPED DEFAULTS — what a fresh install is governed by before the Master saves anything and before any
      env var speaks. Every cap was 0 (ungoverned) until 2026-09-17, when a customer's agent spun 98 overnight
      iterations re-confirming that files existed and burned ~$98 with nothing between a stuck loop and the card.
      perDay is now a SOFT rail, not a wall: hitting it ends the run with reason 'budget' scope 'day', the Budget

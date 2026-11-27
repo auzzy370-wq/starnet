@@ -68,7 +68,7 @@ for (const text of [
   'Could you get Ada to look into this?', 'Hey, ask Ada to summarize the paper', 'I want you to have Ada draft the summary'
 ]) A.eq(ids(text), ['researcher'], 'an ordinary delegation request still gets the note: ' + text);
 // FAIL CLOSED: a negation, hedge or quote ANYWHERE vetoes the directive, even one that only qualifies the task. A missed
-// note leaves the lead to decide (it can still dispatch); a wrong one tells it to delegate against the Commander's wish —
+// note leaves the lead to decide (it can still dispatch); a wrong one tells it to delegate against the Master's wish —
 // and no word list tells "not Hubble" from "actually, not her" reliably (two review rounds tried and opened new holes).
 for (const text of [
   'Have Ada research JWST, not Hubble', 'Have Ada find out whether the API is down or not', 'Ask Ada to compare "React" and "Vue"',
@@ -107,7 +107,7 @@ for (const tail of [
 }
 
 const note = crewCallNote('Have Ada research three facts about JWST', crew, 'chiefops');
-A.ok(/^\n\n\[CREW CALL\] The Commander named Ada \(agentId researcher\)/.test(note), 'the note names the member and its agentId');
+A.ok(/^\n\n\[CREW CALL\] The Master named Ada \(agentId researcher\)/.test(note), 'the note names the member and its agentId');
 A.ok(/team\.dispatch, workers:\[\{agentId:"researcher"/.test(note), 'the note spells out the exact call');
 A.ok(/only if the dispatch is refused/.test(note), 'advisory: the lead may still answer if the dispatch fails');
 
@@ -124,7 +124,7 @@ A.eq(crewCallNote('Delegate this to the other agents: find three facts about JWS
     ['have Quill join the conversation', ['writer']]
   ]) {
     const seat = crewCallNote(text, crew, 'chiefops', both);
-    A.ok(/^\n\n\[CREW CALL\] The Commander wants .* IN THIS CHAT with them\. Seat them with station\.control \{"action": "group\.add", "args": \{"agents": \[/.test(seat), 'a seat ask names group.add: ' + text + ' -> ' + seat);
+    A.ok(/^\n\n\[CREW CALL\] The Master wants .* IN THIS CHAT with them\. Seat them with station\.control \{"action": "group\.add", "args": \{"agents": \[/.test(seat), 'a seat ask names group.add: ' + text + ' -> ' + seat);
     A.eq(JSON.parse(seat.match(/"agents": (\[[^\]]*\])/)[1]), want, 'and exactly who was asked for: ' + text);
     A.ok(!/team\.dispatch, workers|Hand that part/.test(seat) && /team\.dispatch never puts anyone in this chat/.test(seat), 'never a dispatch directive: ' + text);
     A.eq(crewCallNote(text, crew, 'chiefops', { dispatch: true, seat: false }), '', 'fail closed: without station.control a seat ask gets NO note (never the dispatch one): ' + text);

@@ -16,11 +16,11 @@
     builtin: { safe: 'allow', caution: 'allow', dangerous: 'allow' },
     trusted: { safe: 'allow', caution: 'allow', dangerous: 'block' },
     // Community procedures commonly contain URLs or setup scripts. Those are inspectable cautions,
-    // not automatic malware: install them withheld and bind the Commander's approval to exact bytes.
+    // not automatic malware: install them withheld and bind the Master's approval to exact bytes.
     // High/critical findings remain an outright block.
     community: { safe: 'allow', caution: 'ask', dangerous: 'block' },
     'agent-created': { safe: 'allow', caution: 'allow', dangerous: 'ask' },
-    /* THE COMMANDER IS THE APPROVER, SO THEY GET ASK — NOT BLOCK. A skill the human typed into
+    /* THE MASTER IS THE APPROVER, SO THEY GET ASK — NOT BLOCK. A skill the human typed into
        the SKILLS panel used to be scanned as 'trusted', whose answer for dangerous content is
        block; with the gate now enforcing verdicts that made a dead end — you write `rm -rf` into
        your own local procedure on purpose, and the only surface that could bless it is the one

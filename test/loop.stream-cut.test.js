@@ -168,7 +168,7 @@ const toolTurnUsageFirst = () => async function* () {
     A.eq(res.reason, 'done', 'a finished run is done');
     A.ok(!('streamCut' in res), 'a finished run has no streamCut field');
   }
-  // (8) the REAL claude-cli adapter (one-shot and persistent child): a Commander on a SUBSCRIPTION sign-in (init line
+  // (8) the REAL claude-cli adapter (one-shot and persistent child): a Master on a SUBSCRIPTION sign-in (init line
   //     apiKeySource 'none': nothing is billed per call) presses Stop while the first call streams text. That call
   //     cost $0, so it is not a cut call (the run would read "spend unknown" for a provable $0). An API-key sign-in
   //     cut the same way IS a cut call.
@@ -197,7 +197,7 @@ const toolTurnUsageFirst = () => async function* () {
       const sig = init.signal;
       return new Response(new ReadableStream({ start(c) {
         c.enqueue(new TextEncoder().encode('data: ' + JSON.stringify(chunk) + '\n\n'));
-        setTimeout(() => ac.abort(), 25);   // the Commander presses Stop while the model is still reasoning
+        setTimeout(() => ac.abort(), 25);   // the Master presses Stop while the model is still reasoning
         if (sig) sig.addEventListener('abort', () => { try { c.error(abortErr()); } catch (_) {} }, { once: true });
       } }), { status: 200, headers: { 'content-type': 'text/event-stream' } });
     };

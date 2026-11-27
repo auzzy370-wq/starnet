@@ -13,7 +13,7 @@
                          progress (openForAgent — its own + station-wide quests only; sequential quest ids are
                          guessable, so an unscoped attest would let any agent file a completion proposal on
                          another agent's quest). Evidence REQUIRED. This
-                         NEVER completes the quest — it sets a pending attest the Commander confirms (rate-the-work
+                         NEVER completes the quest — it sets a pending attest the Master confirms (rate-the-work
                          beat). The store rejects mechanical (prop/run/fact/artifact) contracts: their completion
                          stays machine-owned. Result copy says "proposed — awaiting confirmation", never "completed".
      • mint            — mint a NEW personalized quest (questStore.mint), kind:'generated', createdBy:'agent:<id>',
@@ -27,7 +27,7 @@
    (It rode capId 'memory'/the `notebook` object originally, but the interactive floor has no placed notebook, so the
    tool was ABSENT while the STATION QUESTS prompt commanded it — a truthful-telemetry break; see CAP_REGISTRY.computer.)
    A quest is the agent's own standing objective — reading/updating it is part of being able to think at all, the same
-   freebie class as compute: no filesystem reach, no network, no outward mutation until the Commander confirms an
+   freebie class as compute: no filesystem reach, no network, no outward mutation until the Master confirms an
    attest. So, like todo, NO consent gate.
 
    makeQuestTools({ store, clock }) -> { questUpdateTool, register(reg) }
@@ -65,9 +65,9 @@
         + 'this run; use it before doing that quest so an unrelated run can never complete it. op:progress ticks a named step '
         + '(pass id, stepKey and a short note on what you did); progress is display only and never completes a '
         + 'quest. op:attest_complete PROPOSES a quest is done (pass id and concrete evidence of what was '
-        + 'accomplished); this NEVER marks it complete: the Commander must confirm. Quests that complete '
+        + 'accomplished); this NEVER marks it complete: the Master must confirm. Quests that complete '
         + 'mechanically (a run finishing, a capability going live, a deliverable existing) cannot be attested; leave '
-        + 'them to the harness. op:mint creates a NEW personalized quest for the Commander (pass title, a completion '
+        + 'them to the harness. op:mint creates a NEW personalized quest for the Master (pass title, a completion '
         + 'contract, domain, and groundedIn citing the dossier/memory fact that motivated it); every quest MUST declare a '
         + 'contract. Never claim a quest done in prose — use this tool.',
       schema: {
@@ -143,13 +143,13 @@
           // AGENT SCOPING (mirrors op:"progress"): only a quest OPEN FOR THIS agent (its own or station-wide —
           // openForAgent, the store's own visibility rule) may be attested. Quest ids are sequential and guessable;
           // without this gate any agent could file a completion proposal on ANOTHER agent's quest and put a
-          // false "reports this quest complete" beat in front of the Commander. A station-wide (agentId:null)
+          // false "reports this quest complete" beat in front of the Master. A station-wide (agentId:null)
           // quest stays attestable by any agent — shared by the store's design, exactly like progress.
           const attestable = store.openForAgent(agentId, now()).some(q => q.id === id);
           if (!attestable) return { content: 'Quest ' + id + ' is not one of your open quests. Only quests listed for you can be attested.', summary: 'not yours' };
           const r = await store.attest(id, { agentId: agentId, runId: runId, evidence: evidence }, now());
           if (!r || r.ok === false) return { content: (r && r.error) ? r.error : 'could not attest ' + id, summary: 'rejected' };
-          return { content: 'Completion proposed for ' + id + ' — awaiting the Commander\'s confirmation. It is NOT complete yet.', summary: 'attest proposed' };
+          return { content: 'Completion proposed for ' + id + ' — awaiting the Master\'s confirmation. It is NOT complete yet.', summary: 'attest proposed' };
         }
 
         // ---- mint: create a new personalized quest (contract-enforced by the store) ----
@@ -158,7 +158,7 @@
           // of quests in a single pass, independent of the prompt doctrine. Only SUCCESSFUL mints consume the budget
           // (a rejected contract/dup/cap doesn't burn it — the agent can fix and retry).
           if (runId && (mintsByRun.get(runId) || 0) >= MINTS_PER_RUN) {
-            return { content: 'one quest per run — the Commander\'s log is not a backlog dump. You already minted a quest this run.', summary: 'mint cap' };
+            return { content: 'one quest per run — the Master\'s log is not a backlog dump. You already minted a quest this run.', summary: 'mint cap' };
           }
           let activeGoal = null;
           try { activeGoal = typeof deps.activeGoal === 'function' ? deps.activeGoal() : null; } catch (_) { activeGoal = null; }
@@ -181,7 +181,7 @@
             mintsByRun.set(runId, (mintsByRun.get(runId) || 0) + 1);
             if (mintsByRun.size > MINT_RUNS_CAP) { const oldest = mintsByRun.keys().next().value; mintsByRun.delete(oldest); }   // FIFO evict the oldest run
           }
-          return { content: 'Minted quest ' + r.id + '. It is now live in the Commander\'s QUEST LOG.', summary: 'minted ' + r.id };
+          return { content: 'Minted quest ' + r.id + '. It is now live in the Master\'s QUEST LOG.', summary: 'minted ' + r.id };
         }
 
         return { content: 'Unknown op "' + op + '". Use one of: ' + OPS.join(', ') + '.', summary: 'noop' };

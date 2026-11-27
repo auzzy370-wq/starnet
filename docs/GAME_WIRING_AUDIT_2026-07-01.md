@@ -67,7 +67,7 @@ Transport: one SSE stream (`/api/channels/events`, sidecar chanBus → `world.js
 
 17. **Quest completion has no UX** — milestone toasts once (`xpstore.js:71`); quest log updates silently; no sound; no trophy case (milestones data exists at `xp.js:206-209`, consumed only by QuestStore).
 18. **Confidence gauge is a phantom** — drives XP multipliers silently (`xp.js:93-97,154-157`); dossier-panel-only; no "I'm starting to understand you" narrative beat at calibration/85% TRUSTED.
-19. **Seed loop closes in code, not narrative** — minted seed lands in recipes, gets used in pitches, Commander is never told "I built the seed you saved."
+19. **Seed loop closes in code, not narrative** — minted seed lands in recipes, gets used in pitches, Master is never told "I built the seed you saved."
 20. **No cumulative pride metrics** — no lifetime tasks shipped, no session recap; floor HUD is now-only.
 21. **Rate-the-work fragile** — control embeds in turn-in card or standalone beat (`chat.js:489-495,536-539`); dismissing proposals can starve rating; no standalone fallback per run. Also still missing task-size weighting (known TODO).
 22. **memory.write/feedback/forget = panel+chime only** — no notebook/archive prop animation; knowledge is invisible in-world.

@@ -153,7 +153,7 @@
         }),
         // the station refuses input while an agent drives (409): the picture is then simply view-only
         send: events => postJson('/api/browser/view/input', { events }),
-        canType: () => true,   // the Commander's hands are never refused (sidecar/browser-view.js driving)
+        canType: () => true,   // the Master's hands are never refused (sidecar/browser-view.js driving)
         onLeave: () => { try { ui.url.focus(); } catch (_) { /* focus is best-effort */ } } });
     }
     setTimeout(watchMinimize, 0);   // once the window is in place
@@ -229,7 +229,7 @@
     const who = m === 'page' && t ? agentLabel(t.agentId) : m === 'watch' && state.watch ? agentLabel(state.watch.agentId) : m === 'live' ? (d && !d.signIn ? agentLabel(d.agentId) : 'YOU') : '';
     ui.who.textContent = who ? who.toUpperCase() : '';
     ui.who.hidden = !who;
-    // never overwrite what the Commander is typing
+    // never overwrite what the Master is typing
     if (forceUrl || root.document.activeElement !== ui.url) {
       ui.url.value = m === 'page' && t ? t.path : (m === 'watch' || m === 'live') && state.page ? (state.page.url || '') : '';
     }
@@ -547,7 +547,7 @@
     });
     state.ui.minObs.observe(w, { attributes: true, attributeFilter: ['class'] });
   }
-  /* keepFocus: an open the Commander did not ask for (FOLLOW, an agent starting to browse) must not take the keyboard
+  /* keepFocus: an open the Master did not ask for (FOLLOW, an agent starting to browse) must not take the keyboard
      from wherever they are typing — COMMS above all. */
   function showWindow(keepFocus) {
     if (typeof StationUI === 'undefined' || !StationUI.openTerm) return false;

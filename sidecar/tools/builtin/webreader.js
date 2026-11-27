@@ -17,7 +17,7 @@
 
    POSTURE (do not weaken):
      · ALWAYS headless, ALWAYS an ephemeral profile, NEVER the station's persistent (signed-in)
-       profile — web_fetch is a read-scope no-consent tool, so it must never ride the Commander's
+       profile — web_fetch is a read-scope no-consent tool, so it must never ride the Master's
        logins: an authenticated page leaking into a no-consent tool would be a real exfil channel.
        The plain-HTTP path carries no cookies; the reader must match it.
      · One shared Chrome for the whole sidecar, lazily booted, serialized (one page at a time),
@@ -107,7 +107,7 @@
     /* A BROWSER THAT CANNOT START (live walk 10-14): Chromium failed to launch, and every engine of every search
        relaunched it — 3 tries × ~20 s each — while the worker's web_search sat on "Searching …" for 80 s, then 185 s.
        A launch failure now ends that search's engine loop and holds the reader down for a cooldown: availability()
-       says why, so web_search skips the rung at once (and tells the Commander) instead of relaunching a dead browser. */
+       says why, so web_search skips the rung at once (and tells the Master) instead of relaunching a dead browser. */
     // the host injects the real clock (index.js); never ambient time here (lint-determinism) — with none, the cooldown never reads as over
     const clock = typeof deps.now === 'function' ? deps.now : () => 0;
     const LAUNCH_COOLDOWN_MS = deps.launchCooldownMs == null ? 10 * 60000 : Number(deps.launchCooldownMs);

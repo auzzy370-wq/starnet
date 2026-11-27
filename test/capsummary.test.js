@@ -42,7 +42,7 @@ const resolvedTools = (capIds, tools) => ({
   const fullPower = summarizeCapabilities(
     resolvedTools(['web', 'cabinet', 'workbench'], ['web_search', 'fs.read', 'shell.exec', 'computer.use', 'desktop.open']),
     { surface: 'autonomous', unrestrictedHost: true });
-  A.ok(/FULL POWER is active: the Commander authorized the whole local computer/.test(fullPower),
+  A.ok(/FULL POWER is active: the Master authorized the whole local computer/.test(fullPower),
     'Full Power is stated at the final authoritative prompt seam');
   A.ok(/arbitrary local host commands and host paths/.test(fullPower) && /physical screen\/input/.test(fullPower),
     'Full Power names general host execution and the actually projected native desktop tools');
@@ -61,7 +61,7 @@ const resolvedTools = (capIds, tools) => ({
   // the ordinary unattended warning or impossible floor-placement advice.
   const owner = summarizeCapabilities(resolvedWith(), { surface: 'autonomous', ownerTrusted: true });
   A.ok(/authenticated owner Telegram session/.test(owner), 'owner DM: names the actual trusted remote-control posture');
-  A.ok(!/UNATTENDED run/.test(owner), 'owner DM: does not falsely describe the Commander as unattended automation');
+  A.ok(!/UNATTENDED run/.test(owner), 'owner DM: does not falsely describe the Master as unattended automation');
   A.ok(!/place a DISH|place an INTEL CAB|place a WORKBENCH/.test(owner), 'owner DM: never suggests inaccessible floor placement');
 
   // 5) no surface specified -> behaves as interactive (emits the note)

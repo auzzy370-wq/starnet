@@ -3,7 +3,7 @@
 
    THE BUG. A run resolves its keys as it starts and builds one provider adapter on each: its primary, every backup key it may
    rotate onto, every provider fallback (index.js runOnceCore). The loop sent every later call on those adapters and re-checked
-   only spend before each attempt (loop.js stopForSpend), never the credential. So a key the Commander removed or rotated
+   only spend before each attempt (loop.js stopForSpend), never the credential. So a key the Master removed or rotated
    under SETTINGS → AI & MODELS, or a browser page removed or replaced, kept billing for the rest of a long run: every later
    turn, a retry, a rotation, a fallback and a compaction fold went out on it.
 

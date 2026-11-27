@@ -1,13 +1,13 @@
-/* VULTRON — dossierstore.js : the live wiring around the pure Commander Dossier engine (dossier.js).
+/* VULTRON — dossierstore.js : the live wiring around the pure Master Dossier engine (dossier.js).
 
    The browser half of the dossier system, modelled on profilestore.js / xpstore.js: it owns the one
-   station-wide dossier object, seeds it from the onboarding docs the Commander already authored, persists
-   it in the save envelope, and exposes the read + mutation surface the COMMANDER panel and the system-
+   station-wide dossier object, seeds it from the onboarding docs the Master already authored, persists
+   it in the save envelope, and exposes the read + mutation surface the MASTER panel and the system-
    prompt composer use.
 
    Like its siblings it is a READ-ONLY citizen of the event spine: it NEVER emits on U.bus (the frozen
    shared/events.js contract is owned elsewhere). It folds nothing automatically in Phase A — the dossier
-   grows only from the Commander's own onboarding docs and explicit panel edits — so it holds only what the
+   grows only from the Master's own onboarding docs and explicit panel edits — so it holds only what the
    user themselves authored, local-first by construction. Date.now() lives here (the injection edge); the
    engine stays clock-pure. */
 'use strict';
@@ -29,10 +29,10 @@ const DossierStore = (() => {
     // first-seed-wins per doc; opts.canonical = these are the Overseer's docs, so an edited doc also refreshes its
     // still-untouched seed (memory-truth: an old manual must not ride every prompt beside the new one)
     if (ready() && opts.docs) Dossier.seedFromDocs(dossier, opts.docs, now(), { resync: opts.canonical === true });
-    pushToSidecar();   // Phase C: hand the composed block to the sidecar so server-composed (cron) runs know the Commander
+    pushToSidecar();   // Phase C: hand the composed block to the sidecar so server-composed (cron) runs know the Master
   }
 
-  // Phase C: mirror the composed Commander block to the sidecar so AUTONOMOUS server-composed runs (cron) —
+  // Phase C: mirror the composed Master block to the sidecar so AUTONOMOUS server-composed runs (cron) —
   // which build their own persona and never see the frontend's system prompt — still know who they serve.
   // Fire-and-forget (a no-op if the sidecar isn't reachable), exactly like syncChannels. The browser-direct
   // runs already carry the block in their prompt, so the sidecar only uses this for the runs that compose it.
@@ -90,7 +90,7 @@ const DossierStore = (() => {
     } catch (_) {}
   }
 
-  // re-seed from freshly-authored onboarding docs (called from applyAgentConfig when the Commander edits a
+  // re-seed from freshly-authored onboarding docs (called from applyAgentConfig when the Master edits a
   // config .md). First-seed-wins PER DOC, so this only adds a dimension newly filled — never duplicates.
   // opts.canonical (the Overseer's own docs): an EDITED doc also updates its seed belief while that belief is still
   // the untouched copy (dossier.js seedFromDocs). A specialist's docs never rewrite the station's seeds.
@@ -101,10 +101,10 @@ const DossierStore = (() => {
     pushToSidecar();   // newly-seeded (or re-synced) beliefs reach the sidecar for cron runs too
   }
 
-  // the durable COMMANDER block for the system prompt (durable beliefs only → cache-stable). '' when cold.
+  // the durable MASTER block for the system prompt (durable beliefs only → cache-stable). '' when cold.
   function composeBlock() { return ready() ? Dossier.composeBlock(dossier, {}) : ''; }   // after a delete: complete beliefs only (dossier.completeOnly)
 
-  // ---- read surface (the COMMANDER panel consumes these) ----
+  // ---- read surface (the MASTER panel consumes these) ----
   function summary() {
     if (!ready()) return null;
     const observed = (typeof ProfileStore !== 'undefined' && ProfileStore.summary) ? ProfileStore.summary() : null;   // the "what you work on" affinity, shown alongside — never folded in here
@@ -116,7 +116,7 @@ const DossierStore = (() => {
 
   // ---- mutations from the glass box — each recomposes the live prompt (onMutate) AND persists ----
   function commit() { try { onMutateFn(); } catch (_) {} try { persistFn(); } catch (_) {} pushToSidecar(); }
-  // upsert = the Commander answered/provided this dimension (via the curiosity nudge, the full interview, onboarding,
+  // upsert = the Master answered/provided this dimension (via the curiosity nudge, the full interview, onboarding,
   // OR the manual +add). Clearing the curiosity ignored-ask tally HERE — the single chokepoint every answer flows
   // through — keeps the stop-forever counter reflecting IGNORES only, not a dimension the user actually engaged with.
   function upsert(dim, belief) {
@@ -129,7 +129,7 @@ const DossierStore = (() => {
     if (!ready()) return;
     // FORGET = NEVER RE-PROPOSED (2026-07-16 resurrect audit): capture the belief's text BEFORE the splice so
     // it joins the permanent studyDeclined denylist — without this, the study loop re-proposed the exact
-    // belief the Commander just forgot on its next pass (forget removed the record but fed no denylist).
+    // belief the Master just forgot on its next pass (forget removed the record but fed no denylist).
     let text = '';
     try { const b = (Dossier.beliefs(dossier, dim) || []).find(x => x && x.id === id); text = b ? String(b.text || '') : ''; } catch (_) {}
     Dossier.forget(dossier, dim, id, now());
@@ -137,9 +137,9 @@ const DossierStore = (() => {
     if (dim === 'goals') { try { if (typeof StationUI !== 'undefined' && StationUI.invalidate) StationUI.invalidate('quests'); } catch (_) {} }
     try { if (text && typeof StudyStore !== 'undefined' && StudyStore.declineText) StudyStore.declineText(text); } catch (_) {}
   }
-  /* purgeRuns(runIds): the Commander deleted a session - drop the beliefs the station learned from its runs (the page's copy of what the sidecar's
+  /* purgeRuns(runIds): the Master deleted a session - drop the beliefs the station learned from its runs (the page's copy of what the sidecar's
      commander-dossier entry clears), compose the prompt block from complete beliefs only from now on, and push the result (a complete push the sidecar
-     admits: it names no forgotten run). A belief the Commander stated or confirmed stays whatever it was first inferred from. Returns how many went. */
+     admits: it names no forgotten run). A belief the Master stated or confirmed stays whatever it was first inferred from. Returns how many went. */
   function purgeRuns(runIds) {
     if (!ready()) return 0;
     const removed = Dossier.purgeRuns(dossier, runIds, now());

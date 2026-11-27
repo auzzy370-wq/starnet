@@ -134,7 +134,7 @@ Andrew: "fix the UI for agent group chats." Smallest visual fixes, no new contro
   (`+1 agent · −1 agent`, "no changes yet") and SAVE is disabled until something changed; from a
   direct chat the button reads START GROUP CHAT. Search box appears only when the crew > 6.
   No toggles, no checkboxes, no "Added" state to decode.
-- Speaker labels: `YOU` → `COMMANDER` (matches direct chat). Agent names take the agent's roster
+- Speaker labels: `YOU` → `MASTER` (matches direct chat). Agent names take the agent's roster
   colour and the bubble rail follows it. The per-message `REPLY` button is gone: clicking a
   speaker's name is the reply affordance (sets `to NAME ✕` above the composer).
 - Shared files: full-width button stack → one `SHARED ▤ file ▤ file` chip row (tool-chip voice);

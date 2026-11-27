@@ -1,7 +1,7 @@
 /* node test/loop.retry-events.test.js — LIVE RETRY EVENTS (2026-09-23, live-events lane).
 
    The retry ladder (sidecar/loop.js + recovery-policy.js, ~105 s of patience) used to run SILENT: the only events a
-   Commander or an API caller saw were run start and then, much later, the answer or the error. Now every same-turn
+   Master or an API caller saw were run start and then, much later, the answer or the error. Now every same-turn
    retry emits provider.retry BEFORE its backoff sleep, carrying the same attempt numbering the run records for its
    recovery attempts, the classifier's reason, and the wait the loop will actually sleep:
 

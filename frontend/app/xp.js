@@ -12,8 +12,8 @@
                      known:false ("calibrating") until MIN_SAMPLES user feedback samples exist, so a
                      fresh agent never shows a made-up number.
      • RELIABILITY — (S2) completed ÷ attributable runs, off the frozen agent.run.end terminal reasons.
-                     What the HARNESS observed, not what the Commander said, so it can honestly disagree
-                     with CONFIDENCE. Mints NO XP; provider faults and Commander cancellations are excluded
+                     What the HARNESS observed, not what the Master said, so it can honestly disagree
+                     with CONFIDENCE. Mints NO XP; provider faults and Master cancellations are excluded
                      from the ratio, never charged to the agent. Same calibration honesty (MIN_RUNS).
      • PRACTICE     — (S5) distilled procedures the agent wrote from real work AND has actually used since.
                      Descriptive capability, not currency: authoring earns nothing, so it cannot be farmed.
@@ -41,7 +41,7 @@
   const RECEIPT_CAP = 10000;        // exact replay horizon; compacted after each durable-history checkpoint
 
   /* S2 — RELIABILITY: the SECOND axis, and deliberately NOT a second XP faucet.
-     CONFIDENCE answers "what did the Commander SAY about this agent"; RELIABILITY answers "what did the
+     CONFIDENCE answers "what did the Master SAY about this agent"; RELIABILITY answers "what did the
      HARNESS OBSERVE" — the one thing the meters never used to read, even though every fact was already on the
      bus. It mints no XP and never touches the level ladder (scoreEvent is untouched): XP stays user-approval-only.
 
@@ -50,7 +50,7 @@
        • ATTRIBUTED — 'done' (completed) · 'max_iters' / 'budget' / 'refusal' (it engaged and fell short)
        • EXCLUDED   — 'error' + 'empty' (the PROVIDER failed: a 404, a dead model id, an out-of-credit key, a
                       degraded stream — charging that to the agent would be a lie, and it is the single most
-                      common terminal on a misconfigured station) · 'cancelled' (the COMMANDER stopped it) ·
+                      common terminal on a misconfigured station) · 'cancelled' (the MASTER stopped it) ·
                       'clarifying' (a neutral Task Brief question — the frozen contract says every success-keyed
                       consumer must treat it exactly like 'cancelled').
      Excluded runs are still COUNTED, separately, so the dossier can say how many were set aside instead of
@@ -59,7 +59,7 @@
   const RELIABILITY_ATTRIBUTED = { done: 'done', max_iters: 'short', budget: 'short', refusal: 'short' };
   const RELIABILITY_EXCLUDED = { error: 'faulted', empty: 'faulted', cancelled: 'neutral', clarifying: 'neutral' };
   // LEGACY SIZE TELEMETRY: workSize still classifies real run cost/tool facts for receipts and old saves, but it
-  // NEVER changes XP. Spend and tool count measure execution shape, not value to the Commander's life goal; using
+  // NEVER changes XP. Spend and tool count measure execution shape, not value to the Master's life goal; using
   // them as a multiplier rewarded expensive/thrashy work. Meaningful complexity now lives in the separate verified
   // journey/mastery ledger. Equal explicit verdicts earn equal XP.
 
@@ -209,7 +209,7 @@
          a trophy lighting and the agent's dispatch briefing gaining a line are one event, not two systems.
        • HANDS ON is the first badge in the whole catalogue to read `toolsOk` — real successful tool calls,
          the most-proven counter the station keeps, and previously worth no recognition at all.
-       • DEPENDABLE is the harness-observed twin of TRUSTED (what the Commander SAID vs what the station SAW).
+       • DEPENDABLE is the harness-observed twin of TRUSTED (what the Master SAID vs what the station SAW).
          It asks reliability() for the band rather than re-deriving the 85% threshold, so the badge can never
          drift from the dossier's B2 gauge, and it adds a VOLUME floor on top: the band alone goes DEPENDABLE
          at MIN_RUNS (3), which would have made this a sixth session-one badge — the exact cliff S4 exists to
@@ -423,7 +423,7 @@
   }
 
   /* S2 — RELIABILITY as render-state (pure, mirrors compute()). The SECOND honest meter: what the harness
-     OBSERVED, versus compute()'s confidence which is what the Commander SAID. Never averaged into one score —
+     OBSERVED, versus compute()'s confidence which is what the Master SAID. Never averaged into one score —
      two meters that can disagree is the truthful shape (a well-liked agent that keeps hitting its iteration
      ceiling should read exactly that way).
 
@@ -443,7 +443,7 @@
     const completed = Math.min(attributed, Math.max(0, Math.floor(num(c.runsWon, 0))));
     const short = attributed - completed;
     const faulted = Math.max(0, Math.floor(num(c.runsFaulted, 0)));   // provider's fault — excluded from the ratio
-    const neutral = Math.max(0, Math.floor(num(c.runsNeutral, 0)));   // Commander-cancelled / a clarifying question
+    const neutral = Math.max(0, Math.floor(num(c.runsNeutral, 0)));   // Master-cancelled / a clarifying question
     const attempted = attributed;
     const known = attempted >= MIN_RUNS;
     const pct = attempted > 0 ? Math.round((completed / attempted) * 100) : 0;
@@ -476,11 +476,11 @@
     const tier = (TIERS.find(t => doneCount >= t.at) || null);
     const m = compute(s);
     const r = reliability(s);
-    const confBand = m.known ? m.band : null;         // what the COMMANDER said (needs MIN_SAMPLES ratings)
+    const confBand = m.known ? m.band : null;         // what the MASTER said (needs MIN_SAMPLES ratings)
     const relBand = r.known ? r.band : null;          // what the HARNESS saw (needs MIN_RUNS attributable runs)
     const parts = [];
     if (tier) parts.push(tier.label);
-    if (confBand) parts.push('Commander rating: ' + confBand.toUpperCase());
+    if (confBand) parts.push('Master rating: ' + confBand.toUpperCase());
     if (relBand) parts.push('finish rate: ' + relBand.toUpperCase());
     return {
       tier: tier ? tier.at : null, confBand, relBand,
@@ -494,12 +494,12 @@
   /* S5 — PRACTICE: what this agent has actually LEARNED, as opposed to what it has been paid in.
      The lane's original S5 sketch was to redefine LEVEL as a readout of accumulated capability. That is the
      right IDEA and the wrong PLACE: level is a monotonic, user-approval-only ladder that every existing save
-     has already climbed under that rule, so redefining it would silently rewrite records the Commander earned,
+     has already climbed under that rule, so redefining it would silently rewrite records the Master earned,
      and it renders synchronously in the world/topbar where this data (an async per-agent skill list) cannot go.
      So it lands the way RELIABILITY did — a FOURTH separately-labelled meter, never averaged into the others.
 
      A procedure counts as LEARNED only when all four hold, and each exclusion is a lie we refuse to tell:
-       • the AGENT wrote it (createdBy agent/reflection/background-review/curator). A skill the Commander
+       • the AGENT wrote it (createdBy agent/reflection/background-review/curator). A skill the Master
          authored is GIVEN, not learned — counted separately, never folded in.
        • it is not ARCHIVED — a retired procedure is not carried knowledge.
        • the guard is not WITHHOLDING it. A withheld skill was never handed to the model, so claiming the agent

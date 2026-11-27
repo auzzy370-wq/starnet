@@ -19,7 +19,7 @@ const run = (over) => Object.assign({ runId: 'r', agentId: 'agent', reason: 'don
 {
   const rows = [
     run({ reason: 'done' }), run({ reason: 'error' }), run({ reason: 'max_iters' }),
-    run({ reason: 'cancelled' }),        // the Commander's own hand — classifies nothing
+    run({ reason: 'cancelled' }),        // the Master's own hand — classifies nothing
     run({ reason: 'clarifying' }),       // a question, not an attempt
     run({ reason: 'done', internal: true }),   // harness self-talk — excluded wholesale
     run({ reason: 'done', ts: T - O.WINDOW_MS - 1 })   // outside the window
@@ -36,7 +36,7 @@ A.eq(O.laneOf('nightshift-act-3'), 'night shift', 'nightshift streams');
 A.eq(O.laneOf('cron-job-1'), 'scheduled', 'cron streams');
 A.eq(O.laneOf('workshop-9'), 'workshop', 'workshop streams');
 A.eq(O.laneOf('loop-2'), 'loop', 'loop streams');
-A.eq(O.laneOf('sess-abc'), 'interactive', 'everything else is the Commander at the console');
+A.eq(O.laneOf('sess-abc'), 'interactive', 'everything else is the Master at the console');
 
 /* ── 3. support before speech ── */
 {
@@ -145,7 +145,7 @@ A.eq(O.successPrior(null, 'x'), null, '…and leans nothing');
     'GET /api/insights serves the same record (the fold every prompt cites is inspectable over HTTP)');
 }
 
-/* ── the Commander's verdict outranks the harness: a finished run rated `miss` is a failure ── */
+/* ── the Master's verdict outranks the harness: a finished run rated `miss` is a failure ── */
 {
   const rows = [];
   for (let i = 0; i < 5; i++) rows.push(run({ runId: 'radar-' + i, recipeId: 'radar', title: 'Stock Radar', ts: T - i * 1000 }));
@@ -154,7 +154,7 @@ A.eq(O.successPrior(null, 'x'), null, '…and leans nothing');
   const verdicts = { 'radar-0': 'miss', 'radar-1': 'miss', 'radar-2': 'miss', 'radar-3': 'miss', 'radar-4': 'great' };
   const rated = O.fold(rows, { now: T, verdicts });
   const k = rated.keys['recipe:radar'];
-  A.eq(k.n + '/' + k.ok + '/' + k.fail, '5/1/4', 'four runs the Commander rated missed count as failures');
+  A.eq(k.n + '/' + k.ok + '/' + k.fail, '5/1/4', 'four runs the Master rated missed count as failures');
   A.eq(k.failReasons.rated_missed, 4, 'named as rated_missed');
   const line = O.lines(rated).find(l => l.indexOf('Stock Radar') >= 0);
   A.ok(line && line.indexOf('only 1 of 5 recent runs landed') >= 0 && line.indexOf('rated_missed ×4') >= 0, 'the line says it did not land, and why (' + line + ')');

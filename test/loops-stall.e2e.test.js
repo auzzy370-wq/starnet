@@ -7,7 +7,7 @@
 
    This walks the REAL sidecar against a mock OpenRouter and proves, end to end:
      · a fresh station (no env, nothing saved) reports the shipped $25/day rail on /api/budget/status, marked
-       as an environment default (not a saved value) — and it is a soft rail the Commander can dial to 0
+       as an environment default (not a saved value) — and it is a soft rail the Master can dial to 0
      · a full-access loop whose passes keep reporting the same "verified the files exist" text parks itself
        PAUSED after stallStopAfter passes, with the reason in words, and then spends NOTHING more
      · the next pass's prompt carried the stall nudge before it parked (the loop was told, not just stopped)
@@ -132,7 +132,7 @@ async function until(B, headers, pred, label, ms) {
     A.eq(bs.envDefaults.perRun, 0, 'per-run stays off');
     A.eq(bs.envDefaults.perAgent, 0, 'per-agent stays off');
     A.eq(bs.envDefaults.global, 0, 'global stays off');
-    // the Commander can switch it off — a rail, not a wall
+    // the Master can switch it off — a rail, not a wall
     const off = await fetch(B + '/api/budget/caps', { method: 'POST', headers, body: JSON.stringify({ perDay: 0 }) });
     A.eq(off.status, 200, 'saving perDay=0 is accepted');
     const after = await (await fetch(B + '/api/budget/status', { headers })).json();
@@ -195,7 +195,7 @@ async function until(B, headers, pred, label, ms) {
     await sleep(2500);
     A.eq(loopCalls(), callsAfterBoot, 'and it spends nothing after the restart either');
 
-    // ---- RESUME: the Commander's call, with a clean streak and the memory intact ----------------------------
+    // ---- RESUME: the Master's call, with a clean streak and the memory intact ----------------------------
     mock.script.push('I swept the release folder. NOTHING-TO-DO');
     const resumed = await fetch(B + '/api/loops/control', { method: 'POST', headers, body: JSON.stringify({ id: loopId, action: 'resume' }) });
     A.eq(resumed.status, 200, 'resume accepted');
@@ -204,7 +204,7 @@ async function until(B, headers, pred, label, ms) {
     A.eq(rl.stallStreak, 0, 'with a clean streak');
     A.eq(rl.recent.filter(r => r.stall).length, 3, 'and the stalled rows still on the record');
     const next = await until(B, headers, s => s.loops[0].iterationCount >= 5, 'the resumed loop to run one more pass', 15000);
-    A.ok(next.loops[0].iterationCount >= 5, 'it ran again once the Commander said so');
+    A.ok(next.loops[0].iterationCount >= 5, 'it ran again once the Master said so');
   } finally {
     try { if (child) child.kill(); } catch (_) {}
     try { mock.server.close(); } catch (_) {}

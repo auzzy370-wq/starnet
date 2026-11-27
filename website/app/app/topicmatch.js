@@ -1,6 +1,6 @@
 /* VULTRON — topicmatch.js : the ONE pure matcher between a LEARNED INTEREST TOPIC and a candidate's text.
 
-   WHY THIS EXISTS — the station learns what the Commander actually keeps working on in sidecar/interests.js: a
+   WHY THIS EXISTS — the station learns what the Master actually keeps working on in sidecar/interests.js: a
    decayed histogram of SPECIFIC topics ("gpu price tracking", "songwriting"), each carrying the verbatim evidence
    quote that earned it. Until now that signal only reached the LLM drafting paths (the scout's directives, the
    quest refresh) and the archetype matcher. Every DETERMINISTIC recommendation surface — the FOR YOU recipe row,
@@ -130,7 +130,7 @@
      EVIDENCE_CAP per topic, each one grounded against the real activity line it was quoted from, and its header
      states the law: a recommendation downstream may cite THIS evidence and nothing else). match() has been
      carrying that quote through on every hit — and every surface threw it away, rendering "you keep working on
-     gpu price tracking (seen 4×)". The Commander was asked to take the count on faith when the station was
+     gpu price tracking (seen 4×)". The Master was asked to take the count on faith when the station was
      holding the receipt the whole time.
 
      ⛔ THE FRAME CLAIMS NO SPEAKER, AND THAT IS DELIBERATE. It would be easy to write `because you said "…"`, and
@@ -138,11 +138,11 @@
      chat openings + the goal + landed deliverable titles. A run title is very often machine-composed (a recipe
      launch, a scheduled brief) and a landed title is the STATION's own words. So the quote is real evidence with
      unknown authorship — exactly the case chat.js's recCite already answers with a neutral citation rather than
-     putting words in the Commander's mouth. "e.g." is also the phrasing sidecar/interests.topicsBlock already
+     putting words in the Master's mouth. "e.g." is also the phrasing sidecar/interests.topicsBlock already
      uses for this same data, so the station cites its own histogram one way everywhere.
 
      Visibly truncated when clipped (the repo's citation law: a cut quote must LOOK cut, so it can never read as
-     a sentence the Commander never finished). */
+     a sentence the Master never finished). */
   const QUOTE_MAX = 72;
   function evidenceLine(quote, max) {
     const q = str(quote).replace(/\s+/g, ' ').replace(/^["“”']+|["“”']+$/g, '').trim();

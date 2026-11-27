@@ -1,8 +1,8 @@
 /* SHARED STATION BUILDS (community builds, phase 1 — 2026-10-07). A build file carries a station's LAYOUT and nothing
-   else: rooms, floors, walls, furniture, belts and junction routing. Everything that is the Commander's own work or
+   else: rooms, floors, walls, furniture, belts and junction routing. Everything that is the Master's own work or
    machine stays home — who owns a desk, a step's instructions and role, an Inbox's project folder and spend limits, a
    connector or plugin binding, a machine's label, the pipeline edges between agents, and player-made props (their art
-   lives in this station's .userprops folder and was paid for by this Commander).
+   lives in this station's .userprops folder and was paid for by this Master).
 
    The SAME cleaner runs on export and on import: a file someone hand-edited (or wrote to smuggle instructions into a
    line) is stripped to layout before it reaches replaceLayout, which then validates every room and prop placement.

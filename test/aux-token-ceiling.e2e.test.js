@@ -278,7 +278,7 @@ async function questArm() {
     // the same seeds as questrefresh.e2e: the tick needs a posture that may act, and a never-cycled state is due at the boot look.
     // The first boot's look may have stamped already, so its record goes too.
     fs.writeFileSync(path.join(f.workspace, '_commander.autonomy.json'), JSON.stringify({ v: 1, posture: { v: 1, initiative: 'propose', reach: 'observe', leashPerDay: 3 }, beliefs: null }));
-    fs.writeFileSync(path.join(f.workspace, '_commander.dossier.json'), JSON.stringify({ block: 'COMMANDER DOSSIER\n- Goals: grow the channel' }));
+    fs.writeFileSync(path.join(f.workspace, '_commander.dossier.json'), JSON.stringify({ block: 'MASTER DOSSIER\n- Goals: grow the channel' }));
     seed(f, [auxRow('claude-cli', 900000, HOUR)]);
     for (const name of ['_station.questrefresh.json', '_station.questrefresh.json.bak']) fs.rmSync(path.join(f.workspace, name), { force: true });
     await f.start();

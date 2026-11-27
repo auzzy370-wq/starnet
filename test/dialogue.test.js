@@ -3,7 +3,7 @@
    dialogue.js is browser-flow code, but its naming primitives (codename / isUnnamed) are PURE and touch no DOM
    at module load, so they load under node like xp.js. The invariant: a blank / whitespace / placeholder overseer
    name never leaves the awakening labelled with the bland generic 'AGENT' — it mints a real station codename
-   instead, WITHOUT hard-blocking the flow (sandbox-no-gating: never trap the Commander on the name field). A real
+   instead, WITHOUT hard-blocking the flow (sandbox-no-gating: never trap the Master on the name field). A real
    typed name is always honoured verbatim (trimmed + clamped to the 18-char nameplate cap). */
 'use strict';
 const A = require('./_assert.js');
@@ -52,7 +52,7 @@ A.ok(/keyHandler = e => \{[\s\S]{0,600}(INPUT|TEXTAREA)[\s\S]{0,200}isContentEdi
 
 /* ---- the READ GATE (2026-08-05): onboarding text used to type out and roll on before anyone could finish
    reading — and a beat REPLACES the previous one, so the unread words were simply destroyed. The law now:
-   a narration beat WAITS for the Commander (space / enter / click) by default; only an explicit
+   a narration beat WAITS for the Master (space / enter / click) by default; only an explicit
    { auto: true } (transient latency-cover lines like "give me a second…") keeps the timed auto-advance.
    The gate is DOM-bound, so these are source-level locks like the keyHandler guard above. */
 A.ok(/function say\(lines, opts\)/.test(dlgSrc), 'say() accepts opts — the auto escape hatch exists');

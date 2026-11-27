@@ -1,8 +1,8 @@
 'use strict';
 /* node test/reflect.dedup-only.test.js - A DECLINED TEXT ONLY SUPPRESSES; IT IS NEVER SHOWN TO THE MODEL (turn identity commit 15, Q5).
 
-   The Commander's declined list is plain strings kept on disk and in host dedup so a rejected proposal is never made again. A declined text
-   was once a proposal the reflection pass made from a conversation, so it may quote a session the Commander has since deleted. From the first
+   The Master's declined list is plain strings kept on disk and in host dedup so a rejected proposal is never made again. A declined text
+   was once a proposal the reflection pass made from a conversation, so it may quote a session the Master has since deleted. From the first
    delete the host passes every declined text to reflect() as opts.dedupOnly, which:
 
      feeds   the exact-duplicate set, the near-duplicate loop and MemTruth.relate - so a rejected belief, a paraphrase of it and a restatement

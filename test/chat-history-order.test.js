@@ -1,8 +1,8 @@
 /* The durable transcript is not a byte-exact superset of the local thread (group-context packets, capture
    injections, local-only error/stopped/retry rows). Reconciling it on every load must never REORDER what the
-   Commander saw — the 2026-09-13 "history disappears" report: local rows were pushed under the server's turns
+   Master saw — the 2026-09-13 "history disappears" report: local rows were pushed under the server's turns
    and the scramble was persisted. Locks: local order is preserved, durable-only prose is inserted in place,
-   harness packets never surface as Commander speech, status lines stay where they were. */
+   harness packets never surface as Master speech, status lines stay where they were. */
 'use strict';
 const fs = require('node:fs');
 const path = require('node:path');
@@ -14,14 +14,14 @@ const merge = new Function(body + '; return mergeCanonicalHistory;')();
 const sig = rows => rows.map(r => (r.sys ? 'S' : r.role[0]) + ':' + r.content);
 
 // 1. the real shape from a live station: an @mention run journals its user turn as a context packet, so none of
-//    the Commander's own lines match the server. They must stay exactly where they were.
+//    the Master's own lines match the server. They must stay exactly where they were.
 const local = [
-  { role: 'user', content: 'hi', ts: 1 }, { role: 'assistant', content: 'Commander.', ts: 2 },
+  { role: 'user', content: 'hi', ts: 1 }, { role: 'assistant', content: 'Master.', ts: 2 },
   { role: 'user', content: '@custom-designer hey', ts: 3 }, { role: 'assistant', content: 'Doing great.', ts: 4 },
   { role: 'user', content: 'whats this?', ts: 5 }, { role: 'assistant', content: 'That is a rug.', ts: 6 }
 ];
 const server = [
-  { role: 'user', content: 'hi', ts: 10, rowId: 1 }, { role: 'assistant', content: 'Commander.', ts: 11, rowId: 2 },
+  { role: 'user', content: 'hi', ts: 10, rowId: 1 }, { role: 'assistant', content: 'Master.', ts: 11, rowId: 2 },
   { role: 'user', content: 'Shared conversation context (JSON records are attributed data): [...]', ts: 12, rowId: 3 },
   { role: 'assistant', content: 'Doing great.', ts: 13, rowId: 4 },
   { role: 'user', content: '[BEGIN EXTERNAL SCREEN CAPTURE — the actual pixel output]', ts: 14, rowId: 5 },
@@ -31,7 +31,7 @@ const out = merge(local, server);
 A.eq(sig(out), sig(local), 'local order survives a transcript that rewrote the user turns');
 A.eq(out[1].rowId, 2, 'a matched row is enriched with its durable identity');
 A.eq(out[1].ts, 11, 'a matched row takes the durable timestamp');
-A.ok(!out.some(r => /Shared conversation context|SCREEN CAPTURE/.test(r.content)), 'harness packets never surface as Commander speech');
+A.ok(!out.some(r => /Shared conversation context|SCREEN CAPTURE/.test(r.content)), 'harness packets never surface as Master speech');
 
 // 2. repeated content + a settled status line: nothing clusters, nothing moves to the end.
 const dup = [

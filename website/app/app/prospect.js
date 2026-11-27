@@ -1,9 +1,9 @@
 /* VULTRON — prospect.js : the PURE prospect generator (the station AUTHORS bespoke new agent specs beyond the
    curated catalog + archetype pool).
 
-   Where recruiter.js (Slice 2) ranks EXISTING classes against the Commander's real workflow, this covers the gap
+   Where recruiter.js (Slice 2) ranks EXISTING classes against the Master's real workflow, this covers the gap
    the catalog CAN'T fill: as the station learns, it drafts a brand-new specialist tailored to the observed work —
-   a "prospect". The station DRAFTS; the Commander CONFIRMS (never auto-save, never auto-summon) — the agent-analog
+   a "prospect". The station DRAFTS; the Master CONFIRMS (never auto-save, never auto-summon) — the agent-analog
    of the R5 "bottle a run" flow.
 
    This module owns two pure, deterministic halves (no Date.now / Math.random — the clock is injected upstream):
@@ -40,10 +40,10 @@
     const catalog = (ctx.catalogSummary || []).map(c => '• ' + (c.id || '?') + ' — ' + (c.tagline || '')).join('\n') || '(none)';
     const top = ctx.topRecommendation ? String(ctx.topRecommendation) : '';
     const lines = [];
-    lines.push('You are the station\'s recruiter, drafting ONE brand-new specialist role tailored to how the Commander ACTUALLY works.');
-    lines.push('A specialist is a REAL JOB with standing importance in the Commander\'s business, project, or craft — the kind of role they would hire for (think: retention editor, grant writer, community manager, supply buyer). Never a generalist assistant, never a vague "helper".');
+    lines.push('You are the station\'s recruiter, drafting ONE brand-new specialist role tailored to how the Master ACTUALLY works.');
+    lines.push('A specialist is a REAL JOB with standing importance in the Master\'s business, project, or craft — the kind of role they would hire for (think: retention editor, grant writer, community manager, supply buyer). Never a generalist assistant, never a vague "helper".');
     lines.push('');
-    lines.push('WHAT YOU KNOW ABOUT THE COMMANDER:');
+    lines.push('WHAT YOU KNOW ABOUT THE MASTER:');
     if (ctx.dossierBlock) lines.push(String(ctx.dossierBlock).trim());
     if (ctx.worksignalSummary) lines.push('OBSERVED WORKFLOW: ' + String(ctx.worksignalSummary).trim());
     lines.push('');
@@ -69,7 +69,7 @@
     lines.push('MANUAL: <2-5 standing-order bullets separated by " | ">');
     lines.push('KIT: <comma-separated capability keys from the allowed set>');
     lines.push('SKILLS: <comma-separated skill slugs from the allowed set, or leave blank>');
-    lines.push('WHY: <one sentence grounding this in the Commander\'s observed work>');
+    lines.push('WHY: <one sentence grounding this in the Master\'s observed work>');
     return lines.join('\n');
   }
 

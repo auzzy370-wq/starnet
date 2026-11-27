@@ -49,7 +49,7 @@ A.eq(QS.stateOf(s, 'ms:first_light').completedAt, 1000, 'done-at-first-sight bac
    The discriminator is state freshness (seen empty before the fold). A first-ever sync backfills old history
    SILENTLY (no 15-celebration storm on first boot / on resuming a save). But once the state exists, a quest
    that appears already done is an AWAY completion the fold never saw open→done live — it IS a completion the
-   Commander earned, so it celebrates exactly once (the persistent notify record is its receipt). */
+   Master earned, so it celebrates exactly once (the persistent notify record is its receipt). */
 (() => {
   // FRESH state: every already-done quest is silent baseline (this is the first sync — it's all old history).
   const fresh = QS.fresh();

@@ -2,7 +2,7 @@
 
    THE GAP IT CLOSES: the MORNING REPORT (nightreportstore.js) only fires on app-CLOSURE absence (its localStorage
    heartbeat). But the night-shift driver's away detection is SERVER-side (lastUserActivityAt) — so an app left OPEN
-   while the Commander is away still fires beats, and reason-only drafts pile up on the desk with NOTHING surfaced
+   while the Master is away still fires beats, and reason-only drafts pile up on the desk with NOTHING surfaced
    until a close/reopen. That silence recreates the "it never does anything" complaint.
 
    THE FIX: while the app is open, poll the drafts the night shift left and, when N+ of them are UNSEEN, surface ONE
@@ -46,7 +46,7 @@ const NightDraftNudge = (() => {
     // THE ONE RETURN REPORT lists drafted ideas in the single briefing — no second nudge about them
     try { if (typeof Briefing !== 'undefined' && Briefing.ownsReturn && Briefing.ownsReturn()) { fired = true; stopPolling(); return; } } catch (_) {}
     if (typeof NightReport === 'undefined' || typeof Chat === 'undefined' || !Chat.nudge) return;
-    // only when the tab is actually being looked at — a nudge fired into a hidden tab is noise the Commander misses.
+    // only when the tab is actually being looked at — a nudge fired into a hidden tab is noise the Master misses.
     try { if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return; } catch (_) {}
     // never stack on a live beat (memory turn-in / study card / suggestion / dialogue panel / another nudge).
     try { if (Chat.beatBusy && Chat.beatBusy()) return; } catch (_) {}
@@ -82,7 +82,7 @@ const NightDraftNudge = (() => {
   }
 
   function stopPolling() { if (pollTimer) { try { clearInterval(pollTimer); } catch (_) {} pollTimer = 0; } }
-  // schedule a near-immediate check (debounced) — used when the tab regains focus/visibility (the Commander is back).
+  // schedule a near-immediate check (debounced) — used when the tab regains focus/visibility (the Master is back).
   function poke() { if (fired) return; if (scheduled) return; try { scheduled = setTimeout(() => { scheduled = 0; check().catch(() => {}); }, 400); } catch (_) {} }
 
   /* init({ enabled, agentId }) — called from enterGame alongside NightReportStore.init. enabled:false (the awakening)
@@ -101,7 +101,7 @@ const NightDraftNudge = (() => {
     if (typeof setInterval === 'function') pollTimer = setInterval(() => { check().catch(() => {}); }, POLL_MS);
   }
 
-  // a fresh Commander (S2/new-hero) inherits no seen-state and no spent nudge.
+  // a fresh Master (S2/new-hero) inherits no seen-state and no spent nudge.
   function reset() { fired = false; stopPolling(); try { localStorage.removeItem(KEY); } catch (_) {} }
 
   // test/inspection seam: force ONE check now, optionally resetting the session flag / seeding the seen mark. The

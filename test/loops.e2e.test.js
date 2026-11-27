@@ -5,7 +5,7 @@
      · a created loop ARMS ITSELF (no arm ceremony) and fires a real iteration through runOnce
      · the iteration's prompt carries the standing objective
      · it stacks candidates up to queueCap, then PARKS — and no amount of waiting fires it
-     · the Commander's VERDICT is what starts the next iteration (the whole thesis)
+     · the Master's VERDICT is what starts the next iteration (the whole thesis)
      · a REJECTION cascades to everything stacked on top of it, and its reason is fed into the
        NEXT iteration's prompt (the loop's memory — without this it re-finds the same bug forever)
      · an honest NOTHING-TO-DO parks the loop DORMANT instead of burning money forever
@@ -177,7 +177,7 @@ async function until(B, headers, pred, label, ms) {
     // Wait on the OBSERVABLE consequence — a new loop model-call — rather than on an iteration counter a
     // pre-park iteration could already have satisfied. That proxy made this assertion flaky under load.
     st = await until(B, headers, () => loopCalls() > callsAtPark, 'the verdict to start the next iteration');
-    A.ok(loopCalls() > callsAtPark, 'the Commander\'s click is what spent the next dollar');
+    A.ok(loopCalls() > callsAtPark, 'the Master\'s click is what spent the next dollar');
 
     // ---- a double verdict on the same iteration is refused -----------------------------------------------
     const again = await fetch(B + '/api/loops/verdict', {
@@ -203,7 +203,7 @@ async function until(B, headers, pred, label, ms) {
     A.ok(/NOTHING-TO-DO/.test(taught), 'and the convergence escape hatch is offered every iteration');
 
     // ---- INVARIANT: convergence is real -------------------------------------------------------------------
-    // Flip the loop to gate:'auto' — the Commander's "you have full access to merge" mode. It applies its own
+    // Flip the loop to gate:'auto' — the Master's "you have full access to merge" mode. It applies its own
     // work, so it never builds a review queue and can therefore run freely to convergence. Proving the mode
     // live AND clearing the queue in one step; a review-gated loop would just park on the queue forever here.
     const flipped = await fetch(B + '/api/loops/update', {

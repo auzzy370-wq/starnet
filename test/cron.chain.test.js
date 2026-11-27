@@ -1,6 +1,6 @@
 /* node test/cron.chain.test.js — A ROUTINE FIRES A WORK LINE, NOT JUST A RUN.
 
-   A routine fires at ONE dock. If the Commander drew stages downstream of that dock, those stages ARE the
+   A routine fires at ONE dock. If the Master drew stages downstream of that dock, those stages ARE the
    routine ("every morning research it, then write it up"). This locks the cron-driver's advanceChain seam:
      · the line runs AFTER the job's own run settles but BEFORE finishFire, so the routine's recorded outcome
        and its session transcript carry the LINE's answer, never stage one's raw material;
@@ -166,7 +166,7 @@ async function fireAndSettle(s, reply) {
     A.eq(lastOf(s.events, 'cron.result').outcome, 'ok', 'an empty line never blanks the routine');
   }
 
-  /* ---- GRANTS NEVER FLOW DOWN A LINE (2026-08-04): the unattended grant the Commander recorded names ONE
+  /* ---- GRANTS NEVER FLOW DOWN A LINE (2026-08-04): the unattended grant the Master recorded names ONE
      agent — the routine's own dock. Stage one runs with it; every downstream hop runs UNGRANTED, so drawing
      a belt to another dock can never silently extend terminal/verify authority onto a different agent. ---- */
   {
@@ -288,7 +288,7 @@ async function fireAndSettle(s, reply) {
       A.eq(s.getJob('j1').lastOutput, 'raw findings about the thing', "and DELIVERS ITS OWN answer, not a later stage's");
     }
 
-    /* THE SAME FLOOR, THE SAME DOCK — with the marker the Commander set by creating it from the line's
+    /* THE SAME FLOOR, THE SAME DOCK — with the marker the Master set by creating it from the line's
        INBOX trigger zone. Now the routine IS the line's trigger and the drawn stages run. */
     {
       hopRuns.length = 0;

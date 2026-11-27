@@ -95,7 +95,7 @@ A.ok(/name: 'team\.summon'[^\n]*\n\s*briefExempt: true/.test(require('fs').readF
   A.ok(/const gate = TaskBriefPolicy\.canMutate\(taskBriefState\.brief, liveTool, c\);/.test(readSidecarSource()), 'the host gate hands the call to the policy');
 }
 
-// RECOMMENDATION MATCHING — a formatting slip must not silently cost the Commander the ★ suggestion, and a
+// RECOMMENDATION MATCHING — a formatting slip must not silently cost the Master the ★ suggestion, and a
 // rescue must never resolve to the WRONG chip. Every accepted form returns the CANONICAL option text.
 {
   const opts = ['operators', 'executives', 'customers'];
@@ -194,7 +194,7 @@ A.eq(Policy.canMutate({ status: 'executing' }, { scope: 'execute' }).ok, true, '
   await s2.prepare({ key: 'stream:w3', text: 'operators' }, 260);
   A.eq(s2.patterns(5)[0].count, 2, 'unfinished work never contributes relationship evidence');
 
-  // GROUNDED RECOMMENDATION — the suggestion drawn from the Commander's OWN answered history. It is the only
+  // GROUNDED RECOMMENDATION — the suggestion drawn from the Master's OWN answered history. It is the only
   // provable one on this surface, so it must appear ONLY when actually observed (>=2), and never leak across
   // questions or outlive its own answer.
   {
@@ -210,7 +210,7 @@ A.eq(Policy.canMutate({ status: 'executing' }, { scope: 'execute' }).ok, true, '
   }
 
   // GROUNDED HONESTY (caught in review 2026-07-24). This is the ONE surface labelled provable, so every way it
-  // could misquote the Commander is a correctness bug, not a polish item.
+  // could misquote the Master is a correctness bug, not a polish item.
   {
     const SKIP = 'Use your judgment. Choose the most sensible reversible default and continue the original task.';
     const Q = parsed.question, OPTS = parsed.options;
@@ -244,7 +244,7 @@ A.eq(Policy.canMutate({ status: 'executing' }, { scope: 'execute' }).ok, true, '
     A.eq([sg.option, sg.count], ['operators', 4], 'counts fold across spellings of the same option instead of understating');
   }
 
-  // ASK-WORTHINESS — a dimension the Commander habitually waves off with "use your judgment" stops being
+  // ASK-WORTHINESS — a dimension the Master habitually waves off with "use your judgment" stops being
   // asked about. Conservative on purpose: a false suppression silently guesses at something they cared about.
   {
     const SKIP = 'Use your judgment. Choose the most sensible reversible default and continue the original task.';
@@ -281,7 +281,7 @@ A.eq(Policy.canMutate({ status: 'executing' }, { scope: 'execute' }).ok, true, '
     A.eq(s4.deferredDimensions().length, 0, 'an answer that merely mentions judgment is never miscounted as a deferral');
 
     // A deferral that still STATES a constraint is an engaged answer — suppressing the dimension would mute
-    // decisions the Commander is actively steering.
+    // decisions the Master is actively steering.
     const s5 = makeStore(memFs()); n = 0;
     for (const a of ['Use your judgment, but keep it under 3 pages', 'Use your judgment — stay inside the api package', 'use your judgment but do not touch billing']) {
       const t = 1000 + (n * 10), uid = 'eng_' + (n++), key = 'stream:' + uid, text = 'how wide ' + uid + '?';
@@ -432,7 +432,7 @@ A.eq(Policy.canMutate({ status: 'executing' }, { scope: 'execute' }).ok, true, '
     A.ok((/renderProse\(r\.body, shownText[,)]/.test(chatSrcT) || (/renderProse\(r\.body, parts\[pi\][,)]/.test(chatSrcT) && /const parts = [^\n]*shownText\.split\(/.test(chatSrcT))) && /const taskText = [^\n]*TaskIntent\.strip\(m\.content\)/.test(chatSrcT) && /const shownText = [^\n]*Fork\.stripMarkers\(taskText\)/.test(chatSrcT), 'history re-renders strip task and fork markers from server-synced rows');
   }
 
-  const cx = CommanderContext.compose({ brief: resumed, dossier: 'COMMANDER DOSSIER\n- Goals: ship', existingSystem: '', patterns: s2.patterns(5) });
+  const cx = CommanderContext.compose({ brief: resumed, dossier: 'MASTER DOSSIER\n- Goals: ship', existingSystem: '', patterns: s2.patterns(5) });
   A.ok(/ORIGINAL REQUEST: Build me a dashboard/.test(cx) && /=> operators/.test(cx), 'composer carries original task + answered decision');
   A.ok(/strength="weak; never override current instructions"/.test(cx), 'relationship evidence is truthfully labelled weak');
 
@@ -442,7 +442,7 @@ A.eq(Policy.canMutate({ status: 'executing' }, { scope: 'execute' }).ok, true, '
   const hubSrc = fs.readFileSync(path.join(__dirname, '../sidecar/channels/hub.js'), 'utf8');
   const orchestrationSrc = fs.readFileSync(path.join(__dirname, '../sidecar/tools/builtin/orchestration.js'), 'utf8');
   A.ok(/taskBriefStore\.prepare/.test(indexSrc) && /TaskIntent\.directive/.test(indexSrc), 'runOnce prepares the durable brief and injects the shared doctrine');
-  A.ok(/taskContext:\s*taskContextBlock/.test(indexSrc) && /workerSystem/.test(orchestrationSrc), 'delegated workers inherit the settled brief without re-questioning the Commander');
+  A.ok(/taskContext:\s*taskContextBlock/.test(indexSrc) && /workerSystem/.test(orchestrationSrc), 'delegated workers inherit the settled brief without re-questioning the Master');
   A.ok(/taskQuestionAsked/.test(indexSrc) && /!taskQuestionAsked/.test(indexSrc), 'clarifications suppress completed-task learning sweeps');
   A.ok(/\{ source: 'marker' \}/.test(indexSrc) && !/The model identified a material unresolved decision/.test(indexSrc), 'the marker settle path records honestly instead of fabricating validation metadata');
   A.ok(/bufferedTaskEnd/.test(indexSrc) && /taskQuestionAsked\s*\?\s*'clarifying'/.test(indexSrc) && !/taskQuestionAsked\s*\?\s*'cancelled'/.test(indexSrc), 'clarification ends as the honest additive clarifying terminal before global completed-work listeners run');
@@ -586,7 +586,7 @@ A.eq(Policy.canMutate({ status: 'executing' }, { scope: 'execute' }).ok, true, '
       return reg.get('brief.ask').run(args).then(() => '').catch(e => e.message);
     })();
     A.ok(/repeatedly answered "use your judgment"/.test(gate) && /correctable assumption/.test(gate), 'the refusal steers to deciding + surfacing an assumption, never to silent guessing');
-    A.ok(/tq-hint/.test(chatSrc) && /more than one is fine/.test(chatSrc), 'the chip row tells the Commander a typed answer is accepted');
+    A.ok(/tq-hint/.test(chatSrc) && /more than one is fine/.test(chatSrc), 'the chip row tells the Master a typed answer is accepted');
     A.ok(/\.tq-hint/.test(cssSrc), 'the typed-answer hint is styled as a quiet affordance note');
   }
 

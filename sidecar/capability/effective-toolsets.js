@@ -33,23 +33,23 @@ function effectiveToolsets({ registry, agentId, agent, placed = [], disabled = {
    narrow set of granted tools the host can PROVE will fail on this run, from signals the host already holds —
    never a guess, never a probe. runOnce moves exactly these from advertised to DEFERRED: still granted, still
    dispatchable, still found by tool.search, whose result carries `why` + `enable` so the model can tell the
-   Commander what is missing instead of calling a dead tool or claiming it worked. Nothing here locks a power
+   Master what is missing instead of calling a dead tool or claiming it worked. Nothing here locks a power
    behind an unlock — the fix is always the service's own setup, named in `enable`.
    A fact is certain only as `false`. true = available; undefined = the host does not know -> stays advertised.
    Signals deliberately NOT here because they are not certain: browser.* without a Chromium binary
-   (browser.attach can still drive a Chrome the Commander started), channel.send with no known chat (a person
+   (browser.attach can still drive a Chrome the Master started), channel.send with no known chat (a person
    may message the station mid-run), image_analyze (falls back to the run's own model). */
 const AVAILABILITY_SIGNALS = [
   { id: 'media-route', fact: 'mediaRoute', tools: ['image_generate'], label: 'image_generate', announce: true,
     why: 'no image-generation connection is configured for this station',
-    enable: 'the Commander signs in to ChatGPT, or connects an OpenAI or OpenRouter key or a Vultron account in SETTINGS' },
+    enable: 'the Master signs in to ChatGPT, or connects an OpenAI or OpenRouter key or a Vultron account in SETTINGS' },
   { id: 'voice-route', fact: 'voiceRoute', tools: ['voice_generate'], label: 'voice_generate', announce: true,
     why: 'no voice route exists: no OpenRouter, Gemini or OpenAI key is connected and the free Edge voice is switched off',
-    enable: 'the Commander connects one of those keys in SETTINGS, or removes VULTRON_EDGE_TTS=0 from the launch environment' },
+    enable: 'the Master connects one of those keys in SETTINGS, or removes VULTRON_EDGE_TTS=0 from the launch environment' },
   { id: 'spotify', fact: 'spotifyConnected', label: 'spotify_*', announce: true,
     tools: ['spotify_search', 'spotify_now_playing', 'spotify_playlists', 'spotify_play', 'spotify_pause', 'spotify_next', 'spotify_previous', 'spotify_queue'],
     why: 'Spotify is not connected',
-    enable: 'the Commander connects Spotify in ABILITIES > TOOLSETS' },
+    enable: 'the Master connects Spotify in ABILITIES > TOOLSETS' },
   // Only the four that need a LIVE pty: status/read/stop still answer for recorded sessions, so they stay.
   { id: 'pty', fact: 'ptyRuntime', tools: ['terminal.start', 'terminal.write', 'terminal.resize', 'terminal.interrupt'], label: 'terminal_start/write/resize/interrupt', announce: true,
     why: 'the interactive terminal runtime (node-pty) is not installed or could not load in this Vultron install',
@@ -83,6 +83,6 @@ function unavailableLine(bySignal) {
   }
   if (!parts.length) return '';
   return 'Granted tools that CANNOT work right now (tool_search still finds them): ' + parts.join('. ') + '. '
-    + 'Never claim one of these worked; tell the Commander what is missing. ';
+    + 'Never claim one of these worked; tell the Master what is missing. ';
 }
 module.exports = { effectiveToolsets, AVAILABILITY_SIGNALS, unavailableTools, unavailableLine };

@@ -1,6 +1,6 @@
 /* sidecar/agent-affinity.js — WHICH AGENTS ACTUALLY WORK TOGETHER.
 
-   The station's idle life leans on this: two agents the Commander really does use together
+   The station's idle life leans on this: two agents the Master really does use together
    should be seen together. So the bond has to be DERIVED from the append-only run log, never
    assigned, never random. If the world shows two sprites as inseparable, this module has to be
    able to point at the runs that made them so — same rule as deliverable-provenance: prose comes
@@ -19,7 +19,7 @@
                              real 643-row station log, 0 runs carried a parentRunId and 0 pairs
                              overlapped literally (runs serialize), while 22 pairs clustered in
                              time — engineer|writer 20x, researcher|writer 15x. That clustering is
-                             a true fact about how the Commander works, not a guess: these agents
+                             a true fact about how the Master works, not a guess: these agents
                              get reached for in the same stretch of work.
 
    Weighted so one real delegation outranks a few coincidental adjacencies, and so a station that

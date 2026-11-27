@@ -65,7 +65,7 @@
     const note = (typeof deps.note === 'function') ? deps.note : function () {};
     const file = (P && DIR) ? P.join(DIR, 'credits.json') : '';
     // Unlink tombstone: written by clearSaved(), removed by persist() (a fresh link). It is what stops the
-    // boot self-heal from resurrecting a link the Commander deliberately severed — the OS keychain can still
+    // boot self-heal from resurrecting a link the Master deliberately severed — the OS keychain can still
     // hold the old token after an unlink (the shell's clear is a separate call that can fail), and a heal
     // that trusts the keychain alone would quietly re-link the station against their explicit choice.
     const tombstone = (P && DIR) ? P.join(DIR, 'credits.unlinked.json') : '';
@@ -299,13 +299,13 @@
     /* BOOT SELF-HEAL (2026-08-25 stranded-user incident). A reinstall (or workspace reset) deletes
        credits.json but the device token survives in the OS keychain and is injected back as envToken —
        leaving a station that IS authorized but LOOKS unlinked: empty model catalog, refused runs, and a
-       Commander with paid credit staring at "not linked". Rebuild the record from the one surviving half:
+       Master with paid credit staring at "not linked". Rebuild the record from the one surviving half:
        ask the cloud /v1/whoami who this token belongs to, and persist the answer.
 
        Refuses unless EVERY guard passes — this must never resurrect a severed link:
          · configured() (a cloud URL exists) and an envToken to try;
          · no saved record (a live link needs no heal) and no in-process unlink;
-         · no unlink tombstone on disk (the Commander's explicit choice outranks the keychain);
+         · no unlink tombstone on disk (the Master's explicit choice outranks the keychain);
          · the cloud ACCEPTS the token (a revoked/unknown token 401s and heals nothing).
        Best-effort by contract: any failure returns { healed:false, reason } and the station simply stays
        honestly unlinked, exactly as before this existed. */

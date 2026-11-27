@@ -86,7 +86,7 @@ A.ok(/const oc = typeof RunOutcome !== 'undefined' \? RunOutcome\.ofRow\(entry\)
 A.ok(/if \(thisRunId\) \{[\s\S]{0,400}renderRunRecap\(ws, thisRunId,/.test(chat), 'recap fires on the clean-finish path with the run\'s id');
 // DURATION HONESTY (2026-07-19): the recap's displayed duration is the channel's honest elapsed — the
 // confirmed-start, approval-pauses-excluded clock the live COMMS timer already shows — never the raw
-// send→teardown span alone (which counted connect latency + time paused waiting on the Commander).
+// send→teardown span alone (which counted connect latency + time paused waiting on the Master).
 A.ok(/Channels\.elapsedOf\(ws\.id, Date\.now\(\)\)[\s\S]{0,200}renderRunRecap\(ws, thisRunId, honestMs > 0 \? honestMs :/.test(chat),
   'the recap duration reads Channels.elapsedOf (honest run clock), falling back to the raw span only when the channel has no reading');
 

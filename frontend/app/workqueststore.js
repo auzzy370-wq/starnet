@@ -1,7 +1,7 @@
 /* VULTRON — workqueststore.js : the live wiring around the pure WorkQuests engine (G1c).
 
    Turns an ACCEPTED idea into a trackable multi-step build. It owns what the pure engine can't:
-     • the MINT — pitchstore/suggeststore call WorkQuestStore.accept(parsed, ctx) the instant the Commander hits
+     • the MINT — pitchstore/suggeststore call WorkQuestStore.accept(parsed, ctx) the instant the Master hits
        "build it". For a recipe with still-missing required params, the store resolves the live gap list
        (Recipes.requiredMissing) so each becomes a real step; a runnable recipe / workflow build gets the single
        run-completion step. If the accepted idea is SEEDBORN, it carries G3a's SeedCredit line onto the card.
@@ -72,7 +72,7 @@ const WorkQuestStore = (() => {
         } catch (_) { gaps = []; }
       }
     }
-    // G3a seed callout: an accepted idea reusing a Commander-saved seed credits it on the card (a credit line).
+    // G3a seed callout: an accepted idea reusing a Master-saved seed credits it on the card (a credit line).
     let credit = '';
     try {
       if (typeof SeedCredit !== 'undefined' && recipeId && typeof Recipes !== 'undefined' && Recipes.get) {

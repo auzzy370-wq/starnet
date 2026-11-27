@@ -501,7 +501,7 @@
       // BYOK endpoint must never redirect the device token away from that account's service.
       const profile = profileOf(id);
       // ...and for the same reason a SUBSCRIPTION SIGN-IN (ChatGPT, Grok, Kimi: authType oauth_device_code), whose OAuth bearer
-      // rides the request: a per-run endpoint (an /api/run body's, a channel snapshot's) never redirects it. The Commander's own
+      // rides the request: a per-run endpoint (an /api/run body's, a channel snapshot's) never redirects it. The Master's own
       // endpoint (the runtime push, the env URL) and the profile's still apply.
       let explicit = (profile && profile.authType === 'oauth_device_code') ? '' : String(explicitBaseUrl || '').trim();
       // ...nor does a STATION-HELD API key (the keychain/runtime push, an operator env key, the page copy). A per-run endpoint
@@ -566,11 +566,11 @@
        a station whose shell pushes its provider config (the per-launch IPC token is set: deps.keptEndpoints.on) keeps the
        endpoints it was pushed (URLs only, never a key) in .secrets/ (station-recovery skips it, /api/file cannot reach it)
        and reads them back at boot, before the scheduler's launch catch-up. Every API-key provider's endpoint is kept — the
-       Commander's own servers (CUSTOM, Ollama) and a cloud provider's override (an OpenRouter-compatible proxy, a corporate
+       Master's own servers (CUSTOM, Ollama) and a cloud provider's override (an OpenRouter-compatible proxy, a corporate
        gateway) alike: the page sends no key on the desktop, so a per-run endpoint never rides the keychain key (baseUrl),
        and a cloud override held for this session only sent every chat after a respawn to the provider's default until the
        window's hand-over landed. A sign-in (ChatGPT, Grok, Kimi) and Vultron's linked account resolve their own endpoints:
-       never kept. The host writes main AND .bak and reads both back: an endpoint the Commander replaced or cleared (a URL
+       never kept. The host writes main AND .bak and reads both back: an endpoint the Master replaced or cleared (a URL
        can carry a token in its query) must not survive in the recovery copy. */
     function keepsEndpoint(id) {
       const profile = profileOf(id);
@@ -865,7 +865,7 @@
     }
     // a forget: true only once the file is read and the entry is proven gone from it. A file that cannot be read answers false, so a
     // route never claims purged for a key it could not see (review r1: the memory of an unread file is empty, and read as "nothing
-    // to forget" while the key stayed in both copies); the Commander's retry, once the file can be read, removes it
+    // to forget" while the key stayed in both copies); the Master's retry, once the file can be read, removes it
     function dropChannel(id) {
       const rid = String(id || '');
       delete carried[rid];

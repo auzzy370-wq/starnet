@@ -141,7 +141,7 @@ function boot(port, env, attemptsLeft) {
     A.ok(JSON.stringify(second.messages || []).indexOf('researcher-2') >= 0, 'the new agentId reached the model (ready for team.dispatch)');
 
     // 5) THE DESK RIDES ALONG: the workstation the station seeded with the new agent reaches the lead too, so it
-    //    never tells the Commander to go build one. Sourced ONLY from the ack — the sidecar invents nothing.
+    //    never tells the Master to go build one. Sourced ONLY from the ack — the sidecar invents nothing.
     A.ok(JSON.stringify(second.messages || []).indexOf('BRIDGE') >= 0, 'the seeded workstation location reached the model');
   } finally {
     try { child.kill(); } catch (_) {}

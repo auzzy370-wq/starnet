@@ -110,7 +110,7 @@ const Onboarding = (() => {
   }
 
   // THE FALLBACK MISSION QUESTION — the classic 5-option purpose picker, kept for when the live read can't
-  // land (no brain wired, offline, slow, unparseable, or the Commander shared nothing to read from). It is
+  // land (no brain wired, offline, slow, unparseable, or the Master shared nothing to read from). It is
   // required: purpose.md is ALWAYS authored by the end of the ceremony, whichever path got there.
   function fallbackPurposeStep(opening = false) {
     const lead = (role === 'orchestrator');
@@ -156,7 +156,7 @@ const Onboarding = (() => {
     }
     // THE COMPOSER IS AN ANSWER BOX (2026-07-20 answer-swallow fix): the input literally says "answer to wake
     // your agent…", so text typed there MUST land on the question on screen. Dialogue.answer() resolves the
-    // pending free-text node with the Commander's words (same path as the inline ✎ input) — before this, the
+    // pending free-text node with the Master's words (same path as the inline ✎ input) — before this, the
     // handler was a no-op and every composer-typed answer was silently dropped (empty dossier, no digs, thin
     // synthesis). Between questions (monologue/patter, a read gate, option-only picks) it returns false: that text
     // used to be SWALLOWED — box cleared, words gone (sweep/onboarding 2026-10-20) — so it goes back into the
@@ -174,7 +174,7 @@ const Onboarding = (() => {
     } else if (!opts.wake) {
       // THE RE-WAKE (2026-07-20): wake:false IS the replay — resumeInto re-enters the ceremony only when a
       // prior session closed mid-awakening (onboarded never flipped; see app.js resumeInto). The birth already
-      // happened in front of this Commander once — replaying the full monologue reads as amnesia, and an agent
+      // happened in front of this Master once — replaying the full monologue reads as amnesia, and an agent
       // that forgets being born breaks the fiction. Short re-greeting, then straight back to the questions.
       setTimeout(() => reignite(), 500);
     } else {
@@ -229,7 +229,7 @@ const Onboarding = (() => {
   }
 
   // THE RE-WAKE — the replay entry (a refresh/relaunch mid-awakening). No second birth: the mind has already
-  // caught fire, met the Commander, and heard its own first words once. It comes back UP mid-thought — light
+  // caught fire, met the Master, and heard its own first words once. It comes back UP mid-thought — light
   // already part-risen, heartbeat already steadier than a newborn's, the turn immediate (it knows where you
   // are) — says so in three dry lines, and goes straight back to the unfinished briefing (startQuestions).
   // The flood, first contact, and mandate never replay; the QUESTIONS do (skipped answers wrote nothing).
@@ -363,7 +363,7 @@ const Onboarding = (() => {
   /* ---- the live-mind seam: one guarded reason-only round trip, null on ANY failure ----
      PATIENCE, NOT A CLIFF: the first cut used tight timeouts (9s/14s) and silently dropped any reply that
      beat them by seconds — a slow-but-good brain (codex reasoning models take 15-25s) produced a PERFECT
-     read that died in the wire while the Commander got the old script (proven live 2026-07-01: gpt-5.5's
+     read that died in the wire while the Master got the old script (proven live 2026-07-01: gpt-5.5's
      synthesis landed ~2s past the window; the save shows the canned picker purpose). Now the ceremony WAITS
      with presence: in-voice patter lines cover each patience window, and only the hard ceiling below ends
      the wait. A fast reply skips all patter; a dead wire (fast error) skips it too — only slow-success waits. */
@@ -469,7 +469,7 @@ const Onboarding = (() => {
     }
     bumpTruth();
     // say only what the dial will actually do: at 'propose' or above quest refresh plans the first step on its
-    // own; at 'wait' nothing starts until the Commander does.
+    // own; at 'wait' nothing starts until the Master does.
     const plans = typeof AutonomyStore !== 'undefined' && AutonomyStore.summary && (AutonomyStore.summary() || {}).enabled;
     await Dialogue.say([seg(plans
       ? 'then that’s the path. i’ll line up quests for the first step — they’ll be waiting in QUESTS.'
@@ -493,7 +493,7 @@ const Onboarding = (() => {
     AU.steady(p);                                      // the heartbeat steadies + the room warms
   }
 
-  // NS VISIBILITY (2026-07-13) — the honest dial-raise line for the AWAKENING cadence beat. The moment the Commander
+  // NS VISIBILITY (2026-07-13) — the honest dial-raise line for the AWAKENING cadence beat. The moment the Master
   // picks a run-on-my-own posture, a build-capable pick ('build'/'free') SILENTLY degrades to reason-only drafts on a
   // cold-start station (no away-workshop grant + a dossier too thin to act) — the exact "it never does anything"
   // invisibility the Settings NIGHT SHIFT panel already fixes but onboarding never did. We push the just-set posture to
@@ -527,7 +527,7 @@ const Onboarding = (() => {
       if (!running) return { text: '' };   // DISCONNECT mid-question — bail without committing or advancing
       if (res.help) return { text: '', help: true };
       // V3 §3/S1: a STEERING chip never answers. Picking one narrows the ask and opens the typed path — only
-      // the Commander's OWN words can land (skipping the steer follow-up counts as a skip, writes nothing).
+      // the Master's OWN words can land (skipping the steer follow-up counts as a skip, writes nothing).
       const steerOpt = (!res.custom && !res.skip && res.label) ? (s.options || []).find(x => x && x.steer && x.label === res.label) : null;
       if (steerOpt) {
         res = await Dialogue.node({
@@ -539,7 +539,7 @@ const Onboarding = (() => {
         if (!running) return { text: '' };
       }
       // A TYPED skip is a skip here too — every optional beat offers a "Skip for now" chip, so the word is the
-      // vocabulary the flow teaches, and a typed one used to be committed as the Commander's own words at
+      // vocabulary the flow teaches, and a typed one used to be committed as the Master's own words at
       // weight 'stated' (and, on a config beat, built into the patch: a purpose of "skip"). Whole-answer match.
       const isSkip = !!res.skip || res.value == null ||
         (typeof Interview !== 'undefined' && Interview.isSkipAnswer ? Interview.isSkipAnswer(res.value) : String(res.value).trim() === '');
@@ -549,7 +549,7 @@ const Onboarding = (() => {
         continue;
       }
       const text = isSkip ? '' : clipAnswer(String(res.value).trim());
-      // A TYPED MISSION IS THE COMMANDER'S OWN WORDS (41b2d015 review): quick setup, the keyless wake and a talk whose
+      // A TYPED MISSION IS THE MASTER'S OWN WORDS (41b2d015 review): quick setup, the keyless wake and a talk whose
       // synthesis could not land all ask the fallback mission question, and a typed answer there only committed
       // purpose.md, which the dossier copies in as a 'seed' (never grounds acting). Land it as a 'stated' goals belief
       // BEFORE purpose.md commits, exactly as the synthesis path does (the doc seed then dedupes to nothing). A tapped
@@ -559,8 +559,8 @@ const Onboarding = (() => {
       if (!isSkip && commit) { const patch = s.build(text); if (patch) commit(patch); }
       if (!isSkip && s.field === 'purpose') purposeSaid = text;   // the station pick reads what they said they want help with
       // a beat that targets a dossier dimension (not a config .md) writes its answer STRAIGHT to the station-wide
-      // dossier — same authoring path the COMMANDER panel uses (recomposes the live prompt + persists at the edge).
-      if (!isSkip && s.dossierDim && typeof DossierStore !== 'undefined' && DossierStore.upsert) { DossierStore.upsert(s.dossierDim, { text, source: 'onboarding', weight: 'stated' }); ink(s.dossierDim, text); }   // V3: always the Commander's own words now (steer chips can't write); the ink stamp shows the write landing
+      // dossier — same authoring path the MASTER panel uses (recomposes the live prompt + persists at the edge).
+      if (!isSkip && s.dossierDim && typeof DossierStore !== 'undefined' && DossierStore.upsert) { DossierStore.upsert(s.dossierDim, { text, source: 'onboarding', weight: 'stated' }); ink(s.dossierDim, text); }   // V3: always the Master's own words now (steer chips can't write); the ink stamp shows the write landing
       // the autonomy cadence beat writes the chosen OPENING posture straight to AutonomyStore (the option value is a
       // cadence-preset id). Skipping ('Decide later') leaves the new-station default — PROPOSE: suggestions to
       // approve, never an unattended act (Autonomy.fresh).
@@ -575,7 +575,7 @@ const Onboarding = (() => {
         bumpTruth();
         const ack = typeof s.ack === 'function' ? s.ack(text) : s.ack;
         await Dialogue.say([seg(ack, 44, 360)]);
-        // NS visibility: after the cadence beat RAISED the dial, tell the Commander what that actually means tonight
+        // NS visibility: after the cadence beat RAISED the dial, tell the Master what that actually means tonight
         // (build vs draft + cold-start readiness), live from the status route. Only for a run-on-my-own pick; skips
         // are silent. Fail-open — a '' line (unreachable route / not build-capable) simply adds nothing.
         if (!isSkip && s.posturePreset) {
@@ -608,7 +608,7 @@ const Onboarding = (() => {
   }
 
   // V3 helpers — synthesized beliefs from a mind reply land through the one store chokepoint; a quiet store is a
-  // no-op, never a crash. The weight says what the Commander actually GAVE (bug 41b2d015 review): 'synth' (grounded,
+  // no-op, never a crash. The weight says what the Master actually GAVE (bug 41b2d015 review): 'synth' (grounded,
   // counts toward readiness) only when the reply synthesizes their own words; a reply written with nothing of theirs
   // to read — a thin run's read, the dig after "Help me figure that out" — lands as 'seed', never inked, so a goals
   // line the model invented can never make the station think it knows what they want.
@@ -622,7 +622,7 @@ const Onboarding = (() => {
       if (grounded && !inked++) ink(b.dim, b.text);   // the stamp shows the first learned line; the file holds them all
     }
   }
-  // one generated follow-up ask → the Commander's typed words (steer-chip law: generated chips are
+  // one generated follow-up ask → the Master's typed words (steer-chip law: generated chips are
   // plausible answers, but tapping one still asks for their own words — nothing canned ever lands).
   async function askGenerated(askText, chips, customLabel, placeholder) {
     const options = (chips || []).map(c => ({ label: c, steer: 'close — type your version, with the real names and details.' }));
@@ -672,7 +672,7 @@ const Onboarding = (() => {
     const pace = await Dialogue.node({
       lines: [seg(interviewOnly
         ? 'let’s fill in the picture. a few questions about your work, or a deeper conversation about your goals? you can review and change what we save in your dossier.'
-        : 'i’m awake. let’s give this station a direction. start with ' + quickSays.replace(/ (question)/, ' setup $1') + ', or take time to tell me about your work. you can edit what we save in your dossier — the COMMANDER file of what the station knows about you.', 46, 0)],
+        : 'i’m awake. let’s give this station a direction. start with ' + quickSays.replace(/ (question)/, ' setup $1') + ', or take time to tell me about your work. you can edit what we save in your dossier — the MASTER file of what the station knows about you.', 46, 0)],
       options: [
         ...(!interviewOnly ? [{ label: 'Quick setup — ' + quickSays, value: 'quick' }] : []),
         // the pace hint rides IN the label (no sentence under a choice). Only the quick path carries a count: the talks
@@ -773,7 +773,7 @@ const Onboarding = (() => {
       // the agent's REAL hands: live placed caps (object=capability), labeled with the same power-words the
       // palette uses. Empty on a fresh awakening (honest — the kit-out is still ahead, and the mirror's
       // directive now teaches CONDITIONAL offers for that case); populated on a deferred interview whose
-      // Commander already wired gear.
+      // Master already wired gear.
       const liveCaps = (() => {
         try {
           const ids = (typeof World !== 'undefined' && World.heroCaps) ? (World.heroCaps('agent') || []) : [];
@@ -800,7 +800,7 @@ const Onboarding = (() => {
         if (!running) return;
         if (pick && /^o\d$/.test(String(pick.value))) {
           // the directive makes every offer the AGENT speaking ("i could …"): store and hand it on as the offer they
-          // accepted — verbatim it read "Wants the station to: i could …" and became the Commander's own first task
+          // accepted — verbatim it read "Wants the station to: i could …" and became the Master's own first task
           const offer = mir.offers[Number(String(pick.value).slice(1))] || '';
           grabbedMove = offer;   // the synthesis reads the offer itself ("the offer of yours they grabbed")
           firstTask = offer ? 'Go ahead with your offer: “' + offer.replace(/[.\s]+$/, '') + '.”' : '';
@@ -839,7 +839,7 @@ const Onboarding = (() => {
     }
 
     // B8. THE READ — the agent puts it together, speaks its read, and authors its OWN mission; the
-    //    Commander confirms or corrects it. V3: the synthesis sees the WHOLE meeting (tuesday, dig, lost
+    //    Master confirms or corrects it. V3: the synthesis sees the WHOLE meeting (tuesday, dig, lost
     //    time, the year, the grabbed offer), and on a thin/loose run the directive makes the read OWN the
     //    thinness — "i barely know you yet" is the honest read, never faked familiarity.
     let purposeDone = false;
@@ -868,20 +868,20 @@ const Onboarding = (() => {
           if (!running) return;
           if (own && own.value != null && String(own.value).trim()) purposeT = String(own.value).trim();
         }
-        // V3: the mission is REAL context (synthesized from — or re-stated in — the Commander's words), so it
+        // V3: the mission is REAL context (synthesized from — or re-stated in — the Master's words), so it
         // lands as a grounded `goals` belief BEFORE purpose.md commits (the doc-seed then dedupes to nothing).
         // 'stated' when they put it their own way, 'synth' when they confirmed the agent's synthesis.
-        // A THIN run's confirmed synthesis is grounded in NOTHING the Commander said — it lands as 'seed'
+        // A THIN run's confirmed synthesis is grounded in NOTHING the Master said — it lands as 'seed'
         // (purpose.md still exists; the readiness gate stays honestly shut until real words arrive).
         if (typeof DossierStore !== 'undefined' && DossierStore.upsert) { DossierStore.upsert('goals', { text: purposeT, source: 'onboarding', weight: (purposeT !== syn.purpose ? 'stated' : (gaveAnything ? 'synth' : 'seed')) }); if (purposeT !== syn.purpose || gaveAnything) ink('goals', purposeT); }   // a seed-weight thin purpose is never inked — nothing was learned
-        // THE MISSION BECOMES A PLAN (USER-STUDY LOOP). A mission grounded in something the Commander actually
+        // THE MISSION BECOMES A PLAN (USER-STUDY LOOP). A mission grounded in something the Master actually
         // said (never a thin seed) is drafted into ordered steps NOW, in parallel with the cadence question, so
         // the path can be confirmed before the meeting ends — quests then have a real step to aim at on day one
         // instead of waiting for a first clean task run. The draft is the existing decomposition (one reason-only
-        // call); nothing is saved until the Commander confirms it below.
+        // call); nothing is saved until the Master confirms it below.
         if ((purposeT !== syn.purpose || gaveAnything) && typeof GoalStore !== 'undefined' && GoalStore.proposeDecomposition && typeof DossierStore !== 'undefined' && DossierStore.beliefs) {
           // the belief THIS beat just wrote = the NEWEST goals belief (upsert without an id always appends). Never an
-          // exact-text find: the dossier trims + caps a belief at 280 chars, so a long mission in the Commander's own
+          // exact-text find: the dossier trims + caps a belief at 280 chars, so a long mission in the Master's own
           // words never matched (the offer silently vanished), and an identical older belief would win the find.
           const goalsNow = DossierStore.beliefs('goals') || [];
           const newest = goalsNow[goalsNow.length - 1];
@@ -1028,9 +1028,9 @@ const Onboarding = (() => {
      runLeadMeeting the awakening uses, minus the birth theatre), decline hands the gap to hunt mode.
      ONE-SHOT: the flag is spent on OFFER (never a nag loop); reEnable lives in re-running onboarding.
      THE INTERVIEW ITSELF IS AN OFFER (comms-owner arbiter, review 10-27). It runs on a RETURNING station, mid-game, so it opens as
-     an offer like the First Pitch: the panel ends above the message box, and when the Commander picks a conversation, sends a turn
+     an offer like the First Pitch: the panel ends above the message box, and when the Master picks a conversation, sends a turn
      or an ask reaches them it steps aside, unanswered — the meeting stands down (as stop() makes it) and the IOU is re-armed, so a
-     later boot offers it again. Esc is its "not now": the Commander left it, so the IOU stays spent. Answers already given are kept.
+     later boot offers it again. Esc is its "not now": the Master left it, so the IOU stays spent. Answers already given are kept.
      Before this it opened as the awakening's ceremony and held all three over COMMS (the gh#158 shape). */
   const DEFER_KEY = 'vultron.interview.deferred.v1';
   function setDeferred() { try { localStorage.setItem(DEFER_KEY, '1'); } catch (_) {} }

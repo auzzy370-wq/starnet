@@ -40,7 +40,7 @@ global.fetch=async(url,opts)=>{
   fail=true;assert.equal((await S.reset()).ok,false);assert.equal(S.get().initiative,server.initiative);
   fail=false;await S.reset();assert.equal(mem[key],undefined);assert.equal(S.get().initiative,'propose');assert.equal(server.initiative,'propose','reset returns to the new-station default');assert.equal(calls.at(-1).resumeHalt,false);
   // org P06: REACH and PACE never lift an E-STOP halt (resumeHalt:false); the ON ITS OWN rungs (setInitiative /
-  // applyPreset) still do. A write the route says LIFTED a halt (haltLifted) tells the Commander; one that lifted
+  // applyPreset) still do. A write the route says LIFTED a halt (haltLifted) tells the Master; one that lifted
   // nothing says nothing — the notice keys on the route's proof, never on the request.
   await S.setReach('reach');assert.equal(calls.at(-1).resumeHalt,false,'REACH never lifts a halt');
   await S.setLeash(5);assert.equal(calls.at(-1).resumeHalt,false,'PACE never lifts a halt');

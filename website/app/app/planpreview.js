@@ -1,6 +1,6 @@
 /* frontend/app/planpreview.js — the station builder's approval card DRAWS its plan (vibe design, 2026-09-29).
 
-   Before the Commander approves, the card shows where the build goes and what goes where: the station's rooms as flat
+   Before the Master approves, the card shows where the build goes and what goes where: the station's rooms as flat
    plates (dimmed), the room the plan adds or changes lit, each zone outlined and numbered, and what will stand there.
    The same recipe as the station preset cards (build.js showStationBuilds): plank decks warm, others steel, belts in the
    accent, equipment gold, every other piece green. The data is StationBuilder's plan.preview, read from the plan the

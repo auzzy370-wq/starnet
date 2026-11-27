@@ -11,7 +11,7 @@
      record({ runId, agentId, turns, usd, tokens }) -> entry,   // stamps ts, appends, returns it
      recordStrict({ runId, agentId, turns, usd, tokens }) -> entry, // same, but append failure throws
      unsettledRuns() -> receipt[], settleUnsettled(runId, usd, how?) -> entry,   // ended unpriced or interrupted runs;
-                                  // how = 'entered' (default: the Commander typed the charge) | 'limit' (counted at its per-run
+                                  // how = 'entered' (default: the Master typed the charge) | 'limit' (counted at its per-run
                                   // limit) | 'recorded' (at the charge a damaged line still records) | 'assumed' (at the assumption)
      unknownItems() -> item[],    // those receipts as the open unknown items, each with the figure it is counted at (below)
      markUnsettled(runId) -> boolean, // move an ended, unpriced dispatch receipt into the same recovery path without writing
@@ -48,7 +48,7 @@
   const UNKNOWN_IMAGE_AUX = 'image-unknown-cost';
   /* THE EXPLICIT UNKNOWN-SPEND STATE (spend-governor S3, customer reports d688ea20). An open receipt is one charge nobody
      recorded, and it used to make ALL spend unknown: one torn line, or a run interrupted three days ago, refused every run
-     under any limit the Commander chose until someone settled it. Each open receipt is now an item counted at its BOUND
+     under any limit the Master chose until someone settled it. Each open receipt is now an item counted at its BOUND
      (budget.js counts it in every limit that can contain it):
        damaged      a record line that could not be read: the charge it still records ('recorded': the host reads a complete
                     "usd" field off the line), else 'assumed': the largest single charge this ledger records, and never less
@@ -58,7 +58,7 @@
                     past it). With none it has NO bound, and only such an item can still refuse a limit that covers it.
        evaluation   a skill evaluation run whose call came back unpriced or cut off: the same rule (its receipt names its limit).
      countAs is the one-click figure SPENDING LIMITS offers for EVERY item (COUNT AS): its bound, or the assumption for an item
-     with none. Counted in memory only: nothing is written until the Commander settles it, and a counted item is never $0. */
+     with none. Counted in memory only: nothing is written until the Master settles it, and a counted item is never $0. */
   const UNKNOWN_CHARGE_USD = 2;
   const EVALUATION_RUN_PREFIX = 'skill-eval-';   // skill-evaluation-runner.js names every evaluation run in this namespace
   // how a settlement booked its figure (settleUnsettled); an older build reads anything but 'limit' as 'entered'
@@ -84,7 +84,7 @@
     const pending = new Map();   // exact durable dispatch receipt, not just a live-run flag
     const failedBookings = new Set(); // a known charge may already be journaled; never offer another manual booking
     // An interrupted run's dispatch receipt (io.unsettled) makes ONE run's spend unknown, not the whole logbook:
-    // the readable rows stay, history reads incomplete until the Commander settles each run (settleUnsettled).
+    // the readable rows stay, history reads incomplete until the Master settles each run (settleUnsettled).
     const unsettled = new Map();
     try {
       const raw = io.readAll(); if (!Array.isArray(raw)) throw new Error('invalid ledger response'); rows = raw.filter(r => r && typeof r === 'object');
@@ -101,7 +101,7 @@
         damagedLines: [...unsettled.values()].filter(r => r && r.kind === 'damaged').length
       };
     }
-    // meta (optional object, or a getter for one): what the receipt may name about the dispatch so the Commander can
+    // meta (optional object, or a getter for one): what the receipt may name about the dispatch so the Master can
     // find the charge later. runCapUsd is the run's own per-run limit when it started — never a booked amount.
     function receiptMeta(meta) {
       try { if (typeof meta === 'function') meta = meta(); } catch (_) { meta = null; }
@@ -168,7 +168,7 @@
         ...(str(e.aux).trim() ? { aux: str(e.aux).trim().slice(0, 40) } : {}),   // (additive) a housekeeping call's spend (reflection, study…), not a run
         ts: num(e.ts) || clock.now()
       };
-      // settleUnsettled, not a meter: the Commander settled this run. attestedAs says HOW — 'entered' (they typed the
+      // settleUnsettled, not a meter: the Master settled this run. attestedAs says HOW — 'entered' (they typed the
       // charge from the provider dashboard), 'limit' (they chose to count it at the per-run limit it started with, a
       // figure its last call can run past), 'recorded' (at the charge a damaged line still records) or 'assumed' (at the
       // assumption for a charge nobody can read). Never claim "entered" for a one-click booking.
@@ -199,7 +199,7 @@
       return entry;
     }
 
-    /* The ONE way an interrupted run's unknown spend becomes known: the Commander states what the provider charged, or
+    /* The ONE way an interrupted run's unknown spend becomes known: the Master states what the provider charged, or
        books one of the figures SPENDING LIMITS offers in one click (COUNT AS: its limit, the charge its line records, or the
        assumption), and the row says which (attestedAs). Never automatic. A receipt found unsettled at boot or explicitly marked
        after an unpriced dispatch qualifies; live pending runs still book themselves. The row keeps dispatch time and is
@@ -220,7 +220,7 @@
     }
 
     /* METERED dollars only. `unmetered` marks a run paid for by a SUBSCRIPTION (Grok/Kimi OAuth, a
-       ChatGPT plan) whose provider-reported figure is an estimate of nothing the Commander was charged.
+       ChatGPT plan) whose provider-reported figure is an estimate of nothing the Master was charged.
        The flag was stamped at record time and had ZERO readers on this side, so the same run read two
        different amounts depending on the surface: /api/insights said $0.00 "subscription / unmetered"
        (insights.js honors it) while /api/budget's spentToday + lifetime and the budget governor's day and
@@ -265,7 +265,7 @@
       settleUnsettled,
       unknownItems,
       unsettledRuns() { return [...unsettled.values()].map(r => Object.assign({}, r)); },
-      // the Commander's settlement of an interrupted run, or null: { usd, attestedAs } from its attested row (the run
+      // the Master's settlement of an interrupted run, or null: { usd, attestedAs } from its attested row (the run
       // history reads this to stop calling a settled run spend-unknown). Newest-first, no copy of the whole log.
       attestedFor(runId) {
         const id = str(runId);

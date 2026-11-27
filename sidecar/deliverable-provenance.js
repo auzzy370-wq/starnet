@@ -34,7 +34,7 @@
   function str(v) { return v == null ? '' : String(v); }
 
   // A run row is "hidden work" when the harness marked it internal, or when the caller's stream classifier says
-  // its stream is harness self-talk. Neither is a contributor to a deliverable the Commander asked for.
+  // its stream is harness self-talk. Neither is a contributor to a deliverable the Master asked for.
   function hidden(row, isInternal) {
     if (!row) return true;
     if (row.internal) return true;

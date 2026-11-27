@@ -121,7 +121,7 @@
   }
 
   // wave a gap off forever. Returns true only when it actually took (a known, not-already-dismissed gap).
-  // Unlike dossier quests these are ALWAYS dismissible — a fix-it suggestion the Commander waves off must
+  // Unlike dossier quests these are ALWAYS dismissible — a fix-it suggestion the Master waves off must
   // stop nagging even though the real gap is still open (the sandbox law: the station suggests, never pushes).
   function dismiss(state, id, now) {
     if (!state || !state.gaps || !id) return false;

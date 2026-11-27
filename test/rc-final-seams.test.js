@@ -1,5 +1,5 @@
 /* node test/rc-final-seams.test.js — the open RC-walk seams (qa/evidence/rc-walk-1013/FINDINGS.md), each locked where the
-   Commander reads it. The panels' OWN functions are sliced out of the shipped files (A.fnBody) and run in a vm over stubs, or
+   Master reads it. The panels' OWN functions are sliced out of the shipped files (A.fnBody) and run in a vm over stubs, or
    the UMD module is required directly:
      #30  the Workflow panel's ✓ DELIVERED says when the job was NOT counted in SHIPPED (the server's per-job answer), and a
           settled job re-reads TODAY at once, so the card and the plate agree

@@ -1,6 +1,6 @@
-/* sidecar/journey-store.js — durable Commander-journey progression.
+/* sidecar/journey-store.js — durable Master-journey progression.
 
-   This is deliberately NOT XP. XP remains the agent/Commander feedback relationship; this store records the
+   This is deliberately NOT XP. XP remains the agent/Master feedback relationship; this store records the
    separate causal spine the game was missing:
 
      explicit goal -> verified quest/milestone/metric outcome -> domain mastery -> adaptation receipt ->
@@ -150,7 +150,7 @@ function normReceipt(r) {
 function normalize(raw) {
   const r = raw && typeof raw === 'object' ? raw : {};
   const allMetrics = (Array.isArray(r.metrics) ? r.metrics : []).map(normMetric).filter(Boolean);
-  // Retired rows are expendable history; active Commander metrics are not. A malformed/legacy file with more
+  // Retired rows are expendable history; active Master metrics are not. A malformed/legacy file with more
   // than the nominal cap must preserve every active row rather than silently deleting user-entered truth.
   const activeMetrics = allMetrics.filter(m => m.status === 'active');
   const retiredKeep = new Set(allMetrics.filter(m => m.status === 'retired').slice(-Math.max(0, METRIC_CAP - activeMetrics.length)));
@@ -235,7 +235,7 @@ function foldOutcome(rec, input, now) {
 function questFoldGate(q) {
   if (!q || !q.id || q.status !== 'done') return { ok: false, error: 'a completed quest is required' };
   const attest = q.attest && q.attest.confirmed === true ? q.attest : null;
-  if (q.contract && q.contract.type === 'attest' && !attest) return { ok: false, error: 'attest completion requires Commander-confirmed evidence' };
+  if (q.contract && q.contract.type === 'attest' && !attest) return { ok: false, error: 'attest completion requires Master-confirmed evidence' };
   return { ok: true, attest, sourceId: clip('quest:' + q.id, 120) };
 }
 
@@ -346,7 +346,7 @@ function makeJourneyStore(deps) {
   // opts.authority (sidecar-internal ONLY — the POST /api/journey route never passes a third argument, so a client
   // can never claim it): the step was settled by the harness from its quest slate (sidecar/goal-advance.js), which
   // names the honest authority — 'harness-contract' when a mechanical contract completed work, 'commander-confirmed'
-  // when every completed quest was the Commander's own report.
+  // when every completed quest was the Master's own report.
   async function recordMilestone(d, now, opts) {
     d = d || {}; let result = null;
     const sourceId = 'milestone:' + clip(d.goalId, 64) + ':' + clip(d.milestoneId, 80);
@@ -386,7 +386,7 @@ function makeJourneyStore(deps) {
 
   async function confirmGoal(d, now) {
     d = d || {}; const id = clip(d.id, 64), evidence = clip(d.evidence, 1000);
-    if (typeof d.id !== 'string' || typeof d.evidence !== 'string' || !id || d.id.length > 64 || !evidence) return { ok: false, error: 'goal id and Commander evidence are required' };
+    if (typeof d.id !== 'string' || typeof d.evidence !== 'string' || !id || d.id.length > 64 || !evidence) return { ok: false, error: 'goal id and Master evidence are required' };
     let goal = null, outcome = null, duplicate = false;
     await durable.update(STORE_KEY, cur => {
       const rec = normalize(cur); goal = rec.goals.find(g => g.id === id);
@@ -440,16 +440,16 @@ function makeJourneyStore(deps) {
       if (reached(m) && m.reachedAt == null) {
         m.reachedAt = stamp(now);
         outcome = foldOutcome(rec, { sourceId: 'metric:' + m.id + ':reached', kind: 'metric', goalId: m.goalId,
-          title: m.label + ' reached ' + m.target + (m.unit ? ' ' + m.unit : ''), evidence: 'Commander recorded ' + value + (m.unit ? ' ' + m.unit : ''),
+          title: m.label + ' reached ' + m.target + (m.unit ? ' ' + m.unit : ''), evidence: 'Master recorded ' + value + (m.unit ? ' ' + m.unit : ''),
           verifiedBy: 'commander-client', goalDone: false }, now);   // one metric target proves itself, never the whole life goal
       }
       // Goal-scoped high-water checkpoints survive metric retirement/replacement and regressions.
-      // They describe a Commander-reported metric improvement, never a percentage of the life goal.
+      // They describe a Master-reported metric improvement, never a percentage of the life goal.
       const progress = (m.current - m.baseline) / (m.target - m.baseline);
       for (const checkpoint of [25, 50, 75, 100]) {
         if (progress * 100 >= checkpoint) award(rec, { key: 'goal:' + m.goalId + ':metric:' + checkpoint,
           kind: 'metric', goalId: m.goalId, title: m.label + ': ' + checkpoint + '% of metric target',
-          evidence: 'Commander recorded ' + value + (m.unit ? ' ' + m.unit : '') + (d.note ? ' — ' + clip(d.note, 240) : ''),
+          evidence: 'Master recorded ' + value + (m.unit ? ' ' + m.unit : '') + (d.note ? ' — ' + clip(d.note, 240) : ''),
           verifiedBy: 'commander-client' }, now);
       }
       metric = Object.assign({}, m); return rec;

@@ -1,7 +1,7 @@
 /* VULTRON — autojobs.js : the PURE engine for SELF-INITIATION (Slice 2 of the autonomy layer).
 
-   The agent stops only ever waiting for orders: once it knows the Commander and they've turned autonomy on, it
-   PROPOSES a few recurring STANDING JOBS grounded in what it knows — the Commander approves the ones they want, and
+   The agent stops only ever waiting for orders: once it knows the Master and they've turned autonomy on, it
+   PROPOSES a few recurring STANDING JOBS grounded in what it knows — the Master approves the ones they want, and
    each approved job becomes a scheduled cron routine that wakes unattended and leaves a draft on the desk.
 
    This is the deterministic skeleton; the model fills one narrow reasoning slot (what the jobs actually are). Same
@@ -29,14 +29,14 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  const REQUIRE_DIMS = ['goals'];   // can't propose useful standing work without knowing what the Commander wants
+  const REQUIRE_DIMS = ['goals'];   // can't propose useful standing work without knowing what the Master wants
   const MIN_KNOWN = 2;              // at least two dossier dimensions filled before the station dares to self-initiate
-  const MAX_PROPOSALS = 3;          // never a wall of jobs — a few high-signal proposals, the Commander stays in control
-  const MAX_JOBS = 8;              // don't proactively offer more when the Commander already runs this many routines
+  const MAX_PROPOSALS = 3;          // never a wall of jobs — a few high-signal proposals, the Master stays in control
+  const MAX_JOBS = 8;              // don't proactively offer more when the Master already runs this many routines
   const NAME_CHARS = 80;           // cron job name cap (matches the routines form maxlength)
 
   // THE CADENCE MENU — a small curated set of VALID schedule strings (each parses in sidecar/cron.js: interval or a
-  // 5-field numeric cron). The model picks one id per job; the Commander can retune it later in the ROUTINES panel.
+  // 5-field numeric cron). The model picks one id per job; the Master can retune it later in the ROUTINES panel.
   // Kept here (not model-authored) so a routine can never be scheduled with an unparseable expression.
   const CADENCES = [
     { id: 'morning',  label: 'every morning',        schedule: '0 9 * * *', atHour: 9 },
@@ -92,7 +92,7 @@
     return { go: true, reason: 'ready' };
   }
 
-  // THE DIRECTIVE — the reason-only task the agent runs to GENERATE its proposals. It already carries the COMMANDER
+  // THE DIRECTIVE — the reason-only task the agent runs to GENERATE its proposals. It already carries the MASTER
   // dossier block in its live system prompt; this hands it the same beliefs explicitly (so a weak model can't miss
   // them) and hard-constrains the output to grounded, achievable-now, strictly-tagged standing jobs.
   //   beliefs       — { goals:[text], pain:[text], ambition:[text], stack:[text], standing_orders:[text], ... }
@@ -106,7 +106,7 @@
 
     const lines = [];
     lines.push('INTERNAL — SELF-INITIATION. Do not run any tools. Reason only, then reply in the exact format below.');
-    lines.push('You now know your Commander. Propose up to ' + max + ' RECURRING STANDING JOBS worth running for them on a schedule — real, useful, recurring work, not generic filler.');
+    lines.push('You now know your Master. Propose up to ' + max + ' RECURRING STANDING JOBS worth running for them on a schedule — real, useful, recurring work, not generic filler.');
     // hand the model the grounding material explicitly
     const dimLine = (key, label) => {
       const arr = Array.isArray(beliefs[key]) ? beliefs[key].filter(Boolean) : [];
@@ -132,7 +132,7 @@
     lines.push('WHY: <one sentence — the specific goal/pain/ambition it serves>');
     lines.push('GROUNDS: <the exact thing you know that grounds it>');
     lines.push('CADENCE: <one id from the list>');
-    lines.push('RUN: <the standing instruction the job runs each time — a self-contained reasoning/drafting task that ends by leaving a clear draft for the Commander>');
+    lines.push('RUN: <the standing instruction the job runs each time — a self-contained reasoning/drafting task that ends by leaving a clear draft for the Master>');
     return lines.join('\n');
   }
 
@@ -201,7 +201,7 @@
       deliver: 'local',
       repeat: { times: null }
     };
-    // TZ HONESTY (cadence item #4): persist the device zone so a wall-clock cadence FIRES on the Commander's local
+    // TZ HONESTY (cadence item #4): persist the device zone so a wall-clock cadence FIRES on the Master's local
     // 9:00 (not UTC), matching the "your local time" label. Additive: the sidecar's /api/cron accepts an optional
     // `tz` (IANA); a tz-less body still resolves under the host default, so this never breaks an old caller. Only
     // attach it for a wall-clock cadence (an interval has no local anchor) and only when we could resolve one.

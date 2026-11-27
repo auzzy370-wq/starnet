@@ -9,7 +9,7 @@
    · TICKET in the PATH (apitickets kind 'plugin', scope = id + digest): relative assets inherit it; the verifier
      derives the scope from the path, never from the ticket.
    · DIGEST in the PATH, re-proven on every request against the approval (plugins.js approvedRecord): a file is
-     served only while the Commander's approval covers the exact bytes on disk. Edit one character and the open
+     served only while the Master's approval covers the exact bytes on disk. Edit one character and the open
      window's next request is refused with 410 — the edited code is not running until it is approved again.
    · OPAQUE ORIGIN: every response carries `Content-Security-Policy: sandbox allow-scripts …` WITHOUT
      allow-same-origin. The page runs, but it can never read the app's DOM, the injected API token, or call /api/*

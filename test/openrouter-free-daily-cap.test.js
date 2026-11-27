@@ -3,7 +3,7 @@
 
    OpenRouter answers the free-model per-day limit with HTTP 429 "Rate limit exceeded: free-models-per-day. Add 10
    credits to unlock 1000 free model requests per day". Its reset is the next UTC day, so a retry is doomed by
-   construction. Live (sweep rig, mock OpenRouter): the run sent 7 POSTs over ~102 s and then told the Commander
+   construction. Live (sweep rig, mock OpenRouter): the run sent 7 POSTs over ~102 s and then told the Master
    "The model provider is busy (too many requests) — wait a few seconds and try again" with a ↻ retry. The
    per-MINUTE free limit ("free-models-per-min") is a genuine short window and must stay a retryable rate limit.
 
@@ -55,7 +55,7 @@ async function thrown(p, req) {
     A.eq(calls.length, 1, 'daily cap: the adapter sends ONE request, no pre-stream retry ladder');
     A.ok(!(err && err.preStreamRetriesExhausted), 'daily cap: not marked as an exhausted transient retry');
 
-    // ---- what the Commander is told, on BOTH friendlyerror paths ----
+    // ---- what the Master is told, on BOTH friendlyerror paths ----
     for (const [label, F] of [['browser', BrowserFriendly], ['node', NodeFriendly]]) {
       const v = F.friendlyError(cls.message);
       A.eq(v.kind, 'quota_exhausted', label + ' copy: daily cap reads as a spent allowance (got ' + v.kind + ')');

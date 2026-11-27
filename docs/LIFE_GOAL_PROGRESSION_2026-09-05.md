@@ -1,6 +1,6 @@
 # Life-goal progression — 2026-09-05
 
-The Commander level now represents recorded progress toward registered personal goals.
+The Master level now represents recorded progress toward registered personal goals.
 Crew feedback XP still represents crew development. Completing a plan does not assert
 that the real-world goal has been achieved.
 
@@ -9,7 +9,7 @@ that the real-world goal has been achieved.
 1. Create a goal with a success condition and at least one actionable step, or add a
    success condition to an existing plan. Choose which active goal to focus on.
 2. Ask Vultron to help, or perform the action yourself and report what happened.
-3. Track goal metrics and inspect the evidence behind earned Commander points.
+3. Track goal metrics and inspect the evidence behind earned Master points.
 4. Get next-step recommendations informed by goal criteria, metrics, prior results,
    and blocker feedback. Defer, mark blocked, request a smaller step, or resume a quest.
 5. Extend a completed plan when more work remains. Explicitly confirm the outcome
@@ -17,7 +17,7 @@ that the real-world goal has been achieved.
 
 The first scoring model awards 10 points for a goal-linked milestone or confirmed
 quest, 10 at each goal-scoped metric checkpoint, and 100 for a confirmed goal.
-Every 100 points advances one Commander level. These weights are initial product
+Every 100 points advances one Master level. These weights are initial product
 choices, not a calibrated measure of distance to a life goal. Evidence receipts
 distinguish user reports from other completion records. Existing earned history is
 preserved; historical records do not receive invented retroactive points.
@@ -38,10 +38,10 @@ reason, if the planning context changed while the request was running.
 `node dev/life-goal-proof.mjs` launches its own seeded app and browser. The final
 combined source passed the DOM -> HTTP -> durable store -> restart walkthrough:
 
-- Three reported actions: active goal, 100% of plan, 30 Commander points, no achieved goal.
+- Three reported actions: active goal, 100% of plan, 30 Master points, no achieved goal.
 - Metric updates reached the planner request. A generated quest was deferred,
   resumed, and completed through a user report.
-- Explicit outcome confirmation: 160 points, Commander level 2, evolution stage 1.
+- Explicit outcome confirmation: 160 points, Master level 2, evolution stage 1.
 - Restart and repeated confirmation: unchanged points and evolution, no active completed goal.
 - No collected browser warnings/exceptions or unthemed native-control paint failures.
 
@@ -51,7 +51,7 @@ provider. Installed-desktop behavior and release packaging are outside this proo
 
 The next product validation should assess whether recommended steps actually move
 users toward their success conditions, and tune scoring and recommendation ranking
-from that evidence. No powers or capabilities are locked behind Commander levels.
+from that evidence. No powers or capabilities are locked behind Master levels.
 
 ## Integration verification
 

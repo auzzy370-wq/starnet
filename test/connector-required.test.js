@@ -146,7 +146,7 @@ function ctxFor(runId) {
       A.ok(/could not be raised for: gmail: bus dead/.test(r.content), 'a lost emit is named in the result (catch fires, says so)');
     }
     // a card whose sign-in is DISABLED in this build is not a door: no chip event, and the model is told not to
-    // send the Commander to sign in (first-hour walk 2026-09-28: "sign in with Google, no setup" beside a disabled button)
+    // send the Master to sign in (first-hour walk 2026-09-28: "sign in with Google, no setup" beside a disabled button)
     {
       const reason = 'Google sign-in is not available in this build.';
       const t = makeConnectorTools({ connectors: { list: () => [] }, connectorCatalog: catalog, keysCatalog: null,
@@ -157,7 +157,7 @@ function ctxFor(runId) {
       const r = await t.listTool.run({ goal: 'send my newsletter to subscribers', scope: 'available' }, ctx);
       A.ok(!ctx.emitted.some(e => e.name === 'connector_required' && e.payload.connectorId === 'gmail'), 'no CONNECT chip for a disabled sign-in');
       A.ok(/CANNOT BE CONNECTED IN THIS BUILD/.test(r.content) && /- gmail — Google sign-in is not available in this build\./.test(r.content), 'the model is told gmail cannot be connected, with the reason');
-      A.ok(/never tell them to sign in/.test(r.content), 'the model is told not to send the Commander to sign in');
+      A.ok(/never tell them to sign in/.test(r.content), 'the model is told not to send the Master to sign in');
       // blocked cards must not take the 3 slots from connectable ones (review nit 2026-09-28)
       const allBlocked = makeConnectorTools({ connectors: { list: () => [] }, connectorCatalog: catalog,
         signInUnavailable: e => (e && e.id !== 'composio' ? 'off in this build' : '') });

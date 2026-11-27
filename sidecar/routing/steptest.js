@@ -1,6 +1,6 @@
 /* sidecar/routing/steptest.js — the conveyor STEP-THROUGH TEST (Andrew's ruling, 2026-09-22).
 
-   The Commander runs their OWN job through a real work line and the line PAUSES after each dock finishes: they
+   The Master runs their OWN job through a real work line and the line PAUSES after each dock finishes: they
    see the exact text that would be handed to the next dock, can edit it, re-run the step (after changing the
    bay's brief), rewind to an earlier hop, change where it stops, or stop. "Try this step" in the Workflow panel
    is the same engine with `single:true` — one dock, then done, with the next dock only PREVIEWED.

@@ -64,7 +64,7 @@ if (fs.existsSync(mirror)) {
 
 /* ---- THE SELF-GRANT HOLE (must stay closed) ----
    The entire safety property of the unattended grant is that a MODEL cannot mint one. There are three routine
-   creation paths; only the Commander's own panel request may carry grants. If either agent-reachable path ever
+   creation paths; only the Master's own panel request may carry grants. If either agent-reachable path ever
    spreads its caller args into the spec, an agent could schedule itself a terminal — silently. Lock both. */
 {
   const agentTool = fs.readFileSync(path.join(root, 'sidecar', 'tools', 'builtin', 'routines.js'), 'utf8');

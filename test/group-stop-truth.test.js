@@ -1,7 +1,7 @@
 /* node test/group-stop-truth.test.js — STOP in a GROUP chat ends the waiting approval honestly and keeps the run's narration
    readable (live walk with a real model, 2026-10-14).
 
-   Found on the 0.13.5 candidate: the lead reached an approval card (loop.create), the Commander pressed STOP, and
+   Found on the 0.13.5 candidate: the lead reached an approval card (loop.create), the Master pressed STOP, and
      · the approval card simply disappeared — no retire line (one-on-one says "■ the run ended before an answer — nothing
        was approved");
      · the run's whole narration collapsed to its LAST sentence ("Good. Now I can create the loop:") plus
@@ -56,7 +56,7 @@ const byClass = (root, c) => all(root).filter(e => e._cls && e._cls.has(c));
     readFile: async () => ({ name: 'x.md', content: 'aGk=', bytes: 2, hash: 'h' }), decodeFile: f => ({ text: 'hi', hash: f.hash }), uploadFile: (name, content) => ({ name, content, hash: 'h' }) };
   const api = makeGroupSessions(deps); await api.ready;
   const said = ['I\'ll set up the line first. Let me look at what the station has.', 'The steps are locked; the system won\'t let me reconfigure them. Let me take a different approach and create a loop instead.', 'Good. Now I can create the loop:'];
-  // the lead narrates across three model turns, then asks to create a loop and waits; the Commander stops it there
+  // the lead narrates across three model turns, then asks to create a loop and waits; the Master stops it there
   execute = async o => {
     for (const s of said) o.emit('agent.token', { runId: o.runId, delta: s });
     const answer = await o.prompt({ tool: 'loop.create', scope: 'write', argsSummary: '{"name":"Launch post"}' });

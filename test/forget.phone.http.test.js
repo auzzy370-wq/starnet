@@ -4,11 +4,11 @@
    The rest of commit 11 is proved on the page's routes (test/forget.tool-quotes.http.test.js); this is the same rule over the phone's: a real sealed phone,
    the real remote host, and a provider the test controls. Rows are seeded straight into the transcript while the station is stopped (the stamp is what a
    run that read the session leaves: quotes + quotesAt), the desk's save holds its own cached copies of the stamped reply (the keyed copy the page keeps, which
-   the merge folds into the station's row, and an id-less provisional one), and the Commander deletes the quoted session with the save the page sends.
+   the merge folds into the station's row, and an id-less provisional one), and the Master deletes the quoted session with the save the page sends.
 
      before   the phone's thread holds the stamped reply (the station's row, with the desk's keyed copy folded into it) and the desk's id-less user row
      after    thread: no word of the deleted session. The station's row is hidden by the quote rule, so the desk's keyed copy has no twin left and would
-              survive the merge as a desk-only row: it is the identity.forgotten list the host carries to the merge (TurnMerge R2) that drops it. The Commander's
+              survive the merge as a desk-only row: it is the identity.forgotten list the host carries to the merge (TurnMerge R2) that drops it. The Master's
               own typed words, the unstamped answer and the desk's id-less USER row of the same run stay
      send     a phone send under window:shadow and window:id hands the provider no word of the deleted session and still hands it the unstamped answer
    RED at the previous commit: the host's display read never carried what the quote rule hid, and the store did not hide a stamped row at all. */
@@ -57,13 +57,13 @@ const textOf = rows => (Array.isArray(rows) ? rows : []).map(r => String(r && r.
     A.ok(before.some(r => r.content === 'PHONE_DESK_USER_NOTE'), '...and the desk\'s id-less user row of that run (the merge keeps a desk row the station has no twin of)');
     A.eq(before.filter(r => String(r.content).includes(SENT)).length, 1, '...the reply once: the desk\'s keyed copy folds into the station\'s row, and the id-less provisional copy of a reply the station holds is not a second line');
 
-    // ---------------- the delete (the Commander's Delete: the save without q, with q in deletedIds and forgetIds)
+    // ---------------- the delete (the Master's Delete: the save without q, with q in deletedIds and forgetIds)
     await saveWith([{ id: 's', agentId: 'agent', title: 'Phone', history: deskHistory }], { deletedIds: ['q'], forgetIds: ['q'] });
     const after = await fx.read('s');
     A.ok(after.identity && after.identity.forgotten && after.identity.forgotten.keys.some(k => k[1] === reply.rowId) && after.identity.forgotten.runIds.includes('seedrun1'), 'GET identity lists the row the quote rule hid and the run it came from');
     const thread = await fx.phoneCall('thread', { streamId: 's', limit: 100 });
     A.ok(!textOf(thread).includes(SENT), 'the phone\'s thread holds no word of the deleted session (the station\'s row, the desk\'s keyed copy and its id-less copy are all gone): ' + textOf(thread).slice(0, 300).replace(/\n/g, ' | '));
-    A.ok(thread.some(r => r.content === 'PHONE_ASK_ONE') && thread.some(r => r.content === 'PHONE_ASK_TWO') && thread.some(r => r.content === 'PHONE_PLAIN_ANSWER'), 'the Commander\'s typed words and the unstamped answer stay');
+    A.ok(thread.some(r => r.content === 'PHONE_ASK_ONE') && thread.some(r => r.content === 'PHONE_ASK_TWO') && thread.some(r => r.content === 'PHONE_PLAIN_ANSWER'), 'the Master\'s typed words and the unstamped answer stay');
     A.ok(thread.some(r => r.content === 'PHONE_DESK_USER_NOTE'), 'the desk\'s id-less USER row of the forgotten run stays (a user row is never a copy a run took by reading a session)');
 
     // ---------------- a phone send: the provider is handed nothing of the deleted session

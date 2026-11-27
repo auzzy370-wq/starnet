@@ -279,7 +279,7 @@ const recId = (jobId, runId) => 'routine:' + jobId + ':' + runId + ':@origin';
     w.rule((c) => c.op === 'send' && c.text.indexOf('R1-P3 ') >= 0, 1, 'fail');
     await w.fire('daily', 'run-1', digest('R1'));
     A.eq(w.parts('R1'), [1, 1, 0], '(c) the daily digest is half sent');
-    // the Commander pauses both routines
+    // the Master pauses both routines
     w.proc.edit((jobs) => cronStore.pauseJob(cronStore.pauseJob(jobs, 'daily'), 'weekly'));
     await w.advance(70000);
     A.eq(w.parts('R1'), [1, 1, 1], '(c) the started digest finishes while its routine is paused (was: its last part held until the resume)');

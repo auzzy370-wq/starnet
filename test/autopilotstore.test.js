@@ -30,7 +30,7 @@ AutopilotStore.init({
 
 /* ---------- a just-active station does nothing ---------- */
 A.eq(AutopilotStore.tick().mode, 'none', 'fresh init starts ACTIVE → no fire (reason: not idle)');
-A.eq(offers, 0, 'no curiosity asked while the Commander is active');
+A.eq(offers, 0, 'no curiosity asked while the Master is active');
 
 /* ---------- going idle earns ONE thing ---------- */
 nowMs += IDLE;
@@ -216,7 +216,7 @@ A.ok(/value:\s*'undo'/.test(appSrc), 'B3: the undo action is wired into the welc
   AutopilotStore.init(Object.assign(baseDeps(goodChat), { digest: (info) => { digested = info; }, digestAwayMs: 300000 }));
   nowMs += 60000;                 // a minute of idle passes, then the autopilot works
   await AutopilotStore.act();
-  nowMs += 400000;                // ~6.6 min later the Commander returns
+  nowMs += 400000;                // ~6.6 min later the Master returns
   AutopilotStore.noteActivity();
   A.ok(digested && digested.drafts.length >= 1, 'returning after a real absence shows the welcome-back digest of drafts made while away');
   // a brief glance away does NOT trigger it
@@ -247,7 +247,7 @@ A.ok(/value:\s*'undo'/.test(appSrc), 'B3: the undo action is wired into the welc
   AutopilotStore.init(Object.assign(baseDeps(tieChat), { getPosture: () => ({ enabled: true, actsUnattended: true, leashPerDay: 9 }) }));
   A.eq((await AutopilotStore.act()).archetype, 'advance-goal', 'with no learning, a tie picks advance-goal (the fixed order)');
   AutopilotStore.rate('kill-pain', true); AutopilotStore.rate('kill-pain', true);   // net +2 → +0.5 selection bias
-  A.eq((await AutopilotStore.act()).archetype, 'kill-pain', 'after the Commander likes kill-pain twice, it wins the tie — the learn hook re-weights selection per Commander');
+  A.eq((await AutopilotStore.act()).archetype, 'kill-pain', 'after the Master likes kill-pain twice, it wins the tie — the learn hook re-weights selection per Master');
 
   /* ---------- B2: the act path WRITES a real local file when permitted ---------- */
   let writeCalls = [];

@@ -244,7 +244,7 @@ const STATION = 'STATIONTOKEN', TOK_A = 'TOKAAA', TOK_B = 'TOKBBB';
     }, 5000, 'both bots CONNECTED in status');
 
     // Polling is not DM readiness: an ordinary pre-pair DM is intentionally silent, but the add response already
-    // gave the Commander the exact enrollment command instead of leaving them to discover a second control.
+    // gave the Master the exact enrollment command instead of leaving them to discover a second control.
     const prePairSends = tg.perToken[TOK_A].sends.length;
     tg.pushText(TOK_A, 900, 77, 'why are you not answering?');
     await sleep(1200);

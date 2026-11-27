@@ -111,7 +111,7 @@ A.ok(!EC.normalizeInput({ key: 'x'.repeat(5000) }).ok, 'an absurd key is refused
   // a second origin (127.0.0.1 vs localhost — separate localStorage) boots holding a different key it never saved here
   A.eq(store.put('openrouter', { key: 'sk-or-v1-other-origin' }, { boot: true, ifRev: '' }), { ok: true, changed: false, applied: false, stale: true }, 'another page\'s boot cannot replace a key it never saw');
   A.eq(store.get('openrouter').key, OLD, 'the station keeps the first page\'s key');
-  // the Commander rotates the key in page B (explicit save = last write wins)
+  // the Master rotates the key in page B (explicit save = last write wins)
   A.eq(store.put('openrouter', { key: NEW }).applied, true, 'an explicit save always applies');
   // page A (still holding OLD, last saw `seen`) boots again: OLD must not come back
   A.eq(store.put('openrouter', { key: OLD }, { boot: true, ifRev: seen }).stale, true, 'a boot from the page that last saw an older revision is stale');
@@ -277,14 +277,14 @@ A.ok(NR.bindingPhrase('no-provider').indexOf(EC.UNATTENDED_REMEDY) >= 0, 'nightr
     A.eq(hr({ key: KX, baseUrl: 'https://explicit.example/v1' }), { key: KX, baseUrl: 'https://explicit.example/v1' }, "a body's own endpoint still rides its own key");
   }
   // (review r3) a SUBSCRIPTION sign-in's OAuth bearer (ChatGPT, Grok, Kimi) never follows a per-run endpoint — an
-  // /api/run body's, a channel snapshot's — as the managed Vultron credential never does; the Commander's own still applies
+  // /api/run body's, a channel snapshot's — as the managed Vultron credential never does; the Master's own still applies
   {
     PROFILES.codex = { authType: 'oauth_device_code', keyEnv: [], baseUrlEnv: [], baseUrl: '' };
     PROFILES.kimi = { authType: 'oauth_device_code', keyEnv: [], baseUrlEnv: ['KIMI_BASE_URL'], baseUrl: 'https://api.kimi.example/v1' };
     const evil = 'https://third-party.example/v1';
     A.eq(resolvers({}).providerRuntimeBaseUrl('codex', evil), '', "a per-run endpoint never carries the ChatGPT sign-in's bearer");
     A.eq(resolvers({}).providerRuntimeBaseUrl('kimi', evil), 'https://api.kimi.example/v1', "...nor a device sign-in's: the profile endpoint");
-    A.eq(resolvers({ env: { KIMI_BASE_URL: UE } }).providerRuntimeBaseUrl('kimi', evil), UE, "the Commander's own endpoint (env) still applies");
+    A.eq(resolvers({ env: { KIMI_BASE_URL: UE } }).providerRuntimeBaseUrl('kimi', evil), UE, "the Master's own endpoint (env) still applies");
     A.eq(resolvers({}).providerRuntimeBaseUrl('custom', evil), evil, 'a key provider keeps its per-run endpoint');
   }
   // (review r4, M3) a STATION-HELD API key — the desktop keychain's runtime push, an operator env key, the page copy — never

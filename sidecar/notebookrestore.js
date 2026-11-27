@@ -58,7 +58,7 @@
   }
 
   // ADDITIVE union by id: existing always wins on a collision (never clobber memory formed since the backup).
-  // opts.declined (the agent's declined texts) skips incoming notes the Commander forgot; opts.skipped (an array)
+  // opts.declined (the agent's declined texts) skips incoming notes the Master forgot; opts.skipped (an array)
   // collects the ids skipped, so the route can report them instead of a silent count gap.
   function mergeNotes(existing, incoming, opts) {
     opts = opts || {};

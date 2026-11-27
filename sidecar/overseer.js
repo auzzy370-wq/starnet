@@ -43,14 +43,14 @@ function makeOverseer(deps) {
     const read = deps.sessionsRead ? deps.sessionsRead() : { doc: deps.sessions(), stamp: '' };
     const legacy = (read && read.doc) || {};
     const deleted = new Set(legacy.deletedIds || []);
-    // the page's list is the newest 500 ids and a NEW AGENT clears it: the sidecar's own ledger of the Commander's deletes (deps.forgotten(id, ts),
+    // the page's list is the newest 500 ids and a NEW AGENT clears it: the sidecar's own ledger of the Master's deletes (deps.forgotten(id, ts),
     // session-tombstones) is the authority, so a thread filed in a deleted session never reads back as live (turn identity commit 12)
     if (typeof deps.forgotten === 'function') for (const w of state.threads) if (deps.forgotten(w.id, Number(w.createdAt) || 0)) deleted.add(w.id);
     const rows = new Map((legacy.workstreams || []).map(w => [w.id, w]));
     for (const w of state.threads) {
       if (deleted.has(w.id)) { rows.delete(w.id); continue; }
       const visible = rows.get(w.id);
-      // the page's saved copy wins for what the Commander edits (title, lane…), but never blanks the project this thread
+      // the page's saved copy wins for what the Master edits (title, lane…), but never blanks the project this thread
       // was filed under: a page that adopted it before learning the project saves projectRoot:null
       rows.set(w.id, Object.assign({}, w, visible || {}, { parentStreamId: w.parentStreamId, projectHome: !!w.projectHome, worker: w.worker === true,
         projectRoot: (visible && visible.projectRoot) || w.projectRoot || null }));
@@ -97,7 +97,7 @@ function makeOverseer(deps) {
     const key = String(ref || '').trim().toLowerCase();
     const exact = rows.filter(w => w.id === ref);
     const named = rows.filter(w => w.title.toLowerCase() === key);
-    // a name means the conversation the Commander can see, never a delegated worker's thread that shares it
+    // a name means the conversation the Master can see, never a delegated worker's thread that shares it
     const visible = named.filter(w => w.worker !== true);
     const hits = exact.length ? exact : (visible.length ? visible : named);
     if (hits.length !== 1) throw new Error(hits.length ? 'ambiguous session title; use its id' : 'no such session');
@@ -120,7 +120,7 @@ function makeOverseer(deps) {
     const parent = resolveIn(rows, args.parentStreamId);
     const duplicate = state.threads.find(w => args.requestId && w.requestId === args.requestId);
     if (duplicate) return copy(resolveIn(rows, duplicate.id));
-    // a hidden worker thread never blocks a name the Commander can see; worker threads stay unique among themselves too
+    // a hidden worker thread never blocks a name the Master can see; worker threads stay unique among themselves too
     const taken = name => rows.some(w => (args.worker === true || w.worker !== true) && w.title.toLowerCase() === name.toLowerCase());
     if (taken(title)) {
       // A delegated worker (or a caller passing uniqueTitle) wants a thread whatever the name, so pick a free one from
@@ -138,14 +138,14 @@ function makeOverseer(deps) {
       kind: 'chat', lane: 'active', history: [], runIds: [], createdAt: deps.now(), lastActiveAt: deps.now() };
     return update(s => { dropDeleted(s, deleted); s.threads.push(row); return row; });
   }
-  // A thread the Commander deleted is already hidden; its row is dropped from overseer.json the next time a thread is
+  // A thread the Master deleted is already hidden; its row is dropped from overseer.json the next time a thread is
   // filed, so the file does not keep one row per deleted worker forever. ensure() still refuses it while the save's
   // tombstone stands.
   function dropDeleted(s, deleted) { if (deleted.size) s.threads = s.threads.filter(w => !deleted.has(w.id)); }
   // A brand-new conversation whose FIRST ask delegates: its run is live before the page's debounced save lands, so the
   // overseer has never seen it and every worker lost its thread ("no such session", 2026-10-10). The run that asks proves
   // the conversation exists; it is filed from that run's identity, and the page's saved copy wins every field once it
-  // lands. A conversation the Commander deleted is never brought back.
+  // lands. A conversation the Master deleted is never brought back.
   function ensure(args) {
     const id = String(args.id || '');
     const { rows, deleted } = view();
@@ -181,7 +181,7 @@ function makeOverseer(deps) {
      have all settled, so NOVA posts one report naming each worker's part. A worker that never settles cannot hold that
      report forever: past the ceiling NOVA reports on the finished part and names who is still working, and the straggler
      gets one follow-up report when it settles. A worker stopped BECAUSE its lead run was cancelled (subagents.js
-     cancelChildren) gets no review: the Commander just pressed Stop on that conversation, and a fresh paid run
+     cancelChildren) gets no review: the Master just pressed Stop on that conversation, and a fresh paid run
      reporting the stop would override it. */
   const SETTLED = ['done', 'error', 'refused', 'interrupted', 'stale'];
   const ceilingMs = () => (Number(deps.reportCeilingMs) > 0 ? Number(deps.reportCeilingMs) : 600000);
@@ -306,12 +306,12 @@ function makeOverseer(deps) {
     // Stop admission immediately even when the disk cannot accept a receipt.
     emergencyPaused = true;
     // Keep cancellation in RAM even if persistence fails. A later successful
-    // resume must not resurrect work the Commander already stopped.
+    // resume must not resurrect work the Master already stopped.
     const next = copy(state);
     next.reviews.push(...freshReviews(workers || [], { force: true }));
     next.paused = true;
     for (const r of next.reviews) if (r.status === 'pending' || r.status === 'reviewing') {
-      r.status = 'cancelled'; r.error = 'Stopped by the Commander.';
+      r.status = 'cancelled'; r.error = 'Stopped by the Master.';
     }
     state = next;
     commit(state);
@@ -357,8 +357,8 @@ function makeOverseer(deps) {
 }
 /* station.read_session as the OVERSEER answers it (org P29-sys review, 2026-10-14). The lead's session.peek in an interactive
    coordinator run is wired to overseerStation (sidecar/index.js), which answers read_session itself and never reaches the
-   page's handler in stationcommands.js. A goal-loop step is stored as a user-role turn the Commander never typed: here it
-   reads as the STATION's line naming the goal ('Goal step: <goal>', speaker 'station'), never as the Commander's words, so
+   page's handler in stationcommands.js. A goal-loop step is stored as a user-role turn the Master never typed: here it
+   reads as the STATION's line naming the goal ('Goal step: <goal>', speaker 'station'), never as the Master's words, so
    the lead cannot tell the user "you asked me to continue…". Both heads (session + the pre-org-pass standing goal) and the
    saved-history fallback go through GoalLoop.stepOfTurn. What the goal loop SENDS the model for its own continuation is
    untouched: this is only how another session's history reads. */

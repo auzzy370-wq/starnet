@@ -1,6 +1,6 @@
-/* node test/nightshift-localday.test.js — the night-shift DAY KEY is the Commander's LOCAL calendar day.
+/* node test/nightshift-localday.test.js — the night-shift DAY KEY is the Master's LOCAL calendar day.
 
-   2026-10-05 audit item 6: nightshift.js reset the daily leash at UTC midnight (7 PM for a UTC-5 Commander), so the
+   2026-10-05 audit item 6: nightshift.js reset the daily leash at UTC midnight (7 PM for a UTC-5 Master), so the
    leash refilled mid-evening. Proves, with the offset INJECTED (never the machine zone):
      · localday.dayOf is the UTC bucket when unconfigured (every legacy pure test keeps its exact days)
      · with UTC-5 the leash does NOT roll at UTC midnight, and DOES roll at local midnight

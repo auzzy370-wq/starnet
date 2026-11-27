@@ -2,7 +2,7 @@
 
    Two lies a STOP used to tell:
    (1) the loop never read the run signal BETWEEN tool dispatches, so a turn that issued five writes kept
-       executing four of them after the Commander stopped it after the first;
+       executing four of them after the Master stopped it after the first;
    (2) a cancelled turn (and every retry/compress/fallback re-entry) returned without reconciling the usage
        the provider still bills, so the ledger booked $0 for a stopped 150k-prompt turn.
    Zero network — the replay provider and hand-rolled generators drive the loop. */
@@ -54,7 +54,7 @@ function threeWrites() {
       model: 'replay/model', agentId: 'a', runId: 'r', tools: [], limits: { maxIters: 5, grace: false }, signal: ac.signal,
       dispatch: (c, ctx) => reg.dispatch(c, ctx), capCtx: openCtx({ signal: ac.signal }), clock: { now: () => Date.now() }
     });
-    A.eq(ran, ['f0'], 'ONLY the first write executed after the Commander stopped the run');
+    A.eq(ran, ['f0'], 'ONLY the first write executed after the Master stopped the run');
     const tm = toolMsgs(res);
     A.eq(tm.map(m => m.tool_call_id), ['c0', 'c1', 'c2'], 'every requested call still has its paired transcript result');
     A.eq(tm[0].content, 'wrote f0', 'the call that ran before the stop keeps its real result');
@@ -102,7 +102,7 @@ function threeWrites() {
     const provider = scriptedProvider(async function* () {
       yield { type: 'usage', usage: { prompt_tokens: 1000, completion_tokens: 500, total_tokens: 1500 } };
       yield { type: 'text', delta: 'partial ' };
-      ac.abort();                                   // the Commander pressed STOP mid-stream
+      ac.abort();                                   // the Master pressed STOP mid-stream
       yield { type: 'text', delta: 'never seen' };
     });
     const res = await runAgentLoop({ messages: [{ role: 'user', content: 'x' }], provider, emit, cost: cost(), model: 'm', agentId: 'a', runId: 'r', signal: ac.signal });

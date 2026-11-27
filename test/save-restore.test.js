@@ -66,7 +66,7 @@ assert.equal(restorable(station, { workstreams: 'not a list' }), 0);
 
 // save-latch-kill: a refused save is now merged IN-SESSION, so a session two windows keep writing diverges again and again. A
 // copy an earlier merge made is continued; a new divergence gets the next copy; the same save twice still brings nothing twice;
-// a copy the Commander deleted is never refilled. (A second divergence used to stay out of the station entirely.)
+// a copy the Master deleted is never refilled. (A second divergence used to stay out of the station entirely.)
 {
   const st = { generalId: 'g', deletedIds: [], workstreams: [
     ws('g', [turn('user', 'hi'), turn('assistant', 'station 1')], { title: null }),
@@ -81,7 +81,7 @@ assert.equal(restorable(station, { workstreams: 'not a list' }), 0);
   assert.deepEqual(p2.copied, ['g~restored2'], 'latch-kill: a session that diverged again gets the next copy');
   assert.equal(restorable(st, third), 1, 'latch-kill: and the offer counts it');
   assert.deepEqual([plan(p2.doc, third).copied, plan(p2.doc, third).extended], [[], []], 'latch-kill: the same save twice brings nothing twice');
-  // a restored copy the Commander deleted is never refilled (that id stays deleted) — and the work it held, deleted on purpose
+  // a restored copy the Master deleted is never refilled (that id stays deleted) — and the work it held, deleted on purpose
   // after it was last worked in (the time-scoped deleted-session ledger), never comes back
   const dismissed = { generalId: 'g', deletedIds: ['g~restored'], workstreams: [st.workstreams[0]] };
   const third0 = { generalId: 'g', workstreams: [ws('g', [turn('user', 'hi'), turn('assistant', 'window 2')], { title: null, lastActiveAt: 1000 })] };

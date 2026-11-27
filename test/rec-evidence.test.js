@@ -2,8 +2,8 @@
 
    The audit's SECOND root cause: `internal:true` starves the generators. An internal run keeps the caller's
    prompt verbatim — right for a strict-format parse, and wrong for the three components that must GUESS what
-   the Commander wants next. The First Pitch, the goal decomposition and the ongoing suggestion were reasoning
-   from strictly LESS about the Commander than an ordinary task run receives: no learned topics with their
+   the Master wants next. The First Pitch, the goal decomposition and the ongoing suggestion were reasoning
+   from strictly LESS about the Master than an ordinary task run receives: no learned topics with their
    verbatim quotes, no open threads, no verdict patterns, no recent activity, no active goal.
 
    This suite holds the two halves of the fix:
@@ -11,7 +11,7 @@
      1. THE EVIDENCE PACK REACHES THEM — `evidence:true` rides the browser call, the route, and runOnce, and
         appends the SAME bounded, provenance-labelled pack (commander-context.js) an ordinary task gets. And
         NOTHING ELSE about the internal path changes: no manual, no capability summary, no skills.
-     2. THE SUGGEST EVIDENCE CONTRACT — the model must produce the Commander's OWN words, that quote is VETOED
+     2. THE SUGGEST EVIDENCE CONTRACT — the model must produce the Master's OWN words, that quote is VETOED
         against what the station actually knows (fail-closed), only a survivor is spoken as «because you said»,
         and the ledger row finally distinguishes a real quote from the model's own rationale.
 
@@ -95,7 +95,7 @@ for (const [file, label] of [['frontend/app/pitchstore.js', 'the First Pitch'],
   const plain = Pitch.buildDirective(base);
   A.eq(plain.indexOf('EVIDENCE:'), -1, 'the First Pitch directive is unchanged — no EVIDENCE line it would not check');
   const withEv = Pitch.buildDirective(Object.assign({ wantEvidence: true }, base));
-  A.ok(withEv.indexOf('EVIDENCE:') >= 0, 'the suggestion directive asks for the Commander’s own words');
+  A.ok(withEv.indexOf('EVIDENCE:') >= 0, 'the suggestion directive asks for the Master’s own words');
   A.ok(/quoted verbatim/.test(withEv), '…verbatim');
   A.ok(/never your own paraphrase/.test(withEv), '…never a paraphrase');
   A.ok(/write NONE/.test(withEv), '…and gives the model an HONEST way out (it is allowed to have nothing)');

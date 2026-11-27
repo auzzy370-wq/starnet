@@ -14,7 +14,7 @@ const { spawn } = require('child_process');
 const { bootToken } = require('./_httpToken.js');
 const { allocatePort, BIND_REFUSED } = require('./helpers/ports.js');
 // host notes (the <run_context> note, recall) ride the newest user turn on this non-Claude wire: read them, and the
-// Commander's own words, through the helper rather than one placement (provider.js userSideHostNotes)
+// Master's own words, through the helper rather than one placement (provider.js userSideHostNotes)
 const { runContextOf, userWords, lastUserWords, hostText, loopNotes } = require('./helpers/host-notes.js');
 
 const HOST = '127.0.0.1';
@@ -83,7 +83,7 @@ function startMockOpenRouter() {
              messages the model answers plainly, or the run would loop forever. */
           const msgs = (parsed && parsed.messages) || [];
           const lastUser = [...msgs].reverse().find(m => m && m.role === 'user');
-          const lastUserOwn = lastUser ? userWords(lastUser) : '';   // the Commander's words, without the leading host notes
+          const lastUserOwn = lastUser ? userWords(lastUser) : '';   // the Master's words, without the leading host notes
           if (lastUserOwn === CREWLESS_REQUEST) {
             const current = msgs.slice(msgs.lastIndexOf(lastUser) + 1);
             const results = current.filter(m => m && m.role === 'tool');
@@ -587,7 +587,7 @@ async function waitUntil(fn, ms, label) {
       A.ok(leads.some(r => hostText(r.messages).includes('Agent id: parity_lead')), label + ': the same saved lead identity handles the task');
       A.ok(leads.some(r => JSON.stringify(r.messages[0]).includes('parity_worker (Parity Worker)')), label + ': briefing names the saved specialist');
       A.ok(reqs.some(r => (r.messages || []).some(m => m.role === 'tool' && /WORKER_PARITY_OK/.test(JSON.stringify(m)))), label + ': worker result returned through the real tool loop');
-      // the Commander's (here: the lead's) own words — a lead request's leading host notes (recall, earlier conversation) can quote them
+      // the Master's (here: the lead's) own words — a lead request's leading host notes (recall, earlier conversation) can quote them
       const worker = reqs.find(r => (r.messages || []).some(m => m.role === 'user' && /return worker parity proof/i.test(userWords(m))));
       A.ok(!!worker, label + ': specialist made a real provider call');
       A.ok(worker && !(worker.tools || []).some(t => t.function?.name === 'team_dispatch'), label + ': worker cannot recursively delegate');
@@ -632,9 +632,9 @@ async function waitUntil(fn, ms, label) {
     const proofChat = 4245;
     tg.pushText(proofChat, 99, '/telegramproof');
     await waitUntil(() => tg.sends.some(s => String(s.chat_id) === String(proofChat) && /TELEGRAM_COMMAND_OK/.test(String(s.text || ''))), 8000,
-      'owner Commander-defined exec command');
+      'owner Master-defined exec command');
     A.ok(tg.sends.some(s => String(s.chat_id) === String(proofChat) && /TELEGRAM_COMMAND_OK/.test(String(s.text || ''))),
-      'a Commander-defined shell command runs over the admitted owner DM');
+      'a Master-defined shell command runs over the admitted owner DM');
 
     // ---- /tools must describe the office this channel's runs ACTUALLY get -------------------------------
     // THE BUG (2026-07-28, reported off a v0.6.8 install): runSlashForChannel read `placed` ONLY from
@@ -654,7 +654,7 @@ async function waitUntil(fn, ms, label) {
     A.ok(/FILE CABINET/.test(toolsReply), '/tools lists FILE CABINET (cabinet is in the autonomous office)');
     A.ok(/MEMORY NOTEBOOK/.test(toolsReply), '/tools lists MEMORY NOTEBOOK (notebook is in the autonomous office)');
     // An admitted owner DM extends the headless office with the same non-physical workbench and orchestration
-    // objects the desktop Commander receives, so this card must agree with the provider wire above.
+    // objects the desktop Master receives, so this card must agree with the provider wire above.
     const activeLines = toolsReply.split('\n').filter(l => l.indexOf('✓') === 0);
     A.ok(activeLines.some(l => /WORKBENCH/.test(l)), '/tools lists terminal authority for the admitted owner DM');
     A.ok(activeLines.some(l => /TASK DELEGATION/.test(l)), '/tools lists delegation authority for the admitted owner DM');

@@ -159,7 +159,7 @@
        run did exactly that. */
     const context = isFn(deps.context) ? deps.context : null;
     /* onStopped(loop, prevState) — fired the moment a loop stops being able to continue ON ITS OWN and starts
-       needing the Commander: the review queue filled, it converged, it met its objective, or it parked itself.
+       needing the Master: the review queue filled, it converged, it met its objective, or it parked itself.
        This is the honest trigger for a notification — not "a candidate appeared", which happens while the loop
        is still working and would be pure noise. Edge-triggered on the state TRANSITION, so a poll or a restart
        can never re-announce the same stop. */
@@ -383,7 +383,7 @@
             running. Nothing else calls store.renewHeartbeat, so the whole heartbeat mechanism hangs off here.
          2. OUTCOME CAPTURE. runOnce RESOLVES on a failed run and reports the failure through events, so a
             driver that trusted only the promise would settle a broken iteration as a review candidate and ask
-            the Commander to approve work that never happened.
+            the Master to approve work that never happened.
          3. VISIBILITY. Forwards to the injected tee so an unattended iteration is observable live, in exactly
             the redacted shape the host already applies to other autonomous runs. */
       // The assembler keeps the streamed reply. runOnce does NOT return the assistant text (it resolves with
@@ -489,7 +489,7 @@
         surface: 'autonomous',
         trigger: 'loop',
         station: station,   // read above, before the claim
-        // a per-iteration USD ceiling, when the Commander set one. 0 = ungoverned (budgetcaps.js semantics).
+        // a per-iteration USD ceiling, when the Master set one. 0 = ungoverned (budgetcaps.js semantics).
         maxCostUsd: (fresh.budget && fresh.budget.perIterationUsd) || undefined,
         emit: sink
       };
@@ -515,7 +515,7 @@
             if (!live || live.runId !== runId || (ac.signal && ac.signal.aborted)) return null;
             // runOnce RESOLVES on a failed run — the failure arrives through the sink (state.errMsg) or as an
             // end reason. Trusting the promise alone would park a broken iteration as a review candidate and
-            // ask the Commander to approve work that never happened.
+            // ask the Master to approve work that never happened.
             if (state.cancelled) return settle(loop.id, runId, { status: 'error', cancelled: true, error: 'cancelled' });
             if (state.errMsg) return settle(loop.id, runId, { status: 'error', error: state.errMsg });
             const terminalReason = String(state.reason || (res && res.reason) || '');
@@ -542,7 +542,7 @@
               : Promise.resolve(null);
             // the harvest needs the SAME pre-iteration snapshot the check got: its commit pathspec is
             // after-minus-before, so without it a pass would stage files that were already dirty when the
-            // loop started — the Commander's own work, swept into a commit a later rejection reverts.
+            // loop started — the Master's own work, swept into a commit a later rejection reverts.
             return checkP.then(verdict => beforeP.then(before =>
               Promise.resolve().then(() => {
                 const live = leases.get(loop.id);
@@ -559,7 +559,7 @@
                 { diff: (verdict && verdict.diff) || null }
               )),
               // a harvest failure (e.g. git refused the commit) is a REAL iteration failure, not a silent
-              // success: the work did not land, so the loop must not park a candidate the Commander cannot act on.
+              // success: the work did not land, so the loop must not park a candidate the Master cannot act on.
               (e) => settle(loop.id, runId, { status: 'error', error: 'harvest: ' + ((e && e.message) || 'failed') })
             )));
           },
@@ -663,7 +663,7 @@
       try { if (lease.abort && isFn(lease.abort.abort)) lease.abort.abort(); } catch (_) {}
       try {
         settle(loopId, lease.runId, {
-          status: 'error', cancelled: true, error: String(reason || 'cancelled by the Commander')
+          status: 'error', cancelled: true, error: String(reason || 'cancelled by the Master')
         });
       } catch (_) {}
       return true;

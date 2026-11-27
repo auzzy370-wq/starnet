@@ -298,7 +298,7 @@
       let nextToolIndex = 0;
       let sawToolCall = false;
       let doneEmitted = false;         // exactly one terminal event per stream (see STREAM-END TRUTH below)
-      /* WHAT THE SILENT STREAM IS DOING (wait note). Reasoning and tool arguments show the Commander nothing, so the
+      /* WHAT THE SILENT STREAM IS DOING (wait note). Reasoning and tool arguments show the Master nothing, so the
          wait line read "waiting … (stream open)" whether the model was reasoning or the stream had gone quiet. Each
          change of activity is reported once as a { type:'waiting' } note (the loop's adapter-facts channel) — the
          activity only, never the reasoning summary's text. */

@@ -486,7 +486,7 @@
     // otherwise matches the Monday rule below). Twice a month is offered as "the 1st and 15th of every month".
     // any "every N weeks" with N >= 2 (QA 2026-10-02: "every 6 weeks on mondays at 9am" saved WEEKLY)
     if (/\bevery other\b|\bbi-?weekly\b|\bfortnight(?:ly)?\b|\bevery (?:[2-9]|[1-9]\d+|two|three|four|five|six|seven|eight|nine|ten) weeks\b|\btwice a month\b/.test(s)) return null;
-    // More shapes the rules below would quietly turn into a DIFFERENT schedule than the words the Commander
+    // More shapes the rules below would quietly turn into a DIFFERENT schedule than the words the Master
     // approves on the card (sweep 2026-10-01) — refuse them all, never guess:
     //   "every day except sunday at 9am" saved Sundays ONLY · "every 2 days at 9am" / "every year on jan 1" /
     //   "every quarter" saved DAILY · "the first monday of every month" saved the 1st (or every Monday) ·

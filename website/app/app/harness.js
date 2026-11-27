@@ -631,7 +631,7 @@ const Harness = (() => {
      localStorage is per ORIGIN (localhost:8787, 127.0.0.1:8787 and a forwarded port are three separate stores), so each
      page remembers per provider the station revision it last proved (ENGINE_SYNC_SLOT { rev, pending }). A boot
      hand-over carries that revision and the station takes it only if nothing changed since — an older page can never
-     put back a key the Commander rotated or removed elsewhere. A save or REMOVE that failed to reach the station is
+     put back a key the Master rotated or removed elsewhere. A save or REMOVE that failed to reach the station is
      `pending`: the next page boot retries it (on the same condition) until the station confirms it. */
   const ENGINE_SYNC_SKIP = { codex: 1, grok: 1, kimi: 1, vultron: 1, 'claude-cli': 1 };
   const ENGINE_SYNC_SLOT = 'vultron.byok.engineSync';
@@ -1404,7 +1404,7 @@ const Harness = (() => {
       wrapped.cause = e;
       return wrapped;
     }
-    // a Stop (AbortController) is the Commander's own act, never a transport loss
+    // a Stop (AbortController) is the Master's own act, never a transport loss
     function isAbortError(e) { return !!e && e.name === 'AbortError'; }
 
     let res, shared = null;   // shared: this run's place on the page's ONE run stream (runStream above), when it has one
@@ -1428,7 +1428,7 @@ const Harness = (() => {
       if (Number.isSafeInteger(turnRowId) && turnRowId > 0) reqBody.turnRowId = turnRowId;
       if (!recovery && Number.isFinite(windowTokens)) reqBody.windowTokens = windowTokens;
       if (!recovery && windowFrom === 'station') reqBody.windowFrom = 'station';
-      if (goalContinuation === true) reqBody.goalContinuation = true;   // a goal-loop step (kind goal-step), never the Commander's wording
+      if (goalContinuation === true) reqBody.goalContinuation = true;   // a goal-loop step (kind goal-step), never the Master's wording
       if (quotesStream) reqBody.quotesStream = String(quotesStream).slice(0, 64);   // an internal call composed from this session's words (the retitle, the goal judge): the station stamps what it writes as a quote of it, so a delete of the session takes it too
       // reason-only self-talk (retitle / goal-judge / pitch / autopilot): the sidecar keeps the caller's system
       // prompt VERBATIM (no manual/capability/skill/memory dressing) and never stamps the away clock for it.
@@ -1439,8 +1439,8 @@ const Harness = (() => {
       if (voiceTurn && !internal) reqBody.voiceTurn = true;
       /* THE EVIDENCE PACK, for the runs that must GUESS (rec perfection W2). An internal run gets a verbatim
          system prompt — which is right for a strict-format parse, and wrong for the three RECOMMENDATION
-         generators, which were asked "what should this Commander do next?" while being handed strictly less
-         about the Commander than an ordinary task run receives. `evidence:true` appends the SAME bounded,
+         generators, which were asked "what should this Master do next?" while being handed strictly less
+         about the Master than an ordinary task run receives. `evidence:true` appends the SAME bounded,
          provenance-labelled server-side pack (commander-context.js) an ordinary task gets — nothing else about
          the internal path changes (no manual, no skills, no memory fence, no recall-stat writes). */
       if (evidence) reqBody.evidence = true;
@@ -1805,7 +1805,7 @@ const Harness = (() => {
       return Array.isArray(j.batches) ? j.batches : [];
     } catch (e) { return []; }
   }
-  // NS-6: after a salient task run the sidecar MINES threads (ideas the Commander floated but never acted on) into
+  // NS-6: after a salient task run the sidecar MINES threads (ideas the Master floated but never acted on) into
   // a stash. Fetch the pending candidates for the thread turn-in card. Returns { runId, proposals } — the BATCH
   // runId matters: the turn-in verdict must reference the stash batch (which may be the agent's latest pending
   // batch when the exact run had none). { runId:null, proposals:[] } on any failure (fail-open).
@@ -1845,7 +1845,7 @@ const Harness = (() => {
     return fetch('/api/memory/turnin', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(o || {}) })
       .then(r => r.ok ? r.json().catch(() => ({ ok: true })) : { ok: false }).catch(() => ({ ok: false }));
   }
-  // wipe a hero's SERVER-SIDE memory (notebook/declined/todo) on new-hero commission, so a fresh Commander never
+  // wipe a hero's SERVER-SIDE memory (notebook/declined/todo) on new-hero commission, so a fresh Master never
   // inherits a stranger's kept memories or permanently-declined proposals. Fire-and-forget; a fresh hero proceeds
   // regardless (the browser advice stores are already reset locally).
   async function memoryReset(agentId) {
@@ -1880,7 +1880,7 @@ const Harness = (() => {
       return r.ok ? (await r.json().catch(() => ({ ok: true }))) : { ok: false };
     } catch (e) { return { ok: false }; }
   }
-  /* The Commander's review decision on a skill the guard WITHHELD from the model. The approval is
+  /* The Master's review decision on a skill the guard WITHHELD from the model. The approval is
      recorded against the content digest the sidecar just read, so any later edit re-asks. Carries
      the sidecar's refusal text through on failure — a 'block' verdict can never be approved and the
      panel must say why rather than silently fail. */

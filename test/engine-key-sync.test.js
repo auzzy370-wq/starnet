@@ -7,7 +7,7 @@
        /api/providers/engine-key; REMOVE posts the empty config (the station clears its copy)
      · every page boot re-hands what this browser holds as a BOOT hand-over carrying the station revision this page
        last proved — the station keeps a newer change another origin made (localhost vs 127.0.0.1 are separate
-       localStorage), so an older page can never put back a key the Commander rotated or removed
+       localStorage), so an older page can never put back a key the Master rotated or removed
      · a save or REMOVE that could not reach the station is remembered as pending and retried at the next boot (a
        failed REMOVE used to be forgotten while the station kept spending on the key); a 4xx refusal is not retried
      · the desktop app (keychain), dev (server-held key) and the sign-in providers never send a key

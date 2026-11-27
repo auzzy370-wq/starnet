@@ -1,6 +1,6 @@
 /* node test/workshop.e2e.test.js — real sidecar proof for the AWAY WORKSHOP (W1 grant + W2 driver).
 
-   Boots the ACTUAL sidecar with a mock OpenRouter, then drives the full loop the way the Commander would:
+   Boots the ACTUAL sidecar with a mock OpenRouter, then drives the full loop the way the Master would:
      1. POST /api/workshop/grant { on:true }  — record the "Build things while I'm away" consent.
      2. POST /api/workshop/queue              — line up a build request.
      3. POST /api/workshop/shift              — force-fire ONE shift NOW (attended test of the unattended path).

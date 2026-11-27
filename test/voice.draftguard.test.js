@@ -3,7 +3,7 @@
    Andrew's "random text deletion" bug (2026-07-19): with the mic live, voice.js treated the composer
    as dictation's own surface — onInterim REPLACED the entire box with each interim transcript, and
    submitTranscript CLEARED it unconditionally on every finalize (even an empty/noise one). In
-   hands-free mode the listen loop re-arms continuously, so anything the Commander TYPED was erased
+   hands-free mode the listen loop re-arms continuously, so anything the Master TYPED was erased
    within seconds, over and over, with a chime each cycle.
 
    The law under test: dictation may only overwrite or clear text IT wrote (dictShown). A typed
@@ -112,7 +112,7 @@ const lastSR = () => srInstances[srInstances.length - 1];
   // --- webSpeech: TYPED DRAFT — interims must never overwrite it --------------------------------
   {
     const t = boot();
-    t.input.value = 'my typed draft';                        // the Commander is mid-thought
+    t.input.value = 'my typed draft';                        // the Master is mid-thought
     t.Voice.startListening(); await tick();
     lastSR().fireInterim('noise words');
     A.ok(t.input.value === 'my typed draft', 'typed draft: interim does NOT overwrite it');
@@ -133,18 +133,18 @@ const lastSR = () => srInstances[srInstances.length - 1];
     A.ok(t.sent().length === 0, 'typed draft: an empty finalize sends nothing');
   }
 
-  // --- webSpeech: Commander TYPES OVER the interim preview — their text wins --------------------
+  // --- webSpeech: Master TYPES OVER the interim preview — their text wins --------------------
   {
     const t = boot();
     t.Voice.startListening(); await tick();
     lastSR().fireInterim('partial dict');
     A.ok(t.input.value === 'partial dict', 'mixing: interim rendered while the box was empty');
-    t.input.value = 'partial dict plus my typing';           // the Commander edits/types over the preview
+    t.input.value = 'partial dict plus my typing';           // the Master edits/types over the preview
     lastSR().fireInterim('partial dictation grows');
-    A.ok(t.input.value === 'partial dict plus my typing', 'mixing: once the Commander typed, interims stop overwriting');
+    A.ok(t.input.value === 'partial dict plus my typing', 'mixing: once the Master typed, interims stop overwriting');
     lastSR().fireFinal('partial dictation grows'); await tick();
     t.Voice.stopListening(); await tick();
-    A.ok(t.input.value === 'partial dict plus my typing', 'mixing: finalize leaves the Commander\'s hybrid text alone');
+    A.ok(t.input.value === 'partial dict plus my typing', 'mixing: finalize leaves the Master\'s hybrid text alone');
     A.ok(t.sent().length === 1, 'mixing: the transcript still sends');
   }
 
@@ -156,7 +156,7 @@ const lastSR = () => srInstances[srInstances.length - 1];
     A.ok(t.input.value === 'ghost words', 'stale listen: preview rendered before the failure');
     lastSR().fireError('network'); await tick();             // listen dies; its onend still delivers onFinal('')
     A.ok(t.input.value === '', 'stale listen: an errored listen clears its OWN preview only (no user text existed)');
-    // the Commander now TYPES the exact string dictation once wrote — a fresh listen must still treat
+    // the Master now TYPES the exact string dictation once wrote — a fresh listen must still treat
     // it as a draft (proves dictShown resets per listen; stale equality can never grant clearing rights)
     t.input.value = 'ghost words';
     t.Voice.startListening(); await tick();

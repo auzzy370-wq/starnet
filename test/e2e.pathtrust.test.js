@@ -260,7 +260,7 @@ function boot(port, env, attemptsLeft) {
 
     /* ---- 6. "FULL ACCESS" ON THE CARD IS AT LEAST AS STRONG AS "ALWAYS" (live-caught 2026-07-27) ----
        The card offers four grades; "full" used to be handled as a one-time allow that recorded nothing, so the
-       Commander clicking the STRONGEST button was asked again on the very next file touch in the same folder —
+       Master clicking the STRONGEST button was asked again on the very next file touch in the same folder —
        a user clicked it five times for five reads and never got a standing grant. Proven here over real HTTP:
        one "full" answer, then subsequent reads carry a 'deny' answerer that must NEVER be consulted. The root
        is un-blessed at this point (section 5 revoked it), so this starts from a genuinely cold trust store. */

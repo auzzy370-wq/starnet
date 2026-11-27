@@ -33,9 +33,9 @@
   const POINTER_ACTIONS = ['click', 'double_click', 'drag'];
   const SELF_PROCESS_RE = /^skynet-desktop(.exe)?$/i;
   const SELF_TITLE_RE = /^vultron(?![w.])/i;
-  const SELF_DRIVE_HELP = 'never operate Vultron through the screen: its own tools change it in the background while the Commander keeps working. '
+  const SELF_DRIVE_HELP = 'never operate Vultron through the screen: its own tools change it in the background while the Master keeps working. '
     + 'Read assembly lines with station.layout; tool_search "station builder" for station.map, station.plan, station.build, station.test_line and station.start_line; '
-    + 'tool_search "station settings" for settings. If those tools are not in your list, tell the Commander which change you need instead.';
+    + 'tool_search "station settings" for settings. If those tools are not in your list, tell the Master which change you need instead.';
   const DESTRUCTIVE_HOTKEYS = [
     'ctrl+alt+delete',
     'ctrl+shift+esc',

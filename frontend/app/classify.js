@@ -1,4 +1,4 @@
-/* VULTRON — classify.js : is the Commander assigning a TASK (go act, with real tools) or just TALKING?
+/* VULTRON — classify.js : is the Master assigning a TASK (go act, with real tools) or just TALKING?
    Pure + testable (UMD: a `Classify` global in the browser, module.exports under node).
 
    isTaskDirective gates ONE thing now: TOOL AVAILABILITY (the sidecar wires tools only when isTask). It no
@@ -24,7 +24,7 @@
   // "sure, send it" — never reaches here.) Acks like "yes / got it / sounds good" are answers, not missions.
   // Any other trailing word carries work and falls through to TASK: a retry ("ok, try it now"), a redirect
   // ("no, use the dish") or a new topic ("yes, bitcoin price today") was chat while the tail took ANY three words,
-  // so the run got zero tools and the agent told the Commander it had no web tool with a DISH placed.
+  // so the run got zero tools and the agent told the Master it had no web tool with a DISH placed.
   // ACK is shared by the head AND the tail, so two acks in a row ("ok got it", "sure, sounds good", "ok thx") stay
   // chat — a task there drops an INTAKE box on the work-only belt and mints a recurring job from a closing ack.
   // Trade-off: an agent's name after a greeting ("hey nova", "thanks claude") is not a pleasantry word -> TASK.
@@ -47,7 +47,7 @@
   }
 
   /* "YES" TO AN OFFER IS A GO (2026-10-01). An ack alone is chat ("thanks", "got it") — but when the agent's last
-     turn OFFERED to do work ("Want me to draft it?", "Shall I go ahead?"), the Commander's "yes" / "sure" / "do it"
+     turn OFFERED to do work ("Want me to draft it?", "Shall I go ahead?"), the Master's "yes" / "sure" / "do it"
      IS the task directive. Classified as chat it ran with no tools, so the agent could only promise the work.
      isAffirmation: the WHOLE message is a yes (a few trailing words allowed: "yes please", "sure, go for it").
      offeredWork: the agent's reply ends on a question that offers to act. Both must hold. */
@@ -85,7 +85,7 @@
   }
 
   /* THE AGENT'S BASELINE STANCE for a turn, from whether the message is a task: a task's baseline is 'task'
-     (work pose), chatter's is 'talk' (face the Commander). NOTE: chat.js no longer applies this PREEMPTIVELY
+     (work pose), chatter's is 'talk' (face the Master). NOTE: chat.js no longer applies this PREEMPTIVELY
      to start the walk — the live desk trip is reactive (it fires when a real tool runs; see walkToDesk). This
      pure mapping is kept as the canonical task->stance contract and as a regression guard.
 

@@ -11,7 +11,7 @@ const { TAIL_GUARD } = require('../sidecar/learned-tail.js');
 const { TaskIntent } = require('../frontend/app/fork.js');
 const { runContextOf } = require('./helpers/host-notes.js');
 const text = content => typeof content === 'string' ? content : (content || []).map(p => p.text || '').join('');
-const DOSSIER = belief => 'WHAT YOU KNOW ABOUT YOUR COMMANDER (the station has learned this — honor it; if anything here is wrong, the Commander will correct it):\n- Style: ' + belief;
+const DOSSIER = belief => 'WHAT YOU KNOW ABOUT YOUR MASTER (the station has learned this — honor it; if anything here is wrong, the Master will correct it):\n- Style: ' + belief;
 const FORK = 'MID-TASK PREFERENCE FORK (you may use this AT MOST ONCE per task, or not at all):\nFORK_PROOF';
 const HISTORY = [
   { role: 'user', content: 'Keep the API compatible. Previous project evidence: ' + 'HISTORY_EVIDENCE_17 '.repeat(1500) },
@@ -79,7 +79,7 @@ const HISTORY = [
     await run('custom', 'audit-model', persona + '\n\n' + DOSSIER('terse'));
     await run('custom', 'audit-model', persona + '\n\n' + DOSSIER('thorough'));
     const [x, y] = bodies.map(body => text(body.messages[0].content));
-    const at = s => s.indexOf('WHAT YOU KNOW ABOUT YOUR COMMANDER');
+    const at = s => s.indexOf('WHAT YOU KNOW ABOUT YOUR MASTER');
     assert.equal(at(x), -1, 'custom: learned context is outside the system');
     assert.equal(x, y, 'custom: the entire system is byte-identical');
     assert.ok(runContextOf(bodies[0].messages).includes('- Style: terse') && runContextOf(bodies[1].messages).includes('- Style: thorough'), 'custom: both preferences reach their current turn');

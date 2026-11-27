@@ -1,8 +1,8 @@
 /* VULTRON — discovery.js : THE ENVIRONMENT DISCOVERY ENGINE (pure reducers; the ambient half lives in index.js).
 
    THE PRODUCT GAP THIS CLOSES (rec-system audit, 2026-08-28). Vultron's whole promise is that it finds the work —
-   yet every proactive surface studied only what the Commander TYPED (transcripts, run titles, interview answers).
-   The station never once looked at the projects the Commander had explicitly blessed it into. This module is the
+   yet every proactive surface studied only what the Master TYPED (transcripts, run titles, interview answers).
+   The station never once looked at the projects the Master had explicitly blessed it into. This module is the
    missing organ: it turns a bounded projectscan snapshot of a BLESSED root into candidate work items the existing
    recommendation surfaces can offer — each one carrying the repo's own line as its verbatim citation.
 
@@ -156,7 +156,7 @@
     const fp = str(finding && finding.fingerprint);
     if (!fp) return false;
     if (s.staged.some(f => f.fingerprint === fp)) return false;         // already on offer
-    if (s.denylist.indexOf(fp) >= 0) return false;                      // the Commander said no — forever
+    if (s.denylist.indexOf(fp) >= 0) return false;                      // the Master said no — forever
     if (s.resolved.indexOf(fp) >= 0) return false;                      // already picked up — don't re-nag
     return s.staged.length < STAGED_CAP;
   }

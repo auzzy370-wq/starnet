@@ -28,7 +28,7 @@
   /* gateOf — the guard decision for one skill, from an injected gate (skills/gate.js). No gate
      injected = everything visible, which is exactly how this file behaved before the gate existed. */
   function gateOf(s, gate) {
-    if (s && s.pendingCandidate) return { visible: false, reason: 'proposed skill awaits behavior evaluation and Commander approval' };
+    if (s && s.pendingCandidate) return { visible: false, reason: 'proposed skill awaits behavior evaluation and Master approval' };
     if (typeof gate !== 'function') return { visible: true, reason: '' };
     try { const d = gate(s) || {}; return { visible: d.visible !== false, reason: str(d.reason) }; }
     catch (_) { return { visible: true, reason: '' };  /* a gate hiccup must never empty the index */ }
@@ -79,7 +79,7 @@
       : 'You have no saved skills yet. ';
     return '\n\n## SAVED AGENT SKILLS\n'
       + opening + 'A skill is a procedure you write down so your next runs start from it instead of working it out again. '
-      + 'When a task makes you work out a non-trivial procedure (a multi-step workflow, a fix for a tricky error, a format or approach the Commander wants), save it '
+      + 'When a task makes you work out a non-trivial procedure (a multi-step workflow, a fix for a tricky error, a format or approach the Master wants), save it '
       + (canManage ? 'with skill.manage (action create)' : 'with skill.write')
       + ' before you finish: a short name, a one-line summary of when to use it, and the steps. '
       // A model-written skill is a pending proposal: say so, or the agent believes it already applies.
@@ -193,14 +193,14 @@
     return head + '\n' + text;
   }
 
-  /* composeLoaded injects FULL BODIES for skills the Commander named (/skill, preloadSkills), so
+  /* composeLoaded injects FULL BODIES for skills the Master named (/skill, preloadSkills), so
      the gate matters here even more than in the index. The caller already filters, and `withheld`
      is checked again here: this is the last seam before the bytes enter the system prompt. */
   function composeLoaded(skills) {
     const live = (Array.isArray(skills) ? skills : []).filter(s => s && s.body && s.state !== 'archived' && !s.withheld && !s.pendingCandidate);
     if (!live.length) return '';
     return '\n\n## PRELOADED SKILLS\n'
-      + 'The Commander explicitly loaded these skills for this run. Follow them where applicable.\n\n'
+      + 'The Master explicitly loaded these skills for this run. Follow them where applicable.\n\n'
       + live.map(s => '### ' + cleanLine(s.name || s.id || 'Skill') + (s.summary ? ' -- ' + cleanLine(s.summary) : '') + '\n'
         + (s.setup ? 'Setup:\n' + s.setup + '\n\n' : '') + s.body
         + (s.files && s.files.length ? '\n\nSupport files:\n' + s.files.map(supportFileLine).join('\n') : '')

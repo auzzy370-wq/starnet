@@ -41,7 +41,7 @@ function seed(root, mutation, taskDone = false) {
   write(root, 'agent.save.json', { version: 1, agentId: 'agent', updatedAt: mutation, savedAt: mutation, doc: { schema: 'vultron.save', version: Save.CURRENT, updatedAt: mutation, agent: { id: 'agent', name: 'NOVA' }, station: { rooms: [{ id: 'command' }, { id: 'lab' }], props: [{ id: 'terminal', roomId: 'command' }, { id: 'bench', roomId: 'lab' }] }, workstreams: [{ id: 'general', title: 'General', messages: [{ role: 'user', content: 'complete station rehearsal' }] }] } });
   write(root, 'channels/agent.history.json', { version: 1, messages: [{ role: 'user', content: 'preserved channel conversation', ts: mutation }] });
   write(root, 'agent.notebook.json', { entries: [{ id: 'memory-1', title: 'Memory', body: 'preserve me' }] });
-  write(root, '_commander.dossier.json', { block: 'Commander memory and preferences' });
+  write(root, '_commander.dossier.json', { block: 'Master memory and preferences' });
   write(root, 'cron.jobs.json', { jobs: [{ id: 'routine-1', schedule: '0 9 * * *', prompt: 'morning report' }] });
   write(root, 'loops.json', { loops: [{ id: 'loop-1', objective: 'continue until verified', state: 'active' }] });
   write(root, 'agent.todo.json', { items: [{ id: 'task-1', text: 'complete rehearsal', done: taskDone }] });

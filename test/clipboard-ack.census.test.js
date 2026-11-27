@@ -1,6 +1,6 @@
 /* node test/clipboard-ack.census.test.js — INV-7, copy controls acknowledge only a real copy (truthful-ack lane, 2026-11-03).
 
-   THE DEFECT CLASS. A copy key that says COPIED is a claim about the Commander's clipboard. The briefing's "copy briefing" key
+   THE DEFECT CLASS. A copy key that says COPIED is a claim about the Master's clipboard. The briefing's "copy briefing" key
    printed "copied ✓" whether or not anything was written (stationui.js); chat.js and diagnostics.js each carried their own copy
    of the clipboard helper, and ten files wrote the clipboard by hand, several announcing on a write they never checked.
 

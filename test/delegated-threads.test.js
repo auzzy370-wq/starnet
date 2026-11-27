@@ -257,7 +257,7 @@ const roster = new Map([['researcher', { system: 'R', name: 'MIRA' }], ['writer'
   // OPEN WHILE IT RUNS: who has what + stop without a click until every worker settles; settled rows offer See work
   const L = D._internals;
   global.App = { agentName: id => ({ researcher: 'MIRA', writer: 'VEX' })[id] || id };
-  L.opened.add('cap1');   // a settled card folds: open it, as the Commander would
+  L.opened.add('cap1');   // a settled card folds: open it, as the Master would
   A.ok(/class="dg-li-st" data-tip="subagent could not start — the concurrency cap/.test(L.lineHtml({ lead: 'cap1', rows: [{ ws: ws({ id: 'kc', agentId: 'researcher', title: 'Scan' }), worker: capRefused }] }, 'home')), 'the refused row carries that sentence on its status');
   const running = { lead: 'b1', rows: [{ ws: ws({ id: 'k1', agentId: 'researcher', title: 'Scan competitors' }), worker: { status: 'running', startedAt: Date.now(), canInterrupt: true, id: 'w1', runId: 'r1' } },
     { ws: ws({ id: 'k2', agentId: 'writer', title: 'Write the email (3)', runIds: ['r2'] }), worker: { status: 'done', startedAt: 1000, completedAt: 5000 } }] };
@@ -268,7 +268,7 @@ const roster = new Map([['researcher', { system: 'R', name: 'MIRA' }], ['writer'
   const settled = L.lineHtml({ lead: 'b2', rows: [running.rows[1]] }, 'home');
   A.ok(/aria-expanded="false"/.test(settled) && !/dg-line-list/.test(settled), 'once every worker settles it folds to the one line');
   L.closed.add('b1');
-  A.ok(/aria-expanded="false"/.test(L.lineHtml(running, 'home')), 'the Commander folding a running dispatch is respected');
+  A.ok(/aria-expanded="false"/.test(L.lineHtml(running, 'home')), 'the Master folding a running dispatch is respected');
   pend.set('home', [{ promptId: 'p5', tool: 'fs.write', agentId: 'agent', workerStreamId: 'k1' }]);
   const asking = L.lineHtml(running, 'home');
   A.ok(/aria-expanded="true"/.test(asking) && /data-dg-consent="once" data-dg-ws="k1"/.test(asking) && /data-dg-consent="deny" data-dg-ws="k1"/.test(asking), 'a worker waiting on you shows even folded, with Approve and Deny on its row');

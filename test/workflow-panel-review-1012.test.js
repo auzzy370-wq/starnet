@@ -1,7 +1,7 @@
 /* test/workflow-panel-review-1012.test.js — the Workflow panel / WORKFLOWS window findings of the 2026-10-12 release review
    (wave 2, agent lane). Each block drives the panel's OWN functions (sliced out of frontend/app/workflowpanel.js and
    frontend/app/windows/workflows.js with A.fnBody and run in a vm against stubs, the way conveyor-choices does) and asserts what
-   the Commander reads:
+   the Master reads:
      conveyor-ui-07  SPLIT THE JOB: ADD A BRANCH says the new step takes one more PART (never "a copy of every job"); the split
                      note says only TAKE TURNS swaps the JOINER for a MERGER
      conveyor-ui-08  paintPlain carries no unreachable OUTBOX copy (paintOutbox is the one place it is written)

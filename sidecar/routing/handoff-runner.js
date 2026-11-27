@@ -20,7 +20,7 @@
      · at most MAX_PENDING hand-offs wait per target line behind the one running (a burst beyond is refused), one in flight.
    Re-checked at dispatch (a waiting hand-off whose gate closed meanwhile is dropped with the reason on record).
 
-   VERDICTS (conveyor-backend-04): the target line's job runs under the SENDING job's entry verdicts — the Commander's own job keeps
+   VERDICTS (conveyor-backend-04): the target line's job runs under the SENDING job's entry verdicts — the Master's own job keeps
    Full Access on the next line exactly as an in-line hop does; a payload-started, forwarded or attachment-started job stays under the
    taint lock and a non-owner sender's job stays withheld. Fail closed: only entryTrusted/hostPowerKept carried as a literal true from the
    hub that ran the job (chain.js shipped) lift either, the weakest along the lineage wins, and anything else is untrusted + withheld.
@@ -56,7 +56,7 @@ function makeHandoffRunner(deps) {
   const emit = typeof d.emit === 'function' ? d.emit : function () {};
   const bumpQueue = typeof d.bumpQueue === 'function' ? d.bumpQueue : function () { return 0; };
   const halted = typeof d.halted === 'function' ? d.halted : function () { return false; };
-  /* faulted() -> the halt is the station's OWN process-fault containment, not the Commander's E-STOP (wave 2 review,
+  /* faulted() -> the halt is the station's OWN process-fault containment, not the Master's E-STOP (wave 2 review,
      conveyor-backend-08): halted() stays the one gate, this only picks the words — a record never blames an E-STOP nobody pressed */
   const faulted = typeof d.faulted === 'function' ? d.faulted : function () { return false; };
   const dayCap = typeof d.dayCap === 'function' ? d.dayCap : function () { return { cap: null, spent: 0 }; };
@@ -353,7 +353,7 @@ function makeHandoffRunner(deps) {
   /* E-STOP: drop every waiting hand-off; the host kills the in-flight runs through the hubs' inflight maps.
      (fix-runtime 24) A drop is SAID, never silent: each dropped hand-off goes through refuse() — the target line gets the failed
      "not sent on" record (a burst counted on ONE record, the standing-refusal rule) and every dropped sending job reads NOT sent
-     on, with why. `why` names a stop that was not the Commander's E-STOP (the process-fault containment says its own).
+     on, with why. `why` names a stop that was not the Master's E-STOP (the process-fault containment says its own).
      opts.close (the station is QUITTING — gracefulShutdown; wave 2 repair, conveyor-backend-03): admission closes as well. A
      hub-driven job on another line can still finish inside the shutdown window; its hand-off is then refused with the same reason
      (preflight), never queued into a memory that process.exit drops. An E-STOP never closes admission: RESUME lets work go again. */
@@ -366,7 +366,7 @@ function makeHandoffRunner(deps) {
   }
   function inflights() { const out = []; for (const s of live.values()) if (s.hub && s.hub._internals && s.hub._internals.inflight) out.push(s.hub._internals.inflight); return out; }
   /* status() — a DIAGNOSTIC / TEST read (no route or panel shows it): what waits per line and the last MAX_REFUSALS refusals. Every
-     refusal is also on the line-jobs records, which are what the Commander reads. */
+     refusal is also on the line-jobs records, which are what the Master reads. */
   function status() {
     const lines = [];
     for (const [line, s] of live) lines.push({ line, queued: s.queue.length, running: !!s.busy, streamId: (s.current && s.current.streamId) || null });

@@ -48,7 +48,7 @@ All happen **without a page reload**:
 > **Only the orchestrator (the hero, agent id `'agent'`) has a voice.** Summoned /
 > secondary agents NEVER speak aloud and are never given the short spoken-reply style.
 
-A secondary agent exists for the orchestrator to **delegate** to — the Commander talks to
+A secondary agent exists for the orchestrator to **delegate** to — the Master talks to
 the orchestrator, not to a crowd of agents. Enforced at the one TTS gate in `chat.js`
 (`willSpeak` requires the active stream's agent be the orchestrator). Ambient mutters are
 already hero-only (crew bodies render silent speech bubbles, never `Voice.mutter`).

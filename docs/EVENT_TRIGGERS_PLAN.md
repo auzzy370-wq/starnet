@@ -68,7 +68,7 @@ an agent's memory — an agent's notebook is the wrong trust class for "did this
 - `watch: { probe: {...}, cursorPath: '<jsonpath-ish>', cursor: <last seen>, lastProbeAt, lastChangeAt,
   consecutiveFailures }` on the job record, additive like `meta`.
 - Probe sources, in the order they are worth building:
-  1. **Connector tool call** — `connectors.list` already tells the agent (and the Commander) which
+  1. **Connector tool call** — `connectors.list` already tells the agent (and the Master) which
      connectors exist; GitHub issues, Notion pages, Linear tickets are one `manager.call(id, tool, args)`.
   2. **`web_request` with a stored service key** — covers Stripe, Printify, Etsy and everything else in
      `servicekeys-catalog.js` that ships no MCP server. Reuses the existing per-key autonomy grant, which
@@ -85,13 +85,13 @@ an agent's memory — an agent's notebook is the wrong trust class for "did this
 - **The flapping source.** Up/down/up across ticks. Needs the change to be *the cursor advancing*, not
   *the response differing*.
 - **The dead credential.** A 401 must pause the watcher with an honest state, never silently stop firing —
-  a watcher that quietly stops is worse than one that never started, because the Commander believes it is
+  a watcher that quietly stops is worse than one that never started, because the Master believes it is
   watching.
 - **Probe cost drift.** A probe that grows into a paginated crawl is a model turn by another name. Cap it.
 
 ### Done means
 
-The Commander sets a watcher on a real source, the source changes, and a routine fires within one tick
+The Master sets a watcher on a real source, the source changes, and a routine fires within one tick
 with the change in its context — observed live, plus a sidecar restart in the middle proving the cursor
 survived. Not "the unit tests pass".
 

@@ -128,7 +128,7 @@ function clipRig(full) {
 {
   const world = read('frontend/app/world.js');
   A.ok(/ORPHAN_JUNCTION: 'NOT ON A BELT — BELT INTO IT'/.test(src) && /ORPHAN_JUNCTION: 'NOT ON A BELT — BELT INTO IT'/.test(world), 'ORPHAN_JUNCTION says BELT INTO IT on both surfaces (moving a junction onto a belt is refused: ANOTHER BELT RUNS HERE)');
-  A.ok(!/MOVE IT ONTO THE LINE|NOT ON A BELT — MOVE IT'/.test(src + world), '…and nothing still tells the Commander to move it onto the line');
+  A.ok(!/MOVE IT ONTO THE LINE|NOT ON A BELT — MOVE IT'/.test(src + world), '…and nothing still tells the Master to move it onto the line');
   const why = src.slice(src.indexOf('const VAL_WHY = {'), src.indexOf('const valWhy ='));
   A.ok(/ORPHAN_JUNCTION: '[^']*drag from the machine[^']*'/i.test(why), 'the hover card\'s long form says the whole fix');
   // the fix it names really works: a machine belted into a beltless junction clears the finding

@@ -1,6 +1,6 @@
 /* node test/browser-profile-fallback.test.js — a run that loses the durable station profile to the STATION BROWSER
-   (the shared browser the Commander has open, sidecar/browser-view.js) browses on a temporary profile. It must not
-   error, must not wait out the 8 s profile wait, and must never close the Commander's browser. Against another RUN
+   (the shared browser the Master has open, sidecar/browser-view.js) browses on a temporary profile. It must not
+   error, must not wait out the 8 s profile wait, and must never close the Master's browser. Against another RUN
    the old rule stands: wait, then refuse — two runs never silently swap account identity. makeDriver SEAM (not an
    injected driver) so profileDeps() — and therefore the lease — really runs. */
 'use strict';
@@ -28,7 +28,7 @@ function fakeDriver() {
     A.ok(Date.now() - t0 < 1000, 'no 8 s wait when the station browser holds the profile');
     const url = await B.session.navigate('https://example.com/');
     A.eq(url, 'https://example.com/', 'the run browses');
-    A.eq(!!built[0].profileIsPersistent, false, 'on a TEMPORARY profile (it never touches the one the Commander has open)');
+    A.eq(!!built[0].profileIsPersistent, false, 'on a TEMPORARY profile (it never touches the one the Master has open)');
     A.ok(built[0].profileDir !== 'C:/tmp/profile', 'and never the durable profile directory');
   }
   // 2. lost to another RUN → the old refusal stands

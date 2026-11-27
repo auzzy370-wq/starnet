@@ -2,7 +2,7 @@
 /* node test/run-cap-bounds-spawn.e2e.test.js — bug d3a76db3: the PER RUN dollar cap does not bound team.spawn workers.
 
    SETTINGS › SPENDING LIMITS says PER RUN is a "Hard ceiling for a single agent run". With PER RUN at $0.05, one
-   Commander request whose lead answered its first turn with team.spawn of 4 clones spent $0.24: the lead $0.08 and
+   Master request whose lead answered its first turn with team.spawn of 4 clones spent $0.24: the lead $0.08 and
    four workers $0.04 each. Every spawned worker started with its OWN full PER RUN ceiling, and nothing charged
    worker spend against the lead's run, so the lead also took a second paid turn past its cap and ended "done".
 
@@ -108,7 +108,7 @@ function startMock() {
     assert.ok(!r1.calls.includes('lead+'), 'the lead paid for no further turn once its run cap was spent: ' + JSON.stringify(r1.calls));
     assert.equal(r1.lead.reason, 'budget', 'the lead stops at its PER RUN cap, not "done" past it (got ' + r1.lead.reason + ')');
     assert.equal(r1.lead.budgetScope, 'run', 'the stop names the per-RUN cap');
-    assert.equal(r1.lead.budgetCapUsd, CAP_USD, 'the stop carries the $0.05 cap the Commander set');
+    assert.equal(r1.lead.budgetCapUsd, CAP_USD, 'the stop carries the $0.05 cap the Master set');
     assert.ok(r1.workers.some(w => w.reason === 'budget'), 'the workers past the cap stop with reason budget: ' + JSON.stringify(r1.workers.map(w => w.reason)));
     assert.ok(r1.workers.filter(w => w.reason === 'budget').every(w => w.budgetScope === 'run' && w.budgetCapUsd === CAP_USD), 'a stopped worker names the lead run\'s $0.05 cap');
     const st = await fixture.json('GET', '/api/budget/status');

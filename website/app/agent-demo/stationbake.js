@@ -1006,7 +1006,7 @@ const StationBake = (() => {
 
   /* ---------- per-tile deck painters — one per material ----------
      Each paints ONE tile in that tile's own base colour. bakeDeck AND the REFIT palette
-     sampler both go through paintDeck, so the swatch a Commander clicks is drawn by the exact
+     sampler both go through paintDeck, so the swatch a Master clicks is drawn by the exact
      code that bakes the station — a deck preview here can never drift from the deck they get. */
 
   /* ================= THE DECK CRAFT HELPERS (2026-09-03 polish pass) =================

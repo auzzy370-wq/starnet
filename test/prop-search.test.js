@@ -2,7 +2,7 @@
 
    Asserted against the REAL PropSprites.CATALOG and the REAL label maps, so a renamed prop, a new
    category, or a new capability badge that would quietly become unfindable in REFIT fails HERE rather
-   than in front of the Commander.
+   than in front of the Master.
 
    The two closing blocks are the load-bearing ones, and they are written to cover props that DO NOT
    EXIST YET: every prop must be reachable by its own label, and every word the palette PRINTS on a

@@ -6,7 +6,7 @@
 > - Covers trunk `feat/harness-backend` from tag `v0.6.6` through **10d837d0**
 >   (142 substantive commits; qa/claims/status commits excluded).
 >   The body through `62706fb9` was written 2026-07-25; the delta `62706fb9..10d837d0`
->   (browser instrument, request cost, Commander commands, station defaults) was appended
+>   (browser instrument, request cost, Master commands, station defaults) was appended
 >   2026-07-26.
 > - **DELTA `10d837d0..91f3c5b1` WRITTEN UP 2026-07-26** — security sweep, delegation +
 >   conveyor honesty, idle continuity, props/tables, the FOR YOU shelf, and the MIT/branding
@@ -107,7 +107,7 @@ The station gets places to be, and your phone gets real control of it.
 - `/reasoning` and `/fast` move the actual dial instead of announcing that they can't.
 - A command can no longer be declared in one place and silently missing in the other; a guard
   test holds the two registries together.
-- **Write your own commands, and put them on a clock.** A Commander-defined command is yours —
+- **Write your own commands, and put them on a clock.** A Master-defined command is yours —
   name it, give it the prompt, and it appears in the palette like a built-in. Any command can
   also be scheduled, so `/…` becomes a routine without leaving the chat.
 - **The palette completes argument values**, not just command names, so you stop guessing what
@@ -233,7 +233,7 @@ pinned by a regression test.
 - The per-agent cards in the dossier's CONFIG tab had no card styling and ran together.
 - **The cap that stopped a run is named**, so a run that halts tells you which limit it hit —
   and the default caps are set for a beginner instead of an expert.
-- **Task Brief** no longer asks about dimensions the Commander always defers, no longer offers
+- **Task Brief** no longer asks about dimensions the Master always defers, no longer offers
   a fake three-way choice between near-identical options, shows that a typed answer is
   allowed, and grounds its ★ recommendation in observed history. An adversarial review of the
   lane also closed an inversion, a permanent latch and a denial-of-service path.

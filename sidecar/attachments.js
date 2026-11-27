@@ -1,4 +1,4 @@
-/* sidecar/attachments.js — USER ATTACHMENTS for COMMS (photos/files the Commander attaches to a message,
+/* sidecar/attachments.js — USER ATTACHMENTS for COMMS (photos/files the Master attaches to a message,
    like Claude Code / Codex).
 
    The bytes live in the agent's WORKSPACE under .attachments/ (jailed by the same resolveInside proof the
@@ -146,7 +146,7 @@ module.exports = function makeAttachments(deps) {
     return { ok: true, id, name, path: rel, mediaType: parsed.mime, kind, size: parsed.buffer.length };
   }
 
-  // Best-effort delete of an attachment the Commander removed before sending (avoids orphaned bytes). The path
+  // Best-effort delete of an attachment the Master removed before sending (avoids orphaned bytes). The path
   // must be a real .attachments/ reference; anything else is refused. Never throws; returns { ok }.
   async function removeAttachment(agentId, rel) {
     const r = String(rel || '');

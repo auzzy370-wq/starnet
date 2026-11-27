@@ -2,7 +2,7 @@
 
    Pins the laws the handoff host owns: its own id and wait (not the consent channel), waiting → taken →
    returned / cancelled / expired / aborted, taking the wheel restarts the 30-minute clock, the run's own signal
-   ends it, frames and input exist ONLY while the Commander holds the wheel, the input vocabulary is closed,
+   ends it, frames and input exist ONLY while the Master holds the wheel, the input vocabulary is closed,
    and every state change is published as a browser.handoff event the station can render truthfully. */
 'use strict';
 const A = require('./_assert.js');
@@ -46,7 +46,7 @@ const flush = () => new Promise(r => setImmediate(r));
     const surf = fakeSurface();
     const r = host.request({ agentId: 'nova', runId: 'run1', reason: 'login', note: 'Sign in to GitHub so I can open the PR', url: 'https://github.com/login?return_to=%2Fsecret&token=zzz', title: 'Sign in to GitHub', surface: surf });
     A.eq(r.id, 'ho_abc123', 'a handoff gets its own id (not a consent promptId)');
-    A.eq(r.view.state, 'waiting', 'a new handoff is waiting for the Commander');
+    A.eq(r.view.state, 'waiting', 'a new handoff is waiting for the Master');
     A.eq(r.view.where, 'github.com/login', 'the UI location drops the query string (tokens stay out of the SSE log)');
     A.eq(r.view.expiresAt, 1000 + H.WAIT_MS, 'the wait is 30 minutes, its own clock');
     A.ok(host.isLive('run1'), 'isLive is true while waiting (the frozen guard reads this)');
@@ -67,7 +67,7 @@ const flush = () => new Promise(r => setImmediate(r));
     clk.advance(10 * 60 * 1000);
     const tk = await host.take(r.id);
     A.ok(tk.ok, 'take succeeds');
-    A.eq(tk.view.state, 'taken', 'the Commander now holds the wheel');
+    A.eq(tk.view.state, 'taken', 'the Master now holds the wheel');
     A.eq(tk.view.expiresAt, clk.now() + H.WAIT_MS, 'taking the wheel restarts the 30-minute clock');
     A.eq(surf.started, 1, 'taking the wheel starts the browser stream');
     A.ok(host.isLive('run1'), 'still live (agent still frozen) while taken');
@@ -130,7 +130,7 @@ const flush = () => new Promise(r => setImmediate(r));
     clk.advance(29 * 60 * 1000);
     await host.take(r.id);
     clk.advance(29 * 60 * 1000);
-    A.eq(host.get(r.id).state, 'taken', '58 minutes after the request but 29 after taking: still the Commander\'s');
+    A.eq(host.get(r.id).state, 'taken', '58 minutes after the request but 29 after taking: still the Master\'s');
     clk.advance(60 * 1000);
     A.eq((await r.done).state, 'expired', 'a held wheel expires 30 minutes after it was taken');
   }

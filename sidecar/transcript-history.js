@@ -114,7 +114,7 @@ function indexHash(index) { return crypto.createHash('sha256').update(JSON.strin
 /* What a search hit says about the row beside its words, ONLY when the row has it (a hit of any other row is unchanged): the
    words typed beside a content that holds something else (a row of the 11-02 shape stores a file's text in the content), the
    references of the files it carried, and, for an ATTACHMENT row alone, its kind. A reader that shows the hit
-   (recall_conversation) renders the Commander's words and '[attached: name]' from these, never a file's text
+   (recall_conversation) renders the Master's words and '[attached: name]' from these, never a file's text
    (sidecar/turn-attachment.js textOf); the visibility matrix classifies a system row by its kind, and without it an attachment
    row would read as a local line and never be recalled. Other kinds stay as they were (a steer note or a deliverable row is no
    more findable by search than before; widening that is not this step's call). */

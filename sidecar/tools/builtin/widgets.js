@@ -145,7 +145,7 @@
          max lengths this prose did not). What survives is what a per-field description structurally cannot
          say: what the instrument IS, the cross-turn freshness contract, the cross-field "only when the data
          has that shape" rule, and SKIP — which has no runtime guard behind it, so it stays spelled out. */
-      description: 'Publish or update a small named readout on the station\'s widget rails: a live instrument the Commander can pin ' +
+      description: 'Publish or update a small named readout on the station\'s widget rails: a live instrument the Master can pin ' +
         'on screen (e.g. app revenue, top AI headlines, subscriber count). It always shows YOUR name and the time you set it, ' +
         'so a stale figure is attributable to you: re-set the same id (it overwrites) whenever you have a newer one; a routine ' +
         'is the natural driver. Use tone/spark/progress only when the data genuinely has that shape (a real trend series, a ' +
@@ -235,7 +235,7 @@
 
         return {
           content: args.error ? 'Recorded the refresh error for widget "' + id + '". Its last reading and timestamp are unchanged.' : (created ? 'Published' : 'Updated') + ' widget "' + rec.label + '" (' + id + '). ' +
-            'It shows your name and this timestamp; the Commander can pin it from the rail’s ＋ menu.',
+            'It shows your name and this timestamp; the Master can pin it from the rail’s ＋ menu.',
           summary: (created ? 'published ' : 'updated ') + id
         };
       }

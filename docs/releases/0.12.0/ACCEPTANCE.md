@@ -21,7 +21,7 @@ Unchecked means owed. Each completed row needs candidate SHA, artifact identity 
 
 ## New aesthetic and product flow
 
-- [ ] Fresh Commander: account/model → agent arrival → first useful task → open result → goal/progress follow-through. Test skip/replay without repeating setup or duplicating work.
+- [ ] Fresh Master: account/model → agent arrival → first useful task → open result → goal/progress follow-through. Test skip/replay without repeating setup or duplicating work.
 - [ ] Every selected furnished preset: choose, place/rotate/remove, undo, save/restart; verify props grant the actual tools advertised. A prepared conveyor must run and deliver its claimed output.
 - [ ] Build library: readable categories and previews, placement/cancel feedback, selection/rotation, keyboard Escape and reliable pointer targets under curvature.
 - [ ] Remastered agents: all shipped skins, all walk directions, turns, idle/talk/sit cycles, crowded collisions and foot anchors; legacy settings and selections continue to work.

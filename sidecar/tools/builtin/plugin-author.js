@@ -1,13 +1,13 @@
 /* sidecar/tools/builtin/plugin-author.js — THE CREW BUILDS PLUGINS (plugin extensions phase 4, 2026-09-29).
 
    "Make me a dashboard for my Stripe numbers" → an agent writes a real plugin. The whole flow is INERT until the
-   Commander approves it, which is what makes it safe to hand to any agent:
+   Master approves it, which is what makes it safe to hand to any agent:
      · agents write only into a DRAFT folder (<workspaces>/plugin-drafts/<id>) — never into plugins/ (a reserved id
        their file tools cannot touch) and never into their own workspace jail;
      · a draft never runs: plugin.preview opens its window in a DRAFT window (sandboxed page, a throwaway in-memory
        store, no backend), and plugin.check only parses and compiles;
      · plugin.submit copies the draft into plugins/<id> behind a consent card — and even then it is only INSTALLED:
-       it stays off until the Commander approves its exact code in ABILITIES → EXTENSIONS (the hash-locked gate every
+       it stays off until the Master approves its exact code in ABILITIES → EXTENSIONS (the hash-locked gate every
        plugin goes through). An agent can never switch its own plugin on.
 
    makePluginAuthorTools({ fsp, path, draftsDir, pluginsDir, template, parseScreens, relPathOk, compile, preview,
@@ -26,7 +26,7 @@ const GUIDE = [
   '- WINDOW (ui/*.html): the station kit is injected automatically. The page is transparent (the window glass is its background). Build with kit classes, not your own chrome: sn-stack · sn-row-flex · sn-grid · sn-panel · sn-card · sn-sect (▮ header strip) + sn-list/sn-item rows · sn-stats/sn-stat · sn-table · sn-badge · dot ok|warn|bad · sn-btn (.primary .danger .xs) · sn-input · sn-select · sn-tabs/sn-tab · sn-empty · sn-error. Colours only via var(--ph), rgba(var(--ph-rgb),.2), var(--ok)/--bad/--warn. No white backgrounds, no other fonts, no glows.',
   '- BRIDGE in the page: await vultron.ready; vultron.store.get/set(key, json) (durable, shared with the code); vultron.ui.toast(text); vultron.ui.setTitle(text); vultron.ui.openLink("https://…"); vultron.backend.call(name, args).',
   '- CODE (index.js, "main"; optional — delete both for a window-only plugin): register(api) { api.tool({ name, description, parameters, readOnly, run(args) }); api.handle(name, fn); api.every(ms, fn); api.store.get/set }. Secrets and non-CORS APIs belong here, never in the page.',
-  '- Then plugin.check → plugin.preview (ask the Commander how it looks) → plugin.submit. Submitted means installed OFF: the Commander approves it in ABILITIES → EXTENSIONS. Never say it is on before that.'
+  '- Then plugin.check → plugin.preview (ask the Master how it looks) → plugin.submit. Submitted means installed OFF: the Master approves it in ABILITIES → EXTENSIONS. Never say it is on before that.'
 ].join('\n');
 
 function makePluginAuthorTools(deps) {
@@ -88,7 +88,7 @@ function makePluginAuthorTools(deps) {
     const m = await readManifest(base);
     if (m.__error) problems.push(m.__error);
     const manifest = m.__error ? {} : m;
-    if (!m.__error && !manifest.name) warnings.push('plugin.json has no "name" — the Commander will see the folder id instead');
+    if (!m.__error && !manifest.name) warnings.push('plugin.json has no "name" — the Master will see the folder id instead');
     const sc = parseScreens(manifest, fileSet);
     for (const e of sc.errors) problems.push('screens: ' + e);
     const uiOnly = manifest.main == null && sc.screens.length > 0;
@@ -119,7 +119,7 @@ function makePluginAuthorTools(deps) {
   const tools = [
     {
       name: 'plugin.draft_start',
-      description: 'Start a Vultron plugin DRAFT (a plugin is the Commander\'s own app/dashboard/tool inside Vultron: windows built from the station kit, plus optional code with crew tools). '
+      description: 'Start a Vultron plugin DRAFT (a plugin is the Master\'s own app/dashboard/tool inside Vultron: windows built from the station kit, plus optional code with crew tools). '
         + 'Starts from a working template (a window with a notes list + a KIT reference tab, and code with two example tools). To change an INSTALLED plugin use plugin.draft_from_installed instead. '
         + 'Drafts never run. Then edit with plugin.draft_write, check with plugin.check, show with plugin.preview, and install with plugin.submit.',
       schema: { type: 'object', required: ['id'], properties: {
@@ -151,7 +151,7 @@ function makePluginAuthorTools(deps) {
     },
     {
       name: 'plugin.draft_from_installed',
-      description: 'Copy an INSTALLED plugin into a draft so you can change it (asks the Commander first: it reads that plugin\'s code). Then edit with plugin.draft_write and plugin.submit it — the installed plugin turns off until the Commander approves the new version.',
+      description: 'Copy an INSTALLED plugin into a draft so you can change it (asks the Master first: it reads that plugin\'s code). Then edit with plugin.draft_write and plugin.submit it — the installed plugin turns off until the Master approves the new version.',
       schema: { type: 'object', required: ['id'], properties: {
         id: { type: 'string', description: 'the installed plugin\'s folder id' },
         replace: { type: 'boolean', description: 'discard an existing draft with this id first' }
@@ -228,7 +228,7 @@ function makePluginAuthorTools(deps) {
     },
     {
       name: 'plugin.preview',
-      description: 'Open a plugin draft\'s window on the Commander\'s screen as a DRAFT window, so they (and you, from their reply) can see it. The page runs sandboxed with no network, a throwaway store and no backend. Open it again after edits to show the new version.',
+      description: 'Open a plugin draft\'s window on the Master\'s screen as a DRAFT window, so they (and you, from their reply) can see it. The page runs sandboxed with no network, a throwaway store and no backend. Open it again after edits to show the new version.',
       schema: { type: 'object', required: ['id'], properties: { id: { type: 'string' }, screen: { type: 'string', description: 'screen id (default: the first)' } } },
       run: async (a) => {
         const id = idOf(a);
@@ -237,12 +237,12 @@ function makePluginAuthorTools(deps) {
         if (!preview) throw new Error('previews need the Vultron window open');
         const out = await preview(id, a.screen ? String(a.screen) : r.screens[0].id);
         if (!out || !out.ok) throw new Error((out && out.error) || 'the station could not open the preview');
-        return { content: 'The DRAFT window "' + (out.title || id) + '" is open on the Commander\'s screen. Ask them how it looks; edit and preview again as needed, then plugin.submit.', summary: 'previewed ' + id };
+        return { content: 'The DRAFT window "' + (out.title || id) + '" is open on the Master\'s screen. Ask them how it looks; edit and preview again as needed, then plugin.submit.', summary: 'previewed ' + id };
       }
     },
     {
       name: 'plugin.submit',
-      description: 'Install a checked plugin draft into Vultron. It is installed OFF: the Commander switches it on in ABILITIES → EXTENSIONS after reviewing its code (you cannot approve it). Replacing an installed plugin turns it off until they approve the new code.',
+      description: 'Install a checked plugin draft into Vultron. It is installed OFF: the Master switches it on in ABILITIES → EXTENSIONS after reviewing its code (you cannot approve it). Replacing an installed plugin turns it off until they approve the new code.',
       schema: { type: 'object', required: ['id'], properties: { id: { type: 'string' } } },
       run: async (a) => {
         const id = idOf(a);
@@ -259,7 +259,7 @@ function makePluginAuthorTools(deps) {
         await fsp.rename(staging, dst);
         await afterInstall(id);
         return {
-          content: (replacing ? 'Replaced' : 'Installed') + ' the "' + id + '" plugin — it is OFF until the Commander approves it: CONNECT › ABILITIES › EXTENSIONS → APPROVE & ENABLE. '
+          content: (replacing ? 'Replaced' : 'Installed') + ' the "' + id + '" plugin — it is OFF until the Master approves it: CONNECT › ABILITIES › EXTENSIONS → APPROVE & ENABLE. '
             + 'Tell them that, and what it does. Once on, its window opens from EXTENSIONS' + (r.main ? ', and any tools reach agents through its PLUGIN TERMINAL (placed automatically in the lead\'s room)' : '') + '.',
           summary: (replacing ? 'replaced' : 'installed') + ' plugin ' + id + ' (awaiting approval)'
         };
@@ -268,11 +268,11 @@ function makePluginAuthorTools(deps) {
   ];
 
   // Inert until approved (drafts never run; submit installs OFF), so none of this is a host-process effect.
-  // submit alone asks first: it changes what is installed on the Commander's station.
+  // submit alone asks first: it changes what is installed on the Master's station.
   const ASKS = { 'plugin.submit': 1, 'plugin.draft_from_installed': 1 };
   const defs = tools.map(t => Object.assign({
     // submit is EXECUTE scope: the consent broker never lets a cached "Always" or an unattended run carry it —
-    // installing (or replacing, which turns the old plugin off) is decided by a watching Commander every time
+    // installing (or replacing, which turns the old plugin off) is decided by a watching Master every time
     scope: t.name === 'plugin.submit' ? 'execute' : (/draft_(?:start|write|from_installed)$/.test(t.name) ? 'write' : 'read'),
     readOnly: t.name === 'plugin.draft_read' || t.name === 'plugin.check',
     capability: 'pluginauthor',

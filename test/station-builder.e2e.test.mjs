@@ -7,7 +7,7 @@
    and one UNDO removes all of it. Then the same for a furnished room kit (station_plan_room) and a restyle
    (station_plan_restyle): the room holds exactly the kit's furniture, the restyle changes only the floor, one UNDO each.
    Last, a whole-station swap (replace: true) is backed up to Build mode's own slot, and its RESTORE PREVIOUS brings the old station back.
-   And the ask understood: the Commander's words pick the line, and "new" recruits a Tester through the page's own summon.
+   And the ask understood: the Master's words pick the line, and "new" recruits a Tester through the page's own summon.
    Last, vibe design: "the left side cozy, the right side a line that builds and tests code" lands exactly so, in one undo. Isolated like station-layout.e2e (APPDATA / LOCALAPPDATA / USERPROFILE / HOME /
    HERMES_HOME to scratch, a fresh Chrome profile, OS-picked ports, a local mock model). Skips LOUDLY with no Chromium. */
 import { spawn } from 'node:child_process';
@@ -191,10 +191,10 @@ try {
   }
   check('the Workflow panel agrees: READY TO RUN', !!panel && panel.pill === 'READY TO RUN', JSON.stringify(panel));
 
-  // 4. Build mode open: the Commander owns the floor, so the builder refuses (and the model is told why)
+  // 4. Build mode open: the Master owns the floor, so the builder refuses (and the model is told why)
   const run2 = await leadRun(base, token, 'add another build and test line');
   check('a second run completes', run2.status === 200);
-  check('with Build mode open, planning is refused in plain words', /^REFUSED: Build mode is open, so the Commander is editing the floor/.test(mock.results[2] || ''), (mock.results[2] || '').slice(0, 160));
+  check('with Build mode open, planning is refused in plain words', /^REFUSED: Build mode is open, so the Master is editing the floor/.test(mock.results[2] || ''), (mock.results[2] || '').slice(0, 160));
 
   // 4b. TEST A LINE (10-01): the lead sends one real job down the line it built (SEND A JOB's own route) and reads each step back
   mock.planTool = 'station_test_line'; mock.planArgs = { line: 'SHIP IT', job: 'TEST JOB: write the word hello' };
@@ -319,13 +319,13 @@ try {
     return { rooms: st.rooms().filter(r => r.kind !== 'corridor').map(r => r.name), backupProps: saved && saved.props ? saved.props.length : -1 }; })()`);
   check('the station is now the preset', JSON.stringify(swapped.rooms) === JSON.stringify(['HOME', 'ANALYSIS', 'ARCHIVE']), JSON.stringify(swapped.rooms));
   check('the old layout is backed up in Build mode\'s slot', swapped.backupProps === preSwap.props, JSON.stringify(swapped) + ' vs ' + preSwap.props);
-  // the Commander restores it the way Build mode offers: Build → Presets → RESTORE PREVIOUS
+  // the Master restores it the way Build mode offers: Build → Presets → RESTORE PREVIOUS
   const restored = await evalJS(cdp, `(async () => { Build.open(); await new Promise(r => setTimeout(r, 700)); document.querySelector('#refit-stations').click(); await new Promise(r => setTimeout(r, 500));
     const b = document.querySelector('[data-restore-build]'); const enabled = !!b && !b.disabled; if (enabled) b.click(); await new Promise(r => setTimeout(r, 500)); Build.close();
     const st = App.station(); return { enabled, rooms: st.rooms().filter(r => r.kind !== 'corridor').map(r => r.name), props: st.props().length }; })()`);
   check('RESTORE PREVIOUS brings the old station back', restored.enabled && JSON.stringify(restored.rooms) === JSON.stringify(preSwap.rooms) && restored.props === preSwap.props, JSON.stringify(restored) + ' vs ' + JSON.stringify(preSwap));
 
-  // 10. understanding the ask: the Commander's words pick the line, and "new" recruits the Tester through the page's own summon
+  // 10. understanding the ask: the Master's words pick the line, and "new" recruits the Tester through the page's own summon
   const crew0 = await evalJS(cdp, `App.agents().map(a => a.id)`);
   mock.planTool = 'station_plan'; mock.planArgs = { purpose: 'fix bugs in my repo and test them', steps: [{ step: 1, agent: 'lead' }, { step: 2, agent: 'new' }] };
   at = mock.results.length;
@@ -338,7 +338,7 @@ try {
   const seated = await evalJS(cdp, `(() => { const st = App.station(), id = ${JSON.stringify(rec ? rec.id : '')}; const bay = st.props().find(p => p.t === 'bay' && p.role === 'TESTER' && p.agentId === id);
     return { onCrew: App.agents().some(a => a.id === id), seated: !!bay, desk: st.props().some(p => p.agentId === id && p.t !== 'bay'), brief: bay ? bay.brief : '' }; })()`);
   check('the recruit is on the crew, seated at its step, with a desk', seated.onCrew && seated.seated && seated.desk, JSON.stringify(seated));
-  check('the step carries the Commander\'s words', /This line is for: "fix bugs in my repo and test them"\.$/.test(seated.brief), seated.brief.slice(-120));
+  check('the step carries the Master\'s words', /This line is for: "fix bugs in my repo and test them"\.$/.test(seated.brief), seated.brief.slice(-120));
   const after6 = await evalJS(cdp, `(() => { const st = App.station(), id = ${JSON.stringify(rec ? rec.id : '')}; const u = st.undo();
     return { ok: u && u.ok, line: st.props().some(p => p.t === 'bay' && p.role === 'TESTER'), onCrew: App.agents().some(a => a.id === id), crew: App.agents().length }; })()`);
   check('one UNDO takes back the line and the seat; the recruit stays on the crew, as the card said', after6.ok && !after6.line && after6.onCrew && after6.crew === crew0.length + 1, JSON.stringify(after6));
@@ -365,7 +365,7 @@ try {
   check('one UNDO removes the designed room', undone7.ok && JSON.stringify(undone7.rooms) === JSON.stringify(pre7), JSON.stringify(undone7));
 
 
-  // 12. a line the Commander DESCRIBED: "research it, then a writer and an analyst at once, then a reviewer"
+  // 12. a line the Master DESCRIBED: "research it, then a writer and an analyst at once, then a reviewer"
   mock.planTool = 'station_plan';
   mock.planArgs = { name: 'Weekly digest', shape: ['RESEARCHER', { together: ['WRITER', 'ANALYST'] }, 'REVIEWER'], steps: [{ step: 1, agent: 'lead' }, { step: 2, agent: 'lead' }, { step: 3, agent: 'lead' }, { step: 4, agent: 'lead' }] };
   at = mock.results.length;
@@ -469,7 +469,7 @@ try {
   check('one UNDO takes the refit back', undone12 === true);
   mock.lookFirst = false; mock.mapArgs = {};
 
-  /* A STATION DESIGNED WHOLE, through the real tools: a palette in the Commander's words, from a prebuild, a design review on the plan and the receipt. */
+  /* A STATION DESIGNED WHOLE, through the real tools: a palette in the Master's words, from a prebuild, a design review on the plan and the receipt. */
   mock.lookFirst = false; mock.planTool = 'station_plan';
   mock.planArgs = { layout: { theme: 'a moody cyberpunk club', from: 'software', rooms: [{ name: 'AFTER HOURS', style: 'games', size: { w: 26, h: 16 } }] }, replace: true };
   at = mock.results.length;

@@ -33,7 +33,7 @@
        compiler reads E, S, W, N keep their order, so a SPLITTER's turns and a FILTER's fallback never change. A layout
        that would reorder them is refused, never returned.
    WHERE IT GOES
-     · a PINNED machine (one the Commander placed or dragged) never moves: the line is laid out around the first pin;
+     · a PINNED machine (one the Master placed or dragged) never moves: the line is laid out around the first pin;
        every other machine keeps its place relative to the machine feeding it (a branch moves as one), and one whose
        spot is taken steps to the nearest clear lane — or the nearest clear spot at all — with a junction's spot also
        needing the sides its links want free;
@@ -600,7 +600,7 @@
       const W = sx2 - sx1 + 1, H = sy2 - sy1 + 1;
       if (!needs) needs = { w: W, h: H };
       // where to look first: given opts.near, the spots whose middle is closest to it (a new line lands where the
-      // Commander is looking), else rows top first, then columns
+      // Master is looking), else rows top first, then columns
       const spots = [];
       for (let y = Y1; y + H - 1 <= Y2; y++) for (let x = X1; x + W - 1 <= X2; x++) spots.push([x, y, near ? Math.abs(x + W / 2 - near.x) + Math.abs(y + H / 2 - near.y) : 0]);
       if (near) spots.sort((p, q) => p[2] - q[2] || p[1] - q[1] || p[0] - q[0]);

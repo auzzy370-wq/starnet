@@ -1,7 +1,7 @@
 /* sidecar/tools/builtin/docextract.js — DOCUMENT-TO-TEXT for fs.read.
 
    fs.read decoded everything as UTF-8, so a .docx / .xlsx / .ipynb came back as binary noise — the agent could
-   see that a file existed and had no way to read it. Those three are the formats a Commander actually keeps
+   see that a file existed and had no way to read it. Those three are the formats a Master actually keeps
    work in, and all three are readable with what Node already ships: OOXML is a ZIP of XML, and a notebook is
    plain JSON. NO NEW DEPENDENCY — that is a hard constraint here (the desktop bundle is Tauri-shippable and a
    native zip/office dep would cut against it), which is why this file carries its own small ZIP reader.

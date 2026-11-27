@@ -1,7 +1,7 @@
 /* node test/shellhooks.test.js — THE SHELL-HOOK BRIDGE.
 
    Turns a line of config into a handler on the hook spine, speaking the reference harness's wire protocol
-   exactly so a Commander's existing hook scripts port unchanged. Uses REAL child processes (node -e) rather
+   exactly so a Master's existing hook scripts port unchanged. Uses REAL child processes (node -e) rather
    than a faked spawn, because the whole point of this module is the process boundary: stdin JSON in, stdout
    JSON out, no shell, bounded, and never fatal. */
 'use strict';
@@ -36,7 +36,7 @@ const mk = (extra) => makeShellHooks(Object.assign({ spawn, fsp, pathMod: path, 
       A.eq(s('prettier --write ""'), ['prettier', '--write', ''], 'an explicitly empty argument survives');
       let threw = false;
       try { s('node "unterminated'); } catch (_) { threw = true; }
-      A.ok(threw, 'an unbalanced quote is an ERROR — guessing at a half-quoted command is how you run something the Commander did not write');
+      A.ok(threw, 'an unbalanced quote is an ERROR — guessing at a half-quoted command is how you run something the Master did not write');
       // The shell metacharacters are DATA here, never operators. This is the injection guarantee.
       A.eq(s('echo a;rm -rf /'), ['echo', 'a;rm', '-rf', '/'], 'a `;` is just a character in an argument — no shell, no second command');
       A.eq(s('echo $HOME'), ['echo', '$HOME'], 'no variable expansion happens');
@@ -50,7 +50,7 @@ const mk = (extra) => makeShellHooks(Object.assign({ spawn, fsp, pathMod: path, 
       const spine = makeHooks();
       const r = await sh.install(spine);
       A.eq(r.installed.length, 0, 'an un-allowed hook is NOT installed');
-      A.eq(r.pending.length, 1, 'it is reported as waiting on the Commander, not dropped silently');
+      A.eq(r.pending.length, 1, 'it is reported as waiting on the Master, not dropped silently');
       A.eq((await spine.invoke('pre_tool_call', {})).blocked, false, 'and it cannot block anything while pending');
       A.eq((await sh.listPending()).length, 1, 'listPending surfaces it for an approval affordance');
     }
@@ -90,7 +90,7 @@ const mk = (extra) => makeShellHooks(Object.assign({ spawn, fsp, pathMod: path, 
       A.eq((await sh.listPending()).length, 0, 'accept:true is the headless escape hatch and it PERSISTS the approval');
     }
 
-    // ---- 6. NEVER FATAL. A hook is the Commander's code and it will be broken sometimes. ----
+    // ---- 6. NEVER FATAL. A hook is the Master's code and it will be broken sometimes. ----
     {
       const cases = [
         ['prints nothing at all', script('')],
@@ -209,7 +209,7 @@ const mk = (extra) => makeShellHooks(Object.assign({ spawn, fsp, pathMod: path, 
       await writeHooks([{ event: 'on_whatever', command: script(''), name: 'ghost' }]);
       const r = await mk({ onError: () => {} }).install(makeHooks(), { accept: true });
       A.eq(r.installed.length, 0, 'a hook on a non-existent event is not installed');
-      A.ok(r.errors.some(e => /on_whatever|cannot register/.test(e)), 'and the Commander is told why');
+      A.ok(r.errors.some(e => /on_whatever|cannot register/.test(e)), 'and the Master is told why');
     }
 
     // ---- 9b. REVOKE — the other half of the gate ----

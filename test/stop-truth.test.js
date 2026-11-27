@@ -1,4 +1,4 @@
-/* node test/stop-truth.test.js — STOP keeps the Commander's words and lets go of everything the stopped run was waiting on
+/* node test/stop-truth.test.js — STOP keeps the Master's words and lets go of everything the stopped run was waiting on
    (live walk with a real model, 2026-10-14).
 
    Found on the 0.13.5 candidate:
@@ -189,7 +189,7 @@ function stopRig(opts) {
     // LIVE (this lane): the station was killed mid-run with a send-now line pending; the page's thrown teardown is not always
     // classified 'network', so the line was re-queued and auto-sent into the dead station. A throw that is not a deliberate
     // STOP never saw its run end: it marks the stream lost, whatever the error's wording.
-    const thrown = src.slice(src.indexOf('      const stopped = interrupted.has(ws.id);   // the Commander pressed Stop'), src.indexOf('let engineAlive = null;', src.indexOf('      const stopped = interrupted.has(ws.id);   // the Commander pressed Stop')));
+    const thrown = src.slice(src.indexOf('      const stopped = interrupted.has(ws.id);   // the Master pressed Stop'), src.indexOf('let engineAlive = null;', src.indexOf('      const stopped = interrupted.has(ws.id);   // the Master pressed Stop')));
     A.ok(thrown.length > 200 && thrown.length < 4000 && /\} else \{[\s\S]*persistPartial\(ws, acc\);\s*streamLost = true;/.test(thrown), 'a non-STOP throw marks the stream lost (right after it saves what streamed)');
     A.ok(/let runToolsOk = 0, runDeliv = 0, thisRunId = null, streamLost = false;/.test(src), 'each send starts with its stream not lost');
     A.ok(/if \(activeWs\) \{ returnHeld\(activeWs\.id\); flushQueued\(activeWs\.id\); \}/.test(src), 'returning to a session gives back what its confirmed STOP held, before its queue drains');
@@ -714,12 +714,12 @@ function stopRig(opts) {
     A.ok(catchBody && /settleRunNeeds\(ws\.id\);/.test(catchBody[0]), 'a thrown teardown (STOP, a dropped stream) settles the run\'s own bell waits — a background worker\'s ask keeps its entry');
   }
 
-  // ── 4. the floor and CREW listen for that same response; the tutorial never reads a stop as the Commander's "no" ──
+  // ── 4. the floor and CREW listen for that same response; the tutorial never reads a stop as the Master's "no" ──
   {
     const world = fs.readFileSync(path.join(__dirname, '../frontend/app/world.js'), 'utf8');
     A.ok(/U\.bus\.on\('permission\.response', p => \{\s*if \(p && awaitPrompt && \(!p\.promptId \|\| p\.promptId === awaitPrompt\.promptId\)\) clearAwait\(\);/.test(world), 'the hero\'s AWAITING tag clears on the response');
     const tut = fs.readFileSync(path.join(__dirname, '../frontend/app/tutorial.js'), 'utf8');
-    A.ok(/p\.decision === 'deny' && !p\.stopped\) sawDeny = true/.test(tut), 'a stopped ask is not counted as the Commander denying it');
+    A.ok(/p\.decision === 'deny' && !p\.stopped\) sawDeny = true/.test(tut), 'a stopped ask is not counted as the Master denying it');
   }
 
   // ── 5. the queued pill never hides the live line: a strip that grows while the log shows its end keeps that end in view ──

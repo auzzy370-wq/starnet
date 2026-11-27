@@ -81,7 +81,7 @@ function memFs() {
   A.ok(/preserved across context compaction/.test(inj), 'active todo list is available for compaction reinjection');
   A.ok(inj.indexOf('run regression tests') >= 0 && inj.indexOf('audit current todo behavior') < 0, 'injection keeps pending items and omits completed ones');
 
-  /* ---------- resetAgentMemory: the new-hero clean slate (no prior Commander's state bleeds into a fresh agent) ---------- */
+  /* ---------- resetAgentMemory: the new-hero clean slate (no prior Master's state bleeds into a fresh agent) ---------- */
   const rstore = makeMemoryStore({ fs: memFs(), path, workspaces: ROOT });
   await rstore.update('notebook:hero', () => [{ content: 'a kept belief' }]);
   await rstore.update('declined:hero', () => ['a permanently-rejected belief']);
@@ -129,7 +129,7 @@ function memFs() {
 
   /* ---------- the DURABLE pending queue: a high-stakes deck raised with nobody watching stays answerable ----------
      Unattended runs reflect now, so a credential/PII/standing-instruction proposal can be raised at 3am. The old
-     in-memory Map lost it on restart and could only be reached by exact runId — i.e. the Commander was never given
+     in-memory Map lost it on restart and could only be reached by exact runId — i.e. the Master was never given
      the chance to rule on it. This queue is the durable half. ---------- */
   {
     const pstore = makeMemoryStore({ fs: memFs(), path, workspaces: ROOT });
@@ -169,7 +169,7 @@ function memFs() {
     A.eq(flooded.length, PENDING_CAP, 'the queue is capped');
     A.eq(flooded[flooded.length - 1].id, 'p' + (PENDING_CAP + 9), 'and keeps the NEWEST (oldest fall off the front)');
 
-    // a re-commissioned hero must not inherit the prior Commander's un-answered deck
+    // a re-commissioned hero must not inherit the prior Master's un-answered deck
     pstore.set('notebook:hero', [{ id: 'note_1' }]);
     await resetAgentMemory(pstore, 'hero');
     A.eq(listPending(pstore, 'hero'), [], 'new-hero reset wipes the pending deck too');

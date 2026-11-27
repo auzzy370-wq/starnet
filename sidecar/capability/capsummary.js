@@ -7,7 +7,7 @@
    BOTH surfaces get a note, for different reasons:
    - INTERACTIVE: the floor is real, so a missing power is actionable -- name the object to place.
    - AUTONOMOUS/headless (cron, night shift, delegated workers, chat channels): there is no placement
-     UI and no Commander watching, and enforceRunAuthority additionally strips shell/verify, live MCP
+     UI and no Master watching, and enforceRunAuthority additionally strips shell/verify, live MCP
      connector tools, and Spotify on this surface REGARDLESS of what is placed. Sending no note at all
      left those runs believing they had powers the gate had already removed -- the agent then promised
      work it could not do and blamed the failure on the user's credentials. So the autonomous note
@@ -42,10 +42,10 @@ const CAPS = [
   { id: 'jukebox',      probe: 'spotify_play',    have: 'search and control Spotify', object: 'a JUKEBOX' }
 ];
 
-// The powers a Commander most often assumes an agent has -> highest over-promise risk -> nag if absent.
+// The powers a Master most often assumes an agent has -> highest over-promise risk -> nag if absent.
 const CORE = ['web', 'cabinet', 'workbench'];
 // ROOM SCOPE (cap-scope.js, 2026-10-20): the floor gear a room-scoped agent is told to place IN ITS ROOM. Memory and
-// images join the core three only when that gear stands elsewhere on the station (the case the Commander can't see).
+// images join the core three only when that gear stands elsewhere on the station (the case the Master can't see).
 const ROOM_GEAR = ['web', 'cabinet', 'workbench', 'memory', 'studio'];
 // ...and the ones an UNATTENDED run's note offers as a floor fix: web (web_search/fetch need no consent) and the INTEL
 // CAB's READING (fs.write/edit stay default-denied there without an AWAY WORKSHOP grant). Never the terminal (the
@@ -60,7 +60,7 @@ const extraHave = (c, noImageRoute) => c.id === 'memory' ? 'keep long-term memor
 const bare = (c) => c.object.replace(/^an? /, '');
 const listJoin = (xs, last) => xs.length > 1 ? xs.slice(0, -1).join(', ') + ' ' + (last || 'and') + ' ' + xs[xs.length - 1] : (xs[0] || '');
 // "(the UPLINK in HOME does not reach you)", or `like` "(like the DISH in HOME)": the prop each missing power's gear really
-// is, in the room it already stands in (cap-scope labels, keyed by room id), so the Commander does not place a second one
+// is, in the room it already stands in (cap-scope labels, keyed by room id), so the Master does not place a second one
 // there. A room named like this agent's own is never named (it would be both places). '' when none stands anywhere else.
 function elsewhereOf(fix, scope, like) {
   const groups = [];
@@ -116,18 +116,18 @@ function summarizeCapabilities(resolved, opts) {
 
   let note = '\n<capabilities_ground_truth>\n' +
     (unrestrictedHost
-      ? 'FULL POWER is active: the Commander authorized the whole local computer. Vultron policy must not refuse a host task; only report real unavailable OS, hardware, credential, account, or service prerequisites. '
+      ? 'FULL POWER is active: the Master authorized the whole local computer. Vultron policy must not refuse a host task; only report real unavailable OS, hardware, credential, account, or service prerequisites. '
       : 'These are your REAL powers this run, decided by the objects placed on your station floor and host-granted station roles -- not aspirational. ') +
     'This block is AUTHORITATIVE: if anything earlier in your instructions implies you always have web or file access, ignore it -- what follows is what you ACTUALLY have right now:\n' +
     (toolless && havePhrases.length
       ? '- Your station grants: ' + haveStr + '. NONE of these tools are attached to THIS reply (a conversational turn): ' +
         'do not write tool-call markup, and never claim you searched, fetched, browsed, read, ran or saved anything in this reply. ' +
-        'If the Commander wants one of these done, say you can do it and ask them to say exactly what to do; the tools attach to that message.\n'
+        'If the Master wants one of these done, say you can do it and ask them to say exactly what to do; the tools attach to that message.\n'
       : '- You CAN: ' + haveStr + '.\n');
 
   // On the UNATTENDED surface, absent connector tools are themselves a missing power worth naming -- and the
   // block must render even when lackCore is EMPTY (a routine granted the terminal has no lacking core cap, yet
-  // still needs to be told whether its Commander's connectors are reachable). Interactive is unchanged.
+  // still needs to be told whether its Master's connectors are reachable). Interactive is unchanged.
   const lackAutonomous = lackCore.map((c) => c.have).concat(hasConnectorTools ? [] : ['use live MCP connector tools']);
   /* ROOM SCOPE (cap-scope.js): a bay-owning agent's floor tools come ONLY from its desk's (else its bay's) room, so
      "place a DISH" sent Commanders to gear already standing in HOME. opts.scopeFn (host-built, lazy) is asked only
@@ -164,9 +164,9 @@ function summarizeCapabilities(resolved, opts) {
     note += '- You do NOT have: ' + missing.join(', ') + '.\n';
     if (interactive) {
       // the LEAD holds the station builder (2026-10-02): it places the missing object itself rather than sending the
-      // Commander into Build mode — the builder's own approval card is the Commander's yes, and the power arrives on
+      // Master into Build mode — the builder's own approval card is the Master's yes, and the power arrives on
       // the next run (the floor decides each run's grants)
-      note += 'If the Commander asks for something you lack, do NOT claim, promise, or pretend to do it. Say plainly you can\'t yet, ' +
+      note += 'If the Master asks for something you lack, do NOT claim, promise, or pretend to do it. Say plainly you can\'t yet, ' +
         // the terminal CLI has no station floor on screen: name the object, placed in the desktop app (never "I'll place it")
         (opts.viewer === 'terminal' ? 'and name the object to place in the Vultron desktop app to grant it: '
           : capIds.has('orchestrator') ? 'and offer to place it yourself (station builder add; they approve; works from their next message): ' : 'and name the object to place to grant it: ') +
@@ -193,7 +193,7 @@ function summarizeCapabilities(resolved, opts) {
       note += 'This is an authenticated owner Telegram session: it has the same non-physical authority as the Vultron desktop app. ' +
         'Do NOT claim, promise, or pretend to do what is genuinely absent; state the actual missing setup or tool plainly.\n';
     } else {
-      // GRANT-AWARE (2026-07-25): a routine can now be granted the terminal and/or its Commander's MCP
+      // GRANT-AWARE (2026-07-25): a routine can now be granted the terminal and/or its Master's MCP
       // connectors for unattended use, so this branch must NOT assert a blanket "no shell, no connectors" --
       // that would be a fresh lie to the model on exactly the granted runs the grant exists to enable. Only
       // the capabilities genuinely absent from THIS run's resolved set (lackCore, plus connectors when none
@@ -203,17 +203,17 @@ function summarizeCapabilities(resolved, opts) {
       // The fix is named only when the job needed it: an order on every line hop put the same gear advice into every
       // delivered output and channel reply (and a toolless turn has no job that could have needed it).
       const rest = lackAutonomous.filter((h) => !roomFix.some((c) => c.have === h));
-      note += 'This is an UNATTENDED run: no Commander is watching, so ' + (rest.length || !roomFix.length
+      note += 'This is an UNATTENDED run: no Master is watching, so ' + (rest.length || !roomFix.length
         ? rest.join(', ') + ' and desktop control ' +
           'are unavailable on this run -- each needs either a watched session or an explicit per-routine grant the ' +
-          'Commander sets on the routine itself. Placing objects cannot change that here. '
+          'Master sets on the routine itself. Placing objects cannot change that here. '
         : 'desktop control is unavailable on this run. ') +
         (roomFix.length ? 'No ' + listJoin(roomFix.map((c) => ROOM_WORD[c.id]), 'or') + ' on this run: ' + roomIs + ', has no ' + listJoin(roomFix.map(bare), 'or') +
-          '; the Commander can place ' + (roomFix.length > 1 ? 'them' : 'one') + ' there for your next job' + elsewhereOf(roomFix, scope) + '. ' +
+          '; the Master can place ' + (roomFix.length > 1 ? 'them' : 'one') + ' there for your next job' + elsewhereOf(roomFix, scope) + '. ' +
           (toolless ? '' : 'If the job needed ' + (roomFix.length > 1 ? 'them' : 'it') + ', name that fix in your closing clause. ') : '') +
         'Do NOT claim, promise, or pretend to do what you lack, and do NOT blame missing credentials for a power you were never granted. ' +
-        'Do everything you genuinely can, then state plainly what you could not do and why, so the Commander can finish it in a watched session. ' +
-        'Say it in the Commander\'s terms, in one short closing clause (e.g. "Not saved as a file — copy it from here."), and never open with or explain approval rules, run modes or station policy; ' +
+        'Do everything you genuinely can, then state plainly what you could not do and why, so the Master can finish it in a watched session. ' +
+        'Say it in the Master\'s terms, in one short closing clause (e.g. "Not saved as a file — copy it from here."), and never open with or explain approval rules, run modes or station policy; ' +
         'if a file could not be saved, put its content in your reply.\n';
     }
   }

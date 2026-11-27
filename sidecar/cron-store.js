@@ -104,11 +104,11 @@
   // fields a user may edit via updateJob. `id`, timestamps, run-state and counters are NOT editable here.
   const EDITABLE = ['name', 'prompt', 'agentId', 'model', 'provider', 'deliver', 'skills', 'script', 'scriptTimeoutMs', 'workdir', 'contextFrom', 'monitorMode', 'misfire', 'unattendedGrants', 'noAgent', 'enabledToolsets', 'attachToSession', 'origin', 'runsLine', 'dockId'];
 
-  /* UNATTENDED CAPABILITY GRANT (2026-07-25) — the capability families the Commander explicitly approved for
+  /* UNATTENDED CAPABILITY GRANT (2026-07-25) — the capability families the Master explicitly approved for
      THIS routine to use with nobody watching. Default EMPTY: a routine grants nothing extra unless the user
      ticked it, so every pre-existing job loads with no new power. 'workbench' = terminal (shell.exec) +
-     verify.run. 'connectors' = the Commander's connected MCP servers (capability 'mcp:<connectorId>'); a
-     connector the Commander switched OFF still contributes no tools, so this can never re-enable one.
+     verify.run. 'connectors' = the Master's connected MCP servers (capability 'mcp:<connectorId>'); a
+     connector the Master switched OFF still contributes no tools, so this can never re-enable one.
      'studio' = image_generate: the routine may make images with nobody there to approve each one.
 
      This list is STORAGE, not authority. sidecar/inputpolicy.js owns the authoritative whitelist
@@ -248,17 +248,17 @@
       /* ONLY A ROUTINE THAT BELONGS TO A LINE RUNS THE LINE (Andrew's ruling, 2026-08-07). A routine fires AT
          a dock; if the floor draws stages past that dock, running them buys a provider call per stage. Deciding
          that from the dock alone made every PRE-EXISTING routine buy a whole work line the instant its agent was
-         crewed onto one — money the Commander never asked for, and a delivered answer that was the LAST stage's
+         crewed onto one — money the Master never asked for, and a delivered answer that was the LAST stage's
          instead of the routine's. So the intent is DURABLE and OPT-IN: true only for a routine created from a
          line's own INBOX trigger zone (which posts runsLine:true to /api/cron). Absent/false — every routine
          that predates this, every routine made in AUTOMATION, by the routine.* tools, by a recipe or a slash
          command — is TERMINAL: one run, its own answer, nothing downstream spends.
          Deliberately a FLAG, not a stored lineId: which line a dock belongs to is the compiled plan's single
          answer (router.lineOfAgent), and a second copy on disk would be a second derivation that drifts the
-         first time the Commander edits the floor. The flag records the INTENT; the line is looked up live. */
+         first time the Master edits the floor. The flag records the INTENT; the line is looked up live. */
       runsLine: spec.runsLine === true,
       /* FIRES AT A BAY (multi-bay agents, 2026-09-22): which of the agent's bays this routine fires at, when the
-         Commander picked one (the workflow panel's FIRES AT chips). OPTIONAL and additive — present only when a
+         Master picked one (the workflow panel's FIRES AT chips). OPTIONAL and additive — present only when a
          safe id was given, so every existing job record is byte-identical. The fire resolves it against the
          live plan (router.dockOf): a dock the floor no longer has falls back to the agent's ENTRY dock. */
       ...(ID_RE.test(String(spec.dockId == null ? '' : spec.dockId)) ? { dockId: String(spec.dockId) } : {}),
@@ -396,7 +396,7 @@
     return mapJob(jobs, id, (job) => {
       if (job.schedule && job.schedule.kind === 'once' && job.lastRunAt) return job;   // settled one-shot: never re-armable
       // a manual trigger owns the next fire completely — a stale retry anchor advancing from an old grid
-      // after the triggered run settles would phase-shift the schedule the Commander just touched.
+      // after the triggered run settles would phase-shift the schedule the Master just touched.
       return Object.assign({}, job, { enabled: true, state: 'scheduled', nextRunAt: iso(now), retryAnchorAt: null });
     });
   }
@@ -589,11 +589,11 @@
       return next;
     });
   }
-  /* A routine the Commander PAUSED keeps its undelivered results until it is resumed — pausing it must not be the
+  /* A routine the Master PAUSED keeps its undelivered results until it is resumed — pausing it must not be the
      moment its old results start arriving. A completed one-shot, an exhausted repeat and an auto-paused routine are
-     not 'paused' (their last result is the notice the Commander needs) and deliver as before. With a `receipt`, it answers for that one
-     result: a RUN NOW the Commander pressed on the paused routine (receipt.pausedAtStart, markRun) is theirs to see now, never held (review
-     7.1: it waited for a resume that might never come). Without one, it answers whether the routine itself is paused by the Commander. */
+     not 'paused' (their last result is the notice the Master needs) and deliver as before. With a `receipt`, it answers for that one
+     result: a RUN NOW the Master pressed on the paused routine (receipt.pausedAtStart, markRun) is theirs to see now, never held (review
+     7.1: it waited for a resume that might never come). Without one, it answers whether the routine itself is paused by the Master. */
   function deliveriesHeld(job, receipt) {
     return !!(job && job.enabled === false && job.state === 'paused') && !(receipt && receipt.pausedAtStart === true);
   }
@@ -738,7 +738,7 @@
   }
 
   /* markRun — record the outcome of a fired run. `result = { runId, status:'ok'|'error'|'stopped', reason, error, transient, pausedAtStart }`
-     (pausedAtStart: the fire started on a routine the Commander had already paused — a RUN NOW press; review 7.1).
+     (pausedAtStart: the fire started on a routine the Master had already paused — a RUN NOW press; review 7.1).
      ctx = { now, maxRetries=3, backoffMs=90000 }.
 
        - transient error with retries left -> back off (nextRunAt = now + backoffMs), retryCount++, stay
@@ -764,8 +764,8 @@
       const stopped = !ok && (result.status === 'stopped' || result.outcome === 'stopped');
       /* PAUSED WHILE IT RAN (review r7): pausing a routine writes pauseJob (enabled false, state 'paused') BEFORE its running fire is
          aborted, and the settlement then rewrote 'paused' to 'error' (or 'scheduled'), re-armed nextRunAt and — with prior failures —
-         relabelled the Commander's own pause 'consecutive-failures'. deliveriesHeld read false, so the result went out at once instead
-         of waiting for the resume. The Commander's pause stands: no re-arm, no relabel, the result held. */
+         relabelled the Master's own pause 'consecutive-failures'. deliveriesHeld read false, so the result went out at once instead
+         of waiting for the resume. The Master's pause stands: no re-arm, no relabel, the result held. */
       const pausedByYou = job.enabled === false && job.state === 'paused';
       /* RUN NOW ON A PAUSED ROUTINE (review 7.1): the button stays live on a paused routine, and that press settles here too. A fire that
          STARTED on the paused routine (result.pausedAtStart: handleCronRun's lease records it at the press, finishFire hands it on) was
@@ -848,7 +848,7 @@
         next.state = ok ? 'completed' : stopped ? 'stopped' : 'error';   // a stopped one-shot was stopped, never 'error' (RESCHEDULE re-arms it)
         return next;
       }
-      // the Commander paused it while this fire ran: their pause stands (header) — its results wait for the resume (deliveriesHeld);
+      // the Master paused it while this fire ran: their pause stands (header) — its results wait for the resume (deliveriesHeld);
       // a RUN NOW pressed on the paused routine keeps the pause too, its result marked to go out (askedWhilePaused)
       if (pausedByYou) return next;
       // recurring continues
@@ -860,7 +860,7 @@
       } else if (maxConsecutive > 0 && next.consecutiveFailures >= maxConsecutive) {
         // AUTO-DISABLE: N terminal failures in a row means the routine is broken, not unlucky — re-arming it
         // forever would spend forever. Pause it durably with a governed reason; the finalization (which rides
-        // the normal delivery path) tells the Commander, and resumeJob clears the streak on re-enable.
+        // the normal delivery path) tells the Master, and resumeJob clears the streak on re-enable.
         next.enabled = false;
         next.nextRunAt = null;
         next.state = 'error';
@@ -889,8 +889,8 @@
   }
 
   /* GRANTS BIND TO THE APPROVED INSTRUCTION (2026-09-23 security audit). Returns the unattended grants an AGENT
-     edit must drop: rewriting a granted routine's prompt would otherwise inherit the Commander's standing
-     workbench/connectors power for an instruction the Commander never saw. Pure; the Commander's own edit path
+     edit must drop: rewriting a granted routine's prompt would otherwise inherit the Master's standing
+     workbench/connectors power for an instruction the Master never saw. Pure; the Master's own edit path
      (POST /api/cron/update) does not call this. */
   function grantsRevokedByAgentEdit(current, patch) {
     if (!current || !patch || !Object.prototype.hasOwnProperty.call(patch, 'prompt')) return [];

@@ -136,7 +136,7 @@ const ROWS = [
   V('setVoiceVolume', '', e => e.Voice.setVoiceVolume(0.5), 'spoken'),
   V('playbackChain', '', e => e.Voice.playbackChain(), 'spoken'),
   V('leaseSpeaker', 'a Live call borrows the speaker', e => e.Voice.leaseSpeaker('live'), 'spoken'),
-  V('releaseSpeaker', "the call gives it back to the Commander's choice (on)", e => e.Voice.releaseSpeaker('live'), 'spoken', e => { e.Voice.leaseSpeaker('live'); }),
+  V('releaseSpeaker', "the call gives it back to the Master's choice (on)", e => e.Voice.releaseSpeaker('live'), 'spoken', e => { e.Voice.leaseSpeaker('live'); }),
   V('releaseSpeaker', 'the call gives it back to a hand-set mute', e => e.Voice.releaseSpeaker('live'), 'speaker_off',
     e => { e.Voice.setSpeakReplies(false); e.Voice.leaseSpeaker('live'); }),
   V('speakerState', '', e => e.Voice.speakerState(), 'spoken'),
@@ -181,9 +181,9 @@ const ROWS = [
   C('/voice', 'live, mid-call: the call ends', slash('live'), 'call_end', startCall),
   C('abort', 'DISCONNECT', disconnect, 'disconnect'),
   C('abort', 'DISCONNECT, mid-call', disconnect, 'disconnect', startCall),
-  // the call's own turn path (internal entries): the models leg hears the Commander through its real microphone frame
+  // the call's own turn path (internal entries): the models leg hears the Master through its real microphone frame
   // (VAD onset, endpoint, the station's transcription), the dictation leg through its recognizer
-  T('the Commander starts speaking (VAD onset)', e => A.ok(e.w.onset(), 'VAD onset: the call heard it'), 'spoken'),
+  T('the Master starts speaking (VAD onset)', e => A.ok(e.w.onset(), 'VAD onset: the call heard it'), 'spoken'),
   T('onset, then an empty transcript', turn(''), 'spoken'),
   T('onset, then a follow-up queued behind the run', turn('and check the moon too', { busy: true }), 'spoken'),
   T("onset, then the answer to the run's pending ask", turn('use postgres', { busy: true, sendState: 'answered' }), 'spoken'),

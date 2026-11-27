@@ -1,7 +1,7 @@
 /* node test/newhero-reset.test.js — source-level lock for the new-hero clean slate (Slice 8 #8).
 
    The whole-build sweep found the new-hero (onWake) path reset only Pitch/Suggest/Seed and silently OMITTED
-   CuriosityStore + MintStore, so a second Commander inherited the prior one's waved-off dimensions and recurring-
+   CuriosityStore + MintStore, so a second Master inherited the prior one's waved-off dimensions and recurring-
    task shapes — the latter feeds the seed shelf, so a brand-new agent could offer to author a stranger's chore
    ("you keep asking me to …"), a direct app-lie. Every per-agent advice store MUST be reset on commission.
 
@@ -24,12 +24,12 @@ const seg = src.slice(i, enter);
 
 for (const store of ['PitchStore', 'SuggestStore', 'SeedStore', 'CuriosityStore', 'MintStore', 'AutonomyStore', 'AutoJobStore', 'AutopilotStore', 'PermissionsStore', 'QuestStateStore', 'ReturnStore', 'PrideStore', 'ConfBeats', 'StationQuestStore']) {
   A.ok(new RegExp('\\b' + store + '\\.reset\\(\\)').test(seg),
-    'new-hero onWake resets ' + store + ' — no prior-Commander state bleeds into a fresh agent');
+    'new-hero onWake resets ' + store + ' — no prior-Master state bleeds into a fresh agent');
 }
 
 // Permission lockdown is an authority gate, not one more best-effort cache reset. It must finish before the
 // new hero assignment (the commit point); otherwise a failed durable revoke leaves a half-reset station and
-// lets the fresh Commander inherit the previous station's cabinet:write grant.
+// lets the fresh Master inherit the previous station's cabinet:write grant.
 const permissionsReset = seg.indexOf('await PermissionsStore.reset()');
 const heroCommit = seg.indexOf("agent = { id: 'agent'");
 const autonomyReset = seg.indexOf('await AutonomyStore.reset()');
@@ -44,13 +44,13 @@ const journeyReset = seg.indexOf('await JourneyStore.reset(newCommanderEpoch)');
 A.ok(journeyReset >= 0 && journeyReset < heroCommit,
   'new-hero journey reset is acknowledged before the hero/state commit point');
 A.ok(/if \(!journeyResetResult \|\| !journeyResetResult\.ok\)/.test(seg),
-  'a failed durable journey reset blocks commissioning instead of inheriting the prior Commander');
+  'a failed durable journey reset blocks commissioning instead of inheriting the prior Master');
 A.ok(seg.indexOf('createdAt: newCommanderEpoch') > journeyReset,
   'the committed hero uses the exact generation accepted by the journey reset');
 
 // SERVER-SIDE bleed: the frontend stores above are localStorage; the notebook + the NEW declined denylist live on
 // the sidecar. onWake must ALSO wipe them, or a fresh hero inherits a stranger's kept/declined memories (app-lie).
 A.ok(/Harness\.memoryReset\(/.test(seg),
-  'new-hero onWake wipes SERVER-SIDE memory (notebook/declined/todo) so no prior-Commander memory bleeds into a fresh agent');
+  'new-hero onWake wipes SERVER-SIDE memory (notebook/declined/todo) so no prior-Master memory bleeds into a fresh agent');
 
 A.report('newhero-reset.test');

@@ -1,7 +1,7 @@
 /* node test/hooks.test.js — THE HOOK SPINE.
 
    Vultron had no extension point of this kind at all: skills add instructions, MCP adds tools, routines add a
-   schedule, and nothing let a Commander say "whenever the agent edits a file, run prettier" or "never let it
+   schedule, and nothing let a Master say "whenever the agent edits a file, run prettier" or "never let it
    run that command". These assertions pin the contract every hook — shell script or JS plugin — rides on.
 
    The load-bearing one is the LAW: a hook may DENY, never GRANT. If that ever inverts, one user script becomes
@@ -92,7 +92,7 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
     A.ok((await big.invoke('pre_llm_call', {})).context.length <= 8000, 'a runaway hook cannot own the context window');
   }
 
-  // ---- 7. A BROKEN HOOK IS THE COMMANDER'S CODE AND IT WILL BE BROKEN SOMETIMES — never fatal ----
+  // ---- 7. A BROKEN HOOK IS THE MASTER'S CODE AND IT WILL BE BROKEN SOMETIMES — never fatal ----
   {
     const errs = [];
     const h = makeHooks({ onError: (e) => errs.push(e) });

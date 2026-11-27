@@ -2,7 +2,7 @@
    The audit (10-04) found the old look here: a CRT 4px key pair (REFRESH / CLEAN OLD RECORDS), a pitch-dark search field and
    select, a 12px lead. MATERIAL: the Workflow-window glass restated on this window's root, exactly as
    css/workflows-window.css does — 8px glass keys (36px, 16px VT323), the Build Library field (8px,
-   recessed), nothing a Commander reads under 14px, matte (no glow). The deliverable cards keep their own styles here. */
+   recessed), nothing a Master reads under 14px, matte (no glow). The deliverable cards keep their own styles here. */
 .term.dlv-win {
   --refit-glass: linear-gradient(125deg, rgba(var(--ph-bright-rgb),.09), rgba(var(--ph-rgb),.045) 48%, rgba(var(--ph-rgb),.015));
   --dlv-edge: rgba(var(--ph-rgb),.2);
@@ -39,7 +39,7 @@
 /* ---- THE LIBRARY ITSELF (self-driving lane 5 finish, 2026-10-08) — the cards, the summary strip, the kind chips, the project
    rail and the drawer still wore the 2026-08 type (9.5-12px, 2px pills, a glow on the open card). Same Workflow-panel material
    as the keys above: the 10px glass card (165deg phosphor lift over the panel), 8px chips at 34px, a recessed strip, nothing a
-   Commander reads under 14px, matte — an open card is a brighter EDGE, never a glow. Scoped under .cfg.dlv so it outranks
+   Master reads under 14px, matte — an open card is a brighter EDGE, never a glow. Scoped under .cfg.dlv so it outranks
    pipglass.css's older body.glass-demo .term .dlv-* pass. Shape and order are untouched: only the material changes. */
 .term.dlv-win .cfg.dlv {
   --dlv-plate: rgba(var(--ph-rgb),.035);

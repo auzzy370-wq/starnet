@@ -1,9 +1,9 @@
-/* node test/browser-view.test.js — THE STATION BROWSER (sidecar/browser-view.js): one built-in browser the Commander
+/* node test/browser-view.test.js — THE STATION BROWSER (sidecar/browser-view.js): one built-in browser the Master
    and the agents share. Fake browser sessions, injected clock. Proves:
-     - what the Commander types becomes an http(s) address, a loopback address, a search, or a refusal;
-     - an INTERACTIVE run drives the station browser (the same session the Commander opened, page intact), refs die
+     - what the Master types becomes an http(s) address, a loopback address, a search, or a refusal;
+     - an INTERACTIVE run drives the station browser (the same session the Master opened, page intact), refs die
        and downloads re-point as it changes hands, and it STAYS OPEN when the run ends;
-     - one driver at a time: while a run drives, the Commander's address/clicks/keys are refused; a second run and
+     - one driver at a time: while a run drives, the Master's address/clicks/keys are refused; a second run and
        every unattended run get a private browser (null);
      - the picture streams to the window during and after a run, steps aside for a STEP-IN handoff without stopping
        its stream, survives a long-poll on a still page, and stops when nobody watches;
@@ -72,28 +72,28 @@ function rig(extra) {
   A.eq(R('   ').ok, false, 'an empty address is refused');
   A.eq(R('x'.repeat(2100)).ok, false, 'an absurd address is refused');
 
-  // ---- ONE browser: the Commander opens a page, the agent sees THAT page, and it stays after the run ----
+  // ---- ONE browser: the Master opens a page, the agent sees THAT page, and it stays after the run ----
   {
     const { clk, made, attended, views } = rig();
     A.eq(views.list().station.open, false, 'no browser until somebody uses it');
     const o = await views.open('google.com');
-    A.ok(o.ok && o.url === 'https://google.com/', 'the Commander opens a page');
+    A.ok(o.ok && o.url === 'https://google.com/', 'the Master opens a page');
     A.eq(o.remembered, true, 'on the durable profile: sign-ins are remembered (the session says so)');
     A.eq(views.list().station.open, true, 'the station browser is open');
-    A.eq(views.list().station.driver, null, 'nobody is driving: it is the Commander\'s');
+    A.eq(views.list().station.driver, null, 'nobody is driving: it is the Master\'s');
 
     const prompt = () => 'ask';
     const sess = views.sessionForRun({ agentId: 'nova', runId: 'r1', interactive: true, loginPrompt: prompt });
     A.ok(!!sess, 'an interactive run is given the station browser');
-    // a run that has not browsed yet is NOT the driver: the Commander keeps their browser
+    // a run that has not browsed yet is NOT the driver: the Master keeps their browser
     A.eq(views.list().station.driver, null, 'a run that has not touched the browser is not "driving"');
-    A.ok((await views.input({ type: 'text', text: 'still mine' })).ok, '…so the Commander can keep using it while the agent thinks');
+    A.ok((await views.input({ type: 'text', text: 'still mine' })).ok, '…so the Master can keep using it while the agent thinks');
     A.eq(made[0].hands.length, 0, 'and nothing has changed hands');
     made[0].inputs.length = 0;
     // its first real browser call takes the wheel
     const seen = await sess.handoffSurface().pageInfo();
     A.eq(views.list().station.driver, null, 'asking a passive question (where is the page?) does not take the wheel either');
-    A.eq(seen.url, 'https://google.com/', 'THE page the Commander opened is what the agent browser has');
+    A.eq(seen.url, 'https://google.com/', 'THE page the Master opened is what the agent browser has');
     await sess.back();
     A.eq(made.length, 1, 'no second browser was created: it is the same one');
     A.eq(made[0].navs[made[0].navs.length - 1][0], 'back', 'the agent call reached the shared browser');
@@ -102,9 +102,9 @@ function rig(extra) {
     A.ok(attended.prompt === prompt, 'browser.login asks through the DRIVING run\'s consent channel');
     A.eq(views.list().station.driver.agentId, 'nova', 'the list says who is driving');
 
-    // the Commander's hands are NEVER refused, even while an agent drives (Andrew 2026-10-02: "the whole point was for it
+    // the Master's hands are NEVER refused, even while an agent drives (Andrew 2026-10-02: "the whole point was for it
     // to be interactive inside of the window") — one AGENT driver at a time, but you can always click and type
-    A.eq((await views.input({ type: 'text', text: 'x' })).ok, true, 'while the agent drives, the Commander can still type');
+    A.eq((await views.input({ type: 'text', text: 'x' })).ok, true, 'while the agent drives, the Master can still type');
     A.eq(made[0].inputs.length, 1, '…and it reaches the page');
     const second = views.sessionForRun({ agentId: 'kira', runId: 'r2', interactive: true });
     let busyErr = ''; try { await second.navigate('https://example.org/'); } catch (e) { busyErr = e.message; }
@@ -113,7 +113,7 @@ function rig(extra) {
     A.eq(views.sessionForRun({ agentId: 'nova', runId: 'r3', interactive: false }), null, 'an unattended run never gets the station browser (it uses a private one)');
     A.eq((await views.close()).ok, false, 'it cannot be closed under a driving run');
 
-    // the agent navigates; the Commander watches it live
+    // the agent navigates; the Master watches it live
     await sess.navigate('https://youtube.com/');
     const f1 = await views.frame('station', 0, 0);
     A.ok(f1.ok && f1.frame && f1.frame.seq === 1, 'the picture streams while the agent drives');
@@ -128,11 +128,11 @@ function rig(extra) {
     A.eq(views.list().station.driver, null, 'and nobody is driving');
     A.eq(attended.prompt, undefined, 'the ended run\'s consent channel is gone');
     const f2 = await views.frame('station', 0, 0);
-    A.ok(f2.ok && f2.page.url === 'https://youtube.com/', 'after the run the Commander still sees what the agent opened');
+    A.ok(f2.ok && f2.page.url === 'https://youtube.com/', 'after the run the Master still sees what the agent opened');
     A.eq(f2.driver, null, 'with nobody driving');
 
-    // now the Commander drives it
-    A.ok((await views.input({ type: 'text', text: 'hello' })).ok, 'the Commander types into the same page');
+    // now the Master drives it
+    A.ok((await views.input({ type: 'text', text: 'hello' })).ok, 'the Master types into the same page');
     A.eq(made[0].inputs[made[0].inputs.length - 1].text, 'hello', 'it reached the page');
     A.eq((await views.input({ type: 'nonsense' })).ok, false, 'an unknown input event is refused');
     await views.open('localhost:5173');
@@ -141,7 +141,7 @@ function rig(extra) {
     A.eq((await views.nav('explode')).ok, false, 'an unknown action is refused');
     A.eq((await views.open('javascript:alert(1)')).ok, false, 'a refused address never reaches the browser');
 
-    // the next run takes it again: refs die again (the Commander changed the page)
+    // the next run takes it again: refs die again (the Master changed the page)
     await views.sessionForRun({ agentId: 'kira', runId: 'r4', interactive: true }).forward();
     A.eq(made[0].hands.length, 2, 'every change of hands kills refs');
     A.eq(made[0].hands[1].downloadDir, '/ws/kira/downloads', 'downloads follow the agent now driving');
@@ -149,7 +149,7 @@ function rig(extra) {
     void clk;
   }
 
-  // ---- an agent uses the browser first (nothing open): the run creates it, and it stays for the Commander ----
+  // ---- an agent uses the browser first (nothing open): the run creates it, and it stays for the Master ----
   {
     const { made, views } = rig();
     const sess = views.sessionForRun({ agentId: 'nova', runId: 'r1', interactive: true });
@@ -160,7 +160,7 @@ function rig(extra) {
     A.eq(views.list().station.driver.agentId, 'nova', 'and the agent is driving');
     views.releaseRun('r1');
     const f = await views.frame('station', 0, 0);
-    A.ok(f.ok && f.page.url === 'https://youtube.com/', 'the Commander opens the window after the run and YouTube is there');
+    A.ok(f.ok && f.page.url === 'https://youtube.com/', 'the Master opens the window after the run and YouTube is there');
   }
 
   // ---- a SECOND run while one drives: it browses in its own private browser instead of failing (release review) ----
@@ -175,7 +175,7 @@ function rig(extra) {
     A.eq(privMade, 1, '…in a private browser made for it');
     A.eq(made[0].url, 'https://first.example/', 'the shared browser was not touched');
     A.eq(views.list().station.driver.runId, 'r1', 'the first run still drives the shared browser');
-    A.ok(views.list().agents.some(a => a.runId === 'r2'), 'the Commander can watch the second run\'s private browser');
+    A.ok(views.list().agents.some(a => a.runId === 'r2'), 'the Master can watch the second run\'s private browser');
     await second.navigate('https://second.example/two');
     A.eq(privMade, 1, 'one run, one browser: it stays private for the rest of the run');
     // run-paths-polish review round 1: browser.upload promises a submit after the reply only from a browser that
@@ -193,7 +193,7 @@ function rig(extra) {
     views.releaseRun('r1');
   }
 
-  // ---- PRIVACY: when the run lets go, the Commander's own downloads go to THEIR folder, not the agent's ----
+  // ---- PRIVACY: when the run lets go, the Master's own downloads go to THEIR folder, not the agent's ----
   {
     const { made, views } = rig({ commanderDownloadDir: () => '/home/me/Downloads' });
     const sess = views.sessionForRun({ agentId: 'nova', runId: 'r1', interactive: true });
@@ -201,7 +201,7 @@ function rig(extra) {
     A.eq(made[0].hands[made[0].hands.length - 1].downloadDir, '/ws/nova/downloads', 'while nova drives, downloads land in nova\'s folder');
     views.releaseRun('r1');
     await tick(); await tick();
-    A.eq(made[0].hands[made[0].hands.length - 1].downloadDir, '/home/me/Downloads', 'after the run, the Commander\'s downloads go to their own Downloads folder');
+    A.eq(made[0].hands[made[0].hands.length - 1].downloadDir, '/home/me/Downloads', 'after the run, the Master\'s downloads go to their own Downloads folder');
   }
 
   // ---- STOP mid-tool: a late tool call of an ENDED run never takes the wheel back (release review, reproduced) ----
@@ -214,7 +214,7 @@ function rig(extra) {
     A.ok(/run has ended/.test(late), 'the ended run\'s late driving call is refused');
     A.eq(views.list().station.driver, null, 'nobody is shown driving');
     const typed = await views.input({ type: 'text', text: 'hi' });
-    A.eq(typed && typed.ok, true, 'the Commander can still type in the browser');
+    A.eq(typed && typed.ok, true, 'the Master can still type in the browser');
     const next = views.sessionForRun({ agentId: 'iris', runId: 'r2', interactive: true });
     await next.navigate('https://next.example/');
     A.eq(views.list().station.driver.runId, 'r2', 'and the next run can drive it');
@@ -260,7 +260,7 @@ function rig(extra) {
   {
     const { clk, made, ho, views } = rig();
     await views.open('example.com');
-    A.ok((await views.frame('station', 0, 0)).ok, 'the Commander watches with nobody driving, then closes the window');
+    A.ok((await views.frame('station', 0, 0)).ok, 'the Master watches with nobody driving, then closes the window');
     await views.sessionForRun({ agentId: 'nova', runId: 'r7', interactive: true }).forward();
     ho.live = true;   // the run hits a sign-in: STEP-IN streams this same browser
     const stops = made[0].stops;
@@ -269,7 +269,7 @@ function rig(extra) {
     ho.live = false; views.releaseRun('r7');
   }
 
-  // ---- it NEVER closes under the Commander: only after half an hour with nobody driving or watching ----
+  // ---- it NEVER closes under the Master: only after half an hour with nobody driving or watching ----
   {
     const { clk, made, views } = rig();
     await views.open('example.com');
@@ -308,7 +308,7 @@ function rig(extra) {
     views.unregisterRun('p1');
     A.eq(run.stops, stops, 'an ending run is forgotten WITHOUT reaching into its closing browser');
     A.eq((await views.frame('run:p1', 0, 0)).code, 'ended', 'an ended run has no picture');
-    A.eq(run.inputs.length, 0, 'a private run\'s browser never received Commander input');
+    A.eq(run.inputs.length, 0, 'a private run\'s browser never received Master input');
   }
 
   // ---- WARM: opening the window starts the browser in the background, once ----

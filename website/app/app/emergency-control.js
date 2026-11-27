@@ -61,7 +61,7 @@
     } finally { busy = false; render(); }
   }
   recovery.addEventListener('click', resume);
-  /* idle CPU piece 3 (2026-10-20): through PollGate the read slows to a 30 s floor while the Commander is away instead of
+  /* idle CPU piece 3 (2026-10-20): through PollGate the read slows to a 30 s floor while the Master is away instead of
      stopping on document.hidden — a webview that reports hidden while still on screen got NO pause-state reads at all.
      ONE READ ON RETURN (fix round 5): PollGate's wake already runs the overdue beat, and this file's own visibilitychange
      and focus listeners each started another refresh() beside it (no in-flight guard: three /api/halt reads at once,

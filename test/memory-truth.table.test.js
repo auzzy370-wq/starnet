@@ -102,7 +102,7 @@ const MemTruth = require('../frontend/app/memtruth.js');
     ['The staging database is in Frankfurt', 'the staging database lives in the frankfurt region', 'dupe'],
     ['Always use spaces for indentation.', 'User prefers spaces for indentation', 'dupe'],
     // free-text topics never decide 'distinct': one belief worded twice stays on the similarity path
-    ['the Commander prefers npm start over npm run serve', 'Commander prefers to run npm start rather than npm run serve', 'unknown'],
+    ['the Master prefers npm start over npm run serve', 'Master prefers to run npm start rather than npm run serve', 'unknown'],
     ['User prefers Python', 'User prefers Go', 'unknown'],
     ['User drafts posts in Notion', 'User now drafts posts in Obsidian', 'unknown']
   ];
@@ -230,7 +230,7 @@ const NOTE_TABLE = [
     const again = await plain.write({ title: 'Theme', body: 'The user prefers a light theme' });
     A.ok(/already remember/.test(again.content) && plain.notes().length === 1 && !plain.notes()[0].history, 'a plain restatement still writes nothing');
   }
-  // the SURFACE that wrote the newer claim owns it: a routine retiring the Commander's note is a routine's belief now
+  // the SURFACE that wrote the newer claim owns it: a routine retiring the Master's note is a routine's belief now
   {
     const nb = notebook([{ id: 'note_1', kind: 'note', scope: 'global', title: 'Theme', body: 'User prefers dark mode', createdAt: 1, origin: 'commander' }]);
     await nb.write({ title: 'Theme', body: 'User prefers light mode' }, { origin: 'schedule' });
@@ -252,25 +252,25 @@ const NOTE_TABLE = [
     const r2 = await plain.write({ title: 'Theme', body: 'User prefers light mode' }, { streamId: 'chatY' });
     A.ok(/Scope: every conversation\./.test(r2.content) && plain.notes()[0].scope === 'global', 'an unpinned global belief is superseded in place, and the result says it is still station-wide: ' + r2.content);
   }
-  // the Commander's own words: the superseding record carries their authority
+  // the Master's own words: the superseding record carries their authority
   {
     const nb = notebook();
     await nb.write({ title: 'Theme', body: 'User prefers dark mode' });
     await nb.write({ title: 'Theme', body: 'User prefers light mode' }, { commanderWords: 'Actually I prefer light mode now.' });
     const rec = nb.notes()[0];
-    A.ok(rec.confirmation === 'user-stated' && rec.statedBy && /light mode/.test(rec.statedBy.quote), 'a supersession in the Commander\'s proven words is recorded as theirs');
+    A.ok(rec.confirmation === 'user-stated' && rec.statedBy && /light mode/.test(rec.statedBy.quote), 'a supersession in the Master\'s proven words is recorded as theirs');
     const nb2 = notebook();
     await nb2.write({ title: 'Theme', body: 'User prefers dark mode' });
     await nb2.write({ title: 'Theme', body: 'User prefers light mode' });
     A.eq(nb2.notes()[0].confirmation, 'inferred', 'an unproven one stays the agent\'s inference ([corrected, unconfirmed] in recall)');
   }
-  // an UNPROVEN write never retires the Commander's own words (ecd03ee7 class): it is challenged instead; their words may
+  // an UNPROVEN write never retires the Master's own words (ecd03ee7 class): it is challenged instead; their words may
   {
     const said = [{ id: 'note_1', kind: 'note', scope: 'global', title: 'Indentation', body: 'User prefers spaces over tabs for indentation', createdAt: 1,
       confirmation: 'user-stated', statedBy: { runId: 'r0', quote: 'From now on, always use spaces instead of tabs for indentation' } }];
     const nb = notebook(said);
     const r = await nb.write({ title: 'Indentation', body: 'User prefers tabs over spaces for indentation' });
-    A.eq(nb.active(), ['User prefers spaces over tabs for indentation'], 'a model\'s unproven inversion does not retire the Commander\'s stated preference');
+    A.eq(nb.active(), ['User prefers spaces over tabs for indentation'], 'a model\'s unproven inversion does not retire the Master\'s stated preference');
     A.ok(/already remember/.test(r.content) && /replaceId/.test(r.content), 'it is challenged, and told the explicit correction path');
     const kept = notebook([Object.assign({}, said[0], { confirmation: 'user-confirmed', statedBy: undefined })]);
     await kept.write({ title: 'Indentation', body: 'User prefers tabs over spaces for indentation' });
@@ -284,7 +284,7 @@ const NOTE_TABLE = [
     const nb = notebook();
     await nb.write({ title: 'Theme', body: 'User prefers dark mode' });
     await nb.write({ title: 'Theme', body: 'User prefers light mode' }, { connectorAuthority: { taintedBy: () => 'web page https://x.example' } });
-    A.ok(nb.active().indexOf('User prefers dark mode') >= 0 && !(nb.notes()[0].history || []).length, 'a tainted run never retires the Commander\'s memory (it gets the challenge path)');
+    A.ok(nb.active().indexOf('User prefers dark mode') >= 0 && !(nb.notes()[0].history || []).length, 'a tainted run never retires the Master\'s memory (it gets the challenge path)');
     const nb2 = notebook();
     await nb2.write({ title: 'Theme', body: 'User prefers dark mode' });
     await nb2.write({ title: 'Theme', body: 'User prefers light mode', distinct: true });
@@ -307,12 +307,12 @@ const NOTE_TABLE = [
     const again = await nb.write({ title: 'DB', body: 'The staging database is in Frankfurt', distinct: true });
     A.ok(/already remember/.test(again.content) || nb.active().filter(b => b === 'The staging database is in Frankfurt').length === 1, 'a second restore never duplicates it');
   }
-  // UNDO reaches RECALL: a text retired by the Commander's own words (a user-stated survivor) comes back into auto-recall
+  // UNDO reaches RECALL: a text retired by the Master's own words (a user-stated survivor) comes back into auto-recall
   {
     const context = require('../sidecar/context.js');
     const nb = notebook([{ id: 'note_1', kind: 'note', scope: 'global', title: 'Theme', body: 'User prefers dark mode', createdAt: Date.UTC(2026, 8, 1), origin: 'commander', confirmation: 'inferred' }]);
     await nb.write({ title: 'Theme', body: 'User prefers light mode' }, { commanderWords: 'Actually I prefer light mode now.' });
-    A.eq(nb.notes()[0].confirmation, 'user-stated', '(the survivor is the Commander\'s own words)');
+    A.eq(nb.notes()[0].confirmation, 'user-stated', '(the survivor is the Master\'s own words)');
     const r = await nb.write({ title: 'Theme', body: 'User prefers dark mode', distinct: true });
     A.ok(/both are active now/.test(r.content), '(restored)');
     A.eq(context.activeMemoryRecords(nb.notes()).map(n => n.body), ['User prefers light mode', 'User prefers dark mode'], 'a restored text is ACTIVE for recall too, not retired by the history entry it came from');
@@ -327,7 +327,7 @@ const NOTE_TABLE = [
     A.ok(mine.length === 1 && mine[0].body === 'User prefers dark mode' && !mine[0].restoredFrom, 'project B saves its OWN note: ' + JSON.stringify(nb.notes().map(n => [n.id, n.projectRoot, n.body])));
     A.ok(!nb.notes()[0].history[0].restoredAs && !/Restored/.test(r.content), 'project A\'s retired text stays retired, and the result claims no restore');
   }
-  // UNDO on a tainted run carries the taint: never pinned, never the Commander's words (2026-10-10 law)
+  // UNDO on a tainted run carries the taint: never pinned, never the Master's words (2026-10-10 law)
   {
     const said = { id: 'note_1', kind: 'note', scope: 'global', title: 'Theme', body: 'User prefers dark mode', createdAt: 1, pinned: true,
       confirmation: 'user-stated', statedBy: { runId: 'r0', quote: 'I prefer dark mode' } };
@@ -339,7 +339,7 @@ const NOTE_TABLE = [
     await nb.write({ title: 'Theme', body: 'User prefers dark mode', distinct: true }, taint);
     const back = nb.notes().find(n => n.body === 'User prefers dark mode');
     A.ok(back && back.taintedBy === 'web page https://evil.example' && back.pinned === false && !back.statedBy && back.confirmation !== 'user-stated',
-      'a tainted run\'s restore is stamped with its taint, unpinned, and not the Commander\'s words: ' + JSON.stringify(back));
+      'a tainted run\'s restore is stamped with its taint, unpinned, and not the Master\'s words: ' + JSON.stringify(back));
   }
   /* ---------- 4. trusted capture and the Keep verdict: the host's own writer (sidecar/index.js, executed) ---------- */
   {
@@ -379,13 +379,13 @@ const NOTE_TABLE = [
         A.eq(st.active(), [row.second], 'trusted capture, ' + row.name + ': exactly ONE active record, holding the newer statement');
         const rec = st.notes()[0];
         A.ok(rec.history.length === 1 && rec.history[0].body === row.first && rec.history[0].supersession, 'trusted capture, ' + row.name + ': the old statement is in its history with a receipt');
-        A.ok(rec.confirmation === 'user-stated' && rec.statedBy.runId === 'c2', 'trusted capture, ' + row.name + ': the survivor is the Commander\'s words, stated now');
+        A.ok(rec.confirmation === 'user-stated' && rec.statedBy.runId === 'c2', 'trusted capture, ' + row.name + ': the survivor is the Master\'s words, stated now');
         A.ok(st.receipts.some(p => p.revised === true && p.superseded && p.superseded[0].previous === row.first), 'trusted capture, ' + row.name + ': its COMMS receipt reads as an update naming the retired text');
       } else {
         A.eq(st.active(), [row.first, row.second], 'trusted capture, ' + row.name + ': two different facts stay two active records');
       }
     }
-    // across writers: the Commander's statement retires the agent's own note on the same subject
+    // across writers: the Master's statement retires the agent's own note on the same subject
     {
       const st = station([{ id: 'note_1', kind: 'note', scope: 'global', title: 'Theme', body: 'User prefers dark mode', createdAt: 1, origin: 'commander', confirmation: 'inferred' }]);
       await st.say('From now on, always use light mode.', 'c3');
@@ -399,7 +399,7 @@ const NOTE_TABLE = [
       const w = await kept.api.writeMemoryRecord('nova', { kind: 'profile', content: 'User prefers light mode', scope: 'global' }, { runId: 'k1', source: 'turn-in', userConfirmed: true, trustDelta: 2 });
       A.ok(w.ok && w.superseded && w.superseded[0].id === 'note_1', 'a Keep supersedes: ' + JSON.stringify(w));
       A.eq(kept.active(), ['User prefers light mode'], 'Keep: ONE active record');
-      A.eq(kept.notes()[0].confirmation, 'user-confirmed', 'Keep: the survivor carries the Commander\'s approval');
+      A.eq(kept.notes()[0].confirmation, 'user-confirmed', 'Keep: the survivor carries the Master\'s approval');
       const silent = station(seed);
       await silent.api.writeMemoryRecord('nova', { kind: 'profile', content: 'User prefers light mode', scope: 'global' }, { runId: 's1', source: 'reflection' });
       A.eq(silent.notes()[0].content, 'User prefers dark mode', 'a model\'s silent save retires nothing (reflection sends a same-subject claim to review instead)');
@@ -418,7 +418,7 @@ const NOTE_TABLE = [
       A.ok(w.ok && w.id === 'note_2', 'Keep revises the approved record: ' + JSON.stringify(w));
       A.eq(st.active(), ['User prefers light mode'], 'reflect → Keep with a legacy pair: exactly ONE active record');
       A.eq(st.notes()[0].history.map(h => h.body).sort(), ['User likes the dark theme', 'User prefers dark mode'], '…both older texts in its history');
-      A.eq(st.notes()[0].confirmation, 'user-confirmed', '…carrying the Commander\'s approval');
+      A.eq(st.notes()[0].confirmation, 'user-confirmed', '…carrying the Master\'s approval');
     }
   }
 
@@ -440,7 +440,7 @@ const NOTE_TABLE = [
     A.eq(p.length, 0, 'reflect: the same claim in other words is a restatement, dropped');
     p = await say([{ content: 'User prefers dark mode' }], 'PREFERENCE: The user prefers the dark theme');
     A.eq(p.length, 0, 'reflect: a declined belief worded again stays declined');
-    // a replacement never reaches across a project boundary, nor into the Commander's rating records
+    // a replacement never reaches across a project boundary, nor into the Master's rating records
     const inB = [{ id: 'note_7', kind: 'fact', content: 'The repo uses npm', body: 'The repo uses npm', scope: 'stream', streamId: 'sB', projectRoot: 'C:/Work/B', createdAt: 1 }];
     const fromA = (await reflect(run, { existing: inB, projectRoot: 'C:/Work/A', propose: async () => 'FACT: The repo uses pnpm' })).proposals;
     A.ok(fromA.length === 1 && !fromA[0].replaceId, 'reflect in project A never proposes rewriting project B\'s fact: ' + JSON.stringify(fromA));

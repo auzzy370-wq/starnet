@@ -136,7 +136,7 @@ async function rejection(p) { try { await p; return null; } catch (e) { return e
     A.ok(/\[NOT searched — over the 8 MB per-file search limit: same\/big\.txt\. Name one as "path" to search it \(up to 64 MB\)\.\]/.test(big.content), 'an oversized file is still named, now from the scan-time stat');
   }
 
-  // ---- 6. a consent card (pathTrust waiting on the Commander) does not spend the search budget ----
+  // ---- 6. a consent card (pathTrust waiting on the Master) does not spend the search budget ----
   {
     const proj = path.join(ROOT, 'proj-consent');
     await fsp.mkdir(path.join(proj, 'src'), { recursive: true });

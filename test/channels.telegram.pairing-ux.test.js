@@ -2,7 +2,7 @@
 
    The reported failure was a truthful transport fact rendered as a false product claim: the Bot API poll loop
    was up, but owner enrollment was unfinished, so every ordinary DM was rejected while CHANNELS said CONNECTED
-   and told the Commander to DM the bot. Lock both halves of the repair: connect returns the one-time local code,
+   and told the Master to DM the bot. Lock both halves of the repair: connect returns the one-time local code,
    and the panel renders the unpaired poller as blocked rather than operational. */
 'use strict';
 const { readSidecarSource, sidecarTopLevelFunction } = require('./helpers/source');
@@ -18,7 +18,7 @@ const sidecar = readSidecarSource();
 A.ok(ui.includes('POLLING — DMs BLOCKED: PAIR OWNER'),
   'an up Telegram poller without an owner is rendered as blocked, never CONNECTED');
 A.ok(/j\.pairingCode/.test(ui) && /\/pair /.test(ui),
-  'the connect response pairing code is turned into the exact Telegram command the Commander must send');
+  'the connect response pairing code is turned into the exact Telegram command the Master must send');
 A.ok(/pairingInstruction/.test(ui),
   'the one-time pairing command is retained across the asynchronous status repaint');
 A.ok(/<code>\/pair<\/code> message with a code/.test(ui.slice(ui.indexOf("id: 'telegram'"), ui.indexOf("id: 'discord'"))),

@@ -93,7 +93,7 @@ const TaskConversation = (() => {
     input.addEventListener('input',refresh);
     input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();answer(false);}});
     submit.onclick=()=>answer(false);skip.onclick=()=>answer(true);
-    // submit(text): the COMMS composer answers this card when the Commander types the reply there (chat.js askAnswerers)
+    // submit(text): the COMMS composer answers this card when the Master types the reply there (chat.js askAnswerers)
     const submitText=async text=>{if(done||busy)return false;input.value=String(text||'');refresh();return answer(false);};
     // settled somewhere else (the phone, a timeout, a stop): the card says so and stops taking input; the question stays
     function settle(text){

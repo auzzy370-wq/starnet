@@ -1,6 +1,6 @@
 /* node test/docextract.test.js — DOCUMENT-TO-TEXT for fs.read (.docx / .xlsx / .ipynb).
 
-   fs.read decoded everything as UTF-8, so the three formats a Commander actually keeps work in came back as
+   fs.read decoded everything as UTF-8, so the three formats a Master actually keeps work in came back as
    binary noise: the agent could see the file existed and had no way to read it. OOXML is a ZIP of XML and a
    notebook is plain JSON, so all three are readable with what Node already ships — NO new dependency, which
    is a hard constraint (a native zip/office dep cuts against the Tauri-shippable desktop bundle).

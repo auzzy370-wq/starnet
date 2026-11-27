@@ -1,10 +1,10 @@
-/* sidecar/interests.js — the PURE topic-interest engine (Scout lane 1): what does the Commander keep
+/* sidecar/interests.js — the PURE topic-interest engine (Scout lane 1): what does the Master keep
    asking about?
 
    WHY THIS EXISTS — the recruitment bay's adaptive shelves (recruiter/prospect) key off CAPABILITY lanes
    (which tools fired) and the recipe shelf keys off a 3-bucket code/research/general profile. Neither knows
    a TOPIC: "asks about stocks a lot", "keeps drafting song lyrics". That missing signal is why the bay
-   never drafts the stock-research recipe or the songwriter specialist the Commander's actual work is begging
+   never drafts the stock-research recipe or the songwriter specialist the Master's actual work is begging
    for. This module owns the topic signal: a small reason-only extraction pass reads the recent REAL activity
    (the same contextpack "WORKED RECENTLY / ASKED RECENTLY" lines the night shift grounds in) and emits topic
    candidates WITH verbatim evidence; fold() decays + accumulates them into a persisted histogram.
@@ -158,7 +158,7 @@
   function buildDirective(ctx) {
     ctx = ctx || {};
     const lines = [];
-    lines.push('You are the station\'s intake analyst. From the Commander\'s REAL recent activity below, extract the');
+    lines.push('You are the station\'s intake analyst. From the Master\'s REAL recent activity below, extract the');
     lines.push('SPECIFIC recurring topics or domains they are working in — the kind of interest a tailored recipe or a');
     lines.push('specialist crew member could serve (e.g. "stock research", "songwriting", "kubernetes ops").');
     lines.push('');
@@ -386,7 +386,7 @@
     return false;
   }
 
-  // topicsBlock — the bounded prompt block a generation directive embeds ("what the Commander cares about").
+  // topicsBlock — the bounded prompt block a generation directive embeds ("what the Master cares about").
   function topicsBlock(state, opts) {
     const rows = summary(state, opts);
     if (!rows.length) return '';

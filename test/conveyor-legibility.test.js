@@ -5,7 +5,7 @@
    branches take turns (a JOINER somewhere downstream decides). Locked here, read from the shipped sources:
      F1 — WORK › WORKFLOWS opens the conveyor builder (Build.openWorkflows), and REFIT's subtitle names workflow lines;
      F2 — one account of belts everywhere: belts ARE the workflow (no "optional", no "to watch", no "no belts required");
-     P1 — the splitter's mode is said where the Commander looks: its Workflow panel section, its hover card, its tag;
+     P1 — the splitter's mode is said where the Master looks: its Workflow panel section, its hover card, its tag;
      P2 — every machine on the shelf carries a wiring diagram, and the shelf is grouped the way work meets it;
      P3 — JOINER and MERGER are named by outcome (waits + combines vs shares a belt, combines nothing);
      P4 — the FILTER says its real scope (code / research / everything else) and is edited in the docked panel. */

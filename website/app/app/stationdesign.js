@@ -10,7 +10,7 @@
      empty floor is filled again and again, mirrored across the room when the twin fits, until the floor reads as lived in;
      then corners, real light sources in the dark places, and a floor inlay.
    - CRITIQUE: what a designer would say about any floor, on a copy, before anything is built: numbers plus findings that name
-     the tile and the fix. It judges; it never refuses. A design call belongs to the model and the Commander. */
+     the tile and the fix. It judges; it never refuses. A design call belongs to the model and the Master. */
 'use strict';
 (function (root, factory) {
   if (typeof module !== 'undefined' && module.exports) module.exports = factory();
@@ -167,7 +167,7 @@
   ];
   const THEME_ORDER = Object.keys(THEMES);
   const lower = s => String(s == null ? '' : s).toLowerCase().trim();
-  // a theme by its id, its name or a word in the Commander's own phrase ("moody cyberpunk"): null when nothing matches
+  // a theme by its id, its name or a word in the Master's own phrase ("moody cyberpunk"): null when nothing matches
   function resolveTheme(raw) {
     const n = lower(raw); if (!n) return null;
     if (THEMES[n]) return n;
@@ -212,7 +212,7 @@
     'Light makes the mood: something that glows beside each main group (arc_floorlight, a lamp on a table, a tank, a screen) so a room has pools of light and dark, not one flat wash.',
     'Small things stand on tables, never on the deck: mugs, papers, lamps, book stacks.',
     'Equipment is real: a desk, rack, dish or workbench gives the room’s agents a capability. Place what the room needs and no more; cosmetic pieces are free.',
-    'Build, then judge: read the plan’s design review before building, look at the result, and refit what is wrong before you tell the Commander it is done. A review is advice, your eye decides.',
+    'Build, then judge: read the plan’s design review before building, look at the result, and refit what is wrong before you tell the Master it is done. A review is advice, your eye decides.',
   ];
 
   const hash = s => { let h = 2166136261; for (const c of String(s)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; };

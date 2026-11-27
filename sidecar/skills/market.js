@@ -1,13 +1,13 @@
 /* sidecar/skills/market.js — the Skill Market client: browse the Vultron catalog, install a skill into the station
    library, keep it honest.
 
-   The catalog (skills/market-format.js) is a public index on vultron.vercel.app, fetched when the Commander opens the
+   The catalog (skills/market-format.js) is a public index on vultron.vercel.app, fetched when the Master opens the
    market. TRUST: the index and the pulled-skills list are both signed (skills/market-signing.js); a document whose
    signature does not verify with a key this app trusts, or whose serial is lower than the highest this station has
    accepted from that catalog (or, for the official catalog, than the floor this app build ships), is refused whole
    ("not trusted") — so neither a changed website nor a replayed old catalog can change what installs. The market can
    PULL a skill: its signed `revoked` list names it, and any installed copy is switched off (kept on disk, left out
-   of the library, shown as PULLED with the reason) until a newer signed list stops naming it or the Commander
+   of the library, shown as PULLED with the reason) until a newer signed list stops naming it or the Master
    removes it. The accepted pulled rows are persisted, so a stale cache, an uninstall or a restart never forgets a
    pull. checkRevocations() reads the small pulled list on its own; the sidecar calls it on a timer, only while at
    least one market skill is installed. Installing:
@@ -276,7 +276,7 @@ function makeSkillMarket(deps) {
       });
     });
     // installed skills the catalog no longer offers (a pulled skill is dropped from it) stay visible, so the
-    // Commander can see why one was switched off and remove it
+    // Master can see why one was switched off and remove it
     const listed = new Set(entries.map(e => e.slug));
     for (const slug of Object.keys(s.installed).sort()) {
       if (listed.has(slug)) continue;

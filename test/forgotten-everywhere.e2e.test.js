@@ -19,7 +19,7 @@
                                         and its words are in no aux prompt (dedupOnly)
        cross-session recall             a later run of T finds T and never S; GET /api/runs lists no run of S or of T's reading run
        attachment file                  the file S attached is gone from the agent's workspace; the file another session attached stays
-     THE NAMED LIMITS (I7), each a passing control: (a) adopted stamps - W's golden and dossier belief stay; (b) cron-jobs - a routine the Commander made
+     THE NAMED LIMITS (I7), each a passing control: (a) adopted stamps - W's golden and dossier belief stay; (b) cron-jobs - a routine the Master made
      is kept; (c) paraphrase - a later reply that only paraphrases S stays (no word of S, nothing to match); (d) session.list titles are metadata
      (test/forget.tool-quotes.http.test.js, "the recorded limit").
    RED at the previous commit: no source on an interest, packet, golden or dossier belief, no write gate, declined texts in the aux prompt. */
@@ -55,14 +55,14 @@ function startUpstream() {
       const done = name => messages.slice(lastUser + 1).filter(m => (m.tool_calls || []).some(t => t.function && t.function.name === name)).length;
       const offered = name => (body.tools || []).some(t => t.function && t.function.name === name);
       if (auxiliary) delta.content = /reflect/i.test(text(messages[0].content)) ? state.reflectAnswer : 'NONE';
-      else if (offered('brief_proceed') && !done('brief_proceed')) tool('brief_proceed', { objective: 'Answer the Commander' });
+      else if (offered('brief_proceed') && !done('brief_proceed')) tool('brief_proceed', { objective: 'Answer the Master' });
       else if (state.phase === 'seed') {
         if (done('notebook_write') === 0) tool('notebook_write', { title: 'Quokka codeword', body: 'The quokka codeword is Wallaby-Seven' });
-        else if (done('notebook_write') === 1) tool('notebook_write', { title: 'Quokka pet', body: 'The Commander keeps a pet quokka named Wallaby-Nine', scope: 'global' });
-        else delta.content = 'Reply to: echo session uniqueword quokka - done. The quokka sanctuary is a long-running project that the Commander wants to keep going for many months, with a treasurer, a roster of keepers and a yearly fundraiser in the spring.';
+        else if (done('notebook_write') === 1) tool('notebook_write', { title: 'Quokka pet', body: 'The Master keeps a pet quokka named Wallaby-Nine', scope: 'global' });
+        else delta.content = 'Reply to: echo session uniqueword quokka - done. The quokka sanctuary is a long-running project that the Master wants to keep going for many months, with a treasurer, a roster of keepers and a yearly fundraiser in the spring.';
       } else if (state.phase === 'read') {
         if (done('recall_conversation') === 0) tool('recall_conversation', { query: 'quokka', scope: 'all' });
-        else delta.content = 'Found the other session: it was about the quokka sanctuary and its treasurer. I will fold that into the platypus plan for the Commander, who wants a detailed plan with milestones and owners.';
+        else delta.content = 'Found the other session: it was about the quokka sanctuary and its treasurer. I will fold that into the platypus plan for the Master, who wants a detailed plan with milestones and owners.';
       } else if (state.phase === 'probe') {
         if (done('recall_conversation') === 0) tool('recall_conversation', { query: 'echo session', scope: 'all' });
         else delta.content = 'Here is what I found about the platypus plan, with nothing else of note, and the next milestones for the launch team to review before Friday.';
@@ -137,9 +137,9 @@ function hermeticEnv(base) {
     const reader = (await listedRuns()).find(r => r.runId === runIds.T);
     A.ok(reader, 'the reading run is in the run list before the delete');
 
-    // a routine the Commander made (Q4: kept), quoting the word on purpose
+    // a routine the Master made (Q4: kept), quoting the word on purpose
     const cron = await json('POST', '/api/cron', { name: 'Quokka check', prompt: 'summarize the quokka sanctuary news', schedule: 'every 30m', agentId: 'cron_brief' });
-    A.ok(cron.status === 200 && cron.body && cron.body.ok !== false, 'setup: a routine the Commander made is created: ' + JSON.stringify(cron.body).slice(0, 200));
+    A.ok(cron.status === 200 && cron.body && cron.body.ok !== false, 'setup: a routine the Master made is created: ' + JSON.stringify(cron.body).slice(0, 200));
 
     // the stores a run does not fill by itself here, written the way the sidecar writes them (the real modules), while it is stopped
     await fixture.stop();
@@ -169,7 +169,7 @@ function hermeticEnv(base) {
     A.eq(JSON.parse(fs.readFileSync(ws('_commander.dossier.json'), 'utf8')).block.includes('quokka'), true, 'before the delete the dossier block learned from S is on disk');
     A.ok((await listedRuns()).some(r => r.streamId === S), 'before the delete GET /api/runs lists S');
 
-    // ---- 2. the Commander deletes S ----
+    // ---- 2. the Master deletes S ----
     const callsBefore = up.state.calls.length;
     await save({ deletedIds: [W, S], forgetIds: [S] });   // W stays in deletedIds only: the ledger holds it as adopted, and a forgetIds entry that left the list would be a fresh delete when it came back
     await until(async () => !(await goldens()).includes(runIds.S) && readJson('_commander.dossier.json').block === '' && !packetRuns().includes(runIds.S), 'the purge pass ran over every store');
@@ -198,7 +198,7 @@ function hermeticEnv(base) {
       A.ok(gone !== 200, label + ' ATTACHMENT FILES: the file S attached is gone (' + gone + ')');
       A.eq(await fileStatus(keepFile), 200, label + ' ATTACHMENT FILES: the other session\'s file is served');
       // the named limits, each a passing control
-      A.ok(((await json('GET', '/api/cron')).body.jobs || (await json('GET', '/api/cron')).body || []).length >= 1, label + ' LIMIT b: the routine the Commander made is kept');
+      A.ok(((await json('GET', '/api/cron')).body.jobs || (await json('GET', '/api/cron')).body || []).length >= 1, label + ' LIMIT b: the routine the Master made is kept');
       A.ok(fs.readFileSync(ws('agent.declined.json'), 'utf8').includes('treasurer prefers Perth'), label + ' DECLINED: the reject list is kept on disk (Q5)');
     }
     await provesForgotten('after the delete:');

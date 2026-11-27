@@ -1,9 +1,9 @@
 'use strict';
 /* test/build-share.test.js — shared station builds (community builds phase 1, 2026-10-07). A build file carries the
    LAYOUT only and lands through the same replaceLayout the presets use. Held to:
-     1. export strips every piece of the Commander's own work: desk owners, step instructions/roles/hands, machine labels,
+     1. export strips every piece of the Master's own work: desk owners, step instructions/roles/hands, machine labels,
         the Inbox's project folder + spend limits, connector/plugin bindings, pipeline edges, station identity;
-     2. player-made props never leave (their art is this station's, paid for by this Commander) and are counted;
+     2. player-made props never leave (their art is this station's, paid for by this Master) and are counted;
      3. a build round-trips onto ANOTHER station: same rooms, furniture, belts and line links; the importer's crew keep
         their workstations and their station keeps its identity;
      4. import runs the SAME cleaner — a hand-edited file cannot smuggle instructions or owners in;
@@ -49,7 +49,7 @@ assert.ok(!file.station.props.some(p => p.t.startsWith('user_')), 'the player-ma
 assert.ok(out.dropped.work >= 4, 'owners/briefs/label/folder/connector counted: ' + out.dropped.work);
 assert.equal(out.stats.rooms, 5); assert.equal(out.stats.lines, 1);
 
-// 3: import onto another Commander's station
+// 3: import onto another Master's station
 const dst = M.create(M.starterDoc()); dst.ensureWorkstation('kai');
 const before = dst.serialize();
 const got = B.readBuild(out.text, M, dst.doc()._nid + 100);

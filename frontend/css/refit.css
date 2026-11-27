@@ -137,7 +137,7 @@
 .trg-doors { margin-top: 6px; }
 .trg-msg { margin: 6px 0 0; }
 /* the trigger RULE is an explanation, not a warning — .refit-note is the amber voice, and an amber
-   paragraph on every INBOX card teaches the Commander to stop reading amber. */
+   paragraph on every INBOX card teaches the Master to stop reading amber. */
 .trg-explain { font-family: 'VT323', monospace; font-size: 14px; letter-spacing: .4px; line-height: 1.3; color: var(--ph-dim); margin: 6px 0; }
 
 /* ---------- NEW ROUTINE — the create form as ONE object (2026-08-14) ----------

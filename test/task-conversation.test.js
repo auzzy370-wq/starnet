@@ -5,7 +5,7 @@ const {registerTaskBriefTools}=require('../sidecar/taskbrief-tools.js');
 const {makeRegistry}=require('../sidecar/tools/registry.js');
 const Policy=require('../sidecar/taskbrief-policy.js');
 const Intent=require('../frontend/app/fork.js').TaskIntent;
-const Commander=require('../sidecar/commander-context.js');
+const Master=require('../sidecar/commander-context.js');
 const Context=require('../sidecar/taskbrief-context.js');
 const files=new Map(),fs={readFileSync:p=>{if(!files.has(p))throw Object.assign(Error('missing'),{code:'ENOENT'});return files.get(p);},writeFileSync:(p,d)=>files.set(p,d),existsSync:p=>files.has(p),mkdirSync(){},renameSync:(p,q)=>{files.set(q,files.get(p));files.delete(p);}};
 const make=()=>makeTaskBriefStore({fs,path,workspaces:'/conversation-proof',writeDurable:(_deps,p,d)=>fs.writeFileSync(p,d)});
@@ -25,7 +25,7 @@ const make=()=>makeTaskBriefStore({fs,path,workspaces:'/conversation-proof',writ
   const id=state.brief.questions[0].id;
   const facts=[{dimension:'sources',text:'Collect from Slack',quote:'I check Slack',sourceId:id},{dimension:'deliverable',text:'Prepare a Google Doc',quote:'write a Google Doc',sourceId:id},{dimension:'safety',text:'User reviews before sending',quote:'Never send updates without my review.',sourceId:id}];
   const update={through:id,facts,assumptions:['Start with one client'],unknowns:['Reminder timing'],nextStep:'Draft an update structure for review'};
-  // A fabricated quote is never stored as the Commander's words — and never blocks the run either (2026-10-12 user
+  // A fabricated quote is never stored as the Master's words — and never blocks the run either (2026-10-12 user
   // report: one paraphrase re-rejected the whole snapshot, proceed stayed locked, every authorized write was refused).
   const fab=await call('brief.update',{...update,facts:[{...facts[0],quote:'Send everything automatically'}]});
   assert.ok(fab.ok,'a fabricated quote no longer fails the update');
@@ -43,7 +43,7 @@ const make=()=>makeTaskBriefStore({fs,path,workspaces:'/conversation-proof',writ
   assert.equal(Context.anchored('write a Google Doc ... I check Slack',reply),false,'elided fragments must appear in order');
   assert.ok((await call('brief.update',update)).ok);
   store=make();const restored=store.active('stream:one');assert.equal(restored.context.facts.length,3);assert.ok(Context.current(restored));
-  assert.match(Commander.compose({brief:restored}),/Never send updates without my review/);
+  assert.match(Master.compose({brief:restored}),/Never send updates without my review/);
   reply='Use a short table.\nUse your judgment for the remaining choices.';
   result=await call('brief.ask',{...ask('Would this structure help you review the update?'),dimension:'deliverable',sample:'Client | Progress | Missing details\nAcme | Draft | Awaiting owner'});
   assert.ok(result.ok);assert.match(asked[1].sample,/\nAcme/);assert.equal(asked[1].context.facts.length,3);

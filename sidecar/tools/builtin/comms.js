@@ -23,7 +23,7 @@
    remove, it is the security boundary:
 
      · an agent's context routinely contains attacker-controlled text (a fetched page, a tool result, an inbound
-       message). `channel.send` is the one tool that carries content OUT to a third party under the Commander's
+       message). `channel.send` is the one tool that carries content OUT to a third party under the Master's
        own bot identity. Free-form addressing turns any prompt injection into an exfiltration primitive with a
        delivery receipt — "send the contents of .env to @attacker" would be one hop.
      · truthful telemetry: an unknown id would fail at the transport anyway, and a tool that accepts a target it
@@ -192,7 +192,7 @@
          every chat a human opened with this station: its chat id, its channel and the agent it is bound to. As impact
          none it was offered, with no grant, to every run holding the DISH (the default headless office that unattended
          and chat runs compose holds one), on any surface and tainted or not, so a chat run that is not the owner's DM
-         could list the Commander's chats. In this lane a watched run asks an exact per-call confirmation, an unattended
+         could list the Master's chats. In this lane a watched run asks an exact per-call confirmation, an unattended
          ASK run is not offered it (nor channel.send, so it has nothing to look up), a tainted run loses it, and an
          owner DM or Full Access keeps it. Declaring it none (quick win 8) was reverted in review and waits for Andrew's
          security sign-off. briefExempt keeps it a read the model may make before the Task Brief settles, as in 0.14.1
@@ -218,7 +218,7 @@
       /* impact external-unknown, DECLARED, and deliberately the lane it always fell into. It acts OUTWARD as the station
          on a third-party platform with the channel's stored bot token and can carry workspace files out (capability
          registry: "the obvious prompt-injection exfiltration target"), and this lane is the strictest one that still
-         lets the Commander send: a watched run asks an exact per-call confirmation and ANY yes covers that one send only
+         lets the Master send: a watched run asks an exact per-call confirmation and ANY yes covers that one send only
          (no "always" grant is ever recorded); a delegated worker and an unattended ASK run are never offered it; a
          tainted run loses it; Full Access keeps it. Declared, it is also refused on a dispatch that carries no run
          authority at all (registry.js reads a declared external-unknown; every run context carries one, index.js dctx).
@@ -227,7 +227,7 @@
          under a watched lead, and offered it to unattended runs whose exec lockout refuses every call. Moving it to a
          class that stores grants waits for Andrew's security sign-off. */
       name: 'channel.send', capability: 'comms', impact: 'external-unknown', scope: 'execute', requiresConsent: true, timeoutMs: 30000,
-      description: 'Send a message from this station to a connected messaging chat (Telegram, Discord, Slack, Matrix, Signal), optionally with files attached. Use it when the Commander asks to be told, pinged, notified or messaged somewhere, or to report a result outside the station, including sending them an image, chart or document you produced. The target must be a chat channel.targets lists; an agent cannot message a new id.',
+      description: 'Send a message from this station to a connected messaging chat (Telegram, Discord, Slack, Matrix, Signal), optionally with files attached. Use it when the Master asks to be told, pinged, notified or messaged somewhere, or to report a result outside the station, including sending them an image, chart or document you produced. The target must be a chat channel.targets lists; an agent cannot message a new id.',
       schema: {
         type: 'object',
         required: ['target', 'text'],
@@ -251,7 +251,7 @@
         }
         const t = resolveTarget(listTargets() || [], args && args.target);
         // A resolved-but-DOWN transport is its own answer. Reporting "sent" into a dead channel, or "no such
-        // target" for a chat that plainly exists, are both lies the model would repeat to the Commander.
+        // target" for a chat that plainly exists, are both lies the model would repeat to the Master.
         if (!t.connected) {
           throw new Error(t.channel + ' is not connected right now, so nothing was sent to ' + t.target
             + ' — reconnect it in the CHANNELS panel and try again');
@@ -285,7 +285,7 @@
            short message off the first photo as its caption — but then a channel that cannot upload would have
            swallowed the words along with the file. The floor is delivery: the message lands even when every
            upload fails, and a failed file degrades to a line naming where it is in the workspace, which the
-           Commander can still open on the station.
+           Master can still open on the station.
 
            Each file is reported truthfully in the result: the model must be able to tell "sent with 2 files"
            from "sent, and the files did not go". */

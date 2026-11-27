@@ -39,7 +39,7 @@ const ProspectStore = (() => {
   /* ---- THE SHOWN-ROW MEMORY (2026-08-05) ----------------------------------------------------------------
      `recommendationIds` is the "I have already told the ledger about this card" set. It lived only in memory,
      so every page reload re-minted a `shown` row for the SAME three shelf cards. The ledger's replay divides by
-     `counts.shown`, so acceptanceRate and evidenceCoverage fell a little every time the Commander refreshed a
+     `counts.shown`, so acceptanceRate and evidenceCoverage fell a little every time the Master refreshed a
      tab, `repeats` climbed, and foldPref's per-kind/per-trait `shown` grew without any new impression — which
      drags that kind's learned weight toward zero. A metric that decays because the browser was reloaded is not
      a measurement of anything, and the recruiter now READS that preference model.
@@ -77,7 +77,7 @@ const ProspectStore = (() => {
   }
   /* ⛔ THE WINDOW GATES THE MINT, NOT THE LOOKUP (2026-08-05). These were one function, and the TTL applied to
      every caller — so `recommendationVerdict` / `recommendationOutcome` ALSO went blind at T+24h and returned
-     false without POSTing anything. A Commander who left the bay open overnight, or came back to a card whose
+     false without POSTing anything. A Master who left the bay open overnight, or came back to a card whose
      impression row was older than the window, could accept or decline it and have the verdict SILENTLY DROPPED
      while the `shown` row it belonged to sat on the ledger forever unanswered. That depresses acceptanceRate in
      exactly the direction the reload fix was made to stop.

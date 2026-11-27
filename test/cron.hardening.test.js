@@ -1,7 +1,7 @@
 /* node test/cron.hardening.test.js — routine reliability hardening (2026-08-21), four properties:
      1. CONSECUTIVE-FAILURE AUTO-PAUSE: a recurring job that fails terminally N times in a row (default 5,
         ctx/host-overridable) is disabled with disabledReason:'consecutive-failures'; the counter is durable,
-        resets on ok/silent, and resumeJob clears it. The delivery text tells the Commander it was paused.
+        resets on ok/silent, and resumeJob clears it. The delivery text tells the Master it was paused.
      3. MALFORMED-SCHEDULE VISIBILITY: a job whose schedule can never fire is marked ONCE (lastError
         'schedule-unfireable', lastStatus 'error') and emits ONE cron.result — never re-marked per tick.
      4. INTERVAL DRIFT: an in-grace interval fire advances from the SCHEDULED instant (dueAt + period), not the
@@ -75,7 +75,7 @@ const failRun = (o) => { o.emit('agent.run.error', { agentId: 'a', runId: o.runI
     A.ok(paused.disabledAt, 'disabledAt stamped');
     A.eq(paused.nextRunAt, null, 'no next fire while auto-paused');
     A.eq(paused.state, 'error', 'state stays error (visible)');
-    A.ok(/Routine paused after 3 consecutive failures/.test(paused.finalization.error), 'the finalization (delivery) text tells the Commander it was paused');
+    A.ok(/Routine paused after 3 consecutive failures/.test(paused.finalization.error), 'the finalization (delivery) text tells the Master it was paused');
     A.ok(/e6/.test(paused.finalization.error), 'the delivery text still carries the underlying error');
     // a transient failure with retries left does NOT count (the occurrence isn't finalized)
     let t = [intervalJob('t1', 'every 1h')];

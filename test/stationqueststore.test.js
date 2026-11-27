@@ -143,7 +143,7 @@ StationQuestStore.reset();
 A.eq(global.localStorage.getItem('vultron.stationquests.v1'), null, 'reset removes the self-persisted key');
 A.eq(StationQuestStore.quests().length, 0, 'a reset store degrades to no quests until the next init');
 StationQuestStore.init();
-A.eq(StationQuestStore.isDismissed('sq:nova:studio'), false, 'after reset+init, no prior Commander history remains');
+A.eq(StationQuestStore.isDismissed('sq:nova:studio'), false, 'after reset+init, no prior Master history remains');
 
 /* ---------- source-level locks: the browser wiring (not node-loadable) ---------- */
 const qsSrc = fs.readFileSync(path.join(__dirname, '../frontend/app/queststore.js'), 'utf8');

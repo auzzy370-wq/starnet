@@ -44,9 +44,9 @@ A.eq(R.willPropose(), false, 'below the launch floor → no offer');
 
 /* A RECIPE WITH NO AUTHORED CADENCE STILL EARNS THE OFFER (2026-08-05). The old gate required `r.cadence` — the
    CATALOG AUTHOR's suggestion — which quietly excluded every recipe the station itself mints: seedstore →
-   Recipes.draft stamps `cadence: null`, so an agent-authored recipe the Commander launched nine times by hand
+   Recipes.draft stamps `cadence: null`, so an agent-authored recipe the Master launched nine times by hand
    could never earn "want it on a schedule?". The evidence was always the launch count, and that is all the
-   nudge cites; the cadence is chosen by the Commander in the SCHEDULE IT form the accept opens. */
+   nudge cites; the cadence is chosen by the Master in the SCHEDULE IT form the accept opens. */
 launchCounts = { 'fix-bug': { n: 9, lastAt: 1 } };
 A.eq(R.willPropose(), true, 'a recipe with NO authored cadence is nudged on its real hand-launch count');
 A.eq(R._pick().cadence, null, '…and the pick carries no cadence — nothing is fabricated for it');
@@ -62,7 +62,7 @@ launchCounts = { 'fix-bug': { n: 6, lastAt: 2 }, 'morning-brief': { n: 6, lastAt
 A.eq(R._pick().id, 'morning-brief', 'on a tie, the recipe with a declared cadence wins the slot');
 /* ---------- THE RATED COUNTERS ARE CONSULTED, NOT JUST THE LAUNCH COUNT (2026-08-05) ----------
    pick() read `u.n` and nothing else, so a recipe launched three times and rated 👎 all three still earned
-   "want this every day?" — repetition read as approval while the Commander's own rate-the-work verdicts said
+   "want this every day?" — repetition read as approval while the Master's own rate-the-work verdicts said
    the opposite. The offer is BINARY, so a mismatch of kind must EXCLUDE, not down-rank (repo law). */
 launchCounts = { 'morning-brief': { n: 3, lastAt: 1 } };
 A.eq(R.willPropose(), true, 'control: the same 3 launches with NO verdicts on record does earn the offer');
@@ -139,7 +139,7 @@ A.ok(/launchSeed:\s*\{\s*id:\s*String\(recipeId\)/.test(appSrc), 'openRecipeLaun
 const mkt = fs.readFileSync(path.join(__dirname, '../frontend/app/marketplace.js'), 'utf8');
 A.ok(/function maybeConsumeLaunchSeed/.test(mkt), 'the bay defines the one-shot launch-seed consume');
 A.ok(/ctx\.launchSeed = null/.test(mkt), 'the launch seed is consumed one-shot (cleared before any render)');
-// lane F (same telemetry read): the card life chip is the Commander's OWN counts, honestly framed — never "popular".
+// lane F (same telemetry read): the card life chip is the Master's OWN counts, honestly framed — never "popular".
 A.ok(/function recipeLifeChip/.test(mkt), 'the bay defines the recipe life chip (lane F)');
 A.ok(/ProspectStore\.launches\(\)/.test(mkt.slice(mkt.indexOf('function recipeLifeChip'), mkt.indexOf('function recipeLifeChip') + 900)), 'the life chip reads the real scout launch counters');
 A.ok(!/popular/i.test(mkt.slice(mkt.indexOf('function recipeLifeChip'), mkt.indexOf('function recipeCardHTML'))), 'the life chip never claims popularity (own counts only — truthful telemetry)');

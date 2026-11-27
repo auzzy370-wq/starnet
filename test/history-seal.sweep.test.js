@@ -9,7 +9,7 @@
        conversation, asks nothing while any run is live, pauses when the station is silent, gives up on an id the station does not answer and on a request it
        keeps refusing (never a loop), never asks about a row with no row id or a session the route cannot take, and saves once it has proved something.
      THE SEAL PASS (chat.js sealSoon / sealPass / sealLeft): 2 s after a run ends (a burst is one read) the open-time read runs again on the conversation the
-       run left unproven — never one a run is live in, never one that is still packed, and never one the Commander is looking at, which is read when they leave
+       run left unproven — never one a run is live in, never one that is still packed, and never one the Master is looking at, which is read when they leave
        it — with no repaint, so the run's own rows are named, not repeated, in the very next save.
    Production wiring: the real transcript store behind the real route handlers, the real Harness.api, the real Workstreams / HistoryRef / TurnMerge, chat.js and
    app.js lifted by name (test/helpers/seal-rig.js). Both shipped trees run. */
@@ -224,12 +224,12 @@ async function passScenarios(root) {
       assert.deepEqual(W.get('a').history.map(r => r.content), ['first question', 'answer to first question'], 'and the conversation is the one it was');
     });
 
-    await run('a burst of runs is one read; a conversation on screen is read when the Commander leaves it, not before; one a run is live in or that is still packed is not read', async () => {
+    await run('a burst of runs is one read; a conversation on screen is read when the Master leaves it, not before; one a run is live in or that is still packed is not read', async () => {
       p.open('a');
       await send('a', 'second'); await send('a', 'third');
       assert.equal(p.fire(), 1, 'two run ends inside the debounce are one pending read');
       await Rig.flush();
-      assert.ok(savedOf('a').some(r => r.content === 'third'), 'it is on screen: the pass does not read it (a repaint under the Commander\'s eyes is worse than a longer save)');
+      assert.ok(savedOf('a').some(r => r.content === 'third'), 'it is on screen: the pass does not read it (a repaint under the Master\'s eyes is worse than a longer save)');
       const reads = tp.calls.filter(c => c.method === 'GET').length;
       p.open('b'); p.api.sealLeft(W.get('a'));
       assert.equal(p.fire(), 1, 'leaving the conversation schedules its read'); await Rig.flush();

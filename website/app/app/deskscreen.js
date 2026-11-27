@@ -159,7 +159,7 @@ const DeskScreen = (() => {
   };
   const TRIGGER = { schedule: 'A scheduled routine', manual: 'A routine you ran by hand', event: 'An incoming event', loop: 'A loop iteration', nightshift: 'Autonomy' };   // 'nightshift' stays the internal trigger id; the user-facing name is Autonomy
 
-  // the task this run is working: the Commander's own words when this page launched it (the workstream whose live
+  // the task this run is working: the Master's own words when this page launched it (the workstream whose live
   // run IS this run — Channels.runIdOf), else an honest label for what started it. Never a guess.
   function taskOf(rec) {
     if (rec.task) return { text: rec.task, known: true };
@@ -170,7 +170,7 @@ const DeskScreen = (() => {
           rec.wsId = w.id;
           const h = Array.isArray(w.history) ? w.history : [];
           for (let i = h.length - 1; i >= 0; i--) if (h[i] && h[i].role === 'user' && h[i].content) {
-            // a goal-loop step is the station's prompt, not the Commander's words: the task is the GOAL it works toward
+            // a goal-loop step is the station's prompt, not the Master's words: the task is the GOAL it works toward
             const step = (typeof GoalLoop !== 'undefined' && GoalLoop.stepOfTurn) ? GoalLoop.stepOfTurn(h[i]) : null;
             rec.task = step != null ? step : String(h[i].content); break;
           }
@@ -250,7 +250,7 @@ const DeskScreen = (() => {
      A registered station window ('desk'): it rises from the bottom dock between CREW and COMMS, resizes and
      minimizes like every other window; another agent's desk re-targets it (no roster selector). The activity feed is
      COMMS; this window is only the agent's screen. Built once per agent, repainted in place each second (the note
-     field is never rebuilt under the Commander's cursor). */
+     field is never rebuilt under the Master's cursor). */
   let doors = {};                                              // openChat (app.js)
   let cur = null, timer = 0;                                   // cur = { agentId, name, body }
   let snap = null, snapAt = 0, snapBusy = false;               // /api/state/snapshot: this agent's server-proven live runs

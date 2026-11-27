@@ -4,9 +4,9 @@
      A. (2026-07-15) An automated build never paints its card into a FOREIGN session. Every deliverable
         gets its OWN workstream ('workshop-<runId>' — the shift's durable streamId); the card renders only
         inside that session, pinned via opts.sessionId.
-     A'. (2026-07-16) DELIVERY REVEAL: a landed build GREETS the Commander — its own session OPENS with the
+     A'. (2026-07-16) DELIVERY REVEAL: a landed build GREETS the Master — its own session OPENS with the
         full return card (explanation + files + decide row) on live push, attach, and genuine return; the
-        newest build opens when several are pending, the rest land unread. If the Commander is mid-something
+        newest build opens when several are pending, the rest land unread. If the Master is mid-something
         (or App isn't up), the reveal stands down to the unread row + one actionable toast.
      B. The 2026-07-14 honesty laws survive the reshape: a prior session's persisted seen/later ledger is
         ignored (session-scoped), undecided = still owed (re-surfaced every session until decided), an
@@ -105,14 +105,14 @@ const { WorkshopStore } = require('../frontend/app/workshopstore.js');
 
   /* ---------- B1. return-from-away re-surfaces UNDECIDED work: sessions bump unread, the newest REVEALS ---------- */
   const wsA = streams.get('workshop-run-A');
-  wsA.lastReadAt = Date.now() + 1;   // simulate: the Commander read it, then went away
+  wsA.lastReadAt = Date.now() + 1;   // simulate: the Master read it, then went away
   activeStreamId = 'ws_general';     // …and is back on a plain stream
   const builtStampA = wsA.lastActiveAt;   // when the work actually landed — the honest rail stamp
   await new Promise(r => setTimeout(r, 5));
   cards = [];
   await WorkshopStore.presentOnReturn();
   A.eq(cards.length, 1, 'a genuine return reveals the newest undecided deliverable\'s card');
-  A.eq(cards[0].o.sessionId, 'workshop-run-B', 'that card lives in its own session, never the stream the Commander left open');
+  A.eq(cards[0].o.sessionId, 'workshop-run-B', 'that card lives in its own session, never the stream the Master left open');
   A.ok(Workstreams.unread(wsA), 'an undecided deliverable\'s session goes unread again on a genuine return — undecided = still owed');
   A.eq(wsA.lastActiveAt, builtStampA, 'the re-offer never re-stamps lastActiveAt — the rail\'s "last worked" time stays the build\'s, not a perpetual "now" (2026-07-18 timestamp-honesty fix)');
 
@@ -149,10 +149,10 @@ const { WorkshopStore } = require('../frontend/app/workshopstore.js');
   A.eq(cards.length, 0, 'no card without the reveal — it belongs to the session open');
   A.eq(toasts.length, 1, 'the fallback announces ONE toast');
   A.ok(/^Built while you were away: “quiet build”/.test(toasts[0].msg), 'the toast says what happened (a sentence, no ✦ in front — old-UI review 10-26 #3)');
-  A.eq(toasts[0].cat, 'cronDigest', 'the toast stays in the Commander-mutable autonomous category (P1-8 mute works)');
+  A.eq(toasts[0].cat, 'cronDigest', 'the toast stays in the Master-mutable autonomous category (P1-8 mute works)');
   global.App = savedApp;
 
-  /* ---------- B5. DELETED = GONE (2026-07-16): a session the Commander deleted never re-forms,
+  /* ---------- B5. DELETED = GONE (2026-07-16): a session the Master deleted never re-forms,
      never reveals, never toasts — even while its manifest is still pending server-side ---------- */
   pending.push({ runId: 'run-E', title: 'doomed build', files: [] });
   streams.delete('workshop-run-E'); deletedIds.add('workshop-run-E');   // simulate rail delete → tombstone
@@ -180,7 +180,7 @@ const { WorkshopStore } = require('../frontend/app/workshopstore.js');
      lastActiveAt with the REAL build-landed time — never the adopt/poll moment. (The re-offer non-restamp
      is locked in B1; this locks the FIRST adopt.) ---------- */
   cards = []; toasts = [];
-  const BUILT_AT = Date.now() - 8 * 3600 * 1000;   // "built 8 hours ago, while the Commander slept"
+  const BUILT_AT = Date.now() - 8 * 3600 * 1000;   // "built 8 hours ago, while the Master slept"
   WorkshopStore.onBuilt({ agentId: 'agent', runId: 'run-T', manifest: { title: 'overnight build', files: [], builtAt: BUILT_AT } });
   A.eq(streams.get('workshop-run-T').lastActiveAt, BUILT_AT,
     'the adopted session\'s "last worked" = the manifest\'s builtAt (the real production time, not now)');

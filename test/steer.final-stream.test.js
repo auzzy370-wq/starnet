@@ -68,7 +68,7 @@ function host(runId) {
       async function* () {                      // turn 1: the FINAL, tool-free answer, streamed slowly
         yield { type: 'text', delta: 'The report is in ' };
         await tick(10);
-        postedDuringStream = h.post('use metric units');   // the Commander steers mid-stream
+        postedDuringStream = h.post('use metric units');   // the Master steers mid-stream
         yield { type: 'text', delta: 'imperial units.' };
         yield { type: 'done', finishReason: 'stop' };
       },
@@ -187,13 +187,13 @@ function host(runId) {
     const { emit } = setup();
     const pending = [];
     const provider = streamingProvider([
-      async function* () { yield { type: 'text', delta: 'worker final' }; pending.push('[from the Commander] narrower scope'); yield { type: 'done', finishReason: 'stop' }; },
+      async function* () { yield { type: 'text', delta: 'worker final' }; pending.push('[from the Master] narrower scope'); yield { type: 'done', finishReason: 'stop' }; },
       async function* () { yield { type: 'text', delta: 'narrowed' }; yield { type: 'done', finishReason: 'stop' }; }
     ]);
     const res = await runAgentLoop({ messages: [{ role: 'user', content: 'go' }], provider, emit, cost: makeCostEngine({ priceOf }), model: 'm', agentId: 'w', runId: 'w1',
       tools: [], limits: { grace: false }, capCtx: openCtx(), steer: () => pending.splice(0) });
     A.eq([provider.requests.length, res.reason], [2, 'done'], 'a worker steer arriving mid-final also gets its turn');
-    A.ok(hasNote(provider.requests[1], '[from the Commander] narrower scope'), 'with the identical steering_note format');
+    A.ok(hasNote(provider.requests[1], '[from the Master] narrower scope'), 'with the identical steering_note format');
   }
 
   A.report('steer.final-stream.test');

@@ -15,7 +15,7 @@
 
    Every dep is read inside a closure, never at wiring time: the stores are built later in index.js than the registry.
 
-   WHAT IS KEPT ON PURPOSE (exemptions, Q4): routines the Commander created (cron-jobs), delivered workspace files, learned skill
+   WHAT IS KEPT ON PURPOSE (exemptions, Q4): routines the Master created (cron-jobs), delivered workspace files, learned skill
    files, and the stores whose records hold no words of a session (counters, ids, settings, secrets). Each is named below with its
    reason, and test/forget-registry.census.test.js requires one of the two for every durable store the sidecar writes. Adopted stamps
    (a delete made before the ledger's first read, I7 limit d) are never purged by any entry: the ledger never hands them to a pass. */
@@ -129,39 +129,39 @@ const STORES = [
   ['memory:pending', 'entry', 'notebook-memory'],
   ['threads-store.js', 'entry', 'notebook-memory'],
   // ---- kept on purpose, with the reason ----
-  ['CRON_FILE', 'exempt', 'cron-jobs', 'Q4: routines the Commander created are kept - a routine is the Commander\'s own configuration, not a memory of a session'],
+  ['CRON_FILE', 'exempt', 'cron-jobs', 'Q4: routines the Master created are kept - a routine is the Master\'s own configuration, not a memory of a session'],
   ['CRON_ARMED_FILE', 'exempt', '', 'the arm switch of those routines (a flag and a time)'],
   ['CRON_HALT_FILE', 'exempt', '', 'the halt switch of those routines (a flag and a time)'],
-  ['LOOPS_FILE', 'exempt', '', 'Q4: loops the Commander created are kept, like routines - configuration, not a memory'],
+  ['LOOPS_FILE', 'exempt', '', 'Q4: loops the Master created are kept, like routines - configuration, not a memory'],
   ['LOOPS_HALT_FILE', 'exempt', '', 'the halt switch of those loops (a flag and a time)'],
   ['TURN_IDENTITY_FILE', 'exempt', 'turn-identity-mode', 'turn-identity surface modes only (a mode name per surface)'],
-  ['memory:declined', 'exempt', 'declined', 'Q5: the Commander\'s own reject list - plain strings kept on disk and in host dedup so a rejected proposal is never made again; from the first non-adopted delete reflect gets them as dedupOnly, so none reaches a prompt (commit 15)'],
+  ['memory:declined', 'exempt', 'declined', 'Q5: the Master\'s own reject list - plain strings kept on disk and in host dedup so a rejected proposal is never made again; from the first non-adopted delete reflect gets them as dedupOnly, so none reaches a prompt (commit 15)'],
   ['memory:todo', 'exempt', '', 'the agent\'s in-session task plan (todo tool): no source is recorded on its items and it is replaced on every plan write; a known gap, noted for a follow-up - it can only be cleared wholesale'],
   ['memory:embed', 'exempt', '', 'embedding vectors (numbers) keyed by notebook record ids; the notebook-memory entry removes the records and a vector without a record is never served'],
   ['memory:minted', 'exempt', '', 'the mint ledger: fingerprints and counts of routines an agent created (dedup), no session text'],
   ['memory-store.js', 'exempt', '', 'the key-value router itself; every key prefix it serves has its own row (memory:*)'],
   ['personalization-store.js', 'exempt', '', 'the learning switch and its revision counter; the personalization-revision entry bumps the revision on a delete so a learning pass that began before it writes nothing'],
-  ['AGENT_ROSTER_FILE', 'exempt', '', 'the crew roster: agent definitions the Commander wrote (names, models, personas), not derived from a session'],
-  ['ALLOWLIST_FILE', 'exempt', '', 'the tool and path allowlist the Commander granted'],
+  ['AGENT_ROSTER_FILE', 'exempt', '', 'the crew roster: agent definitions the Master wrote (names, models, personas), not derived from a session'],
+  ['ALLOWLIST_FILE', 'exempt', '', 'the tool and path allowlist the Master granted'],
   ['BYPASS_FILE', 'exempt', '', 'a consent flag and its time'],
-  ['PROJECTS_FILE', 'exempt', '', 'the project registry (folders the Commander blessed)'],
-  ['GOALS_FILE', 'exempt', '', 'the Commander\'s own active goal, in the Commander\'s words'],
-  ['NIGHTFOCUS_STATE_FILE', 'exempt', '', 'the night focus steer the Commander chose and its settings'],
+  ['PROJECTS_FILE', 'exempt', '', 'the project registry (folders the Master blessed)'],
+  ['GOALS_FILE', 'exempt', '', 'the Master\'s own active goal, in the Master\'s words'],
+  ['NIGHTFOCUS_STATE_FILE', 'exempt', '', 'the night focus steer the Master chose and its settings'],
   ['NIGHTSHIFT_STATE_FILE', 'exempt', '', 'whether the night shift is enabled and its cadence'],
   ['NIGHTSHIFT_LEARN_FILE', 'exempt', '', 'per-archetype up and down verdict tallies (counts only, no text)'],
-  ['DISCOVERY_FILE', 'exempt', '', 'project discovery findings read from the Commander\'s folders on disk, not from a session'],
+  ['DISCOVERY_FILE', 'exempt', '', 'project discovery findings read from the Master\'s folders on disk, not from a session'],
   ['SCHEMA_VERSION_FILE', 'exempt', '', 'the workspace schema version stamp'],
-  ['BROWSER_SETTINGS_FILE', 'exempt', '', 'a browser setting the Commander chose'],
-  ['EXECUTION_SETTINGS_FILE', 'exempt', '', 'an execution setting the Commander chose'],
+  ['BROWSER_SETTINGS_FILE', 'exempt', '', 'a browser setting the Master chose'],
+  ['EXECUTION_SETTINGS_FILE', 'exempt', '', 'an execution setting the Master chose'],
   ['RUNTIME_KNOBS_FILE', 'exempt', '', 'runtime tuning settings (numbers and switches)'],
   ['TOOLSETS_FILE', 'exempt', '', 'which tool sets are disabled (a setting)'],
   ['STEPTEST_FILE', 'exempt', '', 'step-test state of a work line (spend and ids)'],
   ['CHANNEL_SECRETS_FILE', 'exempt', '', 'a credential store (secrets, not derived from a session)'],
   ['CODEX_TOKENS_FILE', 'exempt', '', 'a credential store (OAuth tokens)'],
   ['SERVICEKEYS_FILE', 'exempt', '', 'a credential store (service keys)'],
-  ['SKILLS_ALLOW_FILE', 'exempt', '', 'learned skill files (Q4): the Commander\'s approvals of reviewed skill bytes'],
+  ['SKILLS_ALLOW_FILE', 'exempt', '', 'learned skill files (Q4): the Master\'s approvals of reviewed skill bytes'],
   ['SKILL_EVALUATIONS_FILE', 'exempt', '', 'learned skill files (Q4): behavioural comparison receipts of skill candidates'],
-  ['SKILL_REGISTRIES_FILE', 'exempt', '', 'skill registry sources (urls the Commander added)'],
+  ['SKILL_REGISTRIES_FILE', 'exempt', '', 'skill registry sources (urls the Master added)'],
   ['SKILL_METRICS_FILE', 'exempt', '', 'skill usage counters'],
   ['SKILL_NUDGE_FILE', 'exempt', '', 'a per-agent turn counter'],
   ['budgetStore', 'exempt', '', 'spending caps and counters (numbers)'],
@@ -170,14 +170,14 @@ const STORES = [
   ['memoryConfigStore', 'exempt', '', 'memory settings (switches and thresholds)'],
   ['lineSpendStore', 'exempt', '', 'work-line spend counters'],
   ['lineShipmentStore', 'exempt', '', 'work-line shipment receipts (ids and states, no title)'],
-  ['triggerStore', 'exempt', '', 'trigger runner configuration the Commander made'],
+  ['triggerStore', 'exempt', '', 'trigger runner configuration the Master made'],
   ['triggerSeenStore', 'exempt', '', 'trigger runner dedup state (hashes of items already seen)'],
   ['widgetStore', 'exempt', '', 'widgets placed on the desk: delivered artifacts, kept like delivered workspace files (Q4)'],
   ['appDataStore', 'exempt', '', 'data an installed app keeps for itself, not derived from a session'],
   ['pluginDataStore', 'exempt', '', 'data an installed plugin keeps for itself, not derived from a session'],
-  ['terminalMetadataStore', 'exempt', '', 'metadata of the Commander\'s terminal sessions (not conversation sessions)'],
+  ['terminalMetadataStore', 'exempt', '', 'metadata of the Master\'s terminal sessions (not conversation sessions)'],
   ['idempotency-ledger.js', 'exempt', '', 'receipts of external connector writes keyed by hashes (a safety record: it stops a write being repeated)'],
-  ['journey-store.js', 'exempt', '', 'the Commander\'s verified progression: outcomes the Commander or a harness contract confirmed, kept as earned'],
+  ['journey-store.js', 'exempt', '', 'the Master\'s verified progression: outcomes the Master or a harness contract confirmed, kept as earned'],
   ['request-reservations.js', 'exempt', '', 'API request ids and hashes (24 hour receipts)'],
   ['workflow-takeover.js', 'exempt', '', 'offer decisions keyed by workflow fingerprint (state and time)'],
   ['session-tombstones.js', 'exempt', '', 'the ledger of deletes itself: ids and times only - it IS the record the purge reads']
@@ -191,13 +191,13 @@ const UNKEYED_ENTRIES = {
 };
 const UNKEYED_EXEMPTIONS = [
   ['turn-identity-soak', 'turn-identity.soak.json: ids, counts and hashes only (the soak ledger), no text of a session'],
-  ['run-journal', 'the journals of interrupted runs (.run-journal): an unmatched tool intent in one is the only evidence a side effect may have happened, so the file stays until the Commander resolves it; a run that began in, or read, a deleted session is never offered, prepared or continued (runRecoveryForgotten)'],
-  ['delivered-workspace-files', 'Q4: files an agent delivered into its workspace are the Commander\'s work product and stay (the deliverables entry removes the library rows that pointed at them)'],
+  ['run-journal', 'the journals of interrupted runs (.run-journal): an unmatched tool intent in one is the only evidence a side effect may have happened, so the file stays until the Master resolves it; a run that began in, or read, a deleted session is never offered, prepared or continued (runRecoveryForgotten)'],
+  ['delivered-workspace-files', 'Q4: files an agent delivered into its workspace are the Master\'s work product and stay (the deliverables entry removes the library rows that pointed at them)'],
   ['learned-skill-files', 'Q4: skill files an agent learned stay; goldens and verdict packets, which copy a run, are purged'],
   ['channel-legacy-files', 'the per-chat legacy history mirrors of the channel store (and their .bak and legacy-hops files): read only by the rollback path; the store cannot attribute a file to a stream (the hub\'s agentIdFor owns that mapping), so a delete cannot find it - a known gap, noted for a follow-up'],
   ['station-save-bak', 'the previous committed generation of the station save (<agent>.save.json.bak): persist keeps exactly one, so a just-deleted chat can sit in it until the next save replaces it. Under the v7 format the save carries a chat as its packed run ids (the words live in the transcript, which the delete cuts), so what it holds is ids and titles, not turns; it is the only copy the station can recover a torn main from, so purging it would trade a recovery for a smaller window. Named here so it is a decision, not an oversight (a known gap, noted for a follow-up)'],
-  ['recovery-copies', 'workspace-recovery keeps the whole old station root as a sibling <root>.recovery-rollback-* until the Commander discards it, and station-recovery bundles carry every chat as text: both are recovery copies of the station AS IT WAS, including chats deleted since. They are made on the Commander\'s own command, shown to the Commander, and removed by the Commander; the delete does not reach into them (a known gap, noted for a follow-up)'],
-  ['checkpoint-shadow-repos', 'WORKSPACES/.checkpoints/<agent>/git: restore points of the agent\'s workspace. An upload (.attachments/) is excluded from every new snapshot (checkpoint-store.js info/exclude), and the repo of an agent whose history holds a deleted session\'s upload is replaced by one baseline (forgetAttachments, called by the attachment-files entry), so its older rollback points are lost. Delivered work files in it are the Commander\'s work product (Q4)'],
+  ['recovery-copies', 'workspace-recovery keeps the whole old station root as a sibling <root>.recovery-rollback-* until the Master discards it, and station-recovery bundles carry every chat as text: both are recovery copies of the station AS IT WAS, including chats deleted since. They are made on the Master\'s own command, shown to the Master, and removed by the Master; the delete does not reach into them (a known gap, noted for a follow-up)'],
+  ['checkpoint-shadow-repos', 'WORKSPACES/.checkpoints/<agent>/git: restore points of the agent\'s workspace. An upload (.attachments/) is excluded from every new snapshot (checkpoint-store.js info/exclude), and the repo of an agent whose history holds a deleted session\'s upload is replaced by one baseline (forgetAttachments, called by the attachment-files entry), so its older rollback points are lost. Delivered work files in it are the Master\'s work product (Q4)'],
   ['restored-save-copies', 'a ~restored copy is a workstream row of the PAGE\'s own save (its id is not a valid stream id, so the ledger cannot stamp it); the page\'s delete purges it with the session (commit 16). A file a run in the copy sent stays: that run\'s rows are filed under the global stream, and they name it']
 ];
 
@@ -206,7 +206,7 @@ function wireForgetRegistry(registry, deps) {
   const entry = e => registry.register(e);
 
   /* the notebook, the pending proposals and the open threads a deleted session wrote (session-tombstones forgetSessionMemory): the
-     records CREATED in it go, the versions its runs wrote leave records created elsewhere, a rating verdict keeps the Commander's
+     records CREATED in it go, the versions its runs wrote leave records created elsewhere, a rating verdict keeps the Master's
      words without the deleted work. The scope carries the runs that QUOTE a deleted session too, so the reading run's own notes go. */
   entry({
     name: 'notebook-memory',
@@ -228,7 +228,7 @@ function wireForgetRegistry(registry, deps) {
   /* trusted interest evidence: every quote records the owner row it was quoted from (src { streamId, runId, rowId }, off the context pack's
      parallel activity[].src). A topic with ANY quote from a deleted session is dropped whole (its label is the model's summary of those
      lines); quarantined evidence is unproven, so a purge does not read it as a source. The match is by stream and row, not by run: an
-     interest drawn from a directive the Commander typed stays when that run later read a deleted session. */
+     interest drawn from a directive the Master typed stays when that run later read a deleted session. */
   const interestSource = (src, ev) => ({ streamIds: [src.streamId], rowIds: [src.rowId], at: num(ev && ev.at) });
   entry({
     name: 'interests',
@@ -254,7 +254,7 @@ function wireForgetRegistry(registry, deps) {
     }
   });
 
-  /* the cross-surface recommendation ledger: an entry composed from sessions carries the quote stamp too. One the Commander DECLINED keeps
+  /* the cross-surface recommendation ledger: an entry composed from sessions carries the quote stamp too. One the Master DECLINED keeps
      its decision (the reject list and the preference sample) and loses its evidence quotes; any other goes whole. */
   entry({
     name: 'recommendations',
@@ -273,7 +273,7 @@ function wireForgetRegistry(registry, deps) {
     forget: scope => d.verdictReview().forget((runId, packet, at) => inScope(packetSource(runId, packet, at), scope))
   });
 
-  /* task briefs: the Commander's directive, the questions asked and the answers given, per conversation. Source: the brief's stream and
+  /* task briefs: the Master's directive, the questions asked and the answers given, per conversation. Source: the brief's stream and
      directive row and the runs that opened and completed it. patterns() also asks the registry's read-time belt, so an answered question of a
      deleted session is never offered as an OBSERVED PATTERN while a purge is pending. */
   const briefSource = b => ({ streamIds: [b && b.streamId], runIds: [b && b.originalRunId, b && b.runId], rowIds: [b && b.directiveRowId], at: num(b && b.createdAt) });
@@ -304,7 +304,7 @@ function wireForgetRegistry(registry, deps) {
     }
   });
 
-  /* study proposals: belief updates a finished run's aux pass proposed, held server-side until the Commander turns them in. Source: the run
+  /* study proposals: belief updates a finished run's aux pass proposed, held server-side until the Master turns them in. Source: the run
      the pass studied and the runs its proposals cite. A proposal citing a deleted session's run goes alone; a run whose proposals all go
      leaves no entry (and no 'latest' pointer to it). The browser-owned `declined` mirror beside it is a reject list: kept (Q5). */
   const studyRuns = e => [e && e.runId].concat(((e && e.proposals) || []).flatMap(p => [p && p.sourceRunId, p && p.evidenceRef && p.evidenceRef.runId]));
@@ -342,7 +342,7 @@ function wireForgetRegistry(registry, deps) {
      act ledger (which archetype a run served) and the away workshop's queued jobs. A beat is composed from the context pack's sessions, so a
      draft or a job carries the quote stamp (draftStamp / quotedStamp in index.js) and the act's run; the run's own record is quote-stamped too.
      A draft or a job queued by the night shift with NO stamp predates sources and may quote any session: it goes with the first delete after it
-     (a job already BUILT stays, its deliverable row and files are the Commander's to keep or discard). */
+     (a job already BUILT stays, its deliverable row and files are the Master's to keep or discard). */
   const draftSource = x => ({ runIds: [x && x.runId], quotes: x && x.quotes, quotesAt: x && x.quotesAt, quotesSaturatedAt: x && x.quotesSaturatedAt, at: num(x && x.at) });
   entry({
     name: 'night-drafts',
@@ -385,8 +385,8 @@ function wireForgetRegistry(registry, deps) {
   /* quests and the north star. A generated quest (minted by the quest refresh from the context pack) and an inferred north star carry the quote
      stamp of the sessions they were inferred from; the pass's ledger notes and staged quests do too. A generated OPEN quest with no stamp
      predates sources and rides every run's context (questinject) until completed, so it goes with the first delete after it (the next refresh
-     mints it again from what is still there); a quest the Commander completed or dismissed, the declined-inference list and the dismissed-forever
-     titles stay. The Commander's own goal-arc star carries no stamp and is never dropped. */
+     mints it again from what is still there); a quest the Master completed or dismissed, the declined-inference list and the dismissed-forever
+     titles stay. The Master's own goal-arc star carries no stamp and is never dropped. */
   const stampedSource = x => ({ quotes: x && x.quotes, quotesAt: x && x.quotesAt, quotesSaturatedAt: x && x.quotesSaturatedAt });
   entry({
     name: 'quests',
@@ -410,7 +410,7 @@ function wireForgetRegistry(registry, deps) {
   });
 
   /* the away briefing's state: the last briefing delivered (its items name the runs and sessions it summarised, with an excerpt of each run's own
-     words) is read back by the page and rides the Commander's evidence into later runs. It carries the stamp of the sessions it summarised (the
+     words) is read back by the page and rides the Master's evidence into later runs. It carries the stamp of the sessions it summarised (the
      briefing row in the 'briefing' stream carries the same one), and one with no stamp predates sources and goes with the first delete after it.
      The 'briefed through' time stays: forgetting must not make the station brief the same runs again. */
   entry({
@@ -514,7 +514,7 @@ function wireForgetRegistry(registry, deps) {
     }
   });
 
-  /* group sessions (group-sessions.json): a group chat is a conversation whose id is its workstream's, so the Commander's delete of that session
+  /* group sessions (group-sessions.json): a group chat is a conversation whose id is its workstream's, so the Master's delete of that session
      takes its messages, turns, questions, instructions and shared files (the group's own delete tombstones it). Source: the group's id. */
   entry({
     name: 'group-sessions',
@@ -548,12 +548,12 @@ function wireForgetRegistry(registry, deps) {
     forget: scope => d.lineJobs().forget(j => inScope(lineJobSource(j), scope), 'the conversation this job came from was deleted, so the work waiting on a decision was dropped')
   });
 
-  /* the Commander dossier block and the beliefs snapshot (commit 14, qa/bugs/3e926b6a): composed by the PAGE from beliefs, some learned from runs,
+  /* the Master dossier block and the beliefs snapshot (commit 14, qa/bugs/3e926b6a): composed by the PAGE from beliefs, some learned from runs,
      and pushed here for the unattended runs. Each push names the runs its derived beliefs were learned from and whether it names them all.
      A block that names a run the delete reached goes; one that is not complete and was written at or before the delete cannot say what it was
      learned from, and goes too. A cleared block reads as empty (the missing-snapshot path: the night shift degrades to the EARN tier) until the
      page's complete re-push; the write gate is derivedAdmission in index.js (every push, restore and reset asks it). The posture DIAL is the
-     Commander's setting and is never touched; the snapshot loses the beliefs sourced from forgotten runs (and its readiness verdict with them). */
+     Master's setting and is never touched; the snapshot loses the beliefs sourced from forgotten runs (and its readiness verdict with them). */
   const dossierSource = m => ({ runIds: m && m.sourceRunIds, at: num(m && m.setAt) });
   entry({
     name: 'commander-dossier',

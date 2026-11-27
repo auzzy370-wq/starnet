@@ -1,9 +1,9 @@
-/* VULTRON — stepin.js : STEP-IN, the Commander takes an agent's browser (2026-09-29).
+/* VULTRON — stepin.js : STEP-IN, the Master takes an agent's browser (2026-09-29).
 
    An agent browsing on its own hits a login, a 2FA code or a CAPTCHA and calls browser.need_human. Its run parks
    on the sidecar's handoff host (own id, own 30-minute wait) and a `browser.handoff` event arrives here over the
    station SSE bridge. This window shows THAT agent's live browser — the same headless Chrome, the same page — as
-   a streamed picture, and forwards the Commander's pointer, keys and paste into it. HAND BACK resumes the agent on
+   a streamed picture, and forwards the Master's pointer, keys and paste into it. HAND BACK resumes the agent on
    the page they left it on; CAN'T DO IT tells it to take another route.
 
    TRUTH (the product's core law): every state painted here is a sidecar record (GET /api/browser/handoffs, or the
@@ -309,7 +309,7 @@ const StepIn = (() => {
     view.abort = null; view.streamId = '';
   }
 
-  /* ---------------- the Commander's hands ---------------- */
+  /* ---------------- the Master's hands ---------------- */
   function send(v, ev) {
     const h = focused();
     if (!h || h.state !== 'taken' || v !== view) return;
@@ -419,7 +419,7 @@ const StepIn = (() => {
     else refresh();
   }
 
-  // live(): the handoffs waiting on / held by the Commander right now (a copy) — the public read other windows use
+  // live(): the handoffs waiting on / held by the Master right now (a copy) — the public read other windows use
   // (the DESK SCREEN banner), so nobody has to reach into _state().
   return { mount, unmount, open, refresh, live: () => live.slice(), _state: () => ({ live: live.slice(), recent: recent.slice(), signins, focusId, streaming: !!(view && view.streamId), seq: view ? view.seq : 0 }) };
 })();

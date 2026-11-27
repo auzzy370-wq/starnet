@@ -8,7 +8,7 @@
                  Never claimed from a placement alone (the COMMS run-status honesty law).
         PAUSED   cyan — a step-through test is paused after this dock (the session's own answer).
         FAILED   red — the LAST run at this dock FAILED (an error end), until the next success there or the
-                 Commander acks it (click). Seeded after a reload from the server's per-dock last outcome
+                 Master acks it (click). Seeded after a reload from the server's per-dock last outcome
                  (GET /api/routing/lines/stats `docks`).
         UNFINISHED  the warn lamp — the LAST run at this dock was refused or hit a spend cap or a step limit: dead
                  work the bay holds for you the same way (until a success or a click), said in its outcome's own
@@ -68,7 +68,7 @@
     const liveAt = new Map();    // dockId -> Set(runId) running there now
     const lastOut = new Map();   // dockId -> { runId, agentId, reason, failed, at, error, seeded }
     const byWorkitem = new Map();// workitemId -> runId (the run that picked this crate up)
-    const acked = [];            // runIds of failures the Commander cleared (bounded, oldest dropped)
+    const acked = [];            // runIds of failures the Master cleared (bounded, oldest dropped)
     let step = null;             // { state, sessionId, lineId, pausedDock, runningDock }
 
     function dockFor(p) {

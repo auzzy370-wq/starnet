@@ -2,8 +2,8 @@
 
    This is the missing CONSUMER of the autonomy posture. Slices 1–2 shipped the dial (autonomy.js) and cron
    self-initiation (autojobs.js), but nothing read the posture to actually drive idle behaviour — so the dial had
-   no effect on the floor. This engine closes that: when the Commander goes idle, it decides what the station
-   should do on its own, GATED by the dial AND by how well it actually knows the Commander.
+   no effect on the floor. This engine closes that: when the Master goes idle, it decides what the station
+   should do on its own, GATED by the dial AND by how well it actually knows the Master.
 
    THE DECISION (pure + deterministic; the live clock, the dossier reads, and the curiosity hand-off live in the
    thin store, autopilotstore.js):
@@ -23,7 +23,7 @@
    known breadth (warm) but never grounds acting. The per-job guard is downstream — grounding veto, confidence
    gate, self-critique. Whether a chosen away posture may lift even that seed hold is Andrew's open ruling (bug).
 
-   THE GOVERNING RULE — ceiling vs earned: the dial is the ceiling the Commander PERMITS; the tier is the level the
+   THE GOVERNING RULE — ceiling vs earned: the dial is the ceiling the Master PERMITS; the tier is the level the
    station has EARNED; it operates at the LOWER of the two and names which is BINDING (legibility — "you set me
    free, but i'm still learning you, so here's a question instead of a guess"). WAIT means nothing, ever.
 
@@ -45,7 +45,7 @@
   // the readiness floor constants. goals is the keystone dim (you can't usefully act without knowing what they
   // want). THE ACT FLOOR IS GROUNDING, NOT BREADTH (bug 41b2d015): the old bar (goals + 4 usable areas, or 4 recent
   // runs) held a chosen acting posture off until the station had been used enough. Now one GROUNDED aim is enough —
-  // a goals belief in the Commander's own words, a synthesis of them, or observed work (weight stated/synth/observed).
+  // a goals belief in the Master's own words, a synthesis of them, or observed work (weight stated/synth/observed).
   // A SEED never is: the awakening always authors purpose.md, but a quick-setup chip or a thin run lands there as
   // 'seed' (onboarding.js), and a canned line must never convince the station it knows what they want (dossier.js
   // WEIGHTS). A job still has to cite something real (the grounding veto in parseCandidates) and clear MIN_ACT_SCORE.
@@ -72,10 +72,10 @@
   }
 
   // ACTIVITY-AS-GROUNDING (NS-2): with the context pack, a "cold dossier" no longer means the station can do
-  // nothing. A recent USER-INITIATED run is real evidence of what the Commander is doing, so it is honest grounding
+  // nothing. A recent USER-INITIATED run is real evidence of what the Master is doing, so it is honest grounding
   // to act on that work even before the dossier knows their goals. ONE run is enough (bug 41b2d015): the act
   // pipeline's grounding veto still drops any job that does not cite it, so a count bar only delayed the choice the
-  // Commander already made. It is a SEPARATE path, never a discount on the dossier — no runs → the dossier tier alone.
+  // Master already made. It is a SEPARATE path, never a discount on the dossier — no runs → the dossier tier alone.
   const ACTIVITY_HOT_MIN = 1;       // ≥ this many recent user runs → the station has grounding to ACT on that work
 
   // READINESS — derive the confidence tier, purely. TWO grounding paths, take the HIGHER:
@@ -84,7 +84,7 @@
   //       a fresh GROUNDED belief (weight not 'seed'; a legacy record with no weight is inferred non-seed, exactly as
   //       dossier.js weightOf does); a seed-only goals area, or other usable areas without it, is warm (the station
   //       knows something, not yet what they want). goalsStale = grounded aims on file, all past the recency window.
-  //   (b) ACTIVITY (NS-2) — a recent user run is its own grounding: it directly evidences the work the Commander is
+  //   (b) ACTIVITY (NS-2) — a recent user run is its own grounding: it directly evidences the work the Master is
   //       doing. opts.activityCount (a count the caller derives from the context pack's user-run evidence) drives it;
   //       0/absent → this path contributes nothing (pure dossier). On a tie it names ACTIVITY as the grounding source,
   //       which opens every archetype to the veto (eligibleArchetypes) — a run is fresher evidence than a dossier area.
@@ -152,7 +152,7 @@
     if (canActDial && canActConfidence && hasBudget) return { go: true, mode: 'act', reason: 'ready', binding: null };
     // not act-ready → earn one piece of context, and name what's keeping it from acting (legibility / the flywheel).
     let binding = null;
-    if (!canActDial) binding = 'dial';                 // the Commander hasn't dialled it up to acting yet
+    if (!canActDial) binding = 'dial';                 // the Master hasn't dialled it up to acting yet
     else if (!canActConfidence) binding = 'confidence'; // it's allowed to act, but doesn't know them well enough
     else if (!hasBudget) binding = 'budget';            // allowed + confident, but today's leash is spent
     return { go: true, mode: 'earn', reason: 'earn', binding: binding };
@@ -173,7 +173,7 @@
   const ARCHETYPES = [
     // NOTE (2026-08-15): the BLURBS teach the shift what shape of work to propose, and two of them used to say
     // "draft" — so "draft a tool for it" / "research / draft / stage" invited a document about the job instead of
-    // the job. The ids are LEARN-STORE KEYS and persisted per Commander; never rename them, only the prose.
+    // the job. The ids are LEARN-STORE KEYS and persisted per Master; never rename them, only the prose.
     { id: 'advance-goal',    dim: 'goals', blurb: 'take the next concrete step toward a goal' },
     { id: 'kill-pain',       dim: 'pain',  blurb: 'chip away at a pain point — build the thing that removes it' },
     { id: 'prep-next',       dim: 'goals', blurb: 'research or stage something they will need soon' },
@@ -232,7 +232,7 @@
     return out;
   }
 
-  // the RECENT-ACTIVITY block (NS-2) — dated lines of what the Commander ACTUALLY did lately (from the context
+  // the RECENT-ACTIVITY block (NS-2) — dated lines of what the Master ACTUALLY did lately (from the context
   // pack: recent runs, chats, the goal arc, kept/discarded work). Pushed into the directive so proposals aim at
   // REAL current work, not a static personality sketch. Returns whether any activity was rendered (so the directive
   // can add the "aim at their recent work" rule only when there IS recent work — never inviting fabrication). Pure.
@@ -244,7 +244,7 @@
     return true;
   }
 
-  // the OPEN-THREADS block (NS-6) — durable ideas the Commander raised before but never acted on (from the thread
+  // the OPEN-THREADS block (NS-6) — durable ideas the Master raised before but never acted on (from the thread
   // ledger, injected via the context pack). Each gets a citable tag [tN] so a candidate can name EXACTLY which
   // thread it advances (the preferred grounding — beats a fresh improv idea, and lets the beat verdict write the
   // thread's state back to picked/delivered/declined). Returns whether any thread was rendered (so the directive
@@ -254,7 +254,7 @@
   function pushThreadsBlock(lines, threads) {
     const list = Array.isArray(threads) ? threads.filter(Boolean) : [];
     if (!list.length) return false;
-    lines.push('OPEN THREADS — ideas the Commander raised before but never acted on. PREFER these: if one fits, propose it and cite its tag (e.g. [t1]) in GROUNDS:');
+    lines.push('OPEN THREADS — ideas the Master raised before but never acted on. PREFER these: if one fits, propose it and cite its tag (e.g. [t1]) in GROUNDS:');
     list.forEach((t, i) => {
       const title = String((t && t.title) || '').replace(/\s+/g, ' ').trim().slice(0, 140);
       const spec = String((t && t.spec) || '').replace(/\s+/g, ' ').trim().slice(0, 140);
@@ -341,7 +341,7 @@
     const eligible = (Array.isArray(ctx.eligible) && ctx.eligible.length) ? ctx.eligible : ARCHETYPES;
     const max = Number.isFinite(ctx.max) ? ctx.max : CANDIDATE_MAX;
     const lines = [];
-    lines.push('INTERNAL — SELF-DIRECTED WORK. The Commander is away. Do not run any tools. Reason only, then reply in the exact format below.');
+    lines.push('INTERNAL — SELF-DIRECTED WORK. The Master is away. Do not run any tools. Reason only, then reply in the exact format below.');
     const hasFocus = pushFocusBlock(lines, ctx.focusHeader);
     lines.push('Propose up to ' + max + ' small jobs you could do RIGHT NOW, unattended, to help them — then you will be asked to do the single best one and leave a draft on their desk.');
     const hasThreads = pushThreadsBlock(lines, ctx.threads);
@@ -508,7 +508,7 @@
   function buildDoDirective(selected, ctx) {
     selected = selected || {}; ctx = ctx || {};
     const lines = [];
-    lines.push('INTERNAL — SELF-DIRECTED WORK. The Commander is away. Do not run any tools. Reason only, then reply in the exact format below.');
+    lines.push('INTERNAL — SELF-DIRECTED WORK. The Master is away. Do not run any tools. Reason only, then reply in the exact format below.');
     pushFocusBlock(lines, ctx.focusHeader);
     pushContinueBlock(lines, ctx.continueFrom, '');
     lines.push('Do this ONE job now and leave a finished draft on their desk:');
@@ -538,7 +538,7 @@
 
   /* ============================ NS-3: the TOOL-CAPABLE ACT variant (reach ≥ sandbox) ============================
      The Slice-A directives above hard-forbid tools ("NO tools, NO web, NO file writes") — correct for the
-     reason-only DRAFT path (reach 'observe'). When the Commander raises Reach to 'sandbox', an unattended beat may
+     reason-only DRAFT path (reach 'observe'). When the Master raises Reach to 'sandbox', an unattended beat may
      do REAL work in the agent's jailed sandbox: research with read-only tools, then BUILD a reviewable artifact
      (a file / a small tool / a research brief) under workshop/<runId>/, exactly like an away-workshop shift. These
      V2 variants ask for that instead — same grounding veto (parseCandidates is reused unchanged), same confidence
@@ -555,7 +555,7 @@
     const eligible = (Array.isArray(ctx.eligible) && ctx.eligible.length) ? ctx.eligible : ARCHETYPES;
     const max = Number.isFinite(ctx.max) ? ctx.max : CANDIDATE_MAX;
     const lines = [];
-    lines.push('INTERNAL — SELF-DIRECTED WORK. The Commander is away and has cleared you to BUILD in your private sandbox. Reason first, then reply in the exact format below.');
+    lines.push('INTERNAL — SELF-DIRECTED WORK. The Master is away and has cleared you to BUILD in your private sandbox. Reason first, then reply in the exact format below.');
     const hasFocus = pushFocusBlock(lines, ctx.focusHeader);
     lines.push('Propose up to ' + max + ' small jobs you could do RIGHT NOW, unattended, that each end in a REAL, reviewable artifact left in your workshop — then you will be asked to build the single best one.');
     const hasThreads = pushThreadsBlock(lines, ctx.threads);
@@ -570,11 +570,11 @@
     lines.push('Hard rules:');
     if (hasFocus) lines.push('- STAY ON FOCUS: the single best job MUST advance TONIGHT\'S FOCUS above.');
     if (hasPrior) lines.push('- NO REBUILDS: never propose a job that re-makes one of the ALREADY BUILT items above. To work on one, title the job "Continue: <its title>" and say in SPEC what you will improve. Prefer continuing the newest UNDECIDED build over starting something new.');
-    if (hasSnapshot) lines.push('- PATCH THE REAL PROJECT: base your change on the PROJECT SNAPSHOT above. Your artifact for a code change is a UNIFIED-DIFF .patch file (git-apply-able from the repo root) plus a one-line "howToUse" — the Commander applies it to a new branch on Keep. Set the manifest "kind":"patch" and include "targetRoot":"<the project root path shown in the snapshot header>".');
+    if (hasSnapshot) lines.push('- PATCH THE REAL PROJECT: base your change on the PROJECT SNAPSHOT above. Your artifact for a code change is a UNIFIED-DIFF .patch file (git-apply-able from the repo root) plus a one-line "howToUse" — the Master applies it to a new branch on Keep. Set the manifest "kind":"patch" and include "targetRoot":"<the project root path shown in the snapshot header>".');
     if (hasThreads) lines.push('- PREFER AN OPEN THREAD: if any thread above fits, build it and cite its tag in GROUNDS (e.g. GROUNDS: [t1] ...). A grounded open thread beats a fresh idea. If none fit, improvise a grounded idea as below.');
     if (hasActivity) lines.push('- CONTINUE THEIR WORK: prefer a job that directly advances, unblocks, or extends something in "What they worked on recently" above — that beats a generic idea. But stay HONEST: only cite work that is actually listed; never invent activity.');
     lines.push('- GROUNDED: every job must aim at a SPECIFIC thing above (an open thread / a real recent job / goal / pain / etc). Quote the exact thing in GROUNDS. If you cannot ground it in something you actually know or they actually did, do not propose it.');
-    lines.push('- BUILDABLE NOW, UNATTENDED, LOCAL: it must finish as a FILE or small self-contained tool you write into your workshop folder. You MAY read/research with your tools first. You may NOT send, publish, spend, message, or touch anything outside your sandbox — the artifact stays local for the Commander to review.');
+    lines.push('- BUILDABLE NOW, UNATTENDED, LOCAL: it must finish as a FILE or small self-contained tool you write into your workshop folder. You MAY read/research with your tools first. You may NOT send, publish, spend, message, or touch anything outside your sandbox — the artifact stays local for the Master to review.');
     lines.push(finishRuleFor(ctx.initiative));
     lines.push('- HONEST CONFIDENCE: rate how sure you are it is genuinely useful AND that you can build it well now (high/medium/low). Low is fine — better than padding.');
     lines.push('Reply with one block PER job, EXACTLY this format, nothing else:');
@@ -591,7 +591,7 @@
   // manifest — the SAME deliverable.json contract the away-workshop validates, so the return card + ship gate are
   // reused verbatim. The runId/dir come from the caller (ctx.runId, ctx.dir); the sidecar re-jails every path.
   /* THE AUTONOMY RUNG DECIDES WHETHER A PLAN IS A DELIVERABLE (2026-08-15).
-     The Commander's dial reads WAIT / SUGGEST / BUILD (DRAFTS) / FREE (FULLY AUTONOMOUS) and maps to
+     The Master's dial reads WAIT / SUGGEST / BUILD (DRAFTS) / FREE (FULLY AUTONOMOUS) and maps to
      initiative wait|propose|leash|free. Until now NONE of that reached the build directive: FREE and
      BUILD (DRAFTS) sent byte-identical prompts, so the top rung differed only in CADENCE (a beat every
      ~45 min vs all night) and could still hand back a backlog describing work instead of the work. That
@@ -603,7 +603,7 @@
              delivered) — prose alone is not a guarantee.
      A research/findings answer is NOT a plan: it IS the deliverable, and stays allowed at every rung. */
   /* THE SELECTOR IS WHERE THE VISION LEAKS (2026-08-15). "While you were away" exists to GET THINGS DONE toward
-     the Commander's goals — but a goal, quest, or thread is often PHRASED as a draft ("Draft Automation Backlog"
+     the Master's goals — but a goal, quest, or thread is often PHRASED as a draft ("Draft Automation Backlog"
      was a real quest that produced a real backlog-instead-of-a-tool). The shift obeyed the wording, so the
      plan-shaped deliverable was chosen at CANDIDATE time, long before any card rendered it. Fixing the card was
      treating the symptom. This rule aims the proposal at finishable work, and re-reads a draft-phrased ask as an
@@ -617,13 +617,13 @@
 
   function planRuleFor(initiative) {
     return String(initiative || '') === 'free'
-      ? '- FINISH IT, DO NOT PLAN IT. The Commander is at FREE (fully autonomous) — they want the WORKING THING, not a document about it. NEVER deliver a backlog, roadmap, spec, plan, proposal, checklist, or "next steps" write-up as the artifact. If the job is too big for one shift, build the SMALLEST COMPLETE WORKING PIECE of it and say in the summary what it covers and what is left. At this level a plan is not a deliverable — it is a failed shift, and it will be refused. (Answering a question with a findings doc is NOT a plan; that is still fine.)'
-      : '- If the job is genuinely too big to finish now, a short plan the Commander can act on IS an acceptable deliverable — set "planOnly": true so they are offered a one-click build of it. Prefer finishing something small over describing something large.';
+      ? '- FINISH IT, DO NOT PLAN IT. The Master is at FREE (fully autonomous) — they want the WORKING THING, not a document about it. NEVER deliver a backlog, roadmap, spec, plan, proposal, checklist, or "next steps" write-up as the artifact. If the job is too big for one shift, build the SMALLEST COMPLETE WORKING PIECE of it and say in the summary what it covers and what is left. At this level a plan is not a deliverable — it is a failed shift, and it will be refused. (Answering a question with a findings doc is NOT a plan; that is still fine.)'
+      : '- If the job is genuinely too big to finish now, a short plan the Master can act on IS an acceptable deliverable — set "planOnly": true so they are offered a one-click build of it. Prefer finishing something small over describing something large.';
   }
   function planOnlyFieldFor(initiative) {
     return String(initiative || '') === 'free'
       ? '    "planOnly": false,   <-- MUST be false at this autonomy level; a plan-shaped deliverable is refused (see the rule above),'
-      : '    "planOnly": <true ONLY if this deliverable DESCRIBES work to be done (a plan, backlog, spec, proposal) rather than BEING the finished thing; false for anything the Commander can open and use as-is, including a research answer>,';
+      : '    "planOnly": <true ONLY if this deliverable DESCRIBES work to be done (a plan, backlog, spec, proposal) rather than BEING the finished thing; false for anything the Master can open and use as-is, including a research answer>,';
   }
 
   function buildDoDirectiveV2(selected, ctx) {
@@ -631,7 +631,7 @@
     const dir = String(ctx.dir || ('workshop/' + (ctx.runId || 'run')));
     const backlogId = String(ctx.backlogId || '');
     const lines = [];
-    lines.push('INTERNAL — SELF-DIRECTED WORK. The Commander is away and cleared you to build in your private sandbox. Build this ONE job now and leave a real, reviewable artifact.');
+    lines.push('INTERNAL — SELF-DIRECTED WORK. The Master is away and cleared you to build in your private sandbox. Build this ONE job now and leave a real, reviewable artifact.');
     pushFocusBlock(lines, ctx.focusHeader);
     lines.push('- JOB: ' + String(selected.title || '').trim());
     if (selected.grounds) lines.push('- WHY IT MATTERS TO THEM: ' + String(selected.grounds).trim());
@@ -640,10 +640,10 @@
     const hasSnap = pushSnapshotBlock(lines, ctx.projectSnapshot);
     lines.push('RULES:');
     if (hasSnap && String(ctx.targetRoot || '').trim()) {
-      lines.push('- THIS IS A PROJECT PATCH: write a UNIFIED-DIFF file (e.g. "' + dir + '/change.patch") that applies cleanly with `git apply` from the repo root ' + String(ctx.targetRoot).trim() + '. Base every hunk on the PROJECT SNAPSHOT above; do not invent files or lines that aren\'t there. In the manifest set "kind":"patch" and "targetRoot":"' + String(ctx.targetRoot).trim() + '", and list the .patch file in "files". The Commander applies it to a NEW branch on Keep — you never touch their repo yourself.');
+      lines.push('- THIS IS A PROJECT PATCH: write a UNIFIED-DIFF file (e.g. "' + dir + '/change.patch") that applies cleanly with `git apply` from the repo root ' + String(ctx.targetRoot).trim() + '. Base every hunk on the PROJECT SNAPSHOT above; do not invent files or lines that aren\'t there. In the manifest set "kind":"patch" and "targetRoot":"' + String(ctx.targetRoot).trim() + '", and list the .patch file in "files". The Master applies it to a NEW branch on Keep — you never touch their repo yourself.');
     }
     lines.push(planRuleFor(ctx.initiative));
-    lines.push('- MATCH THE FORMAT TO THE ASK — build the SIMPLEST thing that fully serves it, never the most impressive: a question/research ask -> a short findings doc (answer first, sources after); a draft ask -> the draft file itself; a comparison/decision -> a short ranked write-up, recommendation on top. ONLY build an interactive SINGLE-FILE HTML tool (all CSS/JS inline, no build step, named index.html) when the ask genuinely needs interaction the Commander will use repeatedly — NEVER default to a dashboard unless the ask is literally to watch several changing numbers in one place.');
+    lines.push('- MATCH THE FORMAT TO THE ASK — build the SIMPLEST thing that fully serves it, never the most impressive: a question/research ask -> a short findings doc (answer first, sources after); a draft ask -> the draft file itself; a comparison/decision -> a short ranked write-up, recommendation on top. ONLY build an interactive SINGLE-FILE HTML tool (all CSS/JS inline, no build step, named index.html) when the ask genuinely needs interaction the Master will use repeatedly — NEVER default to a dashboard unless the ask is literally to watch several changing numbers in one place.');
     lines.push('- Whatever the format: ZERO SETUP on their end — self-contained, one-click openable, no external files or build step; a script ships with its single run note in "howToUse".');
     lines.push('- Do the real work with your tools (web read/search, files). Ground factual claims in what the tools return. Write every file for this deliverable UNDER "' + dir + '/" (use paths like "' + dir + '/<file>").');
     // token-burn audit 2026-10-17: this used to say "You cannot run commands or tests" while shell_exec was wired, so the
@@ -659,14 +659,14 @@
     lines.push(planOnlyFieldFor(ctx.initiative));
     lines.push('    "summary": "<2-3 SHORT plain sentences a busy person absorbs in ten seconds: what it IS and what it does for them. NEVER an inventory — no inline lists of categories, failure modes, or counts, and no sentence over ~25 words; the deliverable itself holds the detail>",');
     lines.push('    "files": [{ "path": "<relative to ' + dir + '>", "bytes": <number> }],');
-    lines.push('    "howToUse": "<ONE short sentence — at most the single run command. The station gives the Commander an Open link and a one-click Implement action (a patch is applied for them), so NEVER write multi-step setup or git instructions here>",');
-    lines.push('    "notVerified": ["<up to 5 items, each ONE short check written FOR the Commander — a concrete thing THEY can do in a minute. NEVER your run diagnostics: no tool budgets, byte counts, or what this shift could not execute — turn every limitation into the check it implies>"] }');
+    lines.push('    "howToUse": "<ONE short sentence — at most the single run command. The station gives the Master an Open link and a one-click Implement action (a patch is applied for them), so NEVER write multi-step setup or git instructions here>",');
+    lines.push('    "notVerified": ["<up to 5 items, each ONE short check written FOR the Master — a concrete thing THEY can do in a minute. NEVER your run diagnostics: no tool budgets, byte counts, or what this shift could not execute — turn every limitation into the check it implies>"] }');
     lines.push('- The manifest MUST list the real files you wrote (paths relative to "' + dir + '/"). A shift with no manifest is discarded.');
     return lines.join('\n');
   }
 
   /* the shared LEARN transform (A3 parity, server + frontend). The frontend AutopilotStore keeps a per-archetype
-     { up, down } tally the Commander's verdicts feed; learnWeightsFrom() turns it into the small, capped selection
+     { up, down } tally the Master's verdicts feed; learnWeightsFrom() turns it into the small, capped selection
      bias scoreAndSelect consumes. NS-1 ran server-side with EMPTY weights; NS-3 needs the server to learn from
      approve/deny too, so the pure math lives HERE (one definition, both sides) instead of being re-derived. Pure:
      no clock/rng. learnFold() applies one verdict; learnWeightsFrom() derives the weights. */
@@ -687,12 +687,12 @@
   /* ---- Slice A3: self-critique before delivery, + the "while you were away" digest ---- */
 
   // THE CRITIQUE DIRECTIVE — the reason-only self-review run: the agent adversarially checks its OWN draft against
-  // the spec + the Commander's style/standing-orders before it hits the desk ("verify before done", turned inward).
+  // the spec + the Master's style/standing-orders before it hits the desk ("verify before done", turned inward).
   // The honest outcomes: ship (good), revise (then give the corrected draft), drop (not worth their time).
   function buildCritiqueDirective(deliverable, selected, ctx) {
     deliverable = deliverable || {}; selected = selected || {}; ctx = ctx || {};
     const lines = [];
-    lines.push('INTERNAL — SELF-REVIEW. Before this draft reaches the Commander, review it adversarially and honestly.');
+    lines.push('INTERNAL — SELF-REVIEW. Before this draft reaches the Master, review it adversarially and honestly.');
     lines.push('The job: ' + String(selected.title || '').trim() + (selected.spec ? ' — done when: ' + String(selected.spec).trim() : ''));
     if (ctx.style) lines.push('Their working style: ' + ctx.style);
     if (ctx.standingOrders) lines.push('Their standing orders (must respect): ' + ctx.standingOrders);

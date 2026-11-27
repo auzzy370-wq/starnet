@@ -132,7 +132,7 @@ New members receive session context, not other participants' private DM history 
 
 Peer handoffs use a structured host-validated action scoped to group membership and
 the user's session request. The recipient keeps its own model, credentials, tool grants,
-execution profile, and approval mode. Group membership does not mint Commander authority,
+execution profile, and approval mode. Group membership does not mint Master authority,
 grant unrestricted peer filesystem access, or change standing Full Access semantics.
 
 ### Scheduling, limits, and costs

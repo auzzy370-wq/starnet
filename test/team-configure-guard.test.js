@@ -1,7 +1,7 @@
 /* node test/team-configure-guard.test.js — team.configure rewrites standing orders ANOTHER agent obeys on every
    later run, including unattended ones. Three guards keep a prompt-injected or pre-approved lead from doing that
    silently, each proven against the REAL modules (registry makeTool → consent broker, taint policy, scan):
-     1. its own consent class — an "always" the Commander gave team.summon (same orchestrator:write capability)
+     1. its own consent class — an "always" the Master gave team.summon (same orchestrator:write capability)
         must not pre-approve it. Before 2026-09-23 makeTool dropped `consentKey`, so this also proves the field
         now survives registration (autonomy.set relies on the same passthrough);
      2. taint lock — once the run read untrusted content, an unattended run loses it and a watched run needs a
@@ -39,7 +39,7 @@ const cronGuard = require('../sidecar/cron-guard.js');
     A.eq(s.allow, true, 'control: the cached always grant still covers team.summon');
     const c = await consent({ name: 'team.configure' }, configure);
     A.eq(c.allow, false, 'team.configure is NOT pre-approved by team.summon\'s always grant');
-    A.eq(prompts.join(','), 'team.configure', 'the Commander is asked for team.configure itself');
+    A.eq(prompts.join(','), 'team.configure', 'the Master is asked for team.configure itself');
   }
   {
     const consent = makeConsentBroker({ surface: 'autonomous', grantsPermanent: ['orchestrator:write'] });

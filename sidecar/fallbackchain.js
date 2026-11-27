@@ -63,7 +63,7 @@
   }
 
   // A task cannot make progress on a model the provider catalog definitively says has no tool calling.
-  // If the Commander already configured an ordered fallback chain, promote the first model that is not
+  // If the Master already configured an ordered fallback chain, promote the first model that is not
   // definitively tool-less instead of refusing the whole task at admission. `null`/unknown support remains
   // eligible: a cold or stale catalog must never false-refuse a capable model. The original incapable model
   // is deliberately not appended to the remaining chain—it cannot become more capable after a failover.

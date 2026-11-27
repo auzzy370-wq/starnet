@@ -5,7 +5,7 @@
    the one earned recruit beat). It owns NO state and NEVER emits on U.bus — it just READS, on demand:
      • the capability histogram   — WorkSignalStore.model()   (the raw signal + an injected clock)
      • the interest profile        — ProfileStore              (score(tags) — only when learning is ON)
-     • the Commander dossier        — DossierStore.beliefs('goals'|'pain'|'ambition')  (belief texts)
+     • the Master dossier        — DossierStore.beliefs('goals'|'pain'|'ambition')  (belief texts)
      • the live roster              — App.agents()             (occupied specialtyIds — a class already on the crew)
      • the catalog                  — Specialties.builtins()
    and hands them to Recruiter.recommend(). Because it derives everything live from persisted counters, the shelf
@@ -65,9 +65,9 @@ const RecruiterStore = (() => {
   }
 
   /* the INTEREST GAP read: warm learned topics NOBODY on the crew covers (engine: Recruiter.interestGaps).
-     Separate from recommend() by design — that one can only ever surface classes whose kit the Commander's work
+     Separate from recommend() by design — that one can only ever surface classes whose kit the Master's work
      already touches, so it structurally cannot recommend a capability the station lacks. Same glass-box gate:
-     learning OFF → nothing (the Commander opted out of being modelled, and this reads the learned histogram).
+     learning OFF → nothing (the Master opted out of being modelled, and this reads the learned histogram).
      Topics come from the SERVER's histogram via ProspectStore (GET /api/scout) — never invented here; with no
      read yet, or nothing warm, this returns [] and the bay renders exactly what it renders today. */
   function interestGaps() {

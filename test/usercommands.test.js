@@ -1,6 +1,6 @@
-/* node test/usercommands.test.js — Commander-defined slash commands (alias + exec).
+/* node test/usercommands.test.js — Master-defined slash commands (alias + exec).
 
-   The safety story these guard: one malformed entry must not wipe out every command the Commander defined,
+   The safety story these guard: one malformed entry must not wipe out every command the Master defined,
    a user command must never be able to shadow a builtin, and an alias loop must not hang the dispatcher. */
 'use strict';
 const { readSidecarSource } = require('./helpers/source');

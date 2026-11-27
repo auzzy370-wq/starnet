@@ -1,5 +1,5 @@
 /* node test/save-conflicts-route.test.js — GET /api/save/conflicts?after=<ms> reaches serveSaveConflicts through the
-   REAL route table (final-polish 10-23). The boot preserved-save offer sends ?after= once the Commander has said
+   REAL route table (final-polish 10-23). The boot preserved-save offer sends ?after= once the Master has said
    "Not now" (frontend/app/cloudsave.js conflicts(since)). An `exact` entry compares the FULL req.url, so the query made
    it miss and the request fell through to the '/api/save' prefix entry (serveSaveLoad): the page read j.conflicts as
    undefined -> [] and never offered a preserved copy again, with no error anywhere.

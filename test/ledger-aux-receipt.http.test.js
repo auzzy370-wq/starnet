@@ -5,7 +5,7 @@
    ledger.js; this proves the host's reader and receipt cleanup on a real sidecar.
      A · seeded crash leftovers: an aux row + its settlement journals + the run's dispatch receipt -> the run is listed
          unsettled, both aux journals are cleared (one replayed into the ledger exactly once), nothing reads as damaged,
-         and the Commander's settlement then clears the receipt.
+         and the Master's settlement then clears the receipt.
      B · the real crash: a run embeds its recall query (an aux 'embed' row under the run's id), the provider holds the
          answer, the process is SIGKILLed -> the next boot lists that run as unsettled and its spend reads unknown.
    Zero network, fake key, no real spend. */
@@ -57,7 +57,7 @@ const QUIET = { SKYNET_QUEST_REFRESH: '0', SKYNET_THREAD_MINE: '0', SKYNET_SKILL
       }
       await f.start();
       const settled = await f.json('POST', '/api/budget/settle', { runId: 'live-run', usd: 0.3 });
-      A.eq(settled.status, 200, 'A: the Commander can settle the run');
+      A.eq(settled.status, 200, 'A: the Master can settle the run');
       A.ok(near(settled.body && settled.body.spentToday, 0.83), 'A: the entered charge joins the aux rows: ' + JSON.stringify(settled.body && settled.body.spentToday));
       A.eq([(settled.body.unsettled || []).length, pendingFiles(ws)], [0, []], 'A: that row (not an aux one) clears the receipt');
       await f.restart();

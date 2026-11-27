@@ -431,7 +431,7 @@ function makeRouter(o) {
     };
   }
 
-  /* THE STANDING BRIEF (step editor, 2026-08-05): the Commander's job brief for the dock this agent crews,
+  /* THE STANDING BRIEF (step editor, 2026-08-05): the Master's job brief for the dock this agent crews,
      or null. PROMPT TEXT ONLY — it is injected into run prompts (hub entry runs, chain handoffs) and must
      never influence resolveTarget/chainNext (routing) or stationFor (capability). Same plan precedence as
      stationFor: a brief is a fact about the PLACED floor, true whether or not the belts compile — so it
@@ -466,7 +466,7 @@ function makeRouter(o) {
     return b ? b.slice(0, 2000) : null;
   }
 
-  /* THE LINE BUDGET (2026-08-21): the normalized per-line limits the Commander set on this line's INBOX
+  /* THE LINE BUDGET (2026-08-21): the normalized per-line limits the Master set on this line's INBOX
      ({ maxHops, maxUsdPerMessage, maxUsdPerDay, clamped? }), or null = the executor's defaults. Read
      straight off the compiled plan (Pipeline.lineLimitsOf — never re-derived). Same precedence as the
      brief: a limit is a fact about the PLACED floor, true whether or not the belts compile. Policy only —

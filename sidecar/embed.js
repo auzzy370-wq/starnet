@@ -2,7 +2,7 @@
    ALREADY-CONFIGURED provider's embedding endpoint + the vector math context.rank() blends with BM25.
 
    Why this shape: the shipped desktop bundle carries NO node_modules, so a native/ONNX local embedder cannot
-   ship. Instead the lane borrows the embedding endpoint of a provider the Commander has already configured
+   ship. Instead the lane borrows the embedding endpoint of a provider the Master has already configured
    (OpenAI-compatible `/embeddings` — OpenAI, OpenRouter, Groq, Mistral, Together, Ollama local, … — or Gemini's
    `:batchEmbedContents`). No model configured, or a provider without an embedding wire (Anthropic, Codex) =>
    makeEmbedder returns null and recall stays pure BM25 — byte-identical to the pre-lane behaviour.

@@ -345,7 +345,7 @@ const openCtx = () => ({ canRun: () => true, canUse: () => ({ ok: true }), agent
   // (retry-dedupe) deltas from a FAILED attempt already reached COMMS live; the retried stream must not
   //     re-print them. The retried attempt buffers, then emits only the suffix novel beyond what was shown —
   //     while the DURABLE assistant turn keeps the FULL retried text (stripping it would corrupt the
-  //     transcript by exactly the bytes the Commander already saw).
+  //     transcript by exactly the bytes the Master already saw).
   {
     const { seq, emit } = setup();
     let attempt = 0;

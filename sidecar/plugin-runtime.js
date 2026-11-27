@@ -54,7 +54,7 @@ function makePluginRuntime(deps) {
   const workerCwd = deps.cwd || undefined;
   /* verify(id, digest, opts?) -> bool: does the approval still cover exactly the code this process was started from?
      Asked before every tool/window call, before any restart, and on a timer for plugins with background jobs — an
-     edit must never keep running (or be restarted from disk) without the Commander approving it again. */
+     edit must never keep running (or be restarted from disk) without the Master approving it again. */
   const verify = typeof deps.verify === 'function' ? deps.verify : null;
   // LOG BUDGET: a plugin printing in a loop must not flood the station log. 120 lines a minute, then one notice.
   const LOG_PER_MIN = 120;
@@ -211,7 +211,7 @@ function makePluginRuntime(deps) {
        budget burned twice as fast. One restart at a time; everyone else waits on it. */
     if (!rec.restarting) {
       rec.restarting = (async () => {
-        // never restart code from disk that the Commander has not approved as it is NOW
+        // never restart code from disk that the Master has not approved as it is NOW
         if (verify && !(await verify(id, rec.plugin.digest))) {
           stop(id);
           throw new Error('the plugin changed since it was approved — approve it again in ABILITIES → EXTENSIONS');

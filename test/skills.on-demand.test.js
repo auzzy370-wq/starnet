@@ -103,7 +103,7 @@ const bySlug = {}; for (const s of LIB) bySlug[s.slug] = s;
   A.eq(C.find(offered, 'Make a Plan'), plan, 'the display name resolves');
   A.eq(C.find(offered, 'library:web-research'), bySlug['web-research'], 'a gear-gated recipe resolves once its gear is placed and it is enabled');
   A.eq(C.find(offered, 'library:test-driven-development'), null, 'a recipe NOT offered this run (disabled + gear absent) is not served');
-  A.eq(C.find(C.live(LIB, { overrides: { plan: false }, placedTypes: [] }), 'library:plan'), null, 'a recipe the Commander DISABLED is not served');
+  A.eq(C.find(C.live(LIB, { overrides: { plan: false }, placedTypes: [] }), 'library:plan'), null, 'a recipe the Master DISABLED is not served');
   A.eq(C.find(offered, 'library:'), null, 'an empty library name is not a match');
   A.eq(C.find(offered, ''), null, 'no name, no recipe');
   const text = C.viewText(plan);

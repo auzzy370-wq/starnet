@@ -168,7 +168,7 @@ function world(opts) {
     A.eq(w.tick(T0 + 5 * HOUR).fired, 0, 'still nothing hours later');
     A.eq(LJ.decide(w.loop(), {}, { now: T0 + 5 * HOUR }).binding, 'queue-full', 'the reason is nameable');
 
-    // the Commander rules on it — THIS is the trigger. The verdict lands through the store (exactly what the
+    // the Master rules on it — THIS is the trigger. The verdict lands through the store (exactly what the
     // /api/loops/verdict route does), then the next ordinary tick picks it up.
     const ruled = S.recordVerdict(w.loops, 'l1', 1, 'approved', { now: T0 + 6 * HOUR });
     const after = world({ loops: ruled });
@@ -566,7 +566,7 @@ function world(opts) {
   /* ---- 17. ENDURANCE: a pre-restart running pass never auto-replays uncertain side effects ------------
      The durable fire claim proves that a pass existed, not whether its last tool effect happened. On a new
      driver there is no live lease that can own that claim. The first tick must reconcile it into an explicit
-     recovery pause; only the Commander's existing RESUME action may start a fresh pass. */
+     recovery pause; only the Master's existing RESUME action may start a fresh pass. */
   {
     let loops = S.createLoop([], { id: 'l1', objective: 'multi-step work', queueCap: 5 }, { now: T0 });
     loops = S.startIteration(S.claimFire(loops, 'l1', { now: T0 }), 'l1', { runId: 'pre-restart', now: T0 });
@@ -592,7 +592,7 @@ function world(opts) {
     loops = S.createLoop(loops, { id: 'l2', objective: 'second' }, { now: T0 });
     const w = world({ loops, maxParallel: 2 });
     w.tick(T0);
-    A.eq(w.drv.abortLease('l1', 'paused by the Commander'), true, 'the targeted loop cancellation is accepted');
+    A.eq(w.drv.abortLease('l1', 'paused by the Master'), true, 'the targeted loop cancellation is accepted');
     A.eq(S.getLoop(w.loops, 'l1').iterations[0].outcome, 'cancelled', 'the targeted pass settles cancelled immediately');
     A.eq(S.getLoop(w.loops, 'l2').iterations[0].outcome, 'running', 'a sibling pass remains live');
     A.eq(w.drv.leases.size, 1, 'only the sibling lease remains');
@@ -620,7 +620,7 @@ function world(opts) {
     w.tick(T0);
     await w.finish({ text: 'old provider completed' });
     await w.flush();
-    A.eq(w.drv.abortLease('l1', 'paused by the Commander'), true, seam + ': cancel during pending host work');
+    A.eq(w.drv.abortLease('l1', 'paused by the Master'), true, seam + ': cancel during pending host work');
     A.eq(w.tick(T0 + MIN).fired, 1, seam + ': resume starts a replacement');
     const replacement = w.drv.leases.get('l1');
     A.eq(replacement.runId, 'run2', seam + ': replacement owns its lease');

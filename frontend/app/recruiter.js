@@ -1,12 +1,12 @@
 /* VULTRON — recruiter.js : the PURE adaptive-recruitment matcher (the "which teammate to recruit NEXT" brain).
 
-   Given what the Commander ACTUALLY does (the worksignal capability histogram), what they're interested in (the
+   Given what the Master ACTUALLY does (the worksignal capability histogram), what they're interested in (the
    profile affinity vector), what they've told the station (the dossier goals/pain/ambition beliefs), and who's
    already on the crew (the roster), rank the catalog classes NOT yet rostered and return the single best NEW hire
    with an HONEST, counter-derived reason.
 
    TRUTHFUL TELEMETRY LAW (non-negotiable): every `why` string is derived from a REAL persisted counter — the
-   dominant capability lane the Commander's work leaned on, or the matched goal/pain text. Confidence reflects
+   dominant capability lane the Master's work leaned on, or the matched goal/pain text. Confidence reflects
    evidence VOLUME; below the warm threshold (the shared CALIBRATING_N sample floor) recommend() returns an EMPTY
    list so the UI falls back to the honest cold-start lineup. Never fabricate a reason, never pad the list.
 
@@ -104,7 +104,7 @@
     const samples = (sig && Number.isFinite(sig.total)) ? sig.total : 0;
     if (!WorkSignal || samples < CAL_N) return { warm: false, items: [] };
 
-    // the capability vector + the dominant lane of the Commander's real work.
+    // the capability vector + the dominant lane of the Master's real work.
     const summ = WorkSignal.summary(sig, now);
     const dominantLane = summ.dominant;
 
@@ -112,7 +112,7 @@
     const coveredTags = new Set();
     for (const cls of catalog) { if (rostered.has(cls.id)) { const t = classDominantTag(cls); if (t) coveredTags.add(t); } }
 
-    // dossier belief text (goals + pain + ambition) — the Commander's stated direction.
+    // dossier belief text (goals + pain + ambition) — the Master's stated direction.
     const dossierText = [].concat(opts.dossier && opts.dossier.goals || [], opts.dossier && opts.dossier.pain || [], opts.dossier && opts.dossier.ambition || []).filter(Boolean).join(' ');
 
     const scored = [];
@@ -120,7 +120,7 @@
       if (!cls || rostered.has(cls.id)) return;   // never recommend a class already on the roster
       const kit = Array.isArray(cls.kit) ? cls.kit : [];
 
-      // (a) KIT-AFFINITY — how much of the Commander's real work lands in the lanes this class's kit covers. The
+      // (a) KIT-AFFINITY — how much of the Master's real work lands in the lanes this class's kit covers. The
       // heaviest single kit lane is the honest "reason" anchor.
       let kitAff = 0, bestLane = null, bestLaneW = 0;
       for (const lane of kit) {
@@ -130,7 +130,7 @@
       }
 
       // (b) COVERAGE GAP — this class's dominant tag matches the tag of high-volume work AND no rostered class
-      // already covers that tag. Uses the lane the Commander works in most and the tag they do there.
+      // already covers that tag. Uses the lane the Master works in most and the tag they do there.
       const cTag = classDominantTag(cls);
       const domLaneTag = dominantLane ? WorkSignal.laneTag(sig, dominantLane, now) : null;
       const coversGap = !!(cTag && kitAff > 0 && !coveredTags.has(cTag) &&
@@ -145,7 +145,7 @@
       const outcomePreference = preferenceFor(cls);
 
       const v = kitAff * W_KIT + gap * W_GAP + Math.min(dossierHits, 3) * W_DOSSIER + profAff * W_PROFILE + outcomePreference * 3;
-      // (only classes the Commander's work actually TOUCHES are eligible — a zero-kit-affinity class has no honest
+      // (only classes the Master's work actually TOUCHES are eligible — a zero-kit-affinity class has no honest
       // workflow reason to be "curated", so it never surfaces even if the dossier keyword-matches.)
       if (kitAff <= 0) return;
 
@@ -159,7 +159,7 @@
         why = 'your recent work leaned on ' + word + ' — ' + (cls.tagline || cls.name).toLowerCase();
       }
 
-      // confidence reflects EVIDENCE VOLUME: the share of the Commander's work this class's kit captures, lifted
+      // confidence reflects EVIDENCE VOLUME: the share of the Master's work this class's kit captures, lifted
       // toward 1 as the sample count clears the floor. Honest 0..1 — never a fabricated high number on thin data.
       const share = clamp01(kitAff);                                    // 0..1 (the vector is normalized)
       const volume = clamp01(samples / (CAL_N * 4));                    // ramps to 1 at ~4x the floor
@@ -182,7 +182,7 @@
   /* ============================ THE INTEREST GAP — the one recommendation recommend() structurally cannot make
      ============================================================================================================
      recommend() above is deliberately walled: a class with `kitAff <= 0` returns early, so a class is only ever
-     eligible if the Commander's work ALREADY touched the lanes its kit covers. That wall is load-bearing — it is
+     eligible if the Master's work ALREADY touched the lanes its kit covers. That wall is load-bearing — it is
      what stops the curated shelf inventing a workflow reason — but it also means the bay can only ever recommend
      MORE OF WHAT YOU ALREADY DO. It can never say the most valuable thing a recruiter can say: "you keep asking
      about X and nobody here can do it." An echo chamber cannot grow the station.

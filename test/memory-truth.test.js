@@ -2,11 +2,11 @@
    instructions. But they will randomly recall from OLD memories. Not save or update from old instructions, even when
    stated as saved." Every seam that let an older instruction beat a newer one is locked here, positive AND negative:
      1. recall lines carry their saved/updated date, and the header states "newer wins, the user's latest message wins"
-     2. a correction in the Commander's PROVEN words keeps their authority; an unproven one reads "[corrected, …]"
+     2. a correction in the Master's PROVEN words keeps their authority; an unproven one reads "[corrected, …]"
         (proof = owner surface + untainted + their sentence holds the note's words with the same polarity)
      3. a same-subject write (Jaccard 0.3–0.6) is saved but names the notes it may replace; correcting the old one to
         the new text folds this run's fresh copy into it (one active belief, old text archived)
-     4. a standing instruction in the Commander's own words defaults to every conversation, not one thread
+     4. a standing instruction in the Master's own words defaults to every conversation, not one thread
      5. recency = when a memory was WRITTEN (recall stamps no longer keep an old belief "recent"); ties go newer
      6. receipts: notebook.write registers ITS run's save; a named run never borrows another run's receipt list,
         and COMMS shows each save once even when a run saves mid-run AND after it ends
@@ -43,7 +43,7 @@ function harness(at, extra) {
     { id: 'note_4', title: 'Legacy', body: 'migrated note', createdAt: 0 }
   ]).text;
   A.ok(text.includes('[note_1] [user-confirmed reference] Indentation — User prefers tabs (saved 2026-09-02)'), 'an old Keep-approved line shows WHEN it was saved');
-  A.ok(text.includes('[note_2] [user-stated] Indentation — User prefers spaces (saved 2026-10-11)'), 'the newer contradicting line shows its later date and the Commander\'s-words tag');
+  A.ok(text.includes('[note_2] [user-stated] Indentation — User prefers spaces (saved 2026-10-11)'), 'the newer contradicting line shows its later date and the Master\'s-words tag');
   A.ok(text.includes('[note_3] [corrected, unconfirmed] Reports — User wants weekly reports (updated 2026-10-11)'), 'an agent correction reads as superseding, dated by its update, still unconfirmed');
   A.ok(text.includes('• [note_4] Legacy — migrated note\n'), 'a record with no real timestamp gets NO invented date (never 1970-01-01)');
   A.ok(/newer one wins/.test(text) && /latest message beats any memory/.test(text), 'the header states the conflict rule the dates exist for');
@@ -80,16 +80,16 @@ function harness(at, extra) {
   const words = 'From now on, use spaces instead of tabs for indentation.';
   const ctxA = (extra) => Object.assign({ agentId: 'agent', runId: 'r1', streamId: 'chat-a', commanderWords: words }, extra || {});
 
-  // ---- 2 + 4. provenance proven from the Commander's words; standing instructions go to every conversation ----
+  // ---- 2 + 4. provenance proven from the Master's words; standing instructions go to every conversation ----
   {
     const h = harness(T1);
     const r = await h.t.writeTool.run({ title: 'Indentation', body: 'User prefers spaces over tabs for indentation', pinned: true }, ctxA());
     const n = h.notes()[0];
-    A.eq(n.confirmation, 'user-stated', 'a note that IS the Commander\'s sentence is recorded as their words');
+    A.eq(n.confirmation, 'user-stated', 'a note that IS the Master\'s sentence is recorded as their words');
     A.eq(n.statedBy && n.statedBy.quote, 'From now on, use spaces instead of tabs for indentation', 'with the proving sentence kept as evidence');
     A.eq(n.scope, 'global', 'a standing instruction ("from now on") defaults to every conversation');
     A.eq(n.streamId, null, '…not pinned to the chat it was said in');
-    A.ok(/Scope: every conversation/.test(r.content) && /Commander's own words/.test(r.content), 'the result says where it applies and whose words it is');
+    A.ok(/Scope: every conversation/.test(r.content) && /Master's own words/.test(r.content), 'the result says where it applies and whose words it is');
     A.eq(rank(h.notes(), 'write the parser', { now: T1, streamId: 'chat-b' }).map(x => x.id).join(','), 'note_1', 'the pinned standing order reaches a DIFFERENT chat');
   }
   {
@@ -143,10 +143,10 @@ function harness(at, extra) {
     const n = h.notes()[0];
     A.ok(n.confirmation !== 'user-stated' && !n.statedBy, 'no user authority for an altered claim: ' + note + ' / ' + said);
     A.eq(n.scope, 'stream', 'an unproven claim is not widened across conversations');
-    A.ok(!/Commander.s own words/.test(result.content), 'the save receipt does not claim the user stated the alteration');
+    A.ok(!/Master.s own words/.test(result.content), 'the save receipt does not claim the user stated the alteration');
   }
 
-  // ---- 2. corrections: proven words keep the Commander's authority; unproven reads as a superseding inference ----
+  // ---- 2. corrections: proven words keep the Master's authority; unproven reads as a superseding inference ----
   {
     const kept = () => [{ id: 'note_1', kind: 'note', title: 'Indentation', body: 'User prefers tabs for indentation', content: 'User prefers tabs for indentation',
       confirmation: 'user-confirmed', scope: 'global', streamId: null, createdAt: T0, trust: 0.3, pinned: false }];
@@ -154,8 +154,8 @@ function harness(at, extra) {
     const r = await h.t.writeTool.run({ title: 'Indentation', body: 'User prefers spaces for indentation', replaceId: 'note_1', previousBody: 'User prefers tabs for indentation' },
       ctxA({ runId: 'r2', commanderWords: 'Actually I prefer spaces for indentation now.' }));
     const n = h.notes()[0];
-    A.eq(n.confirmation, 'user-confirmed', 'a correction in the Commander\'s proven words keeps the confirmed status of the belief it replaces');
-    A.ok(/Recorded as the Commander's own words/.test(r.content), 'and the result says so');
+    A.eq(n.confirmation, 'user-confirmed', 'a correction in the Master\'s proven words keeps the confirmed status of the belief it replaces');
+    A.ok(/Recorded as the Master's own words/.test(r.content), 'and the result says so');
     A.ok(renderRecall(h.notes()).text.includes('[note_1] [user-confirmed reference] Indentation — User prefers spaces for indentation (updated 2026-10-11)'), 'recall shows the new text, confirmed, dated as an update');
     const h2 = harness(T1); h2.seed(kept());
     await h2.t.writeTool.run({ title: 'Indentation', body: 'User prefers spaces for indentation', replaceId: 'note_1', previousBody: 'User prefers tabs for indentation' }, ctxA({ runId: 'r2', commanderWords: '' }));

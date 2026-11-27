@@ -100,12 +100,12 @@ const shotIds = (msgs) => pixelTurns(msgs).map(m => m.content.find(p => p.type =
     A.eq(pixelTurns(off.requests[4]).length, 4, 'toolImageKeep: false disables eviction (every capture rides, the old behavior)');
   }
 
-  // ---- 3. ONLY TOOL CAPTURES AGE OUT: the Commander's own attached image is the directive, never evicted ----
+  // ---- 3. ONLY TOOL CAPTURES AGE OUT: the Master's own attached image is the directive, never evicted ----
   {
     const attachment = { role: 'user', content: [{ type: 'text', text: 'here is the mockup' }, { type: 'image_url', image_url: { url: 'data:image/png;base64,' + PNG } }] };
     const { requests } = await run({ shots: 4, prefix: [attachment] });
     const last = requests[requests.length - 1];
-    A.ok(last[0] === attachment, 'the Commander attachment rides untouched (same object) in every request');
+    A.ok(last[0] === attachment, 'the Master attachment rides untouched (same object) in every request');
     A.eq(pixelTurns(last).length, 3, 'attachment + the newest two captures carry pixels');
   }
 

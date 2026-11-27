@@ -1,4 +1,4 @@
-/* sidecar/growth-fold.js — fold the Commander's acknowledged work verdicts into a station save that trails them, instead of
+/* sidecar/growth-fold.js — fold the Master's acknowledged work verdicts into a station save that trails them, instead of
    refusing the save (wave-1 save-latch-kill; vultron-releases#4 Blocker 2).
 
    The rating ledger (growthratings.js) is the source of truth for XP; a save's stats are its projection, with the watermark

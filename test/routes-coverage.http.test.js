@@ -149,14 +149,14 @@ function boot(port, workspaces, attemptsLeft, extraEnv) {
     A.eq(dism.status, 200, 'POST /api/quests/dismiss {id} -> 200');
     A.eq(typeof dism.body.ok, 'boolean', 'dismiss returns an ok boolean');
 
-    // ---- Commander journey: durable metric round-trip + honest invalid operation ----
+    // ---- Master journey: durable metric round-trip + honest invalid operation ----
     const journey0 = await j('GET', '/api/journey');
     A.eq(journey0.status, 200, 'GET /api/journey -> 200');
     A.eq(journey0.body.journey.evolution.goalsReached, 0, 'fresh journey makes no progress claim');
     const metric = await j('POST', '/api/journey', { op: 'metric.create', goalId: 'goal:http', label: 'Paying users', baseline: 0, target: 10, unit: 'users' });
     A.eq(metric.status, 200, 'POST /api/journey metric.create -> 200');
     A.ok(metric.body.ok && metric.body.metric.id, 'metric.create returns the durable metric id');
-    const metricReached = await j('POST', '/api/journey', { op: 'metric.update', id: metric.body.metric.id, current: 10, note: 'Commander checked billing' });
+    const metricReached = await j('POST', '/api/journey', { op: 'metric.update', id: metric.body.metric.id, current: 10, note: 'Master checked billing' });
     A.eq(metricReached.status, 200, 'POST /api/journey metric.update -> 200');
     A.eq(metricReached.body.journey.evolution.goalsReached, 0, 'reaching one metric cannot overclaim the whole life goal');
     A.eq(metricReached.body.journey.outcomes[0].kind, 'metric', 'reached metric still lands as a provenance-bearing outcome');
@@ -165,11 +165,11 @@ function boot(port, workspaces, attemptsLeft, extraEnv) {
     const journeyBad = await j('POST', '/api/journey', { op: 'invent.level' });
     A.eq(journeyBad.status, 400, 'unknown journey operation -> 400');
     const journeyReset = await j('POST', '/api/journey', { op: 'journey.reset', epoch: 2 });
-    A.eq(journeyReset.status, 200, 'journey reset advances to a new Commander generation');
+    A.eq(journeyReset.status, 200, 'journey reset advances to a new Master generation');
     const staleJourney = await j('POST', '/api/journey', { op: 'metric.create', epoch: 1, label: 'Stale tab metric', baseline: 0, target: 1 });
-    A.eq(staleJourney.status, 409, 'a stale Commander generation cannot mutate the new journey');
+    A.eq(staleJourney.status, 409, 'a stale Master generation cannot mutate the new journey');
     const currentJourney = await j('POST', '/api/journey', { op: 'metric.create', epoch: 2, label: 'Current tab metric', baseline: 0, target: 1 });
-    A.eq(currentJourney.status, 200, 'the active Commander generation can mutate its journey');
+    A.eq(currentJourney.status, 200, 'the active Master generation can mutate its journey');
 
     // ---- (7) POST /api/activity — arrival IS the signal; always 200 with the recorded timestamp ----
     const before = Date.now();

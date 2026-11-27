@@ -101,7 +101,7 @@
   /* ---------------- CAMERA MODE chip (honest cinecam / follow-lock readout) ---------------- */
   // The idle cinecam + session follow-lock live in world.js (World.cameraMode). This chip is the diegetic
   // security-feed readout: "● AUTO CAM" while the idle director drives, "● TRACKING" while a session lock
-  // trails the picked agent, hidden while the Commander owns the camera. Pure read on the 300ms tick —
+  // trails the picked agent, hidden while the Master owns the camera. Pure read on the 300ms tick —
   // it asserts only real client camera state, and only when that state is live.
   function buildCamMode() {
     const hud = $('#stage-wrap .cam-hud');

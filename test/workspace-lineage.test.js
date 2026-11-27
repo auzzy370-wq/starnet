@@ -23,7 +23,7 @@ try {
   // E-STOP/scheduler bookkeeping (2026-08-25): the desktop shell fires POST /api/halt on EVERY clean quit,
   // which writes these files even on a station that was never created. They stranded a fresh install on the
   // recovery gate after one open+quit. They are INFRA — a file the sidecar writes stationlessly is never
-  // proof a Commander created a station.
+  // proof a Master created a station.
   for (const f of ['loops.halt.json', 'nightshift.state.json', 'cron.halt.json', 'nightshift.state.json.bak']) {
     fs.writeFileSync(path.join(current, f), '{"halted":true}');
   }

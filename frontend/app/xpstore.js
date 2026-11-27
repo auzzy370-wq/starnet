@@ -58,7 +58,7 @@ const XpStore = (() => {
 
   // the always-on STATION level chip in the top bar — the colony's headline number.
   function pushTopbar() {
-    // Agent feedback remains crew XP. Only the Journey read-model writes Commander level.
+    // Agent feedback remains crew XP. Only the Journey read-model writes Master level.
     try { if (typeof Topbar !== 'undefined' && Topbar._paintXp) Topbar._paintXp(); } catch (_) {}
   }
 
@@ -88,12 +88,12 @@ const XpStore = (() => {
   }
   function celebrateStation(level) {
     pushTopbar();
-    // The Commander chip must not celebrate an agent-feedback level.
+    // The Master chip must not celebrate an agent-feedback level.
     // NO StationUI.notify (notification diet): the gold chip pulse + the new level number ARE the announcement.
   }
   // a milestone's short trophy title for the broadcast. Read from
   // the xp.js catalogue rather than a second hand-kept map: the labels ARE the trophy-case labels, so the badge
-  // the Commander sees lit and the name the broadcast shouts cannot drift apart. Slug-case is the last resort.
+  // the Master sees lit and the name the broadcast shouts cannot drift apart. Slug-case is the last resort.
   function milestoneLabel(id) {
     if (typeof Xp !== 'undefined' && Array.isArray(Xp.MILESTONES)) {
       const m = Xp.MILESTONES.find(x => x && x.id === id);

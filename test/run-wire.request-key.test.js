@@ -4,7 +4,7 @@
    Review r8 F4 made /api/run's body key the caller's own (providerRuntimeBaseUrl's 5th argument, inRequest), but only in
    handleRun and runOnceCore. Every other caller that re-resolves a key and an endpoint the request sent still passed four
    arguments, so a body key EQUAL to the #89 page copy's (the copy lags the page's last change when its push failed) was
-   sent to the copy's OLDER endpoint — conversation content, or a key probe, to a service the Commander had moved away from
+   sent to the copy's OLDER endpoint — conversation content, or a key probe, to a service the Master had moved away from
    (Codex's repro, case 2: the voice route resolved the old endpoint while /api/run resolved the new one). The callers:
      · applyVoiceTurnRoute — the voice hop, its catalog reads (voiceCatalogEntry -> listModelsForProvider) and the agent's
        route it builds as the hop's fallback;

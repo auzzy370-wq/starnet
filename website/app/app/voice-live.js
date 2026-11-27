@@ -31,7 +31,7 @@ const VoiceLive = (() => {
   const LOCAL_VOICE_KEY = 'vultron.liveVoice.localVoice.v1';
   const TURN_END_KEY = 'vultron.liveVoice.turnEndMs.v1';
   // Start complete turns on the proven QUICK boundary. A partial that visibly trails off still gets the
-  // existing +600ms continuation grace below, and NORMAL/PATIENT remain explicit Commander choices.
+  // existing +600ms continuation grace below, and NORMAL/PATIENT remain explicit Master choices.
   const DEFAULT_TURN_END_MS = 1200;
   const TURN_END_CHOICES = [0, DEFAULT_TURN_END_MS, 1800, 2600];
   let timing = {}, lastAudioStartMs = null;
@@ -331,7 +331,7 @@ const VoiceLive = (() => {
     const el = $('lv-task');
     refreshRoute();
     if (!el || typeof Workstreams === 'undefined' || typeof Channels === 'undefined') return;
-    // the panel reports the session the CALL is bound to — not whatever the Commander is browsing, which
+    // the panel reports the session the CALL is bound to — not whatever the Master is browsing, which
     // would misreport whose work the strip is showing the moment they click around mid-call.
     const ws = boundSession() || Workstreams.active();
     if (!ws) { el.textContent = 'No active workstream.'; return; }
@@ -463,7 +463,7 @@ const VoiceLive = (() => {
      appear (once each — announceWaits below, driven by the panel's existing 500ms tick) and ANSWERED by
      voice: approvals via approvalCommand, chips via chipCommand, which clicks the REAL button so every
      downstream effect is identical to a mouse pick. The visual cards stay — they are the truthful record —
-     but the ASK happens aloud, and the call never depends on the Commander looking at the screen. */
+     but the ASK happens aloud, and the call never depends on the Master looking at the screen. */
   let spokenApprovalId = null;
   function chipButtons() {
     // a pending question's one-tap answers come first (chat.js clarifyRow: the run is paused on them). A multi-select
@@ -629,7 +629,7 @@ const VoiceLive = (() => {
      silently re-targeted the conversation: the next utterance ran in whatever session was open, under that
      session's agent. The call now remembers the session it was OPENED in and pins focus back to it before
      every utterance — browsing while silent is free, but spoken words always reach the session the call
-     belongs to. The ONE legitimate rebind is the Commander steering the call BY VOICE ("open the research
+     belongs to. The ONE legitimate rebind is the Master steering the call BY VOICE ("open the research
      session"): station.switch_session calls rebind() when a live call is up, because that switch came
      through the call itself. A UI click never routes through that verb. */
   let boundWsId = null;
@@ -674,7 +674,7 @@ const VoiceLive = (() => {
     // The replies live BEFORE this turn acts: send() opens the new run's reply inside sendOrQueue, synchronously, so
     // only this snapshot may be cancelled. A turn that starts a run supersedes it and a stop cuts it; nothing else does.
     const prior = typeof Voice !== 'undefined' && Voice.replies ? Voice.replies() : [];
-    // spoken words go to the session this call was opened in, wherever the Commander happens to be browsing
+    // spoken words go to the session this call was opened in, wherever the Master happens to be browsing
     ensureBoundFocus();
     markTiming('send', measured);
     caption('user', value);
@@ -734,7 +734,7 @@ const VoiceLive = (() => {
   function onAssistant(part) {
     part = part || {};
     // Speech updates the call panel only. A delayed reply must never navigate away from
-    // the session the Commander selected or replace its composer draft. Call ownership stays bound.
+    // the session the Master selected or replace its composer draft. Call ownership stays bound.
     caption('agent', part.text || '', !part.opening);
   }
   // the agent's live output RMS, straight off the tap on its playback chain. Stored, not drawn: the mic
@@ -988,14 +988,14 @@ const VoiceLive = (() => {
     if (paused) return;
     const frameMs = frame.length / context.sampleRate * 1000;
     if (performance.now() < calibratedUntil) {
-      // Starting to speak immediately must not teach the calibrator that the Commander's voice is room noise.
+      // Starting to speak immediately must not teach the calibrator that the Master's voice is room noise.
       // Cap the learned floor while the complete calibration window remains in pre-roll below.
       noiseFloor = Math.min(CALIBRATION_FLOOR_CEILING, noiseFloor * 0.92 + rms * 0.08);
       keepPreRoll(frame, frameMs);
       return;
     }
     // An additive margin remains usable for a distant microphone; multiplying a slightly noisy floor by 2.8
-    // classified quiet syllables as silence and closed the turn while the Commander was still speaking.
+    // classified quiet syllables as silence and closed the turn while the Master was still speaking.
     const replyPending = typeof Voice !== 'undefined' && Voice.isReplyPending && Voice.isReplyPending();
     const outputActive = agentTalking || replyPending;
     const threshold = Math.max(0.008, noiseFloor + (outputActive ? 0.025 : 0.006));
@@ -1298,7 +1298,7 @@ const VoiceLive = (() => {
     /* ONE ENGINE FOR EVERY STATION (Andrew, 2026-07-30). The provider-native realtime path is deliberately NOT
        taken any more, even where it is available. It gave the smoothest turns but tied the feature to one
        vendor, capped the personality behind that vendor's guardrails, and made the behaviour differ between
-       stations depending on who the Commander happened to connect. The built-in engine is slower per turn and
+       stations depending on who the Master happened to connect. The built-in engine is slower per turn and
        wins everything else: identical on every provider, no credential at all, and the persona speaks in its
        own words with no third-party ceiling. `realtimeCapability()` and startRealtime() are kept, unreferenced
        from here, so the choice is reversible without rebuilding it — but nothing routes to them.
@@ -1359,7 +1359,7 @@ const VoiceLive = (() => {
     reflectButton(true);
     if (typeof Voice !== 'undefined') {
       // Entering hands-free means you expect to HEAR the reply, so the call borrows the speaker: its own lease, given back
-      // at its end, never saved, and a choice the Commander makes meanwhile is theirs to keep. Local Live is Vultron's one
+      // at its end, never saved, and a choice the Master makes meanwhile is theirs to keep. Local Live is Vultron's one
       // hands-free surface; a legacy loop can still exist through older saved state or API callers, and it closes AFTER
       // the lease is taken, so its hold ending never mutes the speaker in between (that would cancel the reply still thinking).
       if (Voice.leaseSpeaker) Voice.leaseSpeaker('live');
@@ -1462,11 +1462,11 @@ const VoiceLive = (() => {
     // 1) IDENTITY — the agent's own composed prompt, verbatim. It already carries persona, role, dossier and
     //    crew clause, so the spoken agent and the typed agent are the same character rather than two.
     if (agent && agent.systemPrompt) lines.push(String(agent.systemPrompt));
-    lines.push('You are ' + name + ', speaking aloud to the Commander in Vultron. You are the SAME agent they type to — same memory, same work, same voice of character. Never describe yourself as a separate voice assistant or a control layer.');
+    lines.push('You are ' + name + ', speaking aloud to the Master in Vultron. You are the SAME agent they type to — same memory, same work, same voice of character. Never describe yourself as a separate voice assistant or a control layer.');
     /* 2) THE PERSONALITY IS THE POINT, AND SPEAKING IT ALOUD MUST NOT SAND IT DOWN.
        This block used to say "speak naturally and briefly, a sentence or two at a time", which quietly
        overrode the persona above and produced a flat, careful assistant no matter which archetype was
-       chosen. The Commander picked that personality deliberately — UNHINGED even arms a two-press confirm
+       chosen. The Master picked that personality deliberately — UNHINGED even arms a two-press confirm
        because it swears for real — so the spoken register has to match the typed one exactly. State it
        explicitly, because a realtime model defaults to a polite house style unless told otherwise. */
     const persona = (typeof Personas !== 'undefined' && Personas.get && agent && agent.personaId) ? Personas.get(agent.personaId) : null;
@@ -1475,7 +1475,7 @@ const VoiceLive = (() => {
       lines.push('That personality — ' + (persona.name || agent.personaId) + ' — is your ACTUAL speaking voice here, not a description of one. Deliver it out loud with the same register, vocabulary and attitude you would use in writing. Do not soften it, sanitise it, or default to a neutral assistant tone because this is speech.');
       lines.push('Honor the effective style, language preference and custom instructions in your composed personality; speaking aloud does not reset those settings.');
     }
-    lines.push('Speak in a natural spoken rhythm — the length a person would actually say out loud rather than a written paragraph. Let the Commander interrupt you at any moment and stop immediately when they do.');
+    lines.push('Speak in a natural spoken rhythm — the length a person would actually say out loud rather than a written paragraph. Let the Master interrupt you at any moment and stop immediately when they do.');
     // 3) THE STATION, as it is right now.
     if (ctx.crew.length) {
       lines.push('The crew on this station: ' + ctx.crew.map(a => (a.name || a.id) + (a.role ? ' (' + a.role + ')' : '')).join('; ') + '.');
@@ -1486,13 +1486,13 @@ const VoiceLive = (() => {
     if (ctx.activeWs) lines.push('The active session is "' + sessionName(ctx.activeWs) + '".');
     lines.push('Call get_vultron_status before answering any question about what is running, what is waiting for approval, or what the crew is doing — never guess or invent task state, tool results, approvals or files.');
     lines.push('For anything requiring research, code, file changes, tools or sustained work, call start_vultron_task rather than claiming you did it yourself. Afterwards confirm in one short sentence and note that the work is visible in the session.');
-    lines.push('Use interrupt_vultron_task only when the Commander clearly asks to stop or change direction.');
+    lines.push('Use interrupt_vultron_task only when the Master clearly asks to stop or change direction.');
     lines.push('Do not ask for credentials or read secrets aloud.');
     return lines.join('\n\n');
   }
 
   /* THE INSTRUCTIONS LEAVE THE BROWSER FOR THE PROVIDER DIRECTLY (the oai-events data channel), past every sidecar scrub,
-     and they quote STORED text: the agent's composed persona (the Commander's dossier is baked into it) and the session
+     and they quote STORED text: the agent's composed persona (the Master's dossier is baked into it) and the session
      titles. So they go through the station's stored-text prompt rule first (POST /api/prompt/scrub, prompt-scrub on the
      sidecar, which knows the held keys). If the station cannot scrub them, nothing is sent: the call keeps the generic
      instructions the sidecar set when it created the call. A newer push supersedes an older one still in flight.
@@ -1603,7 +1603,7 @@ const VoiceLive = (() => {
     try { event = JSON.parse(raw); } catch (_) { return; }
     const type = String(event.type || '');
 
-    // what the Commander said (the provider transcribes its own input)
+    // what the Master said (the provider transcribes its own input)
     if (/input_audio_transcription\.completed$/.test(type) && event.transcript) {
       const said = String(event.transcript).trim();
       caption('user', said);
@@ -1801,7 +1801,7 @@ const VoiceLive = (() => {
     if (typeof Voice !== 'undefined') {
       /* ⛔ THE SAME LEVERS start() PULLS, IN THE SAME ORDER, INCLUDING THE DEGRADE PATH. An explicit opt-out or
          damaged/custom bundle lands here even in an installed station. Wiring the speaker auto-enable only into the
-         models path left that room muted: the Commander could talk, but never hear an answer. */
+         models path left that room muted: the Master could talk, but never hear an answer. */
       if (Voice.leaseSpeaker) Voice.leaseSpeaker('live');
       if (Voice.inVoiceMode && Voice.inVoiceMode() && Voice.endSession) Voice.endSession('live_start', { scope: 'audible' });
       /* setLocalTts(TRUE) on the dictation leg too (2026-07-30). This flag means "speak with the BUILT-IN
@@ -1866,7 +1866,7 @@ const VoiceLive = (() => {
     closeMeterTap();
     // ONE teardown: every reply is cut with this call's cause; the listen loop dictation STARTED stops (detaching the hooks
     // alone left the sidecar dictating after the panel closed); the call's hold on the speaker goes back (a hand-set speaker
-    // stays as the Commander left it); the hooks detach and ordinary speech returns to the persona ladder
+    // stays as the Master left it); the hooks detach and ordinary speech returns to the persona ladder
     if (typeof Voice !== 'undefined' && Voice.endSession) Voice.endSession(cause, { lease: 'live' });
     dictation = false;
     boundWsId = null;   // the binding dies with the call — a later call binds to wherever it is opened

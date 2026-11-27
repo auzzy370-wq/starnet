@@ -51,7 +51,7 @@ const DNS_PREFIX = { web: 'refusing: ', browser: 'refusing to navigate: ', conne
 const HTTPS_TEXT = { connectorOauth: 'connector OAuth endpoints must use https', skillSource: 'skill sources must use HTTPS' };
 const CRED_TEXT = { connectorOauth: 'connector OAuth endpoints cannot contain embedded credentials', skillSource: 'skill source URLs cannot contain credentials' };
 const WEB_FILE = 'only http(s) URLs are allowed. Files are read with fs_read — a worker\'s saved file at the exact path its dispatch row lists (artifacts[].abs).';
-const BROWSER_FILE = 'only http(s) URLs are allowed. To check a file you saved, fs_read it; the Commander opens it from its deliverable card.';
+const BROWSER_FILE = 'only http(s) URLs are allowed. To check a file you saved, fs_read it; the Master opens it from its deliverable card.';
 const FILE_TEXT = { web: WEB_FILE, browser: BROWSER_FILE, connectorOauth: WEB_FILE, skillSource: WEB_FILE };
 const PUB4 = { address: '93.184.216.34', family: 4 };
 const PUB6 = { address: '2606:2800:220:1:248:1893:25c8:1946', family: 6 };
@@ -870,12 +870,12 @@ const DNS_TEXT = {
         const tag = tool + ' ' + url + (note ? ' [' + note + ']' : '');
         if (want === 'refuse') {
           A.eq([r.isError, r.hostAuthored === true, r.content, r.summary], [true, true, failed(tool, NAV_WORDS(host)), 'private address refused'], tag + ': refused in the browser\'s words, host-authored');
-          A.eq([asked.length, rec.navigated.length, rec.prompts.length], [0, 0, 0], tag + ': no DNS question, the browser sent nowhere, the Commander never asked');
+          A.eq([asked.length, rec.navigated.length, rec.prompts.length], [0, 0, 0], tag + ': no DNS question, the browser sent nowhere, the Master never asked');
           continue;
         }
         A.ok(!r.isError, tag + ': allowed' + (r.isError ? ' (refused: ' + r.content + ')' : ''));
         if (tool === 'browser.navigate') A.eq([rec.navigated, rec.askedAtNavigate], [[new URL(url).href], [isLiteral(url) ? 0 : 1]], tag + ': the browser is sent there after exactly one DNS question for the caller\'s URL');
-        else A.eq([rec.prompts, asked.map(q => q[0])], [[host], isLiteral(url) ? [] : [name]], tag + ': the Commander is asked, after one DNS question');
+        else A.eq([rec.prompts, asked.map(q => q[0])], [[host], isLiteral(url) ? [] : [name]], tag + ': the Master is asked, after one DNS question');
       }
     }
     for (const row of DNS_ROWS) {
@@ -887,7 +887,7 @@ const DNS_TEXT = {
         const tag = tool + ' DNS ' + row.label;
         A.eq(asked.slice(0, 1), row.local ? [] : [[host, { all: true }]], tag + (row.local ? ': answered locally, never asked of DNS' : ': the caller\'s URL asks DNS once'));
         if (row.allow) { A.ok(!r.isError && (tool === 'browser.login' ? rec.prompts.length === 1 : rec.navigated.length === 1), tag + ': allowed'); continue; }
-        A.eq([rec.navigated.length, rec.prompts.length], [0, 0], tag + ': the browser is sent nowhere and the Commander never asked');
+        A.eq([rec.navigated.length, rec.prompts.length], [0, 0], tag + ': the browser is sent nowhere and the Master never asked');
         if (row.refuse === 'private-answer') {
           A.eq([r.isError, r.hostAuthored === true, r.content], [true, true, failed(tool, DNS_TEXT[row.refuse]('browser', row) + '. ' + S.privateAnswerExit(host, row.address, 'browser'))],
             tag + ': the browser\'s words plus its DNS-filter exit, host-authored (the caller\'s own URL: no taint)');
@@ -1112,7 +1112,7 @@ const DNS_TEXT = {
         A.eq([n, rec.fetched.length], [2, 1], 'connector OAuth rebinding: one DNS question per leg; the second leg\'s loopback answer is never fetched');
         A.ok(second.error && second.error.message.startsWith('refusing: ' + DNS_HOST + ' resolves to private address 127.0.0.1. '), 'connector OAuth rebinding: it is refused, with the DNS-filter exit');
       }
-      // publicDestination: a custom server's authorization endpoint (the Commander's browser opens it; nothing is fetched)
+      // publicDestination: a custom server's authorization endpoint (the Master's browser opens it; nothing is fetched)
       for (const [url, want, , note] of HOST_ROWS) {
         const target = asScheme(url, 'https:');
         reset(); answerFor = () => [PUB4];
@@ -1272,7 +1272,7 @@ const DNS_TEXT = {
   //      before the module (the browser allowed metadata.goog, connector OAuth refused every IPv6 literal, three
   //      hand-rolled pins disagreed on Node's { all: true }). Code only: comments are blanked by a small lexer that
   //      keeps strings and regex literals (the tables were written in both). Not counted, on purpose: a path segment
-  //      such as '.local' in path.join, the cleartext rule of mcp/transport.http.js (whether the Commander's OWN
+  //      such as '.local' in path.join, the cleartext rule of mcp/transport.http.js (whether the Master's OWN
   //      connector URL is loopback, so a token may travel over http) and peerowner.js (who is calling the station). ----
   {
     const { sidecarSourceFiles, functionSourceIn } = require('./helpers/source.js');

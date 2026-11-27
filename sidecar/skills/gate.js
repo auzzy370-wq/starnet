@@ -9,8 +9,8 @@
    Three rules, and they are deliberately not symmetric:
      block -> never visible, and NOT approvable. `block` is the trust table's answer for content
               a TRUSTED source should never have written (skills/guard.js TRUST); a click cannot
-              make it safe, and offering the click would just train the Commander to click.
-     ask   -> withheld until the Commander approves THIS EXACT CONTENT. The approval is keyed to
+              make it safe, and offering the click would just train the Master to click.
+     ask   -> withheld until the Master approves THIS EXACT CONTENT. The approval is keyed to
               a content digest, mirroring plugins.js keying its allowlist to the code hash: an
               edit re-asks, exactly like a silently edited plugin re-asks.
      other -> visible.
@@ -113,7 +113,7 @@
     }
     /* AN UNSTAMPED RECORD (no contentDigest: saved before digest stamping — a legacy row with no verdict, or an
        'ask' written between verdict stamping and digest stamping) has only the lifecycle stamp, which no
-       Approve can match: the route binds the approval to digestOf(the bytes the Commander read). With the body,
+       Approve can match: the route binds the approval to digestOf(the bytes the Master read). With the body,
        verify() re-scans those live bytes and re-decides against their digest (below), so an approval releases
        exactly the bytes that were scanned and read — never unscanned bytes on a lifecycle stamp (review
        2026-10-12: an earlier fix approved the live digest here with no scan, which laundered a rewrite past the
@@ -140,7 +140,7 @@
     }
     function decide(skill) {
       if (skill && skill.pendingCandidate) return { action: 'ask', visible: false, approvable: false,
-        categories: categoriesOf(skill), reason: 'proposed revision awaits behavior evaluation and Commander approval; the active version is unchanged' };
+        categories: categoriesOf(skill), reason: 'proposed revision awaits behavior evaluation and Master approval; the active version is unchanged' };
       const stamped = str(skill && skill.guardAction).trim().toLowerCase();
       const rule = ruleAction(skill);
       const action = rule ? worseAction(stamped, rule) : stamped;
@@ -149,9 +149,9 @@
           reason: 'blocked by the skill guard' };
       }
       if (action === 'ask') {
-        if (isApproved(skill)) return { action: 'ask', visible: true, approvable: true, approved: true, categories: categoriesOf(skill), reason: 'approved by the Commander' };
+        if (isApproved(skill)) return { action: 'ask', visible: true, approvable: true, approved: true, categories: categoriesOf(skill), reason: 'approved by the Master' };
         return { action: 'ask', visible: false, approvable: true, approved: false, categories: categoriesOf(skill),
-          reason: 'needs the Commander\'s approval in ABILITIES > SKILLS' };
+          reason: 'needs the Master\'s approval in ABILITIES > SKILLS' };
       }
       return { action: action || 'allow', visible: true, approvable: false, categories: [], reason: '' };
     }
@@ -192,7 +192,7 @@
           return unscanned;
         }
         if (live.action === 'allow') return base;
-        // Decide against the digest of the bytes just scanned: the allow route stores digestOf(the body the Commander
+        // Decide against the digest of the bytes just scanned: the allow route stores digestOf(the body the Master
         // read), so with no stamp isApproved() would compare it to 'u'+updatedAt and ALLOW would never take effect.
         // An approval releases exactly these bytes.
         const legacy = decide(Object.assign({}, skill, { guardAction: live.action, scan: live.scan, contentDigest: digestOf(skill) }));
@@ -271,7 +271,7 @@
      (a promotion's precommit). For each re-stamp skillstore.digestRestamps() lists, an approval that carries one of
      that record's old digests is copied to '<agent>\0<id>\0<new digest>' with the new digest (and the new stamp, when
      its stamp was the record's old stamp): the same bytes, approved once, stay approved. Nothing is removed, so an
-     older Vultron reading the file still finds its own key. A copy is marked `restampedFrom`, so the Commander's next
+     older Vultron reading the file still finds its own key. A copy is marked `restampedFrom`, so the Master's next
      decision on the skill supersedes it (supersedeApproval, below). */
   function restampApprovals(approvals, restamps) {
     if (!approvals || typeof approvals !== 'object' || !Array.isArray(restamps) || !restamps.length) return null;
@@ -296,7 +296,7 @@
 
   /* supersedeApproval(approvals, key, entry) -> a new approvals map holding `entry` at the panel key '<agent>\0<id>',
      with every '<agent>\0<id>\0<digest>' copy restampApprovals made removed. A copy carries an older decision forward to
-     the new digest of the same bytes; once the Commander decides again, that older decision is over. Left in place, it
+     the new digest of the same bytes; once the Master decides again, that older decision is over. Left in place, it
      sat beside the new approval under its own digest key (the lookup reads the digest key first), so restoring the
      superseded bytes on disk released them again. A promotion's own digest-keyed precommit is not a copy and stays. */
   function supersedeApproval(approvals, key, entry) {
@@ -305,7 +305,7 @@
     return next;
   }
   /* dropRestamped(approvals, key) -> a new approvals map without the '<agent>\0<id>\0<digest>' copies restampApprovals made
-     for the skill at panel key `key`. Each of the Commander's decisions on a skill ends them: the allow route (through
+     for the skill at panel key `key`. Each of the Master's decisions on a skill ends them: the allow route (through
      supersedeApproval) and a promotion (index.js approve-candidate, once it has landed). Everything else stays, the
      panel key and a promotion's own precommit included. */
   function dropRestamped(approvals, key) {

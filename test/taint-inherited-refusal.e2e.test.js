@@ -1,7 +1,7 @@
 /* node test/taint-inherited-refusal.e2e.test.js — an INHERITED taint lock tells the truth and names the way out.
 
    A delegated worker starts with its lead's taint (orchestration connectorOptions -> initialTaint): the lead's chat
-   had the Commander's attachment in it, so the handed-over instructions may carry that content. The lock is correct
+   had the Master's attachment in it, so the handed-over instructions may carry that content. The lock is correct
    (sec-taint 09-25) — but the refusal used to say "This run has already read outside content", which a worker that
    read nothing has not done, and gave no way forward (a customer then told the worker "don't read attachments").
 
@@ -93,7 +93,7 @@ function toolResult(requests, callId) {
     ] });
     A.eq(roster.status, 200, 'the lead (Full Access) and the worker (ask) are on the roster');
 
-    /* ---- 1. inherited: the lead's chat holds the Commander's attachment ---- */
+    /* ---- 1. inherited: the lead's chat holds the Master's attachment ---- */
     const up = await fixture.json('POST', '/api/attachments', { agent: 'lead-1', name: 'pixel.png', dataUrl: 'data:image/png;base64,' + PNG_B64 });
     A.eq(up.status, 200, 'the owner uploads an attachment');
     const ref = up.body || {};

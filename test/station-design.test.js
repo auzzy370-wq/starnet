@@ -138,7 +138,7 @@ for (const c of T.catalog) {
   A.ok(kept.every(id => st.propById(id)), 'the desks that worked there still stand');
 }
 
-/* ---- a Commander changes their mind: one station after another, each over the last ---- */
+/* ---- a Master changes their mind: one station after another, each over the last ---- */
 {
   const st = fresh();
   const seq = [{ theme: 'noir', rooms: ROOMS }, { theme: 'neon', rooms: ROOMS }, { pattern: 'concourse', theme: 'timber', rooms: ROOMS.slice(0, 4) }, { theme: 'biolab', rooms: ROOMS }, { rooms: ROOMS }];
@@ -191,7 +191,7 @@ for (const c of T.catalog) {
     const t = SB.planBuild(fresh().serialize(), { layout: { theme: id, rooms: ROOMS }, replace: true }, env);
     A.ok(t.ok && new RegExp(SD.THEMES[id].plan, 'i').test(t.plan.summary), id + ': takes its own plan, ' + SD.THEMES[id].plan + ' (' + (t.error || '') + ')');
   }
-  // a Commander changing their mind across plans, and a room added afterwards
+  // a Master changing their mind across plans, and a room added afterwards
   const st = fresh();
   for (const pattern of PLANS.concat(['diamond', 'concourse', 'colony'])) {
     const pl = SB.planBuild(st.serialize(), { layout: { pattern, rooms: pattern === 'concourse' ? ROOMS.slice(0, 4) : ROOMS }, replace: true }, env);

@@ -2,7 +2,7 @@
 
    Before this, a placed BED was somewhere a dormant body stood NEXT TO: planBedSleep walked it to an
    adjacent tile and powered it down on its feet, because the seat law (rightly) bans the chair-sit pose
-   on a mattress. The Commander asked for the real thing — in the bed, under the red covers, head poking
+   on a mattress. The Master asked for the real thing — in the bed, under the red covers, head poking
    out — so the bed now paints in TWO passes with the body between them, and the nap has its own idle
    lane instead of riding the rarely-fired drift-mood power-down.
 

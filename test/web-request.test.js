@@ -1,4 +1,4 @@
-/* node test/web-request.test.js — the web_request tool: calling a third-party API as the Commander.
+/* node test/web-request.test.js — the web_request tool: calling a third-party API as the Master.
 
    The capability that was missing: nothing in Vultron could send a custom HTTP header, so every
    authenticated API meant handing the agent a full shell (shell.exec + curl) — a placed workbench and a
@@ -6,7 +6,7 @@
 
      • the KEY NEVER ENTERS MODEL CONTEXT — the model writes ${NAME}, the host substitutes at send time
      • a placeholder in the URL is REFUSED (secrets in URLs leak to logs/history/Referer)
-     • unattended runs may only spend a key the Commander explicitly approved for unattended use
+     • unattended runs may only spend a key the Master explicitly approved for unattended use
      • the SSRF guard, header-injection guard, and credential-dropping on cross-host redirects hold */
 'use strict';
 const A = require('./_assert.js');
@@ -103,7 +103,7 @@ const OK = [{ status: 200, headers: { 'content-type': 'application/json' }, body
     A.ok(/unattended/.test(msg) && /Printify/.test(msg), 'unattended run refuses a key that was never approved for it: ' + JSON.stringify(msg));
     A.eq(rec2.sent.length, 0, 'and nothing was sent');
 
-    // autonomous: a key the Commander DID approve goes through
+    // autonomous: a key the Master DID approve goes through
     const rec3 = recorder(OK);
     await tools('autonomous', rec3.impl).run({ url: 'https://api.night.com/v1', headers: { Authorization: 'Bearer ${NIGHTLY_API_KEY}' } }, ctx());
     A.eq(rec3.sent[0].opts.headers.Authorization, 'Bearer nightly-token', 'an approved key IS spendable unattended');
@@ -365,7 +365,7 @@ const OK = [{ status: 200, headers: { 'content-type': 'application/json' }, body
   }
 
   // ---- MODEL-PROVIDER KEYS (2026-09-28 user report). An agent reached for ${OPENROUTER_API_KEY} to chase a transparent
-  //      background, was told "add it in KEYS", and kept asking the Commander for access nobody can grant: KEYS refuses
+  //      background, was told "add it in KEYS", and kept asking the Master for access nobody can grant: KEYS refuses
   //      provider keys. The refusal must name the real situation and point at the built-in tool instead. ----
   {
     const reserved = { reservedEnv: new Set(['OPENROUTER_API_KEY', 'OPENAI_API_KEY']) };
@@ -379,9 +379,9 @@ const OK = [{ status: 200, headers: { 'content-type': 'application/json' }, body
       const rec = recorder(OK);
       let msg = '';
       try { await reservedTools(rec.impl).run(args, ctx()); } catch (e) { msg = e.message; }
-      A.ok(/is a model-provider key/.test(msg) && /do not ask the Commander for it/.test(msg), label + ': a provider key is refused as one: ' + JSON.stringify(msg));
+      A.ok(/is a model-provider key/.test(msg) && /do not ask the Master for it/.test(msg), label + ': a provider key is refused as one: ' + JSON.stringify(msg));
       A.ok(/image_generate/.test(msg) && /transparent:true/.test(msg), label + ': the refusal points at the built-in tool that does the job');
-      A.ok(!/add it in/.test(msg), label + ': it never sends the Commander to KEYS, which refuses provider keys');
+      A.ok(!/add it in/.test(msg), label + ': it never sends the Master to KEYS, which refuses provider keys');
       A.eq(rec.sent.length, 0, label + ': nothing was sent, and the legacy key was never spent');
     }
   }

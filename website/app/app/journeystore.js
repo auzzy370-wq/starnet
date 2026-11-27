@@ -1,6 +1,6 @@
 /* VULTRON — journeystore.js: QuerySpine projection for /api/journey.
    The sidecar owns every claim. QuerySpine owns GET dedupe/polling/freshness/error truth; this citizen
-   performs explicit Commander writes and projects proven evolution into the world. */
+   performs explicit Master writes and projects proven evolution into the world. */
 'use strict';
 const JourneyStore = (() => {
   let seeded = false, lastStage = 0, stop = null, lastJourney = null, lastSig = null;

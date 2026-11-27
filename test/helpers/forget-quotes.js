@@ -53,7 +53,7 @@ function startUpstream() {
       const toolResults = turn.filter(m => m.role === 'tool').map(m => textOf(m.content));
       const ctx = { body, messages, tools, turn, made, toolResults, userText: messages.filter(m => m.role === 'user').map(m => textOf(m.content)).join('\n'), lastUser: textOf((messages[lastUserAt] || {}).content), system: textOf((messages[0] || {}).content), index: up.bodies.length - 1, entry };
       let act;
-      if (tools.includes('brief_proceed') && !made('brief_proceed')) act = { tool: 'brief_proceed', args: { objective: 'Answer the Commander' } };
+      if (tools.includes('brief_proceed') && !made('brief_proceed')) act = { tool: 'brief_proceed', args: { objective: 'Answer the Master' } };
       else act = (typeof up.behave === 'function' && up.behave(ctx)) || { text: 'done.' };
       const send = a => {
         if (a.tool) sse({ tool_calls: [{ index: 0, id: 'c_' + up.bodies.length + '_' + Math.random().toString(36).slice(2, 7), type: 'function', function: { name: a.tool, arguments: JSON.stringify(a.args || {}) } }] }, 'tool_calls');
@@ -138,7 +138,7 @@ async function station(prefix, options) {
   };
   rig.sessions = [];   // the workstreams the page would still list (id, title)
   rig.revision = 0;    // the save revision the page last heard (a stale one is a conflict, and a conflict deletes nothing)
-  // the page's save: the workstreams it still lists, the ids it deleted and (the Commander's Delete) the ids to forget
+  // the page's save: the workstreams it still lists, the ids it deleted and (the Master's Delete) the ids to forget
   rig.save = async (deleted, forget) => {
     const r = await rig.json('POST', '/api/save', { agent: { id: 'agent', name: 'NOVA', createdAt: 1 }, updatedAt: Date.now(), _saveRevision: rig.revision,
       workstreams: rig.sessions.filter(w => !(deleted || []).includes(w.id)).map(w => ({ id: w.id, title: w.title, agentId: 'agent', history: [] })), deletedIds: deleted || [], forgetIds: forget || deleted || [] });
@@ -191,7 +191,7 @@ async function seedRows(rig, rows) {
   try { for (const row of rows) io.appendDurable(row); } finally { io.close(); }
   await rig.resume();
 }
-// a one-user-turn session of `word` as durable rows (the Commander typed it; the agent answered)
+// a one-user-turn session of `word` as durable rows (the Master typed it; the agent answered)
 function sessionRows(streamId, word, at) {
   const turn = 'seed_' + streamId.replace(/[^A-Za-z0-9]/g, '').slice(-24) + '_01';
   return [

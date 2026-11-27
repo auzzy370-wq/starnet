@@ -3,7 +3,7 @@
    THE BUG THIS LOCKS OUT (2026-07-18): a 'workshop-<runId>' session's stub line promises "open this
    session any time to review and decide", but when the run stopped being pending server-side (decided
    from another surface/origin, files wiped, workspace moved) presentFor() went TOTALLY SILENT — the
-   Commander opened the session and saw only the naked stub, which read as a broken/old UI (no card,
+   Master opened the session and saw only the naked stub, which read as a broken/old UI (no card,
    no Open-it, no decisions, no explanation). Truthful telemetry says the session must state what
    actually happened, from server truth (the deliverable lifecycle library), or honestly say the files
    are gone — and must stay SILENT only when the station is unreachable (never assert an unproven
@@ -119,11 +119,11 @@ const seedSession = (runId, extraHistory) => {
   /* ---------- 7. unreachable at open (cold-boot race) → RETRIES while the session is on screen, and the
      card appears the moment the station answers. THE BUG THIS LOCKS OUT (2026-07-19, 3rd report): on
      desktop the bundled frontend paints before the sidecar listens; presentFor's one-shot probe failed
-     silently and the Commander saw only the naked stub — no card, no buttons, forever. ---------- */
+     silently and the Master saw only the naked stub — no card, no buttons, forever. ---------- */
   seedSession('run-R');
   pending = [{ runId: 'run-R', title: 'late but owed', files: [] }];
   pendingUnreachable = true;
-  activeStreamId = 'workshop-run-R';   // the Commander is looking at this session
+  activeStreamId = 'workshop-run-R';   // the Master is looking at this session
   cards = [];
   WorkshopStore._pfDelays.fast = 20; WorkshopStore._pfDelays.slow = 20;
   await WorkshopStore.presentFor('workshop-run-R');
@@ -133,7 +133,7 @@ const seedSession = (runId, extraHistory) => {
   A.eq(cards.length, 1, 'the retry presents the card once the station answers');
   A.eq(cards[0].o.sessionId, 'workshop-run-R', 'the late card is still pinned to its own session');
 
-  /* ---------- 8. unreachable + the Commander switched away → the chain retires (no card into a
+  /* ---------- 8. unreachable + the Master switched away → the chain retires (no card into a
      session that is no longer on screen; reopening re-fires presentFor anyway) ---------- */
   seedSession('run-S');
   pending = [{ runId: 'run-S', title: 'switched away', files: [] }];
@@ -144,7 +144,7 @@ const seedSession = (runId, extraHistory) => {
   activeStreamId = 'ws_general';       // switched away before the station answered
   pendingUnreachable = false;
   await new Promise(r => setTimeout(r, 120));
-  A.eq(cards.length, 0, 'a retired chain never paints into a session the Commander left');
+  A.eq(cards.length, 0, 'a retired chain never paints into a session the Master left');
 
   /* ---------- 9. the ATTACH POLL is one-shot no more: station down at boot → maybePresent retries,
      and the deliverable's session is adopted (greet path) the moment the station answers ---------- */

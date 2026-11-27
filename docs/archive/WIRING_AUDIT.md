@@ -10,7 +10,7 @@
 ## Headline verdict
 
 **The harness is far more genuinely wired than its "it lies" reputation suggested.** The core run
-loop, multi-agent summon/dispatch, REFIT routing-as-permission-system, Cortex memory, Commander
+loop, multi-agent summon/dispatch, REFIT routing-as-permission-system, Cortex memory, Master
 dossier, the personalization moat, the safety spine, MCP connectors, save/checkpoint, **and even
 voice** are all real, honest, end-to-end verticals. Nothing in the **safety, memory, or money**
 paths is fabricated.
@@ -56,7 +56,7 @@ cinematic authoring real config docs · idle/awareness/eerie-look-up engines · 
 BAY→cap-isolation/FILTER/MERGER/INTAKE/connector_portal · ARCADE→game · COMMS chat→run→pinned reply ·
 per-workstream concurrent run-state · **Telegram ingress** end-to-end · **Cortex memory** full loop
 (recall fence → reflection proposes → Keep/Edit/Discard → commit/forget/trust + compaction) ·
-**Commander dossier** built from real signals + injected into browser/worker/cron runs · **profile +
+**Master dossier** built from real signals + injected into browser/worker/cron runs · **profile +
 recipes + auto-mint** moat · **XP/Level/Confidence + ctx gauge + SPEND/YIELD/SLAG/CACHE** from real
 reconciled events · durable save mirror + boot auto-resume · checkpoint rewind list+restore · backup
 export/import + notebook restore · **MCP connector** live tools callable in a real run + portal live

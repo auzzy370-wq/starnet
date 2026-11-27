@@ -2,7 +2,7 @@
 /* DELEGATED AND NEEDS YOU ESCAPE A SINGLE QUOTE (reliability wave 1, quick win 36, 2026-10-27).
    delegated.js and needsyou.js each carried their own esc that escaped & < > " but left ' raw, while every other surface
    (app.js, build.js, world.js, the SESSIONS rail) escapes through U.esc, the one complete escaper. A task title, an agent
-   name or a place the Commander or a model wrote ("O'Brien's page") went into attribute values and text unescaped: harmless
+   name or a place the Master or a model wrote ("O'Brien's page") went into attribute values and text unescaped: harmless
    only while every attribute stays double-quoted, and one quote style change away from an injection. Both modules now call
    U.esc. This renders the REAL modules with the production U.esc (test/helpers/frontend-esc.js) and holds that the quote
    arrives as &#39; — in text and in attribute values — and that nothing else changed in the escaping. */

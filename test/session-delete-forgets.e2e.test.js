@@ -4,7 +4,7 @@
 
      1. A session (ws_quokka) says "echo session uniqueword quokka"; its run saves two memories (one filed under the
         chat, one station-wide). A second session (ws_keep) drafts the platypus plan — the control.
-     2. The Commander deletes ws_quokka from the rail: POST /api/save with deletedIds and forgetIds ["ws_quokka"] (what
+     2. The Master deletes ws_quokka from the rail: POST /api/save with deletedIds and forgetIds ["ws_quokka"] (what
         deleteWorkstream's Workstreams.del(id, { forget: true }) + persist write).
      3. Every context path forgets it, and only it:
           HISTORY       GET /api/transcript?stream=ws_quokka is empty; a run on that id (a re-open, a bound channel) is
@@ -51,10 +51,10 @@ function startUpstream() {
       const done = name => messages.slice(lastUser + 1).filter(m => (m.tool_calls || []).some(t => t.function && t.function.name === name)).length;
       const offered = name => (body.tools || []).some(t => t.function && t.function.name === name);
       if (auxiliary) delta.content = 'NONE';
-      else if (offered('brief_proceed') && !done('brief_proceed')) tool('brief_proceed', { objective: 'Answer the Commander' });
+      else if (offered('brief_proceed') && !done('brief_proceed')) tool('brief_proceed', { objective: 'Answer the Master' });
       else if (state.phase === 'seed') {
         if (done('notebook_write') === 0) tool('notebook_write', { title: 'Quokka codeword', body: 'The quokka codeword is Wallaby-Seven' });
-        else if (done('notebook_write') === 1) tool('notebook_write', { title: 'Quokka pet', body: 'The Commander keeps a pet quokka named Wallaby-Nine', scope: 'global' });
+        else if (done('notebook_write') === 1) tool('notebook_write', { title: 'Quokka pet', body: 'The Master keeps a pet quokka named Wallaby-Nine', scope: 'global' });
         else delta.content = 'Reply to: echo session uniqueword quokka — done.';
       } else if (state.phase === 'probe') {
         if (done('recall_conversation') === 0) tool('recall_conversation', { query: 'quokka platypus', scope: 'all' });
@@ -100,7 +100,7 @@ function hermeticEnv(base) {
   const transcript = async stream => ((await json('GET', '/api/transcript?stream=' + stream)).body.turns || []).map(turnText);
   const records = async () => ((await json('GET', '/api/memory/records?agent=agent')).body.records || []);
   const toolResults = bodies => bodies.flatMap(b => (b.messages || []).filter(m => m.role === 'tool').map(m => text(m.content)));
-  // everything the model was handed, minus the Commander's own words in the CURRENT request (they may say "quokka")
+  // everything the model was handed, minus the Master's own words in the CURRENT request (they may say "quokka")
   function contextOf(body) {
     const msgs = body.messages || [];
     const lastUser = msgs.map(m => m.role).lastIndexOf('user');
@@ -129,7 +129,7 @@ function hermeticEnv(base) {
     const before = await records();
     A.ok(before.filter(r => /Wallaby/.test(String(r.body))).length === 2, 'before the delete its two memories are in the notebook: ' + JSON.stringify(before.map(r => r.body)));
 
-    // ---- 2. the Commander deletes it (Workstreams.del(id, { forget: true }) + persist -> POST /api/save) ----
+    // ---- 2. the Master deletes it (Workstreams.del(id, { forget: true }) + persist -> POST /api/save) ----
     const saved = await json('POST', '/api/save', { agent: { id: 'agent', name: 'NOVA', createdAt: 1 }, updatedAt: Date.now(), _saveRevision: 0,
       workstreams: [{ id: KEPT, title: 'Platypus plan', history: [] }, { id: FRESH, title: null, history: [] }], deletedIds: [DELETED], forgetIds: [DELETED] });
     A.eq(saved.status === 200 && saved.body && saved.body.ok, true, 'the save that deletes the session lands: ' + JSON.stringify(saved.body));

@@ -147,7 +147,7 @@ function fakeStack(tools) {
 
   /* ⛔ AN ERRORED READ IS NOT "YOU HAVE NONE", AND A REFUSAL IS NOT "OFFLINE" (fix 1d0c7557).
      `(await fetch(u)).json()` RESOLVES on 4xx/5xx — the error body parses fine, `j.groups` comes back
-     undefined, and the KEYS tab printed "No keyed platform connectors" at a Commander who has plenty.
+     undefined, and the KEYS tab printed "No keyed platform connectors" at a Master who has plenty.
      A non-JSON error body threw instead, and the catch said "sidecar offline — start it" about a station
      that had just answered. Both readings send someone to fix the wrong thing. These pin the three-way
      discrimination, because the defect is invisible in a screenshot: an empty list looks like a fact. */
@@ -275,7 +275,7 @@ function fakeStack(tools) {
      none of the catalog is the single worst discoverability bug the connector surface can have. */
   const searchSel = (stationCore.match(/const rows = pane\.querySelectorAll\(([^)]*)\)/) || [])[1] || '';
   A.ok(/\.cc-card/.test(searchSel), 'console search indexes .cc-card (catalog + KEYS platform cards)');
-  // aliases: the words a Commander TYPES are often in neither the name nor the blurb ("gdrive", "g suite").
+  // aliases: the words a Master TYPES are often in neither the name nor the blurb ("gdrive", "g suite").
   // The matcher must read the off-screen data-search attribute, and the card must emit it.
   A.ok(/dataset\.search/.test(stationCore), 'console search also matches the off-screen data-search aliases');
   A.ok(/data-search="/.test(station), 'catalog cards emit data-search from their aliases');

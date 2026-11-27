@@ -5,7 +5,7 @@
    numbers and HTML entities ignored, Google Fonts + shorthand + JSX); image_generate args are paired with a result that
    really SAVED (failed calls make nothing; the RENDERED model wins over the requested one); the method folds the run's
    successful tool calls in order; a tainted run keeps structure but never free text; the record carries the reference
-   and keeps it through corrections; ★ KEEP THIS STYLE approves without rewriting the Commander's words; two approvals of
+   and keeps it through corrections; ★ KEEP THIS STYLE approves without rewriting the Master's words; two approvals of
    the same words on different work stay two references; 8 realistic records ALL render (the old cap fit 3-4) with the
    newest reference in full; the injection guard still blocks a poisoned reference; and the record survives a durable
    store reload. The live route + prompt seam is test/tasteref.http.test.js. */
@@ -130,7 +130,7 @@ const REF = T.buildRef({ artifacts: ARTS, toolTrace: TRACE, rows: ROWS, files: [
 {
   let r = FM.apply([], { runId: 'run-a', verdict: 'great', directive: 'Design the candle shop landing page', ref: REF }, deps(1000));
   A.ok(r && r.created && r.rec.feedbackRef === REF, 'a 👍 stores the run\'s reference on the LIKED record');
-  A.ok(/^LIKED the result of: Design the candle shop landing page/.test(r.rec.content), 'the Commander-facing words are unchanged (the reference is its own field)');
+  A.ok(/^LIKED the result of: Design the candle shop landing page/.test(r.rec.content), 'the Master-facing words are unchanged (the reference is its own field)');
   let l = r.list;
   r = FM.apply(l, { runId: 'run-a', verdict: 'great', words: 'perfect, keep the neon accent' }, deps(2000));
   A.ok(r && r.rec.feedbackRef === REF && /keep the neon accent/.test(r.rec.content), 'a later correction keeps the reference');
@@ -139,7 +139,7 @@ const REF = T.buildRef({ artifacts: ARTS, toolTrace: TRACE, rows: ROWS, files: [
   const ref2 = Object.assign({}, REF, { palette: ['#000000'] });
   r = FM.apply(l, { runId: 'run-a', verdict: 'great', ref: ref2 }, deps(3000));
   A.ok(r && !r.created && r.rec.feedbackRef === ref2 && r.rec.feedbackAt === 3000, 'a fresh capture replaces the stored reference and moves the record to the front');
-  // ★ KEEP THIS STYLE on a run the Commander rated short: their words stay theirs, the kept flag approves the style
+  // ★ KEEP THIS STYLE on a run the Master rated short: their words stay theirs, the kept flag approves the style
   let m = FM.apply([], { runId: 'run-m', verdict: 'miss', words: 'too dark', directive: 'make the poster' }, deps(10)).list;
   const kept = FM.apply(m, { runId: 'run-m', verdict: 'great', kept: true, ref: REF }, deps(20));
   A.ok(kept && /^DISLIKED: "too dark"/.test(kept.rec.content) && kept.rec.feedbackKept === true && kept.rec.feedbackRef === REF, 'keep-style never rewrites a dislike into a like: ' + (kept && kept.rec.content));
@@ -147,7 +147,7 @@ const REF = T.buildRef({ artifacts: ARTS, toolTrace: TRACE, rows: ROWS, files: [
   // keep-style on an unrated run creates the approval
   const fresh = FM.apply([], { runId: 'run-k', verdict: 'great', kept: true, directive: 'write the release notes page', ref: REF }, deps(40));
   A.ok(fresh && fresh.created && fresh.rec.feedbackKept && /^LIKED the result of: write the release notes page/.test(fresh.rec.content), 'keep-style on an unrated run = an approval');
-  // the Commander's own Memory Core edit is never regenerated over, but a new reference still lands
+  // the Master's own Memory Core edit is never regenerated over, but a new reference still lands
   const edited = memcore.applyEdit(fresh.list, fresh.rec.id, 'Release notes: one page, dark theme').records;
   const e2 = FM.apply(edited, { runId: 'run-k', verdict: 'great', kept: true, ref: ref2 }, deps(50));
   A.ok(e2 && e2.rec.content === 'Release notes: one page, dark theme' && e2.rec.feedbackRef === ref2, 'an edited record keeps its words and takes the new reference');
@@ -160,7 +160,7 @@ const REF = T.buildRef({ artifacts: ARTS, toolTrace: TRACE, rows: ROWS, files: [
   const rated = FM.apply(fresh.list, { runId: 'run-k', verdict: 'great', words: 'love it' }, deps(60));
   A.ok(rated && rated.rec.feedbackKeptOnly === false && rated.rec.feedbackKept === true, 'a real verdict on a keep-only record makes it a verdict record');
   const keepRated = FM.unkeep(rated.list, 'run-k');
-  A.ok(keepRated && !keepRated.removed && /love it/.test(keepRated.rec.content), '…so PUT IT BACK no longer deletes the Commander\'s verdict');
+  A.ok(keepRated && !keepRated.removed && /love it/.test(keepRated.rec.content), '…so PUT IT BACK no longer deletes the Master\'s verdict');
   // A first real verdict can disagree with an earlier style-only approval. Unkeep must reveal that verdict.
   const missed = FM.apply(fresh.list, { runId: 'run-k', verdict: 'miss', words: 'wrong colors' }, deps(70));
   const unkeptMiss = FM.unkeep(missed.list, 'run-k');
@@ -177,7 +177,7 @@ const REF = T.buildRef({ artifacts: ARTS, toolTrace: TRACE, rows: ROWS, files: [
   A.ok(/STYLE KEPT · RESULT REJECTED .*make the poster — disliked: "too dark"/.test(keptPrompt), 'KEEP THIS STYLE after a 👎 keeps the dislike visible: ' + keptPrompt);
   const editedMiss = FM.apply(edited, { runId: 'run-k', verdict: 'miss', words: 'wrong colors' }, deps(80));
   A.eq(editedMiss.rec.feedbackVerdict, 'miss', 'an edited note also records the real verdict without rewriting the edit');
-  A.ok(editedMiss.rec.content.startsWith('Release notes: one page, dark theme'), 'real verdict preserves the Commander edit');
+  A.ok(editedMiss.rec.content.startsWith('Release notes: one page, dark theme'), 'real verdict preserves the Master edit');
   A.eq(FM.unkeep(list0(), 'run-a'), null, 'nothing kept = nothing to put back');
   A.eq(FM.unkeep(null, ''), null, 'null-safe');
 }
@@ -242,7 +242,7 @@ function eight() {
   const pb = FM.renderTaste([poisoned], renderRecall);
   A.ok(pb.text.indexOf('evil.example') < 0 && pb.usedIds.length === 0, 'a poisoned reference is withheld from the prompt');
   A.eq(FM.renderTaste([], renderRecall).text, '', 'no taste = nothing injected');
-  // one huge Commander edit cannot crowd the others out either
+  // one huge Master edit cannot crowd the others out either
   const huge = list.map((r, i) => i === 0 ? Object.assign({}, r, { content: 'z'.repeat(700), body: 'z'.repeat(700), feedbackEdited: true }) : r);
   A.eq(FM.renderTaste(FM.stationTaste(huge, []), renderRecall).count, 8, 'a 700-char edited record still leaves room for all eight');
 }

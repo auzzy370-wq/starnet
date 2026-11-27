@@ -10,7 +10,7 @@
    ══ THE OUTBOUND LINE (this module's extra bar) ══
    Half of these recipes end in something addressed to another human — a proposal, a follow-up, a
    contract reply. EVERY one of them stops at the draft. The directive says so explicitly, in the
-   directive itself, because the Commander must never discover after the fact that the station sent
+   directive itself, because the Master must never discover after the fact that the station sent
    something on their behalf. (recipes.js `impliesOutbound` reads these for the launch-form warning;
    the honesty has to live in the task text too, where the agent actually reads it.)
 

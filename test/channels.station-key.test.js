@@ -246,7 +246,7 @@ function station(opts) {
     A.eq([live.key, live.baseUrl], [STATION_OR, 'https://openrouter.ai/api/v1'], ch + ': every inbound message runs the station key on the configured endpoint (stationHubRunConfig)');
     const msg = s.perMessage[ch]();
     A.eq([msg.key, msg.baseUrl], [STATION_OR, 'https://openrouter.ai/api/v1'], ch + ": ...and on the hub's own secrets() resolution");
-    // the stale endpoint: the Commander points OpenRouter at their own proxy after the bot connected
+    // the stale endpoint: the Master points OpenRouter at their own proxy after the bot connected
     s.runtimeBaseUrls.openrouter = PROXY;
     A.eq(s.stationHubRunConfig('agent', s.view(ch)).baseUrl, PROXY, ch + ': a proxy configured later is followed (no endpoint frozen at connect)');
     A.eq(s.perMessage[ch]().baseUrl, PROXY, ch + ": ...by the hub's secrets() too");
@@ -455,8 +455,8 @@ function station(opts) {
     const crossed = s.stationHubRunConfig('agent', rec(s));
     A.ok(rec(s).key !== 'sk-custom-OWN' && rec(s).baseUrl !== 'http://10.0.0.5:8000/v1', ch + ': a sync to another provider drops the old provider\'s key and endpoint: ' + JSON.stringify({ key: rec(s).key, baseUrl: rec(s).baseUrl }));
     A.ok(crossed.key !== 'sk-custom-OWN', ch + ': ...so the CUSTOM key never goes out on openrouter');
-    // the swap (r7-sync-swap-attack.js): the Commander's page key on a browser station (#89 page copy), a script reconnects with
-    // its own key + endpoint (allowed: a body endpoint rides the body's key), then the Commander's page boots and syncs its key
+    // the swap (r7-sync-swap-attack.js): the Master's page key on a browser station (#89 page copy), a script reconnects with
+    // its own key + endpoint (allowed: a body endpoint rides the body's key), then the Master's page boots and syncs its key
     const p = station({ pageCopy: { openrouter: { key: PAGE_KEY, keyPool: [], baseUrl: '' } },
       secrets: { [ch]: { token: 'tok', key: PAGE_KEY, model: 'openai/gpt-5', provider: 'openrouter', baseUrl: '', enabled: true, agentId: 'agent' } } });
     const scripted = await p.call(connect, { token: 'tok', provider: 'openrouter', model: 'openai/gpt-5', agentId: 'agent', key: 'sk-attacker-own', baseUrl: EVIL }, ...extra);
@@ -580,7 +580,7 @@ function station(opts) {
 
   // ================================ review r7 m9: a bots/connect rebind keeps the bot's own pair ===========================
   {
-    // the bot (777) was connected with its own key on its own proxy; the Commander rebinds it with no key in the body
+    // the bot (777) was connected with its own key on its own proxy; the Master rebinds it with no key in the body
     const s = station({ runtimeKeys: { openrouter: STATION_OR },
       bots: { 777: { token: 'bot-token', key: 'sk-or-BOT-OWN', provider: 'openrouter', model: 'openai/gpt-5', baseUrl: PROXY, agentId: 'agent', ownerId: 1, enabled: true } } });
     const r = await s.call('handleTelegramBotAdd', { token: 'bot-token', agentId: 'agent' });
@@ -601,7 +601,7 @@ function station(opts) {
   }
 
   // ================================ review r8 F1 (MAJOR): a reconnect that switches provider ============================
-  // r8-connect-provider-switch*.js: the record holds the page's OpenRouter key; the Commander moves the agent to a keyless LAN
+  // r8-connect-provider-switch*.js: the record holds the page's OpenRouter key; the Master moves the agent to a keyless LAN
   // CUSTOM server (the operator's env URL), or to Anthropic (an env key), and reconnects with no key in the body.
   const R8 = [['handleChannelConnect', 'handleChannelSync', 'telegram', []], ['handleDiscordConnect', 'handleDiscordSync', 'discord', []],
     ['handleGenericChannelConnect', 'handleGenericChannelSync', 'slack', ['slack']]];
@@ -612,13 +612,13 @@ function station(opts) {
     for (const [provider, model, env, want] of [['custom', 'local/qwen', { CUSTOM_OPENAI_BASE_URL: LAN }, ['', LAN]],
       ['anthropic', 'claude-x', { ANTHROPIC_API_KEY: 'sk-ant-ENV-OPERATOR' }, ['sk-ant-ENV-OPERATOR', 'https://api.anthropic.com/v1']]]) {
       const s = station({ env, roster: { agent: { name: 'NOVA', model, provider } },
-        secrets: { [ch]: { token: 'tok', key: 'sk-or-COMMANDER', provider: 'openrouter', model: 'openai/gpt-5', baseUrl: '', enabled: true, agentId: 'agent' } } });
+        secrets: { [ch]: { token: 'tok', key: 'sk-or-MASTER', provider: 'openrouter', model: 'openai/gpt-5', baseUrl: '', enabled: true, agentId: 'agent' } } });
       const tag = ch + ' -> ' + provider;
       const r = await s.call(connect, { provider, model, agentId: 'agent' }, ...extra);
       A.eq([r.status, recOf(s, ch).provider], [200, provider], tag + ': fixture: the reconnect lands: ' + JSON.stringify(r.body));
       A.ok(!recOf(s, ch).key, tag + ': the OpenRouter key is not saved under ' + provider + ': ' + JSON.stringify(recOf(s, ch).key));
       const live = s.stationHubRunConfig('agent', recOf(s, ch)), msg = s.perMessage[ch]();
-      A.ok(live.key !== 'sk-or-COMMANDER' && msg.key !== 'sk-or-COMMANDER', tag + ': no message sends the OpenRouter key to ' + (live.baseUrl || msg.baseUrl));
+      A.ok(live.key !== 'sk-or-MASTER' && msg.key !== 'sk-or-MASTER', tag + ': no message sends the OpenRouter key to ' + (live.baseUrl || msg.baseUrl));
       A.eq([live.key, live.baseUrl], want, tag + ': each message runs what the station holds for ' + provider);
     }
   }

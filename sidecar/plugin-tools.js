@@ -1,10 +1,10 @@
 /* sidecar/plugin-tools.js — a plugin's api.tool() definitions as tools the crew can call (phase 2, 2026-09-29).
 
    Same contract as an MCP connector tool (sidecar/mcp/translate.js), on purpose — one trust model for "code the
-   Commander installed that the station cannot see inside":
+   Master installed that the station cannot see inside":
      · capability 'plugin:<id>': granted only by that plugin's TERMINAL placed in the agent's room (object =
        capability; frontend worldmodel.bayObjects → { objectType: 'plugin', pluginId });
-     · impact 'external-unknown' + requiresConsent: a watched run shows the Commander a per-call approval card, an
+     · impact 'external-unknown' + requiresConsent: a watched run shows the Master a per-call approval card, an
        unattended run is withheld, and taint revokes it — exactly like a connector;
      · the result is FENCED as external content. The plugin's code is approved, but what it returns (a PR title,
        an email subject, a web page) was written by whoever wrote that data.

@@ -17,7 +17,7 @@
    LEDGER: a row that names its payer is unmetered exactly when the payer is a plan or a local model.
    GOVERNOR (S2): makeGovernor admits every paid call path by POLICY: a dollar payer meets the cross-run caps, a plan or a local
    model never does, an image always does, a background pass meets the 24-hour token ceiling on a route that may sign in unless
-   the Commander triggered it, and a check that throws (the budget, the payer lookup, the token gate) refuses with its exit. */
+   the Master triggered it, and a check that throws (the budget, the payer lookup, the token gate) refuses with its exit. */
 'use strict';
 const fs = require('node:fs');
 const path = require('node:path');
@@ -344,12 +344,12 @@ const governorPart = ledgerPart.then(async () => {
       A.eq(capped.seen.checks.length, dollars ? 1 : 0, where + ': ' + (dollars ? 'the cross-run caps are asked' : 'no dollar cap is asked'));
       if (dollars) A.eq([r.gate, r.scope, r.cap, r.kind, r.cls, /day spending cap is reached \(\$5\.00 of \$1\.00\)/.test(r.why), /RESUME/.test(r.exit)], ['dollars', 'day', 1, kind, kind === 'media' ? 'metered' : cls, true, true], where + ': the cap\'s own verdict, what it is and its exit');
       else A.eq(r, null, where + ': admitted under a reached dollar cap');
-      // the 24-hour token ceiling: a background kind on a route that may sign in meets it, unless the Commander triggered the call
+      // the 24-hour token ceiling: a background kind on a route that may sign in meets it, unless the Master triggered the call
       const t = rig({ verdict: null, tokensReached: true }).governor.admit(kind, { providerId: id, agentId: 'a' });
       const meets = BACKGROUND.includes(kind) && billing.auxCeilingRoute(id);
       A.eq(t ? t.gate : null, meets ? 'tokens' : null, where + ': ' + (meets ? 'the token ceiling stops it' : 'the token ceiling never applies'));
       if (meets) A.ok(/background token ceiling is reached on this route \(250,000 of 200,000 tokens\)/.test(t.why) && /BACKGROUND TOKEN CEILING/.test(t.exit), where + ': the token stop names its figure and its knob');
-      A.eq(rig({ verdict: null, tokensReached: true }).governor.admit(kind, { providerId: id, agentId: 'a', trigger: 'commander' }), null, where + ': a call the Commander triggered runs past the token ceiling');
+      A.eq(rig({ verdict: null, tokensReached: true }).governor.admit(kind, { providerId: id, agentId: 'a', trigger: 'commander' }), null, where + ': a call the Master triggered runs past the token ceiling');
       // ONE ERROR RULE: a check that throws refuses as unknown spend, never "not blocked", and names its exit
       const thrown = rig({ throwCheck: true });
       const x = thrown.governor.admit(kind, { providerId: id, agentId: 'a' });

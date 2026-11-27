@@ -191,7 +191,7 @@
 
   /* The one-line prompt index that stands in for the deferred servers' schemas: server + tool count, and the
      way in. Names the SERVER, not every tool — the measured failure this guards against is a model that never
-     learns a capability exists; a server name is what a Commander's request actually mentions ("my github").
+     learns a capability exists; a server name is what a Master's request actually mentions ("my github").
      Empty for no servers, so a run below the threshold carries no new bytes. */
   function connectorIndexLine(servers) {
     const list = (servers || []).filter(s => s && s.id);
@@ -331,7 +331,7 @@
         }
 
         /* A tool the host PROVED cannot work this run (ctx.unavailable: name -> { why, enable }) is still found and
-           still revealed — the Commander may fix it mid-run — but its line says so, with the fix, so the model
+           still revealed — the Master may fix it mid-run — but its line says so, with the fix, so the model
            reports the missing setup instead of calling it blind or claiming it worked. Absent map: unchanged. */
         const unavailable = (ctx && ctx.unavailable && typeof ctx.unavailable === 'object') ? ctx.unavailable : null;
         const caveat = n => {

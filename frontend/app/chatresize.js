@@ -1,5 +1,5 @@
 /* VULTRON — chatresize.js : draggable COMMS / stage divider.
-   The station grid pins COMMS to a fixed width; this lets the Commander grab the seam on the
+   The station grid pins COMMS to a fixed width; this lets the Master grab the seam on the
    panel's left edge and drag it LEFT to widen COMMS (the centre stage gives up the space) or
    RIGHT to shrink it. The width is a CSS var (--chat-w) the grid reads, persisted per machine.
    The stage canvas re-fits on its own — world.js observes #stage-wrap via ResizeObserver. */
@@ -25,7 +25,7 @@
   // All of these are VISUAL px, and so is --chat-w. The grid holds the cabinet at its designed
   // size regardless of TEXT SIZE (app.css `#screen-game.active` counter-zooms every frame
   // dimension), so the padding/gap/rail the seam has to clear no longer move with the zoom — and a
-  // width the Commander dragged means the same thing at every text size instead of silently
+  // width the Master dragged means the same thing at every text size instead of silently
   // meaning 45% more at HUGE.
   const LEFT_COL = 232, PAD = 11, GAP = 9, MIN = 300;
   const stageWrap = document.getElementById('stage-wrap');

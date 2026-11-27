@@ -94,10 +94,10 @@ const isSummary = m => m && m.role === 'system' && /^<conversation_summary>/.tes
     A.ok(requests.every(r => r.filter(isRunContextNote).length === 1), 'note-only: the note rides every request, once');
   }
   // THE CREW CALL IS PINNED TOO (review 2026-10-12): it left the run-context note for its own <crew_call> note right
-  // after the newest user message (it must trail the Commander's words). In the system prompt no fold ever took it, so
+  // after the newest user message (it must trail the Master's words). In the system prompt no fold ever took it, so
   // no fold may take it now: out of the summarizer's slice, carried after the summary with the run-context note.
   for (const mode of ['paid', 'fallback']) {
-    const CREW = crewCallFence('[CREW CALL] The Commander named Ada (agentId researcher) in this request.');
+    const CREW = crewCallFence('[CREW CALL] The Master named Ada (agentId researcher) in this request.');
     const ctx = makeContext(Object.assign({ contextLimit: 20000 }, RUN_CONTEXT_DEFAULTS));
     const requests = [], slices = [], compacts = [];
     const res = await runAgentLoop({

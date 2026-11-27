@@ -4,12 +4,12 @@
      1. CONFIGURED service keys already ride the prompt (servicekeys.promptBlock — names only, never values).
      2. INSTALLED connectors already project their tools straight into the run's tool list (mcp/manager.js).
      3. Nothing ever told the agent about the integrations that are ONE CLICK AWAY but not yet added.
-   So an agent asked "what is this harness missing?" answered with things the Commander could have had in
+   So an agent asked "what is this harness missing?" answered with things the Master could have had in
    thirty seconds — GitHub, Notion, Stripe, Google Workspace — because from inside the run they were
    indistinguishable from unbuildable. That is the station lying by omission about its own reach.
 
    This tool closes (3) ONLY. It is a READER: pure local state, no network, no consent, and it can neither
-   install nor authenticate anything. Adding a connector spends the Commander's credentials and is their
+   install nor authenticate anything. Adding a connector spends the Master's credentials and is their
    click, in CONNECT › ABILITIES › APPS (a card per service) — the agent's job is to know the offer exists and say so.
 
    NEVER ECHOES A SECRET. Connector summaries carry `hasToken`, never the token (mcp/manager.js summary());
@@ -135,9 +135,9 @@
       };
     }
 
-    /* The point of the whole tool: what the Commander could add but has not. Two catalogs, one list.
+    /* The point of the whole tool: what the Master could add but has not. Two catalogs, one list.
        An MCP row is only reported as available when it is NOT installed; a KEYS row only when its env var
-       is not already connected — otherwise this would nag the Commander to add what they already have. */
+       is not already connected — otherwise this would nag the Master to add what they already have. */
     function sectionAvailable(q) {
       // NO catalog wired at all = we cannot see the offer, which is NOT the same as "there is nothing to add".
       // Returning a confident AVAILABLE (0) here would be the exact lie this tool was built to end.
@@ -175,7 +175,7 @@
       // The count is the REAL total, not the shown slice — a truncated list that reports its own length as the
       // total would understate the offer, which is the failure this tool exists to fix.
       const head = 'AVAILABLE (' + out.length + ')' + (shown.length < out.length ? ', showing ' + shown.length : '')
-        + ' — NOT installed. The Commander adds either kind in CONNECT › ABILITIES › APPS: search the service and follow its card (sign-in, or SET UP API KEY). You cannot add these yourself; offer, never assume.';
+        + ' — NOT installed. The Master adds either kind in CONNECT › ABILITIES › APPS: search the service and follow its card (sign-in, or SET UP API KEY). You cannot add these yourself; offer, never assume.';
       return { label: 'available', count: out.length, head: head, body: shown };
     }
 
@@ -212,18 +212,18 @@
       name: 'connectors.list', capability: 'web', impact: 'external-service', scope: 'read', requiresConsent: false, timeoutMs: 8000,
       description: 'List the station\'s INTEGRATIONS: MCP connectors and platform API keys already connected, and '
         + '(the part you cannot otherwise know) the vetted connectors and platform keys the '
-        + 'Commander could add but has not (GitHub, Notion, Stripe, Google Workspace, Printify, Etsy and more). '
-        + 'Check this BEFORE telling the Commander that Vultron cannot reach a service: it usually can, and the '
+        + 'Master could add but has not (GitHub, Notion, Stripe, Google Workspace, Printify, Etsy and more). '
+        + 'Check this BEFORE telling the Master that Vultron cannot reach a service: it usually can, and the '
         + 'honest answer is "that service has a setup path in CONNECT › ABILITIES › APPS — I can walk you through '
         + 'it?". Read-only: you cannot install or authenticate anything, and you never see a key\'s value. '
-        + 'Pass `goal` (the Commander\'s task) to get SUGGESTED: the not-yet-connected connector(s) it needs; the '
-        + 'station then offers the Commander a one-click '
+        + 'Pass `goal` (the Master\'s task) to get SUGGESTED: the not-yet-connected connector(s) it needs; the '
+        + 'station then offers the Master a one-click '
         + 'door to connect it. Call it with `goal` BEFORE declining a task for lack of email/site/calendar/docs access.',
       schema: {
         type: 'object', properties: {
           scope: { type: 'string', enum: SCOPES, description: 'all (default), connected (what is live now), or available (what could be added)' },
           query: { type: 'string', description: 'filter by name, id or category, e.g. github, payments' },
-          goal: { type: 'string', description: 'the Commander\'s task in their words, e.g. "email my notes to myself"' }
+          goal: { type: 'string', description: 'the Master\'s task in their words, e.g. "email my notes to myself"' }
         }
       },
       run: async (args, ctx) => {
@@ -250,9 +250,9 @@
         }
         if (goal) {
           parts.push(suggested.length
-            ? { label: 'suggested', count: suggested.length, head: 'SUGGESTED for "' + goal + '" — NOT connected yet. The Commander now has a ⇄ CONNECT chip for it on your reply (or on your question card, if you ask one): tell them to tap it — it opens that service in CONNECT › ABILITIES › APPS. Setup varies by provider and may require an API key or developer app setup before sign-in. You cannot connect it yourself.', body: suggested.map(x => '- ' + x.id + ' — ' + x.reason) }
+            ? { label: 'suggested', count: suggested.length, head: 'SUGGESTED for "' + goal + '" — NOT connected yet. The Master now has a ⇄ CONNECT chip for it on your reply (or on your question card, if you ask one): tell them to tap it — it opens that service in CONNECT › ABILITIES › APPS. Setup varies by provider and may require an API key or developer app setup before sign-in. You cannot connect it yourself.', body: suggested.map(x => '- ' + x.id + ' — ' + x.reason) }
             : { label: 'suggested', count: 0, head: 'SUGGESTED (0) for "' + goal + '" — nothing connectable in the catalog matches this goal (or what it needs is already connected).', body: [] });
-          if (blocked.length) parts.push({ label: 'suggested-unavailable', count: blocked.length, head: 'CANNOT BE CONNECTED IN THIS BUILD — sign-in is switched off for these, so there is NO connect chip. Tell the Commander plainly that it is not available yet; never tell them to sign in or tap a chip for it.', body: blocked.map(x => '- ' + x.id + ' — ' + x.unavailable.slice(0, 200)) });
+          if (blocked.length) parts.push({ label: 'suggested-unavailable', count: blocked.length, head: 'CANNOT BE CONNECTED IN THIS BUILD — sign-in is switched off for these, so there is NO connect chip. Tell the Master plainly that it is not available yet; never tell them to sign in or tap a chip for it.', body: blocked.map(x => '- ' + x.id + ' — ' + x.unavailable.slice(0, 200)) });
           if (lost.length) parts.push({ label: 'suggested-emit-lost', count: lost.length, head: 'NOTE: the connect chip could not be raised for: ' + lost.join('; '), body: [] });
         }
         if (scope === 'all' || scope === 'connected') { parts.push(sectionConnected(q), sectionKeys(q)); }

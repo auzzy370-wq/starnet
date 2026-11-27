@@ -17,7 +17,7 @@
 
   // Accepted kinds match the advertised FACT/PREFERENCE contract. NOTE was dropped: it was a loose
   // catch-all the model used for run-specific chatter ("we discussed X"), which is exactly the low-value noise
-  // the Commander complained about. SKILL was dropped next (2026-07-03, same complaint): reflection's one-liner
+  // the Master complained about. SKILL was dropped next (2026-07-03, same complaint): reflection's one-liner
   // "skills" were restated instructions from the run ("expose OPENROUTER_API_KEY…") — not procedures — and the
   // credential-shaped ones tripped the high-stakes confirm deck, so the junkiest class got the LOUDEST popup.
   // Real skill distillation is owned by the background skill review (skillreview.js): it gates on substantial
@@ -39,7 +39,7 @@
   const TRANSIENT = /^(the user (said|asked|wanted|mentioned|requested)|we (discussed|talked|covered|went over)|in this (run|task|session|conversation)|this (run|task|session)|today (i|we)|the (task|conversation) (was|is))\b/i;
   // advice-echo: instructions/procedures restated from the run ("to use X, expose Y…", "the key should be set…")
   // are how-to chatter the agent just SAID, not beliefs about the user/world — the fake-feeling popup class the
-  // Commander flagged. Procedure knowledge belongs to the background skill review, never the memory turn-in.
+  // Master flagged. Procedure knowledge belongs to the background skill review, never the memory turn-in.
   const ADVICE = /^(to (use|enable|set up|configure|get|install|run|access)\b|(here('s| is) )?how to\b|steps? to\b|you (can|should|need to)\b)|\bshould be (exposed|set|added|configured|stored|placed|defined|passed|provided)\b/i;
 
   // strip a recall fence the model may have echoed, so a forged <recalled-memory> block can't be reflected
@@ -152,7 +152,7 @@
     const seen = {};
     const priorTexts = [];   // existing beliefs + already-accepted proposals, for near-dupe (paraphrase) rejection
     for (const r of (Array.isArray(opts.existing) ? opts.existing : [])) { const t = textOf(r).trim(); seen[t.toLowerCase()] = 1; if (t) priorTexts.push(t); }
-    /* opts.dedupOnly (turn identity commit 15, Q5): texts that may only SUPPRESS a proposal - the Commander's declined list once a session
+    /* opts.dedupOnly (turn identity commit 15, Q5): texts that may only SUPPRESS a proposal - the Master's declined list once a session
        has been deleted from this station. They feed the exact-duplicate set, the near-duplicate loop and MemTruth.relate, exactly like a
        held belief, but they are never shown to the model (buildPrompt reads priorTexts alone: a declined text may quote a deleted
        session) and never a replacement target (they are not records). Plain strings or { content } wrappers. */
@@ -162,7 +162,7 @@
     const existing = Array.isArray(opts.existing) ? opts.existing : [];
     /* WHICH HELD BELIEFS A CLAIM MAY REPLACE OR RESTATE: only ones this run can see — never another project's record (a run
        in project A must not propose rewriting project B's fact; replaceId Keep has no project check of its own), and never
-       the Commander's rating records (feedbackmemory owns those; notebook.js supersessionTargets excludes them too).
+       the Master's rating records (feedbackmemory owns those; notebook.js supersessionTargets excludes them too).
        opts.projectRoot is the run's project; absent, project-scoped records are out of reach like any other project. */
     const reachable = r => !!r && r.origin !== 'feedback' && (!retrieval || retrieval.memoryAllowedInProject(r, opts.projectRoot || null));
     const archived = new Set(existing.flatMap(r => (r && Array.isArray(r.history) ? r.history : []).map(h => String(h && h.body || '').trim().toLowerCase())));
@@ -261,9 +261,9 @@
   /* A REFUSED ACTION IS NOT A LESSON (releases#7 / #9, 2026-10-17). A run in which an approval was not given (the
      consent broker's one 'denied' summary: a Deny on the card, an unanswered card, an unattended default-deny) ends
      'done' when the agent carries on without it, so it reached reflection like finished work, and the reflector read
-     the refusal as a standing preference ("The Commander never wants report files written") queued unmarked under
+     the refusal as a standing preference ("The Master never wants report files written") queued unmarked under
      MEMORY > Awaiting your decision. Its work is not what was asked for, so reflection proposes nothing from it; the
-     Commander's own explicit statements still reach memory through trusted learning. Pure: the run's tool trace in. */
+     Master's own explicit statements still reach memory through trusted learning. Pure: the run's tool trace in. */
   function refusedAction(toolTrace) {
     return (Array.isArray(toolTrace) ? toolTrace : []).some(t => !!(t && t.isError && t.summary === 'denied'));
   }
@@ -289,7 +289,7 @@
       confirmation: opts.userConfirmed === true ? 'user-confirmed' : 'inferred',
       authority: 'reference-only',
       // WHICH SURFACE formed this belief (memcore.originOf). Unattended runs reflect now, so a record can come
-      // from a routine, a night shift, or a messaging channel — the Commander must be able to tell those apart
+      // from a routine, a night shift, or a messaging channel — the Master must be able to tell those apart
       // from their own conversation. Absent => 'commander', the historical meaning of an untagged record.
       origin: String(opts.origin || prop.origin || 'commander'),
       createdAt: now, ts: now, lastUsedAt: null, useCount: 0, trust: 0, pinned: false
@@ -313,7 +313,7 @@
   // conservative set must NOT — they fall back to the old Keep/Edit/Discard confirm deck. A proposal is high-stakes
   // when its content carries a CREDENTIAL / PII shape (an api key, password, token, or secret; an email, phone
   // number, or street address) or a STANDING-INSTRUCTION phrasing ("always …", "never …", "from now on …") — the
-  // kind of durable directive the Commander should get to approve before it silently steers every future run.
+  // kind of durable directive the Master should get to approve before it silently steers every future run.
   // Deliberately conservative (better to auto-save a borderline line than to nag on the common case): redact()
   // already ran upstream, so a live secret is usually already scrubbed — this is the belief-shaped backstop.
   const HIGH_STAKES = [

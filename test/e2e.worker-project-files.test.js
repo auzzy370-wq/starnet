@@ -90,7 +90,7 @@ function toolResultFor(requests, callId) {
     VULTRON_OPENROUTER_BASE: provider.baseUrl, SKYNET_OPENROUTER_BASE: provider.baseUrl
   } });
   try {
-    // the trusted project ("My Project Folders") + the Commander's standing ASK-mode grants for the two consent
+    // the trusted project ("My Project Folders") + the Master's standing ASK-mode grants for the two consent
     // classes this flow uses (delegate, generate). No Full Access anywhere; no command grant.
     const pathGrant = 'path:' + projectRoot;
     const allow = [pathGrant, 'orchestrator:execute', 'studio:write'];

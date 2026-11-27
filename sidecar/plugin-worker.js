@@ -1,7 +1,7 @@
 /* sidecar/plugin-worker.js — ONE plugin's code, in its OWN process (plugin extensions phase 2, 2026-09-29).
 
    Forked by sidecar/plugin-runtime.js with the station-secret-free environment. Why a process per plugin: NOT a
-   security boundary (an approved plugin runs with the Commander's full computer permissions, and the approval card
+   security boundary (an approved plugin runs with the Master's full computer permissions, and the approval card
    says so), but a FAILURE boundary — a plugin that throws, leaks, spins forever or calls process.exit() takes down
    itself, never the station. Before this, plugin code ran inside the sidecar, so one bad folder could stop every run.
 

@@ -87,7 +87,7 @@
     if (src.SystemRoot) out.ComSpec = String(src.SystemRoot).replace(/[\\/]+$/, '') + '\\System32\\cmd.exe';
     return out;
   }
-  /* Service keys (the KEYS tab) are the ONE class of secret the Commander pasted expressly SO an agent's
+  /* Service keys (the KEYS tab) are the ONE class of secret the Master pasted expressly SO an agent's
      shell can spend it — "use it to call that service's API directly (curl etc.)" is what the system prompt
      promises. sanitizeChildEnv's blanket scrub strips every one of them (servicekeys.deriveEnvVar always
      ends in _API_KEY), which silently severed the entire feature. They are merged back in per call, but
@@ -805,7 +805,7 @@
         const aid = safeAgentId(opts.agentId || 'agent');
         const cwd = opts.cwd || getCwd(aid);
         // Names go on the argv (`-e NAME`), values go in the DOCKER CLIENT's env — so the secret is never
-        // in a command line, and a container only ever receives keys the Commander connected.
+        // in a command line, and a container only ever receives keys the Master connected.
         const svc = serviceEnvFor(opts.surface);
         const names = Object.keys(svc);
         const run = function () {

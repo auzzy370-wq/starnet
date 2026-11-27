@@ -18,7 +18,7 @@ plan for this anywhere (memory, docs, Desktop notes all grepped).
 ## The model in one paragraph
 
 A **Room** is a Workstream with `members[]` (roster agentIds) and a `policy`; the existing `agentId`
-stays and becomes the **lead**. `@name` in a Commander message runs that member; unmentioned members
+stays and becomes the **lead**. `@name` in a Master message runs that member; unmentioned members
 **observe** (their next hop sees the text as context, Hermes-style, never a run). No mention = the lead
 runs. `@all` = one capped hop per member in roster order, then the lead synthesizes. A member's reply may
 `@mention` another member: that is a **hop**, bounded by an origin message id + hop counter + no-bounce
@@ -50,13 +50,13 @@ rule + pre-hop cost check. Every bubble is a real `runOnce`. Nothing is synthesi
    whole wallet and a second concurrent run refuses. Rooms REQUIRE a per-hop cap (`policy.hopUsd`) —
    a deliberate, visible carve-out. Sequential by default; parallel `@all` opt-in only.
 3. **Peer text is data.** Wrap peer-authored text `[peer:<agentId>|run <id>]`; handoff prompt says it is a
-   request within the room brief, not Commander authority. Acting agent's own `approvalMode` still gates
+   request within the room brief, not Master authority. Acting agent's own `approvalMode` still gates
    writes/shell. Draft-only classes (support, inbox) stay draft-only inside rooms.
 4. **Model belongs to the agent** (LOCKED). A room never sets model/provider. Each hop resolves its own
    roster identity + credential + private jail.
 5. **`shared/events.js` is owned, additive only, by request.** P1/P2 ride existing `agent.run.*` and the
    legacy `chat {from,txt}` event. Request `room.hop` from the owner only if a reducer truly needs it.
-6. **COMMS transcript design is locked** (left/right = speaker). Rooms: Commander right, EVERY agent left
+6. **COMMS transcript design is locked** (left/right = speaker). Rooms: Master right, EVERY agent left
    with a colored rail + uppercase name. Applies to `kind:'room'` only; ordinary threads untouched.
 7. **One chip row / one post-run beat** (`comms-beat-rules`). Room chips (summon offer, cap raise) go
    through the existing beat slot.
@@ -102,7 +102,7 @@ member bubble stamps that run into recquality.
 ## Open forks (Andrew decides; recommendation first)
 
 1. Unaddressed message → **the lead** (predictable, one voice) vs router.js pick.
-2. Default `maxHops` = **6** per Commander message. 0 kills agent-to-agent.
+2. Default `maxHops` = **6** per Master message. 0 kills agent-to-agent.
 3. Team Lead fronts rooms? It is **hollow on a default station** (work-splitting skill needs the
    `orchestrator` prop, KIT-OUT never places it — open bug in `class-catalog-expansion-lane`). Fix that first,
    or let any agent lead.

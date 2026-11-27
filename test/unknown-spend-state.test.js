@@ -20,7 +20,7 @@ function ledgerWith(rows, receipts, opts) {
   const io = { readAll: () => rows.map(r => Object.assign({}, r)), unsettled: () => receipts.map(r => Object.assign({}, r)), append() {}, beginRun() {}, finishRun() {} };
   return makeLedger(Object.assign({ io, clock, nextId: () => crypto.randomUUID() }, opts || {}));
 }
-const chosen = () => true;   // a limit the Commander chose is strict (index.js budgetScopeIsExplicit)
+const chosen = () => true;   // a limit the Master chose is strict (index.js budgetScopeIsExplicit)
 const prior = { runId: 'prior', agentId: 'agent', usd: 0.5, ts: NOW - 3600000 };
 const tornLine = { runId: 'damaged-aaaaaaaaaaaaaaaaaaaaaaaa', agentId: 'nova', kind: 'damaged', lineHash: 'a'.repeat(64) };
 

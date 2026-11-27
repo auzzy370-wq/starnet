@@ -1,7 +1,7 @@
 'use strict';
 const { readSidecarSource } = require('./helpers/source');
 /* INSPECT FULL REQUEST (customer report, 0.13.1): a consent card's argsSummary clips a long command or path at 80
-   characters, so the Commander could not see what they approved. The sidecar now keeps the WHOLE redacted request on the
+   characters, so the Master could not see what they approved. The sidecar now keeps the WHOLE redacted request on the
    pending prompt (GET /api/consent/args) and every card without its own payload view offers a disclosure that reads it.
    The live route round-trip is proven in test/consent-full-args.e2e.test.js; this file pins the pure pieces. */
 const test = require('node:test');

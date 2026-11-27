@@ -192,7 +192,7 @@
       if (!current()) return true;
       host.innerHTML = '';
       // A 404 here has ONE ordinary cause: the file was moved or deleted on disk after the library recorded it.
-      // KEEP copies rather than moves, so the archive normally survives — but the Commander owns that folder and
+      // KEEP copies rather than moves, so the archive normally survives — but the Master owns that folder and
       // may clear it. Say the real reason instead of showing them an HTTP code they cannot act on.
       const gone = /\b404\b/.test(String((e && e.message) || ''));
       if (say) say(gone
@@ -292,7 +292,7 @@
   const PILLS = {
     kept: { label: 'KEPT', cls: 'ok' },
     produced: { label: 'DONE', cls: 'ok' },
-    // a PLAN the Commander pressed Implement on: it was acted on and produced a build. Distinct from KEPT on
+    // a PLAN the Master pressed Implement on: it was acted on and produced a build. Distinct from KEPT on
     // purpose — nothing was copied to a folder, so calling it kept would assert a file landing that never happened.
     implemented: { label: 'IMPLEMENTED', cls: 'ok' },
     pending: { label: 'NEEDS A DECISION', cls: 'warn' },
@@ -390,7 +390,7 @@
       const mainAt = r.main ? files.findIndex(f => f && f.path === r.main) : -1;
       const mainFirst = lis => (mainAt > 0 ? [lis[mainAt]].concat(lis.filter((_, i) => i !== mainAt)) : lis).join('');
       const sec = (label, inner) => inner ? '<div class="dlv-sec"><h5>' + label + '</h5>' + inner + '</div>' : '';
-      // THE ASK — the Commander's own words, quoted rather than paraphrased.
+      // THE ASK — the Master's own words, quoted rather than paraphrased.
       const ask = sec('WHAT YOU ASKED FOR', r.ask ? '<p class="dlv-quote">' + esc(r.ask) + '</p>' : '');
       // WHAT CAME BACK — the agent's recorded closing message, and ONLY when the run kept one. It deliberately
       // does NOT fall back to the deliverable's summary: that sentence is already on the row directly above, and

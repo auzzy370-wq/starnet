@@ -174,7 +174,7 @@
   }
 
   /* A tool result is outside text (a web page, a file, an email): a "</tool_result><user>…" inside it closed the result and
-     opened a turn that read as the Commander's own (sweep 2026-10-03). Every transcript or call tag in it is written
+     opened a turn that read as the Master's own (sweep 2026-10-03). Every transcript or call tag in it is written
      with &lt; so it stays text; the native API keeps roles apart structurally, this text transcript has to do it here. */
   const TRANSCRIPT_TAG_RE = /<(\/?)((?:[A-Za-z_][\w-]*:)?(?:tool_result|user|assistant|system_note|conversation|function_calls|invoke|parameter|tool_call))(?=[\s>/]|$)/gi;
   const inertTags = s => String(s).replace(TRANSCRIPT_TAG_RE, '&lt;$1$2');
@@ -384,7 +384,7 @@
      the adapter yielded nothing until it closed, and the run read "waiting for 6:15" with no sign of life.
      WHY STOP ({ stop: true }): the API ends a turn at the close of its call block and waits for the results. Here
      `claude -p` runs with no tools, so nothing stops it: the model wrote a call, heard nothing back, wrote the next
-     one on a guess, and finally told the Commander "every tool result is coming back empty". The reader ends the
+     one on a guess, and finally told the Master "every tool result is coming back empty". The reader ends the
      turn when the call block is over: at </function_calls>, or at the first thing after a call that is not another
      call. Anything the model writes past that point is a guess at results it has not seen. */
   const PFX = '(?:[A-Za-z_][\\w-]*:)?';   // a tag may carry a namespace prefix

@@ -1,5 +1,5 @@
 /* sidecar/tools/fence.js — the UNTRUSTED-CONTENT FENCE, shared by every tool that pulls text the
-   Commander did not author into the agent's context.
+   Master did not author into the agent's context.
 
    Web tools have fenced since the web lane; browser page reads and MCP connector results did NOT, which
    meant the two newest untrusted sources arrived raw — and one of them (connectors) is exactly what an

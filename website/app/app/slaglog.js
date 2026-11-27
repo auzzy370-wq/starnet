@@ -34,7 +34,7 @@
     // the Vultron relay refused one call's price: its message names the two fixes (fresh chat, cheaper model)
     call_too_expensive: 1,
     // harness stops whose own message is the fix and a plain resend repeats them (2026-10-11): a tool call too big for
-    // the model's output limit (ask in smaller parts / switch model), and a Commander hook that blocks the run
+    // the model's output limit (ask in smaller parts / switch model), and a Master hook that blocks the run
     output_limit: 1, hook_blocked: 1,
     // the station's own sentence names the fix and a resend is refused the same way (typed-outcomes, 2026-10-29): a model's chat
     // template that refused the conversation (pick another model), a TLS certificate this machine does not trust
@@ -94,7 +94,7 @@
         // a KNOWN cause — an empty provider wallet, a model the key can't use, a missing key — names its real
         // fix. "send it again, then report it" is wrong there: a resend hits the same wall and the "bug" is the
         // account (2026-10-07: three Anthropic "credit balance is too low" runs became a quest telling the
-        // Commander to report Vultron).
+        // Master to report Vultron).
         if (ctx.error && ctx.error.msg && KNOWN_ERROR_KINDS[ctx.error.kind])
           return { reason, title: 'errored out',
             // Allocation can fail after earlier turns already ran. Do not claim

@@ -171,7 +171,7 @@ A.eq((listeners['agent.run.end'] || []).length, 1, 'the store subscribes to run.
   fire('agent.run.end', { agentId: 'agent', runId: 'run-link', reason: 'error', turns: 0, usd: 0 });
   A.eq(notifs.length, 1, 'a stalled build surfaces exactly one beat');
   A.ok(/price watcher/.test(notifs[0].txt) && /Relink it/.test(notifs[0].txt), 'a build stalled on a refused link says relink: ' + notifs[0].txt);
-  A.ok(!/report it|diagnostics/.test(notifs[0].txt), 'a refused link never tells the Commander to report Vultron');
+  A.ok(!/report it|diagnostics/.test(notifs[0].txt), 'a refused link never tells the Master to report Vultron');
   A.eq(notifs[0].cls, 'warn', 'the beat stays in the neutral WARN family');
 }
 {

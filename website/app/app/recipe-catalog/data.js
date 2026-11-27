@@ -13,7 +13,7 @@
    gets surfaced as an explicit unresolved list, never quietly coerced into something that makes the
    output look complete. A clean-looking table with three silently mangled rows is worse than a messy
    one, because the mangling is now invisible and downstream everything inherits it. This is the same
-   truthful-telemetry law the product runs on, applied to the Commander's own data.
+   truthful-telemetry law the product runs on, applied to the Master's own data.
 
    Note on tags: these lean `code` because that is what the app's own classifier assigns a directive
    about columns, files and parsing — and it is the honest lane, since this work wants an agent with a

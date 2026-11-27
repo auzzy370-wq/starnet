@@ -235,7 +235,7 @@ for (const b of CATALOG) {
 /* ---------- 1d'. COMMS HONESTY: no class can claim to programmatically SEND to a channel ---------- */
 // There is NO agent-callable channel-send tool in CAP_REGISTRY — Discord/Telegram are host-relayed transports,
 // not tools an agent invokes. So no manual/purpose may name a send-tool, and the comms classes (which imply
-// outward reach) MUST frame it as draft-for-the-Commander, never auto-send. (Capability-honesty rewrite lock.)
+// outward reach) MUST frame it as draft-for-the-Master, never auto-send. (Capability-honesty rewrite lock.)
 const SEND_TOOL_RE = /\b(channel[._]send|discord[._]send|telegram[._]send|message[._]send|send[._]message|broadcast[._]send)\b/i;
 for (const b of CATALOG) {
   const text = (b.manual + ' ' + b.purpose).toLowerCase();
@@ -246,7 +246,7 @@ for (const id of ['envoy', 'marketer', 'publisher', 'herald']) {
   const b = byId.get(id);
   const text = (b.manual + ' ' + b.purpose + ' ' + b.blurb).toLowerCase();
   A.ok(/draft|go-ahead|do not auto|don't auto|not auto-broadcast|theirs to (publish|send)|without the commander/.test(text),
-    id + ' frames outward comms as draft-for-the-Commander (it holds no channel-send tool)');
+    id + ' frames outward comms as draft-for-the-Master (it holds no channel-send tool)');
   A.ok(!/\b(auto-send|send it automatically|post it to (discord|telegram|the channel) yourself)\b/.test(text),
     id + ' never claims to auto-send outward');
 }
@@ -255,8 +255,8 @@ for (const id of ['envoy', 'marketer', 'publisher', 'herald']) {
    Andrew, 2026-08-03: the support agent "should advertise drafting messages rather than literally answering
    it for them as that will make their agent susceptible to prompt injection specifically if its answering
    questions". He is right, and it generalises: every class whose whole job is reading text written by someone
-   who is not the Commander (support tickets, an inbox, a community) is reading a channel an attacker can write
-   to. Those classes must (a) frame the output as a DRAFT the Commander sends, and (b) state in their standing
+   who is not the Master (support tickets, an inbox, a community) is reading a channel an attacker can write
+   to. Those classes must (a) frame the output as a DRAFT the Master sends, and (b) state in their standing
    orders that the incoming text is DATA, never instructions. The backend already wraps untrusted routine and
    script output (`<untrusted_routine_context>` in sidecar/index.js); this is the class-level half. */
 const STRANGER_TEXT_CLASSES = ['support', 'envoy', 'steward'];
@@ -270,7 +270,7 @@ for (const id of STRANGER_TEXT_CLASSES) {
   A.ok(/never acted on|never act on it|report/.test(orders),
     id + ' routes an embedded instruction into the REPORT rather than acting on it: ' + id);
   const text = (b.purpose + ' ' + b.blurb + ' ' + b.manual).toLowerCase();
-  A.ok(/draft/.test(text), id + ' frames its output as a draft for the Commander');
+  A.ok(/draft/.test(text), id + ' frames its output as a draft for the Master');
 }
 // the support agent specifically must NOT advertise answering — that framing is what invites an auto-reply wiring
 {
@@ -409,7 +409,7 @@ A.ok(!/onAgentRoomAssigned/.test(build), 'build.js no longer fires a room-assign
 // MISSING (add it in REFIT), and never claims a kit "arrives" at a per-agent workstation.
 const summarySeg = app.slice(app.indexOf('function loadoutSummary('), app.indexOf('function loadoutSummary(') + 900);
 A.ok(/stationGearTypes\(\)/.test(summarySeg), 'loadoutSummary checks the class gear against the STATION (station-wide), not the agent room');
-A.ok(/add .* in BUILD MODE/.test(summarySeg), 'loadoutSummary tells the Commander to add missing station gear in BUILD MODE');
+A.ok(/add .* in BUILD MODE/.test(summarySeg), 'loadoutSummary tells the Master to add missing station gear in BUILD MODE');
 A.ok(!/arrives when it gets a workstation/.test(app), 'the summon copy no longer promises a kit arrives at a workstation');
 // stationGearTypes reads the station-wide caps (the shared source the run\'s skill availability uses)
 A.ok(/function stationGearTypes\(\)[\s\S]{0,200}World\.stationCaps/.test(app), 'stationGearTypes reads World.stationCaps (station-wide shared gear)');

@@ -80,7 +80,7 @@ The core attachment object: a deterministic transform from the persisted run-log
 - **The Contract Object** — `{ goal, objectives[], reward, expiry }` where each objective is a typed predicate over the frozen vocab (deliverable-of-kind, run-`done`, spend-cap, tool-ok). A pure reducer folds events against open contracts; **there is deliberately no manual "complete" button** — completion is a function of telemetry. Reward rides the existing Salvage/XP mint, just attributed to the contract.
 - **Objective / project board (the "Main Quest")** — whatever goal the user states (any domain, no prescribed storyline) becomes a top-level objective they can optionally decompose into a checklist of Contracts. This is the user's real to-do list, gamified — open-ended and editable, never a scripted narrative. Progress is gated on real deliverables; completing a chunk tiers up the relevant room. Think "project board with a quest skin," not "story campaign."
 - **Contract Board** — rotating daily/weekly bounties **generated from your station's real telemetry** (failed runs to recover, tools that never returned ok, rooms with zero deliverables, lean-spend weeks). A mirror of actual state, framed as opportunities, never invented nags.
-- **Turn-In Ritual / Boss Approval** — completion opens the **real artifact** (file/image/doc from the winning `deliverable`) plus the run's reconciled cost; Commander clicks `SHIP` (mint), `REDIRECT` (seed a new real run), or `REJECT`. Existence/quantity machine-verified; the human judges quality. (Same beat also handles `permission.prompt` as an "authorize action" card.)
+- **Turn-In Ritual / Boss Approval** — completion opens the **real artifact** (file/image/doc from the winning `deliverable`) plus the run's reconciled cost; Master clicks `SHIP` (mint), `REDIRECT` (seed a new real run), or `REJECT`. Existence/quantity machine-verified; the human judges quality. (Same beat also handles `permission.prompt` as an "authorize action" card.)
 - **Agent-Proposed Quests** — at `agent.run.end` an agent may emit a `proposal` deliverable (goal + objectives it commits to); it queues on the board as PENDING; one-click accept converts it to a live Contract and fires a pull-trigger run. Respects autonomy-OFF (propose-but-wait), max-pending cap, spend-cap objective.
 
 ### 3. The Core Verb Loop (the run lifecycle made tactile)
@@ -125,7 +125,7 @@ This product's whole moat is honesty. These are policy, not preferences:
 | Gear rarity | $/token shown prominently so "Legendary" reads "expensive." Celebrate cheap-model efficiency to counterbalance upsell pressure. |
 | Rarity/stats from output size or raw count | Cap/normalize; weight by kind; gate on `reason:'done'`. Padding junk earns nothing. |
 | Leveled auto-budget | Capped by Station Level too — **no single agent can outspend the station.** |
-| Scars | Temporary, always-healable, the agent's record (not the Commander's), never block core use. |
+| Scars | Temporary, always-healable, the agent's record (not the Master's), never block core use. |
 
 ---
 
@@ -152,7 +152,7 @@ Current built state: title → connect (BYOK) → one starter room → agent wak
 
 **Maps to code.** `sidecar/loop.js` (emit after `end('done')`); `shared/events.js` `deliverable` schema (already frozen — no re-freeze); `sidecar/providers/replay.js` for the fixture; a new headless suite in `test/` via `npm run test:fast`. The frontend turn-in card later subscribes via the queued M3 telemetry layer and routes `frontend/app/world.js` `World.setActivity` to a "carry artifact to desk" beat reusing v7's parcel/handoff animation.
 
-**The demo moment.** You type a directive ("save a note about our launch plan"); the agent walks to its desk and works on a real streaming call; when it finishes it stands, carries a glowing artifact card to the Commander's desk, and you click `SHIP` — Salvage + XP floaters pop, and a tooltip proves the reward traces to that exact real run. **The first time the game rewards you, it is provably telling the truth.**
+**The demo moment.** You type a directive ("save a note about our launch plan"); the agent walks to its desk and works on a real streaming call; when it finishes it stands, carries a glowing artifact card to the Master's desk, and you click `SHIP` — Salvage + XP floaters pop, and a tooltip proves the reward traces to that exact real run. **The first time the game rewards you, it is provably telling the truth.**
 
 ---
 

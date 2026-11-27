@@ -3,7 +3,7 @@
    place it. Not automatically place it for the user").
 
    BUILD YOUR OWN LINE used to lay INBOX → BAY → OUTBOX itself near the middle of the view (LineEdit's newLine) and open its panel.
-   Now the key only puts an INBOX in THE HAND; nothing lands until the Commander clicks. Driven for real: build.js's own setHand /
+   Now the key only puts an INBOX in THE HAND; nothing lands until the Master clicks. Driven for real: build.js's own setHand /
    startNewLine / paintHandKeys / setHint / commitPropStamp and the landing clock run in a VM against a live WorldModel, so the
    hand, the hint, the lit key, the placement and the floor after the click are the real ones — never a re-implementation.
      · the key puts an INBOX in hand and places NOTHING (no prop, no link, no undo slot); the key and the hotbar's INBOX slot light;

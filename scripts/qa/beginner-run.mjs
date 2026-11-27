@@ -119,7 +119,7 @@ export function uiOnlyProviderBaseEnv(mode, base) {
 }
 
 // A production-mode sidecar deliberately scans the canonical OS app-data roots for prior-station
-// evidence. The Beginner Run must exercise that behavior without seeing the Commander's real profile,
+// evidence. The Beginner Run must exercise that behavior without seeing the Master's real profile,
 // so the child process gets an empty OS-data namespace as well as its own SKYNET_WORKSPACES root.
 export function isolatedOsDataEnv(root, pathMod = path) {
   const base = String(root || '').trim();

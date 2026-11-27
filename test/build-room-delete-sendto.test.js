@@ -72,7 +72,7 @@ function rig() {
   ctx.selectedRoomId = R.rb;
   ctx.deleteSelectedRoom({}); R.tick(300); ctx.deleteSelectedRoom({});
   A.ok(/THIS CUTS 1 SEND TO/.test(said[said.length - 1]), 'the cut warning');
-  R.tick(4200);   // the Commander reads it
+  R.tick(4200);   // the Master reads it
   ctx.deleteSelectedRoom({});
   A.ok(!s.roomById(R.rb) && ctx.selectedRoomId === null, 'a repeat DELETE 4 s after the warning deletes the room — ' + said[said.length - 1]);
   const R2 = rig();

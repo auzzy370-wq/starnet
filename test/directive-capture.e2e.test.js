@@ -1,6 +1,6 @@
 'use strict';
 /* node test/directive-capture.e2e.test.js — the directive is captured ONCE, before the files expand, and every reader of
-   "what the Commander asked" reads that one wording (turn identity, commit 4; closes the directive/title half of e7dcb889;
+   "what the Master asked" reads that one wording (turn identity, commit 4; closes the directive/title half of e7dcb889;
    A2-ROOT-01, A2-SP-06, A2-FP-C01).
 
    Real sidecar (hermetic fixture) + real POST /api/run against a local mock provider (no money spent). Legs:
@@ -80,7 +80,7 @@ function startMock() {
         if (isMain && capture) state.sawCapture = true;
         res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' });
         if (isMain && state.mode === 'save' && !(request.messages || []).some(m => m.role === 'tool' && m.tool_call_id === 'brief_1')) {
-          res.write('data: ' + JSON.stringify({ choices: [{ delta: { tool_calls: [{ index: 0, id: 'brief_1', type: 'function', function: { name: 'brief_proceed', arguments: JSON.stringify({ objective: 'Save the requested API key and review the implementation plan', deliverable: 'A saved key and a short review', assumptions: ['Use the service named by the Commander'] }) } }] } }] }) + '\n\n');
+          res.write('data: ' + JSON.stringify({ choices: [{ delta: { tool_calls: [{ index: 0, id: 'brief_1', type: 'function', function: { name: 'brief_proceed', arguments: JSON.stringify({ objective: 'Save the requested API key and review the implementation plan', deliverable: 'A saved key and a short review', assumptions: ['Use the service named by the Master'] }) } }] } }] }) + '\n\n');
           res.write('data: ' + JSON.stringify({ choices: [{ delta: {}, finish_reason: 'tool_calls' }], usage: { prompt_tokens: 5, completion_tokens: 3, total_tokens: 8 } }) + '\n\n');
         } else if (isMain && state.mode === 'save' && !(request.messages || []).some(m => m.role === 'tool' && m.tool_call_id === 'save_1')) {
           res.write('data: ' + JSON.stringify({ choices: [{ delta: { tool_calls: [{ index: 0, id: 'save_1', type: 'function', function: { name: 'keys_save', arguments: JSON.stringify({ service: 'Capture Proof' }) } }] } }] }) + '\n\n');
@@ -177,10 +177,10 @@ async function poll(fn, tries) { for (let i = 0; i < (tries || 40); i++) { const
     const d1 = dir1[0] || {};
     // (attachment rows, S3) the directive row holds the label of a captionless turn, never the expanded text whose file bytes are a third
     // party's. The files ride as attachment rows beside it; the model's own copy of the turn is unchanged (checked above). The label is built
-    // from the files' NAMES, a third party's text, so with no typed words it is not the Commander's words and is never written clean (repair:
+    // from the files' NAMES, a third party's text, so with no typed words it is not the Master's words and is never written clean (repair:
     // a clean owner row feeds RECENT ACTIVITY, interests and briefs): it carries the attachment stamp.
     A.ok(!/NOTES-BYTES-SENTINEL|SCREEN CAPTURE/.test(String(d1.content || '')), 'the directive row\'s content holds neither the file\'s bytes nor the capture marker');
-    A.eq([d1.content, d1.typed, d1.turnId, d1.kind, (d1.attachments || []).map(a => a.id), d1.taint, d1.taintKnown], [LABEL, undefined, T1, 'turn', [PHOTO.id, NOTE.id], 'user attachment', true], 'the directive row is the label (typed equals content, so it is not stored twice), its turn, kind turn, the attachment refs, and the attachment stamp (no typed words: not the Commander\'s words, never a clean owner row)');
+    A.eq([d1.content, d1.typed, d1.turnId, d1.kind, (d1.attachments || []).map(a => a.id), d1.taint, d1.taintKnown], [LABEL, undefined, T1, 'turn', [PHOTO.id, NOTE.id], 'user attachment', true], 'the directive row is the label (typed equals content, so it is not stored twice), its turn, kind turn, the attachment refs, and the attachment stamp (no typed words: not the Master\'s words, never a clean owner row)');
     const files1 = rows1.filter(x => x.kind === 'attachment');
     const sha = buf => crypto.createHash('sha256').update(buf).digest('hex');
     A.eq(files1.map(x => [x.role, x.turnId, x.taint, x.content, x.attachment && x.attachment.id, x.attachment && x.attachment.size, x.attachment && x.attachment.sha256]),

@@ -93,7 +93,7 @@ const dropped = () => failopen.counts()['runstore.noteIdentity'] || 0;
 
 // 5. a settled spend keeps the run's turn identity: settleSpend builds its superseding row from the served row, and record()
 //    keeps the identity that row carries (checked exactly as noteIdentity checks it), so the chain's served row still names
-//    the run's turn and directive row after the Commander settles it
+//    the run's turn and directive row after the Master settles it
 {
   const io = memIo();
   const s = makeRunStore({ io, clock });

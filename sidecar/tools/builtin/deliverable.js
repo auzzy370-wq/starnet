@@ -62,7 +62,7 @@
       // impact 'none' STATED (2026-09-30): undeclared, the fail-closed classifier filed it as external-unknown, so a run that
       // had read the web stopped mid-task on an approval card just to NAME its work (or was denied in a routine).
       name: 'deliverable_note', capability: 'deliverable', scope: 'write', requiresConsent: false, impact: 'none', timeoutMs: 5000,
-      description: 'Name the work you produced in this task, so the Commander can find it later in DELIVERABLES. '
+      description: 'Name the work you produced in this task, so the Master can find it later in DELIVERABLES. '
         + 'Optional: call this ONCE, at the end, only when you actually created or changed files. Skip it when the user limits actions, says no further actions, or asks you to stop after the requested change. '
         + 'title: a short plain-English name for the thing you made (not a filename). '
         + 'summary: one plain sentence saying what it is. '

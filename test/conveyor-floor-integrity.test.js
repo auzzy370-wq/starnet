@@ -31,7 +31,7 @@ function rig(type='loop') {
 }
 // ESCAPE FIRST, BACK SECOND (final floor lane M3): a LOOP whose escape lane was laid before its back lane must still take
 // that back lane. The lane-order guess read the escape as "the back lane", so the drag refused with "already has its back
-// lane" while the floor's compile said LOOP_NO_BACK — the two must agree, and the order the Commander draws in must not matter.
+// lane" while the floor's compile said LOOP_NO_BACK — the two must agree, and the order the Master draws in must not matter.
 {
  const {s,I,B1,B2,J}=rig();
  const x=add(s,'outbox',60,20);A.ok(s.connectBelt(J,x).ok,'escape lane first is allowed');

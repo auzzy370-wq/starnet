@@ -52,7 +52,7 @@ const Overseer = (() => {
     } finally { clearTimeout(timeout); busy = false; }
   }
   // the beat runs through PollGate (idle CPU piece 3, 2026-10-20): the same 2.5 s while the station can be seen, a 30 s
-  // floor while the Commander is away, and a catch-up read the moment they are back. Only the scheduling moved: what
+  // floor while the Master is away, and a catch-up read the moment they are back. Only the scheduling moved: what
   // fresh() and unreachable() say is unchanged, so an ask out after a long away reads as it always did until it answers
   if (typeof document !== 'undefined') document.addEventListener('DOMContentLoaded', () => {
     if (typeof PollGate !== 'undefined' && PollGate.every) PollGate.every(refresh, { ms: BEAT });

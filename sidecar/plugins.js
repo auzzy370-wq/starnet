@@ -10,7 +10,7 @@
    no registry, no station internals, no capability set, no provider keys. But it is ordinary in-process
    JavaScript, so nothing stops it requiring whatever Node exposes. Real isolation would need a worker or a VM
    boundary and a serialized bridge; this deliberately does not pretend to have one. What protects the station
-   is the same thing that protects it from shell hooks: the code is INSTALLED BY the Commander, every plugin is
+   is the same thing that protects it from shell hooks: the code is INSTALLED BY the Master, every plugin is
    inert until explicitly allowed, and the allowlist is keyed to the code's own hash so a silent edit re-asks.
 
    The reference harness loads its Python plugins BEFORE its shell hooks so plugin decisions win ties on a
@@ -222,7 +222,7 @@
       const sc = parseScreens(manifest, new Set(tree.files.map(f => f.rel)));
       let findings = guard ? (mainPath ? (guard.scanText(main, source) || null) : []) : null;
       // helpers are code too: the approval prompt discloses what THEY appear to do as well (UI scripts included —
-      // they run in a sandboxed frame, but the Commander is still saying yes to them)
+      // they run in a sandboxed frame, but the Master is still saying yes to them)
       if (guard && Array.isArray(findings)) {
         for (const f of tree.files) {
           if (f.rel === mainRel || f.text == null) continue;
@@ -244,7 +244,7 @@
     }
 
     /* approvedRecord(id) -> plugin | null — the SERVING gate. A plugin's files are only ever served while the
-       Commander's approval covers the exact bytes on disk: the allowlist digest must equal a fresh hash of the
+       Master's approval covers the exact bytes on disk: the allowlist digest must equal a fresh hash of the
        folder. Re-hashed at most every RECHECK_MS per plugin (a window's page pulls many assets at once); without
        an injected clock every call re-hashes — the check never fails open for want of a clock.
 
@@ -416,7 +416,7 @@
         /* EXEC-TIME RE-VERIFICATION. Approval was checked against the folder as discover() saw it; a helper the
            plugin require()s lazily (or reads at event time) can still change after load. Every handler call
            re-verifies the folder digest (re-hashed at most every RECHECK_MS) and a drift disables the WHOLE
-           plugin until the Commander approves the new code — it goes back to pending on the next listing. */
+           plugin until the Master approves the new code — it goes back to pending on the next listing. */
         let checkedAt = now ? now() : 0, disabled = false;
         const stillApproved = async () => {
           if (disabled) return false;

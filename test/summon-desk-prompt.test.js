@@ -1,6 +1,6 @@
 /* node test/summon-desk-prompt.test.js — THE POST-SUMMON DESK STEP IS OWNED BY THE SESSION.
 
-   A hand-summoned specialist arrives with no desk on purpose (the Commander chooses where it sits), and it
+   A hand-summoned specialist arrives with no desk on purpose (the Master chooses where it sits), and it
    cannot take floor work until one exists. That step used to be printed ONCE by summonAgent as a DOM-only
    line — so the first stream switch or reload erased the only place it was ever stated (load() rebuilds the
    log from ws.history, and a local line is not history), and a live beat could drop it outright. A brand-new

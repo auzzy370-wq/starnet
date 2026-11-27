@@ -4,7 +4,7 @@ This is an incremental interface change, preserving the station as home and its 
 
 ## Implemented
 
-- Removed the duplicate My Work destination. Source/discovery controls now live in an expandable Commander section; useful draft creation lives in Recipes; completed Tasks can open a prefilled routine through REPEAT.
+- Removed the duplicate My Work destination. Source/discovery controls now live in an expandable Master section; useful draft creation lives in Recipes; completed Tasks can open a prefilled routine through REPEAT.
 - Replaced the starter equipment checklist wording with purpose-based choices. FILES selects the five equivalent prop appearances. The palette and existing-prop inspection explain purpose, current access, room scope, sharing and duplicate/removal effects. Unknown authority produces a recovery message rather than a grant claim.
 - Corrected the optional tour's fabricated missing-tool story and full-kit implications. Equipment inspection dismisses the generic coach while preserving the deliberate equipment tour.
 - Corrected Abilities and Skills reads to account for selected-agent equipment scope and existing profile/Full Access projection. The skill read also includes shared station equipment, matching the runtime's instruction context. No permission system or execution grant changed.
@@ -23,7 +23,7 @@ Verified in the real sidecar-backed app at port 8978 using the isolated determin
 3. Entered synthetic client notes in Recipes, opened Model & connection, returned to Recipes and observed “Your unsent draft has been restored” with the exact notes intact.
 4. Launched that draft without placing equipment or a conveyor. COMMS showed the real working state, completed answer and `weekly-client-update.md`. The local replay saved a 554-byte Markdown deliverable, with the missing owner/date facts explicitly identified.
 5. Tasks showed “FINISHED — REVIEW RESULT” under “IN PROGRESS / REVIEW.” MARK COMPLETE moved it to COMPLETED. REPEAT opened CREATE ROUTINE with the original task, selected agent and a warning that a pasted source is fixed. It did not create a routine. The form correctly said scheduling was off.
-6. Commander retained editable facts and explained model transmission. Its source section showed the real absence of approved roots, with project-folder and sample actions. The Recipes draft form hides unrelated category filters and the inactive folder fields.
+6. Master retained editable facts and explained model transmission. Its source section showed the real absence of approved roots, with project-folder and sample actions. The Recipes draft form hides unrelated category filters and the inactive folder fields.
 7. Searching Notion showed its sign-in card plus an expandable API alternative, without unrelated category headings or Airtable's alternative. Expanding it and choosing ADD KEY opened the existing KEYS form with Notion and its docs URL prefilled, the search cleared and the key blank. No credential was supplied or changed.
 8. The matching skill no longer instructed the Full Access user to place an Intel Cab. Its enabled switch remained OFF; availability and user preference remained separate.
 
@@ -35,4 +35,4 @@ The first full regression run stopped at step 503/712 because it required the un
 
 Not claimed: independent beginner comprehension, production model quality, real third-party sign-in, every multi-agent/scheduled/delegated context live-tested, or release readiness. Fresh-user sessions remain necessary to validate the plan's usability outcomes. The complete two-room scope rule is covered by model/authority tests; the live equipment check used the solo Full Access fixture. No saved user station or real account was used for these experiments.
 
-Final pre-merge gate: `npm run test:fast` completed successfully on `0c6da55be` — **712/712 checks green**. The final source handoff was also verified: Recipes opened, Commander closed after its exit animation, and unrelated recipe filters were hidden. Subsequent edits only record this receipt and normalize the historical audit's line endings. The integration result is recorded in the shared QA digest after the post-merge gate.
+Final pre-merge gate: `npm run test:fast` completed successfully on `0c6da55be` — **712/712 checks green**. The final source handoff was also verified: Recipes opened, Master closed after its exit animation, and unrelated recipe filters were hidden. Subsequent edits only record this receipt and normalize the historical audit's line endings. The integration result is recorded in the shared QA digest after the post-merge gate.

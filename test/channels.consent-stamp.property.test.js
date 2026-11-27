@@ -74,7 +74,7 @@ async function restart(w, why) {
   await w.advance(0);
   w.boot();   // a fresh store and fresh hubs over the same disk, told 'up'
 }
-// a message whose run stops at its first tool step for the Commander's permission
+// a message whose run stops at its first tool step for the Master's permission
 function asking(w, tag) { w.plans.set(String(tag), { steps: 1, stepMs: 200, long: false, question: false, ask: true }); }
 async function ask(w, chat) {
   const tag = w.inbound(chat, 'message');
@@ -240,7 +240,7 @@ async function failures() {
     await oneStamp('a refused credential', REMOTE.line, kb, w, 2);
   });
 
-  // the Commander deleted the keyboard: nothing to stamp, nothing to report, nothing to retry
+  // the Master deleted the keyboard: nothing to stamp, nothing to report, nothing to retry
   await world(async (w) => {
     const tag = await ask(w, DM);
     const kb = askKeyboards(w, DM).pop();

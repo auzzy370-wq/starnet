@@ -1,4 +1,4 @@
-/* node test/dossier.test.js — the pure Commander Dossier engine (frontend/app/dossier.js).
+/* node test/dossier.test.js — the pure Master Dossier engine (frontend/app/dossier.js).
    Locks the Phase-A promises: beliefs add/update/forget/pin per dimension with collision-proof ids;
    onboarding docs seed ONCE per doc (first-seed-wins, forgotten seeds don't resurrect, empty docs seed
    later); composeBlock() is durable-only + byte-stable + omits blank dimensions + '' when cold + capped;
@@ -98,12 +98,12 @@ A.ok(block1.indexOf('Stack & tools: TypeScript') >= 0, 'composeBlock renders a k
 A.ok(block1.indexOf('Goals: Ship Phase A') >= 0, 'composeBlock renders multiple known dimensions');
 A.ok(block1.indexOf('Identity') < 0, 'composeBlock omits blank dimensions (never guesses)');
 A.eq(D.composeBlock(cb, {}), block1, 'composeBlock is byte-identical for identical state (cache-warm)');
-// the pain lead — the one hand-written, non-trivial lead — must compose so every agent SEES the Commander's pain (Slice 6)
+// the pain lead — the one hand-written, non-trivial lead — must compose so every agent SEES the Master's pain (Slice 6)
 D.upsert(cb, 'pain', { text: 'writing standup reports by hand' }, 3);
-A.ok(D.composeBlock(cb, {}).indexOf('Pain points (what eats their time') >= 0, 'composeBlock renders the pain lead so downstream pitches see the Commander pain');
-// the ambition lead — pain's matched pull — must compose too so pitches can aim at what the Commander actually wants (Slice 7)
+A.ok(D.composeBlock(cb, {}).indexOf('Pain points (what eats their time') >= 0, 'composeBlock renders the pain lead so downstream pitches see the Master pain');
+// the ambition lead — pain's matched pull — must compose too so pitches can aim at what the Master actually wants (Slice 7)
 D.upsert(cb, 'ambition', { text: 'launch a newsletter' }, 4);
-A.ok(D.composeBlock(cb, {}).indexOf('Ambitions (what they keep meaning to do') >= 0, 'composeBlock renders the ambition lead so downstream pitches see the Commander ambitions');
+A.ok(D.composeBlock(cb, {}).indexOf('Ambitions (what they keep meaning to do') >= 0, 'composeBlock renders the ambition lead so downstream pitches see the Master ambitions');
 // the cap backs off on a word boundary and never throws
 const big = D.fresh();
 for (let i = 0; i < 6; i++) D.upsert(big, 'identity', { text: 'word'.repeat(20) + ' ' + i }, i);
@@ -161,7 +161,7 @@ A.eq(new Set(fixed.dims.identity.map(b => b.id)).size, 4, 'a post-hydrate add ne
 {
   const d = D.fresh();
   D.upsert(d, 'pain', { text: 'typed by the commander', source: 'onboarding' }, 10);
-  A.eq(d.dims.pain[0].weight, 'stated', 'a plain upsert defaults to weight stated (the Commander\'s words)');
+  A.eq(d.dims.pain[0].weight, 'stated', 'a plain upsert defaults to weight stated (the Master\'s words)');
   D.upsert(d, 'goals', { text: 'a synthesized mission', source: 'onboarding', weight: 'synth' }, 11);
   A.eq(d.dims.goals[0].weight, 'synth', 'a declared weight is honored');
   D.upsert(d, 'stack', { text: 'observed from work', source: 'study', observedAt: 12 }, 12);
@@ -189,7 +189,7 @@ A.eq(new Set(fixed.dims.identity.map(b => b.id)).size, 4, 'a post-hydrate add ne
 }
 
 /* ---------- memory-truth (2026-10-11): an EDITED doc reaches its still-untouched seed ----------
-   The standing_orders seed was copied from operating-manual.md ONCE, so after the Commander edited the manual every
+   The standing_orders seed was copied from operating-manual.md ONCE, so after the Master edited the manual every
    prompt carried both the new "STANDING ORDERS" and the dossier's old "Standing orders" line — an old instruction
    recalled beside the new one. */
 {
@@ -201,13 +201,13 @@ A.eq(new Set(fixed.dims.identity.map(b => b.id)).size, 4, 'a post-hydrate add ne
   A.eq(manualOf(r1), 'Reply in short bullet points', 'an edited Overseer manual replaces its untouched seed — the old order is gone from the prompt');
   A.eq(r1.dims.standing_orders[0].id, id, '…in place (same belief, no duplicate)');
   A.ok(r1.dims.standing_orders[0].source === 'onboarding' && r1.dims.standing_orders[0].weight === 'seed', '…still a mechanical seed (it never starts counting toward readiness)');
-  A.ok(D.composeBlock(r1).indexOf('long paragraphs') < 0 && D.composeBlock(r1).indexOf('short bullet points') > 0, 'the composed COMMANDER block carries only the current order');
-  // negative: a seed the Commander EDITED is theirs — a later manual change never overwrites it
+  A.ok(D.composeBlock(r1).indexOf('long paragraphs') < 0 && D.composeBlock(r1).indexOf('short bullet points') > 0, 'the composed MASTER block carries only the current order');
+  // negative: a seed the Master EDITED is theirs — a later manual change never overwrites it
   const r2 = D.fresh();
   D.seedFromDocs(r2, { manual: 'Be concise' }, 100, { resync: true });
   D.upsert(r2, 'standing_orders', { id: r2.dims.standing_orders[0].id, text: 'Be concise, and cite sources' }, 150);
   D.seedFromDocs(r2, { manual: 'Be verbose' }, 200, { resync: true });
-  A.eq(manualOf(r2), 'Be concise, and cite sources', 'negative: a Commander-edited seed belief is never rewritten by the doc');
+  A.eq(manualOf(r2), 'Be concise, and cite sources', 'negative: a Master-edited seed belief is never rewritten by the doc');
   // negative: a forgotten seed stays forgotten even when the doc changes
   const r3 = D.fresh();
   D.seedFromDocs(r3, { manual: 'Be concise' }, 100, { resync: true });

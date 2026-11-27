@@ -19,7 +19,7 @@ assert.equal(ledger.unsettledRuns()[0].runId, 'interrupted');
 const strict = makeBudget({ ledger, caps: { day: 1 }, clock: { now: () => 42 } });
 const fresh = makeEvaluationAccounting({ ledger });
 assert.equal(fresh.canContinue(), true, 'a fresh evaluator has no local failures');
-// A chosen cap refuses unsettled spend until the Commander explicitly confirms its charge. A bound is not settlement.
+// A chosen cap refuses unsettled spend until the Master explicitly confirms its charge. A bound is not settlement.
 const unknown = strict.check(null, 'owner', 0);
 assert.equal(unknown.code, 'spend_history_unavailable'); assert.equal(unknown.unknown, true); assert.equal(unknown.countAsUsd, 0.08);
 const tight = makeBudget({ ledger, caps: { day: 0.09 }, clock: { now: () => 42 } }).check(null, 'owner', 0);
@@ -42,7 +42,7 @@ failedSettlement.beforeRun({ runId: 'cannot-save' });
 assert.throws(() => failedSettlement.onRun({ runId: 'cannot-save', result: { usd: 0.01, tokens: 3 } }), /disk full/);
 assert.equal(failedSettlement.canContinue(), false);
 for(const reason of ['error','cancelled']) { const f=makeEvaluationAccounting({ledger}); f.beforeRun({runId:reason}); assert.throws(()=>f.onRun({runId:reason,result:{reason,usd:0,tokens:0}}),/incomplete/); assert.equal(pending.has(reason),true); }
-// The dispatch receipt records the billing source the host knew (Vultron credits or the Commander's own key), so an
+// The dispatch receipt records the billing source the host knew (Vultron credits or the Master's own key), so an
 // unsettled evaluation is never shown as BILLING SOURCE UNKNOWN (security-storage-07). Absent stays unknown.
 for (const managed of [true, false, undefined]) {
   const metas = [];

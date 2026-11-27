@@ -243,7 +243,7 @@ const reconcile = async (js, qs, goal) => {   // index.js reconcileCompletedJour
       ['attest declined (false)', attestQ(105, { source: 'agent', agentId: 'agent', evidence, at: 5, confirmed: false })],
       ['attest pending (null)', attestQ(106, { source: 'agent', agentId: 'agent', evidence, at: 5, confirmed: null })],
       ['attest with no attest record', attestQ(107, null)],
-      ['attest Commander-source', attestQ(108, { source: 'commander', agentId: null, evidence, at: 5, confirmed: true })],
+      ['attest Master-source', attestQ(108, { source: 'commander', agentId: null, evidence, at: 5, confirmed: true })],
       ['mechanical with a stray unconfirmed attest', questRow(109, 'done', { completedAt: 6000, attest: { source: 'agent', agentId: 'agent', evidence, at: 5, confirmed: null } })],
       ['completedAt null', questRow(110, 'done', { completedAt: null })],
       ['completedAt before the epoch', questRow(111, 'done', { completedAt: 4000 })],
@@ -331,7 +331,7 @@ const reconcile = async (js, qs, goal) => {   // index.js reconcileCompletedJour
       'GoalAdvance.overlay': () => GoalAdvance.overlay(goal, js.milestoneDoneKeys()),
       'QuestSweeps.livePropKeys': () => A.eq(QuestSweeps.livePropKeys(open(), 'agent', null, { hasCompute: true }), ['compute'], 'livePropKeys still reads the frozen ledger'),
       'QuestSweeps.artifactQuestKeys': () => QuestSweeps.artifactQuestKeys(open(), 'agent'),
-      'QuestSweeps.learnedFactKeys': () => QuestSweeps.learnedFactKeys(open(), 'agent', { id: 'n1', content: 'The Commander ships on Fridays' }),
+      'QuestSweeps.learnedFactKeys': () => QuestSweeps.learnedFactKeys(open(), 'agent', { id: 'n1', content: 'The Master ships on Fridays' }),
       'questinject.questBlock': () => questBlock(open()),
       'GET /api/quests body': () => JSON.stringify({ ok: true, quests: qs.list() })
     };

@@ -90,7 +90,7 @@ const noise = (tag, e) => { throw new Error(tag + ': ' + (e && e.message)); };
       A.eq(await forget('scout'), 0, 'idempotent');
       const dismissed = Scout.dismiss(Scout.stage(Scout.fresh(1), { id: 'x', kind: 'recipe', draft: { name: 'N' }, why: 'w', fingerprint: 'fp one two', quotes: ['sGone'], quotesAt: [4400] }, { now: 4450 }), 'x', { now: 4460 });
       const afterDismiss = Scout.drop(dismissed, i => !!i.quotes);
-      A.ok(afterDismiss.state.denylist.length === 1 && afterDismiss.state.staged.length === 0, 'a dismissed shape\'s fingerprint stays on the denylist: a draft the Commander waved off does not come back');
+      A.ok(afterDismiss.state.denylist.length === 1 && afterDismiss.state.staged.length === 0, 'a dismissed shape\'s fingerprint stays on the denylist: a draft the Master waved off does not come back');
     }
 
     // ---------------- recommendations: the cross-surface ledger ----------------
@@ -275,14 +275,14 @@ const noise = (tag, e) => { throw new Error(tag + ': ' + (e && e.message)); };
         await ws.queue('agent', Object.assign({ id: 'ns-act-1', title: 'Quokka build', detail: 'spec about quokkas', source: 'nightshift' }, quoting), 4450);
         await ws.queue('agent', Object.assign({ id: 'ns-act-2', title: 'Platypus build', detail: 'spec about platypus', source: 'nightshift' }, elsewhere), 4451);
         await ws.queue('agent', { id: 'ns-act-3', title: 'Old nightshift job', detail: 'queued before sources existed', source: 'nightshift' }, 4000);
-        await ws.queue('agent', { id: 'user-1', title: 'My own job', detail: 'the Commander queued this', source: 'queued' }, 4000);
+        await ws.queue('agent', { id: 'user-1', title: 'My own job', detail: 'the Master queued this', source: 'queued' }, 4000);
         await ws.queue('agent', Object.assign({ id: 'ns-act-4', title: 'Built job', detail: 'built', source: 'nightshift' }, quoting), 4452);
         await ws.markBuilt('agent', 'ns-act-4', 'r_gone', 4460);
         await ws.queue('agent2', { id: 'ns-act-5', title: 'Another agent legacy job', detail: 'x', source: 'nightshift' }, 4000);
         hold.workshop = () => ws;
         hold.workshopAgentIds = () => ['agent', 'agent2'];
         A.eq(await forget('workshop-backlog'), 4, 'the quoting job, the unstamped night job and the job built by a run of the deleted session go, on every agent');
-        A.eq(ws.backlogOf('agent').map(b => b.id).sort(), ['ns-act-2', 'user-1'], 'the other session\'s job and the Commander\'s own queued job stay');
+        A.eq(ws.backlogOf('agent').map(b => b.id).sort(), ['ns-act-2', 'user-1'], 'the other session\'s job and the Master\'s own queued job stay');
         const disk = fs.readdirSync(wdir).filter(f => /workshop/.test(f)).map(f => fs.readFileSync(path.join(wdir, f), 'utf8')).join('\n');
         A.ok(!/quokka/i.test(disk), 'no workshop file or .bak holds the deleted session\'s job');
         A.eq(await forget('workshop-backlog'), 0, 'idempotent');
@@ -299,10 +299,10 @@ const noise = (tag, e) => { throw new Error(tag + ': ' + (e && e.message)); };
         await mint('Quokka habitat survey', { quotes: ['sGone'], quotesAt: [4400] });
         await mint('Platypus launch plan', { quotes: ['sKeep'], quotesAt: [4400] });
         await mint('Old generated quest');   // generated and open, minted before sources existed
-        await store.mint({ title: 'My own quest', desc: 'the Commander made this', kind: 'user', contract, createdBy: 'user' }, 4100);
+        await store.mint({ title: 'My own quest', desc: 'the Master made this', kind: 'user', contract, createdBy: 'user' }, 4100);
         hold.quests = () => store;
         A.eq(await forget('quests'), 2, 'the quest that quotes the deleted session and the unstamped generated open quest go');
-        A.eq(store.list().map(q => q.title).sort(), ['My own quest', 'Platypus launch plan'], 'the other session\'s quest and the Commander\'s own quest stay');
+        A.eq(store.list().map(q => q.title).sort(), ['My own quest', 'Platypus launch plan'], 'the other session\'s quest and the Master\'s own quest stay');
         const disk = fs.readdirSync(qdir).map(f => fs.readFileSync(path.join(qdir, f), 'utf8')).join('\n');
         A.ok(!/quokka/i.test(disk), 'no quest file or .bak holds the deleted session\'s quest');
         A.eq(await forget('quests'), 0, 'idempotent');
@@ -310,7 +310,7 @@ const noise = (tag, e) => { throw new Error(tag + ': ' + (e && e.message)); };
 
       const stamp = (quotes, at) => ({ quotes, quotesAt: [at] });
       let state = QuestRefresh.fresh();
-      state = QuestRefresh.setNorthStar(state, { text: 'Own the outbound stack', groundedIn: 'the Commander\'s active goal arc', source: 'goal' }, { now: 4000 });
+      state = QuestRefresh.setNorthStar(state, { text: 'Own the outbound stack', groundedIn: 'the Master\'s active goal arc', source: 'goal' }, { now: 4000 });
       state = QuestRefresh.proposeNorthStar(state, Object.assign({ text: 'Study quokka habitats', groundedIn: 'inferred from recent activity', source: 'model' }, stamp(['sGone'], 4400)), { now: 4450 });
       state = QuestRefresh.stageQuests(state, [Object.assign({ title: 'Survey quokkas', desc: 'd', reward: 'r', contract: { type: 'attest', key: 'confirm' }, steps: [], groundedIn: 'g' }, stamp(['sGone'], 4400)),
         { title: 'Unstamped staged quest', desc: 'd', reward: 'r', contract: { type: 'attest', key: 'confirm' }, steps: [], groundedIn: 'g' }]);
@@ -322,11 +322,11 @@ const noise = (tag, e) => { throw new Error(tag + ': ' + (e && e.message)); };
       let saves = 0;
       hold.northStar = { get: () => state, set: s => { state = s; }, persist: () => { saves++; } };
       A.eq(await forget('north-star'), 4, 'the proposed star, both staged quests (one stamped, one pre-source) and the note that quoted the session go');
-      A.eq([state.northStar && state.northStar.text, state.proposedNorthStar, state.pendingQuests.length], ['Own the outbound stack', null, 0], 'the Commander\'s own goal-arc star stays; nothing inferred from the deleted session is pending');
+      A.eq([state.northStar && state.northStar.text, state.proposedNorthStar, state.pendingQuests.length], ['Own the outbound stack', null, 0], 'the Master\'s own goal-arc star stays; nothing inferred from the deleted session is pending');
       A.eq(state.ledger.map(e => e.reason).sort(), ['cadence', 'platypus quest'], 'notes that quoted another session or nothing stay');
       A.eq(saves, 2, 'persisted twice');
       A.eq(await forget('north-star'), 0, 'idempotent');
-      // an ADOPTED inferred star that quotes the session goes too (the Commander confirmed it, but its words are the session\'s)
+      // an ADOPTED inferred star that quotes the session goes too (the Master confirmed it, but its words are the session\'s)
       let adopted = QuestRefresh.confirmNorthStar(QuestRefresh.proposeNorthStar(QuestRefresh.fresh(), Object.assign({ text: 'Study quokka habitats', groundedIn: 'g', source: 'model' }, stamp(['sGone'], 4400)), { now: 4450 }), { now: 4460 });
       A.eq(adopted.northStar.quotes, ['sGone'], 'confirming a proposal carries its stamp to the adopted star');
       hold.northStar = { get: () => adopted, set: s => { adopted = s; }, persist: () => {} };
@@ -763,7 +763,7 @@ const noise = (tag, e) => { throw new Error(tag + ': ' + (e && e.message)); };
       let groups = null;
       try {
         let seq = 4000;
-        // group ids are minted by the host: the first group is the one the Commander deletes (its id is its workstream's)
+        // group ids are minted by the host: the first group is the one the Master deletes (its id is its workstream's)
         const ids = ['sGone', 'gm1', 'sKeep', 'gm2', 'gm3', 'gm4', 'gm5', 'gm6', 'gm7', 'gm8', 'gm9'];
         groups = makeGroupSessions({ fs, path, root: gdir, now: () => ++seq, id: () => ids.shift() || ('x' + (++seq)), log: () => {},
           roster: () => [{ id: 'agent', name: 'Lead' }, { id: 'research', name: 'Researcher' }],
@@ -774,7 +774,7 @@ const noise = (tag, e) => { throw new Error(tag + ': ' + (e && e.message)); };
         await groups.send(gone.id, { key: 'k1', text: '@Researcher tell me about quokka habitats' }); await groups.idle(gone.id);
         const keep = await groups.create({ members: ['agent', 'research'], title: 'Platypus group' });
         await groups.send(keep.id, { key: 'k2', text: '@Researcher tell me about platypus nests' }); await groups.idle(keep.id);
-        A.eq(gone.id, 'sGone', 'the group the Commander deletes is filed under its workstream id');
+        A.eq(gone.id, 'sGone', 'the group the Master deletes is filed under its workstream id');
         hold.groupSessions = () => groups;
         const file = path.join(gdir, 'group-sessions.json');
         A.ok(/quokka habitats/.test(fs.readFileSync(file, 'utf8')), 'before the purge the group file holds the deleted session\'s message');

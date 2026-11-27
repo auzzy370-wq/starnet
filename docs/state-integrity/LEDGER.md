@@ -40,7 +40,7 @@ product-call borderlines. The founding crew bug is FIXED and shipped on trunk.
 | **N1** | Med | High | **FIXED** | world.js + app.js | Connector poll now held in `connPollTimer`; `pauseBridge()` (on disconnect) clears it, `resumeBridge()` (on entry) restarts it. Verified live: poll true → false → true. |
 | **N2** | Med | High | **FIXED** | world.js + app.js | Channel `EventSource` now held in `chanES`; closed on disconnect, reopened on entry; `onerror` bails while paused. Verified live: es true → false → true. |
 | **S1** | Med | High | **FIXED** | mintstore.js + app.js | New `MintStore.reset()` drops `vultron.mint.v1`; called from the NEW AGENT handler. Verified live: key present → NEW AGENT → null. |
-| **V1** | High | High | **FIXED** | chat.js send | **Voice ownership (Commander rule):** only the orchestrator (hero) may speak; summoned/secondary agents must be silent. `willSpeak` now requires the active stream's agent be the orchestrator. |
+| **V1** | High | High | **FIXED** | chat.js send | **Voice ownership (Master rule):** only the orchestrator (hero) may speak; summoned/secondary agents must be silent. `willSpeak` now requires the active stream's agent be the orchestrator. |
 | **C4** | Med | Med | **FIXED** | voice.js init | `Voice.init()` now calls `stopSpeaking()` → prior agent's TTS + watchdog interval are cut before the next agent takes the mic. |
 | **W3** | Low | Med | **FIXED** | world.js spawn | `chanQueues` Map + `serverLit` Set never cleared → phantom backlog gauge / a body stuck "working". Cleared in `spawn()`. Verified live: queueDepth 7 → 0. |
 | **W4** | Low | Med | **FIXED** | world.js spawn | `xpAgent` + one-shot beat clocks (levelUp/compact/slag/outbox) not reset → brief stale level chip / a beat replays one frame into the new agent. Reset in `spawn()`. |
@@ -49,11 +49,11 @@ product-call borderlines. The founding crew bug is FIXED and shipped on trunk.
 | **N3** | Low | High | **FIXED** | world.js + app.js | Root cause resolved by N1/N2: the open-once bridge now has a paired pause(disconnect)/resume(entry); the once-guarded `U.bus.on` subscriptions stay put. |
 | **C2** | Low | Low | **FIXED** | chat.js init | `proposalRunsSeen` + `wiQDepth` now cleared in `init()`. |
 | **C3** | Low | Low | **FIXED** | voice.js init | `forcedSpeak` now reset in `Voice.init()` → the speaker-restore bookkeeping never carries across agents. |
-| **S3** | Low | Med | **WONTFIX (intended)** | marketplace.js | Commander decided: consent is **per-user** (global). Already behaves that way — no change. |
-| **S4** | Low | Med | **WONTFIX (intended)** | build.js | Commander decided: BUILD first-use guide is **per-user** (once-ever). Already behaves that way — no change. |
-| **C5** | Low | Low | **WONTFIX (intended)** | tutorial.js | Commander decided: First-Command lesson is **per-user** (once-ever). Already behaves that way — no change. |
+| **S3** | Low | Med | **WONTFIX (intended)** | marketplace.js | Master decided: consent is **per-user** (global). Already behaves that way — no change. |
+| **S4** | Low | Med | **WONTFIX (intended)** | build.js | Master decided: BUILD first-use guide is **per-user** (once-ever). Already behaves that way — no change. |
+| **C5** | Low | Low | **WONTFIX (intended)** | tutorial.js | Master decided: First-Command lesson is **per-user** (once-ever). Already behaves that way — no change. |
 
-**Scope decision (Commander, 2026-06-23):** on NEW AGENT, *behavioral/learned* state resets
+**Scope decision (Master, 2026-06-23):** on NEW AGENT, *behavioral/learned* state resets
 per-agent (S1 task-mining, S2 curiosity → fix by reset); *one-time UI/teaching/consent*
 flags stay per-user (S3/S4/C5 → no change, already correct).
 
@@ -76,20 +76,20 @@ onboarding/intake stop() (clear timers/flags), Tutorial bus handlers (gated by `
   where the economy must persist). Verified live on a seeded station: injected spend=$0.42 +
   queueDepth=7 into NOVA → NEW AGENT "KILO" → both read 0 (and crew 0). `test:fast` green.
   Refit-preservation guaranteed by construction (reset only in spawn, never in loadStation/rederive).
-- **Iteration 2** (2026-06-23): Voice cluster — V1 (Commander rule: only the orchestrator speaks;
+- **Iteration 2** (2026-06-23): Voice cluster — V1 (Master rule: only the orchestrator speaks;
   summoned agents silent) gated at the single `chat.js` TTS seam; C4 (`Voice.init` now cuts the
   prior agent's in-flight speech + watchdog); C3 (`forcedSpeak` reset per agent). Also recorded
-  the Commander's NEW-AGENT scope decision (S1/S2 reset per-agent; S3/S4/C5 stay per-user). `test:fast` green.
+  the Master's NEW-AGENT scope decision (S1/S2 reset per-agent; S3/S4/C5 stay per-user). `test:fast` green.
 - **Iteration 3** (2026-06-23): N1/N2/N3 — the channel SSE stream + connector poll used to run forever
   after a disconnect (battery/network drain from the title screen). Hoisted the handles to module scope
   and added `World.pauseBridge()` (called from `disconnect()`) / `World.resumeBridge()` (called from
   `enterGame`). Verified live across the full lifecycle: in-game {es,poll}=on → disconnect=off →
   resume=on. `test:fast` green.
 - **Iteration 4** (2026-06-23): final batch. S1/S2 — `MintStore.reset()` + `CuriosityStore.reset()` drop
-  their self-persisted keys, called from the NEW AGENT handler (per the Commander's scope decision);
+  their self-persisted keys, called from the NEW AGENT handler (per the Master's scope decision);
   verified live (keys present → NEW AGENT → both null). C1 — tutorial `finished` latch reset in
   `firstCommand()`. C2 — chat `proposalRunsSeen`/`wiQDepth` cleared in `init()`. S3/S4/C5 closed as
-  WONTFIX (Commander: per-user, already correct). **All ledger rows now FIXED or resolved.** `test:fast` green.
+  WONTFIX (Master: per-user, already correct). **All ledger rows now FIXED or resolved.** `test:fast` green.
 
 ## Status: COMPLETE
 

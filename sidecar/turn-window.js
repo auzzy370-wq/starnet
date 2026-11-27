@@ -87,7 +87,7 @@ function make(d) {
     const proof = store.findTurns(o.streamId, candidates.map(c => ({ turnId: c.turnId, turnAt: c.turnAt })));
     const out = [];
     for (const c of candidates) if (proof.get(c.turnId)?.state === 'absent') {
-      // These proved-absent rows are unadmitted typed input: the Commander's words, written CLEAN (taint null) whatever
+      // These proved-absent rows are unadmitted typed input: the Master's words, written CLEAN (taint null) whatever
       // provenance the page claimed. A file the turn carried is recorded beside it as an attachment row (turn-attachment.js:
       // no size or sha256, no read happened here) stamped with the attachment source, which is where that provenance lives
       // now; taint follows the bytes a run actually re-sends (attachments.resentOf), never a reference's presence.
@@ -110,7 +110,7 @@ function make(d) {
      own proof, mirroring TurnMerge R2/R4: (i) a message carrying a key is dropped when the stored row of that key is one the
      predicate forgets (a key whose stored row cannot be read at all falls to (ii) and is counted unvouched); (ii) an id-less, or
      unreadable-key, ASSISTANT message (reply, partial, stopped) is dropped when the run it names (sourceRunId) is quote-forgotten.
-     An id-less USER message is never dropped by the run rule: the run's own directive and the Commander's typed words predate any
+     An id-less USER message is never dropped by the run rule: the run's own directive and the Master's typed words predate any
      read, and a user row is never a copy a run took by reading a session. So the window keeps exactly the keyed rows model-replay
      keeps, and a row the store keeps is never removed. Returns the same array when nothing was dropped. */
   function forgetFloor(messages, o) {

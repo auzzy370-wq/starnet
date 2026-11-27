@@ -51,11 +51,11 @@
     return roots;
   }
 
-  /* ⛔ A CREDENTIAL MUST NOT CROSS AN ISOLATION BOUNDARY. This migration exists so the Commander keeps their
+  /* ⛔ A CREDENTIAL MUST NOT CROSS AN ISOLATION BOUNDARY. This migration exists so the Master keeps their
      ChatGPT sign-in when the app's OWN workspace root moves between versions ("Vultron" <- "Skynet" <-
      "ai.skynet.harness"). It is NOT a licence to copy a live OAuth refresh token into whatever directory
      SKYNET_WORKSPACES happens to point at — and every test boot, dev seed and QA journey points it at a fresh
-     temp dir. Two things went wrong at once there: the Commander's real credential was written into
+     temp dir. Two things went wrong at once there: the Master's real credential was written into
      os.tmpdir(), and a "clean-room" boot silently INHERITED their real ChatGPT sign-in, so a fresh-install
      test was never actually fresh. So: migrate only INTO a root that is one of the app's own known homes.
      The desktop app passes its real workspace root explicitly, so the shipped path is unchanged. */

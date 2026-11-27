@@ -459,7 +459,7 @@
     const jail = fsMod.makeFsTools({ fsp, pathMod: P, root: ROOT, pathTrust: typeof deps.pathTrust === 'function' ? deps.pathTrust : undefined })._internals;
 
     // args.reference -> { rel, mime, buffer, url } (null when none). A workspace/project image only — the image_analyze
-    // jail, read scope — never a URL: every route needs the bytes, and an outside URL is not the Commander's approved work.
+    // jail, read scope — never a URL: every route needs the bytes, and an outside URL is not the Master's approved work.
     async function readReference(aid, reference, ctx) {
       const s = String(reference == null ? '' : reference).trim();
       if (!s) return null;
@@ -752,7 +752,7 @@
         const stop = !isCodex && spendStop ? await spendStop({ signal: ctx && ctx.signal, holdTimeout: ctx && ctx.holdTimeout }) : '';
         if (stop) {
           const why = typeof stop === 'string' ? stop : stop.why;
-          const todo = typeof stop === 'string' ? 'The Commander can change the limit in SETTINGS › SPENDING LIMITS.' : stop.todo;
+          const todo = typeof stop === 'string' ? 'The Master can change the limit in SETTINGS › SPENDING LIMITS.' : stop.todo;
           throw new Error('image_generate did not start: ' + why + '. No image was generated and nothing was charged.' + (todo ? ' ' + todo : ''));
         }
         const thisCall = callScope.getStore();

@@ -8,7 +8,7 @@
    THE TRUST BOUNDARY (load-bearing): scan() consults the injected `isBlessed(root)` guard FIRST and runs NOTHING for
    an un-blessed root — no exec, no readdir. It reads through the harness's own path (git run with cwd=root), which
    the pathtrust guard already permits for blessed roots; it NEVER weakens that guard and NEVER blesses a new root.
-   An autonomous run cannot reach this for a path the Commander didn't already trust.
+   An autonomous run cannot reach this for a path the Master didn't already trust.
 
    DETERMINISM SPLIT: the git/fs IO is INJECTED (exec, fsp) so this module is pure orchestration + bounded text
    composition — lint-determinism clean (no Date.now / rng / raw child_process), node-testable with a fake exec. */

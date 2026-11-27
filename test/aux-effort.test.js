@@ -2,7 +2,7 @@
 
    Measured live (isolated station, anthropic/claude-haiku-4.5 on OpenRouter, the default aux budget, a scripted
    10-turn session): 47% of the session's spend was internal/aux work, and almost all of an aux call's OUTPUT was
-   reasoning the Commander never sees — every aux call inherited the chat's effort (medium):
+   reasoning the Master never sees — every aux call inherited the chat's effort (medium):
      • a session title: 494 output tokens, 483 of them reasoning, for a 4-word title (9 tokens at 'none');
      • a reflection pass: 430 output / 401 reasoning for the SAME one-line PREFERENCE it wrote at 'none' in 24;
      • a goal plan: ~6.8k output tokens, 63 s; a session-ideas pass ran into its own 45 s deadline and was thrown away.
@@ -13,9 +13,9 @@
        makes no override when it lists none or no low tier. OpenRouter's list is a guess until the endpoint refuses a
        rung; that refusal heals in the adapter (test/openrouter-effort-heal.test.js);
      • the post-run passes and INTERNAL runs read that pick (auxPassEffort); compaction keeps auxReasoningEffort
-       (a fold is the Commander's own task context, not station self-talk) — source locks, index.js is not loadable;
+       (a fold is the Master's own task context, not station self-talk) — source locks, index.js is not loadable;
      • an operator who configured the aux tier keeps exactly their configuration;
-     • an internal run that must keep the Commander's effort says keepEffort, end to end: the autopilot's draft and its
+     • an internal run that must keep the Master's effort says keepEffort, end to end: the autopilot's draft and its
        self-critique (work they read), a plan they asked for, the goal loop's done/continue judge, and the WAKE
        preflight (it must prove the path the awakening uses). Proactive self-talk (titles, ideas, the goal-arc
        decomposition, candidates) stays on the aux effort;
@@ -60,9 +60,9 @@ A.ok(/const internalEffortRan = \(\) => internalEffort \? AuxGovernor\.effortAsR
 A.ok(/reasoningEffort: internalEffortRan\(\) \|\| reasoningEffort, unmetered:/.test(idx) && /result\.reasoningEffort = internalEffortRan\(\) \|\| reasoningEffort;/.test(idx),
   'the run record and the result carry the effort the run ran on');
 A.ok(!/internalEffort \|\| reasoningEffort/.test(idx), 'no record keeps the pre-heal pick');
-// …except an internal run whose reply IS work the Commander reads (the autopilot's desk draft + its self-critique):
-// it keeps the Commander's effort. Opt-out is explicit, end to end: page -> /api/run body -> runOnce.
-A.ok(/const internalEffort = o\.internal && !o\.keepEffort \? auxPassEffort\(provider, model\) : null;/.test(idx), 'an INTERNAL self-talk run picks the aux effort for its own model (o.internal, never an /v1 outputOnly repair); a work-product one keeps the Commander effort');
+// …except an internal run whose reply IS work the Master reads (the autopilot's desk draft + its self-critique):
+// it keeps the Master's effort. Opt-out is explicit, end to end: page -> /api/run body -> runOnce.
+A.ok(/const internalEffort = o\.internal && !o\.keepEffort \? auxPassEffort\(provider, model\) : null;/.test(idx), 'an INTERNAL self-talk run picks the aux effort for its own model (o.internal, never an /v1 outputOnly repair); a work-product one keeps the Master effort');
 A.ok(/const keepEffort = !!\(internal && body && body\.keepEffort === true\);/.test(idx) && /internal, evidence, keepEffort,/.test(idx), 'handleRun reads keepEffort (only beside internal) and hands it to runOnce');
 const harness = fs.readFileSync(path.join(__dirname, '..', 'frontend', 'app', 'harness.js'), 'utf8');
 A.ok(/if \(internal && keepEffort\) reqBody\.keepEffort = true;/.test(harness), 'Harness.chat forwards keepEffort only on an internal run');
@@ -72,16 +72,16 @@ A.ok(/buildCritiqueDirective\(deliverable, sel\.selected, \{ style, standingOrde
 A.ok(/buildCandidateDirective\(\{ beliefs, eligible \}\) \}\], agentId: 'agent', isTask: false, placed: \[\], internal: true \}/.test(ap), 'its candidate list stays strict-format self-talk (aux effort)');
 const app = fs.readFileSync(path.join(__dirname, '..', 'frontend', 'app', 'app.js'), 'utf8');
 A.ok(/content: 'Reply with exactly: OK' \}\], agentId: 'agent', isTask: false, placed: \[\], internal: true, keepEffort: true \}/.test(A.fnBody(app, 'async function preflightWire(')),
-  'the WAKE preflight keeps the Commander effort: it proves the path the awakening runs on, not the aux one');
+  'the WAKE preflight keeps the Master effort: it proves the path the awakening runs on, not the aux one');
 const chatSrc = fs.readFileSync(path.join(__dirname, '..', 'frontend', 'app', 'chat.js'), 'utf8');
 A.ok(/const usr = GoalLoop\.judgeUser\([^\n]*\n[^\n]*\n\s*const res = await Harness\.chat\(\{ system: sys, [^\n]*internal: true, keepEffort: true \}\);/.test(chatSrc),
-  'the goal loop JUDGE keeps the Commander effort (a wrong DONE ends their loop)');
+  'the goal loop JUDGE keeps the Master effort (a wrong DONE ends their loop)');
 const goals = fs.readFileSync(path.join(__dirname, '..', 'frontend', 'app', 'goalstore.js'), 'utf8');
 A.ok(/isTask: false, placed: \[\], internal: true, evidence: true, keepEffort: true,\n\s*messages: \[\{ role: 'user', content: 'Help me shape this ambition/.test(goals),
-  'a plan the Commander asked for (suggestPlan) keeps their effort');
+  'a plan the Master asked for (suggestPlan) keeps their effort');
 A.ok(/const directive = Goals\.buildDirective\(belief\.text\);[\s\S]{0,800}?agentId: 'agent', isTask: false, placed: \[\], internal: true, evidence: true \}\);/.test(goals),
   'the proactive goal-arc decomposition stays on the aux effort');
-A.ok(/auxEffortFor: auxReasoningEffort,/.test(idx), 'compaction keeps auxReasoningEffort (the Commander\'s task context)');
+A.ok(/auxEffortFor: auxReasoningEffort,/.test(idx), 'compaction keeps auxReasoningEffort (the Master\'s task context)');
 // the measured session's skill-review spend row carried no model ("(unknown)" in the breakdown): every aux spend row names it
 A.ok(/ledger\.record\(\{ runId: reviewRunId, [^}]*model: model \|\| '',/.test(idx), 'the skill review spend row names the model it spent on');
 A.ok(/ledger\.record\(\{ runId: curatorRunId, [^}]*model: model \|\| '',/.test(idx), 'the skill curator spend row names the model it spent on');

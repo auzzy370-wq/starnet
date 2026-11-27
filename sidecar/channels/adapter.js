@@ -166,7 +166,7 @@
          allowedUsers   (default off) — when set, only these user ids run, ON TOP of the existing owner gate for
                                         DMs and the chat allowlist for groups. It NARROWS, it never widens.
 
-       A DM is untouched: it is already owner-only, and requiring the Commander to @-mention a bot in their own
+       A DM is untouched: it is already owner-only, and requiring the Master to @-mention a bot in their own
        private chat would be absurd. */
     /* botUsername may be a STRING or a FUNCTION. The station bot learns its own @name from getMe() at connect,
        which resolves AFTER the adapter is constructed — a string captured here would be '' forever and the
@@ -247,7 +247,7 @@
       if (m.replyTo && String(m.replyTo.userName || '').trim().toLowerCase() === botUsername) return true;
       // a slash command with NO @suffix is aimed at whatever bot is listening; with a suffix it is aimed by name
       // (and that name landed in `mentions` above, so a command for a DIFFERENT bot has already failed the check).
-      // '-' is allowed because the Commander's own command names may carry one (/disk-usage); without it a group
+      // '-' is allowed because the Master's own command names may carry one (/disk-usage); without it a group
       // dropped such a command before the hub could recognise it (2026-10-18).
       const t = String(m.text == null ? '' : m.text);
       if (/^\/[A-Za-z0-9_-]+(\s|$)/.test(t)) return true;
@@ -439,7 +439,7 @@
           }
         }
         // This chat had backlog discarded while the owner was unclaimed, and has now PROVEN it is the owner by
-        // getting admitted. Pay the deferred apology before its reply — otherwise the Commander's first
+        // getting admitted. Pay the deferred apology before its reply — otherwise the Master's first
         // impression of a bot that was simply switched off is silence, which is what a broken bot looks like.
         // Detached + best-effort by design: the notice must never delay or block the real message.
         if (deferredOfflineNotice.has(String(m.chatId))) {
@@ -668,7 +668,7 @@
                   const was = droppedByChat.get(cid);
                   droppedByChat.set(cid, { count: (was ? was.count : 0) + 1, threadId: thread || (was ? was.threadId : '') });
                 } else if (m && m.chatType === 'dm' && !owner && deferredOfflineNotice.size < MAX_DEFERRED_NOTICE) {
-                  // Owner still unclaimed, so we cannot tell yet whether this is the Commander or a stranger.
+                  // Owner still unclaimed, so we cannot tell yet whether this is the Master or a stranger.
                   // DEFER the apology rather than drop it: this is the first-run case where someone messages a
                   // bot that is not running, and answering with nothing at all reads as a broken bot.
                   deferredOfflineNotice.set(String(m.chatId), thread);

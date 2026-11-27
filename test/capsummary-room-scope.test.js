@@ -86,7 +86,7 @@ const unattended = (res) => Object.assign({}, res, { tools: res.tools.filter(n =
 const extra = savedPlacement(save, 'rq1');   // what /api/run uses when the page sends no `placed`
 const resolvedI = interactiveRun('rq1', extra);
 const scopeI = () => scopeForRun({ loadStation: () => saved, agentId: 'rq1', extraObjects: extra, interactive: true });
-const BEFORE_I = '\n<capabilities_ground_truth>\nThese are your REAL powers this run, decided by the objects placed on your station floor and host-granted station roles -- not aspirational. This block is AUTHORITATIVE: if anything earlier in your instructions implies you always have web or file access, ignore it -- what follows is what you ACTUALLY have right now:\n- You CAN: read and write files, run shell commands and verify code.\n- You do NOT have: search/fetch the web and use the controlled browser.\nIf the Commander asks for something you lack, do NOT claim, promise, or pretend to do it. Say plainly you can\'t yet, and name the object to place to grant it: search/fetch the web and use the controlled browser -> place a DISH. You can always think and reply; that needs nothing.\n</capabilities_ground_truth>';
+const BEFORE_I = '\n<capabilities_ground_truth>\nThese are your REAL powers this run, decided by the objects placed on your station floor and host-granted station roles -- not aspirational. This block is AUTHORITATIVE: if anything earlier in your instructions implies you always have web or file access, ignore it -- what follows is what you ACTUALLY have right now:\n- You CAN: read and write files, run shell commands and verify code.\n- You do NOT have: search/fetch the web and use the controlled browser.\nIf the Master asks for something you lack, do NOT claim, promise, or pretend to do it. Say plainly you can\'t yet, and name the object to place to grant it: search/fetch the web and use the controlled browser -> place a DISH. You can always think and reply; that needs nothing.\n</capabilities_ground_truth>';
 {
   A.eq(summarizeCapabilities(resolvedI, { surface: 'interactive' }), BEFORE_I, 'no scopeFn: byte-identical to the note before this change');
   A.eq(summarizeCapabilities(resolvedI, { surface: 'interactive', scopeFn: () => null }), BEFORE_I, 'a null scope: byte-identical');
@@ -165,36 +165,36 @@ const BEFORE_I = '\n<capabilities_ground_truth>\nThese are your REAL powers this
   const resolvedU = unattended(resolveTools('rq1', withProfile(rs, 'rq1')));
   A.ok(resolvedU.tools.indexOf('web_search') < 0 && resolvedU.tools.indexOf('fs.read') >= 0, 'fixture: the line run has files, no web');
   const before = summarizeCapabilities(resolvedU, { surface: 'autonomous' });
-  A.ok(/search\/fetch the web and use the controlled browser, run shell commands and verify code, use live MCP connector tools and desktop control are unavailable on this run -- each needs either a watched session or an explicit per-routine grant the Commander sets on the routine itself\. Placing objects cannot change that here\./.test(before),
+  A.ok(/search\/fetch the web and use the controlled browser, run shell commands and verify code, use live MCP connector tools and desktop control are unavailable on this run -- each needs either a watched session or an explicit per-routine grant the Master sets on the routine itself\. Placing objects cannot change that here\./.test(before),
     'baseline (no scope): web is lumped under "placing objects cannot change that" — the false claim');
   const scopeU = () => scopeForRun({ loadStation: () => saved, agentId: 'rq1', runStation: rs, interactive: false });
   A.eq((scopeU() || {}).floorRouted, true, 'the routed run\'s scope is floor-routed');
   const note = summarizeCapabilities(resolvedU, { surface: 'autonomous', scopeFn: scopeU });
-  A.ok(/so run shell commands and verify code, use live MCP connector tools and desktop control are unavailable on this run -- each needs either a watched session or an explicit per-routine grant the Commander sets on the routine itself\. Placing objects cannot change that here\. /.test(note),
+  A.ok(/so run shell commands and verify code, use live MCP connector tools and desktop control are unavailable on this run -- each needs either a watched session or an explicit per-routine grant the Master sets on the routine itself\. Placing objects cannot change that here\. /.test(note),
     'the terminal and connectors keep the authority sentence (placing cannot grant them unattended)');
   A.ok(note.indexOf('Placing objects cannot change that here') > note.indexOf('run shell commands') && !/search\/fetch the web[^.]*Placing objects cannot change that here/.test(note),
     'web is no longer under "placing objects cannot change that"');
-  A.ok(note.indexOf('No web on this run: RESEARCH, the room your desk is in, has no DISH; the Commander can place one there for your next job (the DISH in HOME does not reach you). If the job needed it, name that fix in your closing clause. ') >= 0,
+  A.ok(note.indexOf('No web on this run: RESEARCH, the room your desk is in, has no DISH; the Master can place one there for your next job (the DISH in HOME does not reach you). If the job needed it, name that fix in your closing clause. ') >= 0,
     'names the room, the missing gear and where it stands instead: ' + note.slice(note.indexOf('No web'), note.indexOf('No web') + 300));
   // REVIEW FIX 1: a placed STUDIO does not give a line hop images (image_generate needs the routine's ALLOW IMAGES grant;
   // a line hop runs with unattendedGrants []), so the unattended note never offers images (or memory) as a floor fix
   A.ok(!/STUDIO|images|SERVER CART|NOTEBOOK|memory/.test(note), 'the unattended note offers no image or memory gear: ' + note.slice(note.indexOf('No web'), note.indexOf('No web') + 200));
   const lackOf = (s) => (s.match(/- You do NOT have: [^\n]*/) || [''])[0];
   A.eq(lackOf(note), lackOf(before), 'the lack list is the one the run had before the room scope (memory and images never join it unattended)');
-  A.ok(/Say it in the Commander's terms, in one short closing clause/.test(note), 'the closing-clause rule still carries it to the delivered reply');
+  A.ok(/Say it in the Master's terms, in one short closing clause/.test(note), 'the closing-clause rule still carries it to the delivered reply');
   console.log('[room-scope] unattended note: ' + before.length + ' -> ' + note.length + ' chars (+' + (note.length - before.length) + ')');
 
   // REVIEW FIX 3: the fix is named only when the job needed it, never as an order on every hop; a toolless turn
   // (a conversational channel reply) has no job that needed it, so it carries no order at all
   A.ok(!/Name that fix/.test(note), 'no unconditional order');
   const chat = summarizeCapabilities(resolvedU, { surface: 'autonomous', toolless: true, scopeFn: scopeU });
-  A.ok(chat.indexOf('has no DISH; the Commander can place one there for your next job (the DISH in HOME does not reach you). Do NOT claim') >= 0 && !/name that fix/i.test(chat),
+  A.ok(chat.indexOf('has no DISH; the Master can place one there for your next job (the DISH in HOME does not reach you). Do NOT claim') >= 0 && !/name that fix/i.test(chat),
     'a toolless turn keeps the fact and drops the order: ' + chat.slice(chat.indexOf('No web'), chat.indexOf('No web') + 200));
 
   // the INTEL CAB half: a legacy agent (no execution profile) also lacks files; unattended, placing one grants READING
   // only (fs.write/edit stay default-denied without an AWAY WORKSHOP grant), so that is all the note offers
   const legacy = summarizeCapabilities(unattended(resolveTools('rq1', rs)), { surface: 'autonomous', scopeFn: scopeU });
-  A.ok(legacy.indexOf('No web or file reading on this run: RESEARCH, the room your desk is in, has no DISH or INTEL CAB; the Commander can place them there for your next job (the ones in HOME do not reach you). If the job needed them, name that fix in your closing clause. ') >= 0,
+  A.ok(legacy.indexOf('No web or file reading on this run: RESEARCH, the room your desk is in, has no DISH or INTEL CAB; the Master can place them there for your next job (the ones in HOME do not reach you). If the job needed them, name that fix in your closing clause. ') >= 0,
     'a legacy agent is offered web and file reading: ' + legacy.slice(legacy.indexOf('No web'), legacy.indexOf('No web') + 260));
 
   // the fully furnished room: only the terminal (authority) is missing -> the old sentence, byte-identical
@@ -331,7 +331,7 @@ const BEFORE_I = '\n<capabilities_ground_truth>\nThese are your REAL powers this
 
 /* 9. TOOLSETS KILL-SWITCH (review fix 10-21): resolveTools drops a switched-off family's grants (resolve.js isDisabled),
       so its gear is missing because of the switch, not the floor. Placing that gear grants nothing, so it is never a
-      room fix: the unattended web clause said "the Commander can place one there" and interactive gained SERVER CART
+      room fix: the unattended web clause said "the Master can place one there" and interactive gained SERVER CART
       advice for a memory family switched OFF. */
 {
   const officeRun = (off) => resolveTools('rq1', withProfile({ agents: { rq1: { id: 'rq1', room: 'office' } }, rooms: { office: { id: 'office', objects: composeOffice({ surface: 'interactive', extraObjects: extra }) } } }, 'rq1'), undefined, { disabledCaps: off });
@@ -339,7 +339,7 @@ const BEFORE_I = '\n<capabilities_ground_truth>\nThese are your REAL powers this
   const resOff = officeRun(off);
   A.ok(resOff.tools.indexOf('web_search') < 0 && resOff.tools.indexOf('notebook.write') < 0 && resOff.tools.indexOf('fs.read') >= 0, 'fixture: the switches dropped web + memory');
   const n = summarizeCapabilities(resOff, { surface: 'interactive', disabledCaps: off, scopeFn: scopeI });
-  A.ok(!/SERVER CART|long-term memory|DISH[^.]*in RESEARCH/.test(n), 'a switched-off web or memory family is never offered as gear to place in RESEARCH: ' + n.slice(n.indexOf('If the Commander')));
+  A.ok(!/SERVER CART|long-term memory|DISH[^.]*in RESEARCH/.test(n), 'a switched-off web or memory family is never offered as gear to place in RESEARCH: ' + n.slice(n.indexOf('If the Master')));
   A.ok(n.indexOf('Place the STUDIO in RESEARCH, the room your desk is in: gear in any other room (like the STUDIO in HOME) does not reach you.') >= 0, 'the STUDIO, not switched off, is still the room fix');
   // every switchable floor family off: byte-identical to the note with no scope, in each shape resolve.js takes
   const all = ['web', 'memory', 'studio'];
@@ -419,7 +419,7 @@ const BEFORE_I = '\n<capabilities_ground_truth>\nThese are your REAL powers this
   const rtS = makeRouter(); A.ok(rtS.setStation(sw.serialize()).ok, 'fixture: the router takes the swapped station');
   const rsS = rtS.stationFor('rq1');
   const nU = summarizeCapabilities(unattended(resolveTools('rq1', rsS)), { surface: 'autonomous', scopeFn: () => scopeForRun({ loadStation: () => flS, agentId: 'rq1', runStation: rsS }) });
-  A.ok(nU.indexOf('has no DISH or INTEL CAB; the Commander can place them there for your next job (the UPLINK and SAFE in HOME do not reach you). ') >= 0,
+  A.ok(nU.indexOf('has no DISH or INTEL CAB; the Master can place them there for your next job (the UPLINK and SAFE in HOME do not reach you). ') >= 0,
     'unattended: the UPLINK and SAFE are named: ' + nU.slice(nU.indexOf('No web'), nU.indexOf('No web') + 220));
   // a gear room named like the agent's own room: never named as where the gear stands (it would be both places)
   const twin = M.create(st.serialize());
@@ -431,7 +431,7 @@ const BEFORE_I = '\n<capabilities_ground_truth>\nThese are your REAL powers this
   const rtT = makeRouter(); A.ok(rtT.setStation(twin.serialize()).ok, 'fixture: the router takes the twin-named station');
   const rsT = rtT.stationFor('rq1');
   const uT = summarizeCapabilities(unattended(resolveTools('rq1', rsT)), { surface: 'autonomous', scopeFn: () => scopeForRun({ loadStation: () => flT, agentId: 'rq1', runStation: rsT }) });
-  A.ok(uT.indexOf('RESEARCH, the room your desk is in, has no DISH or INTEL CAB; the Commander can place them there for your next job. ') >= 0 && !/in RESEARCH (do|does) not reach/.test(uT),
+  A.ok(uT.indexOf('RESEARCH, the room your desk is in, has no DISH or INTEL CAB; the Master can place them there for your next job. ') >= 0 && !/in RESEARCH (do|does) not reach/.test(uT),
     'twin name, unattended: never "has no DISH ... (the ones in RESEARCH do not reach you)": ' + uT.slice(uT.indexOf('No web'), uT.indexOf('No web') + 200));
   // two OTHER rooms sharing a name stay two rooms: the SERVER CART moved to a new room also called HOME
   const two = M.create(st.serialize()), spot = two.roomSpots(6, 6, 'hab', 1)[0];
@@ -456,7 +456,7 @@ const BEFORE_I = '\n<capabilities_ground_truth>\nThese are your REAL powers this
 /* 12. A ROUTINE'S OWN TOOLSET LIST (review fix 10-21): runOnceCore narrows the run with enforceEnabledToolsets(resolved,
        registry, o.enabledToolsets), and every cron fire and line hop passes job.enabledToolsets with a routed bay station.
        A routine limited to ['cabinet'] lacks web because of ITS list, not the floor, so a DISH placed in RESEARCH grants it
-       nothing. The note said "No web on this run: RESEARCH ... has no DISH; the Commander can place one there"; the true
+       nothing. The note said "No web on this run: RESEARCH ... has no DISH; the Master can place one there"; the true
        sentence (a per-routine setting; placing cannot change that) is the note with no scope, byte-identical. */
 {
   const { enforceEnabledToolsets } = require('../sidecar/inputpolicy.js');
@@ -489,7 +489,7 @@ const BEFORE_I = '\n<capabilities_ground_truth>\nThese are your REAL powers this
   // a family the list keeps is still a true room fix: a legacy agent (no profile) limited to FILES is offered the INTEL CAB,
   // never the DISH, and an INTEL CAB placed in RESEARCH really gives that routine file reading
   const legacy = summarizeCapabilities(lineRun(rsE, false, ['cabinet']), { surface: 'autonomous', enabledToolsets: ['cabinet'], scopeFn: () => scopeE(saved, rsE) });
-  A.ok(legacy.indexOf('No file reading on this run: RESEARCH, the room your desk is in, has no INTEL CAB; the Commander can place one there for your next job (the INTEL CAB in HOME does not reach you). ') >= 0 &&
+  A.ok(legacy.indexOf('No file reading on this run: RESEARCH, the room your desk is in, has no INTEL CAB; the Master can place one there for your next job (the INTEL CAB in HOME does not reach you). ') >= 0 &&
     !/has no DISH|No web/.test(legacy), 'a kept family is still offered, a left-out one never: ' + legacy.slice(legacy.indexOf('Placing objects'), legacy.indexOf('Placing objects') + 260));
   const fc = M.create(st.serialize()), Rc = fc.rooms().find(r => r.name === 'RESEARCH').rects[0];
   let cab = null;
@@ -533,7 +533,7 @@ const BEFORE_I = '\n<capabilities_ground_truth>\nThese are your REAL powers this
   const loadSaved = () => { loads++; return saved; };
   const resU = unattended(resolveTools('rq1', withProfile(rs, 'rq1')));
   const u = summarizeCapabilities(resU, { surface: 'autonomous', scopeFn: () => scopeForRun({ loadStation: loadSaved, agentId: 'rq1', runStation: rs, hasBay: hasBayOn(rt, 'rq1') }) });
-  A.ok(u.indexOf('No web on this run: RESEARCH, the room your desk is in, has no DISH; the Commander can place one there for your next job (the DISH in HOME does not reach you). ') >= 0,
+  A.ok(u.indexOf('No web on this run: RESEARCH, the room your desk is in, has no DISH; the Master can place one there for your next job (the DISH in HOME does not reach you). ') >= 0,
     'a posted-plan line run names RESEARCH: ' + u.slice(u.indexOf('No web'), u.indexOf('No web') + 200));
   A.eq(loads, 1, '...loading the saved floor once');
   const nI = summarizeCapabilities(resolvedI, { surface: 'interactive', scopeFn: () => scopeForRun({ loadStation: loadSaved, agentId: 'rq1', extraObjects: extra, interactive: true, hasBay: hasBayOn(rt, 'rq1') }) });
@@ -577,7 +577,7 @@ const BEFORE_I = '\n<capabilities_ground_truth>\nThese are your REAL powers this
   A.ok(Object.keys(sM.gearElsewhere).every(t => sM.gearElsewhere[t].every(x => x.id !== home.id)), 'HOME, a capability room of its other bay, is never "elsewhere": ' + JSON.stringify(sM.gearElsewhere));
   const uM = summarizeCapabilities(unattended(resolveTools('rq2', withProfile(rsR, 'rq2'))), { surface: 'autonomous',
     scopeFn: () => scopeForRun({ loadStation: () => flM, agentId: 'rq2', runStation: rsR, hasBay: hasBayOn(rtM, 'rq2') }) });
-  A.ok(uM.indexOf('No web on this run: RESEARCH, the room this bay is in, has no DISH; the Commander can place one there for your next job. If the job needed it') >= 0 && !/HOME/.test(uM),
+  A.ok(uM.indexOf('No web on this run: RESEARCH, the room this bay is in, has no DISH; the Master can place one there for your next job. If the job needed it') >= 0 && !/HOME/.test(uM),
     'the RESEARCH line run: "this bay", and HOME\'s DISH is never said not to reach it: ' + uM.slice(uM.indexOf('No web'), uM.indexOf('No web') + 200));
   const uH = summarizeCapabilities(unattended(resolveTools('rq2', withProfile(rsH, 'rq2'))), { surface: 'autonomous',
     scopeFn: () => scopeForRun({ loadStation: () => flM, agentId: 'rq2', runStation: rsH, hasBay: hasBayOn(rtM, 'rq2') }) });

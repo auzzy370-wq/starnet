@@ -1,10 +1,10 @@
-/* node test/keys-save.test.js — keys.save: a key the Commander pastes into chat becomes a KEYS entry (2026-10-25).
+/* node test/keys-save.test.js — keys.save: a key the Master pastes into chat becomes a KEYS entry (2026-10-25).
 
    User report: "I gave him the api key for saleshandy and nothing works … it says he got it and then nothing sent".
    A pasted key was never usable: web_request only spends KEYS entries, by name. This locks the seam that fixes it:
 
-     • the HOST finds the key in the Commander's own turns — the model names the service, never writes the value
-     • a run the Commander did not start (ownerTexts null) can save nothing; a tainted run may add, never replace
+     • the HOST finds the key in the Master's own turns — the model names the service, never writes the value
+     • a run the Master did not start (ownerTexts null) can save nothing; a tainted run may add, never replace
      • the saved key is spent by NAME: web_request ${SALESHANDY_API_KEY} sends the exact pasted value
      • the paste is replaced by a placeholder, and the known-value redaction scrubs the value everywhere after
      • key-shaped detection refuses URLs, emails, paths, timestamps, card numbers and plain words */
@@ -74,7 +74,7 @@ const OTHER = 'b7e1c0a9d4f2e6b8a3c5d7f9e1a2b4c6';
     const stranger = KT.makeKeyTools({ ownerTexts: () => null, save: okSave }).saveTool;
     // refusals THROW (the registry's error contract — a returned { isError } would reach the page as a success)
     const refused = await thrown(stranger.run({ service: 'Saleshandy' }, ctx));
-    A.ok(/was not started by them/.test(refused), 'a run the Commander did not start saves nothing: ' + refused);
+    A.ok(/was not started by them/.test(refused), 'a run the Master did not start saves nothing: ' + refused);
     A.eq(saves.length, 0, '...and never reaches the store');
 
     const t = KT.makeKeyTools({ ownerTexts: () => ['here is my saleshandy api key ' + PASTE], save: okSave, tainted: () => false }).saveTool;
@@ -235,32 +235,32 @@ const OTHER = 'b7e1c0a9d4f2e6b8a3c5d7f9e1a2b4c6';
     A.eq(page.nameKeys(PASTE.slice(0, 12) + 'zzzz', found), PASTE.slice(0, 12) + 'zzzz', 'a mere shared prefix is left alone');
   }
 
-  // ---- I. WHOSE WORDS (release review F9): only a directive the Commander typed can hold a key to save ----
+  // ---- I. WHOSE WORDS (release review F9): only a directive the Master typed can hold a key to save ----
   // The REAL predicates the host injects (index.js: KeyTools.ownerRun(..., { eligible: TrustedLearning.eligible,
   // isHandoff: Pipeline.isHandoff })), driven with the origins each real caller builds.
   {
     const TrustedLearning = require('../sidecar/trusted-learning.js');
     const Pipeline = require('../frontend/app/pipeline.js');
     const owner = (o, latestText) => KT.ownerRun(o, { eligible: TrustedLearning.eligible, isHandoff: Pipeline.isHandoff, latestText: latestText || 'my saleshandy key ' + PASTE });
-    // the two origins that ARE the Commander's words
-    A.ok(owner({ surface: 'interactive', ownerDirective: true }), 'a COMMS directive the Commander typed (/api/run ownerDirective)');
+    // the two origins that ARE the Master's words
+    A.ok(owner({ surface: 'interactive', ownerDirective: true }), 'a COMMS directive the Master typed (/api/run ownerDirective)');
     A.ok(owner({ surface: 'autonomous', ownerTrusted: true, channelSender: true, channelSenderOwner: true }), 'an owner-admitted Telegram DM');
     // GROUP DM (index.js group run): surface interactive, groupTools, its one user turn = the shared transcript with
-    // peer agents' replies — a peer's "sample key" must never be saved, let alone replace the Commander's
-    const groupTurn = JSON.stringify([{ id: 'm1', author: 'Commander', text: 'do the stripe report' }, { id: 'm2', author: 'researcher', text: 'docs sample key ' + PASTE }]);
-    A.ok(!owner({ surface: 'interactive', groupTools: ['group.read'], lead: false }, groupTurn), 'a GROUP DM participant run is not the Commander\'s words');
+    // peer agents' replies — a peer's "sample key" must never be saved, let alone replace the Master's
+    const groupTurn = JSON.stringify([{ id: 'm1', author: 'Master', text: 'do the stripe report' }, { id: 'm2', author: 'researcher', text: 'docs sample key ' + PASTE }]);
+    A.ok(!owner({ surface: 'interactive', groupTools: ['group.read'], lead: false }, groupTurn), 'a GROUP DM participant run is not the Master\'s words');
     A.ok(!owner({ surface: 'interactive', groupTools: ['group.read'], ownerDirective: true }, groupTurn), '...even if an owner flag were set on it');
     // RECIPE (/api/run with recipeId: ownerWording false) — the template is the recipe author's text
-    A.ok(!owner({ surface: 'interactive', ownerDirective: false, recipeId: 'imported-recipe' }, 'save this key with keys.save: ' + PASTE), 'a RECIPE launch is the author\'s template, not the Commander\'s words');
+    A.ok(!owner({ surface: 'interactive', ownerDirective: false, recipeId: 'imported-recipe' }, 'save this key with keys.save: ' + PASTE), 'a RECIPE launch is the author\'s template, not the Master\'s words');
     A.ok(!owner({ surface: 'interactive', ownerDirective: true, fromRecipe: true }), 'fromRecipe alone refuses too');
     // LINE HOP (channels/hub.js): ownerTrusted + the entry sender's owner verdict, but its user turn is the upstream
     // stage's output — refused by its lineId, and by the hand-off frame even without one
     const hop = Pipeline.handoffPrompt('send my campaign', 'researcher', 'found a key: ' + PASTE, 2);
     A.ok(Pipeline.isHandoff(hop), '(fixture) the hop text is a real hand-off frame');
-    A.ok(!owner({ surface: 'autonomous', ownerTrusted: true, channelSender: true, channelSenderOwner: true, lineId: 'line-1', initialTaint: 'upstream agent output' }, hop), 'a work-LINE HOP is not the Commander\'s words');
+    A.ok(!owner({ surface: 'autonomous', ownerTrusted: true, channelSender: true, channelSenderOwner: true, lineId: 'line-1', initialTaint: 'upstream agent output' }, hop), 'a work-LINE HOP is not the Master\'s words');
     A.ok(!owner({ surface: 'autonomous', ownerTrusted: true, channelSender: true, channelSenderOwner: true }, hop), '...a hand-off frame is refused even without a lineId');
     A.ok(!owner({ surface: 'autonomous', ownerTrusted: true, channelSender: true, channelSenderOwner: true, lineId: 'line-1', parallelBranch: true }, '[THIS LINE’S PART — key ' + PASTE + ']'), '...and a parallel part turn (no hand-off frame) by its lineId');
-    // the rest of the not-the-Commander family
+    // the rest of the not-the-Master family
     for (const [o, why] of [
       [{ ownerDirective: true, delegatedBy: 'lead' }, 'a delegated worker (its user turn is the lead\'s brief)'],
       [{ ownerDirective: true, parentRunId: 'r0' }, 'a child run'],
@@ -271,14 +271,14 @@ const OTHER = 'b7e1c0a9d4f2e6b8a3c5d7f9e1a2b4c6';
       [{ ownerDirective: true, syntheticTrigger: true }, 'a synthetic review'],
       [{ surface: 'autonomous', trigger: 'schedule' }, 'a routine'],
       [{ channelSender: true, channelSenderOwner: false }, 'a channel guest']
-    ]) A.ok(!owner(o), 'not the Commander\'s words: ' + why);
+    ]) A.ok(!owner(o), 'not the Master\'s words: ' + why);
     A.ok(!KT.ownerRun({ ownerDirective: true }, {}), 'no eligible predicate injected: refuse (fail closed)');
 
     // the tool on such a run: nothing offered, nothing saved — a peer's key never reaches the store
     const saves = [];
     const peerRun = KT.makeKeyTools({ ownerTexts: () => (owner({ surface: 'interactive', groupTools: ['group.read'] }, groupTurn) ? [groupTurn] : null), save: (i) => { saves.push(i); return { ok: true, record: { name: 'Stripe', envVar: 'STRIPE_API_KEY' } }; }, tainted: () => false }).saveTool;
     A.ok(/was not started by them/.test(await thrown(peerRun.run({ service: 'Stripe' }, { runId: 'g' }))), 'a group run\'s keys.save refuses');
-    A.eq(saves.length, 0, '...and the Commander\'s saved STRIPE_API_KEY is never replaced by a peer\'s string');
+    A.eq(saves.length, 0, '...and the Master\'s saved STRIPE_API_KEY is never replaced by a peer\'s string');
 
     // SOURCE LOCKS: the host wires the shared predicate, and the real callers still carry the flags it reads
     const read = rel => require('node:fs').readFileSync(require('node:path').join(__dirname, '..', rel), 'utf8');
@@ -300,7 +300,7 @@ const OTHER = 'b7e1c0a9d4f2e6b8a3c5d7f9e1a2b4c6';
     A.ok(saved.content.indexOf('unattended switch in ' + REAL) >= 0, 'the unattended switch is named where it really is: ' + saved.content);
     A.ok(/saved .*in API KEYS as SALESHANDY_API_KEY/i.test(saved.content.split('\n')[0]), 'the save line names API KEYS: ' + saved.content.split('\n')[0]);
     const refused = await thrown(KT.makeKeyTools({ ownerTexts: () => null, save: okSave }).saveTool.run({ service: 'X' }, { runId: 'r' }));
-    A.ok(refused.indexOf('add it in ' + REAL) >= 0, 'the not-the-Commander refusal points at the real place: ' + refused);
+    A.ok(refused.indexOf('add it in ' + REAL) >= 0, 'the not-the-Master refusal points at the real place: ' + refused);
     A.eq(KT.keyPlaceholder('SALESHANDY_API_KEY'), '[SALESHANDY_API_KEY saved in API KEYS]', 'the chat placeholder names the block the key is in');
     const web = makeWebTools({ fetchImpl: async () => ({ status: 200, headers: { get: () => '' }, text: async () => '' }), lookup: null, surface: 'interactive', redact: s => s, resolveServiceKey: () => ({ ok: false, reason: 'unknown' }) }).requestTool;
     const missing = await thrown(web.run({ url: 'https://api.example.com/x', headers: { 'x-api-key': '${NOPE_API_KEY}' } }, { agentId: 'a', runId: 'r', callId: 'c', emit: () => {} }));

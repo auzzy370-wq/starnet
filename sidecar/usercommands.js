@@ -1,10 +1,10 @@
-/* sidecar/usercommands.js — COMMANDER-DEFINED slash commands.
+/* sidecar/usercommands.js — MASTER-DEFINED slash commands.
 
-   Lets the Commander add their own commands without touching code, in the shape the reference harness proved
+   Lets the Master add their own commands without touching code, in the shape the reference harness proved
    (© 2025 Nous Research, MIT — see NOTICE.md; its `quick_commands` config block has the same two types):
 
      alias — "/standup" runs "/routine list". Pure rewrite; the target is re-resolved through the registry,
-             so an alias can never reach anything the Commander could not have typed themselves.
+             so an alias can never reach anything the Master could not have typed themselves.
      exec  — "/disk" runs a shell snippet and prints its output.
 
    WHY THE FILE LIVES OUTSIDE THE AGENT JAIL. The reference harness's safety argument for shell-typed commands
@@ -34,7 +34,7 @@ function makeUserCommands(deps) {
   }
 
   /* normalize(raw) -> { commands:[…], errors:[…] }. A malformed ENTRY is dropped with a named reason rather
-     than failing the whole file — one typo must not silently remove every command the Commander defined. */
+     than failing the whole file — one typo must not silently remove every command the Master defined. */
   function normalize(raw) {
     const out = [], errors = [];
     const list = (raw && Array.isArray(raw.commands)) ? raw.commands : [];
@@ -86,7 +86,7 @@ function makeUserCommands(deps) {
   return { load: load, normalize: normalize, catalogEntries: catalogEntries, NAME_RE: NAME_RE, MAX_COMMANDS: MAX_COMMANDS };
 }
 
-/* menuEntries(list, reserved) — the Commander's commands as Telegram "/" menu rows ({ command, description }), so
+/* menuEntries(list, reserved) — the Master's commands as Telegram "/" menu rows ({ command, description }), so
    a group can tap them instead of having to know them (2026-10-18: the menu listed 0 of them).
      · Telegram's grammar is a-z0-9_ (1-32): '-' becomes '_' (the hub reads "/disk_usage" back as /disk-usage), and
        a name over 32 characters stays typeable but is not listed.

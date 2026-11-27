@@ -63,7 +63,7 @@ const Voice = (() => {
   const canSpeak = () => (typeof Audio !== 'undefined') && (typeof fetch !== 'undefined');
 
   // ---- prefs --------------------------------------------------------------
-  // do agents speak their replies aloud? (the Commander's saved choice). DEFAULT OFF — and keep it off: when the speaker is
+  // do agents speak their replies aloud? (the Master's saved choice). DEFAULT OFF — and keep it off: when the speaker is
   // on, chat.js routes even a real TASK to the one-on-one 'talk' stance (the agent faces you and answers on
   // the spot) INSTEAD of walking to its workstation. Defaulting this ON silently suppressed the signature
   // desk trip for every task on an untouched agent ("gave it a task, it just stood there"). Voice is opt-in;
@@ -87,7 +87,7 @@ const Voice = (() => {
   let takeErr = false;              // did the current take end in a hard error? (a clean take resets the streak)
   const MAX_MIC_ERRORS = 3;
   // Plain words for recognizer failure codes — the raw ids ('stt-failed', 'network', 'native-unavailable')
-  // reached the COMMS status line and the Commander had nothing to act on.
+  // reached the COMMS status line and the Master had nothing to act on.
   function micErrorText(code) {
     const c = String(code || '');
     if (c === 'native-unavailable') return 'Windows dictation isn’t responding';
@@ -126,8 +126,8 @@ const Voice = (() => {
      ====================================================================== */
 
   function onSpeakStart() {
-    // ECHO GUARD for Live dictation: the mic re-opens while the run thinks (so the Commander can steer), but
-    // dictation engines cannot tell the agent's voice from the Commander's — a take still open when audio
+    // ECHO GUARD for Live dictation: the mic re-opens while the run thinks (so the Master can steer), but
+    // dictation engines cannot tell the agent's voice from the Master's — a take still open when audio
     // starts would send the agent's own sentence back as the next message. Discard it; the reply's end re-arms.
     if (coordinator && convoMode && listening) { discarding = true; listening = false; setMicState(false); try { sttProvider.abort(); } catch (_) {} }
     speaking = true; setSpeaking(true); duckSfx(true); coordinatorEvent('onState', 'speaking'); startOutputMeter();
@@ -1389,7 +1389,7 @@ const Voice = (() => {
   /* ONE teardown for hands-free exit, refused classic mic, DISCONNECT, /voice off, init and Live start/failure/end.
      Revoke pending starts and abort the take without sending buffered words as a new run. Speech ends with this
      cause ('all' by default; 'audible' preserves a thinking reply). Release handsfree plus the named lease, returning
-     to the Commander's speaker choice; releasing live also detaches that call's hooks and restores classic STT. */
+     to the Master's speaker choice; releasing live also detaches that call's hooks and restores classic STT. */
   function endSession(cause, opts) {
     opts = opts || {};
     const was = convoMode;
@@ -1897,7 +1897,7 @@ const Voice = (() => {
   function busyNow() { return typeof Chat !== 'undefined' && Chat.isBusy && Chat.isBusy(); }
 
   /* A Live call's mic loop stops on an error ONE way (a refused microphone, or MAX_MIC_ERRORS failures in a row): it
-     PAUSES. Never stopConvo(), which cancels every reply, the answer the Commander is waiting for included. The reason
+     PAUSES. Never stopConvo(), which cancels every reply, the answer the Master is waiting for included. The reason
      is the tick's last status write (setDiagStatus) and reaches the Live panel's PAUSED state, error row and RESUME
      (onFatal). A resume, a new call or the call's end lifts the pause and the reason it parked (unpauseMicLoop). */
   function pauseMicLoop(code, why) {
@@ -1941,7 +1941,7 @@ const Voice = (() => {
       onInterim: t => {
         coordinatorEvent('onInterim', String(t || ''));
         // DRAFT PROTECTION: an interim may only replace what dictation itself wrote — never a typed draft.
-        // A non-empty composer that isn't our own last interim means the Commander is typing; leave it alone
+        // A non-empty composer that isn't our own last interim means the Master is typing; leave it alone
         // (the status line still shows 'listening…', so dictation isn't silently lost — it lands via onFinal).
         if (!inputEl || (inputEl.value && inputEl.value !== dictShown)) return;
         inputEl.value = t; dictShown = t;
@@ -2007,7 +2007,7 @@ const Voice = (() => {
     if (discarding) return;   // teardown in progress — drop the buffered transcript, never send it
     const t = String(text || '').trim();
     // DRAFT PROTECTION (text-deletion bug): a listen used to clear the composer UNCONDITIONALLY here — wiping
-    // whatever the Commander had TYPED whenever the mic finalized (even an empty/noise transcript). Only text
+    // whatever the Master had TYPED whenever the mic finalized (even an empty/noise transcript). Only text
     // dictation itself wrote (dictShown, the interim preview) is ours to clear; a typed draft is never touched.
     if (inputEl && inputEl.value && inputEl.value === dictShown) { inputEl.value = ''; if (typeof Chat !== 'undefined' && Chat.autoGrowInput) Chat.autoGrowInput(); }
     dictShown = '';
@@ -2036,7 +2036,7 @@ const Voice = (() => {
     if (!canListen()) return;
     clearResumeCue();
     // A second click while the capability probe is still resolving cancels the queued take. Without this,
-    // two quick clicks could open the microphone late, after the Commander believed they had stopped it.
+    // two quick clicks could open the microphone late, after the Master believed they had stopped it.
     if (!coordinator && pendingListen && pendingListen.probe && !listening) { pendingListen = null; setStatus('online'); return; }
     // barge-in: interrupt whenever the agent is making OR about to make sound (talking() also covers the
     // neural-fetch gap, where `speaking` is still false but a reply is imminent) — the audible scope cancels it.
@@ -2157,10 +2157,10 @@ const Voice = (() => {
     if (modeBtn) modeBtn.classList.remove('resume');
     reflectMode();   // restore the normal title/aria for the current mode
   }
-  /* THE SPEAKER's ONE transition (voice-state.js speaker: the Commander's saved choice plus the sessions holding it on,
+  /* THE SPEAKER's ONE transition (voice-state.js speaker: the Master's saved choice plus the sessions holding it on,
      never saved). Every writer goes through it and every change runs ONE fixed list, in order: a deliberate choice or a
      flip re-probes the neural path fresh (no cold-off or degrade reason survives it); going off silences every reply,
-     thinking ones too; off always puts the speech note away; only the Commander turning it on warms the stock lines;
+     thinking ones too; off always puts the speech note away; only the Master turning it on warms the stock lines;
      and the key always redraws, so its tooltip can never claim ON over a muted speaker. */
   function setSpeaker(next) {
     const s = speaker.apply(next);
@@ -2171,11 +2171,11 @@ const Voice = (() => {
     return s.on;
   }
   function toggleSpeakReplies() {
-    setSpeaker({ pref: !speaker.isOn() });   // the key flips what it shows: the Commander's choice, which ends any session's hold
+    setSpeaker({ pref: !speaker.isOn() });   // the key flips what it shows: the Master's choice, which ends any session's hold
     // the COMMS speaker key sounds like every other COMMS key (and the bottom docks): press(), not the Click_02 tick
     if (typeof SFX !== 'undefined') (SFX.press || SFX.click)();
   }
-  function setSpeakReplies(on) { return setSpeaker({ pref: on !== false }); }   // /voice on|off: the Commander's choice too
+  function setSpeakReplies(on) { return setSpeaker({ pref: on !== false }); }   // /voice on|off: the Master's choice too
 
   // init is called from app.js right after Chat.init — agentName seeds this agent's voice.
   function init(opts) {
@@ -2252,7 +2252,7 @@ const Voice = (() => {
     voiceEffect, setVoiceEffect, voiceVolume, setVoiceVolume, playbackChain: () => lastChain,
     /* LIVE VOICE MUST ARRIVE AUDIBLE. Opening a hands-free session with the speaker muted is a room where you talk and
        nothing answers. Hands-free leases the speaker in toggleVoiceMode(); Local Live leases it for its call. A lease is
-       its owner's alone and never saved: giving it back returns the speaker to the Commander's own choice (one made
+       its owner's alone and never saved: giving it back returns the speaker to the Master's own choice (one made
        mid-call ends every lease and is kept), and a page that dies mid-call reloads to that choice, never a forced ON. */
     leaseSpeaker: owner => setSpeaker({ lease: owner }), releaseSpeaker: owner => setSpeaker({ release: owner }),
     speakerState: () => speaker.state(),

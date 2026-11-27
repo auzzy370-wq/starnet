@@ -14,7 +14,7 @@
      7. The seed→routine gate — a hand-launched recipe with no authored cadence can still earn the offer.
     10. Prospect shown-rows survive a reload — the ledger must not re-mint `shown` for the same shelf item.
     11. Exclusion lists ride the PROMPT, not only the post-hoc filter.
-    12. The suggest ledger types model prose as RATIONALE, never as a quote of the Commander.
+    12. The suggest ledger types model prose as RATIONALE, never as a quote of the Master.
 
    Source-locks are used where the subject is DOM-flow or load-order wiring (not node-loadable); everything else
    is exercised against the real module. */
@@ -40,7 +40,7 @@ const WorkSignal = require('../frontend/app/worksignal.js');
 /* The two artifacts the divergent matchers produced, pinned as the failing cases they were:
    (a) TAG-KEY HITS. The interest lanes are internal vocabulary. A goal sentence containing the word "general"
        used to score against every general-lane class in the catalog, and the WHY chip quoted it back as
-       «it matches your goal: “general”» — a reason the Commander cannot find anywhere on the card.
+       «it matches your goal: “general”» — a reason the Master cannot find anywhere on the card.
    (b) FRAGMENT HITS. A bare indexOf matched "for" inside "performance". */
 const tagOnlyClass = { name: 'Archivist', tagline: 'keeps the record straight', blurb: 'files things away',
   tags: { general: 3, research: 1 } };
@@ -129,7 +129,7 @@ A.ok(/const coldHead = \(tail\) => '◈ ' \+ esc\(tail\);/.test(mkt),
   '…structurally: coldHead composes the glyph and nothing else, so a cold shelf CANNOT wear the eyebrow');
 
 /* ── 3b. THE NOTICER NAME IS USER TEXT, AND THE HEADER GOES STRAIGHT INTO innerHTML ──────────────────────
-   `ctx.agentName` is whatever the Commander typed (app.js:521 does not HTML-escape it) and `.toUpperCase()`
+   `ctx.agentName` is whatever the Master typed (app.js:521 does not HTML-escape it) and `.toUpperCase()`
    neuters no tag. Five shelf headers compose through noticedHead. Behavioural, not a grep: the real
    composition is lifted out of marketplace.js and run over a hostile name with the REAL U.esc. */
 {
@@ -145,7 +145,7 @@ A.ok(/const coldHead = \(tail\) => '◈ ' \+ esc\(tail\);/.test(mkt),
   const evil = mkHead('<img src=x onerror="alert(1)">')('picked from your real work');
   A.eq(/[<>]/.test(evil), false, 'a tag in the agent name cannot reach the shelf header as markup');
   A.ok(evil.indexOf('&lt;IMG SRC=X ONERROR=&quot;ALERT(1)&quot;&gt;') > 0,
-    '…it renders as the literal text the Commander typed');
+    '…it renders as the literal text the Master typed');
   A.ok(evil.indexOf('NOTICED — picked from your real work') > 0, '…and the rest of the eyebrow is unchanged');
   A.eq(mkHead('"quoted" & \'apos\'')('x').indexOf('"'), -1, 'quotes escape too — the header is safe in an attribute context');
   A.eq(mkHead('')('nothing noticed'), '◈ NOTICED — nothing noticed', 'an unnamed station still gets the bare eyebrow');
@@ -159,7 +159,7 @@ const catalog = Recipes.list();
 const cold = Recipes.rankRecipesExplained(catalog, { limit: 3 });
 A.eq(cold.personalized, false, 'no signal at all → the row reports itself as a spread');
 A.eq(cold.items.length, 3, '…and still returns a full, varied row (the shelf never empties)');
-// a ready-but-silent Commander: dossier filled (so readiness passes) yet the goal text matches no recipe, no
+// a ready-but-silent Master: dossier filled (so readiness passes) yet the goal text matches no recipe, no
 // launches, no topics, no profile. This is the exact shape that used to print "◈ FOR YOU" over catalog order.
 const silent = Recipes.rankRecipesExplained(catalog, { limit: 3, goalText: 'i want to be happy and rich', launches: {}, topics: [] });
 A.eq(silent.personalized, false, 'a filled dossier whose goal hits nothing is STILL a spread — and says so');
@@ -174,9 +174,9 @@ A.eq(Recipes.rankRecipes(catalog, { limit: 3 }).map(r => r.id).join(','), cold.i
 /* ── 6b. …AND THE CLAIM IS SIZED TO THE ROW ────────────────────────────────────────────────────────────────
    `personalized` flips on ONE real hit and the ranker then TOPS THE ROW UP from the cold-start category
    spread. Those filler cards render no why at all, so the plural whole-row claim was sitting over catalog
-   cards the station had never seen the Commander touch. Three states, and the ranker reports the count. */
+   cards the station had never seen the Master touch. Three states, and the ranker reports the count. */
 A.eq(cold.scored, 0, 'a pure spread reports zero earned cards');
-A.eq(silent.scored, 0, '…so does a ready-but-silent Commander');
+A.eq(silent.scored, 0, '…so does a ready-but-silent Master');
 A.eq(earned.scored, 1, 'one launch counter earns exactly ONE card — the other two are top-up filler');
 A.eq(earned.items.length, 3, '…and the row is still full (the top-up is what makes the header a lie if unqualified)');
 const allEarned = Recipes.rankRecipesExplained(catalog, { limit: 3,
@@ -208,13 +208,13 @@ A.eq(TopicMatch.reason(m), 'you keep working on gpu price tracking (seen 4×) �
    DELIVERABLE titles (the station's own words). Authorship is unknown, so the frame claims none — the same
    answer chat.js recCite already gives an unlabelled quote. */
 A.eq(/you said|you told|your words/i.test(TopicMatch.reason(m)), false,
-  'the citation never puts the quote in the Commander’s mouth — the activity pool is not all speech');
+  'the citation never puts the quote in the Master’s mouth — the activity pool is not all speech');
 const tmSrc = read('frontend/app/topicmatch.js');
 A.eq(/'because you said/.test(tmSrc) || /you said “/.test(tmSrc), false, 'and no such phrasing exists in the module');
 // a topic with no evidence renders exactly as it always did (nothing is invented to fill the slot)
 const bare = TopicMatch.match([{ label: 'gpu price tracking', weight: 2.4, count: 4 }], 'track gpu prices daily');
 A.eq(TopicMatch.reason(bare), 'you keep working on gpu price tracking (seen 4×)', 'no evidence → no receipt, never a filler');
-// a long quote is VISIBLY cut, so it can never read as a sentence the Commander never finished
+// a long quote is VISIBLY cut, so it can never read as a sentence the Master never finished
 const longQ = TopicMatch.evidenceLine('x'.repeat(400));
 A.eq(longQ.length, TopicMatch.QUOTE_MAX + 7, 'a clipped quote fits the cap plus its “e.g. “…”” frame (6 + 1 chars)');
 A.ok(longQ.indexOf('…”') > 0, '…and ends in an ellipsis INSIDE the quote marks — visibly truncated');
@@ -263,7 +263,7 @@ A.ok(/LAUNCH_FLOOR/.test(nudgeSrc), 'the offer is still earned by REAL hand-laun
 const proposeBody = A.fnBody(nudgeSrc, 'function propose(');
 A.ok(/times by hand/.test(proposeBody), 'the nudge cites the launch count');
 A.eq(/every morning|every 6 hours|weekly|0 9 \* \* \*/.test(proposeBody), false,
-  'and NEVER names a cadence — the Commander picks it in the SCHEDULE IT form the accept opens');
+  'and NEVER names a cadence — the Master picks it in the SCHEDULE IT form the accept opens');
 A.ok(/App\.openRecipeLaunch\(c\.id, 'routine'\)/.test(proposeBody), 'accept deep-links to that form (propose-and-confirm)');
 
 /* ══════════════════════════════════════════════════════════════════════════════════════════════════════════
@@ -311,7 +311,7 @@ A.ok(/function invalidateFit\(\) \{ fitProjects = null; fitChannels = null; fitP
     res({ projects: rows }))) } });
   const first = fit.loadFitProjects();                                  // open #1 — fetch in flight
   A.eq(gates.length, 1, 'the first open really did fire a fetch');
-  fit.invalidateFit();                                                  // …the Commander grants a folder and comes back
+  fit.invalidateFit();                                                  // …the Master grants a folder and comes back
   const second = fit.loadFitProjects();                                 // open #2 — must NOT be handed the stale promise
   A.eq(gates.length, 2, 'the second open fires its OWN fetch instead of adopting the in-flight one');
   gates[0]([{ root: '/old' }]);                                         // the PRE-GRANT answer lands late
@@ -496,7 +496,7 @@ const fireBody = sugSrc.slice(sugSrc.indexOf('async function fire()'));
 A.ok(/const why = parsed\.why \? \(' ' \+ parsed\.why\) : '';/.test(fireBody),
   'the nudge appends the model text plainly');
 A.eq(/you said|because you/.test(fireBody.slice(0, fireBody.indexOf('Chat.nudge'))), false,
-  '…with no framing that would attribute it to the Commander');
+  '…with no framing that would attribute it to the Master');
 // the SAME mis-typing was live one file over: autojobs posts the model's GROUNDS prose to the ledger.
 const ajsSrc = read('frontend/app/autojobstore.js');
 A.eq(/type: 'dossier', quote: pr\.grounds/.test(ajsSrc), false,

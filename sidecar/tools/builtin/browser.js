@@ -30,7 +30,7 @@
   const Orphans = require('./browser-orphans.js');   // #61: end only the station's OWN orphaned Chromium
   const HandoffReasons = require('../../browser-handoff.js').REASONS.slice();   // STEP-IN: browser.need_human's closed reason list
   // UNTRUSTED-CONTENT FENCE (2026-07-25): page text, snapshots, console rows and dialog messages are all
-  // authored by the SITE, not the Commander. web_* has fenced since the web lane; these reads did not, so
+  // authored by the SITE, not the Master. web_* has fenced since the web lane; these reads did not, so
   // the most direct "read a hostile page" path arrived raw. Same marker pair as web — one model contract.
   const { fenceExternal } = require('../fence.js');
 
@@ -567,7 +567,7 @@
      WebRuntimeFeatures::EnableAutomationControlled(true). A non-zero private port avoids that
      specific trigger and prevents cross-run attachment, but the real-browser gauntlet proved current
      headless Chromium can still expose navigator.webdriver. Station-launched browsers therefore also
-     disable the AutomationControlled Blink feature. Attached Commander-owned Chrome is never launched
+     disable the AutomationControlled Blink feature. Attached Master-owned Chrome is never launched
      or modified here. We allocate the private endpoint ourselves: bind 127.0.0.1:0, keep whatever the
      OS hands us, release it, and pass that number to Chromium. */
   function allocateEphemeralPort() {
@@ -754,7 +754,7 @@
   function resolveChrome(wantHeaded, existsSync) {
     existsSync = existsSync || FS.existsSync;
     const exists = (c) => { try { return existsSync(c.path); } catch (_) { return false; } };
-    /* A WINDOW THE COMMANDER USES is their own installed Chrome / Edge / Chromium first — a Playwright test build shows
+    /* A WINDOW THE MASTER USES is their own installed Chrome / Edge / Chromium first — a Playwright test build shows
        "Chrome for Testing" banners and is what sign-in pages trust least. Headless work keeps the old order. */
     if (wantHeaded) for (const c of CHROME_CANDIDATES) { if (!c.headless && !/ms-playwright/.test(c.path) && exists(c)) return { path: c.path, headless: false }; }
     for (const c of CHROME_CANDIDATES) { if (!c.headless && exists(c)) return { path: c.path, headless: false }; }
@@ -834,7 +834,7 @@
     const startPinnedProxy = require('./browser-proxy.js').startPinnedProxy;
     // HEADLESS BY DEFAULT (2026-07-07 direction): research must never open a window on the user's screen.
     // A window appears only when the CALL asked for one (deps.headed — browser.navigate visible:true, i.e.
-    // the Commander asked to watch) and no headless env pins it down (CI/soak rigs still win). Legacy
+    // the Master asked to watch) and no headless env pins it down (CI/soak rigs still win). Legacy
     // deps.headless===true keeps forcing headless for injected test rigs.
     const wantHeaded = deps.forceHeadless !== true && !!deps.headed && !headlessRequested(deps.env) && deps.headless !== true;
     // Resolve the binary honoring the headed preference (skip headless-shell when headed).
@@ -887,7 +887,7 @@
     const downloadWaitMs = deps.downloadWaitMs == null ? DOWNLOAD_WAIT_MS : Math.max(0, Number(deps.downloadWaitMs));
     const inputSleep = typeof deps.inputSleep === 'function' ? deps.inputSleep : sleep;
     if (!fetchImpl || !WebSocketImpl) throw new Error('browser unavailable: Node WebSocket/fetch is not available');
-    /* ATTACH MODE. deps.attachPort names an ALREADY-RUNNING Chrome's DevTools port (the Commander started
+    /* ATTACH MODE. deps.attachPort names an ALREADY-RUNNING Chrome's DevTools port (the Master started
        it with --remote-debugging-port). We launch nothing, so we need no Chromium binary of our own — the
        missing-Chromium refusal below would be wrong here and is skipped. Everything downstream is
        identical: the same CDP driver over the same protocol. */
@@ -916,7 +916,7 @@
     let downloads = downloadDir ? makeDownloadLedger(downloadDir) : null;
     // Owned-browser identity is derived after CDP connects. Windows Chrome GUI binaries often emit
     // nothing for `chrome.exe --version`; launch-time probing alone left their UA as HeadlessChrome.
-    // Attached Commander-owned Chrome is intentionally excluded from every override.
+    // Attached Master-owned Chrome is intentionally excluded from every override.
     let stationIdentity = null;
     /* NETWORK TRUTH. navigate() used to return only location.href, so a 403, a 404 and a page that
        simply rendered nothing were indistinguishable to the agent — it would "read" an error page and
@@ -1071,11 +1071,11 @@
     }
     /* TAB 0 WENT AWAY (customer, 0.13.1 macOS: every call failed "Session with given id not found" while the browser
        still read as alive). Under browser-level attach even the original tab is a session, and its target can go away
-       on its own: the Commander closes the tab or the window (macOS keeps Chrome running with no window), the site
+       on its own: the Master closes the tab or the window (macOS keeps Chrome running with no window), the site
        calls window.close, a crashed or discarded tab detaches. Before this, openerSession kept the dead id forever.
        If another tab is still open on our OWN browser, it becomes tab 0: it was adopted with the shim already in place
        (prepareAdoptedPage), so isolation holds, and a signed-in popup is kept rather than thrown away. Otherwise
-       pageLost turns alive() false and the next call starts a fresh browser on the same profile. The Commander's own
+       pageLost turns alive() false and the next call starts a fresh browser on the same profile. The Master's own
        Chrome is never re-pointed at whichever of their other tabs happens to be first: there the loss is reported. */
     function openerLost() {
       const dead = openerSession;
@@ -1138,7 +1138,7 @@
        still being released by the previous process, or a start that lost a race on a loaded machine. One failed
        spawn used to fail the whole call (the agent then went hunting for other browsers). Two more tries, spaced
        out, before the error is real. Attach mode never retries: that browser is not ours to start. */
-    /* CLEAN START. After a Chromium on this profile ended hard (the Commander closed the station window, a crash, a
+    /* CLEAN START. After a Chromium on this profile ended hard (the Master closed the station window, a crash, a
        killed sidecar), the next launch RESTORED its old tabs beside ours and was slow to report them: the driver's
        first command then waited out whole CDP timeouts (measured: 2 of 3 relaunches stalled 15 s, one 46 s). The
        browser we launch always starts on one blank tab, so forget the crashed session and mark the last exit clean.
@@ -1147,7 +1147,7 @@
        can leave a helper process holding the profile's files, and every retry then exits at once against that lock
        (EBUSY on Default/Sessions). Before a retry, end whatever still runs with THIS profile directory on its command
        line. The directory is unique to this station/run (the proc ledger uses it as the same identity token), so
-       nothing else — never the Commander's own Chrome — can match. Only ever called for a browser we launched. */
+       nothing else — never the Master's own Chrome — can match. Only ever called for a browser we launched. */
     let reclaimed = false;
     // End a Chromium WE started together with its helper processes — instant, no process-table scan (that scan took
     // >15 s on a starved machine). Windows needs /T for the tree; elsewhere the group dies with the browser.
@@ -1336,11 +1336,11 @@
       if (cdp) return cdp;
       /* ATTACH: no spawn, no profile dir, no proc ledger entry. `proc` deliberately stays null, which is
          what makes close() safe — it kills `owned`, and a browser we did not start is not ours to kill.
-         Shutting the Commander's real Chrome (and every unsaved tab in it) because an agent run ended
+         Shutting the Master's real Chrome (and every unsaved tab in it) because an agent run ended
          would be indefensible. */
       /* ATTACH MODE skips ONLY the launch. `proc` deliberately stays null, and that is what makes close()
          safe: it kills `owned`, and a browser we did not start is not ours to kill — ending an agent run by
-         shutting the Commander's real Chrome, with every unsaved tab in it, would be indefensible. Nothing
+         shutting the Master's real Chrome, with every unsaved tab in it, would be indefensible. Nothing
          is written to the proc ledger for the same reason: the sweeper must never reap a process we borrowed.
          Execution then falls through into the SAME readiness/attach/setup loop the launch path uses. */
       let launchPort;
@@ -1590,7 +1590,7 @@
                 await Promise.race([openerAttach, sleep(timeoutMs)]);
                 popupsAdopted = openerSession !== null;
                 if (popupsAdopted && attachPort !== null) {
-                  // Existing Commander tabs arrive as the same attachedToTarget event as future popups,
+                  // Existing Master tabs arrive as the same attachedToTarget event as future popups,
                   // and protocol order is not UI-focus order. Wait for the initial set, then make the
                   // actually visible/focused page tab 0 before any snapshot or action can run.
                   if (initialPageCount > 1) await waitForTabCount(initialPageCount, timeoutMs);
@@ -1638,7 +1638,7 @@
               await installStationMetrics(S);
               /* …and LEAVE that page. The pinned network proxy refuses loopback, so the probe tab sat on "Access to
                  127.0.0.1 was denied — HTTP ERROR 403" (the probe only needs the trustworthy ORIGIN, not the body).
-                 While browsers were invisible nobody saw it; the station browser SHOWED it to the Commander as the first
+                 While browsers were invisible nobody saw it; the station browser SHOWED it to the Master as the first
                  thing on screen, and an agent reading the fresh page reported a Chrome error. Start on a blank page. */
               try { await cdp.send('Page.navigate', { url: 'about:blank' }, S, navTimeoutMs); } catch (e) { failNote('browser.probe-leave', e); }
             }
@@ -2660,8 +2660,8 @@
       const r = await c.send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
       return r.data || '';
     }
-    /* STEP-IN SURFACE (2026-09-29). While the Commander holds the wheel, THIS browser — same process, same page,
-       same profile — is streamed into a docked station window and driven by the Commander's own pointer and keys.
+    /* STEP-IN SURFACE (2026-09-29). While the Master holds the wheel, THIS browser — same process, same page,
+       same profile — is streamed into a docked station window and driven by the Master's own pointer and keys.
        Frames go to the handoff host (sidecar/browser-handoff.js) and from there only to the station page; nothing
        here ever returns page pixels or keystrokes to a tool result. Input is CDP Input.* on the page session, the
        same synthetic path browser.test_input uses: it never touches the operating system's real cursor or keyboard.
@@ -2670,7 +2670,7 @@
        frames of the EMULATED 1440x900 viewport with frames of the hidden window's real content area (1424x749),
        each labelled with its own size — so a click mapped off one frame lands somewhere else on the next.
        Page.captureScreenshot always renders the emulated viewport, i.e. the exact CSS space Input.* coordinates
-       live in. The loop is fast right after the Commander acts and backs off when the page is still, and an
+       live in. The loop is fast right after the Master acts and backs off when the page is still, and an
        unchanged picture is never re-sent. */
     const CAST_FAST_MS = 140, CAST_IDLE_MS = 700, CAST_IDLE_AFTER = 12;
     let castOn = false, castHandler = null, castGen = 0, castKick = null, castSame = 0;
@@ -2723,13 +2723,13 @@
     /* A MINIMIZED STATION WINDOW IS A DEAD PICTURE (Andrew 2026-10-02: "I can't interact with the browser whatsoever from
        the built in browser, I have to manually 'show window' and then I can control it"). Measured: with the station's
        Chrome window minimized the page is hidden and renders nothing — the in-app picture sat at 0 frames/s while the
-       Commander's clicks and keys DID land, so the BROWSER window looked like a frozen mirror; SHOW WINDOW un-minimized
-       it, which is why it then "worked". While the in-app picture is in use (a stream runs, or the Commander clicks into
+       Master's clicks and keys DID land, so the BROWSER window looked like a frozen mirror; SHOW WINDOW un-minimized
+       it, which is why it then "worked". While the in-app picture is in use (a stream runs, or the Master clicks into
        it) a minimized window is put back to normal — Windows keeps it behind the active app (no focus steal) and it
        renders again. Only our own headed window; never an attached browser. */
     let keepShownBusy = false;
     async function keepWindowShown() {
-      // only over the connection that is already open: this must NEVER start (revive) a browser the Commander closed
+      // only over the connection that is already open: this must NEVER start (revive) a browser the Master closed
       if (!headed || attachPort !== null || keepShownBusy || !cdp || cdp.closed || procExited) return false;
       keepShownBusy = true;
       try {
@@ -2818,7 +2818,7 @@
     async function humanInput(ev) {
       const c = await page();
       ev = ev || {};
-      // the Commander just acted: show the result at the fast cadence, starting now
+      // the Master just acted: show the result at the fast cadence, starting now
       castSame = 0;
       if (castKick && !(ev.type === 'mouse' && ev.action === 'move')) { const k = castKick; castKick = null; setTimeout(k, 60); }
       if (ev.type === 'mouse') {
@@ -2855,7 +2855,7 @@
       } catch (e) { failNote('browser.page-info', e); }
       return { url: '', title: '' };
     }
-    // False once the Chromium WE started has exited (the Commander closed the station browser window, or it crashed),
+    // False once the Chromium WE started has exited (the Master closed the station browser window, or it crashed),
     // and once no page target is left to drive (tab 0 went away with no other tab to take its place: openerLost).
     function alive() {
       if (proxyFailed || pageLost) return false;
@@ -2865,7 +2865,7 @@
     }
     // the Chromium we started, while it has not exited — never a number that may have been reused since
     function ownedPid() { return proc && proc.pid && !procExited ? proc.pid : null; }
-    // Raise the station browser's window (the Commander asked to see it).
+    // Raise the station browser's window (the Master asked to see it).
     async function bringToFront() { const c = await page(); await c.send('Page.bringToFront'); return true; }
     async function close(opts) {
       const owned = proc, waitForClose = procClosePromise;
@@ -2955,13 +2955,13 @@
     // processes, and one-sidecar-per-save-dir is a hard invariant, so an in-process lease is sufficient.
     // Ordinary tools wait for this profile; contention must never change account/session identity.
     let leaseHeld = false;
-    /* ATTACH state. Sticky for the life of the session: once a run has driven the Commander's own browser
+    /* ATTACH state. Sticky for the life of the session: once a run has driven the Master's own browser
        it must not be able to quietly drop back to "ordinary headless" and re-open the eval door — the
        credentials it was exposed to do not un-expose themselves. Cleared only by detach(), which tears the
        driver down. */
     let attachedToUserBrowser = false, attachedUserPort = null;
     function acquirePersistent() {
-      // While attached to the Commander's own Chrome the station profile is not in play at all; taking its
+      // While attached to the Master's own Chrome the station profile is not in play at all; taking its
       // single-owner lease would block a concurrent run from a browser this one is not using.
       if (attachedToUserBrowser) return false;
       const pp = deps.persistentProfile;
@@ -2975,7 +2975,7 @@
       if (acquirePersistent()) return { profileDir: deps.persistentProfile.dir, cleanupProfile: false, profileIsPersistent: true };
       // The STATION's shared browser (browser-view.js) holds the profile while it is open, which can be for a long time.
       // A run that loses to IT browses on its own temporary profile (signed out, and its handoff says `remembered:
-      // false` truthfully) rather than erroring or closing the browser the Commander is using. Against another RUN the
+      // false` truthfully) rather than erroring or closing the browser the Master is using. Against another RUN the
       // old rule stands: wait, then refuse — two runs never silently swap account identity.
       if (deps.persistentProfile && !attachedToUserBrowser && typeof deps.persistentProfile.fallback === 'function' && deps.persistentProfile.fallback()) return { profileIsPersistent: false };
       if (deps.persistentProfile && !attachedToUserBrowser) throw new Error('the station browser profile is in use by another agent run — retry after it finishes; saved logins were not replaced');
@@ -3010,9 +3010,9 @@
          undefined  -> reuse whatever is running (or start HEADLESS — the default posture).
          false/true -> if the running driver's mode differs, RELAUNCH in the requested mode on the same
                        profile dir (cookies/logins survive the swap). Headless is the default; a visible
-                       window exists only while the Commander asked for one. */
+                       window exists only while the Master asked for one. */
     function wantedHeaded(wantVisible) {
-      // THE STATION BROWSER (browser-view.js) is a real window the Commander uses, whatever an individual call asks
+      // THE STATION BROWSER (browser-view.js) is a real window the Master uses, whatever an individual call asks
       // (a local test page, a visible:false navigate): only a headless pin (CI/soak env, legacy rigs) keeps it hidden.
       if (deps.preferVisible === true && deps.forceHeadless !== true) return !headlessRequested(deps.env) && deps.headless !== true;
       return deps.forceHeadless === true ? false
@@ -3037,7 +3037,7 @@
       const headed = wantedHeaded(wantVisible);
       if (driver) {
         /* An ATTACHED session never mode-switches. The relaunch below rebuilds the driver WITHOUT
-           attachPort, so honouring a headless request here would silently drop the Commander's browser and
+           attachPort, so honouring a headless request here would silently drop the Master's browser and
            substitute a station one — the agent would go on clicking, in the wrong browser, signed into
            nothing, and nothing in the transcript would say so. Detaching is explicit or not at all. */
         if (attachedToUserBrowser) return driver;
@@ -3484,7 +3484,7 @@
     // "print the page you are looking at" is exactly as safe as get_text on it.
     async function pdf(opts) { return driverFn(ensureDriver(), 'pdf')(opts || {}); }
     /* intercept/emulate are refused while ATTACHED, and the reason is ownership, not risk arithmetic:
-       the Commander's own Chrome is not the station's to reconfigure. Blocking resource loads or
+       the Master's own Chrome is not the station's to reconfigure. Blocking resource loads or
        spoofing device/language/timezone inside their real signed-in browser changes what THEY see and
        how sites treat THEM, in ways that outlast the agent's attention. The station browser exists for
        exactly this kind of reshaping. */
@@ -3502,20 +3502,20 @@
       version++;   // metric/UA changes relay the page: refs from the previous layout are meaningless
       return out;
     }
-    /* attach(port) — drive the Commander's OWN already-running Chrome instead of a station-launched one.
+    /* attach(port) — drive the Master's OWN already-running Chrome instead of a station-launched one.
 
        WHY THIS AND NOT A STEALTH ENGINE. The practical wall in agent browsing is not that a headless
        browser cannot click; it is that a fresh headless profile is signed into nothing and looks like
        exactly what it is. The other answer to that is a fingerprint-spoofing build. This one is better on
-       every axis that matters: it IS a real browser with a real profile and the Commander's real sessions,
+       every axis that matters: it IS a real browser with a real profile and the Master's real sessions,
        it needs no 300MB download or side-car server, and it involves no deception.
 
-       WHAT IT COSTS, STATED PLAINLY: every login the Commander has. That is why eval is refused above,
+       WHAT IT COSTS, STATED PLAINLY: every login the Master has. That is why eval is refused above,
        why the tool requires consent, and why we never kill the process on close. */
     async function attach(port) {
-      // The station browser is the one the Commander and the agents share: it never becomes some other Chrome
+      // The station browser is the one the Master and the agents share: it never becomes some other Chrome
       // (an agent once attached it to a debugging port it found on the machine — another tool's browser).
-      if (deps.noAttach === true) throw new Error('browser.attach is not available here: this is the station browser you share with the Commander. Use browser.navigate in it instead.');
+      if (deps.noAttach === true) throw new Error('browser.attach is not available here: this is the station browser you share with the Master. Use browser.navigate in it instead.');
       const p = Number(port);
       if (!Number.isInteger(p) || p < 1 || p > 65535) throw new Error('browser.attach: port must be an integer 1-65535');
       // Probing BEFORE the relaunch means a wrong port reports "nothing is listening" while the run still
@@ -3550,12 +3550,12 @@
     /* RESET (#61): the supported way out of a wedged station browser - what an agent used to try with a shell kill
        (refused, rightly) and had no other path for. Ends THIS session's own browser (and its network proxy), then
        ends any ORPHANED Chromium on the durable station profile (one a previous Vultron process started and left
-       behind) and clears that profile's stale locks. Never touches the Commander's own Chrome (exact profile match)
+       behind) and clears that profile's stale locks. Never touches the Master's own Chrome (exact profile match)
        nor a live browser this Vultron started (ancestry check). The next browser call starts a fresh browser and
        proxy. Saved sign-ins live in the profile's files and are kept. Returns a truthful receipt. */
     async function reset() {
       const out = { closedOwn: false, closeError: null, sweep: null, attached: attachedToUserBrowser };
-      if (attachedToUserBrowser) return out;   // the Commander's own Chrome is never ours to end: browser.detach
+      if (attachedToUserBrowser) return out;   // the Master's own Chrome is never ours to end: browser.detach
       if (driver && !injected) {
         const d = driver;
         driver = null; driverHeaded = null; version++; navEpoch++;
@@ -3575,7 +3575,7 @@
     async function detach() {
       if (!attachedToUserBrowser) return 'Not attached; nothing to detach.';
       const port = attachedUserPort;
-      // the Commander's Chrome stays open without us: every input holding a staged copy is emptied, then the copies go
+      // the Master's Chrome stays open without us: every input holding a staged copy is emptied, then the copies go
       await uploadStage.dropAll({ clear: true });
       // Drop the CDP socket WITHOUT killing the browser: driver.close() only kills a process it spawned,
       // and in attach mode there is none.
@@ -3586,11 +3586,11 @@
       return 'Detached from your Chrome on port ' + port + '. It is still running and untouched; later browser actions use the station browser again.';
     }
     /* THE GATE. Refuse page eval whenever this run is driving the PERSISTENT profile, because that
-       profile carries the Commander's real logged-in sessions (browser.login put them there). On the
+       profile carries the Master's real logged-in sessions (browser.login put them there). On the
        ephemeral profile there is nothing to steal, so the same call is fine. */
     function evalAllowed() {
-      /* ATTACHED to the Commander's OWN Chrome is the strictest case there is, and it comes first. The
-         station's persistent profile holds the logins the Commander chose to give the agent; their real
+      /* ATTACHED to the Master's OWN Chrome is the strictest case there is, and it comes first. The
+         station's persistent profile holds the logins the Master chose to give the agent; their real
          browser holds EVERY login they have — bank, email, employer SSO. The existing law is "eval is
          dangerous WHERE THE CREDENTIALS ARE", and this is where they all are. */
       if (attachedToUserBrowser) return { ok: false, reason: 'this run is attached to your own Chrome' };
@@ -3691,10 +3691,10 @@
       // No vision provider wired — do NOT fake an answer. Report honestly.
       return { ok: false, bytes, image: data, reason: 'no vision route wired into this run — do not ask the user for an API key; report the screenshot as unavailable' };
     }
-    /* ATTENDED LOGIN TAKEOVER: the agent hit a login wall and asks the Commander to sign in THEMSELVES.
+    /* ATTENDED LOGIN TAKEOVER: the agent hit a login wall and asks the Master to sign in THEMSELVES.
        Two live consent asks bracket a headed relaunch on the persistent profile:
          1. permission.prompt tool:'browser.login'      — "open a visible window so you can log in to <host>?"
-         2. permission.prompt tool:'browser.login.done' — blocks until the Commander clicks Done (or cancels).
+         2. permission.prompt tool:'browser.login.done' — blocks until the Master clicks Done (or cancels).
        While the window is up, synthetic-input shims are OFF (the human is driving real Chrome; SSO popups and
        redirects must work) and the agent's driving tools are the ones paused — this function doesn't return
        until the window is torn down and the browser is back to shimmed HEADLESS mode on the same profile.
@@ -3704,7 +3704,7 @@
     async function login(url, signal) {
       const attended = deps.attendedLogin;
       if (!attended || typeof attended.prompt !== 'function') {
-        throw new Error('browser.login needs a watched COMMS session — an unattended run cannot open a login window for the Commander');
+        throw new Error('browser.login needs a watched COMMS session — an unattended run cannot open a login window for the Master');
       }
       if (deps.stationLogin !== true && (headlessRequested(deps.env) || deps.headless === true)) {
         throw new Error('browser.login unavailable: this host pins the browser headless (VULTRON_BROWSER_HEADLESS)');
@@ -3722,7 +3722,7 @@
       // hard stop (logging into a throwaway profile would silently lose the session at run end — dishonest);
       // a host with NO persistent profile still gets a within-run login on its ephemeral profile.
       await waitForProfile(signal);
-      /* THE STATION BROWSER (sidecar/browser-view.js) is ALREADY the browser the Commander sees and uses — in the
+      /* THE STATION BROWSER (sidecar/browser-view.js) is ALREADY the browser the Master sees and uses — in the
          station's BROWSER window, or as its own Chrome window — on the durable profile. So a sign-in there needs no
          relaunch at all: open the page right here and show it. Measured 2026-09-30 (Andrew: "go to github so i can
          sign in … FAILS IMMEDIATELY"): the relaunch below closes and restarts Chromium twice on one profile, and on a
@@ -3731,7 +3731,7 @@
         const at = await navigate(u.href);
         if (typeof deps.onLoginOpen === 'function') { try { await deps.onLoginOpen({ host, url: at }); } catch (e) { failNote('browser.login.show', e); } }
         let doneHere = false;
-        /* FROZEN while the Commander signs in (release review 2026-09-30): the same rule as a STEP-IN handoff — a
+        /* FROZEN while the Master signs in (release review 2026-09-30): the same rule as a STEP-IN handoff — a
            browser tool called in parallel in this turn (snapshot, get_text, screenshot, console) must not read a page
            they are typing a password or a 2FA code into. thaw() also retires every ref minted before. */
         const wasFrozen = frozenBy;
@@ -3766,18 +3766,18 @@
       await relaunch({ headed: deps.preferVisible === true ? wantedHeaded(undefined) : false });
       return { status: done ? 'done' : 'unconfirmed', host, url: finalUrl || u.href };
     }
-    /* STEP-IN: hand THIS browser — same process, same page, same profile — to the Commander.
+    /* STEP-IN: hand THIS browser — same process, same page, same profile — to the Master.
        handoffSurface() is what the handoff host drives (stream frames out, human input in). It never relaunches:
-       the Commander must land on exactly the page the agent was stuck on, with whatever state it had.
+       the Master must land on exactly the page the agent was stuck on, with whatever state it had.
        freeze()/thaw() bracket the handoff. While frozen the agent's browser tools are refused (makeBrowserTools'
        wrapper reads frozen()), so the agent cannot snapshot, read text, screenshot or read the console while a
        human is typing a password into the page. thaw() kills every ref: the human changed the page. */
     let frozenBy = null;
     function handoffSurface() {
       const d = driver;
-      if (!d || (typeof d.alive === 'function' && !d.alive())) throw new Error('no browser page is open — navigate to the page that needs the Commander first');
+      if (!d || (typeof d.alive === 'function' && !d.alive())) throw new Error('no browser page is open — navigate to the page that needs the Master first');
       for (const fn of ['streamStart', 'streamStop', 'humanInput', 'pageInfo']) {
-        if (typeof d[fn] !== 'function') throw new Error('this browser cannot be handed to the Commander (driver has no ' + fn + ')');
+        if (typeof d[fn] !== 'function') throw new Error('this browser cannot be handed to the Master (driver has no ' + fn + ')');
       }
       // A sign-in lasts past this run only on the durable station profile (the leased one) — say which, truthfully.
       // …and a driver the HELD profile moved to a temporary one remembers nothing, lease or not
@@ -3798,12 +3798,12 @@
     function thaw() {
       if (frozenBy === null) return;
       frozenBy = null;
-      version++; navEpoch++;   // the Commander drove the page: refs minted before the handoff point at a page that may be gone
+      version++; navEpoch++;   // the Master drove the page: refs minted before the handoff point at a page that may be gone
     }
     function frozen() { return frozenBy; }
-    /* THE STATION'S SHARED BROWSER (sidecar/browser-view.js) changes hands: the Commander browses in it between
+    /* THE STATION'S SHARED BROWSER (sidecar/browser-view.js) changes hands: the Master browses in it between
        runs, and different agents drive it on different runs. handTo() is called as a run takes it:
-         · every ref dies (the page may be one the Commander opened or changed — the same rule thaw() applies
+         · every ref dies (the page may be one the Master opened or changed — the same rule thaw() applies
            after a handoff);
          · downloads are re-pointed at the driving agent's own jail. */
     async function handTo(info) {
@@ -4025,11 +4025,11 @@
        never decides for the agent: a login box in a page header is not a reason to stop a research task. */
     const canHandOff = !!(deps.handoff && typeof deps.handoff.request === 'function');
     function stepInHint(reason) {
-      return canHandOff ? ' STEP-IN: you may not solve this yourself - call browser.need_human {reason:"' + reason + '"} to hand this browser to the Commander, and continue when they hand it back.' : '';
+      return canHandOff ? ' STEP-IN: you may not solve this yourself - call browser.need_human {reason:"' + reason + '"} to hand this browser to the Master, and continue when they hand it back.' : '';
     }
     function authHint(status) {
       if (!canHandOff || !status || !status.authWall) return '';
-      return ' This page shows ' + (status.authSignal || 'a sign-in field') + '. You never type the Commander\'s credentials or codes: if the task needs this account, call browser.need_human {reason:"' + status.authWall + '"} so they can do it in this same browser; otherwise carry on without signing in.';
+      return ' This page shows ' + (status.authSignal || 'a sign-in field') + '. You never type the Master\'s credentials or codes: if the task needs this account, call browser.need_human {reason:"' + status.authWall + '"} so they can do it in this same browser; otherwise carry on without signing in.';
     }
     const tools = [
       Object.assign(read('browser.navigate', 'Navigate the AGENT-CONTROLLED browser to a public http(s) URL. HEADLESS in ordinary agent runs: it never opens a window or uses the user\'s input. Private, loopback, intranet, and unsafe redirects remain refused; use browser.test_navigate for a local dev server.', { type: 'object', required: ['url'], properties: navProps },
@@ -4042,7 +4042,7 @@
             try { host = new URL(url).host; } catch (e) { failNote('browser.load-fail.host', e); }
             const http = describeResponse(session.lastResponse && session.lastResponse());
             return {
-              content: 'Browser reached a human-verification wall at ' + host + http.text + '. This is not page content. If the Commander is available, use browser.attach for their own Chrome or browser.login when sign-in is required; otherwise report the wall plainly.' + stepInHint('captcha'),
+              content: 'Browser reached a human-verification wall at ' + host + http.text + '. This is not page content. If the Master is available, use browser.attach for their own Chrome or browser.login when sign-in is required; otherwise report the wall plainly.' + stepInHint('captcha'),
               summary: 'verification wall' + http.summary
             };
           }
@@ -4094,7 +4094,7 @@
           return { content: fenceExternal(lines.join('\n') || 'No visible interactive elements.', 'page snapshot from the controlled browser'), summary: nodes.length + ' ref(s)' + (nodes.some(n => n.frame) ? ' (incl. iframes)' : '') };
         }),
       /* browser.attach ALWAYS costs a consent prompt and can never be defaulted away. Everything else in
-         this file drives a browser the station owns; this one drives the Commander's, where every account
+         this file drives a browser the station owns; this one drives the Master's, where every account
          they have is already signed in. The consent card is the only place a human sees that difference
          before it happens, so `false` is never passed for the consent flag here. */
       exec('browser.attach', 'Attach to an explicitly prepared Chrome debugging session. Prefer browser.login for guided sign-in with a reusable Vultron profile. Advanced attachment requires --remote-debugging-port=<port> and a separate --user-data-dir; current Chrome refuses debugging its default profile. Only accounts signed into that separate profile are available. Use this when a task needs a real logged-in session that browser.login cannot supply. browser.eval stays refused while attached. browser.detach lets go without closing their browser.',
@@ -4107,19 +4107,19 @@
             summary: 'attached to your Chrome'
           };
         }),
-      exec('browser.detach', 'Stop driving the Commander\'s own Chrome and go back to the station browser. Their browser keeps running and every tab stays open — this only lets go of it.', { type: 'object', properties: {} },
+      exec('browser.detach', 'Stop driving the Master\'s own Chrome and go back to the station browser. Their browser keeps running and every tab stays open — this only lets go of it.', { type: 'object', properties: {} },
         async () => ({ content: await session.detach(), summary: 'detached' }), false),
       // #61: the supported recovery when the browser is wedged (navigations fail with proxy/connection errors, a new
       // browser "exited before CDP ownership", the profile is locked). An agent never needs a shell kill for this.
-      exec('browser.reset', 'Recover a stuck station browser: closes the browser this run started (and its network proxy), ends any ORPHANED Vultron browser left running on the station profile by an earlier Vultron process, and clears that profile\'s stale locks. Use it when pages fail with proxy or connection errors, or a new browser exits before it can be controlled. Never touches the Commander\'s own Chrome. Saved sign-ins are kept. The next browser call starts fresh.', { type: 'object', properties: {} },
+      exec('browser.reset', 'Recover a stuck station browser: closes the browser this run started (and its network proxy), ends any ORPHANED Vultron browser left running on the station profile by an earlier Vultron process, and clears that profile\'s stale locks. Use it when pages fail with proxy or connection errors, or a new browser exits before it can be controlled. Never touches the Master\'s own Chrome. Saved sign-ins are kept. The next browser call starts fresh.', { type: 'object', properties: {} },
         async () => {
           if (typeof session.reset !== 'function') return { content: 'browser.reset is not available for this browser.', summary: 'reset unavailable' };
           const r = await session.reset();
-          if (r.attached) return { content: 'This run is attached to the Commander\'s own Chrome, which Vultron never closes. Use browser.detach to let go of it.', summary: 'attached: not reset' };
+          if (r.attached) return { content: 'This run is attached to the Master\'s own Chrome, which Vultron never closes. Use browser.detach to let go of it.', summary: 'attached: not reset' };
           const parts = [r.closedOwn ? 'Closed this run\'s browser and its network proxy.' : (r.closeError ? 'Could not close this run\'s browser: ' + r.closeError + '.' : 'This run had no browser open.')];
           parts.push(r.sweep ? 'Station profile: ' + Orphans.describeSweep(r.sweep) + '.' : 'No station profile sweep was available here.');
           const clean = !r.closeError && (!r.sweep || r.sweep.ok);
-          parts.push(clean ? 'The next browser call starts a fresh browser.' : 'The browser may still be stuck: the Commander can use Settings > BROWSER > RESET STATION BROWSER, or restart Vultron.');
+          parts.push(clean ? 'The next browser call starts a fresh browser.' : 'The browser may still be stuck: the Master can use Settings > BROWSER > RESET STATION BROWSER, or restart Vultron.');
           return { content: parts.join(' '), summary: clean ? 'browser reset' : 'browser reset incomplete' };
         }, false),
       read('browser.find', 'Find visible elements in the current viewport by text and/or role, and get refs you can click or type into. Prefer it over browser.snapshot on a busy viewport: snapshot lists the first 80 interactive elements; this scans up to 200 and returns only matches. It does not scan below the fold or inside closed menus (scroll or open the menu and retry). Refs from earlier snapshots expire, as after any snapshot.',
@@ -4383,7 +4383,7 @@
           const challenge = await session.challengeStatus();
           if (challenge && challenge.challenged) {
             return {
-              content: 'The current page is a human-verification wall, not readable page content. Use browser.attach for the Commander\'s own Chrome or browser.login when sign-in is required; otherwise report the wall plainly.' + stepInHint('captcha'),
+              content: 'The current page is a human-verification wall, not readable page content. Use browser.attach for the Master\'s own Chrome or browser.login when sign-in is required; otherwise report the wall plainly.' + stepInHint('captcha'),
               summary: 'verification wall'
             };
           }
@@ -4395,25 +4395,25 @@
       // job of this bound is to stop a wedged flow from pinning the run forever.
       {
         name: 'browser.login', capability: 'web', impact: 'synthetic-browser', scope: 'execute', requiresConsent: false, timeoutMs: 60 * 60 * 1000,
-        description: 'Ask the Commander to open a VISIBLE browser window and log in to a site THEMSELVES (their password is typed into real Chrome — it never passes through you; never ask for credentials in chat). Blocks until they finish, then returns to headless mode. Verify the signed-in account on the page after Done; confirmation alone does not prove authentication. Cookies persist in the station browser profile, so future runs stay signed in. Use only when a site genuinely requires login; works only in a watched COMMS session.',
+        description: 'Ask the Master to open a VISIBLE browser window and log in to a site THEMSELVES (their password is typed into real Chrome — it never passes through you; never ask for credentials in chat). Blocks until they finish, then returns to headless mode. Verify the signed-in account on the page after Done; confirmation alone does not prove authentication. Cookies persist in the station browser profile, so future runs stay signed in. Use only when a site genuinely requires login; works only in a watched COMMS session.',
         schema: { type: 'object', required: ['url'], properties: { url: { type: 'string' } } },
         run: async (a, ctx) => {
           const r = await session.login(a.url, ctx && ctx.signal);
-          if (r.status === 'declined') return { content: 'Commander declined to open a login window for ' + r.host + '. Continue without authentication and say what is blocked.', summary: 'login declined' };
+          if (r.status === 'declined') return { content: 'Master declined to open a login window for ' + r.host + '. Continue without authentication and say what is blocked.', summary: 'login declined' };
           if (r.status === 'unconfirmed') return { content: 'Login window for ' + r.host + ' closed without a Done confirmation. Any cookies the site set were saved to the station profile; verify with browser.navigate whether you are signed in before relying on it.', summary: 'login unconfirmed' };
-          return { content: 'Commander finished logging in at ' + r.host + (r.station ? '. You are on the same page in the same shared browser, signed in on its saved profile.' : '. The browser is back in headless research mode.') + ' Done is a human confirmation, not authentication proof: use browser.navigate to verify the account and access before continuing.', summary: 'login done' };
+          return { content: 'Master finished logging in at ' + r.host + (r.station ? '. You are on the same page in the same shared browser, signed in on its saved profile.' : '. The browser is back in headless research mode.') + ' Done is a human confirmation, not authentication proof: use browser.navigate to verify the account and access before continuing.', summary: 'login done' };
         }
       },
-      /* STEP-IN (2026-09-29): the agent hands its OWN live browser to the Commander and waits. Scope 'read' is the
+      /* STEP-IN (2026-09-29): the agent hands its OWN live browser to the Master and waits. Scope 'read' is the
          truth about the agent's effect — it pauses; it changes nothing itself — and it keeps a stuck agent from
          needing a settled Task Brief just to ask for help. The wait is the handoff host's (own id, 30 minutes,
-         restarted when the Commander takes the wheel), never the consent channel's auto-deny. The tool budget sits
+         restarted when the Master takes the wheel), never the consent channel's auto-deny. The tool budget sits
          above the longest legal handoff (30 min waiting + 30 min held) so the host, not a tool timeout, ends it. */
       {
         name: 'browser.need_human', capability: 'web', impact: 'synthetic-browser', scope: 'read', requiresConsent: false, timeoutMs: 61 * 60 * 1000,
         // Kept short on purpose: every word here is sent on every turn (test/payload.budget.test.js). The rest of the
         // contract — open the page first, the 30-minute wait — is in the tool's own replies.
-        description: 'A page needs a human (sign-in, 2FA, CAPTCHA, payment): hand THIS browser to the Commander; continue when they hand it back. Never type their credentials or solve CAPTCHAs.',
+        description: 'A page needs a human (sign-in, 2FA, CAPTCHA, payment): hand THIS browser to the Master; continue when they hand it back. Never type their credentials or solve CAPTCHAs.',
         schema: { type: 'object', required: ['reason', 'note'], properties: {
           reason: { type: 'string', enum: HandoffReasons },
           note: { type: 'string' }
@@ -4421,11 +4421,11 @@
         run: async (a, ctx) => {
           const host = deps.handoff;
           if (!host || typeof host.request !== 'function') {
-            return { content: 'STEP-IN is not available in this run, so the Commander cannot take this browser. Report plainly what the page needs from them (sign-in, verification) and what you could not do.', summary: 'no handoff host' };
+            return { content: 'STEP-IN is not available in this run, so the Master cannot take this browser. Report plainly what the page needs from them (sign-in, verification) and what you could not do.', summary: 'no handoff host' };
           }
           const surface = session.handoffSurface();
           const at = await surface.pageInfo();
-          if (!at.url || /^about:/i.test(at.url)) throw new Error('no page is open to hand over - navigate to the page that needs the Commander first');
+          if (!at.url || /^about:/i.test(at.url)) throw new Error('no page is open to hand over - navigate to the page that needs the Master first');
           const handle = host.request({ reason: a && a.reason, note: a && a.note, url: at.url, title: at.title, remembered: surface.remembered, surface, signal: ctx && ctx.signal });
           session.freeze(handle.id);
           let outcome;
@@ -4438,17 +4438,17 @@
               ? ' Their sign-in is kept in the station browser profile, so later runs start signed in.'
               : ' This run uses a temporary browser profile, so the sign-in lasts only for this run.';
             return {
-              content: 'The Commander finished and handed the browser back (handoff ' + outcome.id + '). It is now at ' + (now.url || 'an unknown page') + '.'
+              content: 'The Master finished and handed the browser back (handoff ' + outcome.id + '). It is now at ' + (now.url || 'an unknown page') + '.'
                 + (now.title ? ' ' + fenceExternal('Page title: ' + now.title, 'page title from the controlled browser') : '')
                 + ' Every element ref from before the handoff is gone: take a fresh browser.snapshot (browser.test_snapshot on a local test page) before acting. Handing back is a human confirmation, not proof of authentication - check the page shows the signed-in account.' + kept,
               summary: 'handed back'
             };
           }
           if (outcome.state === 'cancelled') {
-            return { content: 'The Commander could not complete this step (they pressed CAN\'T DO IT on handoff ' + outcome.id + '). Do not retry the same wall. Take another route, or report exactly what is blocked.', summary: 'human could not' };
+            return { content: 'The Master could not complete this step (they pressed CAN\'T DO IT on handoff ' + outcome.id + '). Do not retry the same wall. Take another route, or report exactly what is blocked.', summary: 'human could not' };
           }
           if (outcome.state === 'expired') {
-            return { content: 'Nobody took the browser within 30 minutes, so handoff ' + outcome.id + ' expired. Do not try to get around the wall. Report plainly that the page needs the Commander and what you could not finish.', summary: 'handoff expired' };
+            return { content: 'Nobody took the browser within 30 minutes, so handoff ' + outcome.id + ' expired. Do not try to get around the wall. Report plainly that the page needs the Master and what you could not finish.', summary: 'handoff expired' };
           }
           return { content: 'The run was stopped while waiting on handoff ' + outcome.id + '.', summary: 'handoff ' + outcome.state };
         }
@@ -4485,7 +4485,7 @@
             content: 'Screenshot saved to ' + shot.shown + ' (' + (shot.bytes / 1024).toFixed(0) + ' KB).\nView: ' + shot.viewer,
             summary: 'shot → ' + shot.rel,
             // THE PIXELS THEMSELVES. Until this rode along, "screenshot" meant the model got a FILE PATH and
-            // never saw the screen — it could prove a page to the Commander and remained blind to it itself.
+            // never saw the screen — it could prove a page to the Master and remained blind to it itself.
             // The loop fences and attaches these (see loop.js SCREENSHOTS AS PIXELS); a text-only model simply
             // never has the field turned on.
             images: [{ mime: 'image/png', data: String(data) }]
@@ -4507,7 +4507,7 @@
           }
           return { content: 'PDF saved to ' + doc.shown + ' (' + (doc.bytes / 1024).toFixed(0) + ' KB).\nView: ' + doc.viewer, summary: 'pdf → ' + doc.rel };
         }),
-      exec('browser.intercept', 'Block heavy resource types (image, media, font, stylesheet) in the station browser to make text research faster and cheaper — pages load without downloading what you were never going to read. Pass kinds:[] to turn blocking off. Blocked requests appear in browser.network as ERR_BLOCKED_BY_CLIENT, so nothing is hidden. Blocking "stylesheet" can change layout and hide elements — use it only for pure text scraping. Refused while attached to the Commander\'s own Chrome.', { type: 'object', required: ['kinds'], properties: { kinds: { type: 'array', items: { type: 'string', enum: ['image', 'media', 'font', 'stylesheet'] } } } },
+      exec('browser.intercept', 'Block heavy resource types (image, media, font, stylesheet) in the station browser to make text research faster and cheaper — pages load without downloading what you were never going to read. Pass kinds:[] to turn blocking off. Blocked requests appear in browser.network as ERR_BLOCKED_BY_CLIENT, so nothing is hidden. Blocking "stylesheet" can change layout and hide elements — use it only for pure text scraping. Refused while attached to the Master\'s own Chrome.', { type: 'object', required: ['kinds'], properties: { kinds: { type: 'array', items: { type: 'string', enum: ['image', 'media', 'font', 'stylesheet'] } } } },
         async a => {
           const active = await session.intercept(a.kinds);
           return {
@@ -4515,7 +4515,7 @@
             summary: active.length ? 'blocking ' + active.join(',') : 'blocking off'
           };
         }, false),
-      exec('browser.emulate', 'Emulate a device, user agent, language, or timezone in the station browser — for checking a mobile layout, a localized page, or time-dependent rendering. Pass device (iphone | pixel | ipad) for a one-call phone/tablet profile (metrics + touch + matching user agent), or set userAgent / locale (e.g. "de-DE") / timezone (e.g. "Europe/Berlin") individually. Pass reset:true to clear every override. Refs from earlier snapshots expire — take a fresh browser.snapshot. Refused while attached to the Commander\'s own Chrome.', { type: 'object', properties: { device: { type: 'string', enum: ['iphone', 'pixel', 'ipad'] }, userAgent: { type: 'string' }, locale: { type: 'string' }, timezone: { type: 'string' }, reset: { type: 'boolean' } } },
+      exec('browser.emulate', 'Emulate a device, user agent, language, or timezone in the station browser — for checking a mobile layout, a localized page, or time-dependent rendering. Pass device (iphone | pixel | ipad) for a one-call phone/tablet profile (metrics + touch + matching user agent), or set userAgent / locale (e.g. "de-DE") / timezone (e.g. "Europe/Berlin") individually. Pass reset:true to clear every override. Refs from earlier snapshots expire — take a fresh browser.snapshot. Refused while attached to the Master\'s own Chrome.', { type: 'object', properties: { device: { type: 'string', enum: ['iphone', 'pixel', 'ipad'] }, userAgent: { type: 'string' }, locale: { type: 'string' }, timezone: { type: 'string' }, reset: { type: 'boolean' } } },
         async a => {
           a = a || {};
           if (a.reset === true) {
@@ -4584,7 +4584,7 @@
         return run(args, ctx);
       };
     }
-    /* STEP-IN FROZEN RULE. While the Commander holds this browser (a browser.need_human handoff is live) the agent
+    /* STEP-IN FROZEN RULE. While the Master holds this browser (a browser.need_human handoff is live) the agent
        may not touch it: no snapshot, no get_text, no screenshot/vision, no console, no clicks. A parallel tool call
        in the same turn as need_human is the real path to this — refuse it BEFORE the tool runs, so nothing is read
        off a page a human is typing a password into. browser.need_human itself is exempt (it is the wait). */
@@ -4593,7 +4593,7 @@
       const run = tool.run;
       tool.run = async (args, ctx) => {
         const held = typeof session.frozen === 'function' ? session.frozen() : null;
-        if (held) throw new Error('FROZEN: the Commander holds this browser (' + (/^sign-in/.test(String(held)) ? String(held) : 'STEP-IN handoff ' + held) + '). No browser tool may read or drive the page until they hand it back.');
+        if (held) throw new Error('FROZEN: the Master holds this browser (' + (/^sign-in/.test(String(held)) ? String(held) : 'STEP-IN handoff ' + held) + '). No browser tool may read or drive the page until they hand it back.');
         return run(args, ctx);
       };
     }

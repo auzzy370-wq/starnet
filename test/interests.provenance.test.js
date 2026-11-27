@@ -1,6 +1,6 @@
 /* node test/interests.provenance.test.js - A LEARNED INTEREST NAMES THE ROW IT WAS LEARNED FROM (turn identity commit 12, qa/bugs/31042fab).
 
-   31042fab: after the Commander deleted a session, "what they keep asking about" still carried a topic and a verbatim quote from it into the
+   31042fab: after the Master deleted a session, "what they keep asking about" still carried a topic and a verbatim quote from it into the
    scout's prompts, because the interests histogram kept {q, at} and nothing said where q came from. Now a TRUSTED quote carries
    src = { streamId, runId, rowId }, read off the context pack's parallel activity[].src (the pack's activityLines strings are unchanged), and
    the registry purges, refuses and proves by it. On the real contextpack, transcript store and interests (all present on trunk), through the
@@ -107,7 +107,7 @@ const { wireForgetRegistry } = require('../sidecar/forget-wiring.js');
 
     // ---- (b) the source stream is deleted: the ledger, then the registry's forget; a RESTARTED state ----
     ledgerClock = 300000;
-    A.eq(ledger.observe(['sA']), ['sA'], 'the Commander deletes the session');
+    A.eq(ledger.observe(['sA']), ['sA'], 'the Master deletes the session');
     const scope = SessionTombstones.deletedScope(ledger.unpurged(), runRows);
     // this test wires only the interests state: it runs that entry (the full pass over every store is forget-stores and the e2e)
     const removedQuotes = await registry.entry('interests').forget(scope);

@@ -1,22 +1,22 @@
 /* VULTRON — workshopstore.js : the AWAY-WORKSHOP return surface (lane W3, frontend).
 
-   The Commander switched an agent's "build things while I'm away" grant on; while they were gone an
+   The Master switched an agent's "build things while I'm away" grant on; while they were gone an
    autonomous shift built a deliverable in that agent's jailed sandbox and wrote a manifest. This store
    is the thin live wiring that, on browser attach, asks the sidecar what's UNDECIDED
    (GET /api/workshop/pending) and surfaces each one.
 
    SESSION DELIVERY (2026-07-15, per Andrew): an idle-work deliverable must NEVER pop its card into
-   whatever session the Commander happens to have open. Every deliverable gets its OWN session — a
+   whatever session the Master happens to have open. Every deliverable gets its OWN session — a
    workstream adopted with id 'workshop-<runId>' (the SAME id the sidecar used as the shift's durable
    streamId, so a follow-up message in that session resumes the build's real transcript server-side).
 
-   DELIVERY REVEAL (2026-07-16, per Andrew): a finished build must GREET the Commander, not hide as an
+   DELIVERY REVEAL (2026-07-16, per Andrew): a finished build must GREET the Master, not hide as an
    unread rail row with a one-line stub ("it puts it all on me to prompt and figure out what it even
    is"). When a deliverable lands — live push, attach poll, or genuine return — Vultron OPENS the
    deliverable's OWN session and presents the full return card there (what it built, the honest
    verification line, the summary, the files, the Open-it link, and the decide row). The card still
    renders ONLY inside its own session — never into a random feed — and the reveal stands down (unread
-   row + toast fallback) whenever the Commander is mid-something (a streaming reply, the awakening, an
+   row + toast fallback) whenever the Master is mid-something (a streaming reply, the awakening, an
    open dialogue). With several deliverables pending, the NEWEST opens; the rest land unread.
 
    It also owns the two write paths the rest of the UI calls into:
@@ -31,9 +31,9 @@
        session from re-showing the same card if a poll races. Dismissed = gone, the anti-nag law.
      • UNDECIDED = still owed (2026-07-14): the seen/later ledger is SESSION-scoped, in-memory only. It
        used to persist to localStorage, so a deliverable whose card rendered once — usually to an empty
-       room, since night-shift builds land while the Commander is away BY DEFINITION — was filtered out
+       room, since night-shift builds land while the Master is away BY DEFINITION — was filtered out
        of every future attach poll: pending server-side, invisible forever ("it never tells me what it
-       did"). Now an undecided deliverable re-presents every session until the Commander DECIDES; only
+       did"). Now an undecided deliverable re-presents every session until the Master DECIDES; only
        Keep/Discard (server-side) or Later (this session) silence it.
      • Fail-open: any fetch error → no beat (never a fabricated card, never a thrown error at attach).
 
@@ -60,13 +60,13 @@ const WorkshopStore = (() => {
     const s = (raw && typeof raw === 'object' && !Array.isArray(raw)) ? raw : {};
     return {
       v: 1,
-      later: (s.later && typeof s.later === 'object') ? s.later : {},   // runIds the Commander said "Later" to THIS session
+      later: (s.later && typeof s.later === 'object') ? s.later : {},   // runIds the Master said "Later" to THIS session
       seen: Array.isArray(s.seen) ? s.seen.filter(x => typeof x === 'string').slice(-200) : []
     };
   }
   const ready = () => !!state;
   // ---- reads ----
-  // undecided manifests the Commander hasn't acted on. Filters out anything they said "Later" to this
+  // undecided manifests the Master hasn't acted on. Filters out anything they said "Later" to this
   // session (anti-nag) and anything already shown this session (poll-race guard). Fail-open to [].
   // which agents to poll for pending deliverables. The backend keys the backlog per-agent and requires an
   // explicit ?agent=<id>, so we ask for each live agent (the hero + any crew) and flatten. deps.agentIds()
@@ -131,7 +131,7 @@ const WorkshopStore = (() => {
   // ---- writes ----
   // queue an idea for an agent to build while away. item: { agentId, text, sourceType, sourceId? }.
   // Returns { ok, error?, warn?, needsGrant?, agentId }. Never throws — the caller shows a one-line notice off the
-  // result. On a successful queue we probe the grant: if it's OFF the item will NEVER be built until the Commander
+  // result. On a successful queue we probe the grant: if it's OFF the item will NEVER be built until the Master
   // turns "build while away" on, so we return a VISIBLE warn + needsGrant so the render site can offer that toggle
   // (openGrant below) — turning the old silent stall into an honest, actionable state.
   async function queue(item) {
@@ -185,7 +185,7 @@ const WorkshopStore = (() => {
   // later → just dismiss (server keeps it pending). Returns { ok, destPath?, error? }. Never throws.
   async function decide(agentId, runId, decision, destPath, extra) {
     if (!ready()) state = hydrate(load());
-    // record locally FIRST so a poll race can't re-show a card the Commander just acted on.
+    // record locally FIRST so a poll race can't re-show a card the Master just acted on.
     if (decision === 'later') { state.later[runId] = true; }
     if (state.seen.indexOf(runId) === -1) { state.seen.push(runId); if (state.seen.length > 200) state.seen = state.seen.slice(-200); }
     save();
@@ -213,12 +213,12 @@ const WorkshopStore = (() => {
   /* IMPLEMENT-AS-BUILD (2026-08-14) — POST /api/workshop/implement and run what a PLAN deliverable describes.
      The build is a run, so its lines ride the page's ONE run stream (Harness.streamPost — never a connection of its
      own held for minutes, 2026-10-21). Each line is re-emitted onto U.bus exactly like harness.js's run reader, so
-     the station animates the build LIVE (floor, COMMS beats, work item) rather than the Commander staring at a frozen
+     the station animates the build LIVE (floor, COMMS beats, work item) rather than the Master staring at a frozen
      card for minutes. Resolves the final workshop.implement.result payload.
      Never throws: an unreachable station resolves { fired:false, reason:'unreachable' }. */
   async function implement(agentId, runId, note) {
     const body = { agentId: agentId || 'agent', runId: String(runId) };
-    // what the Commander typed on the card — WHICH part of the plan to build. Rides into the build prompt, not
+    // what the Master typed on the card — WHICH part of the plan to build. Rides into the build prompt, not
     // the chat stream (see chat.js: on a buildable card the box is a build steer, not a message).
     if (note != null && String(note).trim()) body.note = String(note).trim().slice(0, 2000);
     if (typeof Harness === 'undefined' || !Harness.streamPost) return { fired: false, reason: 'unreachable' };
@@ -232,7 +232,7 @@ const WorkshopStore = (() => {
     return result || { fired: false, reason: 'no-result' };
   }
 
-  // DELETED SESSION → SERVER-SIDE DISCARD: when the Commander deletes a deliverable's session
+  // DELETED SESSION → SERVER-SIDE DISCARD: when the Master deletes a deliverable's session
   // ('workshop-<runId>'), the deliverable itself must not stay pending server-side — that pending
   // manifest is exactly what re-minted the session on every restart. Only fires when the run is
   // GENUINELY still pending (a kept/discarded deliverable is left alone — no spurious ledger rows).
@@ -279,7 +279,7 @@ const WorkshopStore = (() => {
     return { ok: false, error: 'Open this file manually; Vultron cannot launch desktop applications from a run.' };
   }
 
-  // the sensible default Keep destination (the Commander's Desktop, when the desktop shell knows it).
+  // the sensible default Keep destination (the Master's Desktop, when the desktop shell knows it).
   function desktopDefault() { try { return deps.desktopDefault ? (deps.desktopDefault() || '') : ''; } catch (_) { return ''; } }
 
   /* ---- SESSION DELIVERY (the seam that replaced feed injection, 2026-07-15) ---- */
@@ -337,7 +337,7 @@ const WorkshopStore = (() => {
       else if (Workstreams.markUnread) Workstreams.markUnread(id);
       else if (Workstreams.touch) Workstreams.touch(id);   // older store without markUnread: keep the unread bump
     } else {
-      // DELETED = GONE: the Commander removed this deliverable's session; adopt() refuses the
+      // DELETED = GONE: the Master removed this deliverable's session; adopt() refuses the
       // tombstoned id, so the row must not re-form (the delete path also discards server-side).
       const adopted = Workstreams.adopt({
         id: id,
@@ -389,7 +389,7 @@ const WorkshopStore = (() => {
     });
   }
 
-  // the Commander is mid-something a focus jump would stomp: a streaming reply, an interview flow, or a
+  // the Master is mid-something a focus jump would stomp: a streaming reply, an interview flow, or a
   // focused dialogue panel or composer. A composer probe error preserves focus; the unread delivery
   // remains available in its own session, so uncertainty never justifies stealing an in-progress draft.
   function commanderEngaged() {
@@ -417,10 +417,10 @@ const WorkshopStore = (() => {
 
   // THE CARD-ON-OPEN SEAM: chat.js load() calls this with the freshly displayed workstream id. If it is a
   // deliverable session whose run is STILL UNDECIDED server-side (fresh honest read — never a cached claim),
-  // render the return card into it. Deliberately ignores the seen AND later ledgers: the Commander explicitly
+  // render the return card into it. Deliberately ignores the seen AND later ledgers: the Master explicitly
   // opened this session, which is the opposite of nagging. Fail-open: any fetch error → no card, no throw —
   // but an UNREACHABLE station RETRIES while this session stays on screen (see below), because on desktop the
-  // bundled frontend paints before the sidecar answers, and a one-shot probe left the Commander staring at the
+  // bundled frontend paints before the sidecar answers, and a one-shot probe left the Master staring at the
   // naked stub line with no card and nothing ever retrying (the "no UI under built-while-away" bug).
   let pfRetryTimer = null;   // one retry chain at a time; each fresh presentFor call supersedes it
   const pfDelays = { fast: 3000, slow: 30000 };   // test-tunable (exported as _pfDelays)
@@ -503,14 +503,14 @@ const WorkshopStore = (() => {
       const kind = row && (row.status === 'kept' || row.status === 'discarded' || row.status === 'failed') ? row.status : 'gone';
       ws.history.push({ role: 'system', sys: true, resolution: kind, content: RESOLUTION_LINE[kind] });
       try { if (typeof App !== 'undefined' && App.persist) App.persist(); } catch (_) {}
-      // if the Commander is looking at this session right now, repaint it so the truth appears immediately.
+      // if the Master is looking at this session right now, repaint it so the truth appears immediately.
       // (Chat.load re-fires presentFor; historyTellsTheStory now stops the chain, so this can't loop.)
       try { if (typeof Chat !== 'undefined' && Chat.load && typeof Workstreams !== 'undefined' && Workstreams.activeId && Workstreams.activeId() === ws.id) Chat.load(ws); } catch (_) {}
     } catch (_) {}
   }
 
   // auto-poll on attach: give EVERY undecided deliverable its own unread session, then REVEAL the newest
-  // (open its session + full return card) so the Commander is greeted with what was built, not a stub row.
+  // (open its session + full return card) so the Master is greeted with what was built, not a stub row.
   // Once per page session.
   let attachTries = 0;   // maybePresent's unreachable-station retry budget (same shape as presentFor's)
   async function maybePresent() {
@@ -529,15 +529,15 @@ const WorkshopStore = (() => {
       return;
     }
     fired = true;
-    // ensureSession returns null for a deliverable whose session the Commander DELETED — never
+    // ensureSession returns null for a deliverable whose session the Master DELETED — never
     // resurrect it, and never reveal it (deleted = gone, the whole point of the tombstone).
     const live = pending.filter(m => ensureSession(m) != null);
     if (live.length && !briefingOwnsReturn()) reveal(live[live.length - 1]);   // backlog order: last = newest build (the briefing greets the return instead when it is live)
   }
 
   /* RETURN RE-PRESENT (2026-07-14, reshaped for session delivery 2026-07-15): a night-shift build lands
-     while the Commander is away BY DEFINITION, so the live delivery (onBuilt below) plays to an empty room.
-     On the Commander's first interaction after a real absence (AutopilotStore's onReturn hook, wired in
+     while the Master is away BY DEFINITION, so the live delivery (onBuilt below) plays to an empty room.
+     On the Master's first interaction after a real absence (AutopilotStore's onReturn hook, wired in
      app.js), re-surface every still-UNDECIDED deliverable by bumping its session unread again (undecided =
      still owed). Respects 'later' (an explicit dismissal stays quiet); ignores 'seen' (a session adopted
      to an empty room must not count as told). */
@@ -552,7 +552,7 @@ const WorkshopStore = (() => {
      app sat open (a night-shift act or an away-workshop shift) was invisible until the next restart
      (2026-07-14: "it doesn't notify me anywhere"). The sidecar emits workshop.built the moment a manifest is
      disk-validated; this adopts the deliverable's OWN unread session immediately — never a card into whatever
-     stream is on screen — plus a persistent StationUI toast (category 'cronDigest', the Commander-mutable
+     stream is on screen — plus a persistent StationUI toast (category 'cronDigest', the Master-mutable
      autonomous-run class). Anti-nag: the seen/later ledger still guards, so a build already delivered this
      session never re-fires here. */
   function onBuilt(p) {
@@ -564,8 +564,8 @@ const WorkshopStore = (() => {
     const m = Object.assign({}, p.manifest, { agentId: aid, runId: runId });
     if (ensureSession(m) == null) return;   // marks seen; a DELETED session never re-forms or re-toasts
     // DELIVERY REVEAL: the moment the build lands, open its session with the full card. Fallback (the
-    // Commander is mid-something, or no App yet): unread row + ONE actionable toast that jumps there.
-    // the Commander is AWAY: the build waits in its session and the ONE briefing reports it on return — no focus jump, no toast
+    // Master is mid-something, or no App yet): unread row + ONE actionable toast that jumps there.
+    // the Master is AWAY: the build waits in its session and the ONE briefing reports it on return — no focus jump, no toast
     if (briefingOwnsReturn() && Briefing.isAway && Briefing.isAway()) return;
     const opened = reveal(m);
     if (!opened) try {
@@ -590,7 +590,7 @@ const WorkshopStore = (() => {
     if (opts.enabled !== false) setTimeout(() => { maybePresent().catch(() => {}); }, ATTACH_DELAY_MS);
   }
 
-  // S2/new-hero: a fresh Commander inherits no prior "later" list.
+  // S2/new-hero: a fresh Master inherits no prior "later" list.
   function reset() { state = hydrate(null); fired = false; try { localStorage.removeItem(KEY); } catch (_) {} }
 
   // pendingAll(): every agent's undecided builds, unfiltered (NEEDS YOU lists each one, org P01); pendingAllOk(): whether

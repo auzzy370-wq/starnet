@@ -40,7 +40,7 @@
     // NS-2 pre-spend gates the precheck can also bind on (they flow through statusDecision as bindings):
     budget: 'the spending budget is exhausted — raise the cap or resume to let jobs run',
     // NOT an exhausted budget: spend history is uncertain (usually an interrupted run that never recorded its spend), so
-    // a limit the Commander chose can't be checked. Raising the cap or resuming changes nothing; SPENDING LIMITS names
+    // a limit the Master chose can't be checked. Raising the cap or resuming changes nothing; SPENDING LIMITS names
     // the cause and its fix (settle that run, or restart after a failed save).
     'spend-unknown': 'Vultron can’t verify past spending (usually a run that was interrupted before it recorded its spend), so your spending limits can’t be checked — see SETTINGS › SPENDING LIMITS',
     // #89: the provider-less form of the station's ONE no-credential sentence (sidecar/engine-credential.js
@@ -215,7 +215,7 @@
     const halted = !!s.halted;
     const leashText = leash == null ? (plural(used, 'job') + ' today') : (used + ' of ' + leash + ' jobs today');
     // THE DURABLE E-STOP HALT WINS OVER EVERYTHING (EL-11 FIX 1). status.halted means the shift is stood down
-    // until the Commander re-writes the dial (handleAutonomyPosture → clearHalt) — rendering "ACTIVE · standing
+    // until the Master re-writes the dial (handleAutonomyPosture → clearHalt) — rendering "ACTIVE · standing
     // by / NEXT ELIGIBLE <time>" here affirmatively claimed a run the E-STOP guarantees won't happen. The halted
     // model never shows a next-eligible clock and names WHICH control lifts the halt.
     if (halted) {
@@ -276,12 +276,12 @@
   // the cold-start explanation behind a 'readiness' stand-down: what the station is missing on EITHER grounding path
   // (your current aims in the dossier, or a recent run). '' when already hot / no detail (an empty line is never invented).
   // THE BAR IS GROUNDING, NOT USAGE (bug 41b2d015, 2026-10-21): it used to read "it knows 2 of 4 areas and has 1 of 4
-  // recent runs" — a counter the Commander had to grind before the posture they chose took effect. Hot now means one
+  // recent runs" — a counter the Master had to grind before the posture they chose took effect. Hot now means one
   // usable GROUNDED aim (never a seed: a quick-setup chip's canned purpose is not "your aims") OR hotRunsMin recent runs
   // (1), so the line names exactly that, never an area count that no longer gates.
   // goalsStale (the aims on file are past the recency window) is named as such — "doesn't know your aims" would be false.
   // Otherwise it says it has no aim it can ACT on, never that it doesn't know them (41b2d015 review): a seed-only goals
-  // area (a quick-setup chip, a thin run, a hand-edited purpose.md) holds words the Commander may well call their aims.
+  // area (a quick-setup chip, a thin run, a hand-edited purpose.md) holds words the Master may well call their aims.
   // The ending names the BAR itself (org pass P09-c: 'until one of those is complete' named nothing that can complete).
   // A NECESSARY condition, never a promise: clearing it does not make it act while the dial is on WAIT / SUGGEST (the
   // 'posture' gate binds first) or while you are at the station — so the line says what it needs, which is
@@ -300,7 +300,7 @@
   // happens, never a counter or an unlock ladder. The exact counts stay in readinessText (SETTINGS › AUTONOMY and LAST
   // REPORT). '' when the station is hot / the route sent no detail, exactly when readinessText is ''. It names the one
   // thing that grounds a job (bug 41b2d015) — the awakening asks what you want help with before the away question, so
-  // once an answer in the Commander's own words (or a synthesis of them) has synced, the station is hot there and this
+  // once an answer in the Master's own words (or a synthesis of them) has synced, the station is hot there and this
   // line stays silent. A quick-setup chip or a thin run lands as a seed, so the line stays — that is the truth. It names
   // the REQUIREMENT, never "once I know what you want" (41b2d015 review): a seed may already say what they want.
   function readinessPlain(rd) {
@@ -327,7 +327,7 @@
     return 'While you’re away I’ll draft small jobs, not build them' + why + ' — see LAST REPORT in SETTINGS › AUTONOMY.';
   }
 
-  // THE DIAL-RAISE OUTLOOK (NS visibility 2026-07-13): the one honest sentence shown the INSTANT the Commander raises
+  // THE DIAL-RAISE OUTLOOK (NS visibility 2026-07-13): the one honest sentence shown the INSTANT the Master raises
   // the autonomy dial (the awakening cadence beat / the station panel) — what a beat will ACTUALLY do while they're
   // away (build vs draft) and how far the station still is from being allowed to act (cold-start readiness). Composed
   // straight from a /api/nightshift/status payload via modePlain/readinessPlain, which read the SAME fields (and the
@@ -351,7 +351,7 @@
   }
 
   // THE UNSEEN-DRAFTS PREDICATE (NS live-session nudge 2026-07-13): the drafts a night-shift beat left on the desk
-  // that the Commander has NOT yet been shown — i.e. those stamped AFTER the durable lastSeenDraftAt mark (set when
+  // that the Master has NOT yet been shown — i.e. those stamped AFTER the durable lastSeenDraftAt mark (set when
   // the morning report or the NIGHT SHIFT panel surfaces them). Newest-first order is preserved from the drafts route.
   // Pure: no Date.now — "unseen" is purely (draft.at > lastSeenAt). A missing/invalid stamp (0) → every real draft is
   // unseen (honest: nothing has been surfaced yet). Guards each row so a malformed entry never throws.

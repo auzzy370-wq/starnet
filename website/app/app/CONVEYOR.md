@@ -127,7 +127,7 @@ everything else goes) · `removeSorter` (the FILTER and every route step it sort
   ROLE chips (`station.setPropRole`) and SHAPE THE LINE (earlier / later / a review / second opinion / share the load / remove),
   REMOVE THE REVIEW on a LOOP gate, a SPLITTER's ADD A BRANCH and ✕ per branch, a FILTER's + A STEP FOR CODE / RESEARCH (a
   type it has no route for) and REMOVE THE SORTER, MAKE IT A LINE on a lone BAY, + OUTBOX where a line that ends on a step has
-  none, TIDY LINE in the footer. The Conveyors tab has BUILD YOUR OWN LINE: an INBOX in hand, placed where the Commander clicks (Esc /
+  none, TIDY LINE in the footer. The Conveyors tab has BUILD YOUR OWN LINE: an INBOX in hand, placed where the Master clicks (Esc /
   right-click puts it down), then the line grows by dragging from it (test/build-new-line-hand.test.js). Locked by test/line-edit.test.js (every op on a real
   station, the audit's newsletter line built from edits alone, one undo each) and test/line-edit-panel.test.js.
 

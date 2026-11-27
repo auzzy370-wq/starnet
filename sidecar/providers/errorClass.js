@@ -54,7 +54,7 @@
        b5582dd, configurable there: HTTP 400 `call_too_expensive`, "This request could cost more than the $10.00 Vultron
        allows for one call"). The copy quotes the relay's own number, never this one. The same
        prompt on the same model is refused identically, so no resend. A configured fallback is a different model at its
-       own price and may fit, so it is worth taking. No fold: shortening the conversation is the Commander's call, not a
+       own price and may fit, so it is worth taking. No fold: shortening the conversation is the Master's call, not a
        silent summary. As format_error it read "Something went wrong — try again" (GitHub #53 follow-up, 2026-10-27). */
     call_too_expensive:     { retryable: false, shouldRotateCredential: false, shouldFallback: true,  shouldCompress: false },
     model_not_found:       { retryable: false, shouldRotateCredential: false, shouldFallback: true,  shouldCompress: false },
@@ -85,7 +85,7 @@
     /* The model's CHAT TEMPLATE refused the conversation's shape (#102: Ollama /v1 answered HTTP 500 "Jinja Exception:
        System message must be at the beginning"; Gemma's "System role not supported"; "Conversation roles must
        alternate"). It is not the server having a bad moment: the same body is refused identically, so the 500 was
-       resent as server_error for nothing and the Commander read "try again". The adapter resends ONCE in the strictest
+       resent as server_error for nothing and the Master read "try again". The adapter resends ONCE in the strictest
        shape (provider.projectRoles 'chat-nosystem') and remembers it for that endpoint + model; this class is what is
        left after that. Another model has another template, so a configured fallback is still worth taking. */
     template_refusal:       { retryable: false, shouldRotateCredential: false, shouldFallback: true,  shouldCompress: false },
@@ -399,7 +399,7 @@
   function isTemplateRefusal(text) { return templateRefusalLow(String(text || '').toLowerCase()); }
   /* NAME THE TEMPLATE (#102) — and name it FIRST. The customer's diagnostics clamp each error to 300 characters
      (diagnostics.js MSG_MAX) and Ollama's Jinja exception arrives as a ~350-character JSON blob ("While executing
-     CallExpression at line 106 …"), so a note appended after it never reached the report the Commander pastes. The
+     CallExpression at line 106 …"), so a note appended after it never reached the report the Master pastes. The
      sentence keeps the adapter's "<label> http <status>" lead (what the page routes on), then says whose template, on
      which host, refused what, with the template's own words; the full provider text rides last, in brackets. With no
      role words to quote (TEMPLATE_SAID_RE found none) the provider's own text leads instead, so the 300 characters a
@@ -440,7 +440,7 @@
       || /\.(?:local|lan|internal|home|home\.arpa)$/.test(h) || (h.indexOf('.') < 0 && h.indexOf(':') < 0)) return 'private';
     return 'public';
   }
-  /* REASONS.unreachable — what nothing answering at that address means, in words the Commander can act on, and only
+  /* REASONS.unreachable — what nothing answering at that address means, in words the Master can act on, and only
      what the harness can prove (review 2026-10-27). The host and port come from the transport cause (undici:
      cause.hostname for a name that did not resolve, cause.address + cause.port for a refused connection), else the
      hostname the adapter stamped. A refused connection on THIS computer means nothing is listening on that port; on

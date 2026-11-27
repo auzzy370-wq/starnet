@@ -108,7 +108,7 @@
       : function (node, done) { if (node && typeof node.remove === 'function') node.remove(); if (done) done(); };
     const maxSeen = Number.isFinite(options.maxSeen) ? Math.max(1, options.maxSeen) : 200;
     /* MINIMUM VISIBLE AGE. Leaving a card undecided is read as an IGNORE, and two ignores permanently silence a
-       belief/offer — so an "ignore" may only be tallied against a card the Commander actually had a chance to see.
+       belief/offer — so an "ignore" may only be tallied against a card the Master actually had a chance to see.
        A card retired before this age closes as 'unseen': the slot is freed exactly the same way, but no feature
        ignore hook fires. Tunable; 1.2s is comfortably longer than any render+scroll and far shorter than the
        run-to-run gap a real card lives across. */
@@ -255,7 +255,7 @@
        THE RACING-SWEEP BUG (fixed 2026-08-04). Three sweeps arm at every hero run end (the study, trust and
        thread lifecycle wires each call scheduleExpire(kind, 900)), and the queue drain that runs in the SAME
        timer batch can render a brand-new card between them. The next sweep in that batch then retired the
-       FRESH card — the Commander never saw a frame of it — and its onExpire tallied an "ignore" against a
+       FRESH card — the Master never saw a frame of it — and its onExpire tallied an "ignore" against a
        belief that was never actually shown. Two of those permanently silence it, and the session cap was
        already spent by markShown. A sweep is now bound to the record that was holding the slot when it ARMED:
        if the slot turned over in between (or was empty at arm time), the sweep is a no-op. */

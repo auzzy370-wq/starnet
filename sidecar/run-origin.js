@@ -1,4 +1,4 @@
-/* Run-origin authority: which runs may inherit the Commander's standing Full Power.
+/* Run-origin authority: which runs may inherit the Master's standing Full Power.
 
    Full Access (per-agent approvalMode:'full') and the station-wide master bypass are the OWNER's authority.
    A run that a chat-channel sender started carries two host-minted fields set by sidecar/channels/hub.js:
@@ -23,12 +23,12 @@ function hostPowerWithheldFor(o) {
   return !!(inherited && typeof inherited === 'object' && inherited.withholdHostPower === true);
 }
 
-/* UNTRUSTED ENTRY (sec-taint2 09-25): was this run STARTED by third-party content rather than by the Commander?
+/* UNTRUSTED ENTRY (sec-taint2 09-25): was this run STARTED by third-party content rather than by the Master?
    Host-minted untrustedEntry:true is set by the channel hub for a line-trigger fire (webhook body / watched file,
    entryTaint), a forwarded message and a chat attachment — on the entry run AND on every hop of its line — and it
    rides into delegated workers through connectorAuthority.untrustedEntry. Such a run's taint lock is NOT lifted by
    Full Access (taint.js postTaintBoundary): the owner decision is that Full Access means zero prompts for work the
-   Commander asked for, never for work a payload's author asked for. Only ever narrows authority, so a caller
+   Master asked for, never for work a payload's author asked for. Only ever narrows authority, so a caller
    that sets it spuriously can only lose power. */
 function entryUntrusted(o) {
   if (!o || typeof o !== 'object') return false;

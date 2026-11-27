@@ -68,7 +68,7 @@
   /* A NEW LINE'S STEPS COME WITH INSTRUCTIONS (2026-09-30, found walking a fresh station): a line from the shelf used to land with
      every BAY blank — "BAY 1 (RESEARCHER) has no instructions" — and a WRITER with no brief, handed research, wrote an essay about
      "the upstream report" instead of the answer. Each role stamps with a NEUTRAL default (what that step is for, no guesses about the
-     job); the roles whose first starter is job-specific ("a 200-word newsletter blurb") get one written for any job. The Commander
+     job); the roles whose first starter is job-specific ("a 200-word newsletter blurb") get one written for any job. The Master
      edits it on the BAY card like any brief. */
   const DEFAULT_BRIEF = {
     RESEARCHER: ['Find credible, recent sources on the job and pull out the key facts. Only include claims you can back with a link.', 'notes with links'],
@@ -618,7 +618,7 @@
     return n + ' TO FIX · ' + String(r.blocking[0].what).toUpperCase();
   }
 
-  /* ---------- cost estimate: ONLY from steps the Commander actually tested ----------
+  /* ---------- cost estimate: ONLY from steps the Master actually tested ----------
      tests = { propId -> { usd } } (real server answers). Never guesses an untested step. */
   function costEstimate(flow, tests) {
     let usd = 0, tested = 0, untested = 0;
@@ -731,7 +731,7 @@
         else {
           out.paused.push('its routine "' + r.name + '" (' + said(r.display) + ') is saved but ' + (x.cron.halted ? 'the scheduler is stopped (E-STOP)' : 'the scheduler is off'));
           // …and named apart for the INBOX node and the INBOX section (2026-09-27 audit T1: the panel said "no schedule"
-          // right above the schedule the Commander had just saved)
+          // right above the schedule the Master had just saved)
           if (r.enabled !== false) out.offSchedules.push(said(r.display));
         }
       }
@@ -794,7 +794,7 @@
   const TERMINAL = { done: 1, stopped: 1, failed: 1 };
   const isLive = s => !!s && !TERMINAL[s.state];
 
-  /* suggestLineFor(text) -> { id, why } | null — START FROM INTENT (2026-09-28). The Commander's own words (their onboarding goal)
+  /* suggestLineFor(text) -> { id, why } | null — START FROM INTENT (2026-09-28). The Master's own words (their onboarding goal)
      read for the SHAPE of the work they describe — a draft that a reviewer approves, research that gets written up, code
      that gets reviewed, a decision that wants two takes — and mapped to the ready-made line that has that shape. Pure and
      conservative: a goal naming ONE kind of work suggests nothing (a single agent already does that), and a schedule in the

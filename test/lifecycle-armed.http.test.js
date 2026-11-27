@@ -193,7 +193,7 @@ function boot(port, workspaces, attemptsLeft, extraEnv) {
     A.ok(getOut().indexOf('cron tick armed') < 0, 'REBOOT: the timer did NOT arm at boot while halted');
 
     // The dossier mirrors beliefs through the posture route during normal page load. That background write is
-    // not Commander consent to resume autonomous work and must leave both durable E-STOPs intact.
+    // not Master consent to resume autonomous work and must leave both durable E-STOPs intact.
     const beliefsOnly = await j('POST', '/api/autonomy/posture', { beliefs: { known: [], beliefs: {} } });
     A.eq(beliefsOnly.body.postureWritten, false, 'beliefs-only sync reports that no autonomy dial was written');
     const afterBeliefsSync = await j('GET', '/api/lifecycle/armed');
@@ -277,7 +277,7 @@ function boot(port, workspaces, attemptsLeft, extraEnv) {
     try { child.kill(); } catch (_) {} await sleep(250);
     fs.writeFileSync(HALT_FILE, JSON.stringify({ version: 1, halted: false }));
     fs.writeFileSync(path.join(ws, 'cron.armed.json'), JSON.stringify({ version: 1, armed: true }));
-    // Beside it, a routine the Commander PAUSED that still holds an undelivered result (a 0.13.5 digest that kept
+    // Beside it, a routine the Master PAUSED that still holds an undelivered result (a 0.13.5 digest that kept
     // failing 'message is too long', paused by hand): cron-store holds it until resume, so it is no background work.
     fs.writeFileSync(path.join(ws, 'cron.jobs.json'), JSON.stringify({ version: 1, jobs: [{
       id: 'pending-result', enabled: false, state: 'completed', agentId: 'agent',

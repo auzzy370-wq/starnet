@@ -1,8 +1,8 @@
-/* sidecar/browser-handoff.js — STEP-IN: the agent hands its live browser to the Commander and waits.
+/* sidecar/browser-handoff.js — STEP-IN: the agent hands its live browser to the Master and waits.
 
    WHY THIS EXISTS. An agent browsing on its own dead-ends at every login, 2FA prompt and CAPTCHA, and the
-   Commander could not even see that it had. STEP-IN is the handoff: the agent asks (browser.need_human), its run
-   PARKS here, the station shows the agent's own browser in a docked window, the Commander signs in inside that
+   Master could not even see that it had. STEP-IN is the handoff: the agent asks (browser.need_human), its run
+   PARKS here, the station shows the agent's own browser in a docked window, the Master signs in inside that
    SAME browser, presses HAND BACK, and the agent carries on from the page they left it on. One browser, two
    drivers, never at the same time.
 
@@ -15,7 +15,7 @@
        the clock, so a slow sign-in is never cut off by the time the request sat unanswered.
      · The agent is FROZEN while a handoff is live. This module owns the live-state truth (isLive) the browser
        session's frozen guard reads; the session refuses every page read until the handoff settles.
-     · The agent never sees what the Commander types. Frames and input flow between the station page and the
+     · The agent never sees what the Master types. Frames and input flow between the station page and the
        browser only: nothing here is placed on a tool result, and input events are never stored or logged.
      · Truthful telemetry: every state the UI shows comes from `view()` of a record in this registry; a terminal
        record says HOW it ended (returned / cancelled / expired / aborted) — never a stale "waiting for you".
@@ -157,7 +157,7 @@ function makeHandoffHost(deps) {
     if (entry.rec.state === 'taken') return { ok: true, view: view(entry.rec) };
     entry.rec.state = 'taken';
     entry.rec.takenAt = now();
-    arm(entry);   // the Commander is working now: a fresh 30 minutes, not what is left of the wait
+    arm(entry);   // the Master is working now: a fresh 30 minutes, not what is left of the wait
     if (entry.nudge) { clearT(entry.nudge); entry.nudge = null; }
     publish(entry.rec);
     try {
@@ -167,7 +167,7 @@ function makeHandoffHost(deps) {
         wake(entry);
       });
     } catch (e) {
-      // A stream that will not start leaves the Commander with nothing to drive. Say so; the handoff stays
+      // A stream that will not start leaves the Master with nothing to drive. Say so; the handoff stays
       // TAKEN (they can still hand back or cancel) rather than pretending the wheel works.
       return { ok: false, error: 'could not stream the agent browser: ' + ((e && e.message) || e), view: view(entry.rec) };
     }

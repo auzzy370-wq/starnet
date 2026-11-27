@@ -1,4 +1,4 @@
-/* node test/internal-run-not-working.test.js — an INTERNAL run is never the agent working for the Commander.
+/* node test/internal-run-not-working.test.js — an INTERNAL run is never the agent working for the Master.
 
    The escape (live walk 10-13, shots/a5-01-after-reload.png): after a page reload NOVA's crew card read WORKING
    with a RUN clock over the desk while the only live run on the station was the harness's own self-talk (a

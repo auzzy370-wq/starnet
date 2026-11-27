@@ -8,7 +8,7 @@
    The lines these assertions hold:
      · a PDF lands in the SAME jail as screenshots, content-addressed, and emits a deliverable — or the
        tool says plainly that there was no workspace / the render failed; it never fabricates a file.
-     · intercept/emulate are REFUSED while attached to the Commander's own Chrome (ownership: their real
+     · intercept/emulate are REFUSED while attached to the Master's own Chrome (ownership: their real
        browser is not the station's to reconfigure); pdf still works there (it is a read).
      · a Fetch.requestPaused reply goes to the SESSION THE EVENT CAME FROM — answering on the active
        session would leave a background tab's paused request hanging and wedge its load.
@@ -140,7 +140,7 @@ const PDF_B64 = Buffer.from('%PDF-1.4\n% fake').toString('base64');
       fetchImpl: async () => ({ json: async () => ({ Browser: 'Chrome/141', webSocketDebuggerUrl: 'ws://127.0.0.1:9222/x' }) })
     });
     await S.attach(9222);
-    A.eq(S.attachedToUser(), true, 'the session is attached to the Commander\'s own Chrome');
+    A.eq(S.attachedToUser(), true, 'the session is attached to the Master\'s own Chrome');
     await rejects(S.intercept(['image']), /refused while attached/, 'intercept never reconfigures THEIR browser');
     await rejects(S.emulate({ locale: 'de-DE' }), /refused while attached/, 'emulate never spoofs THEIR browser');
     A.eq(await S.pdf({}), PDF_B64, 'pdf still renders — printing the page you are looking at is a read');

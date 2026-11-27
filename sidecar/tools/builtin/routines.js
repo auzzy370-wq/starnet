@@ -131,7 +131,7 @@
   }
 
   // describe (injected by the host) turns a job into plain words: { when, next } on the host's wall clock. The model
-  // reports a routine's cadence back to the Commander, and reading `cron 0 10 * * 1` it once told them "bi-weekly".
+  // reports a routine's cadence back to the Master, and reading `cron 0 10 * * 1` it once told them "bi-weekly".
   // wireOf (injected by the host: index.js routineWireRow -> run-wire.js) is the {provider, model, source} the routine's
   // next run really goes out on — the raw provider/model fields are what the routine itself saved (a bare model has no
   // provider of its own; an empty pair follows its agent). null for a script-only routine; absent host -> no `wire`.
@@ -207,7 +207,7 @@
 
   /* THE PATCH WHITELIST — a hard privilege boundary, not a convenience.
      cron-store's updateJob patches more fields than an agent may ever touch: the standing unattended
-     capability grant the COMMANDER ticks in the ROUTINES panel (the one that hands a routine a terminal with
+     capability grant the MASTER ticks in the ROUTINES panel (the one that hands a routine a terminal with
      nobody watching), plus `script` / `workdir` / `skills` / `contextFrom`. An agent that could patch those
      could give its OWN scheduled routine powers it was never granted — a straight escalation off one hostile
      web page. So this path ENUMERATES what it may touch and silently drops everything else; widening a
@@ -248,17 +248,17 @@
     };
     const schedulerState = () => schedulerSnapshot().enabled === true;
     /* THE E-STOP IS A SECOND, INDEPENDENT FACT. `schedulerArmed` reports the arm INTENT, which E-STOP deliberately
-       leaves true — so every readout here said "armed" about a scheduler the Commander had durably stood down, and
+       leaves true — so every readout here said "armed" about a scheduler the Master had durably stood down, and
        run_now told the model the routine "fires on its next tick (within ~1 minute)" when no tick was coming. */
     const schedulerHalted = () => schedulerSnapshot().halted === true;
-    /* (org wire AUTO-P16-1) the Commander TURNED SCHEDULING OFF: a create keeps it off (the one arm rule), so the note names their
+    /* (org wire AUTO-P16-1) the Master TURNED SCHEDULING OFF: a create keeps it off (the one arm rule), so the note names their
        choice and their switch — never "DISARMED" as if a create could fix it */
     const schedulerOffByChoice = typeof deps.schedulerOffByChoice === 'function' ? deps.schedulerOffByChoice : function () { return false; };
     const armedNote = function () {
-      if (schedulerHalted()) return "the scheduler is STOPPED by the Commander's E-STOP — nothing fires until they resume it";
+      if (schedulerHalted()) return "the scheduler is STOPPED by the Master's E-STOP — nothing fires until they resume it";
       if (schedulerSnapshot().degraded) return 'scheduler storage needs recovery — no routine fire is promised until it is recovered';
       if (schedulerState()) return null;
-      if (schedulerOffByChoice()) return 'scheduling is OFF because the Commander turned it off — saving a routine keeps it off, so nothing fires until they turn scheduling on (AUTOMATE › SCHEDULES › ▶ TURN SCHEDULING ON)';
+      if (schedulerOffByChoice()) return 'scheduling is OFF because the Master turned it off — saving a routine keeps it off, so nothing fires until they turn scheduling on (AUTOMATE › SCHEDULES › ▶ TURN SCHEDULING ON)';
       return 'the scheduler is DISARMED — nothing fires until it is armed';
     };
     const roster = typeof deps.roster === 'function' ? deps.roster : function () { return new Map(); };
@@ -273,7 +273,7 @@
       return p === 'codex' || p === 'openai-codex' ? 'codex' : (p === 'openrouter' ? 'openrouter' : '');
     };
     /* ⛔ AN ALLOWLIST IS A DENYLIST FOR EVERY CLASS ADDED LATER. `provider` was hardcoded
-       enum:['openrouter','codex'] in BOTH tool schemas while the station shipped 17 providers. A Commander
+       enum:['openrouter','codex'] in BOTH tool schemas while the station shipped 17 providers. A Master
        running on Kimi, Grok, Ollama or a custom endpoint had an agent that could not pin a routine to the very
        provider the station runs on: shared/schema.js enforces `enum`, so the call died with
        '"kimi" not in enum' before run() was ever reached. Read the live registry instead (injected, so this
@@ -306,7 +306,7 @@
          to a shell, and the check-first rule. Dropped: the agentId auto-routing and `arm` default, both of
          which the schema below already states at the point of use, and the explanation that the server
          rejects a duplicate name — it says so itself, at call time, more precisely than a remembered note. */
-      description: 'Create a Vultron ROUTINE: work an agent runs on a schedule (digests, research, monitoring, reports, drafts, reminders). Use it whenever the Commander wants anything recurring, scheduled or automated; never shell.exec, crontab or an OS scheduler. Results come back to this chat by default; do not ask where to send them. Write a self-contained prompt: task, sources, format, what to flag. Asked to automate something broadly? Create 2-5 routines your own tools can run now (web research, writing, checks; no connection needed), then list them. Call routine.list first; never duplicate.',
+      description: 'Create a Vultron ROUTINE: work an agent runs on a schedule (digests, research, monitoring, reports, drafts, reminders). Use it whenever the Master wants anything recurring, scheduled or automated; never shell.exec, crontab or an OS scheduler. Results come back to this chat by default; do not ask where to send them. Write a self-contained prompt: task, sources, format, what to flag. Asked to automate something broadly? Create 2-5 routines your own tools can run now (web research, writing, checks; no connection needed), then list them. Call routine.list first; never duplicate.',
       schema: {
         type: 'object',
         required: ['prompt', 'schedule'],
@@ -367,7 +367,7 @@
         const job = await createRoutine(spec);
 
         // W6 MINT GATE: the server refused to mint a duplicate. `_duplicate` -> this agent already runs an
-        // exact/near-identical routine (job is the existing one); `_declined` -> the Commander previously deleted
+        // exact/near-identical routine (job is the existing one); `_declined` -> the Master previously deleted
         // this routine and it must not be resurrected. Either way, answer plainly with the anti-retry line and do
         // NOT arm — nothing new was created (server is the authority; this is truthful, not a second store entry).
         if (job && job._declined) {
@@ -398,8 +398,8 @@
           schedulerHalted: !!schedulerHalted(),
           // so the model cannot report "this will run daily" over a stopped scheduler. (AUTO-P16-1: the arm schema has ~0 payload
           // headroom, so the arm rule's detail lives HERE, in the result the model reads after the call — a save never lifts an E-STOP.)
-          schedulerNote: schedulerHalted() ? armedNote() + ' (saving this routine did not lift it — only the Commander resumes)' : (armedNote() || undefined),
-          // the one arm rule, said as it happened: THIS create turned scheduling on, or kept the Commander's OFF
+          schedulerNote: schedulerHalted() ? armedNote() + ' (saving this routine did not lift it — only the Master resumes)' : (armedNote() || undefined),
+          // the one arm rule, said as it happened: THIS create turned scheduling on, or kept the Master's OFF
           schedulerArmedNow: !wasArmed && !!schedulerState() && !schedulerHalted(),
           schedulerOffByChoice: offByChoice,
           armError: armError,
@@ -411,7 +411,7 @@
         };
         return {
           content: JSON.stringify(body),
-          summary: 'scheduled routine for ' + route.agentId + (armError ? ' (arm failed)' : offByChoice ? ' — scheduling is off (the Commander turned it off), so it will not run yet' : '')
+          summary: 'scheduled routine for ' + route.agentId + (armError ? ' (arm failed)' : offByChoice ? ' — scheduling is off (the Master turned it off), so it will not run yet' : '')
         };
       }
     };
@@ -425,7 +425,7 @@
 
        Consent-gated as a whole, like routine.create: an EDIT is the same attack surface as a create (a
        routine authored clean can be patched into a payload), and pausing or deleting standing autonomous
-       work is a Commander-visible change to what the station does while nobody watches.
+       work is a Master-visible change to what the station does while nobody watches.
 
        `run_now` QUEUES rather than runs. The panel's POST /api/cron/run streams a real run to a watching
        human; doing that from inside a tool call would nest a run inside a run (re-entrant runOnce, a second
@@ -491,10 +491,10 @@
             content: JSON.stringify({
               ok: true, action: action, queued: true, schedulerArmed: state.enabled === true, schedulerHalted: halted,
               // TRUTHFUL TELEMETRY: this did NOT run the routine, it moved its next fire to now. Say so, or the
-              // model reports "I ran it" to the Commander and then reads no result. And an E-STOP means no tick
+              // model reports "I ran it" to the Master and then reads no result. And an E-STOP means no tick
               // is coming at all — promising one "within ~1 minute" is the same lie with a deadline on it.
               note: halted
-                ? "queued, but the scheduler is STOPPED by the Commander's E-STOP so nothing will fire until they resume it"
+                ? "queued, but the scheduler is STOPPED by the Master's E-STOP so nothing will fire until they resume it"
                 : degraded ? 'queued, but scheduler storage needs recovery; nothing will fire until it is recovered'
                 : armed
                   ? 'queued — the scheduler fires this routine on its next tick (within ~1 minute); it has not run yet'
@@ -542,10 +542,10 @@
         if (!touched.length) throw new Error('nothing to update — pass at least one of ' + AGENT_PATCHABLE.join(', '));
         const updated = await updateRoutine(job.id, patch);
         // TRUTHFUL TELEMETRY: a rewritten prompt drops the routine's unattended grants (host rule, see updateRoutine
-        // in index.js) — say so, or the model promises the Commander a routine that will now be locked out.
+        // in index.js) — say so, or the model promises the Master a routine that will now be locked out.
         const cleared = updated && Array.isArray(updated._grantsCleared) ? updated._grantsCleared : [];
         const out = { ok: true, action: action, changed: touched, job: pack(updated || job) };
-        if (cleared.length) out.standingGrantsCleared = { grants: cleared, note: 'the new instruction was not approved by the Commander, so its unattended ' + cleared.join('/') + ' grant was removed; the Commander can re-grant it in ROUTINES' };
+        if (cleared.length) out.standingGrantsCleared = { grants: cleared, note: 'the new instruction was not approved by the Master, so its unattended ' + cleared.join('/') + ' grant was removed; the Master can re-grant it in ROUTINES' };
         return {
           content: JSON.stringify(out),
           summary: 'updated routine "' + job.name + '" (' + touched.join(', ') + ')' + (cleared.length ? ' — unattended grants cleared' : '')

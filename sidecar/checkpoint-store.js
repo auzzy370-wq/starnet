@@ -120,7 +120,7 @@
   const FANOUT_RE = /^[0-9a-f]{2}$/;                  // objects/<2 hex>: loose objects, immutable once named
   const PACK_TEMP_RE = /^(tmp_|\.tmp-\d+-pack)/;      // pack-objects' tmp_pack_/tmp_idx_/tmp_rev_… and repack's .tmp-<pid>-pack-* outputs
   const LOOSE_TEMP_RE = /^tmp_obj_/;                  // a loose object still being written
-  /* WHAT NO SNAPSHOT TAKES (turn identity commit 12, A17 iii): the agent's uploaded files (.attachments/) are the Commander's words from a chat,
+  /* WHAT NO SNAPSHOT TAKES (turn identity commit 12, A17 iii): the agent's uploaded files (.attachments/) are the Master's words from a chat,
      and a delete of that chat removes them from the workspace. `git add -A` would copy them into every shadow commit (kept for 50 snapshots,
      for an idle agent for ever), so the workspace repo's info/exclude names the directory: no new snapshot carries an attachment's bytes. */
   const EXCLUDE_LINES = ['.attachments/'];
@@ -291,7 +291,7 @@
     }
 
     /* ensureExclude(scope, gitDir) - the workspace repo (the agent's own folder: scope.id '') ignores EXCLUDE_LINES. A project root is the
-       Commander's own folder and is left as it is. Written at init and again on the first open of an older repo (idempotent). -> true when it
+       Master's own folder and is left as it is. Written at init and again on the first open of an older repo (idempotent). -> true when it
        had to add a line (the repo may then still TRACK files from before: the caller untracks them). */
     function ensureExclude(scope, gitDir) {
       if (scope && scope.id) return false;
@@ -2807,7 +2807,7 @@
        restores a snapshotId that is RECORDED in this agent's index — never an arbitrary ref. Returns false on any failure.
 
        UNDO THE UNDO. `reset --hard` + `clean -fd` used to run with no snapshot of the CURRENT state: the
-       Commander's own hand edits since the last agent snapshot, and any new untracked file, were destroyed and
+       Master's own hand edits since the last agent snapshot, and any new untracked file, were destroyed and
        existed nowhere in the shadow history (audit probe 09-22: an edited v3 and a new draft-by-commander.txt,
        both gone). Before touching the tree, restore now commits the current work tree — tracked changes AND
        untracked non-ignored files, through the SAME `add -A` path every snapshot uses, so the same ignore rules

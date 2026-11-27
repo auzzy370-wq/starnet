@@ -1,13 +1,13 @@
 /* VULTRON — pitchstore.js : the browser wiring around the pure First Pitch engine (pitch.js).
 
    The wiring half of "the agent that points you." It listens (read-only) for the agent finishing its first
-   real task, then — once the station knows enough about the Commander — has the agent REASON OUT one tailored,
+   real task, then — once the station knows enough about the Master — has the agent REASON OUT one tailored,
    buildable suggestion and offers to build it. This is the graduation beat: order-taker → advisor.
 
    How the pitch is generated without a template: it runs Pitch.buildDirective through the EXISTING model path
    (Harness.chat) as a REASON-ONLY call (placed:[] so it can touch no tools, isTask:false). The agent's live
-   system prompt already carries the COMMANDER dossier block (app.js composeSystemPrompt), so the agent reasons
-   from what it genuinely knows about the Commander — the pitch is personalized for free, no context re-injection.
+   system prompt already carries the MASTER dossier block (app.js composeSystemPrompt), so the agent reasons
+   from what it genuinely knows about the Master — the pitch is personalized for free, no context re-injection.
 
    Discipline (mirrors curiositystore.js / dossierstore.js):
    - READ-ONLY citizen of U.bus — it .on()s 'agent.run.end' and NEVER .emit()s (the frozen contract is owned
@@ -39,9 +39,9 @@ const PitchStore = (() => {
     return s;
   }
 
-  // V3 B10 (docs/ONBOARDING_V3_PLAN.md §3): the awakening's mirror beat ended with the Commander GRABBING
+  // V3 B10 (docs/ONBOARDING_V3_PLAN.md §3): the awakening's mirror beat ended with the Master GRABBING
   // one of the agent's offers as its first move. Arm it here so the tour-close floor presents THIS instead
-  // of a generated guess — the one starter allowed below the readiness gate, because the Commander chose
+  // of a generated guess — the one starter allowed below the readiness gate, because the Master chose
   // it themselves (their grab IS the grounding).
   function armFirstMove(move) {
     const t = String(move == null ? '' : move).trim();
@@ -86,8 +86,8 @@ const PitchStore = (() => {
   }
 
   // V3 §6: the shared readiness gate, read live. FAIL-CLOSED: a missing/broken readiness read means the
-  // station cannot PROVE it knows its Commander — so it does not advise (never the old guess-and-pitch).
-  /* the Commander's goal's NEXT unfinished milestone, or '' (rec perfection W2 — the twin of suggeststore's).
+  // station cannot PROVE it knows its Master — so it does not advise (never the old guess-and-pitch).
+  /* the Master's goal's NEXT unfinished milestone, or '' (rec perfection W2 — the twin of suggeststore's).
      The server evidence pack carries the GOAL; the milestone tree lives in the browser, so this is the one fact
      the pack structurally cannot supply. Fail-open: no store / no goal / no decomposition → '' → unchanged. */
   function nextMilestone() {
@@ -109,8 +109,8 @@ const PitchStore = (() => {
   }
 
   /* THE FIRST PITCH WAITS FOR THE ANSWER TO BE READ (first-hour walk 2026-09-28): it fired seconds after the first
-     good answer and its dialogue replaced the whole COMMS column, hiding the listings the Commander had just asked
-     for. It now waits until the answer has been on screen for a minute; if the Commander is typing or a new run is
+     good answer and its dialogue replaced the whole COMMS column, hiding the listings the Master had just asked
+     for. It now waits until the answer has been on screen for a minute; if the Master is typing or a new run is
      in flight by then, it steps aside (still un-pitched) and a later run end offers it again. Same dialogue, same
      words — later. */
   const PITCH_SETTLE_MS = 60000;
@@ -132,10 +132,10 @@ const PitchStore = (() => {
 
   // run the directive → parse → present the beat → route the choice. Awaitable so the test can drive it. `p` is the
   // triggering agent.run.end payload; its runId lets getRecentTask name the run that ACTUALLY just finished (not
-  // whatever workstream happens to be on screen — they differ if the Commander switched streams mid-run).
+  // whatever workstream happens to be on screen — they differ if the Master switched streams mid-run).
   /* THE FIRST PITCH IS AN OFFER (comms-owner arbiter, wave 1). It opened with no offer and covered the whole of COMMS, message box
      included, through the model call and the choice. Now it ends above the message box and steps aside, unanswered, when the
-     Commander picks a conversation, sends a turn or an ask reaches them: it stays un-pitched and a later run end offers it again,
+     Master picks a conversation, sends a turn or an ask reaches them: it stays un-pitched and a later run end offers it again,
      and a model call still in flight is aborted. Esc before the pitch is on screen steps aside the same way; Esc on the pitch is
      its own "something else" key.
      NEVER A NAG LOOP (review 10-27): a pitch that stepped aside is not offered again this session (asideThisSession), so it costs
@@ -164,7 +164,7 @@ const PitchStore = (() => {
       Dialogue.open({ name, offer: { notNow: () => leave(PITCH_NOT_NOW), stepAside: () => leave(PITCH_ASIDE) } });
       const heard = await until(Dialogue.say('give me a second — now that i know you a little, let me think about what would actually be worth building for you…', { auto: true }));   // latency patter — never gate a wait on a click
       if (away(heard)) { standDown(); return; }   // nothing was pitched yet: stays un-pitched
-      // evidence:true (W2) — this call ASKS what is worth building for this Commander, so it reasons from the
+      // evidence:true (W2) — this call ASKS what is worth building for this Master, so it reasons from the
       // same bounded evidence pack an ordinary task run gets, not from the static dossier block alone.
       try { ctl = typeof AbortController === 'function' ? new AbortController() : null; } catch (_) { ctl = null; }
       const res = await until(Harness.chat({ system, messages: [{ role: 'user', content: directive }], agentId: 'agent', isTask: false, placed: [], internal: true, evidence: true, signal: ctl ? ctl.signal : undefined }));
@@ -175,7 +175,7 @@ const PitchStore = (() => {
         if (Dialogue.isOpen()) Dialogue.close();
         return;
       }
-      // G3a seed callout: a pitch that reuses a recipe the Commander SAVED AS A SEED credits it out loud —
+      // G3a seed callout: a pitch that reuses a recipe the Master SAVED AS A SEED credits it out loud —
       // one appended sentence (a credit line, never a separate beat), only when provenance genuinely links.
       let presented = Pitch.present(parsed);
       if (typeof SeedCredit !== 'undefined' && parsed.build && parsed.build.recipeId && typeof Recipes !== 'undefined' && Recipes.get) {
@@ -195,7 +195,7 @@ const PitchStore = (() => {
       try { if (typeof Chat !== 'undefined' && Chat.spendAsk) Chat.spendAsk(); } catch (_) {}
       if (Dialogue.isOpen()) Dialogue.close();
       if (choice && choice.value === 'build') doBuild(parsed);
-      // 'other' → graceful: the panel closes, the Commander stays in control, the dossier keeps learning for sharper future ideas
+      // 'other' → graceful: the panel closes, the Master stays in control, the dossier keeps learning for sharper future ideas
     } catch (_) {
       try { if (Dialogue.isOpen()) Dialogue.close(); } catch (__) {}
     } finally {
@@ -204,7 +204,7 @@ const PitchStore = (() => {
   }
 
   // "let's build it" → a real run starts immediately (the no-dead-gap promise). A recipe pitch instantiates the
-  // recipe; a workflow pitch is sent as a directive that also asks for the one gap, so the build IS the Commander
+  // recipe; a workflow pitch is sent as a directive that also asks for the one gap, so the build IS the Master
   // making it theirs (the intentional-gap beat).
   function doBuild(parsed) {
     try {
@@ -216,7 +216,7 @@ const PitchStore = (() => {
         const r = Recipes.get(b.recipeId);
         // launch the recipe directly ONLY if it is fully runnable as-is. If it still needs a required value (its
         // "gap"), or the proposed recipe doesn't exist, fall through to the directive path — which starts a real
-        // run AND asks the Commander for the one gap, so the build is genuinely theirs, never an empty template.
+        // run AND asks the Master for the one gap, so the build is genuinely theirs, never an empty template.
         const missing = r ? ((typeof Recipes.requiredMissing === 'function') ? Recipes.requiredMissing(r, {}) : []) : ['_unknown'];
         if (r && deps.launchRecipe && !missing.length) { deps.launchRecipe(r, null); return; }
       }
@@ -262,7 +262,7 @@ const PitchStore = (() => {
       if (typeof Dialogue !== 'undefined' && Dialogue.isOpen && Dialogue.isOpen()) return false;
       state.starterDone = true; save();                              // mark on OFFER — ignored still means never re-nag
       let text = null, move = null;
-      // V3 B10: an interview-grabbed first move outranks everything — the Commander already chose it, so it
+      // V3 B10: an interview-grabbed first move outranks everything — the Master already chose it, so it
       // needs no readiness and no fresh model call. One-shot: consumed on offer (never a recurring nag).
       if (state.firstMove) {
         move = state.firstMove; delete state.firstMove; save();
@@ -270,7 +270,7 @@ const PitchStore = (() => {
       }
       // V3 §6: a GENERATED first move is a recommendation — it only fires above the shared readiness gate.
       // Below it (blitzed/skipped interview → thin dossier) the floor is the honest quest-pointer + an
-      // invitation to NAME a chore: the Commander directs, the station never guesses a task from nothing.
+      // invitation to NAME a chore: the Master directs, the station never guesses a task from nothing.
       else if (readinessRead().ready && typeof Harness !== 'undefined' && Harness.chat && Harness.configured && Harness.configured()) {
         const directive = Pitch.buildStarterDirective({ capabilities: deps.getCaps ? deps.getCaps() : [] });
         const call = Harness.chat({ system: deps.getSystem ? deps.getSystem() : '', messages: [{ role: 'user', content: directive }], agentId: 'agent', isTask: false, placed: [], internal: true, evidence: true }).catch(() => null);
@@ -291,18 +291,18 @@ const PitchStore = (() => {
   // A durable first-task review. Merely displaying it never spends the handoff.
   // Interview proposals and edits survive a tour/reload; nothing runs until Start.
   /* THE HAND-OFF IS AN OFFER (gh#158). It opened with no offer, so it owned the whole of COMMS, message box included, and
-     tutorial.onEnterGame re-shows it on every boot while handoffPending stays set: a v0.14.0 Commander with real conversations
+     tutorial.onEnterGame re-shows it on every boot while handoffPending stays set: a v0.14.0 Master with real conversations
      selected one, the camera moved, and COMMS stayed on YOUR FIRST TASK with no message box. Now it opens as an offer
-     (Dialogue armOffer): it ends above the message box, and it steps aside, unanswered, when the Commander picks a conversation
+     (Dialogue armOffer): it ends above the message box, and it steps aside, unanswered, when the Master picks a conversation
      or sends a turn (Dialogue.stepAside) or presses Esc. Stepping aside is never a decline: handoffPending and the draft stay,
      the draft goes into the message box's ↑ recall at once, and the hand-off is offered again at the next boot. A task the
-     Commander sends from COMMS completes it (noteCommsTask). */
+     Master sends from COMMS completes it (noteCommsTask). */
   const handoffAside = why => ({ action: 'aside', why: String(why || '') });
   const HELP_CAP_MS = 12000;   // "Help me choose": a late suggestion is a weird one — cap the model call (deps.helpCapMs in tests)
   let helpCtl = null;          // the in-flight "Help me choose" call's AbortController (reset() ends it too)
   function stepHandoffAside(res) {
     try { if (Dialogue.isOpen && Dialogue.isOpen()) Dialogue.close(); } catch (_) {}
-    // the draft goes into the ↑ recall when the Commander went elsewhere (a session pick, an ask, Esc) — never on their own turn:
+    // the draft goes into the ↑ recall when the Master went elsewhere (a session pick, an ask, Esc) — never on their own turn:
     // they just typed in that box, and ↑ right after a send must bring back what they sent, not the old draft (review 10-27).
     // The draft is still kept for the next offer.
     const draft = String((state && state.handoffDraft) || '').trim();
@@ -380,17 +380,17 @@ const PitchStore = (() => {
       deps.launchDirective && deps.launchDirective(task);
     if (sent) {
       state.handoffPending = false; state.starterDone = true; delete state.firstMove; save();
-      // the first task went out for the Commander, not from the composer: put it in the composer's ArrowUp recall like a
+      // the first task went out for the Master, not from the composer: put it in the composer's ArrowUp recall like a
       // typed send, so a first run that fails at the provider never makes a beginner retype it (bug 159d44fc)
       if (typeof Chat !== 'undefined' && Chat.rememberSent) { try { Chat.rememberSent(task); } catch (_) {} }
     }
     else if (typeof Chat !== 'undefined' && Chat.prefill) Chat.prefill(task);
     return !!sent;
   }
-  // A TASK THE COMMANDER SENDS FROM COMMS COMPLETES THE HAND-OFF (gh#158). startHandoff completes it for a task sent for them;
+  // A TASK THE MASTER SENDS FROM COMMS COMPLETES THE HAND-OFF (gh#158). startHandoff completes it for a task sent for them;
   // a task they type into the message box themselves (the one a failed Start put back there, or simply their own first task)
   // is the same first task. Before this the hand-off stayed pending after that send and came back over COMMS on every boot.
-  // chat.js calls it only for a task directive the Commander sent from the message box (never a retry or a send made for them).
+  // chat.js calls it only for a task directive the Master sent from the message box (never a retry or a send made for them).
   // The bar startHandoff sets (review 10-27): a station with no model configured cannot run that task, so the first task stays
   // pending (offered again) instead of being spent on a run that fails. A completed hand-off has no draft left to offer.
   function noteCommsTask(text) {

@@ -86,7 +86,7 @@
     envs: 'environment', config: 'configuration', configs: 'configuration', docs: 'documentation', app: 'application', apps: 'application', k8s: 'kubernetes' };
   /* relation words. pref = a choice between alternatives (one wins per dimension); like = a taste that may hold for
      several values at once, so it is keyed only inside an alternatives group; use = what a THING uses (several at
-     once, keyed only inside a group), while the Commander's own "use X" is a pref; loc = where something is
+     once, keyed only inside a group), while the Master's own "use X" is a pref; loc = where something is
      (single-valued); be = a copula (single-valued only for an attribute: "the default branch is main"). */
   const REL = {
     prefer: 'pref', prefers: 'pref', preferred: 'pref', want: 'pref', wants: 'pref', wanted: 'pref',
@@ -111,7 +111,7 @@
   const QUAL = new Set(['for', 'in', 'when', 'on', 'across', 'during', 'while', 'within', 'inside']);
   const CMP2 = [['instead', 'of'], ['rather', 'than']];
   const CMP1 = new Set(['over', 'than', 'vs', 'versus', 'not']);
-  // standing framing the Commander opens an instruction with — stripped, never part of the claim
+  // standing framing the Master opens an instruction with — stripped, never part of the claim
   const LEAD = [['from', 'now', 'on'], ['going', 'forward'], ['by', 'default'], ['in', 'the', 'future'], ['in', 'future'], ['remember', 'that'],
     ['note', 'that'], ['please'], ['remember'], ['actually'], ['also'], ['now'], ['so'], ['ok'], ['okay'], ['generally'], ['usually'], ['always'], ['never']];
   const FUTURE = /^for (?:all|every) (?:future )?(?:tasks?|chats?|conversations?|projects?|work)$/;
@@ -220,7 +220,7 @@
       else if (rel === 'be' && after[0] === 'set' && after[1] === 'to') { isName = true; after = after.slice(2); }
     } else if (after.length && NEG.has(after[0]) && after[0] === 'no') { neg = !neg; after = after.slice(1); }
     if (!after.length) return null;
-    // the subject: who or what the belief is about. An imperative ("use spaces …") is the Commander's own order.
+    // the subject: who or what the belief is about. An imperative ("use spaces …") is the Master's own order.
     let subject;
     const subjTokens = clean(subj).filter(t => !NEG.has(t));
     if (!subjTokens.length) {
@@ -228,7 +228,7 @@
       subject = 'user';
     } else if (subjTokens.length > 4) return null;
     else subject = subjTokens.map(t => (PERSON.has(t) ? 'user' : t)).filter((t, i, a) => a.indexOf(t) === i).join(' ');
-    // the Commander's "use X" is a preference; a thing that "uses X" is a fact about that thing
+    // the Master's "use X" is a preference; a thing that "uses X" is a fact about that thing
     if (rel === 'use') rel = subject === 'user' ? 'pref' : 'use';
     // split off a qualifier ("for indentation", "in the editor") — never the location a loc claim names
     let object = after, qualifier = [];

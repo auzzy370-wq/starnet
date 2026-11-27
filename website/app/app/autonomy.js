@@ -1,7 +1,7 @@
 /* VULTRON — autonomy.js : the PURE engine for the AUTONOMY POSTURE — the tunable "alive between sessions" dial.
 
-   THE DIAL IS THE PRODUCT. The station can do real work while the Commander is away and feel alive — honestly — and
-   the Commander tunes exactly HOW MUCH, per agent, along TWO independent axes (separating them is the whole insight:
+   THE DIAL IS THE PRODUCT. The station can do real work while the Master is away and feel alive — honestly — and
+   the Master tunes exactly HOW MUCH, per agent, along TWO independent axes (separating them is the whole insight:
    "be productive on your own all day" can coexist with "but ask before anything irreversible"):
 
      • INITIATIVE — does it start work on its own, and how far:  wait → propose → leash → free
@@ -12,16 +12,16 @@
    "how autonomous do you want me to be?" — see the awakening-question-design rule); a station dial retunes it later.
    Range is honored at BOTH ends: full wait-for-me (off) and full free-range (on).
 
-   SAFE BY DEFAULT: fresh() PROPOSES (studies the Commander, lines up suggestions to approve, never acts unattended)
+   SAFE BY DEFAULT: fresh() PROPOSES (studies the Master, lines up suggestions to approve, never acts unattended)
    with a Sandbox ceiling; a corrupt save degrades to fully wait-for-me; and even FREE-RANGE initiative keeps Reach
-   capped at 'sandbox' — running free toward goals must never silently send/publish/spend; the Commander raises Reach
+   capped at 'sandbox' — running free toward goals must never silently send/publish/spend; the Master raises Reach
    to 'reach' deliberately. That default IS the "productive all day, asks before anything irreversible" guarantee.
 
    This is Slice 1: the posture MODEL only (the enums, the presets, the derived read surface). The self-directed
    task-selection engine, the cron self-initiation, and the "while you were away" digest are later slices.
 
    PURE + node-testable, mirroring pitch.js / quests.js: an `Autonomy` global in the browser, module.exports under
-   node. NO Date.now / Math.random — a posture is a deterministic function of what the Commander chose. The thin
+   node. NO Date.now / Math.random — a posture is a deterministic function of what the Master chose. The thin
    browser store (autonomystore.js) self-persists it and is a read-only U.bus citizen; the awakening + the dial panel
    are the only writers. */
 'use strict';
@@ -50,13 +50,13 @@
   const rankOf = (axis, v) => axis.indexOf(v);
 
   // the persisted shape. DEFAULT (USER-STUDY LOOP, 2026-09-28, Andrew's call) = PROPOSE with a Sandbox ceiling:
-  // a new station studies the Commander and lines up goal-grounded suggestions and quests for them to approve,
+  // a new station studies the Master and lines up goal-grounded suggestions and quests for them to approve,
   // but never ACTS unattended (actsUnattended stays false below 'leash'). 'wait' remains one tap away and is
   // honored exactly. Reach is stored (at 'sandbox') even below 'leash', so later RAISING initiative inherits a
-  // ceiling the Commander actually set — never a surprise reach.
+  // ceiling the Master actually set — never a surprise reach.
   function fresh() { return { v: 1, initiative: 'propose', reach: 'sandbox', leashPerDay: DEFAULT_LEASH }; }
   // the conservative floor a CORRUPT or partial save degrades to, per field: fully wait-for-me. A save the
-  // Commander wrote and the disk mangled must never come back MORE active than the safest reading of it.
+  // Master wrote and the disk mangled must never come back MORE active than the safest reading of it.
   function floor() { return { v: 1, initiative: 'wait', reach: 'sandbox', leashPerDay: DEFAULT_LEASH }; }
 
   function clampLeash(n) {
@@ -90,7 +90,7 @@
   function setReach(state, level) { const s = normalize(state); if (REACH.indexOf(level) >= 0) s.reach = level; return s; }
   function setLeash(state, n) { const s = normalize(state); s.leashPerDay = clampLeash(n); return s; }
 
-  // THE AWAKENING CADENCE BEAT — concrete, scenario-grounded choices (each a tangible behavior the Commander can
+  // THE AWAKENING CADENCE BEAT — concrete, scenario-grounded choices (each a tangible behavior the Master can
   // picture, NOT an abstract slider). Order = least → most autonomous. NB: 'free' caps Reach at 'sandbox' on
   // purpose — see the file header. The store maps the picked id through applyPreset to set the opening posture.
   function cadencePresets() {
@@ -109,7 +109,7 @@
     return s;
   }
   // which preset (if any) the current posture EXACTLY matches — lets the dial highlight the chosen cadence, and
-  // returns null once the Commander hand-tunes off a preset (a legitimate custom posture).
+  // returns null once the Master hand-tunes off a preset (a legitimate custom posture).
   function matchPreset(state) {
     const s = normalize(state);
     const p = cadencePresets().filter(x => x.initiative === s.initiative && x.reach === s.reach)[0];

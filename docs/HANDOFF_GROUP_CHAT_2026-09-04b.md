@@ -55,10 +55,10 @@ Vultron matches the shape; the gap is FREE agent-to-agent coordination with owne
 2. @ A CREW MEMBER NOT IN THE CHAT — autocomplete offers them with `+ ADD` (one keystroke pull-in).
 3. SIX-PER-GROUP SOFT CAP — picker hint "works best with up to 6", never a block.
 4. JUDGMENT CALLS AS A CHOICE CARD — route an agent's question through the Task Brief `brief.ask`
-   path so the Commander gets a one-tap choice in the group.
+   path so the Master gets a one-tap choice in the group.
 5. STALLED HANDOFF NUDGE — handoff unanswered past a threshold => lead gets one nudge turn
    (Hermes stall monitor: 450s idle / 1200s in-tool).
-6. STATUS WORDS `blocked` (waiting on Commander) and `done` (chain finished) in the state row.
+6. STATUS WORDS `blocked` (waiting on Master) and `done` (chain finished) in the state row.
 Items 1-3 are an afternoon each on this branch. 4-6 ride Rooms P2.
 
 ## Andrew's locked UI law for this feature

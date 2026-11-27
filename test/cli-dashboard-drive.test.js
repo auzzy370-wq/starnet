@@ -289,7 +289,7 @@ const UP = '\x1b[A', DOWN = '\x1b[B', ESC = '\x1b';
     const r1 = d.userRuns()[0];
     A.eq(r1 && r1.body.reasoningEffort, 'xhigh', 'effort: the roster\'s effort rides the terminal\'s run');
     d.st.end(r1.runId, 'ok');
-    d.st.roster.agents[0].reasoningEffort = null;   // the Commander cleared it in the app
+    d.st.roster.agents[0].reasoningEffort = null;   // the Master cleared it in the app
     await sleep(900);   // the roster refresh (shortened here)
     await d.keys('two\r', 400);
     const r2 = d.userRuns()[1];

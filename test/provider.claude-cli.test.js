@@ -466,7 +466,7 @@ const result = (extra) => Object.assign({ type: 'result', subtype: 'success', is
     // the whole first message to the prompt cache
     {
       const tools = [{ type: 'function', function: { name: 'fs_read', description: 'read', parameters: { type: 'object', properties: { path: { type: 'string' } } } } }];
-      const crewNote = provider.crewCallFence('[CREW CALL] The Commander named Ada (agentId researcher) in this request.');
+      const crewNote = provider.crewCallFence('[CREW CALL] The Master named Ada (agentId researcher) in this request.');
       const call = { id: 'k1', type: 'function', function: { name: 'fs_read', arguments: JSON.stringify({ path: 'a' }) } };
       const turn1 = m1.concat([{ role: 'system', content: crewNote }]);
       const turn2 = turn1.concat([{ role: 'assistant', content: '', tool_calls: [call] }, { role: 'tool', tool_call_id: 'k1', content: 'A' }]);
@@ -498,9 +498,9 @@ const result = (extra) => Object.assign({ type: 'result', subtype: 'success', is
     }
     // THE CREW CALL TRAILS (review 2026-10-12): a <crew_call> note right after the newest user message closes that user
     // entry on a first message (one block, the request before it), and is its own entry after it on a later message
-    const crew = provider.crewCallFence('[CREW CALL] The Commander named Ada (agentId researcher) in this request.');
+    const crew = provider.crewCallFence('[CREW CALL] The Master named Ada (agentId researcher) in this request.');
     const c1 = _internals.buildPrompt(m1.concat([{ role: 'system', content: crew }]), [], prefix);
-    A.eq(c1.blocks, [{ type: 'text', text: '<user>\n' + note1 + '\n\n' + recall + '\n\nhi\n\n' + crew + '\n</user>' }], 'single user turn + crew call: one block, the crew call after the Commander\'s words');
+    A.eq(c1.blocks, [{ type: 'text', text: '<user>\n' + note1 + '\n\n' + recall + '\n\nhi\n\n' + crew + '\n</user>' }], 'single user turn + crew call: one block, the crew call after the Master\'s words');
     A.ok(c1.system.indexOf('[CREW CALL]') < 0, 'the crew call never enters the CLI system prompt');
     const c0 = _internals.buildPrompt([sys, { role: 'user', content: 'hi' }, { role: 'system', content: crew }], [], prefix);
     A.eq(c0.blocks, [{ type: 'text', text: '<user>\nhi\n\n' + crew + '\n</user>' }], 'single user turn, no leading note: the crew call still closes the user entry');
@@ -537,7 +537,7 @@ const result = (extra) => Object.assign({ type: 'result', subtype: 'success', is
       await collect(p, { model: 'haiku', cacheSystemPrefix: prefix, messages: [{ role: 'system', content: prefix + parts.learned + '\n\nPER CONVERSATION' }, { role: 'user', content: 'x' }] });
       return written[0];
     };
-    const head = 'WHAT YOU KNOW ABOUT YOUR COMMANDER (learned):\n- Style: ';
+    const head = 'WHAT YOU KNOW ABOUT YOUR MASTER (learned):\n- Style: ';
     const a = await sysOf('You are Ada.\n\n' + head + 'terse'), b = await sysOf('You are Ada.\n\n' + head + 'thorough');
     const boundary = '__SYSTEM_PROMPT_DYNAMIC_BOUNDARY__';
     A.ok(a.indexOf(boundary) > 0 && a.indexOf(boundary) < a.indexOf(head), 'the learned block follows the boundary');

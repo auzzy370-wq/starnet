@@ -3,7 +3,7 @@
    A reset generation (ERASE EVERYTHING or START FRESH, through either door) refuses a browser copy of the station from
    BEFORE the reset, so an erased station never writes itself back (bug 5c019483, #101's erase authority). The reset's time
    used to be parsed by savestore.js on its own, every call: a marker it could not read proved nothing, so EVERY save was
-   refused — the gate let a brand-new Commander onboard over a torn marker, and their station's first and second saves
+   refused — the gate let a brand-new Master onboard over a torn marker, and their station's first and second saves
    were refused (reset:true) with no station file ever written and no way out. Now the time is the station record's
    (sidecar/station-record.js, injected into the save store by index.js): the one marker parser reads every dialect, and a
    torn marker's time is bounded by when the record was derived at boot, so a station founded after it saves while a copy
@@ -91,7 +91,7 @@ const SHAPES = [
         A.eq([wake.ok, wake.held], [true, true], n + ': WAKE\'s crew, pushed before its first save lands, is held too (' + JSON.stringify(wake) + ')');
         A.eq(fs.existsSync(rosterFile), false, n + ': no roster file before a station is founded');
       }
-      // the station the Commander founds now (for the onboarded shape: its own next save)
+      // the station the Master founds now (for the onboarded shape: its own next save)
       const founded = shape.onboarded ? doc('FOUNDED-AFTER-THE-ERASE', T_RESET + 1000, 5, Date.now(), 'onboarded-window')
         : doc('FOUNDED-NOW', bootedAt + 1, 0, bootedAt + 2, 'new-window');
       const first = (await save(founded)).body;

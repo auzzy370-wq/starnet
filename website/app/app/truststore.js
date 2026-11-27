@@ -3,7 +3,7 @@
    Where xpstore.js folds real run outcomes into DESCRIPTIVE meters (level/confidence), this store folds the SAME
    events into a track record that, once earned, MINTS a consent-gated OFFER to raise the autonomy dial — and,
    on a sustained bad streak, DEMOTES the earned rung back. It is the mechanical teeth Growth Tier 3 gives to
-   level + confidence, always through the Commander's tap (never a silent escalation).
+   level + confidence, always through the Master's tap (never a silent escalation).
 
    Discipline mirrors studystore.js / autonomystore.js:
    - READ-ONLY citizen of U.bus — subscribes to the SAME feed xpstore folds (agent.run.end + memory.feedback) but
@@ -103,7 +103,7 @@ const TrustStore = (() => {
   }
 
   // apply a demotion the moment the engine sees a bad-enough streak. Lowers ONLY the earned rung (never the
-  // Commander's manual floor), records the new earned floor (or clears it), and surfaces an EXPLICIT notice.
+  // Master's manual floor), records the new earned floor (or clears it), and surfaces an EXPLICIT notice.
   let demotionPending = false;
   function applyInitiative(to, confirmed) {
     let result;
@@ -202,7 +202,7 @@ const TrustStore = (() => {
   // ---- consent verdicts (called by the chat trust card) ----
   // ACCEPT: apply the earned rung THROUGH the existing plumbing (AutonomyStore.setInitiative for initiative;
   // PermissionsStore.grant for a grant — never a parallel path), record provenance, and (initiative) remember the
-  // manual FLOOR we raised from so a later demotion can never step below the Commander's own setting.
+  // manual FLOOR we raised from so a later demotion can never step below the Master's own setting.
   // RETURN SHAPE: boolean for initiative (a sync dial write); a Promise<boolean> for a grant — the server grant is
   // async and can FAIL while resolving (PermissionsStore.grant swallows errors and always resolves), so success is
   // only claimed after re-reading the authoritative held-grants state and finding the key actually blessed
@@ -210,7 +210,7 @@ const TrustStore = (() => {
   function accept(offer) {
     if (!ready() || !offer) return false;
     if (offer.kind === 'initiative') {
-      const from = (posture().initiative) || 'wait';    // the Commander's current (manual) rung = the demotion floor
+      const from = (posture().initiative) || 'wait';    // the Master's current (manual) rung = the demotion floor
       return applyInitiative(offer.to, () => {
         // if a lower rung was already earned, keep the ORIGINAL manual floor (don't move the floor up to an earned rung).
         const prevFloor = (state.earned.initiative && state.earned.initiative.floor) || from;
@@ -228,7 +228,7 @@ const TrustStore = (() => {
         const ok = grantsHeld().indexOf(offer.to) >= 0;
         if (ok) {
           // a grant's provenance is recorded on the earned record too (for the ledger badge), but grants have no
-          // "floor" to demote toward — revoking is the Commander's, and a grant demotion is out of scope this tier.
+          // "floor" to demote toward — revoking is the Master's, and a grant demotion is out of scope this tier.
           state.earned.grant = state.earned.grant || {};
           state.earned.grant[offer.to] = { provenance: offer.provenance || null, earnedAt: now() };
           capMap(state.earned.grant);
@@ -240,7 +240,7 @@ const TrustStore = (() => {
     return false;
   }
 
-  // DECLINE: the Commander tapped "Not yet" — stop offering THIS rung in this level band for good (a NEW level
+  // DECLINE: the Master tapped "Not yet" — stop offering THIS rung in this level band for good (a NEW level
   // band re-opens it: earning a level is a fresh mandate). Mirrors the memory-overhaul "discard = never again",
   // scoped to the band so growth can re-earn the ask.
   function decline(offer) {
@@ -272,7 +272,7 @@ const TrustStore = (() => {
     const live = (posture().initiative) || 'wait';
     return live === state.earned.initiative.to ? { to: state.earned.initiative.to, floor: state.earned.initiative.floor, provenance: state.earned.initiative.provenance } : null;
   }
-  // the Commander manually moved the dial: reconcile the earned record. A set AT the earned rung keeps it; a set
+  // the Master manually moved the dial: reconcile the earned record. A set AT the earned rung keeps it; a set
   // ABOVE it (a user grant beyond what was earned) or BELOW it (a user override) RETIRES the earned record — the
   // manual setting wins and is recorded as such (no badge on a user-set rung). Called by the dial's setInitiative.
   function onManualInitiative(level) {

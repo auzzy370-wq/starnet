@@ -276,7 +276,7 @@ function makeRoutineDelivery(deps) {
   /* THE MEDIA OF ONE TARGET'S RECORD. The words go first and the files follow (channel.send's law): a channel that cannot
      upload never swallows the message. A file refused for the moment waits on its lane's backoff (each part has its own
      mark, so nothing else goes out again); one that cannot go is told to the chat in the note, and never silent — the
-     Commander would be waiting for a picture that is not coming. A Full Access fire may already have put its own files
+     Master would be waiting for a picture that is not coming. A Full Access fire may already have put its own files
      here with channel.send — never the same picture twice. */
   function mediaFor(plan, job, target, chatId) {
     const withFiles = (plan.attach.files.length || (plan.named.length && plan.attach.dropped.length)) && !RoutineMedia.filesAlreadySent(plan.runs, target, chatId);
@@ -296,7 +296,7 @@ function makeRoutineDelivery(deps) {
       try {
         const streamId = 'cron-' + result.runId;
         const recorded = transcriptStore.view('proof', streamId, { limit: 2 });
-        // provenance on both rows (memory-learning-07): the routine's prompt is the Commander's own; the script's stdout is
+        // provenance on both rows (memory-learning-07): the routine's prompt is the Master's own; the script's stdout is
         // untrusted output, the same as the <untrusted_script_output> a scheduled pre-check script hands a run
         if (!recorded.some(t => t.role === 'user')) transcriptStore.append({ streamId, agentId: job.agentId, role: 'user', taint: null, content: String(job.prompt || ''), turnId: TurnKinds.runTurnId(result.runId), sourceRunId: result.runId, kind: 'routine' });
         if (!recorded.some(t => t.role === 'assistant')) transcriptStore.append({ streamId, agentId: job.agentId, role: 'assistant', taint: 'scheduled script output', content: result.outcome === 'failed' ? String(result.error || 'script failed') : String(result.text || ''), turnId: TurnKinds.runTurnId(result.runId), sourceRunId: result.runId, kind: 'routine' });

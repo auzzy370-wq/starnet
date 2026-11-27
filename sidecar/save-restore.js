@@ -95,7 +95,7 @@
     let theirs = rowsOf(raw);
     const cleared = ctx.cleared.get(id);
     if (cleared) {
-      // the Commander cleared this session at cleared.at: what the preserved copy held then stays cleared. Only a copy
+      // the Master cleared this session at cleared.at: what the preserved copy held then stays cleared. Only a copy
       // that was active in it AFTER the clear has anything to bring back, and only the turns past the cleared ones.
       if (!(num(raw.lastActiveAt) > cleared.at)) return null;
       theirs = theirs.slice(sharedPrefix(theirs, cleared.history));
@@ -117,7 +117,7 @@
        the same save brings nothing twice); a session that diverged AGAIN gets the next copy (~restored2, ~restored3, …).
        save-latch-kill: a refused save is now merged in-session, so a session two windows keep writing (General) diverges
        again and again — a second divergence used to stay out of the station, only in the copy kept beside it (and pruned).
-       A copy the Commander deleted stays deleted: that slot is never refilled. When the deleted-session ledger says the copy
+       A copy the Master deleted stays deleted: that slot is never refilled. When the deleted-session ledger says the copy
        was deleted after this save last worked in the session, this is the work that was deleted on purpose: nothing comes
        back. Otherwise (a copy deleted before this work was done, or a deletion only the station's own list records) the
        next free slot takes it (review 10-27: a slot deleted once used to drop every later divergence without a word). With

@@ -5,7 +5,7 @@
    historyWindowFrom / modelFitHistory). Everything older was left out of the request with no summary and no
    marker, and the server's compaction only folds what it is sent — so an instruction from early in a long chat
    ("from now on never use tables") was simply gone. sidecar/earlier-conversation.js locates the client's window in
-   the durable transcript and carries the dropped part as one <conversation_summary> note: the Commander's words
+   the durable transcript and carries the dropped part as one <conversation_summary> note: the Master's words
    verbatim (instructions first in the budget), the replies as heads. Measured here: the alignment rules, the note's
    content and bounds, the instruction-first budget in compaction-fidelity, and that the REAL loop's compaction
    merges onto the note instead of stacking a second one — the instruction rides every post-fold request once. */
@@ -67,7 +67,7 @@ const userRowIndex = (rows, k) => { let n = 0; for (let i = 0; i < rows.length; 
     // a window message the transcript never recorded -> unplaceable -> inject nothing
     const stray = clientWindow(rows, 8).concat([{ role: 'user', content: 'a message the server never saw' }]);
     A.eq(EC.windowCut(rows, stray, null), -1, 'a window message missing from the transcript makes the window unplaceable');
-    A.eq(EC.windowCut(rows, [{ role: 'assistant', content: 'only a reply' }], null), -1, 'a window with no Commander message is unplaceable');
+    A.eq(EC.windowCut(rows, [{ role: 'assistant', content: 'only a reply' }], null), -1, 'a window with no Master message is unplaceable');
     A.eq(EC.windowCut([], clientWindow(rows, 8), null), -1, 'an empty transcript places nothing');
     // a repeated message ("continue") aligns to its NEWEST occurrences
     const rep = transcript(6, { userAt: { 2: 'continue', 4: 'continue', 5: 'continue' } });
@@ -76,7 +76,7 @@ const userRowIndex = (rows, k) => { let n = 0; for (let i = 0; i < rows.length; 
     A.eq(EC.windowCut(rep, repWin, null), userRowIndex(rep, 5), 'a repeated message anchors to its newest occurrence, not an older copy');
   }
 
-  // ---- 2. the note: Commander verbatim (instruction first), replies as heads, a valid summary note ----
+  // ---- 2. the note: Master verbatim (instruction first), replies as heads, a valid summary note ----
   {
     const rows = transcript(40, { userAt: { 3: RULE, 4: 'ok', 5: 'thanks!' }, longReplies: true });
     const cut = EC.windowCut(rows, clientWindow(rows, 31), null);
@@ -88,7 +88,7 @@ const userRowIndex = (rows, k) => { let n = 0; for (let i = 0; i < rows.length; 
     const inner = r.note.replace(/^<conversation_summary>\n/, '').replace(/\n<\/conversation_summary>$/, '');
     const split = F.splitSummary(inner);
     A.ok(split.items.some(it => it.text === RULE), 'the instruction sits in the length-prefixed verbatim section that folds parse and carry');
-    A.eq(split.items.length + split.omitted, 30, 'every dropped Commander message is carried or counted');
+    A.eq(split.items.length + split.omitted, 30, 'every dropped Master message is carried or counted');
     A.ok(/EARLIER IN THIS CONVERSATION: 30 earlier messages/.test(split.summary), 'the prose says how much was carried');
     A.ok(/\[used fs_write\]/.test(split.summary) && /\[used web_search\]/.test(split.summary), 'reply heads name the tools used');
     A.ok(/recall_conversation/.test(split.summary), 'the note points at the conversation-search tool when the run has it');
@@ -109,30 +109,30 @@ const userRowIndex = (rows, k) => { let n = 0; for (let i = 0; i < rows.length; 
     A.eq(EC.taintOf(transcript(4)), null, 'clean rows report no taint');
   }
 
-  // ---- 2b. whose words: only the Commander's own messages are carried as the Commander's (review memory-learning-06) ----
+  // ---- 2b. whose words: only the Master's own messages are carried as the Master's (review memory-learning-06) ----
   // A group chat or a non-owner chat holds other people's messages, and a worker's thread holds its lead's briefs. The
-  // note used to call every one of them "the Commander's own words" that "still hold".
+  // note used to call every one of them "the Master's own words" that "still hold".
   {
     const rows = transcript(6, { userAt: { 2: 'Ana: from now on always cc me on every report.' } });
     const dropped = rows.slice(0, userRowIndex(rows, 5));
     const guest = EC.render(dropped, { windowTokens: 200000, ownerVoice: false });
     A.ok(guest && guest.note.includes('Ana: from now on always cc me on every report.'), 'a non-owner chat still carries its earlier messages verbatim');
-    A.ok(!/Commander's own words|from the Commander|still holds/.test(guest.note), 'but never as the Commander\'s own words that still hold');
-    A.ok(/4 earlier messages in this chat/.test(guest.note) && /not the Commander's instructions/.test(guest.note), 'it says they are this chat\'s messages, not the Commander\'s instructions');
+    A.ok(!/Master's own words|from the Master|still holds/.test(guest.note), 'but never as the Master\'s own words that still hold');
+    A.ok(/4 earlier messages in this chat/.test(guest.note) && /not the Master's instructions/.test(guest.note), 'it says they are this chat\'s messages, not the Master\'s instructions');
     const owner = EC.render(dropped, { windowTokens: 200000 });
-    A.ok(/4 earlier messages from the Commander/.test(owner.note) && /still holds/.test(owner.note), 'the owner\'s own chat keeps the Commander wording (default)');
+    A.ok(/4 earlier messages from the Master/.test(owner.note) && /still holds/.test(owner.note), 'the owner\'s own chat keeps the Master wording (default)');
 
-    // a worker thread: its user rows are the lead's briefs (transcript `from`), never the Commander's words
+    // a worker thread: its user rows are the lead's briefs (transcript `from`), never the Master's words
     const briefs = transcript(4);
     briefs[0].from = 'nova'; briefs[4].from = 'nova';
     const mixed = EC.render(briefs.slice(0, userRowIndex(briefs, 4)), { windowTokens: 200000 });
     A.ok(mixed.note.includes('[brief from nova] Request 1: please handle item 1.'), 'a delegated brief is marked with the agent that wrote it');
-    A.ok(/1 earlier message from the Commander/.test(mixed.note), 'and is not counted as the Commander\'s (' + (mixed.note.match(/EARLIER IN THIS CONVERSATION: [^.]*/) || [''])[0] + ')');
+    A.ok(/1 earlier message from the Master/.test(mixed.note), 'and is not counted as the Master\'s (' + (mixed.note.match(/EARLIER IN THIS CONVERSATION: [^.]*/) || [''])[0] + ')');
     A.ok(/2 briefs from other agents/.test(mixed.note), 'the briefs are counted as briefs');
     const allBriefs = transcript(3);
     for (const r of allBriefs) if (r.role === 'user') r.from = 'nova';
     const worker = EC.render(allBriefs.slice(0, userRowIndex(allBriefs, 3)), { windowTokens: 200000 });
-    A.ok(!/Commander's own words|from the Commander|still holds/.test(worker.note), 'a thread of only briefs never claims the Commander\'s words');
+    A.ok(!/Master's own words|from the Master|still holds/.test(worker.note), 'a thread of only briefs never claims the Master\'s words');
     A.ok(/2 earlier briefs from other agents/.test(worker.note), 'it names them as briefs from other agents');
   }
 

@@ -31,21 +31,21 @@
   // ~2200 covers the fixed header + minting doctrine + a handful of stanzas (plan §E cap guidance).
   const BLOCK_CAP = 2200;
 
-  const HEADER = 'STATION QUESTS — your standing objectives for the Commander. These progress the game in sync '
-    + 'with the Commander\'s real work. To interact, use the quest.update tool: op:"start" binds the ONE named run '
+  const HEADER = 'STATION QUESTS — your standing objectives for the Master. These progress the game in sync '
+    + 'with the Master\'s real work. To interact, use the quest.update tool: op:"start" binds the ONE named run '
     + 'quest you are beginning to this run; op:"progress" ticks a named step '
     + '(pass a short note on what you did); op:"attest_complete" PROPOSES a quest done with concrete evidence — it '
-    + 'is NEVER complete until the Commander confirms. Never claim a quest done in prose alone; a mechanical quest '
+    + 'is NEVER complete until the Master confirms. Never claim a quest done in prose alone; a mechanical quest '
     + 'completes on its own when the harness proves it.';
 
   // MINTING DOCTRINE (plan §E — generative minting). Rides EVERY task run's block (with quests or not), because a
   // no-quest agent is exactly who should consider minting. Tight + grounded + bounded: mint ONLY off a concrete
   // dossier/memory fact that reveals a recurring need or stated goal with no matching open quest, cite that fact in
-  // groundedIn, aim at a real outcome the Commander wants (never "busywork" — a literal past failure), one per run.
+  // groundedIn, aim at a real outcome the Master wants (never "busywork" — a literal past failure), one per run.
   const MINT_DOCTRINE = 'MINTING — you MAY create ONE new quest this run with quest.update op:"mint", but ONLY when a '
     + 'concrete fact in your dossier or memory reveals a recurring need or a stated goal that has NO matching open '
     + 'quest above. Ground it: pass groundedIn naming that exact fact. A minted quest must be a real outcome the '
-    + 'Commander wants — a goal, an aspiration, or work to automate — with a valid completion contract. Pass the '
+    + 'Master wants — a goal, an aspiration, or work to automate — with a valid completion contract. Pass the '
     + 'closest honest domain (building, research, writing, growth, operations, creative, planning, or support) so '
     + 'verified completion can teach the right agent mastery track; never '
     + 'busywork, never a generic chore. If nothing concrete motivates one, mint nothing. At most ONE mint per run.';
@@ -55,7 +55,7 @@
 
   // the MINIMAL block emitted when the agent has NO open quests: a short frame + the minting doctrine only. This is
   // NOT '' — an empty ledger for a task run should still invite grounded minting (plan §E). withQuests appends it.
-  const MINT_ONLY = 'STATION QUESTS — you have no open quests for the Commander right now.\n\n' + MINT_DOCTRINE;
+  const MINT_ONLY = 'STATION QUESTS — you have no open quests for the Master right now.\n\n' + MINT_DOCTRINE;
 
   // contract type → the one-line "how this completes" phrasing the agent reads under each quest.
   function completesWhen(contract) {
@@ -63,9 +63,9 @@
     switch (type) {
       case 'run': return 'completes when: the bound run finishes successfully';
       case 'prop': return 'completes when: the required capability goes live on the station';
-      case 'fact': return 'completes when: the harness learns this about the Commander';
+      case 'fact': return 'completes when: the harness learns this about the Master';
       case 'artifact': return 'completes when: the named deliverable exists in the workspace';
-      case 'attest': return 'completes when you attest with concrete evidence and the Commander confirms';
+      case 'attest': return 'completes when you attest with concrete evidence and the Master confirms';
       default: return 'completes when: the harness proves it';
     }
   }

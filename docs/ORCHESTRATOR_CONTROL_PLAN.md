@@ -1,8 +1,8 @@
 # Orchestrator control lane (`agent/orchestrator-control`)
 
-Goal: agents that (a) **understand Vultron** so they can help a stuck Commander, and (b) let the
+Goal: agents that (a) **understand Vultron** so they can help a stuck Master, and (b) let the
 **orchestrator actually control Vultron live** — summon/equip crew and hand them work, exactly as
-the Commander would. Locked decisions: APPROVAL-mode-gated authority; orchestrator/lead-only actuates;
+the Master would. Locked decisions: APPROVAL-mode-gated authority; orchestrator/lead-only actuates;
 all agents get the knowledge.
 
 ## Shipped (committed on this branch, green on `test:fast` + `test:http`)

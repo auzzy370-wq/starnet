@@ -135,10 +135,10 @@ waiver alongside the final release notes.
    signed manifest coherence, Mac acceptance, and update preservation/canary behavior.
 6. Review the concrete draft and publish only through the owner-authorized release step.
 
-## Continued preparation: Commander QA repair
+## Continued preparation: Master QA repair
 
 On the owner's request to continue, `0d8f2ff4f` repairs the shared HUD truthfulness probe
-and its separate audit assertion. The product already renders Commander progression from
+and its separate audit assertion. The product already renders Master progression from
 the server-owned Journey store. QA still compared it with unrelated crew XP and a
 monotonic baseline. A delayed first Journey response therefore produced the exact old
 `displayed=null gte expected=1` failure; a fabricated `Lv 999` also incorrectly passed.
@@ -150,7 +150,7 @@ The repaired probe accepts the honest dash, matches the loaded level exactly, re
 999, and passes again after restoring the genuine projection. No production progression
 logic, readiness skip, golden threshold or known-issue suppression changed.
 
-The separate audit now queries `/api/journey` directly and requires a finite Commander
+The separate audit now queries `/api/journey` directly and requires a finite Master
 level, preserving an explicit service-availability check in addition to display parity.
 Thirteen registered regression assertions cover delayed data, invented levels, missing
 and empty DOM, unrelated crew XP, stale/saved markings, recovery and authoritative reset.

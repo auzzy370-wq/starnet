@@ -13,7 +13,7 @@ const { makeClock } = require('../shared/clock-rng.js');
   const run = { agentId: 'ag', runId: 'run_7', messages: [
     { role: 'system', content: 'SYS — should be stripped' },
     { role: 'user', content: 'I prefer terse answers and I deploy with npm publish' },
-    { role: 'assistant', content: 'Understood, Commander.' }
+    { role: 'assistant', content: 'Understood, Master.' }
   ] };
   const stub = () => 'PREFERENCE: user prefers terse answers\nFACT: deploys with npm publish\nrandom chatter, no tag\nSKILL: can tag releases';
 
@@ -209,7 +209,7 @@ const { makeClock } = require('../shared/clock-rng.js');
   A.eq(highStakes('keeps a shared secret in the config'), true, 'a "secret" mention is high-stakes');
   A.eq(highStakes('rotate the access credentials monthly'), true, 'a "credentials" mention is high-stakes');
   // POSITIVES — PII
-  A.eq(highStakes('reach the Commander at andrew@example.com'), true, 'an email address is high-stakes');
+  A.eq(highStakes('reach the Master at andrew@example.com'), true, 'an email address is high-stakes');
   A.eq(highStakes('the office number is +1 (415) 555-0199'), true, 'a phone number is high-stakes');
   A.eq(highStakes('ships packages to 1600 Pennsylvania Avenue'), true, 'a street address is high-stakes');
   // POSITIVES — standing instructions

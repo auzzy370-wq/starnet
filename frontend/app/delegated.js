@@ -147,7 +147,7 @@ const Delegated = (() => {
       // the station stopped answering (Overseer.fresh): the last ledger can no longer vouch for this worker, so the row
       // claims neither working nor stopped — no live clock, no Stop key (a failed poll repaints at once)
       if (typeof Overseer !== 'undefined' && Overseer.fresh && !Overseer.fresh()) return { cls: 'unknown', live: 'status unknown — station unreachable', t: '' };
-      // the worker's OWN run as CREW clocks it (every wait on the Commander excluded — rc walk #21: this branch still read the
+      // the worker's OWN run as CREW clocks it (every wait on the Master excluded — rc walk #21: this branch still read the
       // ledger's wall clock, so a worker that waited on an approval read a minute ahead of CREW and the world tag); the
       // ledger's start only when this page never saw that run begin
       const runMs = (typeof CrewClock !== 'undefined' && CrewClock && typeof CrewClock.elapsedOfRun === 'function' && w.runId) ? CrewClock.elapsedOfRun(w.runId, crewNow()) : null;
@@ -211,7 +211,7 @@ const Delegated = (() => {
     // was the red 'stopped', "1 stopped")
     return { cls: 'failed', live: 'ended without a result', t: '' };
   }
-  // the prompt waiting on the Commander that THIS worker raised: matched by the stamp the sidecar puts on a delegated
+  // the prompt waiting on the Master that THIS worker raised: matched by the stamp the sidecar puts on a delegated
   // worker's ask (workerStreamId / workerRunId), never by agent id (the lead's id rides every worker's ask)
   function askOf(r, parentId) {
     const C = typeof Channels !== 'undefined' ? Channels : null;
@@ -225,9 +225,9 @@ const Delegated = (() => {
 
   /* ONE CARD PER LEAD RUN under the ask (its dispatch calls in order): "Delegated to MIRA, ROOK and VEX · 2 working · 1 done". While anything runs (or
      waits on you) its rows show (2026-10-10 blind test: who-has-what and Stop without a click); once all settle it
-     folds to that one line. The Commander's own click wins either way while the page lives. */
-  const opened = new Set();   // batch keys the Commander expanded
-  const closed = new Set();   // batch keys the Commander folded while they were still running
+     folds to that one line. The Master's own click wins either way while the page lives. */
+  const opened = new Set();   // batch keys the Master expanded
+  const closed = new Set();   // batch keys the Master folded while they were still running
   const seen = new Set();     // worker thread ids whose work is unfolded (See work)
   const receipts = new Map(); // worker thread id -> { status: 'loading'|'ok'|'err', data, at, runId, error }
   const loadingReceipts = new Set();
@@ -456,7 +456,7 @@ const Delegated = (() => {
       }
       const html = lineHtml(b, parentId);
       if (card.dataset.dgHtml !== html) {
-        // keep the key the Commander is on (the 1s clock repaints a live card)
+        // keep the key the Master is on (the 1s clock repaints a live card)
         const focused = document.activeElement && card.contains(document.activeElement) ? document.activeElement : null;
         const focusKey = focused ? keyOf(focused) : '';
         const retained = new Map(Array.from(card.querySelectorAll('[data-dg-inspect], [data-dg-answer]')).map(n => [n.hasAttribute('data-dg-inspect') ? 'ask:' + n.dataset.dgPrompt : 'answer:' + n.dataset.dgAnswer, n]));

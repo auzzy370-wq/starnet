@@ -44,7 +44,7 @@ function startMockOpenRouter() {
         req.on('data', d => { body += d; });
         req.on('end', () => {
           res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' });
-          res.write('data: ' + JSON.stringify({ choices: [{ delta: { content: 'Acknowledged, Commander.' } }] }) + '\n\n');
+          res.write('data: ' + JSON.stringify({ choices: [{ delta: { content: 'Acknowledged, Master.' } }] }) + '\n\n');
           res.write('data: ' + JSON.stringify({ choices: [{ delta: {}, finish_reason: 'stop' }], usage: { prompt_tokens: 6, completion_tokens: 3, total_tokens: 9 } }) + '\n\n');
           res.write('data: [DONE]\n\n');
           res.end();
@@ -211,7 +211,7 @@ function parseToolResult(result) {
     A.ok(r.data.sidecarReachable === false && /Vultron/i.test(r.data.error), 'the error tells the operator to start Vultron');
 
     // ⛔ STATION RESTART: THE SCRAPED TOKEN IS PER-LAUNCH AND GOES STALE. Vultron is a desktop app the
-    // Commander closes and reopens; every launch mints a NEW api token. This bridge is spawned once by the MCP
+    // Master closes and reopens; every launch mints a NEW api token. This bridge is spawned once by the MCP
     // client and lives for that whole session, so a token cached for the process lifetime meant the FIRST
     // restart killed every tool with "returned HTTP 401" (and left the SSE feed re-presenting the dead token
     // every 3s) until the user knew to restart their MCP client. Boot a fresh sidecar on the SAME port and

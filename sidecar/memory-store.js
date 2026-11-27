@@ -3,7 +3,7 @@
    The notebook, todo, declined, minted, and pending stores intentionally share one injected store contract, but
    they do not share the same on-disk file: notebook:<agent> is durable long-term memory, todo:<agent> is the active
    task plan that must survive restarts/compaction, declined:<agent> is the permanent reject-list of memory
-   proposals the Commander Discarded (so reflection never re-proposes them — §5.6 "discard = never again"),
+   proposals the Master Discarded (so reflection never re-proposes them — §5.6 "discard = never again"),
    pending:<agent> holds high-stakes proposals still awaiting a Keep/Edit/Discard verdict, and embed:<agent> holds
    the derived embedding vectors the hybrid recall lane blends with BM25 (sidecar/embed.js).
    Unknown keys are rejected instead of being accidentally mapped into a notebook filename. */
@@ -94,7 +94,7 @@ function makeMemoryStore(deps) {
 
 // Wipe all of ONE agent's per-store memory — its kept notebook, its permanent declined reject-list, its active
 // todo plan, and any proposals still awaiting a verdict — so a re-commissioned hero starts clean (no prior
-// Commander's beliefs bleed in, and no prior Commander's un-answered confirm deck greets the new one). Best-effort
+// Master's beliefs bleed in, and no prior Master's un-answered confirm deck greets the new one). Best-effort
 // per key: a single unwritable file never blocks the others. Pure over the injected store, so it is unit-testable
 // without booting the server (the new-hero clean-slate is a named hard rule, not just a source-grep).
 async function resetAgentMemory(store, agentId) {
@@ -105,7 +105,7 @@ async function resetAgentMemory(store, agentId) {
 }
 
 // Remove ONE entry from an agent's permanent declined reject-list (the undo-a-discard escape hatch), so a belief
-// the Commander discarded by mistake can be proposed again. Returns whether anything was actually removed. Pure
+// the Master discarded by mistake can be proposed again. Returns whether anything was actually removed. Pure
 // over the injected store → unit-testable without booting the server.
 async function restoreDeclined(store, agentId, text) {
   const t = String(text == null ? '' : text).trim();
@@ -125,7 +125,7 @@ async function restoreDeclined(store, agentId, text) {
    High-stakes memory proposals (credential/PII/standing-instruction shaped) are not auto-saved — they wait for a
    Keep/Edit/Discard verdict. That wait used to live in an in-memory Map keyed by runId, which was fine while only
    the watched browser run could raise one. Unattended runs reflect now, so a deck can be raised with nobody at the
-   station, and an un-answered proposal that evaporates on the next restart is a belief the Commander never got to
+   station, and an un-answered proposal that evaporates on the next restart is a belief the Master never got to
    rule on. These three helpers are the durable half; the composite key is runId+':'+id because proposal ids are
    per-batch (every batch mints a prop_1).
 
@@ -164,7 +164,7 @@ async function appendPending(store, agentId, runId, items, now) {
 }
 
 // Remove ONE decided proposal and return it, so a verdict arriving after a restart (when the in-memory batch is
-// long gone) can still be resolved against the real proposal body instead of 404-ing the Commander's decision.
+// long gone) can still be resolved against the real proposal body instead of 404-ing the Master's decision.
 // Returns null when it was never queued — callers treat that as "not ours", never as an error.
 async function takePending(store, agentId, runId, id) {
   const key = pendingKey(runId, id);
@@ -186,7 +186,7 @@ function listPending(store, agentId) {
 }
 
 // Non-consuming lookup for two-phase turn-in: KEEP/EDIT must prove the destination write before the proposal is
-// removed. Consuming first loses the Commander's decision forever when the notebook/skill disk write fails.
+// removed. Consuming first loses the Master's decision forever when the notebook/skill disk write fails.
 function findPending(store, agentId, runId, id) {
   const key = pendingKey(runId, id);
   return listPending(store, agentId).find(e => e && e.key === key) || null;

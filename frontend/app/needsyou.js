@@ -1,5 +1,5 @@
 'use strict';
-/* NEEDS YOU — every thing on the station waiting on the Commander, in ONE list at the top of SESSIONS (2026-10-11: all
+/* NEEDS YOU — every thing on the station waiting on the Master, in ONE list at the top of SESSIONS (2026-10-11: all
    nine blind usability testers, on every design, asked for exactly this: approvals and failures from every conversation
    in one place, each with its action right there, saying exactly what will happen and how long it has waited).
 
@@ -10,7 +10,7 @@
    - delegated work that failed, or was stopped by a restart or the liveness check: the overseer's worker ledger (/api/overseer), for a
      conversation this page holds, until you open it or dismiss it;
    - a routine run that failed and you have not looked at: its own cron-<runId> session (lastRunOk === false, unread);
-   - (org P01) every other wait that BLOCKS on the Commander, each from its own live source, never the bell's stored entries:
+   - (org P01) every other wait that BLOCKS on the Master, each from its own live source, never the bell's stored entries:
      an agent waiting at STEP-IN (StepIn.live — the sidecar's handoff records), extensions awaiting approval (GET /api/hooks +
      /api/plugins, re-read every minute), builds that need a keep/discard decision (GET /api/workshop/pending via
      WorkshopStore.pendingAll — DELIVERABLES' NEEDS A DECISION), a quest an agent says is done (QuestLedgerStore.pendingAttests),
@@ -129,7 +129,7 @@ const NeedsYou = (() => {
   }
   /* where a build's row goes, named as the place it lands (Andrew 10-15: "where you are ACTUALLY needed"): its own session,
      by the name the SESSIONS rail shows (the session's title once it exists, else the one WorkshopStore gives it on the
-     click). DELIVERABLES only when openDoor will fall back to it: no WorkshopStore to adopt the session, or the Commander
+     click). DELIVERABLES only when openDoor will fall back to it: no WorkshopStore to adopt the session, or the Master
      deleted it (adopt refuses the tombstone). Read only: the session is adopted by the click, never by a render. */
   function buildPlace(m) {
     const W = typeof WorkshopStore !== 'undefined' ? WorkshopStore : null;
@@ -453,7 +453,7 @@ const NeedsYou = (() => {
     host.hidden = !list.length;
     host.setAttribute('aria-label', list.length ? 'Needs you: ' + list.length + ' waiting' : 'Needs you');
     if (shape === lastShape) {
-      // only time moved: update the ages in place, so the key the Commander is on keeps its focus
+      // only time moved: update the ages in place, so the key the Master is on keeps its focus
       const since = new Map(list.map(i => [i.key, i.since]));
       host.querySelectorAll('li.ny-item[data-ny-key]').forEach(li => {
         const el = li.querySelector('.ny-age'), text = age(since.get(li.dataset.nyKey), now);
@@ -481,7 +481,7 @@ const NeedsYou = (() => {
       const same = keys.filter(n => n.dataset.nyAct === fAct && (fAct === 'more' || n.dataset.nyKey === fKey));
       const again = same.find(n => n.className === fCls) || same[0];
       // a disabled key cannot hold focus (its answer is on the way): keep it on the same row's live key, else its
-      // "in <where>", so a keyboard Commander is never dropped to the page
+      // "in <where>", so a keyboard Master is never dropped to the page
       const live = again && !again.disabled ? again
         : fKey ? keys.find(n => n.dataset.nyKey === fKey && !n.disabled && /\bny-key\b/.test(n.className)) || keys.find(n => n.dataset.nyKey === fKey && !n.disabled) : null;
       if (live && again && live !== again) parked = { act: fAct, cls: fCls, key: fKey };

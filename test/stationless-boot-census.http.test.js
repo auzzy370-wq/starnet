@@ -62,7 +62,7 @@ const HOST = '127.0.0.1';
 const INDEX = path.resolve(__dirname, '..', 'sidecar', 'index.js');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 // the station-scoped bookkeeping files a station-less writer could leave: one per STATE_EVIDENCE family a route or a tick
-// reaches today (scout, the Commander dials, routines, loops, night focus, personalization), plus the night-shift ledger
+// reaches today (scout, the Master dials, routines, loops, night focus, personalization), plus the night-shift ledger
 const PLANTS = ['scout.state.json', '_commander.autonomy.json', 'cron.jobs.json', 'loops.json', 'nightfocus.state.json', 'personalization.json', 'autonomy.ledger.jsonl'];
 // each unattended writer's own first file. Not every one is station state to a reader (discovery's is not), so the
 // completeness census alone could not see that writer run.
@@ -244,7 +244,7 @@ const UNATTENDED_FILES = [['the night shift', 'autonomy.ledger.jsonl'], ['the qu
       ['POST', '/api/memory/reset', { agent: 'agent' }],                                                              // Harness.memoryReset
       ['POST', '/api/scout/context', { customClasses: [{ name: 'Census class' }] }],
       ['POST', '/api/scout/telemetry', { kind: 'recipe.launch', id: 'census-recipe', name: 'Census recipe' }],
-      ['POST', '/api/dossier', { block: 'COMMANDER DOSSIER\n- census' }],
+      ['POST', '/api/dossier', { block: 'MASTER DOSSIER\n- census' }],
       ['POST', '/api/goals', { goal: null }],
       ['POST', '/api/roster', crew('CENSUS', Date.now())],                                                            // enterGame's pushRoster
       ['POST', '/api/agent/approval', { agentId: 'agent', mode: 'full' }],                                           // the no-page controls

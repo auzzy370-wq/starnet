@@ -107,7 +107,7 @@
     // year-old month. The station's clock is the truth; `now` is injected by the caller (this file never reads a clock).
     const today = todayLine(o.now);
     if (today) lines.push(today);
-    lines.push('If the Commander asks what Vultron build, model, provider, run, surface, or session you are using, answer from this block. For mutable harness state such as scheduler health, routines, connectors, or errors, call station.inspect. Do not guess or invent a CLI command.');
+    lines.push('If the Master asks what Vultron build, model, provider, run, surface, or session you are using, answer from this block. For mutable harness state such as scheduler health, routines, connectors, or errors, call station.inspect. Do not guess or invent a CLI command.');
     return '\n\n' + lines.join('\n');
   }
 

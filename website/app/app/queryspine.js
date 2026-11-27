@@ -17,7 +17,7 @@ const QuerySpine = (() => {
   let now = () => Date.now();
   let armInterval = (fn, ms) => setInterval(fn, ms);
   let disarmInterval = id => clearInterval(id);
-  /* AWAY, THE POLL SLOWS (idle CPU piece 3, 2026-10-20). While the Commander is away (PollGate: hidden with no input for
+  /* AWAY, THE POLL SLOWS (idle CPU piece 3, 2026-10-20). While the Master is away (PollGate: hidden with no input for
      10 s) a resource's beat skips its read until the last-good value is AWAY_MS old, so journey's 4 s poll becomes one read
      per ~30 s and cron's 60 s poll is unchanged; it never stops. The moment they are back, PollGate's wake re-reads every
      subscribed resource whose value is older than its own poll cadence. Freshness is never stretched across the away
@@ -218,7 +218,7 @@ const QuerySpine = (() => {
     validate: data => !!(data && Array.isArray(data.jobs))
   });
 
-  // Durable Commander Journey truth. Polling is shared and subscriber-owned; failed reads keep
+  // Durable Master Journey truth. Polling is shared and subscriber-owned; failed reads keep
   // last-good data with explicit stale/error metadata rather than manufacturing current proof.
   define('journey', {
     path: '/api/journey',

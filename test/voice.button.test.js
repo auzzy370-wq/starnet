@@ -357,7 +357,7 @@ async function opensWithin(t, ms) {
   }
 
   // Browser recognition may end its own instance after a pause even in continuous mode. Standard voice
-  // keeps the take open, retains those words, and sends them only when the Commander clicks again.
+  // keeps the take open, retains those words, and sends them only when the Master clicks again.
   {
     const pending = [], heard = [];
     const t = boot({ desktop: true, fetch: url => {
@@ -532,7 +532,7 @@ async function opensWithin(t, ms) {
   // --- a recognizer that fails every time PAUSES the Live mic and says why ----------------------
   // Live dictation re-armed a failing engine forever (~every 150ms) while the panel read LISTENING and the
   // status showed a raw 'mic: network'. Three hard errors in a row pause the mic with plain words — and the
-  // reply the Commander is waiting for still speaks (stopConvo's stopSpeaking would have staled its token).
+  // reply the Master is waiting for still speaks (stopConvo's stopSpeaking would have staled its token).
   {
     const requests = [];
     const t = boot({ Audio: AutoEndAudio, fetch: (url, o) => {
@@ -557,7 +557,7 @@ async function opensWithin(t, ms) {
     A.ok(!t.statusLog.some(s => /^mic: /.test(String(s))), 'mic errors: no raw engine code reaches the status line');
     t.Voice.speakChunk(reply, 'Here is the answer you asked for.', 'agent'); t.Voice.endReply(reply);
     await until(() => requests.length > 0, 1000);
-    A.eq(requests.length, 1, 'mic errors: the pause never cancels the reply the Commander is waiting for');
+    A.eq(requests.length, 1, 'mic errors: the pause never cancels the reply the Master is waiting for');
     await until(() => !t.Voice.isReplyPending(), 1000);
     A.eq(srInstances.length, instances, 'mic errors: the reply ending does not re-arm a paused mic');
     t.Voice.resumeCoordinator(); await until(() => srInstances.length > instances, 1000);
@@ -884,7 +884,7 @@ async function opensWithin(t, ms) {
     await until(() => t.Voice.isSpeaking(), 1000);
     A.ok(t.Voice.isSpeaking() && played.length === 1, 'held: the first sentence is playing, the second queued behind it');
     t.Voice.releaseSpeaker('live');   // the lease alone goes back: nothing stopped the voice before it
-    A.eq(t.Voice.isOn(), false, 'held: giving back the lease leaves the speaker at the Commander\'s mute');
+    A.eq(t.Voice.isOn(), false, 'held: giving back the lease leaves the speaker at the Master\'s mute');
     A.ok(!t.Voice.isSpeaking(), 'held: the sentence that was playing stops with it');
     A.ok(paused.length > 0 && paused.every(src => src === 'The first sentence is playing.'), 'held: its audio is paused: ' + paused.join('|'));
     A.ok(!t.Voice.isReplyPending(), 'held: nothing is left queued');

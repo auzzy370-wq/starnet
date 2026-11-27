@@ -75,7 +75,7 @@ A.eq(Xp.applyEvent(Xp.fresh(), discard()).awards.xp, 0, 'negative feedback award
 A.eq(Xp.applyEvent(Xp.fresh(), feedback(1000, 'kept')).awards.xp, 50, 'a huge finite kept-feedback delta is capped at +50 xp');
 A.eq(Xp.applyEvent(Xp.fresh(), feedback(1000, 'huge')).awards.xp, 0, 'unknown memory.feedback reasons do not award xp');
 
-// ---- task-size is legacy receipt telemetry only; equal Commander verdicts earn equal XP ----
+// ---- task-size is legacy receipt telemetry only; equal Master verdicts earn equal XP ----
 const sized = (delta, reason, size) => ({ name: 'memory.feedback', payload: { agentId: 'a', id: 'w1', delta, reason, size } });
 A.eq(Xp.workSize({ tools: 0, usd: 0 }), 'small', 'no tools, no spend -> small');
 A.eq(Xp.workSize({ tools: 2, usd: 0.01 }), 'small', 'a couple of tool calls is still small');
@@ -388,8 +388,8 @@ A.eq(Xp.practice([sk({ useCount: 1 })]).count, 1, 'a procedure the model actuall
 
 // each exclusion is a claim we refuse to make.
 A.eq(Xp.practice([sk({ useCount: 9, withheld: true })]).count, 0, 'a WITHHELD skill was never handed to the model — it cannot be known');
-A.eq(Xp.practice([sk({ useCount: 9, withheld: true })]).withheld, 1, '…and the withheld one is surfaced so the Commander can act on it');
-A.eq(Xp.practice([sk({ useCount: 9, createdBy: 'user' })]).count, 0, 'a skill the COMMANDER wrote is given, not learned');
+A.eq(Xp.practice([sk({ useCount: 9, withheld: true })]).withheld, 1, '…and the withheld one is surfaced so the Master can act on it');
+A.eq(Xp.practice([sk({ useCount: 9, createdBy: 'user' })]).count, 0, 'a skill the MASTER wrote is given, not learned');
 A.eq(Xp.practice([sk({ useCount: 9, createdBy: 'user' })]).given, 1, '…counted separately, never folded in');
 A.eq(Xp.practice([sk({ useCount: 9, state: 'archived' })]).count, 0, 'a retired procedure is not carried knowledge');
 A.eq(Xp.practice([sk({ useCount: 9, state: 'stale' })]).count, 1, 'a STALE skill is still in force (only archived is retired)');
@@ -438,7 +438,7 @@ A.eq(cg.positiveFeedback, 1, 'compute surfaces positive feedback count');
 A.eq(cg.negativeFeedback, 1, 'compute surfaces negative feedback count');
 A.eq(Xp.compute(Xp.fresh()).tasksDone, 0, 'fresh agent has 0 tasks done');
 
-/* ---- S2 RELIABILITY: the SECOND axis — what the HARNESS observed, not what the Commander said ----
+/* ---- S2 RELIABILITY: the SECOND axis — what the HARNESS observed, not what the Master said ----
    The whole point is that it is provable without a single user tap, AND that it never becomes a second XP
    faucet. Every assertion below pairs "the meter moved" with "the ladder did not". */
 
@@ -477,7 +477,7 @@ A.eq(rFault.pct, 100, 'a provider outage cannot drag an agent\'s reliability dow
 A.eq(rFault.faulted, 3, 'faulted runs are still counted, so the dossier can name them');
 A.eq(rFault.excluded, 3, 'excluded = faulted + neutral');
 
-// a Commander cancel, and a neutral Task Brief question, are likewise not the agent's outcome
+// a Master cancel, and a neutral Task Brief question, are likewise not the agent's outcome
 const rNeutral = Xp.reliability(run([done(), done(), done(), ended('cancelled'), ended('clarifying')]).stats);
 A.eq(rNeutral.attempted, 3, 'cancelled + clarifying are EXCLUDED from the denominator');
 A.eq(rNeutral.neutral, 2, 'neutral runs are counted separately from provider faults');
@@ -529,18 +529,18 @@ A.eq(Xp.credential(fiveDone(['done', 'done', 'done', 'done'])).tier, null, 'four
 const c5 = Xp.credential(fiveDone(['done', 'done', 'done', 'done', 'done']));
 A.eq(c5.tier, 5, 'the first experience tier lands at 5 shipped tasks');
 A.ok(/5\+ tasks shipped/.test(c5.text), 'the tier is published as a THRESHOLD, never a live count');
-A.eq(c5.confBand, null, 'an unrated agent claims no Commander rating');
-A.ok(!/Commander rating/.test(c5.text), '…and the phrase is absent entirely, not empty');
+A.eq(c5.confBand, null, 'an unrated agent claims no Master rating');
+A.ok(!/Master rating/.test(c5.text), '…and the phrase is absent entirely, not empty');
 A.eq(c5.relBand, 'dependable', 'five clean runs DO calibrate the harness-observed finish rate');
 A.ok(/finish rate: DEPENDABLE/.test(c5.text), 'the finish rate is published once MIN_RUNS attributable runs exist');
 
-// a rated agent adds the Commander's own verdict, and the two stay distinguishable in the text
+// a rated agent adds the Master's own verdict, and the two stay distinguishable in the text
 let rated = fiveDone(['done', 'done', 'done', 'done', 'done']);
 for (let i = 0; i < 3; i++) rated = Xp.applyEvent(rated, { name: 'memory.feedback', payload: { agentId: 'a', id: 'm' + i, delta: 2, reason: 'work_great' } }).stats;
 const cRated = Xp.credential(rated);
-A.ok(/Commander rating: /.test(cRated.text), 'a rated agent publishes the Commander rating');
+A.ok(/Master rating: /.test(cRated.text), 'a rated agent publishes the Master rating');
 A.ok(/finish rate: /.test(cRated.text), '…alongside the separately-sourced finish rate');
-A.ok(cRated.text.indexOf('Commander rating') < cRated.text.indexOf('finish rate'), 'what you said is listed before what the station saw');
+A.ok(cRated.text.indexOf('Master rating') < cRated.text.indexOf('finish rate'), 'what you said is listed before what the station saw');
 
 /* THE CHURN GUARD — this is what makes the credential safe to publish into a briefing. Ordinary work must not
    move the key; only a tier crossing or a band flip may. If this goes red, S3 re-POSTs the whole roster
@@ -590,7 +590,7 @@ A.eq(twiceRating.awards.duplicate, true, 'the duplicate rating receipt is explic
 
 // user-visible text says AUTONOMY, never "night shift" (the server-side driver keeps the internal name; walk 10-14 #20):
 // the trophy keeps its id (saved trophy cases still hold 'night_shift') and is named for what it marks — work that
-// reached the Commander through a channel, far from the station.
+// reached the Master through a channel, far from the station.
 {
   const away = Xp.MILESTONES.find(m => m.id === 'night_shift');
   A.ok(!!away, 'the channel-delivery trophy keeps its saved id');

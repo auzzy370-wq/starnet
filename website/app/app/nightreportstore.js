@@ -54,7 +54,7 @@ const NightReportStore = (() => {
     if (!(awaySince > 0 && (now - awaySince) >= MIN_AWAY_MS)) return;   // no real absence → no beat
 
     // fetch the three surfaces in parallel; scope drafts/ledger to the away window server-side where we can.
-    // PLUS (2026-07-15 UX audit): the undecided workshop deliverables — the one thing a returning Commander
+    // PLUS (2026-07-15 UX audit): the undecided workshop deliverables — the one thing a returning Master
     // actually has to act on was the one thing the morning report never mentioned.
     const [status, ledgerRes, draftsRes, pendingRes] = await Promise.all([
       getJSON('/api/nightshift/status'),
@@ -74,7 +74,7 @@ const NightReportStore = (() => {
     catch (_) { report = null; }
     // fire when the NIGHT SHIFT has a story OR builds are waiting for review (2026-07-15 UX audit: a workshop
     // shift that built things while the night shift idled produced a silent morning — the one moment the
-    // Commander actually reads a summary said nothing about the work owed to them). Neither → no beat, never a nag.
+    // Master actually reads a summary said nothing about the work owed to them). Neither → no beat, never a nag.
     const hasNight = !!(report && report.hasReport);
     if (!hasNight && !pendingBuilds.length) return;
 
@@ -146,7 +146,7 @@ const NightReportStore = (() => {
     setTimeout(() => { maybeReport().catch(() => {}); }, DELAY_MS);
   }
 
-  // a fresh Commander (S2/new-hero) inherits no report state.
+  // a fresh Master (S2/new-hero) inherits no report state.
   function reset() { fired = false; boundary = 0; try { localStorage.removeItem(KEY); } catch (_) {} }
 
   // test/inspection seam: force a report attempt (used by the DOM round-trip proof). An optional { boundary, reset }

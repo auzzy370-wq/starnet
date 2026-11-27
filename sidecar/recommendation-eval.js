@@ -67,7 +67,7 @@ function evaluate(raw, opts) {
   };
 }
 
-/* A fixed eight-week evolution arc used by CI and by maintainers changing rank policy. The Commander begins by
+/* A fixed eight-week evolution arc used by CI and by maintainers changing rank policy. The Master begins by
    keeping research briefs, then shifts toward automation. Recency decay plus explicit outcomes must let automation
    overtake research; a model that keeps serving the old identity fails this simulation. */
 function simulateArc() {

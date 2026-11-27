@@ -1,10 +1,10 @@
 /* VULTRON — goals.js : the PURE GOAL-TREE engine (GROWTH Tier 2: understanding → direction).
 
-   Today a Commander "goal" is a flat dossier belief string ("shipping a local-first agent harness"); a quest is
+   Today a Master "goal" is a flat dossier belief string ("shipping a local-first agent harness"); a quest is
    an isolated one-off; a completed quest fires SFX+toast and feeds back NOTHING. This engine upgrades a goal
    into a STRUCTURED, PERSISTED TREE — one goal decomposed into 3-5 ordered MILESTONES, the next OPEN milestone
    surfacing as an actionable quest, real chaining as milestones complete, an HONEST progress meter (done/total,
-   nothing synthetic), and completion EVIDENCE written back into the node. The agent decomposes; the Commander
+   nothing synthetic), and completion EVIDENCE written back into the node. The agent decomposes; the Master
    confirms; only real completed work advances the bar.
 
    The tree shape:
@@ -92,18 +92,18 @@
   const clip = (s, n) => { s = String(s == null ? '' : s).trim(); return (s.length > n ? s.slice(0, n) : s).replace(/[\uD800-\uDBFF]$/, ''); };
 
   /* THE DECOMPOSITION DIRECTIVE — the self-assigned task the agent runs to break a goal into a path. The agent
-     already carries the COMMANDER dossier block in its system prompt, so this tells it to USE what it knows, not
+     already carries the MASTER dossier block in its system prompt, so this tells it to USE what it knows, not
      re-state it. It hard-constrains the reply to 3-5 concrete, ordered milestones so parseDecomposition() reads it.
      Deterministic: same goalText → byte-identical directive (mirrors pitch.buildDirective). */
   function buildDirective(goalText) {
     const g = clip(goalText, 280);
     const lines = [];
     lines.push('INTERNAL — GOAL DECOMPOSITION. Do not run any tools. Reason only, then reply in the exact format below.');
-    lines.push('Your Commander has this goal: "' + g + '".');
+    lines.push('Your Master has this goal: "' + g + '".');
     lines.push('Break it into a clear PATH — the ordered milestones that get them there. Hard rules:');
     lines.push('- Between ' + MIN_MILESTONES + ' and ' + MAX_MILESTONES + ' milestones. Ordered: earliest first, each a real step toward the goal.');
     lines.push('- Each milestone is ONE concrete, achievable outcome — something you could actually help build or do, not a vague theme.');
-    lines.push('- Ground them in what you know about this Commander (their stack, pain, world). No generic filler.');
+    lines.push('- Ground them in what you know about this Master (their stack, pain, world). No generic filler.');
     lines.push('- One per line, numbered. Nothing else — no preamble, no closing note.');
     lines.push('Reply in EXACTLY this format:');
     lines.push('1. <first milestone>');
@@ -123,7 +123,7 @@
     // milestone line is never stored with an obvious key shape even when no redact is injected.
     const inject = typeof opts.redact === 'function' ? opts.redact : (x => x);
     const redact = s => scrubSecrets(inject(s));
-    // a milestone is read as plain words (walk 10-14: the confirm panel typed '**Item one:**' and '`code`' at the Commander, and
+    // a milestone is read as plain words (walk 10-14: the confirm panel typed '**Item one:**' and '`code`' at the Master, and
     // Confirm would have stored them so) — opts.plain is the host's markdown → one plain line (Deliverables.plainLine)
     const plain = typeof opts.plain === 'function' ? opts.plain : (x => x);
     const out = [];
@@ -212,7 +212,7 @@
     return ms.every(m => m && m.status === 'done');
   }
 
-  /* bind a real WORK quest to a milestone (in place): the Commander accepted the milestone quest, it routed
+  /* bind a real WORK quest to a milestone (in place): the Master accepted the milestone quest, it routed
      through the work-quest path, and THAT quest's id is recorded here so completing the real work can find and
      complete this milestone. Idempotent; only ever binds an OPEN milestone of an ACTIVE goal. Returns true iff bound. */
   function bindMilestoneQuest(goal, milestoneId, questRef) {
@@ -239,7 +239,7 @@
     goal.updatedAt = now;
     res.changed = true;
     // A completed plan is evidence of actions, not proof that the life outcome happened.
-    // The goal remains active until the Commander reports its stored success condition met.
+    // The goal remains active until the Master reports its stored success condition met.
     res.planDone = allDone(goal);
     return res;
   }
@@ -274,7 +274,7 @@
        • a CUSTOM (edited) reply re-parses the typed text (steps split on ';' or newline, ordinals stripped);
          a valid edit (≥ MIN_MILESTONES steps) confirms the EDITED path (capped at MAX).
        • an edit that parses UNDER the floor is a REJECTION of the model's tree — decline (treat as not-now),
-         NEVER silently persist the unedited model path the Commander just tried to replace.
+         NEVER silently persist the unedited model path the Master just tried to replace.
        • anything else (not-now / skip / no choice) declines.
      Returns { action:'confirm'|'decline', path } — path is only meaningful on 'confirm'. */
   function resolveConfirmChoice(choice, path) {
@@ -283,7 +283,7 @@
     if (choice.custom && typeof choice.value === 'string') {
       const revised = String(choice.value).split(/[;\n]+/).map(l => l.replace(/^\s*\d{1,2}[.)\]:-]?\s+/, '').trim()).filter(Boolean);
       if (revised.length >= MIN_MILESTONES) return { action: 'confirm', path: revised.slice(0, MAX_MILESTONES) };
-      return { action: 'decline', path: orig };   // a too-short edit = the Commander rejected the tree — never persist it
+      return { action: 'decline', path: orig };   // a too-short edit = the Master rejected the tree — never persist it
     }
     if (choice.value === 'confirm') return { action: 'confirm', path: orig };
     return { action: 'decline', path: orig };
@@ -332,7 +332,7 @@
       // an ACCEPTED front milestone whose bound work quest is still in flight is IN PROGRESS — visible, honest,
       // but NOT re-acceptable (a second Accept would double-mint the build and double-spend a paid run).
       const inFlight = !isDone && isNext && !!m.questRef && !!questLive(m.questRef);
-      // One selected next step is offered for execution; the Commander can select a different
+      // One selected next step is offered for execution; the Master can select a different
       // open step without changing the original plan order or its completed history.
       const status = isDone ? 'done' : (isNext ? 'open' : 'open');
       out.push({

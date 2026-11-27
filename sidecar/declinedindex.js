@@ -1,5 +1,5 @@
 /* sidecar/declinedindex.js — the SHARED DECLINED INDEX (NS-8 lite): a read-side unification of the per-engine
-   declined/denylist collections, so an idea the Commander EXPLICITLY declined in ONE surface is not re-proposed in
+   declined/denylist collections, so an idea the Master EXPLICITLY declined in ONE surface is not re-proposed in
    ANOTHER. Each engine still WRITES its own store (no migration, no shared event) — this only READS them at
    propose-time and answers one question: "did the user already wave this exact idea off somewhere?"
 

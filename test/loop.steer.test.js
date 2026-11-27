@@ -46,7 +46,7 @@ function baseReg() { const reg = makeRegistry(); reg.register({ impact: 'none', 
     A.eq(res.reason, 'done', 'steered run completes cleanly (pairing never violated)');
     const note = messages.find(m => m.role === 'system' && /<steering_note>/.test(String(m.content)));
     A.ok(note, 'a <steering_note> system message was injected');
-    A.ok(/prefer option B/.test(note.content), 'the note carries the Commander text');
+    A.ok(/prefer option B/.test(note.content), 'the note carries the Master text');
     // PAIRING INVARIANT: every assistant tool_call is immediately followed by its tool result — the steer
     // injection (a system message at a loop boundary) never splits a tool_call from its result.
     for (let i = 0; i < messages.length; i++) {
@@ -54,7 +54,7 @@ function baseReg() { const reg = makeRegistry(); reg.register({ impact: 'none', 
         A.eq(messages[i + 1] && messages[i + 1].role, 'tool', 'each tool_call turn is immediately followed by its tool result');
       }
     }
-    // the note is surfaced to the live transcript as a token delta so the Commander sees it land.
+    // the note is surfaced to the live transcript as a token delta so the Master sees it land.
     const tok = seq.filter(e => e.name === 'agent.token' && /\[steering\]/.test(e.payload.delta || ''));
     A.eq(tok.length, 1, 'exactly one steering token delta surfaced');
   }

@@ -1,5 +1,5 @@
 /* node test/station-control.test.js — station.settings / station.control / station.power (the lead changes the station
-   for the Commander, 2026-10-02). Driven against a stub bridge and a stub route table. What these tools OWN:
+   for the Master, 2026-10-02). Driven against a stub bridge and a stub route table. What these tools OWN:
      • the split: an escalation (wider access or spending) is refused by station.control and only station.power does it;
        station.power refuses a non-escalation, and refuses ANY call on a run nobody is watching;
      • the walls: the autonomy dial is written with resumeHalt:false; the scheduler is never switched under an E-STOP;
@@ -67,7 +67,7 @@ A.ok(/unknown station change/.test(cardFor({ action: 'nope' })), 'an unknown act
   A.ok(refused(r) && /unattended/.test(r.content), 'a routine/night-shift run cannot raise caps');
   A.eq(s.routes.length, 0, 'nothing was called on the unattended run');
   const owner = make(stubs(), { surface: 'autonomous', ownerTrusted: true });
-  A.ok(!refused(await owner.powerTool.run({ action: 'budget.set', args: { perDay: 50 } })), 'the Commander\'s own paired chat counts as watched');
+  A.ok(!refused(await owner.powerTool.run({ action: 'budget.set', args: { perDay: 50 } })), 'the Master\'s own paired chat counts as watched');
   const ord = await t.controlTool.run({ action: 'session.pin', args: { session: 'x' } });
   A.ok(!refused(ord), 'ordinary changes still work unattended (their consent gate decides)');
 }
@@ -176,7 +176,7 @@ A.ok(/unknown station change/.test(cardFor({ action: 'nope' })), 'an unknown act
   A.ok(t.controlTool.consentKey !== t.powerTool.consentKey, 'control and power are separate consent classes');
   A.ok(t.controlTool.taintLocked && t.powerTool.taintLocked, 'both lock once the run read untrusted content');
 }
-// checkpoints: the store's health record rides through, so the lead never tells the Commander a change can be undone
+// checkpoints: the store's health record rides through, so the lead never tells the Master a change can be undone
 // while the last restore point failed to save (a killed checkpoint Git command's stale lock, 10-15)
 {
   const health = { ok: false, at: 5, since: 4, failures: 2, lastFailure: { at: 5, reason: 'Git add timed out' } };

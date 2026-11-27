@@ -6,7 +6,7 @@
    at fetch, Audio, AudioContext, SpeechRecognition, getUserMedia and localStorage; Chat, Workstreams and Channels are
    plain state there). Every reply is opened through the REAL chat.js speech closure, as send() opens it.
 
-   I4 THE TURN TABLE. The reply's state when the Commander speaks {pending: sent, nothing said yet; audible: a sentence
+   I4 THE TURN TABLE. The reply's state when the Master speaks {pending: sent, nothing said yet; audible: a sentence
    queued} x the turn {empty, a follow-up queued behind the run, the answer to its pending ask, 'pause the mic', a spoken
    approval, a chip, an agent switch, a status question, 'stop speaking', 'stop', 'stop, <redirect>', a turn that starts
    a run}. The models leg hears the turn through its real microphone frame (VAD onset, endpoint, the station's
@@ -170,7 +170,7 @@ async function sideEffects(env, name, text, o, run, clicks) {
     const name = leg + ' leg, a refused microphone' + (leg === 'models' ? ' (a COMMS mic take, routed through the call)' : '');
     try {
       const env = await call(leg);
-      const run = chatReply(env.Voice);                         // the Commander is waiting on this run's answer
+      const run = chatReply(env.Voice);                         // the Master is waiting on this run's answer
       if (leg === 'models') env.Voice.startListening();
       const help = env.Voice.microphoneHelp();
       env.w.mic().fail('not-allowed');                          // the error and the recognizer's end, in one tick

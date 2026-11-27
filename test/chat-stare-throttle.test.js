@@ -4,7 +4,7 @@
    reduce how often that happens significantly." The COMMS-focused agent used to point at the
    cursor on EVERY re-affirm of the warm chat-stare (the hero re-affirms every tick), so an
    actively-moving mouse made it track the cursor continuously for the whole warm window. The fix
-   (chatStareTrack) holds the gaze on the Commander (south) and only opens a brief, cooldown-gated
+   (chatStareTrack) holds the gaze on the Master (south) and only opens a brief, cooldown-gated
    follow beat now and then.
 
    world.js is a browser IIFE (can't require under node), and the behavior is tick-driven (rAF),
@@ -45,19 +45,19 @@ const lo = (a) => a;
 // ---- reduceMotion: never chase, never schedule ----
 {
   const b = {};
-  A.eq(chatStareTrack(b, 5000, true, true, lo), 'commander', 'reduceMotion → faces the Commander');
+  A.eq(chatStareTrack(b, 5000, true, true, lo), 'commander', 'reduceMotion → faces the Master');
   A.eq(b.chatTrackCd, undefined, 'reduceMotion does not arm the follow schedule');
   A.eq(b.chatTrackUntil, undefined, 'reduceMotion leaves the beat window untouched');
 }
 
 // ---- first hold does not pounce (delayed first beat) ----
 const b = {};
-A.eq(chatStareTrack(b, 0, true, false, lo), 'commander', 'first hold faces the Commander even with a fresh cursor');
+A.eq(chatStareTrack(b, 0, true, false, lo), 'commander', 'first hold faces the Master even with a fresh cursor');
 A.eq(b.chatTrackCd, 8000, 'first hold seeds a delayed cooldown (now + 8000), not an immediate follow');
 A.eq(b.chatTrackUntil, undefined, 'first hold opens no beat');
 
 // ---- fresh cursor BEFORE the cooldown → still no follow (THE FIX) ----
-A.eq(chatStareTrack(b, 5000, true, false, lo), 'commander', 'fresh cursor before cooldown → Commander, NOT the cursor (no per-tick tracking)');
+A.eq(chatStareTrack(b, 5000, true, false, lo), 'commander', 'fresh cursor before cooldown → Master, NOT the cursor (no per-tick tracking)');
 A.eq(b.chatTrackUntil, undefined, 'no beat opened before the cooldown elapses');
 
 // ---- cooldown elapsed + fresh → ONE beat, cooldown pushed far out ----
@@ -65,10 +65,10 @@ A.eq(chatStareTrack(b, 8000, true, false, lo), 'cursor', 'cooldown elapsed + fre
 A.eq(b.chatTrackUntil, 9200, 'beat runs now + 1200 (=9200)');
 A.eq(b.chatTrackCd, 25200, 'next follow is gated far out: beat-end + 16000 (=25200)');
 
-// ---- during the beat window → cursor; after → Commander ----
+// ---- during the beat window → cursor; after → Master ----
 A.eq(chatStareTrack(b, 8600, true, false, lo), 'cursor', 'mid-beat (t<until) → keep following the cursor');
-A.eq(chatStareTrack(b, 9200, true, false, lo), 'commander', 'beat ended (t==until) → back to the Commander');
-A.eq(chatStareTrack(b, 20000, true, false, lo), 'commander', 'still inside the cooldown → Commander');
+A.eq(chatStareTrack(b, 9200, true, false, lo), 'commander', 'beat ended (t==until) → back to the Master');
+A.eq(chatStareTrack(b, 20000, true, false, lo), 'commander', 'still inside the cooldown → Master');
 
 // ---- a STALE cursor never follows, even past the cooldown ----
 {
@@ -93,6 +93,6 @@ A.eq(chatStareTrack(b, 20000, true, false, lo), 'commander', 'still inside the c
 
 // ---- source lock: chatStareHold wires the helper in and maps 'cursor' → the live cursor dir ----
 A.ok(/chatStareTrack\(self, now, fresh, reduceMotion\(\), U\.irnd\)/.test(src), 'chatStareHold calls chatStareTrack with reduceMotion + U.irnd injected');
-A.ok(/face === 'cursor' \? dirToward\(self\.px, self\.py, lastCursor\.wx, lastCursor\.wy\) : 'south'/.test(src), "a 'cursor' beat faces the live cursor; otherwise south (at the Commander)");
+A.ok(/face === 'cursor' \? dirToward\(self\.px, self\.py, lastCursor\.wx, lastCursor\.wy\) : 'south'/.test(src), "a 'cursor' beat faces the live cursor; otherwise south (at the Master)");
 
 A.report('chat-stare-throttle.test');

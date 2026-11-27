@@ -1,14 +1,14 @@
 /* VULTRON — quests.js : the PURE quest-skin engine. Dresses the station's EXISTING, honest progress as RPG
    quests — without inventing anything. It is a read PROJECTION over three real sources:
      • xp.js MILESTONES   — real achievements (tasks shipped, memories reused…); earned = a done quest.
-     • the Commander dossier — each still-blank dimension is a "get to know you" quest; known = done.
+     • the Master dossier — each still-blank dimension is a "get to know you" quest; known = done.
      • a pending agent idea  — an ONGOING suggestion currently waiting in COMMS = one actionable quest. (The one-time
        First Pitch is NOT surfaced here: it fires the instant it's earned — it never sits "waiting" — so it has no
        quest-log state. Only the recurring SuggestStore.willSuggest cadence produces a waiting idea.)
 
    THE LAW (inherited from xp.js): every quest cashes out in a REAL capability or outcome — never a fake XP
    currency — and the log NEVER gates anything. It reveals the order of progress; it does not withhold. So an
-   "open" quest is always something the Commander can just do now; nothing is locked behind a level.
+   "open" quest is always something the Master can just do now; nothing is locked behind a level.
 
    PURE + node-testable (a `Quests` global in the browser, module.exports under node). No Date.now / Math.random:
    the quest list is a deterministic function of the live state the store passes in. The browser wiring (the
@@ -35,7 +35,7 @@
   //                 them into the ordered list right after the waiting idea, so a real capability failure surfaces
   //                 as the most-actionable direction. Absent input → unchanged (older callers untouched).
   //   workQuests  — (G1c) accepted-idea builds projected from WorkQuests: [{ id, kind:'work', title, desc,
-  //                 reward, status }] — a pitch/idea the Commander said "build it" to, with real step progress.
+  //                 reward, status }] — a pitch/idea the Master said "build it" to, with real step progress.
   //   maintQuests — (G1c) fix-it quests projected from MaintQuests: [{ id, kind:'maintenance', title, desc,
   //                 reward, status }] — a recurring slag cause or a jammed routine became actionable direction.
   //                 All three (station/work/maint) are absent-input → unchanged (older callers untouched).
@@ -89,7 +89,7 @@
 
     // 1a-i) WORK quests (G1c) — an accepted pitch/idea became a trackable multi-step build. Pre-shaped by
     //       WorkQuests.project (id 'wq:<n>', kind 'work'); each carries its own step progress in the desc. They
-    //       lead right after the station gaps: a build the Commander SAID YES to is the most actionable direction.
+    //       lead right after the station gaps: a build the Master SAID YES to is the most actionable direction.
     if (Array.isArray(input.workQuests)) {
       for (const q of input.workQuests) {
         if (!q || !q.id) continue;

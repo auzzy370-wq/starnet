@@ -586,7 +586,7 @@
         try { authority = await ctx.authorize(call, tool); } catch (e) { authority = { ok: false, reason: 'authority error' }; }
         // a TIMED-OUT exact confirmation (inputpolicy.js timedOut) is not a refusal: same words as the consent timeout
         // below, never "denied". Summary 'denied' + "Do NOT retry" keep it a terminal human decision for loop.js.
-        if (authority && authority.ok !== true && authority.timedOut === true) return errResult('approval timed out for ' + call.name + ': the Commander did not answer the approval request in time, so it was NOT run. This was not a refusal — tell them it timed out and that they can ask again to retry. Do NOT retry it yourself.', 'denied');
+        if (authority && authority.ok !== true && authority.timedOut === true) return errResult('approval timed out for ' + call.name + ': the Master did not answer the approval request in time, so it was NOT run. This was not a refusal — tell them it timed out and that they can ask again to retry. Do NOT retry it yourself.', 'denied');
         if (!authority || authority.ok !== true) return errResult('user-control denied: ' + ((authority && authority.reason) || call.name), 'user-control-denied');
       } else if (tool.impact === 'physical-input' || tool.impact === 'visible-desktop' || tool.impact === 'external-unknown') {
         return errResult('user-control denied: no run authority for ' + tool.impact, 'user-control-denied');
@@ -614,11 +614,11 @@
         let c;
         try { c = await ctx.consent(call, tool); } catch (e) { c = { allow: false, reason: 'consent error' }; }
         // a TIMED-OUT approval is not a refusal: name it as what happened, or the model reports "you declined"
-        if (c && !c.allow && c.timedOut) return errResult('approval timed out for ' + call.name + ': the Commander did not answer the approval request in time, so it was NOT run. This was not a refusal — tell them it timed out and that they can ask again to retry. Do NOT retry it yourself.', 'denied');
-        /* the Commander's own No (reason 'denied', permissions.js): the model repeats a result's framing, and "consent denied"
-           came back to the Commander as "The Commander declined the dispatch" (rc walk 10-14) — they ARE the Commander. Say
+        if (c && !c.allow && c.timedOut) return errResult('approval timed out for ' + call.name + ': the Master did not answer the approval request in time, so it was NOT run. This was not a refusal — tell them it timed out and that they can ask again to retry. Do NOT retry it yourself.', 'denied');
+        /* the Master's own No (reason 'denied', permissions.js): the model repeats a result's framing, and "consent denied"
+           came back to the Master as "The Master declined the dispatch" (rc walk 10-14) — they ARE the Master. Say
            who said no and how to say it to them; any other refusal (no channel, unattended, a hard line) keeps its reason. */
-        if (c && !c.allow && c.reason === 'denied') return errResult('consent denied for ' + call.name + ': the Commander said no on the approval card, so it was NOT run. Do NOT retry it or work around it; carry on without it. If you mention it, say it to them as "you" ("you declined …").', 'denied');
+        if (c && !c.allow && c.reason === 'denied') return errResult('consent denied for ' + call.name + ': the Master said no on the approval card, so it was NOT run. Do NOT retry it or work around it; carry on without it. If you mention it, say it to them as "you" ("you declined …").', 'denied');
         // withdrawn before anyone answered (the run stopped): never a No — the model must not say they declined
         if (c && !c.allow && c.cancelled) return errResult('approval withdrawn for ' + call.name + ': the request ended before anyone answered it, so it was NOT run. Nobody said no; do NOT retry it yourself.', 'cancelled');
         if (!c || !c.allow) return errResult('consent denied for ' + call.name + (c && c.reason ? ': ' + c.reason : ''), 'denied');
@@ -641,7 +641,7 @@
         try { pre = await hooks.invoke('pre_tool_call', hookPayload); } catch (_) { pre = null; }
         if (pre && pre.blocked) {
           // Named, because "blocked" with no author is the most frustrating message a harness can print: the
-          // Commander needs to know WHICH of their scripts stopped this, and the model needs to know it was
+          // Master needs to know WHICH of their scripts stopped this, and the model needs to know it was
           // policy rather than a broken tool so it stops retrying.
           return errResult('blocked by your hook' + (pre.by ? ' `' + pre.by + '`' : '') + ': ' + pre.reason, 'hook-blocked');
         }

@@ -201,7 +201,7 @@
           '<p class="set-about ch-tagline">' + c.tagline + '</p>' +
           // OPEN by default: the steps are the whole point of a card nobody has set up yet, and a folded
           // <details> hides them at exactly the moment they are needed. paintCard folds it once this
-          // platform is actually configured (and never again after the Commander toggles it by hand).
+          // platform is actually configured (and never again after the Master toggles it by hand).
           '<details class="ch-setup" open data-autofold="1"><summary>SETUP GUIDE</summary>' +
             '<ol class="ch-steps"><li>' + c.steps.join('</li><li>') + '</li></ol>' +
             (c.note ? '<p class="ch-note">' + c.note + '</p>' : '') +
@@ -346,7 +346,7 @@
         : configured ? ('○ saved but offline — RESUME to reconnect' + (st.detail ? ' — ' + st.detail : ''))
         : '○ not connected';
       // a standing backend warning (e.g. the owner binding failed to persist) rides EVERY state — real risk
-      // the Commander must see, straight from channelStatusPayload (self-heals server-side once the disk agrees).
+      // the Master must see, straight from channelStatusPayload (self-heals server-side once the disk agrees).
       if (st && st.warning) el.textContent += ' ⚠ ' + st.warning;
       // rail dot + overview summary row ride the SAME proven status (one truth, three projections)
       const dot = body.querySelector('#' + c.pre + '-dot');

@@ -127,8 +127,8 @@
   }
   // ts (optional, caller-injected wall-clock) opens/closes an approval PAUSE window: while a run sits
   // waiting on the human, the clock is stopped — elapsedOf() excludes paused spans, so "RUN COMPLETE · 2:14"
-  // is machine time, never the Commander's think-time counted as agent work.
-  // SEVERAL ASKS AT ONCE (2026-10-11): parallel delegated workers can each wait on the Commander inside one conversation.
+  // is machine time, never the Master's think-time counted as agent work.
+  // SEVERAL ASKS AT ONCE (2026-10-11): parallel delegated workers can each wait on the Master inside one conversation.
   // `pendings` keeps every open ask by promptId; `pending` stays the newest (every single-ask reader keeps working).
   // Answering one (clearPending with its promptId) leaves the others open; the pause window closes when none remain.
   function setPending(wsId, p, ts) {

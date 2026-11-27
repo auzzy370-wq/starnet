@@ -3,7 +3,7 @@
    Everything here was, until this suite, a rule stated only in a prompt or a verdict stamped on a
    record that nothing read:
      A. the guard verdict is ENFORCED — a withheld skill is named but never delivered (prompt index,
-        skill.list, skill.view), and an 'ask' clears only for the exact content the Commander approved;
+        skill.list, skill.view), and an 'ask' clears only for the exact content the Master approved;
      B. a tampered package (SKILL.md edited on disk after the scan) is caught at the delivery seam;
      C. `pinned` is a LOCK — every content action refuses, including the skill.write wrapper;
      D. an autonomous pass must READ a skill before it may rewrite or archive it;
@@ -50,7 +50,7 @@ function approvalsMap() {
   A.eq(rec.guardAction, 'ask', 'agent-created dangerous content -> ask');
   A.ok(rec.contentDigest, 'persist stamps a content digest');
 
-  // The Commander's own typing is its own tier: it ASKS, so the author can bless their own
+  // The Master's own typing is its own tier: it ASKS, so the author can bless their own
   // deliberate content. Blocking the human would be a gate with no key (see guard.js TRUST).
   const s2 = storeWith();
   s2.write({ agentId: 'a', name: 'Risky', summary: 'r', body: RISKY, createdBy: 'user' });
@@ -172,7 +172,7 @@ function approvalsMap() {
   const approvals = approvalsMap();
   const gate = makeSkillGate({ guard: skillGuard, approvals });
   const legacy = { id: 'old', agentId: 'a', name: 'Old Deploy', createdBy: 'agent', state: 'active', body: RISKY, files: [], updatedAt: 42 };
-  A.eq(gate.verify(legacy).visible, false, 'withheld before the Commander allows it');
+  A.eq(gate.verify(legacy).visible, false, 'withheld before the Master allows it');
   approvals.set('a', 'old', { digest: digestOf(legacy), action: 'allow', at: 1 });   // what handleAgentSkillAllow stores
   const v = gate.verify(legacy);
   A.eq(v.visible, true, 'the approval of these exact bytes clears the legacy record');
@@ -184,7 +184,7 @@ function approvalsMap() {
 }
 
 // ---- B2c. an UNSTAMPED record (no contentDigest) can really be approved — bound to the bytes read ----
-// POST /api/agent-skills/allow keys the approval to digestOf(the bytes the Commander read) plus the lifecycle stamp.
+// POST /api/agent-skills/allow keys the approval to digestOf(the bytes the Master read) plus the lifecycle stamp.
 // isApproved used to compare it only to stampOf = 'u'+updatedAt, so Approve on such a record never took effect.
 {
   const approvals = approvalsMap();
@@ -248,9 +248,9 @@ function approvalsMap() {
   A.ok(/the real steps/.test(s.view('a', id, { bump: false }).body), 'the pinned body is intact');
   A.eq(s.view('a', id, { bump: false }).updatedAt, before, 'and nothing was stamped');
 
-  // only the Commander takes the lock off (bug 97743dff: a model unpin used to open the next patch)
+  // only the Master takes the lock off (bug 97743dff: a model unpin used to open the next patch)
   A.eq(s.manage({ agentId: 'a', action: 'unpin', target: id }).ok, false, 'a model (default writer) cannot unpin it');
-  A.eq(s.manage({ agentId: 'a', action: 'unpin', target: id, createdBy: 'user' }).ok, true, 'the Commander can unpin it (lifecycle, not content)');
+  A.eq(s.manage({ agentId: 'a', action: 'unpin', target: id, createdBy: 'user' }).ok, true, 'the Master can unpin it (lifecycle, not content)');
   A.eq(s.manage({ agentId: 'a', action: 'edit', target: id, body: 'new steps' }).ok, true, 'and then the edit lands');
 
   // the human surface may override its own pin, but only with an explicit force
@@ -283,7 +283,7 @@ function approvalsMap() {
   const pass2 = makeSkillTools({ store: s, gate, readBeforeWrite: true });
   A.eq(pass2.manageTool.run({ action: 'patch', target: 'Deploy', find: 'step two', replace: 'step three' }, ctx).summary, 'unread', 'the ledger does not leak between passes');
 
-  // an interactive run (no readBeforeWrite) is unaffected — the Commander is present
+  // an interactive run (no readBeforeWrite) is unaffected — the Master is present
   const live = makeSkillTools({ store: s, gate });
   A.eq(live.manageTool.run({ action: 'patch', target: 'Deploy', find: 'step two', replace: 'step three' }, { agentId: 'a' }).summary, 'patch', 'an interactive run still patches directly');
 }
@@ -311,7 +311,7 @@ function approvalsMap() {
   const another = s.list('a').filter(x => x.name === 'Another')[0].id;
   A.eq(s.manage({ agentId: 'a', action: 'archive', target: another, createdBy: 'curator', absorbedInto: 'Old' }).ok, false, 'an ARCHIVED heir is refused');
 
-  // a Commander or ordinary run archives freely — only the curator owes lineage
+  // a Master or ordinary run archives freely — only the curator owes lineage
   A.eq(s.manage({ agentId: 'a', action: 'archive', target: another, createdBy: 'user' }).ok, true, 'a human archive needs no heir');
 }
 
@@ -368,7 +368,7 @@ function approvalsMap() {
   const gate = makeSkillGate({ guard: skillGuard, approvals });
   s.write({ agentId: 'a', name: 'Cleanup', body: NASTY, createdBy: 'user' });
   const rec = s.list('a')[0];
-  A.eq(rec.guardAction, 'ask', 'the Commander\'s own risky content asks');
+  A.eq(rec.guardAction, 'ask', 'the Master\'s own risky content asks');
   const tools = makeSkillTools({ store: s, gate });
   A.eq(tools.viewTool.run({ name: 'Cleanup' }, { agentId: 'a' }).summary, 'withheld', 'unapproved: withheld');
 

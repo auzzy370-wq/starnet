@@ -68,7 +68,7 @@ A.eq(F.readable('Pick one.\nFORK: tone? || casual | formal'), 'Pick one.\ntone?\
 A.eq(F.readable('no marker here'), 'no marker here', 'readable is byte-identical without a marker');
 
 /* ---------- ONE CASE RULE, ONE KEYWORD GRAMMAR (rc review 2026-10-14) ----------
-   The loop's "the reply waits on the Commander" check was case-insensitive while the chat's parse was not, so a title-case
+   The loop's "the reply waits on the Master" check was case-insensitive while the chat's parse was not, so a title-case
    "Fork:" ended the run as a question and rendered raw. One keyword source (Fork.MARKER_KEY) now serves fork.js, the loop and
    the push line: FORK in capitals or title case (a lowercase "fork:" is prose or code, never a marker), TASK_QUESTION in
    any case (the word is unmistakable). An ordered-list number before a marker is decoration, never a dangling "1.". */

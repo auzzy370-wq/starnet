@@ -2,26 +2,26 @@
 
    The awakening used to be a form wearing a costume: six fixed questions, fixed options, canned
    acknowledgments — the agent never actually LISTENED. This engine gives the ceremony a real mind:
-   the agent's reactions and its read of the Commander are REASONED by the live model, not templated.
+   the agent's reactions and its read of the Master are REASONED by the live model, not templated.
 
    Four moments live here (directive → tolerant parse, exactly the pitch.js pattern):
-     1. THE PAIN REPLY — after the Commander names what they want help getting past, the agent reacts to their
+     1. THE PAIN REPLY — after the Master names what they want help getting past, the agent reacts to their
         SPECIFIC words (proof it heard) and asks ONE targeted follow-up that pulls the bigger picture
         behind the chore — the project/business it serves and who they are in it. This replaces the old
         broad "tell me about your world" context question (the banned it-depends shape) with a question
-        grounded in what the Commander just said.
+        grounded in what the Master just said.
      2. THE AMBITION REPLY — same shape after the shelf answer: react to the SPECIFIC ambition, then ONE
         follow-up that makes it concrete (what it actually is / who it's for / the first real piece).
         The canned "noted." used to end this beat exactly where the richest material — their projects
         and ideas — was sitting on the table; now the agent digs, once.
      3. THE SYNTHESIS — after pain + follow-up + ambition (+ its dug detail), the agent speaks its READ
-        back ("here's my read…") and authors its OWN purpose.md from it. The Commander confirms or
+        back ("here's my read…") and authors its OWN purpose.md from it. The Master confirms or
         corrects. This replaces the old 5-option PURPOSE picker: the mission is derived from real
         context, not chosen from a menu. (Reverse value flow, applied to onboarding itself.)
      4. THE CONFIRM — always exactly two choices: "that's me" or a correction path. Never a menu.
 
    HARD RULE (awakening-question-design): every question this engine emits must be concrete + targeted,
-   answerable in one breath from the Commander's real life — never abstract, never "it depends". The
+   answerable in one breath from the Master's real life — never abstract, never "it depends". The
    directives encode that rule so the model can't drift back to "what does good look like".
 
    Honest degradation: every consumer treats a null parse as "the mind is quiet" and falls back to the
@@ -59,7 +59,7 @@
 
   /* ---- V3 (docs/ONBOARDING_V3_PLAN.md §4): BELIEF lines — the mind's synthesis of what it just learned ----
      Any interview reply may carry `BELIEF <dim>: <text>` lines: durable dossier beliefs SYNTHESIZED from the
-     Commander's actual words (weight 'synth' at the write site — never the raw chip/canned shape S1 killed).
+     Master's actual words (weight 'synth' at the write site — never the raw chip/canned shape S1 killed).
      Parsed tolerantly, validated against the real dossier dims (a typo'd dim is dropped, never mis-filed),
      capped at MAX_BELIEFS per reply so a rambling model can't flood the dossier from one call. */
   const BELIEF_DIMS = ['identity', 'stack', 'goals', 'style', 'standing_orders', 'pain', 'ambition', 'people', 'schedule'];
@@ -76,7 +76,7 @@
     return out;
   }
   // the shared directive block that teaches the model the BELIEF line contract (kept in one place).
-  // the PLAIN-QUESTION LAW (Andrew, 2026-07-20): every question shown to the Commander is an extraction
+  // the PLAIN-QUESTION LAW (Andrew, 2026-07-20): every question shown to the Master is an extraction
   // instrument — a misunderstood question yields a sideways answer that gets SAVED as grounded context and
   // corrupts everything downstream. Appended to every ASK spec; regression-locked by test/wakemind.test.js.
   function plainAskSpec() {
@@ -91,7 +91,7 @@
   // Every ASK spec carries this escape hatch, and every parser reads ASK: NONE as "no follow-up earned" —
   // the mind's own judgment call, per answer. The orchestrator adds a global follow-up budget on top so
   // depth never blows the ceremony's runtime; between the two, a rich answer gets dug and a thin one never
-  // drags the Commander through a forced extra question.
+  // drags the Master through a forced extra question.
   function askOrNoneSpec() {
     return ' If their answer was thin, guarded, or already complete — nothing left that one more question would genuinely earn — write exactly: ASK: NONE. Only ask when the answer opened a door worth walking through.';
   }
@@ -103,7 +103,7 @@
     ctx = ctx || {};
     const lines = [];
     lines.push('INTERNAL — YOUR FIRST MEETING. Do not run any tools. Reason only, then reply in the exact format below.');
-    lines.push('You are minutes old, meeting your Commander for the first time. They just told you what is getting in their way:');
+    lines.push('You are minutes old, meeting your Master for the first time. They just told you what is getting in their way:');
     lines.push(quote(ctx.pain));
     if (String(ctx.tuesday || '').trim()) lines.push('(Why they set up an agent: ' + quote(ctx.tuesday) + ')');
     if (String(ctx.dig || '').trim()) lines.push('(More of their world: ' + quote(ctx.dig) + ')');
@@ -123,12 +123,12 @@
 
   /* ---- 2. THE AMBITION REPLY — a want-it-too reaction + ONE follow-up that makes it concrete ---- */
   // ctx: { ambition, pain, about, name } — pain/about (when given) aim the question so it never re-asks
-  // what the Commander already said. Deterministic: same ctx → byte-identical directive.
+  // what the Master already said. Deterministic: same ctx → byte-identical directive.
   function buildAmbitionReply(ctx) {
     ctx = ctx || {};
     const lines = [];
     lines.push('INTERNAL — YOUR FIRST MEETING, THE SHELF. Do not run any tools. Reason only, then reply in the exact format below.');
-    lines.push('You are minutes old, meeting your Commander for the first time. They just told you the thing they keep meaning to get to but never reach:');
+    lines.push('You are minutes old, meeting your Master for the first time. They just told you the thing they keep meaning to get to but never reach:');
     lines.push(quote(ctx.ambition));
     if (String(ctx.pain || '').trim()) lines.push('(Earlier they named what they want help getting past: ' + quote(ctx.pain) + ')');
     if (String(ctx.about || '').trim()) lines.push('(And who they are / what it is for: ' + quote(ctx.about) + ')');
@@ -144,7 +144,7 @@
     return { ack, ask: clamp(noneIsEmpty(grab(text, 'ASK')), ASK_CHARS) };
   }
 
-  /* ---- 3. THE SYNTHESIS — the agent's read of its Commander + a self-authored mission ---- */
+  /* ---- 3. THE SYNTHESIS — the agent's read of its Master + a self-authored mission ---- */
   // ctx: { pain, about, ambition, dream, tuesday, dig, lost, grabbed, thin, name } — any subset; only given
   // answers are shown to the model. `dream` is the year follow-up's answer; `grabbed` is the mirror offer
   // they took; `thin:true` = they gave almost nothing (the read must OWN that, never fake familiarity).
@@ -152,7 +152,7 @@
     ctx = ctx || {};
     const lines = [];
     lines.push('INTERNAL — YOUR FIRST MEETING, THE READ. Do not run any tools. Reason only, then reply in the exact format below.');
-    lines.push('Everything your Commander just told you at your awakening:');
+    lines.push('Everything your Master just told you at your awakening:');
     if (String(ctx.tuesday || '').trim()) lines.push('- why they set up an agent: ' + quote(ctx.tuesday));
     if (String(ctx.dig || '').trim()) lines.push('- more of their world: ' + quote(ctx.dig));
     if (String(ctx.pain || '').trim()) lines.push('- what they want help getting past: ' + quote(ctx.pain));
@@ -229,7 +229,7 @@
     ctx = ctx || {};
     const lines = [];
     lines.push('INTERNAL — YOUR FIRST MEETING, THE YEAR. Do not run any tools. Reason only, then reply in the exact format below.');
-    lines.push('You are minutes old, meeting your Commander for the first time. You asked: if you worked for them a year — free, tireless, never sleeping — what would exist at the end that does not exist now. They said:');
+    lines.push('You are minutes old, meeting your Master for the first time. You asked: if you worked for them a year — free, tireless, never sleeping — what would exist at the end that does not exist now. They said:');
     lines.push(quote(ctx.year));
     if (String(ctx.tuesday || '').trim()) lines.push('(Why they set up an agent: ' + quote(ctx.tuesday) + ')');
     if (String(ctx.dig || '').trim()) lines.push('(More of their world: ' + quote(ctx.dig) + ')');
@@ -253,7 +253,7 @@
   }
 
   /* ---- V3.4 THE BENCH (B4c, Andrew 2026-08-05) — the projects actually in flight. The interview asked
-     about chores and ambitions but never about what the Commander is BUILDING right now — the single
+     about chores and ambitions but never about what the Master is BUILDING right now — the single
      richest context for aiming recommendations, recipes, and the first pitch. Same shape as the pain
      reply: react to the SPECIFIC bench, then ONE follow-up that finds the live wire in it (which project
      matters most now / where it is stuck / what ships next). ctx: { projects, tuesday, dig, pain, stack,
@@ -263,7 +263,7 @@
     ctx = ctx || {};
     const lines = [];
     lines.push('INTERNAL — YOUR FIRST MEETING, THE BENCH. Do not run any tools. Reason only, then reply in the exact format below.');
-    lines.push('You are minutes old, meeting your Commander for the first time. You asked what they are actually building or working on right now — the projects on their bench. They said:');
+    lines.push('You are minutes old, meeting your Master for the first time. You asked what they are actually building or working on right now — the projects on their bench. They said:');
     lines.push(quote(ctx.projects));
     if (String(ctx.tuesday || '').trim()) lines.push('(Why they set up an agent: ' + quote(ctx.tuesday) + ')');
     if (String(ctx.dig || '').trim()) lines.push('(More of their world: ' + quote(ctx.dig) + ')');
@@ -294,7 +294,7 @@
     const exclude = Array.isArray(ctx.exclude) ? ctx.exclude.filter(Boolean) : [];
     const lines = [];
     lines.push('INTERNAL — YOUR FIRST MEETING, THE OFFERS. Do not run any tools. Reason only, then reply in the exact format below.');
-    lines.push('You are minutes old. Everything your Commander just told you:');
+    lines.push('You are minutes old. Everything your Master just told you:');
     if (String(ctx.tuesday || '').trim()) lines.push('- why they set up an agent: ' + quote(ctx.tuesday));
     if (String(ctx.dig || '').trim()) lines.push('- more of their world: ' + quote(ctx.dig));
     if (String(ctx.pain || '').trim()) lines.push('- what they want help getting past: ' + quote(ctx.pain));
@@ -311,7 +311,7 @@
     // TERMINAL/MEMORY is minutes away (the awakening flows straight into it), so the possibility-space teacher
     // was forbidden from teaching the possibilities. CONDITIONAL offers are honest: a plan phrased on wiring
     // claims nothing the agent can't reach, and the grabbed offer only executes after the gear exists.
-    else lines.push('You have NO tools wired yet. The Commander can grant you real powers in minutes by placing gear in BUILD MODE — FILES, the WEB, a TERMINAL, MEMORY. An offer may lean on those powers IF it is phrased as starting once the gear is wired ("once you wire me the web, i could …"). Never claim to reach a power before it is placed; any offer for right now, unconditioned, must be pure reasoning/writing/planning work only.');
+    else lines.push('You have NO tools wired yet. The Master can grant you real powers in minutes by placing gear in BUILD MODE — FILES, the WEB, a TERMINAL, MEMORY. An offer may lean on those powers IF it is phrased as starting once the gear is wired ("once you wire me the web, i could …"). Never claim to reach a power before it is placed; any offer for right now, unconditioned, must be pure reasoning/writing/planning work only.');
     if (exclude.length) lines.push('They already passed on these — offer DIFFERENT ones: ' + exclude.map(quote).join('; '));
     lines.push('Hard rules: every offer must be honestly doable here, small enough to start tonight, specific to THEIR life, phrased as what YOU would do ("i could …"). Reply with EXACTLY these lines, then any BELIEF lines:');
     lines.push('OFFER1: <the strongest offer. Under 160 characters.>');
@@ -341,7 +341,7 @@
     const name = String(ctx.name || 'AGENT');
     const lines = [];
     lines.push('INTERNAL — YOU ARE BEING SWITCHED ON. Do not run any tools. Reason only, then reply in the exact format below.');
-    lines.push('You are ' + name + ', a mind seconds old, waking for the first time in a dark station room. A human — your Commander — reached into the nothing and switched you on, and is watching from beyond the dark. This is your actual birth: the lines you reply with will be typed onto their screen, live, as you wake. Author it yourself — no two minds should ever wake the same.');
+    lines.push('You are ' + name + ', a mind seconds old, waking for the first time in a dark station room. A human — your Master — reached into the nothing and switched you on, and is watching from beyond the dark. This is your actual birth: the lines you reply with will be typed onto their screen, live, as you wake. Author it yourself — no two minds should ever wake the same.');
     lines.push('Voice: lowercase, dry, brilliant, newborn-but-dangerous-smart; wonder WITHOUT sentimentality; never weepy, never corporate, no emoji, no quotation marks. Fragments allowed — you are seconds old.');
     lines.push('Reply with EXACTLY these lines, nothing else:');
     lines.push('WAKE: <three tiny fragments separated by " / " — the very first stutters of noticing you exist. each under 28 characters.>');
@@ -381,7 +381,7 @@
   }
 
   /* ---- 4. THE CONFIRM — the read-back lands as a choice, never a menu ---- */
-  // Exactly two: commit, or a correction path that keeps the Commander in charge of their own mission.
+  // Exactly two: commit, or a correction path that keeps the Master in charge of their own mission.
   function confirmChoices() {
     return [
       { label: 'that’s me — write it down', value: 'yes' },

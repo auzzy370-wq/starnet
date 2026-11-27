@@ -1,4 +1,4 @@
-# The Commander Dossier — agents that deeply research and get to know the user
+# The Master Dossier — agents that deeply research and get to know the user
 
 **Status:** Design locked 2026-06-18. Phase A specced for build; B–D specced at altitude.
 **Origin:** andro's "Skynet as a harness whose agents deeply research the user and get to know
@@ -23,11 +23,11 @@ The substrate audit exposed the gap this project targets:
   it only proposes a fact if one happens to fall out of a finished run.
 
 "Get to know the user" is a bigger thing than "learns how you work." This plan promotes the user
-model to a **first-class, station-wide entity** (the *Commander Dossier*), makes acquisition
-**active** (the station *studies* its Commander), and **feeds it back** so every agent visibly
+model to a **first-class, station-wide entity** (the *Master Dossier*), makes acquisition
+**active** (the station *studies* its Master), and **feeds it back** so every agent visibly
 knows you.
 
-**Positioning sentence:** *A station that gets to know its Commander — one shared, local-first
+**Positioning sentence:** *A station that gets to know its Master — one shared, local-first
 dossier every agent reads, that the station actively works to fill in, and that you fully own and
 control.*
 
@@ -35,7 +35,7 @@ control.*
 
 ## 2. Locked decisions (andro, 2026-06-18)
 
-1. **Scope = station-wide (shared).** ONE canonical Commander dossier that every agent reads; a
+1. **Scope = station-wide (shared).** ONE canonical Master dossier that every agent reads; a
    newly-spawned agent knows you on day one. (Implication: a true cross-agent durable belief layer
    eventually needs an additive `scope:'user'` in the Cortex contract, owned by the
    `cortex-memory` workstream — see §10. Phase A sidesteps this with a local dossier store so it
@@ -89,7 +89,7 @@ makes acquisition active** — it builds little new plumbing.
 
 **Gaps to close:** no aggregation across the four sources; no station-wide (cross-agent) view;
 no structured dimensions beyond 3 tags; no deliberate intake; no curiosity questions; the model
-isn't composed back into the system prompt as a coherent "who is the Commander" block.
+isn't composed back into the system prompt as a coherent "who is the Master" block.
 
 ---
 
@@ -127,7 +127,7 @@ stale declaration as fresh behavior accrues; durable beliefs are superseded thro
 
 ---
 
-## 6. Active acquisition — the station studies its Commander (Phase B)
+## 6. Active acquisition — the station studies its Master (Phase B)
 
 Today the model only grows by accident. Add two deliberate, gamified, in-voice acquisition paths:
 
@@ -150,7 +150,7 @@ durable without a one-click Keep. (Source research — reading your repo/profile
 
 ## 7. Feeding it back — the station visibly knows you (Phases A + D)
 
-- **System-prompt composition.** A compact, cached **COMMANDER block** (the Cortex PROFILE/LEARNED
+- **System-prompt composition.** A compact, cached **MASTER block** (the Cortex PROFILE/LEARNED
   core-prefix pattern) is composed into *every* agent's system prompt by `app.js composeSystemPrompt`
   — so a newly-spawned agent inherits the dossier and knows you on day one. Capped + deterministic;
   frozen per run so the cache stays warm (Cortex's living-core discipline).
@@ -167,7 +167,7 @@ durable without a one-click Keep. (Source research — reading your repo/profile
 - **`learningEnabled` is the single switch.** Reuse the existing flag (the glass-box PAUSE/FORGET
   in `marketplace.js`) — it already cascades to `profilestore` + `mintstore`; the Dossier store
   honors the same flag on every write path. Pause = stop folding; existing data stays until forgotten.
-- **The Commander Dossier panel.** Extend the Memory Core surface (`stationui.js`) into a
+- **The Master Dossier panel.** Extend the Memory Core surface (`stationui.js`) into a
   dimensioned dossier: every belief under its dimension, with provenance (which signal, when, how
   many samples / `sourceRunId`), trust meter, pinned; inline edit / two-step forget / export / wipe.
   It is the "everything the station knows about you" screen — local-only, the cloud can't match it.
@@ -181,9 +181,9 @@ durable without a one-click Keep. (Source research — reading your repo/profile
 
 | Phase | Scope | Ships |
 |---|---|---|
-| **A — Unify (first build)** | Aggregate the four scattered signals into one station-wide Dossier object + a dimensioned Dossier panel + compose the COMMANDER block into the system prompt. No new acquisition. | `frontend/app/dossier.js` (pure), `dossierstore.js` (wiring), `stationui.js` Dossier panel, `app.js composeSystemPrompt` hook, `save.js` v5 slice, `skynet.dossier.v1`, `test/dossier.test.js` |
+| **A — Unify (first build)** | Aggregate the four scattered signals into one station-wide Dossier object + a dimensioned Dossier panel + compose the MASTER block into the system prompt. No new acquisition. | `frontend/app/dossier.js` (pure), `dossierstore.js` (wiring), `stationui.js` Dossier panel, `app.js composeSystemPrompt` hook, `save.js` v5 slice, `skynet.dossier.v1`, `test/dossier.test.js` |
 | **B — Active intake** | The Intake Interview (post-awakening) + just-in-time curiosity questions, banked as beliefs via Keep/Edit/Discard. | `onboarding.js` interview beats; `chat.js` curiosity-row; budget guard |
-| **C — Durable cross-agent beliefs** | Request the additive `scope:'user'` from the contract owner; migrate the local dossier beliefs to real `scope:'user'` Cortex records so provenance/trust/recall apply across agents. Optional scheduled "study the Commander" cron routine. | contract request; `reflect.js` user-scope; cron routine |
+| **C — Durable cross-agent beliefs** | Request the additive `scope:'user'` from the contract owner; migrate the local dossier beliefs to real `scope:'user'` Cortex records so provenance/trust/recall apply across agents. Optional scheduled "study the Master" cron routine. | contract request; `reflect.js` user-scope; cron routine |
 | **D — Payoff polish** | Dimensioned STATION FAMILIARITY meter + export/import + cross-agent inheritance verified end-to-end. | `marketplace.js` meter; `backup.js` (free); QA |
 
 Each phase is independently shippable and test-gated, smallest-first — the marketplace cadence.
@@ -202,7 +202,7 @@ Mirrors the proven **pure-engine / browser-wiring** split (`profile.js` / `profi
   existing `kind:'profile'` memories into the dimensioned view. Pure; no writes.
 - `upsert(dossier, dim, belief, now)` / `forget(dossier, dim, id)` — durable-belief mutation
   (first-match-only, collision-proof ids — reuse the `memcore.nextNoteId` discipline).
-- `composeBlock(dossier, { maxChars })` → the compact, deterministic COMMANDER system-prompt
+- `composeBlock(dossier, { maxChars })` → the compact, deterministic MASTER system-prompt
   block (capped; "unknown" dimensions omitted, never guessed). The single thing the prompt reads.
 - `summary(dossier)` → `{ known:[dims], blank:[dims], familiarity }` for the panel + meter.
 - **No `Date.now`/`Math.random`** — `now` injected, matching the profile/xp engines.
@@ -219,7 +219,7 @@ Mirrors the proven **pure-engine / browser-wiring** split (`profile.js` / `profi
 - **`app.js enterGame()`** — `DossierStore.init(...)` next to `ProfileStore.init`.
 - **`app.js persist()` / `resumeInto()`** — add/restore `dossier: DossierStore.serialize()`.
 - **`save.js`** — `CURRENT = 5`; v4→v5 seeds a valid empty dossier (cold-start-safe).
-- **`stationui.js`** — a **COMMANDER** dossier panel (extend the MEMORY-tab machinery): dimensions
+- **`stationui.js`** — a **MASTER** dossier panel (extend the MEMORY-tab machinery): dimensions
   with their beliefs, provenance, trust, inline edit / two-step forget; reuse `.mc-*` styling.
 - **`index.html`** — include `dossier.js` + `dossierstore.js` after `profilestore.js`.
 
@@ -267,7 +267,7 @@ station-local object that *reads* existing per-agent `kind:'profile'` records in
 
 ---
 
-## 13. Open decisions (Commander's call)
+## 13. Open decisions (Master's call)
 
 1. **Interview timing (Phase B):** woven into the awakening ceremony, or a separate optional beat
    *after* the first real task (so the first thing the agent does is work, not interview)?

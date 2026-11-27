@@ -198,7 +198,7 @@ A variable the user exported in their own shell (`NPM_TOKEN`, `GITHUB_TOKEN`, a 
 - The digest walks the whole plugin folder with `lstat`, in sorted order and bounded (512 files, 16 MiB, depth 12).
 - A link or junction anywhere in the folder, or a folder that is itself a link, is refused.
 - The guard's findings now cover helper files, not only `main`.
-- Exec-time re-verification: every handler call re-checks the folder digest (re-hashed at most every 2 s). A drift disables the whole plugin until the Commander re-approves it.
+- Exec-time re-verification: every handler call re-checks the folder digest (re-hashed at most every 2 s). A drift disables the whole plugin until the Master re-approves it.
 
 **Upgrade note:** approvals recorded under the old main-only digest ask once more after this lands.
 

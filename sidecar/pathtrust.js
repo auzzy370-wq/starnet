@@ -231,7 +231,7 @@
         if (!R) continue;
         if (pathInside(real, R)) { touch(R, norm, { user: userTouch }); return { base: R, abs: norm }; }
       }
-      // 1b. …or under a root the Commander approved "for this session" earlier in THIS run (o.sessionRoots: a Set the
+      // 1b. …or under a root the Master approved "for this session" earlier in THIS run (o.sessionRoots: a Set the
       // caller owns per run, so it dies with the run and is never a standing grant)
       const sessionRoots = (o.sessionRoots && typeof o.sessionRoots.add === 'function') ? o.sessionRoots : null;
       if (sessionRoots) for (const R of sessionRoots) if (R && pathInside(real, R)) return { base: R, abs: norm };
@@ -258,16 +258,16 @@
       /* BLESS THE REAL PATH. The header calls the grant key "realpath (canonical)", but normalizeRoot is only
          P.resolve — so a root reached through a symlinked ancestor (~/code -> /mnt/data/code, the ordinary
          way people arrange a dev box) was STORED un-canonical while step 1 above compares against the
-         realpath. The two could never match, so "always" silently did nothing and the Commander was asked to
+         realpath. The two could never match, so "always" silently did nothing and the Master was asked to
          bless the same folder on every single call — consent fatigue that trains people to click through the
-         one prompt that widens the agent's filesystem reach. The PROMPT still names the path the Commander
+         one prompt that widens the agent's filesystem reach. The PROMPT still names the path the Master
          recognizes; only the recorded key is canonical. */
       const decision = await prompt(proposed, { path: norm, scope: scope });
       /* "always" AND "full" both RECORD the standing root grant. "full" used to fall through to the one-time
          branch below on the reasoning that "a directory bless is never a side effect of a blanket capability
          grant" — which is still true and still enforced, because this module does not interpret the agent's
          global approval posture. But that reasoning was applied to the wrong value: `decision` here is not leaked state,
-         it is the Commander's DIRECT answer to a card that names THIS folder. Treating their strongest answer
+         it is the Master's DIRECT answer to a card that names THIS folder. Treating their strongest answer
          as weaker than "Always" meant clicking "Full access" recorded nothing, so the very next file touch in
          the same folder asked again — live-caught 2026-07-27: five reads in one project folder raised five
          identical cards while the user clicked "Full access" on every one. The strongest button was the only

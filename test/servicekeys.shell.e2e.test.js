@@ -30,7 +30,7 @@ const RESERVED = new Set(['OPENROUTER_API_KEY']);
 (async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'sk-keys-'));
 
-  // a host env shaped like the real sidecar's: a provider/billing key plus whatever the Commander pastes.
+  // a host env shaped like the real sidecar's: a provider/billing key plus whatever the Master pastes.
   const hostEnv = Object.assign({}, process.env, { OPENROUTER_API_KEY: 'sk-or-BILLING-DO-NOT-LEAK' });
   let keys = [];
   let owned = {};

@@ -3,7 +3,7 @@
 
    An agent that owns a BAY draws its floor tools only from its CAPABILITY room: its desk's room, else its bay's
    (worldmodel agentRoomId, the remote-bay ruling). The note used to say "place a DISH" with no room, so a
-   Researcher the lead seated in a new RESEARCH room (station.build with "new" recruits) told the Commander to place
+   Researcher the lead seated in a new RESEARCH room (station.build with "new" recruits) told the Master to place
    gear that was already standing in HOME, where it does not reach that agent. Pure: station-model reads only.
 
    capScope(station, agentId, dockId) -> null | { scoped:false } |
@@ -39,7 +39,7 @@ function floorTypes(objs) {
 }
 
 // a room name rides the system prompt VERBATIM (accents, '/', '+', '#', any script): the note must name the room the
-// Commander sees. A name it cannot carry as-is -- a control or format character, a line break, '<' or '>' (they could
+// Master sees. A name it cannot carry as-is -- a control or format character, a line break, '<' or '>' (they could
 // close the note's fence), or longer than renameRoom's 24 -- is never rewritten (that names a room that does not exist):
 // it is '' instead, so the scope names no room and the note stays the old one.
 function roomLabel(s) { const t = String(s == null ? '' : s).trim(); return (t.length > 24 || /[\p{C}\p{Zl}\p{Zp}<>]/u.test(t)) ? '' : t; }

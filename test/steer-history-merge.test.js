@@ -107,11 +107,11 @@ const merge = new Function(require('./helpers/turnmerge').source('mergeCanonical
 // renderHistory redraws the note as its own steer-echo row, never as agent prose
 const rh = A.fnBody(source, 'function renderHistory(onlyTurns)');
 A.ok(/\(\?:\^\|\\n\)\\\[steering\\\] \(\[\^\\n\]\*\)\\n\?/.test(rh), 'renderHistory splits steering lines out of the reply');
-// …and it is the COMMANDER's row (Andrew 10-26: the note sat under the agent's name, so the agent read as saying it). One
+// …and it is the MASTER's row (Andrew 10-26: the note sat under the agent's name, so the agent read as saying it). One
 // builder for the live echo and both replay paths: steerRow, a 'user' row labelled MID-RUN, the wire marker stripped.
 const sr = A.fnBody(source, 'function steerRow(text, stamp)');
 A.ok(sr.length > 40 && sr.length < 800, 'steerRow located');
-A.ok(/row\('user', \{ stamp: stamp, brief: 'COMMANDER · MID-RUN' \}\)/.test(sr) && /classList\.add\('steer-echo'\)/.test(sr), 'a steering note is a Commander row labelled MID-RUN');
+A.ok(/row\('user', \{ stamp: stamp, brief: 'MASTER · MID-RUN' \}\)/.test(sr) && /classList\.add\('steer-echo'\)/.test(sr), 'a steering note is a Master row labelled MID-RUN');
 A.ok(/steerRow\(parts\[pi\], stamp\)/.test(rh) && /steerRow\(m\.content, stamp\)/.test(rh), 'both replay paths draw it with steerRow');
 A.ok(/steerRow\(text, true\)/.test(A.fnBody(source, 'function steerNote(text)')), 'and so does the live stream');
 
@@ -175,8 +175,8 @@ A.ok(/steerRow\(text, true\)/.test(A.fnBody(source, 'function steerNote(text)'))
   });
   require('vm').runInContext(sr + ';\n' + rh + ';\nrenderHistory([{ role: "user", content: "go" }, { role: "system", sys: true, steerEcho: true, content: "[steering] use the blue folder", sourceRunId: "r9", ts: 4 }, { role: "assistant", sys: true, content: "■ a station line" }, { role: "assistant", sys: true, steerEcho: true, content: "[steering] an earlier draft row", sourceRunId: "r8", ts: 5 }, { role: "assistant", content: "Looking.\\n[steering] skip the tests\\nDone.", ts: 6 }]);', ctx);
   const echoRows = made.filter(r => r.d.cls.includes('steer-echo'));
-  A.eq(echoRows.map(r => [r.cls, r.body.textContent, r.o.stamp, r.o.brief]), [['user', 'use the blue folder', 4, 'COMMANDER · MID-RUN'], ['user', 'an earlier draft row', 5, 'COMMANDER · MID-RUN'], ['user', 'skip the tests', 6, 'COMMANDER · MID-RUN']],
-    'a filed read note (the station-row shape, role system + sys) replays as the Commander\'s MID-RUN row, stamped when it was sent — a row filed in the first draft shape (role assistant) too, and a note saved inside a reply');
+  A.eq(echoRows.map(r => [r.cls, r.body.textContent, r.o.stamp, r.o.brief]), [['user', 'use the blue folder', 4, 'MASTER · MID-RUN'], ['user', 'an earlier draft row', 5, 'MASTER · MID-RUN'], ['user', 'skip the tests', 6, 'MASTER · MID-RUN']],
+    'a filed read note (the station-row shape, role system + sys) replays as the Master\'s MID-RUN row, stamped when it was sent — a row filed in the first draft shape (role assistant) too, and a note saved inside a reply');
   A.eq(made.filter(r => r.cls === 'agent').map(r => r.body.text), ['Looking.', 'Done.'], 'the agent keeps only its own prose around the note');
   // a plain station row replays in the SYSTEM register its live line drew (chat.js sysLine, old-UI review 10-26 #3), not
   // through toolLine as agent prose

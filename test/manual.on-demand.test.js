@@ -101,7 +101,7 @@ for (const r of M.INLINE_RULE_EXCERPTS) {
 A.ok(/call\s+manual\.read with the section id/.test(index) && /never from memory/.test(index), 'the TOC tells the model to call manual.read before naming a window/menu/prop');
 // the behaviour rules the manual test (test/manual.test.js) pins on the whole manual, still in the PROMPT form
 A.ok(/CALL station\.inspect first/.test(index), 'rule inline: live harness state -> station.inspect');
-A.ok(/NEVER send the Commander to BUILD MODE to connect a platform/.test(index), 'rule inline: never BUILD MODE for a connector');
+A.ok(/NEVER send the Master to BUILD MODE to connect a platform/.test(index), 'rule inline: never BUILD MODE for a connector');
 A.ok(/Do not refuse in chat/.test(index), 'rule inline: approval mode -> just call the tool');
 A.ok(/HONESTY RULE/.test(index) && /If you have the connectors\.list tool, CALL IT/.test(index) && /not connected YET/.test(index), 'rule inline: the connect-a-platform honesty rules');
 A.ok(/Windows Task Scheduler/.test(index) && /OS crontab/.test(index), 'rule inline: routines never go to OS schedulers');

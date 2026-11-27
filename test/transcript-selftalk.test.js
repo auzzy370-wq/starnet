@@ -1,4 +1,4 @@
-/* node test/transcript-selftalk.test.js — THE STATION'S SELF-TALK IS NOT THE COMMANDER'S WORDS (bug 4dee26ba).
+/* node test/transcript-selftalk.test.js — THE STATION'S SELF-TALK IS NOT THE MASTER'S WORDS (bug 4dee26ba).
 
    The quiet title call (its prompt is the session's substantive user messages plus 200 characters of the reply), the
    goal judge, pitch, autopilot and every other reason-only internal call run with no workstream, so the sidecar filed
@@ -12,7 +12,7 @@
         'internal' row; a real 'global' row is still found. Nothing is deleted: the rows stay on disk.
      3. ALREADY WRITTEN — rows a 0.13.5 station filed in 'global' before the stamp existed (the title prompt's
         "Assistant reply (context only):" tail, an "INTERNAL —" directive, the goal judge's prompt) are skipped by the
-        same readers; the same words in a named session are the Commander's and are still found. */
+        same readers; the same words in a named session are the Master's and are still found. */
 'use strict';
 const { readSidecarSource } = require('./helpers/source');
 const { makeMemoryTranscriptIo } = require('./helpers/memory-transcript-io.js');
@@ -55,9 +55,9 @@ const clockAt = start => { let t = start; return { now: () => t, set: v => { t =
       say(undefined, 'assistant', 'Zebrafish Aquarium Rebuild', { dispatchState: 'internal' });
       // what a 0.13.5 station already wrote: the same self-talk, unstamped, in 'global'
       say('global', 'user', 'Fix the walrus invoice export\n\nAssistant reply (context only): The walrus export fails because');
-      say('global', 'user', 'INTERNAL — SELF-DIRECTED WORK. The Commander is away. Do not run any tools. walrus backlog');
+      say('global', 'user', 'INTERNAL — SELF-DIRECTED WORK. The Master is away. Do not run any tools. walrus backlog');
       say('global', 'user', 'Goal:\nship the walrus importer\n\nAgent\'s most recent response:\nwalrus done\n\nIs the goal satisfied — done or continue?');
-      // the Commander's own words: a real global row, and a named session that quotes the same shapes
+      // the Master's own words: a real global row, and a named session that quotes the same shapes
       say('global', 'user', 'remember the walrus password rotation');
       say('ws_named', 'user', 'INTERNAL — walrus memo I wrote myself');
       say('ws_named', 'user', 'zebrafish tank notes for the named session');
@@ -66,7 +66,7 @@ const clockAt = start => { let t = start; return { now: () => t, set: v => { t =
       const said = allHits.map(h => h.content);
       A.ok(!said.some(c => /context only|Zebrafish Aquarium Rebuild|SELF-DIRECTED|Is the goal satisfied/.test(c)), label + ': search (scope all) returns no self-talk row: ' + JSON.stringify(said));
       A.ok(said.includes('remember the walrus password rotation'), label + ': a real global row is still found');
-      A.ok(said.includes('INTERNAL — walrus memo I wrote myself') && said.includes('zebrafish tank notes for the named session'), label + ': a named session\'s words are the Commander\'s and are still found');
+      A.ok(said.includes('INTERNAL — walrus memo I wrote myself') && said.includes('zebrafish tank notes for the named session'), label + ': a named session\'s words are the Master\'s and are still found');
       const globalHits = store.search(undefined, 'walrus zebrafish', { limit: 50 }).map(h => h.content);
       A.eq(globalHits, ['remember the walrus password rotation'], label + ': search of the global stream itself finds only the real row');
 
@@ -91,7 +91,7 @@ const clockAt = start => { let t = start; return { now: () => t, set: v => { t =
   // ---------------- 4. BROWSE: the 'global' listing never previews self-talk ----------------
   // A 0.13.5 title prompt / goal judge whose basis is a long first message: the segment summary cuts the preview at
   // 160 characters, so the marker that names it self-talk is gone from the cut text. The listing must still not quote
-  // it — not even a DELETED session's opening line — and must still preview a real Commander row.
+  // it — not even a DELETED session's opening line — and must still preview a real Master row.
   async function browse(label, makeIo, legacy, reply) {
     const dir = temp('browse-' + label);
     try {
@@ -101,7 +101,7 @@ const clockAt = start => { let t = start; return { now: () => t, set: v => { t =
       const say = (streamId, role, content, extra) => { clock.set(clock.now() + 10); return store.append(Object.assign({ streamId, agentId: 'agent', role, content, taint: null }, extra || {})); };
       const opening = 'I need help drafting the letter to my landlord about the mold in the bedroom and the rent I withheld in March, please keep this private between us and do not mention my employer';
       A.ok(opening.length > 160, label + ': the basis is longer than the summary preview');
-      say('global', 'user', 'remember the walrus password rotation');            // the Commander's own global words
+      say('global', 'user', 'remember the walrus password rotation');            // the Master's own global words
       say('ws_secret', 'user', opening);
       // pre-stamp self-talk: the prompt AND its reply, one run id, no dispatchState (what a 0.13.5 station filed)
       say('global', 'user', legacy(opening), { sourceRunId: 'run_legacy_selftalk' });
@@ -129,7 +129,7 @@ const clockAt = start => { let t = start; return { now: () => t, set: v => { t =
 
       const g = store.streams({ limit: 20 }).find(s => s.streamId === 'global');
       A.ok(g && !/landlord|Goal:/.test(g.preview), label + ': the global listing never previews the self-talk prompt: ' + JSON.stringify(g && g.preview));
-      A.eq(g && g.preview, 'remember the walrus password rotation', label + ': it previews the newest real Commander row');
+      A.eq(g && g.preview, 'remember the walrus password rotation', label + ': it previews the newest real Master row');
       A.ok(!store.streams({ limit: 20 }).some(s => s.streamId === 'ws_secret'), label + ': the deleted session is not listed');
       const tool = makeRecallTool({ transcriptStore: store, ownStreamOnly: () => false }).recallTool;
       const listing = (await tool.run({}, { streamId: 'ws_other' })).content;

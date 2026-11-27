@@ -1,7 +1,7 @@
 /* sidecar/execution-profiles.js — honest, persisted execution envelopes.
 
    An execution profile answers WHERE and WITH WHAT SCOPE an agent works. It is deliberately
-   separate from approvalMode (whether the Commander is asked before a risky call) and from the
+   separate from approvalMode (whether the Master is asked before a risky call) and from the
    host-minted physical-desktop lease. Keeping those axes independent prevents the old "Full
    Access" label from claiming capabilities or machine control that the run did not actually have.
 

@@ -1,7 +1,7 @@
 /* node test/channels.setup-guide.test.js — the CHANNELS setup guide must be VISIBLE on a cold card.
 
    The defect this locks (F7 of docs/CONNECTOR_UX_PLAN.md): every platform card rendered its SETUP GUIDE
-   as a collapsed <details>, so a first-time Commander saw only "BOT TOKEN — FROM @BOTFATHER" and an empty
+   as a collapsed <details>, so a first-time Master saw only "BOT TOKEN — FROM @BOTFATHER" and an empty
    input. The steps that tell you where the token comes from existed and were good — they were folded away
    at exactly the moment they were needed, which is the whole reason people report "I didn't know I had to
    go add it manually."
@@ -34,7 +34,7 @@ A.ok(!/autofold[\s\S]{0,60}&& conn\b/.test(ui),
 // ---- C. one-shot: only activating the summary takes the flag away for good ----
 A.ok(/querySelector\('summary'\)/.test(ui), 'the hand-toggle detector is scoped to the guide summary');
 A.ok(/summary\.addEventListener\('click', \(\) => \{ delete guide\.dataset\.autofold; \}\)/.test(ui),
-  'a pointer/keyboard summary activation clears the autofold flag so the UI never fights the Commander');
+  'a pointer/keyboard summary activation clears the autofold flag so the UI never fights the Master');
 A.ok(!/guide\.addEventListener\('toggle'/.test(ui),
   'programmatic guide.open changes cannot consume the human-override flag');
 A.ok(/dataset\.foldWired/.test(ui), 'the summary listener is installed once, not on every paint');

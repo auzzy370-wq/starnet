@@ -722,7 +722,7 @@ body.crt-dull #chat-log, body.crt-dull .term-body, body.crt-dull #left, body.crt
      PANEL  (--term-w-panel)  — a single reading column: UPDATES, NOTIFICATIONS, FIELD MANUAL,
                                 OUTBOX, TROPHY CASE. The default; no class needed.
      WIDE   (--term-w-wide)   — anything with a rail, a grid, or side-by-side columns: every
-                                `.console` window plus TASK BOARD / QUEST LOG / COMMANDER DOSSIER
+                                `.console` window plus TASK BOARD / QUEST LOG / MASTER DOSSIER
                                 (`.term.wide`, which is width-only — it does NOT imply the console
                                 rail markup that `.console` mounts).
    Both are declared HERE so `.term.console` in app.css and `.term.wide` resolve the same token and
@@ -1017,7 +1017,7 @@ body.crt-dull #chat-log, body.crt-dull .term-body, body.crt-dull #left, body.crt
 .cf-nav-b:focus-visible { outline: 2px solid var(--ph-bright); outline-offset: 1px; }
 .cf-grp-note { font-size: 11px; color: var(--ph-dim); line-height: 1.45; margin: 5px 0 9px; max-width: 78ch; }
 /* the landing flash for a card reached from BRIEF's setup strip — without it the pane simply teleports and the
-   Commander has to re-find the row they clicked. Fades out on its own (class dropped after 1.4s). */
+   Master has to re-find the row they clicked. Fades out on its own (class dropped after 1.4s). */
 .cf-card.cf-jumped { border-left-color: var(--ph-bright); box-shadow: 0 0 14px var(--ph-glow2); }
 .cf-file { font-size: 14px; color: var(--ph-bright); letter-spacing: 1px; }
 .cf-name { font-size: 14px; color: var(--ph-bright); letter-spacing: 1px; }

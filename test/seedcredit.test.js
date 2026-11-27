@@ -1,5 +1,5 @@
 /* node test/seedcredit.test.js — the PURE seed-callout helper (G3a): when does a pitch/suggestion/digest
-   genuinely reuse a Commander-saved seed? HONESTY is the contract under test: a credit renders only when
+   genuinely reuse a Master-saved seed? HONESTY is the contract under test: a credit renders only when
    provenance links (the seedborn flag, a routine-name match, or a real template match) — an uncertain row
    gets NO credit, never a guess. */
 'use strict';

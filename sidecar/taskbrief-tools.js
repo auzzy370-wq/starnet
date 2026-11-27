@@ -34,7 +34,7 @@ function registerTaskBriefTools(registry, store, state, deps) {
         recommended: { type: 'string' }, reason: { type: 'string' },
         mode:{type:'string',enum:['conversation','choice'],description:'conversation: one open-ended question with optional shortcuts. choice: legacy bounded choices.'},
         sample:{type:'string',description:'Optional short draft/example to react to; not a claim of a created file or completed action.'},
-        multiSelect: { type: 'boolean', description: 'true when the options are NOT mutually exclusive and the Commander may pick several (e.g. sources, constraints). The chips then toggle instead of firing.' }
+        multiSelect: { type: 'boolean', description: 'true when the options are NOT mutually exclusive and the Master may pick several (e.g. sources, constraints). The chips then toggle instead of firing.' }
       };
       return { type: 'object', required: ['dimension', 'question', 'reason', 'discoverable'], properties: Object.assign({}, qProps, {
         // live-caught 2026-07-16: with no description the model reads 'discoverable' as an open judgment call
@@ -52,12 +52,12 @@ function registerTaskBriefTools(registry, store, state, deps) {
       if (!checked.ok) {
         // brief_ask is a HIDDEN tool, so a rejection reaches neither the transcript nor telemetry. Left
         // unlogged it was invisible: a model that chronically fails the validator quietly downgrades to the
-        // marker fallback (no recommendation at all) and the Commander just stops seeing ★ chips with no
+        // marker fallback (no recommendation at all) and the Master just stops seeing ★ chips with no
         // way to know why. One warn line makes that rate knowable without surfacing model churn as UI noise.
         try { console.warn('[taskbrief] brief_ask rejected: ' + checked.error); } catch (_) {}
         throw new Error(checked.error + '. Correct the arguments and call brief_ask again — do NOT ask in plain prose; if you cannot satisfy the validator, end your reply with: TASK_QUESTION: <question> || <option A> | <option B> — and put the question ONLY in that marker line (it renders as the question card; never write it out in prose as well).');
       }
-      // ASK-WORTHINESS GATE: the Commander has repeatedly answered "use your judgment" in this dimension, so
+      // ASK-WORTHINESS GATE: the Master has repeatedly answered "use your judgment" in this dimension, so
       // asking again spends one of only two questions on something they have already told us to decide. Refuse
       // and steer to the honest alternative — pick a reversible default and SURFACE it as a correctable
       // assumption in brief_proceed, where the read card makes it visible and steerable.
@@ -67,7 +67,7 @@ function registerTaskBriefTools(registry, store, state, deps) {
       const droppedDims = checked.questions.filter(q => deferred.indexOf(q.dimension) >= 0).map(q => q.dimension);
       if (!kept.length) {
         try { console.warn('[taskbrief] brief_ask suppressed: ' + droppedDims.join(', ') + ' habitually deferred'); } catch (_) {}
-        throw new Error('the Commander has repeatedly answered "use your judgment" on ' + droppedDims.join(', ')
+        throw new Error('the Master has repeatedly answered "use your judgment" on ' + droppedDims.join(', ')
           + ' decisions — do not ask this. Choose the most sensible reversible default, call brief_proceed, and state that choice as a correctable assumption.');
       }
       if (droppedDims.length) { try { console.warn('[taskbrief] brief_ask trimmed deferred dimension(s): ' + droppedDims.join(', ')); } catch (_) {} }
@@ -87,7 +87,7 @@ function registerTaskBriefTools(registry, store, state, deps) {
         const answers = [];
         for (let i = 0; i < asked.length; i++) {
           const q = asked[i];
-          // The PROVABLE suggestion (the Commander's own answered history, with a count) reached only the
+          // The PROVABLE suggestion (the Master's own answered history, with a count) reached only the
           // end-run fallback card. The live card — now the primary path — showed the model's guess alone.
           let grounded = null;
           try { grounded = typeof store.groundedFor === 'function' ? store.groundedFor(q) : null; } catch (_) { grounded = null; }
@@ -121,7 +121,7 @@ function registerTaskBriefTools(registry, store, state, deps) {
           }
         }
         if (answers.length === asked.length) {
-          const lines = answers.map(a => 'The Commander answered "' + a.text + '" to: ' + a.q.text + (a.q.mode==='conversation' ? '\nAnswer sourceId: '+a.q.id : ''));
+          const lines = answers.map(a => 'The Master answered "' + a.text + '" to: ' + a.q.text + (a.q.mode==='conversation' ? '\nAnswer sourceId: '+a.q.id : ''));
           if(asked.some(q=>q.mode==='conversation')) return {content:lines.join('\n')+'\nRead the WHOLE answer, including volunteered constraints, sources, exceptions and corrections. Call brief.update with through='+answers[answers.length-1].q.id+' and a complete revised understanding. Then proceed if the next useful action is clear, show a small draft for feedback, or ask ONE newly useful question. Do not mechanically fill every field.',summary:'conversation answered'};
           return { content: lines.join('\n') + '\nContinue the task with ' + (answers.length > 1 ? 'these decisions' : 'this decision') + ' applied — do not re-ask them.', summary: 'answered in turn' };
         }
@@ -130,7 +130,7 @@ function registerTaskBriefTools(registry, store, state, deps) {
         // remaining ones resume from the durable 'clarifying' brief on the next reply.
       }
       const open = (state.brief.questions || []).find(x => !x.answer) || asked[0];
-      return { content: 'Waiting for the Commander\'s decision.', summary: 'task question ready', control: {
+      return { content: 'Waiting for the Master\'s decision.', summary: 'task question ready', control: {
         final: true, reason: 'done', text: 'TASK_QUESTION: ' + open.text + ' || ' + (open.options.length ? open.options.join(' | ') : '[free text]')
       } };
     }
@@ -147,11 +147,11 @@ function registerTaskBriefTools(registry, store, state, deps) {
       const saved=await store.updateContext(state.brief.id,args,now());
       if(!saved) throw new Error('Task context cannot be updated while waiting or after completion.');
       state.brief=saved;
-      // Items whose quote matched none of the Commander's words were kept as labelled assumptions, not refused
+      // Items whose quote matched none of the Master's words were kept as labelled assumptions, not refused
       // (taskbrief-context QUOTE ANCHORING). Say so, so the model neither re-sends them nor treats them as quoted.
       const sent=Array.isArray(args && args.assumptions) ? args.assumptions.map(a=>String(a).trim()) : [];
       const demoted=((saved.context && saved.context.assumptions) || []).filter(a=>a.indexOf(Context.UNCONFIRMED)===0 && sent.indexOf(a)<0);
-      const note=demoted.length ? '\n'+demoted.length+' item(s) had no matching quote from the Commander and were saved as unconfirmed assumptions instead. That does not block the task: continue (brief.proceed when ready) and state them as assumptions.' : '';
+      const note=demoted.length ? '\n'+demoted.length+' item(s) had no matching quote from the Master and were saved as unconfirmed assumptions instead. That does not block the task: continue (brief.proceed when ready) and state them as assumptions.' : '';
       return {content:'Working understanding saved for this task only.'+note+'\n'+JSON.stringify(saved.context),summary:'task context updated'};
     }
   });

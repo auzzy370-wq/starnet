@@ -2,7 +2,7 @@
 
    The bug (audit probe 09-22): only the FIRST user message was pinned. A constraint the user added later ("NEVER
    modify prod-db.conf") went through the summarizer, and a generic summary silently dropped it. Now every fold that
-   removes messages carries the folded slice's user (and Commander steering) messages VERBATIM in a deterministic
+   removes messages carries the folded slice's user (and Master steering) messages VERBATIM in a deterministic
    section at the end of the summary note — whatever the summarizer returned, through the fallback digest too, and
    across successive folds without duplication, bounded with an explicit omitted-count line.
 
@@ -156,7 +156,7 @@ function scripted(ctx, n, requests) {
     ]);
     A.eq(got.length, 2, 'the attachment text and the steering note are collected; the screenshot, hook and assistant are not');
     A.ok(got[0].text.indexOf('look at this') === 0 && got[0].text.indexOf('base64') < 0 && /1 image attached/.test(got[0].text), 'an attachment keeps its words, names its image, never its bytes');
-    A.eq(got[1], { kind: 'steer', text: 'use the staging db only', fullChars: 23 }, 'a steering note is carried as the Commander wrote it');
+    A.eq(got[1], { kind: 'steer', text: 'use the staging db only', fullChars: 23 }, 'a steering note is carried as the Master wrote it');
   }
 
   A.report('fold.user-verbatim.test');

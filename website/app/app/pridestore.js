@@ -44,7 +44,7 @@ const PrideStore = (() => {
   // the STATION RECORD readout (stationui.js reads this at render). Honest "—" flags live in the snapshot.
   function snapshot() { return ready() ? Pride.snapshot(state) : null; }
 
-  // S2/new-hero: a fresh Commander founds a brand-new station — no inherited lifetime record.
+  // S2/new-hero: a fresh Master founds a brand-new station — no inherited lifetime record.
   function reset() { state = (typeof Pride !== 'undefined') ? Pride.hydrate(null) : null; try { localStorage.removeItem(KEY); } catch (_) {} }
 
   return { init, snapshot, reset };

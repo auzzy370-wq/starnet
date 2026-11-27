@@ -3,7 +3,7 @@
 
    codex-auth.js (auth.openai.com/oauth/token) and oauth-device.js (Grok / Kimi token endpoints) threw "…provider quota
    exhausted (429)…" for ANY refresh 429. Quota is enforced at the inference API, not the token endpoint — a 429 there is
-   the auth service throttling refreshes. Worse, the browser read the word "quota" as `billing`: the Commander of a
+   the auth service throttling refreshes. Worse, the browser read the word "quota" as `billing`: the Master of a
    ChatGPT / SuperGrok / Kimi SUBSCRIPTION (no wallet exists) was told "Your provider account is out of credit — top it
    up, then try again". Pinned: the refresh 429 keeps its code (codex_rate_limited / oauth_rate_limited, relogin false)
    and its sentence now reads as the transient rate limit it is, on the classifier and on BOTH friendlyerror paths. */

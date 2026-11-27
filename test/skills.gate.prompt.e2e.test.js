@@ -9,7 +9,7 @@
        and no body
      - the flagged body text never appears anywhere in the request
      - a /skill preload of a withheld skill produces the WITHHELD SKILLS notice instead of the steps
-     - after the Commander approves it, the same skill's body IS delivered by skill.view
+     - after the Master approves it, the same skill's body IS delivered by skill.view
    Zero real network, zero spend (fake key, mocked upstream). */
 'use strict';
 const A = require('./_assert.js');
@@ -152,9 +152,9 @@ function seed(ws) {
     A.ok(r.system.indexOf('PRELOADED SKILLS') >= 0, 'a clean skill still preloads');
     A.ok(r.system.indexOf('npm run deploy') >= 0, 'with its real steps');
 
-    // ---- 3. after the Commander approves it, the same skill is delivered ----
+    // ---- 3. after the Master approves it, the same skill is delivered ----
     const allow = await fetch(B + '/api/agent-skills/allow', { method: 'POST', headers: hdr, body: JSON.stringify({ agentId: 'gate', id: risky.id }) });
-    A.eq(allow.status, 200, 'the Commander approves the withheld skill');
+    A.eq(allow.status, 200, 'the Master approves the withheld skill');
     r = await run('/skill Risky Deploy');
     A.ok(r.system.indexOf('WITHHELD SKILLS') < 0, 'it is no longer withheld');
     A.ok(r.all.indexOf(RISKY_NEEDLE) >= 0, 'and its body IS delivered now that the human blessed it');

@@ -9,8 +9,8 @@
    real driver and proves, off the deliveries the host is asked to make:
      1. a routine's backlog for one chat collapses to its NEWEST result, delivered once, carrying how many earlier
         results it replaces; the older receipts are closed as superseded and never sent;
-     2. a routine the Commander PAUSED sends nothing until it is resumed — then one result, not its backlog; but (2b, review 7.1) a
-        RUN NOW the Commander pressed on it while paused delivers its result at once, and retries it while the routine stays paused;
+     2. a routine the Master PAUSED sends nothing until it is resumed — then one result, not its backlog; but (2b, review 7.1) a
+        RUN NOW the Master pressed on it while paused delivers its result at once, and retries it while the routine stays paused;
      3. a completed one-shot (not paused) still delivers its result;
      4. a result whose send is already in flight is never superseded (it may already have landed);
      5. a supersede that cannot reach disk sends nothing (retried on a later pass);
@@ -91,7 +91,7 @@ function setup(jobs, opts) {
     A.eq(byJob('market')[0] && byJob('market')[0].superseded, 1, 'naming the one it replaces');
     A.eq(byJob('once').map(x => x.runId), ['o-5'], 'a completed one-shot (not paused) still delivers its result');
     A.eq(byJob('once')[0] && byJob('once')[0].superseded, 0, 'with nothing superseded');
-    A.eq(byJob('paused').length, 0, 'a routine the Commander paused sends nothing on boot');
+    A.eq(byJob('paused').length, 0, 'a routine the Master paused sends nothing on boot');
     A.eq(s.sent.length, 3, 'three sends in total, not one per stuck digest (' + s.sent.length + ')');
 
     const daily = s.getJob('daily');
@@ -105,15 +105,15 @@ function setup(jobs, opts) {
     await s.driver.recoverFinalizations(); await flush();
     A.eq(s.sent.length, 3, 'later recovery passes send nothing more');
 
-    // the Commander resumes the paused routine: one result, not its backlog
+    // the Master resumes the paused routine: one result, not its backlog
     s.setStore(jobs => cronStore.resumeJob(jobs, 'paused', { now: s.clock.now() }));
     await s.driver.recoverFinalizations(); await flush();
     A.eq(byJob('paused').map(x => x.runId), ['p-29'], 'a resumed routine delivers only its newest held result');
     A.eq(byJob('paused')[0] && byJob('paused')[0].superseded, 1, 'naming the earlier one');
   }
 
-  // ---- 2b. RUN NOW on a routine the Commander had already paused (review 7.1): the ROUTINES button stays live on a paused routine, and
-  //      that press's result is the Commander's to see now — its receipt (pausedAtStart) goes out on the settlement and, when that send
+  // ---- 2b. RUN NOW on a routine the Master had already paused (review 7.1): the ROUTINES button stays live on a paused routine, and
+  //      that press's result is the Master's to see now — its receipt (pausedAtStart) goes out on the settlement and, when that send
   //      failed, on the scheduler's recovery pass, while the routine's held results (another chat here) keep waiting for the resume ----
   {
     const OTHER = Object.assign({}, CHAT, { chatId: '888' });
@@ -294,7 +294,7 @@ function setup(jobs, opts) {
     A.ok(cronStore.supersedeDeliveries(next, 'split', { now: T0 }) === next, 'nothing left to collapse returns the same store');
     const again = [Object.assign({}, next[0], { deliveryBacklog: next[0].deliveryBacklog.concat([next[0].finalization]), finalization: receipt('split', 's-0', 0, CHAT) })];
     A.eq(cronStore.supersedeDeliveries(again, 'split', { now: T0 })[0].finalization.superseded, 2, 'a result superseded again hands on the count it carried');
-    A.eq(cronStore.deliveriesHeld({ enabled: false, state: 'paused' }), true, 'paused by the Commander holds');
+    A.eq(cronStore.deliveriesHeld({ enabled: false, state: 'paused' }), true, 'paused by the Master holds');
     // who replaces whom
     const failed = (runId, days) => Object.assign(receipt('mix', runId, days, CHAT), { outcome: 'failed', result: '', error: 'down' });
     const silent = (runId, days) => Object.assign(receipt('mix', runId, days, CHAT), { outcome: 'silent', result: '[SILENT]' });
@@ -311,7 +311,7 @@ function setup(jobs, opts) {
     A.ok(cronStore.supersedeDeliveries(two, 'mix', { now: T0, busy: ['r-0'] }) === two, 'a busy newest result takes over nothing (its text is already on the wire)');
     A.ok(cronStore.supersedeDeliveries(two, 'mix', { now: T0, busy: ['r-1'] }) === two, 'a busy older result is never superseded');
     A.eq(cronStore.undeliveredCount(cronStore.supersedeDeliveries(two, 'mix', { now: T0 })[0]), 2, 'undeliveredCount counts the superseded result with its keeper');
-    A.eq(cronStore.deliveriesHeld({ enabled: false, state: 'error', disabledReason: 'consecutive-failures' }), false, 'an auto-paused routine still tells the Commander');
+    A.eq(cronStore.deliveriesHeld({ enabled: false, state: 'error', disabledReason: 'consecutive-failures' }), false, 'an auto-paused routine still tells the Master');
     A.eq(cronStore.deliveriesHeld({ enabled: false, state: 'completed' }), false, 'a completed one-shot still delivers');
   }
 

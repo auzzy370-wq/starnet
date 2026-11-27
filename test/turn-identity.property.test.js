@@ -148,7 +148,7 @@ let active = null, assertions = 0;
             expected.attachments.push({ runId: sent.runId, id: up.id, path: up.path, turnId: sent.turnId });
           } else if (op === 'quoteRead' || op === 'deleteSession') {
             // quoteRead: another session says a unique word, then a run of this one reads it and says it back (the run's rows carry the quote stamp).
-            // deleteSession: the Commander deletes a session that run read (or one this stream never touched); from then on its word is in no page row,
+            // deleteSession: the Master deletes a session that run read (or one this stream never touched); from then on its word is in no page row,
             // no GET /api/transcript row, no model-replay window, no page window and no provider body (turn identity commit 11, I7)
             const read = async () => {
               const n = ++serial, stream = 'q' + seedIndex.toString(36) + 'x' + n.toString(36), word = 'quokka' + seedIndex.toString(36) + 'x' + n.toString(36);

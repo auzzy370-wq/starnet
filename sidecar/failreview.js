@@ -37,7 +37,7 @@
   /* which run OUTCOMES (frontend/app/runoutcome.js) a failure review may learn from (typed outcomes, the unpark: its callers hand
      the run's outcome — runOnceCore's _auxFail gate and learning-eligibility.js, from the lead's own facts — never the bare end
      word, so a 'done' end the run's own error outranked is failed and reviewed). 'succeeded' learns via reflection; 'stopped' is
-     the Commander's own hand (nothing failed); 'empty' / 'asked' produced no work to learn from; and a reply the provider CUT
+     the Master's own hand (nothing failed); 'empty' / 'asked' produced no work to learn from; and a reply the provider CUT
      short ('cut_short') is unfinished work, which no learning pass reads (learning-eligibility.js: a truncated run teaches nothing). */
   const REVIEW_OUTCOMES = { failed: 1, refused: 1, step_limit: 1, out_of_budget: 1 };
   function reviewableOutcome(outcome) { return REVIEW_OUTCOMES[String(outcome == null ? '' : outcome)] === 1; }
@@ -175,7 +175,7 @@
       ' durable LESSONS worth remembering for future runs — one per line, each tagged LESSON:. A lesson names ' +
       'what failed, why, and what to do differently next time — concrete and reusable, never a restatement of ' +
       'the failure, never blame. Skip one-off transient noise (a single network blip) unless a recovery ' +
-      'pattern is visible across attempts. The Commander reads these lessons: write them in plain words about ' +
+      'pattern is visible across attempts. The Master reads these lessons: write them in plain words about ' +
       'the task, never internal tool names, schemas or error codes. Never advise skipping, bypassing or treating ' +
       'as optional a step the station requires (the task brief, an approval, consent, a permission) — if such a ' +
       'step kept failing, the lesson is how to satisfy it. If nothing durable can be learned, reply NONE.\n\n' +

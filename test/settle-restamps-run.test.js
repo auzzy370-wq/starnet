@@ -1,5 +1,5 @@
 /* test/settle-restamps-run.test.js — settling an interrupted run makes its spend KNOWN everywhere, durably.
-   SETTINGS › SPENDING LIMITS › SETTLE (POST /api/budget/settle) booked the Commander's figure in the spend ledger
+   SETTINGS › SPENDING LIMITS › SETTLE (POST /api/budget/settle) booked the Master's figure in the spend ledger
    only. The run's history row (runstore, reason 'interrupted') kept spendUnknown:true / usd 0, so INSIGHTS still
    counted it as spend-unknown and left its dollars out while SPENDING LIMITS' LIFETIME included them, and the run
    row still read "spend unknown" (spend-truth lane B12, 2026-10-08; customers Kevin, Malcolm, Jamal, Dame).
@@ -75,7 +75,7 @@ try {
   A.eq(typeof L.attestedFor, 'function', 'the ledger answers what a settled run was booked at');
   A.eq(L.attestedFor && L.attestedFor('int9'), null, 'nothing before the settle');
   L.settleUnsettled('int9', 1.25, 'entered');
-  A.eq(L.attestedFor('int9'), { usd: 1.25, attestedAs: 'entered' }, 'the Commander\'s figure and how it was attested');
+  A.eq(L.attestedFor('int9'), { usd: 1.25, attestedAs: 'entered' }, 'the Master\'s figure and how it was attested');
   A.eq(L.attestedFor('prior'), null, 'a metered row is not an attestation');
 } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 

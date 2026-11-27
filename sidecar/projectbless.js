@@ -1,7 +1,7 @@
 /* sidecar/projectbless.js — the ADD-A-PROJECT bless core (NS-5c Projects rail).
 
    POST /api/projects/bless {path} is the SECOND doorway to the SAME standing path-grant machinery as
-   conversational path trust (pathtrust.js): the Commander types or picks a folder in the Projects rail and
+   conversational path trust (pathtrust.js): the Master types or picks a folder in the Projects rail and
    blessing it records the identical `path:<normalized-real-root>` grant + known-projects row — one consent
    flow, two doorways, never a parallel store. Here the CLICK is the consent, so unlike a run there is no
    mid-stream prompt() — but the exact same rules gate it:
@@ -101,7 +101,7 @@
       const ok = await bless(proposedReal, { isGitRepo: isGit, now: now() });
       if (!ok) return { ok: false, code: 'persist', reason: 'could not persist project trust — denied: ' + proposedReal };
       // `root` is the CANONICAL key that was actually granted, so the rail row and the guard cannot disagree
-      // about which folder is trusted. `typedRoot` keeps the path the Commander recognizes, for the notice.
+      // about which folder is trusted. `typedRoot` keeps the path the Master recognizes, for the notice.
       return { ok: true, root: proposedReal, isGitRepo: isGit, typedRoot: proposed };
     }
 
@@ -122,7 +122,7 @@
 
   /* The LAPSED anchor (issue #60). A session anchored to a folder that is NOT a standing grant right now (trust
      removed, or a path that never matched the grant) used to get projectScopeLine's '' and nothing else: the run
-     quietly fell back to the private workspace while the Commander, the rail and the shell all pointed at the
+     quietly fell back to the private workspace while the Master, the rail and the shell all pointed at the
      project, so a "verified" fs.write landed where the shell then found it MISSING. Silence was the lie. This
      line asserts no access (it says the opposite) and names the way back. Empty for a blessed or absent root. */
   function projectLapsedLine(root, blessed) {
@@ -130,8 +130,8 @@
     if (!r || blessed) return '';
     return '\n\nPROJECT FOLDER NOT TRUSTED: this session is anchored to ' + r.slice(0, 1024) + ', but that folder is not a ' +
       'trusted project right now, so a RELATIVE file path writes to your private workspace, not that folder (the shell ' +
-      'will not find it there). To work in the folder, use absolute paths inside it (Vultron may ask the Commander to ' +
-      'approve it), or ask the Commander to add it again under PROJECTS. Never report a file as saved in that folder ' +
+      'will not find it there). To work in the folder, use absolute paths inside it (Vultron may ask the Master to ' +
+      'approve it), or ask the Master to add it again under PROJECTS. Never report a file as saved in that folder ' +
       'unless its receipt names a location inside it.';
   }
 
@@ -143,7 +143,7 @@
     if (hasFolder) return '';
     return '\n\nNO WORKING FOLDER: this workflow has no working folder, so a RELATIVE file path saves to your private ' +
       'workspace, which other agents cannot read. To put a file in a trusted project, use its absolute path inside that ' +
-      'project, and tell the Commander to set WORKING FOLDER on this workflow\'s INBOX.';
+      'project, and tell the Master to set WORKING FOLDER on this workflow\'s INBOX.';
   }
 
   /* WHERE THE FILES REALLY ARE, SAID BY THE HOST (#81). workflowNoFolderLine tells the MODEL, and the tool receipts tell it
@@ -208,18 +208,18 @@
      worked in. Every serious codebase carries its conventions in a file at the root — AGENTS.md, CLAUDE.md,
      .cursorrules — and until now Vultron read none of them at run time: `harness-import.js` parses AGENTS.md,
      but that is the one-time MIGRATION importer for adopting another harness's home, not live project context.
-     So an agent anchored to the Commander's repo re-derived its conventions from scratch on every run, and
+     So an agent anchored to the Master's repo re-derived its conventions from scratch on every run, and
      violated the ones it could not guess.
 
      TRUST: gated on the SAME standing blessed-root grant as the folder line — an un-blessed or revoked root
-     loads NOTHING. These files are Commander-owned instructions from a folder the Commander explicitly
+     loads NOTHING. These files are Master-owned instructions from a folder the Master explicitly
      trusted, so they are injected as instructions rather than fenced as untrusted data; fencing them would
      defeat the entire point. They are still run through redact() on the way in, because a project file that
      pastes a key into a setup snippet must not carry it into the prompt.
 
      CACHE: this rides the SYSTEM prompt, which is the cached prefix. That is safe and deliberate — the text is
      read ONCE per run and is byte-stable for that run's lifetime, so it never shifts the prefix mid-run. It
-     changes only when the Commander edits the file, which correctly costs one cache write. */
+     changes only when the Master edits the file, which correctly costs one cache write. */
   const INSTRUCTION_FILES = [
     { label: 'AGENTS.md', names: ['AGENTS.md', 'agents.md'] },
     { label: 'CLAUDE.md', names: ['CLAUDE.md', 'claude.md'] },
@@ -267,7 +267,7 @@
       if (!parts.length) return empty;
       return {
         text: '\n\nPROJECT INSTRUCTIONS — this folder\'s own standing rules, read from ' + sources.join(' and ') +
-          '. Follow them for work in this project the way you would follow the Commander\'s own standing orders. ' +
+          '. Follow them for work in this project the way you would follow the Master\'s own standing orders. ' +
           'A direct instruction in this conversation always wins over them.\n' + parts.join('\n\n'),
         sources: sources
       };

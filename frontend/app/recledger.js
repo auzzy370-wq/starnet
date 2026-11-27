@@ -9,7 +9,7 @@
      · the BROWSER QUALITY EWMA (recqualitystore.js) — how well each spine channel's accepted offers actually
        turned out. Read by exactly one consumer: the spine.
 
-   So a Commander who declined an idea at a COMMS card had declined it in localStorage only. The night shift could
+   So a Master who declined an idea at a COMMS card had declined it in localStorage only. The night shift could
    build it while they slept; the bay could shelve it the next morning; nothing outside chat.js ever learned that
    this channel's offers keep getting waved off. And the spine — the one place that decides who speaks — could not
    see a single one of the verdicts the rest of the station had been recording for months.
@@ -18,7 +18,7 @@
    the right shape. Everything here is either a write INTO it or a read FROM it.
 
      WRITE  note(candidate)            — the offer the spine just fired becomes a `shown` row.
-            verdict(channel, …)        — the Commander's answer becomes that row's terminal state.
+            verdict(channel, …)        — the Master's answer becomes that row's terminal state.
      READ   isDeclined(text)           — did they already wave this exact thing off ANYWHERE?
             preferenceOf(kind, traits) — the ledger's own learned, bounded, decayed preference weight.
 
@@ -47,7 +47,7 @@ const RecLedger = (() => {
   const DECLINED_CAP = 250;      // the tail the browser keeps in memory — the ledger itself is capped at 4000
   const ROW_CAP = 20;            // channel → live row memory; there are ten channels, so this never evicts in practice
   /* HOW LONG AN UNANSWERED IMPRESSION MAY SIT ON THE LEDGER (dead-wires lane, 2026-08-28). The server's expiry
-     sweep existed and ran on every GET, but NO writer ever set `expiresAt` — so a card the Commander simply never
+     sweep existed and ran on every GET, but NO writer ever set `expiresAt` — so a card the Master simply never
      clicked stayed a `shown` row forever, quietly depressing acceptanceRate for an offer nobody could act on any
      more. Every row this module mints now declares one. The sweep's own law is unchanged and matters here: an
      expiry is NEVER a verdict — only rows still sitting at `shown`/`opened` drop, and a dropped row feeds nothing
@@ -91,12 +91,12 @@ const RecLedger = (() => {
 
   /* ── THE READ ────────────────────────────────────────────────────────────────────────────────────────────
      ONE request answers both questions the spine needs: what has been explicitly declined anywhere, and what has
-     the Commander's history taught the ledger about each kind. Called at init and after each verdict the spine
+     the Master's history taught the ledger about each kind. Called at init and after each verdict the spine
      records (cheap, coalesced by REFRESH_MIN_MS) — never on a timer.
 
      WHY DECLINES ARE READ EVEN WHEN PERSONALIZATION IS PAUSED: a decline is not a learned preference, it is an
      instruction. `model` is the learned half and the server already withholds it (returns null) when the
-     Commander has paused personalization; this module simply carries whatever the server chose to send. */
+     Master has paused personalization; this module simply carries whatever the server chose to send. */
   const REFRESH_MIN_MS = 60 * 1000;
   async function refresh(force) {
     if (!force && loadedAt && (now() - loadedAt) < REFRESH_MIN_MS) return false;
@@ -116,7 +116,7 @@ const RecLedger = (() => {
     } catch (_) { return false; }   // fail-open: the previous read stands, or nothing does
   }
 
-  // did the Commander explicitly wave this exact thing off, on ANY surface? Empty/unparseable → never a hit.
+  // did the Master explicitly wave this exact thing off, on ANY surface? Empty/unparseable → never a hit.
   function isDeclined(text) { const k = normKey(text); return !!k && declined.has(k); }
 
   /* the ledger's learned weight for a candidate, −0.75..+0.75, or 0 when there is nothing to read.
@@ -137,12 +137,12 @@ const RecLedger = (() => {
 
   /* ── THE WRITE ───────────────────────────────────────────────────────────────────────────────────────────
      note(candidate) — the spine fired this offer; put it on the ledger as `shown` and remember the row so the
-     Commander's answer can find it. Returns the row id, or '' when this candidate does not get one (no title,
+     Master's answer can find it. Returns the row id, or '' when this candidate does not get one (no title,
      a channel that mints its own, or one of the two that are not offers at all).
 
      The row carries the candidate's OWN citation as `rationale`-typed evidence, never `quote`-typed: the why line
      is composed by the station from real state, and W3 established that calling composed prose a quote is the
-     ledger lying about its own provenance. Where a channel really does carry the Commander's verbatim words it
+     ledger lying about its own provenance. Where a channel really does carry the Master's verbatim words it
      may pass evidenceKind:'verbatim' and the row says so honestly. */
   function note(candidate) {
     const c = candidate && typeof candidate === 'object' ? candidate : null;
@@ -167,7 +167,7 @@ const RecLedger = (() => {
     return id;
   }
 
-  /* verdict(channel, state, reason) — the Commander answered. Posts the terminal state onto the row note() minted
+  /* verdict(channel, state, reason) — the Master answered. Posts the terminal state onto the row note() minted
      and drops it, so a second answer for the same channel can never re-verdict a row that is already closed (the
      ledger itself refuses that too; this just stops the pointless request).
      Returns true only when a row was actually found and answered — the caller may treat false as "nothing to
@@ -196,14 +196,14 @@ const RecLedger = (() => {
      outcomes. The wire goes live the day any row-minting channel starts launching work from its accept — do
      NOT delete it as dead, and do not claim it carries traffic until such a channel exists.
      The browser quality EWMA (recqualitystore.js) has known for weeks whether an accepted spine offer's run
-     really finished and how the Commander rated it — and none of that ever reached the durable ledger, so for
+     really finished and how the Master rated it — and none of that ever reached the durable ledger, so for
      surface `spine` the server's replay() quality term was structurally zero and every channel's earned record
      died with the browser profile. settle() is the missing half of the accept: recqualitystore forwards each
      outcome it folds, and this module translates the ones the ledger can hold.
 
        completed    → the accepted row advances to state `completed` (the state machine allows it; the row is
-                      KEPT here, because the Commander's rating usually lands after the finish).
-       great/ok/miss→ the Commander's own verdict becomes the row's outcome.quality — the same ±1 vocabulary
+                      KEPT here, because the Master's rating usually lands after the finish).
+       great/ok/miss→ the Master's own verdict becomes the row's outcome.quality — the same ±1 vocabulary
                       suggeststore already posts — and closes this module's interest in the row.
        deferred     → the accept produced no run inside the attribution window. The ledger's state machine has
                       no accepted→deferred edge (correctly — the accept was real), so nothing is posted; the row

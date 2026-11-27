@@ -1,9 +1,9 @@
 # QUEST SYSTEM V2 — the harness-owned, agent-aware quest ledger
 
 **Status:** SHIPPED — merged to trunk 2026-07-08 (41cd1d01), test:fast 274 + test:http green, real-provider
-proven (haiku-4.5: grounded mint + capped second mint + attest held open until Commander confirm).
+proven (haiku-4.5: grounded mint + capped second mint + attest held open until Master confirm).
 Open follow-up: additive `quest.new`/`quest.progress`/`quest.complete` events from the shared-contract owner.
-**Why:** quests are the retention spine — the game's progression must be in sync with the Commander's
+**Why:** quests are the retention spine — the game's progression must be in sync with the Master's
 real-world progression (goals, aspirations, work to automate). The v1 system fails this in two ways:
 completions celebrate unreliably (or silently), and every quest that isn't mechanically observable
 (prop placed / run ended) is architecturally uncompletable — the agent cannot see or update quests at all.
@@ -54,7 +54,7 @@ Quest record:
   contract: { type: 'prop'|'run'|'fact'|'artifact'|'attest', key: <string> },
   steps: [ { key, label, done, note? } ],   // optional; empty = single implicit step
   status: 'open' | 'done' | 'dismissed',
-  attest: null | { agentId, runId, evidence, at, confirmed: null },  // pending Commander confirm
+  attest: null | { agentId, runId, evidence, at, confirmed: null },  // pending Master confirm
   declineNote: null | { at, note },         // last declined attest — agent sees this next run
   createdAt, completedAt, dismissedAt
 }
@@ -68,7 +68,7 @@ Contract types and who flips them:
 - `run:<binding>` — completed when the bound run ends `done` (existing work-quest signal; non-done → stall).
 - `fact:<dossier-dim|memory-key>` — completed when the dossier/cortex provably learns the key.
 - `artifact:<check>` — completed when the named deliverable exists (workshop manifest truth).
-- `attest` — the agent PROPOSES completion with evidence (via the quest tool); the Commander confirms
+- `attest` — the agent PROPOSES completion with evidence (via the quest tool); the Master confirms
   with the existing rate-the-work beat. Agent claim alone NEVER completes. Confirm → done. Decline →
   attest cleared, declineNote stamped, quest stays open.
 
@@ -80,7 +80,7 @@ Routes (index.js, apiauth like siblings):
 - `GET  /api/quests`                  — full ledger (frontend polls this on the existing 1s tick cadence)
 - `POST /api/quests/mint`             — {title, desc?, reward?, contract, steps?, agentId?} (contract enforced)
 - `POST /api/quests/update`           — {id, op:'tick'|'attest', stepKey?, evidence?}
-- `POST /api/quests/confirm`          — {id, ok:bool, note?} (Commander only — the attest verdict)
+- `POST /api/quests/confirm`          — {id, ok:bool, note?} (Master only — the attest verdict)
 - `POST /api/quests/dismiss`          — {id}
 
 ### B. Agent awareness

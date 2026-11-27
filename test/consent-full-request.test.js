@@ -1,7 +1,7 @@
 'use strict';
 const { readSidecarSource } = require('./helpers/source');
 /* A CONSENT CARD SHOWS THE WHOLE REQUEST (user report 10-08). consentSummary used to clip every non-file approval to a
-   77-char JSON prefix, so a long shell.exec showed its head and hid its tail behind "…" — the Commander approved a
+   77-char JSON prefix, so a long shell.exec showed its head and hid its tail behind "…" — the Master approved a
    command they could not read, and no surface (desk card, run log, group chat) held the rest. Now the sidecar sends
    the whole redacted request; each surface clips only its own glance line and the desk card / group chat carry every
    character in INSPECT COMPLETE REQUEST; a chat message says when it had to cut. */
@@ -128,7 +128,7 @@ test('group chat clips its line and carries the whole request under it', () => {
   for (const ev of [{ tool: 'plugin__acme__sync', argsSummary: JSON.stringify({ query: 'q1' }, null, 2) }, { tool: 'team.summon', argsSummary: JSON.stringify({ name: 'SCOUT', spec: 'researcher' }, null, 2) }, { tool: 'shell.bg.write', argsSummary: JSON.stringify({ id: 'bg1', eof: true }, null, 2) }])
     assert.ok(!/[{}"]/.test(card.actionPhrase(ev)), 'no JSON in: ' + card.actionPhrase(ev));
   assert.ok(!/[{}"]/.test(card.actionPhrase({ tool: 'loop.create', argsSummary: JSON.stringify({ every: 5, spec: { a: 1 } }) })), 'no JSON punctuation reaches the phrase');
-  assert.match(group, /detail\.open = inspectOpen\.has\(pid\)/, 'a re-render keeps the panel the Commander opened');
+  assert.match(group, /detail\.open = inspectOpen\.has\(pid\)/, 'a re-render keeps the panel the Master opened');
 });
 
 test('a chat message (Telegram/Discord) fits the whole request or says it had to cut', async () => {
@@ -186,7 +186,7 @@ test('a choice answer preserves a parallel worker approval and its paused clock'
   const buttons = f.nodes[0].body.children.find(n => n.className === 'consent-btns');
   await buttons.children[0].onclick();
   assert.deepEqual(f.Channels.pendingAllOf(f.ws.id).map(p => p.promptId), ['p2']);
-  assert.ok(f.Channels.peek(f.ws.id).pausedAt, 'another worker is still waiting on the Commander');
+  assert.ok(f.Channels.peek(f.ws.id).pausedAt, 'another worker is still waiting on the Master');
   assert.equal(f.nodes[0].d.dataset.clarifyPrompt, 'q1', 'delegation Answer targets this exact card');
 });
 test('a conversation answer preserves a parallel worker approval', async () => {

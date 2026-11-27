@@ -1,7 +1,7 @@
 /* node test/cron.images-grant.e2e.test.js -- a routine granted IMAGES may generate a picture with nobody watching.
 
    Issue (2026-10-18): "every morning at 8, make me a picture of a sunrise and send it to me on Telegram" fired, but in
-   the default ASK posture image_generate was refused ("silence is not consent") and the run told the Commander to
+   the default ASK posture image_generate was refused ("silence is not consent") and the run told the Master to
    "pre-authorize image generation on this routine" — a setting that did not exist. Andrew approved a per-routine
    IMAGES grant: a tick in the create form and ▣ ALLOW IMAGES on an existing routine's row.
 

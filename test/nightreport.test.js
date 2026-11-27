@@ -192,7 +192,7 @@ A.ok(/drafts only/i.test(pmNoGrant.modeText) && /grant/i.test(pmNoGrant.modeText
 A.eq(pmNoGrant.modeWarn, true, 'dial-promises-building-but-degraded IS a warning');
 const pmReach = NR.panelModel({ status: Object.assign({}, stBase, { buildMode: 'draft', draftReason: 'reach' }), tzOffsetMin: 0 });
 A.ok(/reach/i.test(pmReach.modeText), 'reach-gated draft mode names the REACH dial as the unlock');
-A.eq(pmReach.modeWarn, false, 'reach-gated drafting is the Commander’s setting, not a warning');
+A.eq(pmReach.modeWarn, false, 'reach-gated drafting is the Master’s setting, not a warning');
 A.eq(NR.panelModel({ status: stBase, tzOffsetMin: 0 }).modeText, '', 'an older sidecar without buildMode → empty modeText (never a guess)');
 // readiness: cold/warm tiers explain BOTH grounding paths (current aims, or a recent run); hot / absent → no line.
 // (bug 41b2d015) the bars are one aim / one run — the line names those, never an area count that no longer gates.
@@ -261,7 +261,7 @@ A.ok(/leave the app running/i.test(NR.awayRuleText({ awayAfterMs: 900000 })), 't
 A.ok(NR.panelModel({ status: { active: true, away: false, beatsUsedToday: 0, leashPerDay: 3, awayAfterMs: 900000 }, tzOffsetMin: 0 }).awayRuleText.indexOf('15 min') >= 0, 'panelModel surfaces the away rule');
 
 /* ---------- postureOutlook(): the honest dial-raise feedback (NS visibility 2026-07-13) ----------
-   The instant the Commander raises the autonomy dial (awakening cadence beat / station panel), one honest line
+   The instant the Master raises the autonomy dial (awakening cadence beat / station panel), one honest line
    from the LIVE status says what a beat will actually do while they're away + how far the station is from acting. */
 A.eq(NR.postureOutlook(null), '', 'unreachable status → no outlook (never a fabricated promise)');
 A.eq(NR.postureOutlook({}), '', 'a status with no buildMode/readiness detail → no outlook');

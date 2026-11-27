@@ -1,5 +1,5 @@
 /* test/linejobs.test.js — LINE JOBS (sidecar/routing/linejobs.js, 2026-09-30): every job sent down a work line is ONE record, from
-   the moment it goes out. Pure state in, state out: a record takes only the route's own verdict, keeps what the Commander changed
+   the moment it goes out. Pure state in, state out: a record takes only the route's own verdict, keeps what the Master changed
    because of it, names the job it re-ran, is never left "running" across a restart, and the store stays bounded. */
 'use strict';
 const A = require('./_assert.js');
@@ -16,7 +16,7 @@ s = r.state;
 A.ok(J.finish(s, 'job-zzzzzzzzzzzz', { status: 'delivered' }).job === null, 'an unknown job is not invented');
 A.ok(J.finish(s, 'job-aaaaaaaaaaaa', { status: 'perfect' }).job.status === 'interrupted', 'a status the route never gives is not kept as said');
 
-/* ---------- notes: what the Commander changed because of the job ---------- */
+/* ---------- notes: what the Master changed because of the job ---------- */
 r = J.note(s, 'job-aaaaaaaaaaaa', { kind: 'fix', at: 5000, dockId: 'p12', role: 'WRITER', field: 'does', text: 'Two sentences.', was: 'Write it up.', why: 'shorter' });
 A.ok(r.job && r.job.notes.length === 1 && r.job.notes[0].kind === 'fix' && r.job.notes[0].was === 'Write it up.', 'a fix used is kept with what it replaced');
 s = r.state;

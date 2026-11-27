@@ -48,7 +48,7 @@ Normal COMMS work answers in that conversation. A conveyor runs when work reache
 
 Execution finished means **review the result**. MARK COMPLETE records the user's task status; it does not publish or send anything. REPEAT opens the existing routine form with task context; it does not create or enable a routine. Routines saved with scheduling off do not run automatically.
 
-Keep source controls with Commander, prepared work in Recipes, task tracking in Tasks, files in Deliverables, and repeating work in Automation. A user returning from setup must retain the draft. Source-backed suggestions must show evidence, a review action and dismissal, plus truthful local/model-transmission information.
+Keep source controls with Master, prepared work in Recipes, task tracking in Tasks, files in Deliverables, and repeating work in Automation. A user returning from setup must retain the draft. Source-backed suggestions must show evidence, a review action and dismissal, plus truthful local/model-transmission information.
 
 ## Change review
 

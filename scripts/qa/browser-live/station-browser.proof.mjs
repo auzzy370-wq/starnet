@@ -46,7 +46,7 @@ const results = [];
 const ok = (name, cond, detail) => { results.push({ name, ok: !!cond, detail }); console.log((cond ? 'PASS ' : 'FAIL ') + name + (detail ? ' — ' + String(detail).slice(0, 300) : '')); };
 async function until(fn, ms, step = 300) { const t0 = Date.now(); let v; while (Date.now() - t0 < ms) { v = await fn().catch(() => null); if (v) return v; await sleep(step); } return v; }
 
-// ---- a tiny site for the Commander's own browsing (loopback) ----
+// ---- a tiny site for the Master's own browsing (loopback) ----
 const site = await new Promise(resolve => {
   const s = createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
@@ -293,7 +293,7 @@ try {
   const fr1 = await evalJS(cdp, "fetch('/api/browser/view/front',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'}).then(r=>r.status)");
   ok('SHOW WINDOW raises the real window (200)', fr1 === 200, String(fr1));
   await shot('real-window-mirror');
-  // the Commander closes the Chrome window (gracefully)
+  // the Master closes the Chrome window (gracefully)
   // a normal close request — what clicking the window's X does (WM_CLOSE; taskkill without /F), not a crash
   for (const pid of wins) closeWindowGracefully(pid);
   const gone = await until(() => view().then(v => v.station.open === false ? 1 : null), 20000, 500);

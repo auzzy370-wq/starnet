@@ -185,7 +185,7 @@ function liveWindow(opts) {
     w.skew += FRAME / RATE * 1000;
     processor.onaudioprocess({ inputBuffer: { getChannelData: () => new Float32Array(FRAME).fill(level) } });
   };
-  // the Commander starts speaking: past the calibration window, `voiced` loud frames (3 clear the onset while nothing
+  // the Master starts speaking: past the calibration window, `voiced` loud frames (3 clear the onset while nothing
   // is audible; 8, the 300 ms rule, while the agent is). True when the call heard an onset (the panel reads HEARING).
   const panelState = () => $('lv-state').textContent;
   w.onset = (voiced = 3) => { w.skew += 1000; for (let i = 0; i < voiced; i++) w.frame(0.1); return panelState() === 'HEARING'; };

@@ -230,7 +230,7 @@ P0 #10, plus:
   TERMINAL AUDIO under DISPLAY (2967-2969); provider card role=button wrapping an ADD KEY
   button (2111-2126); duplicated PROVIDERS heading (visible in sys-settings.png); one
   persistence model (SAVE+msg vs instant, 2672).
-- COMMANDER: 560px scroll with guillotined bottom edge — sections/jump links + fade cue
+- MASTER: 560px scroll with guillotined bottom edge — sections/jump links + fade cue
   (4646-4722); familiarity gauge vs gate provenance (4657-4663).
 - Topbar/dock: STANDBY paints full signal bars beside an ONLINE pill (`topbar.js:56-59`,
   `stationui.js:106-110`) — dim neutral bars pre-bridge; RECRUIT carries the "workstream"

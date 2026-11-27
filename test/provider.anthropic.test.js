@@ -294,7 +294,7 @@ async function collect(provider, req) { const out = []; for await (const e of pr
   }
 
   // G. THINKING + EFFORT: the wire contract per model family. Before this the adapter emitted NO thinking
-  //    parameter at all and advertised ['none'], so a BYOK Anthropic Commander ran a non-thinking Claude.
+  //    parameter at all and advertised ['none'], so a BYOK Anthropic Master ran a non-thinking Claude.
   {
     let seen = null;
     const bodyFetch = () => async (url, init) => {

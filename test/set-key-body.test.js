@@ -44,7 +44,7 @@ const handleSetKey = new Function('ipcTokenOk', 'readBody', 'setProviderRuntimeC
   const url = 'http://127.0.0.1:' + server.address().port + '/api/key';
   const post = async payload => { const r = await fetch(url, { method: 'POST', body: payload }); return { status: r.status, json: await r.json().catch(() => null) }; };
   try {
-    // ---- an oversized body: refused, worded, and the key is still the one the Commander saved ----
+    // ---- an oversized body: refused, worded, and the key is still the one the Master saved ----
     for (const size of [70 * 1024, 2 << 20]) {
       const r = await post(JSON.stringify({ provider: 'openrouter', key: 'sk-or-' + 'x'.repeat(size) }));
       A.eq(r.status, 413, 'a ' + size + '-byte config push is answered 413, never 200');

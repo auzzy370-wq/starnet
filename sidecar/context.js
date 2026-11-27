@@ -502,10 +502,10 @@
     return ' (' + (updated ? 'updated ' : 'saved ') + day + ')';
   }
   // the provenance tag, from what the HOST recorded — never from text the model wrote:
-  //   user-confirmed — the Commander kept/edited it (a Keep, or their own verdict words)
-  //   user-stated    — notebook.write proved the text is the Commander's own words from that run (overlap with their
+  //   user-confirmed — the Master kept/edited it (a Keep, or their own verdict words)
+  //   user-stated    — notebook.write proved the text is the Master's own words from that run (overlap with their
   //                    message, owner surface, untainted run — see notebook.js statedBy)
-  //   corrected      — an agent correction (replaceId) the host could not tie to the Commander's words: it supersedes
+  //   corrected      — an agent correction (replaceId) the host could not tie to the Master's words: it supersedes
   //                    the archived text, but it is still the agent's inference
   //   inferred       — a silent reflection save
   function confirmationTag(r) {

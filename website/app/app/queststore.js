@@ -3,7 +3,7 @@
    No state, no persistence, no bus subscription — it just gathers the live, honest progress the station
    already tracks and hands it to the pure Quests engine:
      • the STATION xp rollup (XpStore.stationStats → Xp.compute meter + Xp.milestones) — real achievements,
-     • the Commander dossier's known/blank dimensions (DossierStore) — get-to-know-you quests,
+     • the Master dossier's known/blank dimensions (DossierStore) — get-to-know-you quests,
      • whether a tailored idea is currently due (SuggestStore.willSuggest) — one actionable quest.
 
    A projection, not an owner (mirrors the dossierstore read-surface idiom). NEVER emits on U.bus. Every read

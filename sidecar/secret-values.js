@@ -14,7 +14,7 @@
                                           Authorization, OPENAI_API_KEY, DB_PASSWORD …) or a value shaped like a token
                                           (a 20+ letter/digit run holding both). prompt-scrub.js reads this narrower list:
                                           a connector's NODE_ENV=production or Content-Type: application/json is not a
-                                          secret to scrub out of the Commander's own words.
+                                          secret to scrub out of the Master's own words.
    Whitespace-separated parts of a value are added as well: a Slack channel token is stored as the combined
    "xoxb-… xapp-…" pair and either half can surface alone. Short strings are filtered by context.js (KNOWN_MIN).
    Pure, bounded (depth + count caps), never throws on odd input.
@@ -32,7 +32,7 @@ const { redactWith } = require('./context.js');   // the vendor key SHAPES alone
 const SECRET_KEY = /^(?:key|apikey|api[_-]?key|token|access[_-]?token|refresh[_-]?token|id[_-]?token|bot[_-]?token|app[_-]?token|device[_-]?token|client[_-]?secret|signing[_-]?secret|webhook[_-]?secret|secret|password|passwd|bearer|authorization)$/i;
 /* CREDENTIAL NAMES (review r2, 2026-10-28). A header/env name is a credential by its WHOLE SEGMENTS (split on _ - . and
    camelCase), never a substring: the old /key|token|secret|pass|auth|…/ held KEYCLOAK_REALM, MONKEY_*, TOKENIZER,
-   COMPASS_PROJECT and OAUTH_REDIRECT_URI values (and cut 'production' out of the Commander's own words), yet missed
+   COMPASS_PROJECT and OAUTH_REDIRECT_URI values (and cut 'production' out of the Master's own words), yet missed
    MYSQL_PWD, DB_PW, ADMIN_PIN, X-Admin-Pin, HMAC_SALT, X-Api-Sig, SENTRY_DSN, LICENSE and HUBSPOT_PAT, whose values
    then rode every prompt raw. A name is a credential when:
      · two segments say so together (access code, auth code, session id, connection string), or

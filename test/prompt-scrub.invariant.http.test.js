@@ -1,5 +1,5 @@
 'use strict';
-/* node test/prompt-scrub.invariant.http.test.js — a key the Commander typed once never rides a LATER run's prompt
+/* node test/prompt-scrub.invariant.http.test.js — a key the Master typed once never rides a LATER run's prompt
    (context-key-redact, 2026-10-28).
 
    THE BUG (found 10-27 in a live rig): the station's <run_context> <commander_evidence> RECENT ACTIVITY lines quoted
@@ -80,7 +80,7 @@ function decide(body) {
   const all = msgs.map(m => flat(m && m.content)).join('\n');
   let lastUser = -1; for (let i = msgs.length - 1; i >= 0; i--) if (msgs[i] && msgs[i].role === 'user') { lastUser = i; break; }
   const words = lastUser >= 0 ? ownWords(flat(msgs[lastUser].content)) : '';
-  if (/You surface ideas the Commander raised/.test(all)) return 'NONE';   // the thread-mining aux pass
+  if (/You surface ideas the Master raised/.test(all)) return 'NONE';   // the thread-mining aux pass
   const q = SCRIPT[phase] || [], n = scripted[phase] || 0;
   if (q[n] && Array.isArray(body.tools) && body.tools.length > 5) { scripted[phase] = n + 1; return q[n]; }
   if (/INV-MINE/.test(words)) return LONG_REPLY;
@@ -144,14 +144,14 @@ fs.writeFileSync(path.join(WS, 'loops.json'), JSON.stringify({ version: 1, loops
   state: 'paused', enabled: false, iterationCount: 0, maxIterations: 5, createdAt: NOW - HOUR, iterations: [] }] }));
 fs.writeFileSync(path.join(WS, 'subagents.json'), JSON.stringify({ version: 1, records: [{ id: 'sa_inv', leadId: 'agent', agentId: 'agent', runId: 'run_sa_inv',
   status: 'done', reason: 'done', generation: 1, prompt: 'Call the billing API with key ' + K.OPENAI.value + ' and summarize the open invoices',
-  context: 'The Commander said: the Anthropic key is ' + K.ANTHROPIC.value, result: 'Summarized 4 open invoices.',
+  context: 'The Master said: the Anthropic key is ' + K.ANTHROPIC.value, result: 'Summarized 4 open invoices.',
   createdAt: NOW - HOUR, updatedAt: NOW - HOUR, startedAt: NOW - HOUR, endedAt: NOW - HOUR + 1000 }] }));
-// (review r2) a password the Commander typed BEFORE a connector held it, under a header name that is no credential word:
+// (review r2) a password the Master typed BEFORE a connector held it, under a header name that is no credential word:
 // only the transcript's redaction (every header/env value) holds it, never the prompt's credential list
 const CONN_PW = 'Tr0ub4dor&3!xq#Z';
 const CONN_TEXT = ('INV-CONN update the reporting mailer settings for the weekly digest and keep the same relay host as before, the relay value').padEnd(121, ' x') + ' is ' + CONN_PW + ' ok';
 
-// the page persona: the page bakes the Commander's dossier into every agent's stored systemPrompt (frontend/app/app.js)
+// the page persona: the page bakes the Master's dossier into every agent's stored systemPrompt (frontend/app/app.js)
 const DOSSIER = 'Runs an outreach agency. Our OpenRouter key: ' + K.OPENROUTER.value;
 const PAGE_SYSTEM = 'You are Hero, the station lead. Answer briefly.\n\nCOMMANDER DOSSIER\n' + DOSSIER;
 // the goal: a key whole, and a second the 280-char store cut leaves mid-key (AIza + 16 body chars survive the cut)
@@ -275,7 +275,7 @@ const TYPED = {};   // phase -> the key ids its own words typed
     phase = 'QREF';
     await api('POST', '/api/quests/refresh/run', {});
     await idle(2500, 60000);
-    A.eq(await run('INT', '', { extra: { internal: true, evidence: true, isTask: false, system: 'You recommend the Commander\'s next step. Reply with ONE line.' }, messages: [{ role: 'user', content: 'INV-INT what should the Commander do next?' }] }), 'done', 'phase C: an internal evidence:true run completed');
+    A.eq(await run('INT', '', { extra: { internal: true, evidence: true, isTask: false, system: 'You recommend the Master\'s next step. Reply with ONE line.' }, messages: [{ role: 'user', content: 'INV-INT what should the Master do next?' }] }), 'done', 'phase C: an internal evidence:true run completed');
     // ---- (review r2) the lanes round 2 found open ----
     // MINE: a substantive task run, so the thread-mining aux pass fires and lists the board (th_legacy holds GITHUB)
     A.eq(await run('MINE', 'INV-MINE Please review the outreach dashboard plan we sketched last week and tell me which of the follow-up steps still need doing: the lead scoring pass, the weekly report export, and the reminder emails for cold leads. Also note which could become a standing routine.'), 'done', 'phase C: MINE completed');
@@ -283,7 +283,7 @@ const TYPED = {};   // phase -> the key ids its own words typed
     // LOOP / SUBA: the model calls a store-reading station tool; its result rides the follow-up request
     A.eq(await run('LOOP', 'INV-LOOP which loops do I have, and are any stuck?'), 'done', 'phase C: LOOP completed');
     A.eq(await run('SUBA', 'INV-SUBA how did my background workers do?'), 'done', 'phase C: SUBA completed');
-    // AJ: the page's own internal prompt, built with its REAL module from a stored Commander belief
+    // AJ: the page's own internal prompt, built with its REAL module from a stored Master belief
     const AutoJobs = require('../frontend/app/autojobs.js');
     const ajDirective = AutoJobs.buildProposalDirective({ beliefs: { goals: ['Ship outreach v2 this quarter'], stack: ['Every model call goes through OpenAI with key ' + K.OPENAI.value] }, existingJobs: ['Morning digest'] });
     A.eq(await run('AJ', '', { extra: { internal: true, evidence: true, isTask: false, placed: [], system: 'You are Hero, the station lead.' }, messages: [{ role: 'user', content: ajDirective }] }), 'done', 'phase C: the page\'s autojobs internal run completed');
@@ -321,7 +321,7 @@ const TYPED = {};   // phase -> the key ids its own words typed
   A.eq(connHits, [], 'I1b: a value only a connector header holds (plain name) never rides a later request (base parity on brief/chat lines)');
   // I5 (review r2): the lanes that leaked at b54518d12 were actually driven
   const sysOf = c => { const m = (c.body && c.body.messages) || []; return m.map(x => flat(x && x.content)).join('\n'); };
-  A.ok(chat.some(c => c.phase === 'MINE' && /You surface ideas the Commander raised/.test(sysOf(c)) && /LEGACY-T rotate the deploy key \[redacted-key\]/.test(JSON.stringify(c.body))), 'I5: the thread-mining pass fired and listed the legacy thread with its key replaced');
+  A.ok(chat.some(c => c.phase === 'MINE' && /You surface ideas the Master raised/.test(sysOf(c)) && /LEGACY-T rotate the deploy key \[redacted-key\]/.test(JSON.stringify(c.body))), 'I5: the thread-mining pass fired and listed the legacy thread with its key replaced');
   const toolMsg = (ph, re) => chat.some(c => c.phase === ph && ((c.body && c.body.messages) || []).some(m => m && m.role === 'tool' && re.test(flat(m.content))));
   A.ok(toolMsg('LOOP', /Post the daily standup to Slack with bot token \[redacted-key\]/), 'I5: loop.list\'s result reached the model, its stored objective scrubbed');
   A.ok(toolMsg('SUBA', /Call the billing API with key \[redacted-key\]/), 'I5: team.subagents\' result reached the model, its stored prompt scrubbed');
@@ -335,9 +335,9 @@ const TYPED = {};   // phase -> the key ids its own words typed
   const ask2 = later.filter(c => c.phase === 'ASK2');
   A.ok(ask2.some(c => /ORIGINAL REQUEST: INV-ASK1 open an issue on my tracker with openai key \[redacted-key\]/.test(text(c))), 'I2: ASK2 continues the brief: its ORIGINAL REQUEST keeps the words, key replaced');
   A.ok(later.some(c => c.phase === 'NIGHT' && /TONIGHT'S FOCUS: [^"\\]*\[redacted-(?:key|secret)\]/.test(text(c))), 'I2: the night directive leads with TONIGHT\'S FOCUS, its stored key replaced');
-  A.ok(later.some(c => c.phase === 'QREF' && /GOAL PROGRESS AND COMMANDER FEEDBACK/.test(text(c)) && /\[redacted-key\]/.test(text(c))), 'I2: the quest refresh still carries its goal progress, keys replaced');
+  A.ok(later.some(c => c.phase === 'QREF' && /GOAL PROGRESS AND MASTER FEEDBACK/.test(text(c)) && /\[redacted-key\]/.test(text(c))), 'I2: the quest refresh still carries its goal progress, keys replaced');
   A.ok(later.some(c => c.phase === 'INT' && /RECENT ACTIVITY|<commander_evidence|<active_goal/.test(text(c))), 'I2: the internal evidence:true run still carries the evidence pack');
-  A.ok(later.some(c => c.phase === 'W1' && /COMMANDER DOSSIER\\nRuns an outreach agency\. Our OpenRouter key: \[redacted-key\]/.test(text(c))), 'I2: the page persona keeps its dossier words, key replaced');
+  A.ok(later.some(c => c.phase === 'W1' && /MASTER DOSSIER\\nRuns an outreach agency\. Our OpenRouter key: \[redacted-key\]/.test(text(c))), 'I2: the page persona keeps its dossier words, key replaced');
   // I3
   const ask1 = chat.filter(c => c.phase === 'ASK1');
   A.ok(ask1.some(c => { const m = c.body.messages || []; const u = m[m.length - 1]; return u && u.role === 'user' && ownWords(flat(u.content)).indexOf(K.ASKKEY.value) >= 0; }), 'I3: the live turn is untouched: ASK1 sends its own key raw (keys.save reads it there)');

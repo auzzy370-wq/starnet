@@ -6,7 +6,7 @@
    the E-STOP cancelled (no error event, end reason 'cancelled') came back as a successful reply made of whatever
    had streamed so far. The do step's one streamed token ("Working on it") became the deliverable, the critique call
    (signal already aborted) came back empty -> default 'ship', and the station recorded a DELIVERED draft, ledgered
-   outcome delivered:true and served it to the morning report — about work the Commander had just stopped.
+   outcome delivered:true and served it to the morning report — about work the Master had just stopped.
    Now only a run that ended 'done' is a reply; a cancelled/budget/limit end is an error and the beat stands down.
    Real sidecar; the mock answers the propose call with one grounded job, then hangs the do call after one token. The
    workspace holds a founded station (test/helpers/station.js): the night-shift tick stands down on one with none. */

@@ -4,7 +4,7 @@
    THE HOLE (found live): the dial IS the night shift's consent (initiative >= leash = "act on your own"). Turning it
    down to WAIT mid-beat only changed the NEXT tick's gate: the in-flight beat kept its provider stream open and,
    once it answered, went on to its do + critique model calls (or, at reach >= sandbox, its whole build run) — paid,
-   unattended work after the Commander withdrew permission. Only the E-STOP reached the beat. Now a posture write that
+   unattended work after the Master withdrew permission. Only the E-STOP reached the beat. Now a posture write that
    no longer permits acting aborts the driver's in-flight beat, and the ledger records it ending undelivered.
    Real sidecar; mock provider whose completion hangs (headers + one token, then silence). The workspace holds a founded
    station (test/helpers/station.js): the night-shift tick stands down on one with none. */

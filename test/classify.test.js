@@ -25,7 +25,7 @@ const TASKS = [
   'build me a landing page',
   'investigate why sales dropped in Q2',
   // an ack-led RETRY / REDIRECT / new topic carries work: the ack word does not make it small talk (the agent was
-  // handed zero tools and told the Commander a placed DISH gave it no web tool)
+  // handed zero tools and told the Master a placed DISH gave it no web tool)
   'ok, try it now', 'cool, try now', 'no, use the dish', 'ok try again', 'ok, versuch es nochmal',
   'sure, latest news?', 'yes, bitcoin price today', 'perfect, now the weather', 'cool, do that'
 ];
@@ -107,7 +107,7 @@ A.eq(getTag('Build the API'), getTag('build the api'), 'case-insensitive + deter
    contract and as a guard against the old regression: the speaker/voice toggle once leaked into the stance, so
    an on-speaker task was answered one-on-one. These assertions keep stanceFor reading NOTHING but isTask. */
 A.eq(stanceFor(true), 'task', 'a TASK -> task stance (its baseline work pose)');
-A.eq(stanceFor(false), 'talk', 'a non-task -> talk stance (face the Commander one-on-one)');
+A.eq(stanceFor(false), 'talk', 'a non-task -> talk stance (face the Master one-on-one)');
 // structural guarantee: stanceFor reads NOTHING but isTask, so no voice/speaker/mic/UI state can ever turn a
 // task into a one-on-one chat. Any extra argument is ignored — the desk trip cannot be suppressed.
 A.eq(stanceFor(true, { voiceOn: true }), 'task', 'voice ON must NOT change a task (extra args ignored)');

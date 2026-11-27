@@ -1,9 +1,9 @@
 /* VULTRON — seeds.js : the PURE engine for the SELF-GROWING SEED SHELF.
 
-   The mint detector (mint.js) already notices when the Commander keeps asking for the same SHAPE of task and
+   The mint detector (mint.js) already notices when the Master keeps asking for the same SHAPE of task and
    induces a parameterized template ("draft release notes for {input}"). This engine turns one of those raw
    candidates into a SEED PROPOSAL the agent can VOICE: a readable title, the directive template (its {input}
-   token kept — that token IS the intentional gap, the one thing the Commander fills to make a run theirs), and a
+   token kept — that token IS the intentional gap, the one thing the Master fills to make a run theirs), and a
    gentle, in-voice line offering to save it as a one-tap seed on the shelf.
 
    This is the "agents author seeds from observed patterns" move: usage → a seed the agent drafts for you → (once

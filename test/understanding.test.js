@@ -1,6 +1,6 @@
 /* node test/understanding.test.js — the pure understanding engine (frontend/app/understanding.js).
    Locks the promises the north-star arc depends on: a cold dossier reads 0; evidence → confidence is
-   saturating + monotonic; provenance weighs (Commander/pinned > study-observed); staleness DECAYS confidence
+   saturating + monotonic; provenance weighs (Master/pinned > study-observed); staleness DECAYS confidence
    (the drift signal) while a pinned belief never decays; north-star-critical dims (goals/ambition/pain) weigh
    the overall more; corroboration raises a dim; `weakest` names the highest weight×gap dim (the VOI question
    target) deterministically; `calibrating` flips below the floor; and identical state is byte-stable. Clock
@@ -50,7 +50,7 @@ const dObserved = D.fresh();
 D.upsert(dObserved, 'pain', { text: 'writing standup notes by hand', source: 'study', observedAt: 1000 }, 1000);
 const cAuthored = U.understanding(dAuthored, { now: 1000 }).dims.pain.conf;
 const cObserved = U.understanding(dObserved, { now: 1000 }).dims.pain.conf;
-A.ok(cAuthored > cObserved, 'a Commander-authored belief is more confident than the same belief merely observed');
+A.ok(cAuthored > cObserved, 'a Master-authored belief is more confident than the same belief merely observed');
 
 /* ---------- staleness: confidence DECAYS as a belief ages (the drift signal) ----------
    NOTE: base timestamps must be POSITIVE — the engine treats t<=0 as "undated" (a hydrated legacy belief we

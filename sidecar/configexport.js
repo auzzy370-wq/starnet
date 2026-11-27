@@ -41,7 +41,7 @@
     'fallback',       // ordered fallback model chain (fallback.json)
     'autonomy',       // initiative/reach knobs (browser-owned; passed in by the app)
     'roster',         // agent roster metadata: name/model/provider/role (agent.roster.json) — NO system secrets
-    'dossier',        // the Commander dossier block (_commander.dossier.json)
+    'dossier',        // the Master dossier block (_commander.dossier.json)
     'permissions',    // standing capability grants (permissions.allow.json)
     'connectors',     // MCP connector configs — REDACTED (headers/env/url auth stripped; configured marker kept)
     'notifyPrefs'     // per-category notification toggles (browser-owned; passed in by the app)

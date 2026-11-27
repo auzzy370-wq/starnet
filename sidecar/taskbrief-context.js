@@ -21,8 +21,8 @@ function normalize(value) {
    source, and a single miss rejected the WHOLE snapshot. Models re-type quotes — a curly apostrophe, a capital, a
    collapsed line break, a dropped period, an elided middle, the right words under the wrong sourceId — so the update
    failed again and again; proceed() refuses until a conversational answer is incorporated, and canMutate blocks
-   every write until proceed. One paraphrase therefore locked a run out of the action the Commander had just
-   authorized, and the only way out was the Commander retyping their own words.
+   every write until proceed. One paraphrase therefore locked a run out of the action the Master had just
+   authorized, and the only way out was the Master retyping their own words.
    The evidence rule is unchanged — a fact still needs the user's actual words — but the match is now on meaning-
    preserving folds only (unicode compatibility form, quote/dash glyphs, whitespace, case, edge punctuation, "..."
    between in-order fragments, each >= 3 chars), any source that holds the words is accepted (sourceId corrected),
@@ -67,9 +67,9 @@ function current(brief) {
   const last=latestAnswer(brief);
   return !!brief.context && brief.context.through===(last ? last.id : 'request');
 }
-/* WHAT THE COMMANDER ALREADY ANSWERED (review 10-14), for crew seated mid-task with station.control group.add: the kickoff
+/* WHAT THE MASTER ALREADY ANSWERED (review 10-14), for crew seated mid-task with station.control group.add: the kickoff
    turn in the group used to re-ask "What are we launching?" seconds after it was answered. Each answered question with the
-   Commander's own answer, in order, on one line — '' when nothing was answered. Bounded: a long answer is clipped (its
+   Master's own answer, in order, on one line — '' when nothing was answered. Bounded: a long answer is clipped (its
    start is what tells the lead not to ask), and the whole line never passes `max`. */
 function answeredSoFar(brief, max = 600) {
   const one = (x, n) => { const t = String(x == null ? '' : x).replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n - 1) + '…' : t; };

@@ -122,7 +122,7 @@ const CFG = { reflectEnabled: true, reflectCooldownMs: 180000, auxTokenCeiling: 
     A.ok(/Local models have no ceiling/.test(note), 'local routes are named');
     A.ok(/stops on that route/.test(note) && !/that sign-in/.test(note), 'the key is the route, not the account');
     A.ok(/several accounts on one route share it/.test(note) && /earlier subscription usage still counts/.test(note), 'and what that means is stated');
-    A.ok(/reviews from rating a run and REFRESH QUESTS/.test(note), 'the Commander-triggered bypasses are named');
+    A.ok(/reviews from rating a run and REFRESH QUESTS/.test(note), 'the Master-triggered bypasses are named');
     A.ok(/your own runs, one-off actions you press, and planning runs the app starts for you/.test(note), 'what is neither stopped nor counted is named, the internal planning runs included');
     A.ok(/counts as 0/.test(note) && /can go over/.test(note), 'the soft edges are named');
   }

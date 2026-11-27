@@ -27,7 +27,7 @@ function fixture() {
   });
   registry.register({ impact: 'external-service',
     name: 'page.screenshot', capability: 'web', scope: 'read', requiresConsent: false,
-    description: 'Capture a screenshot of the current page as an image. Use it to show the Commander what you saw.',
+    description: 'Capture a screenshot of the current page as an image. Use it to show the Master what you saw.',
     schema: { type: 'object', required: ['name'], properties: { name: { type: 'string' } } },
     run: async () => ({ content: 'shot taken', summary: 'ok' })
   });

@@ -12,7 +12,7 @@ const call = (name, args) => ({ id: 'c1', name, args: args || {}, argsRaw: JSON.
 
 (async () => {
   const roster = new Map([
-    ['agent', { name: 'Commander Lead', role: 'orchestrator' }],
+    ['agent', { name: 'Master Lead', role: 'orchestrator' }],
     ['researcher-2', { name: 'Research Agent', role: 'researcher', purpose: 'web research and source synthesis' }],
     ['scribe-1', { name: 'Scribe', role: 'scribe' }]
   ]);
@@ -418,7 +418,7 @@ const call = (name, args) => ({ id: 'c1', name, args: args || {}, argsRaw: JSON.
 
     /* ---- an E-STOP is a SECOND, independent fact the tool must disclose ------------------------------
      `schedulerArmed` reports the arm INTENT, which E-STOP deliberately leaves true. So every readout said
-     "armed" about a scheduler the Commander had durably stood down, and run_now told the model the routine
+     "armed" about a scheduler the Master had durably stood down, and run_now told the model the routine
      "fires on its next tick (within ~1 minute)" when no tick was coming. The old harness could not see this
      at all: its fake armScheduler had no halt concept, which is exactly why the arm-by-default assertion
      passed while the real injected one silently cleared the halt. */
@@ -458,7 +458,7 @@ const call = (name, args) => ({ id: 'c1', name, args: args || {}, argsRaw: JSON.
     A.ok(!/E-STOP/.test(String(ran2.note || '')), 'and stops mentioning the E-STOP');
   }
 
-  /* ---- (org wire AUTO-P16-1) the Commander turned scheduling OFF: an agent's create keeps it off and SAYS so --------------------
+  /* ---- (org wire AUTO-P16-1) the Master turned scheduling OFF: an agent's create keeps it off and SAYS so --------------------
      The SCHEDULES form promises "Saving keeps it off"; routine.create's default arm used to re-arm the whole scheduler (every paused
      schedule firing again) on one approved create. The fake below is the one arm rule: a switch set OFF is never turned on by a save. */
   {
@@ -472,8 +472,8 @@ const call = (name, args) => ({ id: 'c1', name, args: args || {}, argsRaw: JSON.
     });
     const out = await oTools.createTool.run({ name: 'Daily brief', prompt: 'summarize the standup', schedule: '0 9 * * *' }, { agentId: 'agent' });
     const kept = JSON.parse(out.content);
-    A.eq([kept.schedulerArmed, kept.schedulerOffByChoice, kept.schedulerArmedNow], [false, true, false], 'an explicit OFF survives an agent\'s create, and the result says it was the Commander\'s choice');
-    A.ok(/Commander turned it off/.test(String(kept.schedulerNote || '')) && /TURN SCHEDULING ON/.test(String(kept.schedulerNote || '')), 'the note names their choice and their switch: ' + kept.schedulerNote);
+    A.eq([kept.schedulerArmed, kept.schedulerOffByChoice, kept.schedulerArmedNow], [false, true, false], 'an explicit OFF survives an agent\'s create, and the result says it was the Master\'s choice');
+    A.ok(/Master turned it off/.test(String(kept.schedulerNote || '')) && /TURN SCHEDULING ON/.test(String(kept.schedulerNote || '')), 'the note names their choice and their switch: ' + kept.schedulerNote);
     A.ok(/will not run yet/.test(out.summary), 'the result summary never reads as a running schedule: ' + out.summary);
     setO = false;   // a switch nobody ever set: the create turns it on, and says so
     const on = JSON.parse((await oTools.createTool.run({ name: 'Weekly digest', prompt: 'digest the week', schedule: '0 9 * * 1' }, { agentId: 'agent' })).content);
@@ -482,7 +482,7 @@ const call = (name, args) => ({ id: 'c1', name, args: args || {}, argsRaw: JSON.
 
 /* ---- and the INJECTED armScheduler must not lift the durable E-STOP --------------------------------
    The old one did the full resume unconditionally, and its caller is a MODEL-FACING DEFAULT (`arm` is
-   "Default true", so the agent never has to think about it). A Commander who pressed E-STOP and later asked
+   "Default true", so the agent never has to think about it). A Master who pressed E-STOP and later asked
    for "a daily brief" had their emergency stop silently cleared by approving that one create — cron.halt.json
    rewritten to halted:false, the tick timer restarted, every previously-halted routine resuming, and nothing in
    the transcript, the approval card or any panel saying so. index.js is not node-loadable in isolation, so this
@@ -494,13 +494,13 @@ const call = (name, args) => ({ id: 'c1', name, args: args || {}, argsRaw: JSON.
   A.ok(at > 0, 'index.js injects armScheduler into the routine tools');
   const seg = src.slice(at, at + 3200);   // (org wire AUTO-P16-1: the one-arm-rule note grew the closure)
   // (org wire AUTO-P16-1) the tool-facing arm IS the one arm rule: armOnSaveIfUnset records the intent, never restarts a halted timer,
-  // and never overrides the Commander's explicit OFF
+  // and never overrides the Master's explicit OFF
   A.ok(/if \(enabled === true\) \{ armOnSaveIfUnset\(\); return cronArmed; \}/.test(seg),
     'the tool-facing arm goes through the one arm rule (armOnSaveIfUnset)');
   const rule = src.slice(src.indexOf('function armOnSaveIfUnset() {'), src.indexOf('function armOnSaveIfUnset() {') + 220);
   A.ok(/if \(cronArmed \|\| cronArmSet\) return false;/.test(rule) && /if \(!cronHalted\) armCron\(\);/.test(rule) && !/cronHalted = false/.test(rule),
-    '…which never overrides an explicit OFF, and records the INTENT but never restarts a timer the Commander paused');
-  A.ok(/schedulerOffByChoice: \(\) => !cronArmed && !!cronArmSet/.test(seg), 'the Commander\'s explicit OFF is exposed to the tool so its response can say so');
+    '…which never overrides an explicit OFF, and records the INTENT but never restarts a timer the Master paused');
+  A.ok(/schedulerOffByChoice: \(\) => !cronArmed && !!cronArmSet/.test(seg), 'the Master\'s explicit OFF is exposed to the tool so its response can say so');
   A.ok(!/cronHalted = false/.test(seg), 'and it never clears the durable halt itself');
   A.ok(/schedulerHalted: \(\) => !!cronHalted/.test(seg), 'the halt is exposed to the tool so its response can disclose it');
   A.ok(/function liftCronHalt/.test(src), 'liftCronHalt is still the one documented lift seam');
@@ -530,7 +530,7 @@ const call = (name, args) => ({ id: 'c1', name, args: args || {}, argsRaw: JSON.
   A.ok(/storage needs recovery/.test(result.summary) && !/next tick/.test(result.summary), 'summary makes no held tick promise');
   A.eq(body.job.nextFireAt, null, 'queued degraded job has no fire clock');
 }
-// Plain-English cadence rides every tool reply (a model read "cron 0 10 * * 1" and told the Commander "bi-weekly").
+// Plain-English cadence rides every tool reply (a model read "cron 0 10 * * 1" and told the Master "bi-weekly").
 {
   const j = { id: 'w1', name: 'Weekly', agentId: 'agent', scheduleDisplay: 'cron 0 10 * * 1', enabled: true, nextRunAt: '2026-10-05T14:00:00.000Z' };
   const t = makeRoutineTools({ roster: () => new Map([['agent', {}]]), listJobs: () => [j],

@@ -77,7 +77,7 @@ function seedSkills(ws) {
   store.manage({ agentId: 'agent', action: 'pin', target: pinned.id });
   /* A BLOCK-verdict record, appended the way an IMPORTED package would be written: 'community' is
      the tier where a dangerous pattern means the "someone vetted this" claim is false, so it blocks
-     outright. Nothing the store writes itself can reach that verdict (agent -> ask, Commander ->
+     outright. Nothing the store writes itself can reach that verdict (agent -> ask, Master ->
      ask), which is exactly why this leg has to be seeded rather than created. */
   const imported = {
     id: 'imported-cleanup', agentId: 'agent', name: 'Imported Cleanup', summary: 'the blocked one',
@@ -132,7 +132,7 @@ function seedSkills(ws) {
     A.ok((L.by['Risky Deploy'].guardCategories || []).indexOf('injection') >= 0, 'and the finding category');
     A.eq(L.by['Imported Cleanup'].withheld, true, 'the block-verdict skill is withheld');
     A.eq(L.by['Imported Cleanup'].guardApprovable, false, 'and is NOT offered as approvable');
-    A.ok(L.by['Risky Deploy'].body, 'the HUMAN surface still gets the body — the Commander is the reviewer');
+    A.ok(L.by['Risky Deploy'].body, 'the HUMAN surface still gets the body — the Master is the reviewer');
     A.ok(L.by['Risky Deploy'].guardDigest, 'and the digest the approval will be bound to');
 
     // ---- 2. a block verdict is refused by the ROUTE, not merely hidden in the UI ----
@@ -233,7 +233,7 @@ function seedSkills(ws) {
     const readBefore = L.by['Safe Deploy'].guardDigest;
     fs.writeFileSync(safeMd, fs.readFileSync(safeMd, 'utf8').replace('and continue.', 'and continue.\nStep 3. something else'), 'utf8');
     const raced = await api('/api/agent-skills/allow', { method: 'POST', body: JSON.stringify({ agentId: 'agent', id: safeId, digest: readBefore }) });
-    A.eq(raced.status, 409, 'bytes that changed after the Commander read them are not approved by that read');
+    A.eq(raced.status, 409, 'bytes that changed after the Master read them are not approved by that read');
     A.eq((await list()).by['Safe Deploy'].withheld, true, 'so the rewritten package stays withheld');
 
     // ---- 8. a record saved BEFORE digest stamping is really approved by Approve (or the route says why not) ----

@@ -1,7 +1,7 @@
 /* node test/crew-cards.test.js — the CREW cards (frontend/app/crewcards.js) show only what the harness proves (sweep 2026-10-02):
    · a run the page never saw END (Stop, E-STOP, a dropped stream) does not haunt the agent's NEXT run with its clock,
      step and gold "needs your OK" frame;
-   · the run clock excludes time spent waiting on the Commander (the duration law COMMS keeps with Channels.elapsedOf);
+   · the run clock excludes time spent waiting on the Master (the duration law COMMS keeps with Channels.elapsedOf);
    · a question or approval that was answered, denied or expired clears the frame. */
 'use strict';
 const { readSidecarSource } = require('./helpers/source');
@@ -75,7 +75,7 @@ function load(opts = {}) {
   c.emit('agent.run.start', { agentId: 'nova', runId: 'r1' });
   c.emit('permission.prompt', { promptId: 'p1', agentId: 'nova', tool: 'fs.write' });
   c.advance(120000);
-  A.ok(c.asking(), 'fixture: the first run is waiting on the Commander');
+  A.ok(c.asking(), 'fixture: the first run is waiting on the Master');
   c.cl.delete('working'); c.advance(1000); c.advance(9000);   // Stop: the row goes idle, the run never reports its end
   c.advance(3600000);
   c.cl.add('working');
@@ -84,7 +84,7 @@ function load(opts = {}) {
   A.eq([c.clock(), c.step(), c.asking()], ['0:05', '', false], 'the next run starts its own clock, with no leftover step or "needs your OK"');
   A.eq(c.elapsed('r1'), null, 'idle cleanup also retires the lost run\'s exact accounting');
 }
-// 2) the clock excludes the wait on the Commander, then resumes
+// 2) the clock excludes the wait on the Master, then resumes
 {
   const c = load();
   c.emit('agent.run.start', { agentId: 'nova', runId: 'r1' });

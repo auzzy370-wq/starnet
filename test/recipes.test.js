@@ -100,7 +100,7 @@ A.ok(mb.indexOf('{window}') < 0 && mb.indexOf('{topic}') < 0, 'no tokens survive
 A.ok(mb.split('\n\nProcedure')[0].split('\n\nDecisions')[0].split('\n').every(line => !/\s{2,}/.test(line) && !/\s[.,;:!?]/.test(line)), 'filled prose reads clean before the structured workflow');
 
 // CRITICAL: a filled value is inserted VERBATIM — pasted code / logs / indentation / aligned text must survive
-// untouched, because the agent has to run exactly what the Commander supplied (not a whitespace-flattened version).
+// untouched, because the agent has to run exactly what the Master supplied (not a whitespace-flattened version).
 const code = 'def f():\n    return  1   # 4-space indent + intentional double spaces';
 A.ok(R.fillTask('summarize', { content: code }).indexOf(code) >= 0, 'fillTask preserves multi-line / indented / multi-space pasted content verbatim');
 const trace = '  at foo (a.js:1)\n  at bar (b.js:2)';
@@ -458,7 +458,7 @@ A.eq(lRank[0].id, 'summarize', 'a heavily-launched recipe ranks first on launche
 const lCap = R.rankRecipes(items, { launches: { 'summarize': { n: 500 }, 'fix-bug': 400 }, goalText: '', limit: 3 });
 A.eq(lCap.map(r => r.id).slice(0, 2).join(','), items.filter(r => ['fix-bug', 'summarize'].includes(r.id)).map(r => r.id).join(','), 'capped launch counts tie-break by catalog order; both launch shapes accepted');
 
-/* OUTCOME term (lane B): the Commander's own rate-the-work verdicts rank what actually HELPED. */
+/* OUTCOME term (lane B): the Master's own rate-the-work verdicts rank what actually HELPED. */
 // a great-rated recipe outranks an equally-launched unrated one
 const oUp = R.rankRecipes(items, { launches: { 'summarize': { n: 2, rated: { great: 2, ok: 0, miss: 0 } }, 'fix-bug': { n: 2 } }, limit: 2 });
 A.eq(oUp[0].id, 'summarize', 'great verdicts lift a recipe over an equally-launched unrated one');
@@ -497,7 +497,7 @@ A.eq(sinkSome[0].id, 'fix-bug', 'the surviving positive recipe still leads the r
    A param declares the KIND of value it wants so the launch form can offer the right control (a file chooser,
    a chip row, the live connector list) instead of one textarea for everything. Every type still resolves to a
    plain string through fillTask, and a type NEVER gates a launch — these locks are about the form never lying:
-   no picker with nothing to pick, no preselected option the Commander was never shown. */
+   no picker with nothing to pick, no preselected option the Master was never shown. */
 const typed = R.saveCustom({
   name: 'Typed Fill-ins', task: 'Review {target} with a {depth} pass, filed under {folder}, posted to {channel}.',
   params: [
@@ -572,15 +572,15 @@ const lit = R.builtins().filter(r => R.goalKeywordScore(r, vague) > 0).length;
 A.ok(lit <= 10, 'a vague goal lights up at most a handful of the catalog, not most of it: got ' + lit + '/' + R.builtins().length);
 
 /* a thin (but real) signal must still fill the row — topped up from the honest category spread, and NEVER by
-   readmitting a recipe the Commander rated down (that one carries a negative score and stays sunk). */
+   readmitting a recipe the Master rated down (that one carries a negative score and stays sunk). */
 const thin = R.rankRecipes(items, { goalText: 'summarize', launches: { 'fix-bug': { n: 1, rated: { miss: 3 } } }, score: () => 0, limit: 4 });
 A.eq(thin.length, 4, 'a one-hit goal still fills the FOR-YOU row (topped up from the category spread)');
 A.eq(thin[0].id, 'summarize', 'the genuinely matched recipe still leads the row');
-A.ok(!thin.some(r => r.id === 'fix-bug'), 'the top-up never readmits a recipe the Commander rated down');
+A.ok(!thin.some(r => r.id === 'fix-bug'), 'the top-up never readmits a recipe the Master rated down');
 const thinIds = {}; thin.forEach(r => { A.ok(!thinIds[r.id], 'the topped-up row has no duplicates'); thinIds[r.id] = true; });
 
 /* painText (momentum loop, 2026-08-21): the PAIN + AMBITION dossier dims rank the FOR YOU row with the same weight as
-   goals, and the card's why names them honestly. A pain point the Commander stated must surface the recipe that
+   goals, and the card's why names them honestly. A pain point the Master stated must surface the recipe that
    removes it even when the goals dim is silent — and a silent painText must change nothing (byte-identical rank). */
 const mlPain = R.rankRecipesExplained(items, { painText: 'I keep having to fix the same bug every week', goalText: '', limit: 3 });
 A.ok(mlPain.personalized, 'a pain point alone is real signal (not cold start)');

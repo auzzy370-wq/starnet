@@ -1,23 +1,23 @@
 /* sidecar/threadmine.js — the PURE post-run THREAD-MINING producer (NS-6). Given a finished run's conversation +
-   an INJECTED aux-model `propose(prompt) -> text`, it asks "which ideas did the Commander float here but never
+   an INJECTED aux-model `propose(prompt) -> text`, it asks "which ideas did the Master float here but never
    act on?", parses the model's tagged blocks into thread candidates, and guardrails them (a VERBATIM evidence
    quote that must actually appear in the conversation — the grounding veto; fingerprint dedup vs the live ledger
    AND the permanent declined denylist; length + count caps). The turn-in beat then offers Keep / Edit / Discard.
 
    Mirrors reflect.js / study.js exactly: NO IO, NO ambient clock/rng — `clock`, `propose` are injected, so it is
    deterministic and replay-safe (passes lint-determinism). Candidates are CANDIDATES ONLY: this module NEVER
-   writes to the ledger. Nothing becomes an open thread until the Commander keeps it at turn-in (index.js turn-in
+   writes to the ledger. Nothing becomes an open thread until the Master keeps it at turn-in (index.js turn-in
    route → threadsStore.add). That is the "stash, not auto-commit" law, ported from the memory/study turn-in.
 
    THE GROUNDING VETO (the anti-slop heart, ported from autopilot.parseCandidates): a thread is only as real as its
-   evidence. The model must return a VERBATIM quote of where the Commander raised the idea; a candidate whose quote
+   evidence. The model must return a VERBATIM quote of where the Master raised the idea; a candidate whose quote
    does NOT appear (normalized) in the actual conversation is DROPPED. An idea the model invented — "the user
    wanted a CRM" when they never said it — has no real quote, so it dies. This is what keeps "you mentioned X" honest.
 
    THE SUBSTANCE VETO (added after the 2026-07-08 escape: real-provider mining offered a banter line — "I'm gonna be
    throwing some real chaos at you" — back as a "thread", which is exactly the ridiculous ask that erodes trust in
    the whole turn-in surface): grounded is NOT enough. A thread must also be actionable work: the model must supply
-   a DO: line naming a concrete first deliverable AND stake CONFIDENCE: high that the Commander genuinely wants it
+   a DO: line naming a concrete first deliverable AND stake CONFIDENCE: high that the Master genuinely wants it
    picked up; anything less is dropped. The prompt states the bar explicitly ("would being asked about this seem
    ridiculous?") with banter/hype/jokes as named non-examples, caps the list at 2, and defaults to NONE. */
 'use strict';
@@ -80,7 +80,7 @@
     }
     let body = turns.join('\n');
     if (body.length > cap) body = body.slice(body.length - cap);   // keep the most recent exchange
-    // the Commander's OWN turns, separately — a mined quote is located in the whole exchange (which includes the
+    // the Master's OWN turns, separately — a mined quote is located in the whole exchange (which includes the
     // AGENT's words), so the turn-in card may only claim "you said" when the quote is found in THIS blob.
     const userTurns = [];
     for (const msg of (Array.isArray(messages) ? messages : [])) {
@@ -89,20 +89,20 @@
       if (c) userTurns.push(c);
     }
     const prompt =
-      'Read this conversation. Find CONCRETE WORK the Commander explicitly wanted but that was never acted on ' +
+      'Read this conversation. Find CONCRETE WORK the Master explicitly wanted but that was never acted on ' +
       'here — a "thread" a colleague could genuinely pick up later (a tool they asked for, a project they ' +
       'described wanting built, a follow-up left hanging).\n' +
       'THE BAR: a thread is a real, actionable piece of work with a clear deliverable. Before listing anything, ' +
-      'apply this test: if the Commander were later asked "you floated this idea — keep the thread?", would the ' +
+      'apply this test: if the Master were later asked "you floated this idea — keep the thread?", would the ' +
       'question seem ridiculous to them? If yes, it is NOT a thread.\n' +
       'NEVER list: jokes, banter, hype, or trash-talk (e.g. "I\'m gonna throw some real chaos at you" is banter, ' +
       'not an idea); emotional or rhetorical remarks; vague intentions with no concrete subject; compliments or ' +
       'complaints; meta-comments about you or this conversation; hypotheticals raised only to make a point; ' +
-      'anything already done here; or your own suggestions — only work the COMMANDER asked for or described wanting.\n' +
+      'anything already done here; or your own suggestions — only work the MASTER asked for or described wanting.\n' +
       'For EACH thread reply EXACTLY:\nTHREAD: <short title of the work>\n' +
-      'QUOTE: <verbatim words the Commander used — copy word-for-word from the text; never paraphrase or invent>\n' +
+      'QUOTE: <verbatim words the Master used — copy word-for-word from the text; never paraphrase or invent>\n' +
       'DO: <the concrete first deliverable someone could produce for it>\n' +
-      'CONFIDENCE: <high | medium | low — that the Commander would genuinely want this picked up>\n' +
+      'CONFIDENCE: <high | medium | low — that the Master would genuinely want this picked up>\n' +
       'List at most 2, best first. Most conversations contain NO real threads — when in doubt, reply NONE.\n' +
       /* ALREADY-TRACKED RIDES THE PROMPT (2026-08-05). mine() has always held a fingerprint map of every live
          thread and every permanently-declined one — and used it ONLY to drop candidates after the reply landed.
@@ -159,7 +159,7 @@
 
     const built = buildPrompt(run.messages, PROMPT_CAP, opts.knownTitles);
     const convo = normText(built.conversation);   // the haystack for the verbatim-quote veto
-    const spoken = normText(built.userText || '');   // the Commander's OWN words (the "you said" bar)
+    const spoken = normText(built.userText || '');   // the Master's OWN words (the "you said" bar)
     let raw;
     try { raw = await propose(built.prompt); } catch (_) { return { proposals: [], prompt: built.prompt }; }
 
@@ -178,9 +178,9 @@
       const nq = normText(quote);
       if (nq.length < MIN_QUOTE || convo.indexOf(nq) < 0) continue;
       // THE SUBSTANCE VETO (post-escape 2026-07-08: banter minted as a thread): grounded is not enough — the model
-      // must also name a concrete deliverable (DO:) and stake HIGH confidence the Commander wants it picked up.
+      // must also name a concrete deliverable (DO:) and stake HIGH confidence the Master wants it picked up.
       // A joke/hype line can pass the quote check (it was really said); it cannot honestly carry a deliverable +
-      // high confidence, and anything below that bar is not worth interrupting the Commander to ask about.
+      // high confidence, and anything below that bar is not worth interrupting the Master to ask about.
       const starter = redact(String(cand.starter || '')).trim();
       if (starter.length < MIN_DO) continue;
       if (String(cand.confidence || '').toLowerCase() !== 'high') continue;
@@ -192,8 +192,8 @@
       proposals.push({
         id: 'thread_' + (proposals.length + 1),
         title: title, spec: quote, starter: starter, fingerprint: fp,
-        // WHO said it: 'user' only when the quote is located in the Commander's own turns. The turn-in card cites
-        // anything else as "from the conversation" rather than putting the agent's words in the Commander's mouth.
+        // WHO said it: 'user' only when the quote is located in the Master's own turns. The turn-in card cites
+        // anything else as "from the conversation" rather than putting the agent's words in the Master's mouth.
         speaker: (nq && spoken.indexOf(nq) >= 0) ? 'user' : 'other',
         sourceRef: { streamId: run.streamId || null, runId: run.runId || null, date: now },
         sourceRunId: run.runId || null, createdAt: now

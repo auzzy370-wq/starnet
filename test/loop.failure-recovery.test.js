@@ -1,6 +1,6 @@
 /* node test/loop.failure-recovery.test.js — engine-enforced alternative-path recovery.
 
-   A model may see one failed tool and immediately hand the setup burden to the Commander. Prompt doctrine helps,
+   A model may see one failed tool and immediately hand the setup burden to the Master. Prompt doctrine helps,
    but this is important enough to enforce at the loop: the first give-up response after a non-terminal failure
    buys a bounded recovery turn that explicitly requires a different route. Real user denial remains terminal and
    the guard is bounded so it can never create an infinite/spending loop. */
@@ -78,10 +78,10 @@ async function run(turns, dispatch, limits) {
     A.eq(out.res.reason, 'done', 'bounded guard never loops forever');
   }
 
-  // The Commander explicitly denied the action: no workaround pressure may override that authority.
+  // The Master explicitly denied the action: no workaround pressure may override that authority.
   {
     const out = await run([
-      toolTurn('primary_tool', 'c1'), textTurn('The Commander declined that action, so I stopped.')
+      toolTurn('primary_tool', 'c1'), textTurn('The Master declined that action, so I stopped.')
     ], async () => ({ ok: false, isError: true, content: 'The action was not performed.', summary: 'denied' }));
     const nudges = out.messages.filter(m => m.role === 'system' && /<failure_recovery>/.test(String(m.content)));
     A.eq(nudges.length, 0, 'the consent broker\'s denied summary is an irreducible terminal decision, not a recovery target');

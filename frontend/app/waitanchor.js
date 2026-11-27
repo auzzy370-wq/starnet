@@ -1,7 +1,7 @@
 /* VULTRON — waitanchor.js : where a permission-blocked agent WALKS TO and WAITS (G4 embodiment, feature 1).
 
    When a run blocks on a `permission.prompt`, the acting agent's body stops working, stands, and walks to a
-   waiting anchor where it visibly waits until the Commander approves or denies. This module is the PURE
+   waiting anchor where it visibly waits until the Master approves or denies. This module is the PURE
    decision for WHICH tile that anchor is — resolved HONESTLY from the live floor, never a hardcoded coordinate.
 
    THE ANCHOR LADDER (fixed order; the first that resolves a reachable approach tile wins):

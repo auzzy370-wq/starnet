@@ -1,7 +1,7 @@
 /* sidecar/provider-accounts.js — EXTRA sign-in accounts for a subscription provider (subscription stacking).
 
    A subscription provider (Claude Code, ChatGPT/Codex, Grok, Kimi) has ONE primary sign-in — the one its existing
-   store already holds (the CLI's own ~/.claude, codex/tokens.json, <id>/tokens.json). The Commander can connect
+   store already holds (the CLI's own ~/.claude, codex/tokens.json, <id>/tokens.json). The Master can connect
    MORE accounts of the same provider; when the account a run is on hits its usage limit, the run fails over to the
    next one (index.js runOnce builds the chain, credpool.js cools the spent account).
 

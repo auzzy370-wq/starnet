@@ -37,7 +37,7 @@ const I = RemoteSessions._internals;
   await I.sync(false);
   const ws = sessions.get('remote_forge_a1');
   A.ok(!!ws, 'a phone-started conversation is adopted as a desk session');
-  A.eq(ws && ws.title, 'tighten the hero copy', 'titled with what the Commander said');
+  A.eq(ws && ws.title, 'tighten the hero copy', 'titled with what the Master said');
   A.eq(ws && ws.agentId, 'forge', 'bound to the agent that ran it');
   A.eq(ws && ws.history, [], 'no dialogue is invented: the transcript comes from the normal session load');
   A.ok(busy.has('remote_forge_a1'), 'it shows busy while the station says the run is live');
@@ -74,7 +74,7 @@ const I = RemoteSessions._internals;
   busy.delete('ws_desk1');
 
   // deleted stays deleted; junk ids and unknown desk streams are ignored
-  A.eq(I.applyRun({ runId: 'r4', agentId: 'forge', streamId: 'remote_forge_deleted', title: 'x', live: true }), false, 'a session the Commander deleted is not resurrected');
+  A.eq(I.applyRun({ runId: 'r4', agentId: 'forge', streamId: 'remote_forge_deleted', title: 'x', live: true }), false, 'a session the Master deleted is not resurrected');
   A.ok(!sessions.has('remote_forge_deleted'), 'and no row is made');
   A.eq(I.applyRun({ runId: 'r5', agentId: 'forge', streamId: '../etc', live: true }), false, 'a bad stream id is ignored');
   A.eq(I.applyRun({ runId: 'r6', agentId: 'forge', streamId: 'ws_unknown', live: true }), false, 'an unknown non-phone stream is not adopted');

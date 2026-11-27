@@ -1,4 +1,4 @@
-# Away Workshop — real work while the Commander is gone
+# Away Workshop — real work while the Master is gone
 
 **Status:** PLAN (2026-07-03, Fable). Not started.
 **Product goal:** when the user returns after being away, an agent has *actually built
@@ -38,7 +38,7 @@ What already exists and MUST be reused, not rebuilt:
   which fs tools already provably enforce. Anything outside the jail keeps today's exact
   ladder. `.env`/`.git` hardline floor untouched.
 - **User-granted, not self-granted.** The workshop is switched on per-agent by an explicit
-  Commander decision ("let this agent build in its workshop while I'm away"). Silence is
+  Master decision ("let this agent build in its workshop while I'm away"). Silence is
   still not consent — this is a *recorded yes*, same grant machinery as today.
   It is NOT an XP grind-unlock (sandbox law: no gating walls) — it's a consent toggle,
   available from minute one.
@@ -140,7 +140,7 @@ pair → sweep removes one and logs it; `test:fast` green with ledger tests.
 
 ### W7 — OPEN the deliverable, don't display its code (frontend+backend, LOCKED direction — Andrew 2026-07-04)
 **The misunderstanding W3 shipped with:** the return card's file browser shows the SOURCE
-of what the agent built. Wrong product. The Commander receives a TOOL — clicking it must
+of what the agent built. Wrong product. The Master receives a TOOL — clicking it must
 OPEN and RUN it, the way you'd hand someone an app, not a repo. Nobody reviewing an
 away-build wants a code listing by default.
 

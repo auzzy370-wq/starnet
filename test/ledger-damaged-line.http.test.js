@@ -4,13 +4,13 @@
 
    ledger.jsonl was written for months by appends that could leave a torn or glued line after a crash (the torn-tail
    isolation landed 2026-09-22) and was read leniently, skipping such a line. The strict reader that followed
-   (2026-09-19) turned ANY unreadable line into "the spend record could not be read": with a limit the Commander
+   (2026-09-19) turned ANY unreadable line into "the spend record could not be read": with a limit the Master
    chose, every paid run is refused, a restart reads the same bytes, and SETTINGS › SPENDING LIMITS had nothing to
    settle — only "the spend files in your workspaces folder are damaged".
 
    What an unreadable line recorded is UNKNOWN, never $0. A chosen cap refuses while it is unsettled, and RESUME
    cannot turn an estimate into a charge. The line is listed with its suggested settlement: a surviving complete usd
-   field, or the assumption max(largest single ledger charge, $2). The Commander can enter a verified charge or
+   field, or the assumption max(largest single ledger charge, $2). The Master can enter a verified charge or
    explicitly accept that suggestion with COUNT AS (mode 'bound'). Only then can an ordinary cap/RESUME authorize
    another paid call. The original line is never rewritten/deleted; the attestation names exactly what it settles.
    A torn
@@ -18,7 +18,7 @@
 
    A GLUED line is a torn fragment followed by one whole row the next append wrote (logbound.js: "the NEW row was
    lost"). That row's charge is fully recorded: it is counted exactly once (never $0, never twice when the settlement
-   journal or a later clean copy holds the same row), and only the FRAGMENT is the unknown charge the Commander settles —
+   journal or a later clean copy holds the same row), and only the FRAGMENT is the unknown charge the Master settles —
    named by what the fragment itself says, never by the glued row's run, model or time. */
 const assert = require('node:assert/strict'), fs = require('node:fs'), path = require('node:path'), crypto = require('node:crypto'), http = require('node:http');
 const { SidecarFixture } = require('./helpers/sidecar-fixture.js');
@@ -45,7 +45,7 @@ const near = (a, b) => typeof a === 'number' && Math.abs(a - b) < 1e-9;
   try {
 
   // ---- A: a damaged middle line never blocks a capped run: it counts at its bound, an ordinary cap stop RESUME clears,
-  //      and it stays listed until the Commander settles it in one click; the record is never touched ----
+  //      and it stays listed until the Master settles it in one click; the record is never touched ----
   const f = new SidecarFixture({ prefix: 'ledger-damaged-line-', timeoutMs: 20000, env: { SKYNET_BUDGET_PER_DAY: '2.5', SKYNET_AUX_BUDGET: '0', SKYNET_QUEST_REFRESH: '0',
     SKYNET_OPENROUTER_BASE: base, VULTRON_OPENROUTER_BASE: base, SKYNET_OPENROUTER_KEY: 'damaged-fixture', SKYNET_DEFAULT_MODEL: 'test/spend' } });
   const ledger = path.join(f.workspace, 'ledger.jsonl');
@@ -57,10 +57,10 @@ const near = (a, b) => typeof a === 'number' && Math.abs(a - b) < 1e-9;
     assert.equal(st.spentToday, null, 'what the damaged line recorded is unknown: no exact total');
     assert.equal(st.accounting.complete, false);
     assert.equal(st.accounting.readError, 'UNSETTLED_SPEND', 'one unknown line, not an unreadable logbook');
-    assert.equal(st.unsettled.length, 1, 'the damaged line is listed for the Commander: ' + JSON.stringify(st.unsettled));
+    assert.equal(st.unsettled.length, 1, 'the damaged line is listed for the Master: ' + JSON.stringify(st.unsettled));
     const d = st.unsettled[0];
     assert.equal(d.kind, 'damaged', 'it is named as a damaged record, never as an interrupted run');
-    assert.equal(d.agentId, 'nova', 'what can be read off the fragment helps the Commander find the charge');
+    assert.equal(d.agentId, 'nova', 'what can be read off the fragment helps the Master find the charge');
     assert.equal(d.model, 'deepseek/deepseek-chat');
     assert.ok(/\bold-a\b/.test(d.title) && !/old-b/.test(d.title), 'named by the fragment\'s own run, never the glued row\'s: ' + d.title);
     assert.equal(d.ts, null, 'the fragment records no time: it never borrows the glued row\'s timestamp');

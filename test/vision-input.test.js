@@ -14,7 +14,7 @@
         text-only model, keep them for a vision model, and keep them for a model the catalog says nothing about.
      4. The 404 itself: one request (no retry), non-retryable, a message that names the fix — and the adapter
         remembers it, so the next request to that model goes without the image instead of failing again.
-     5. The Commander's copy on BOTH friendlyerror paths (browser mirror and node) names the fix: a vision model. */
+     5. The Master's copy on BOTH friendlyerror paths (browser mirror and node) names the fix: a vision model. */
 'use strict';
 const { readSidecarSource, sidecarTopLevelFunction } = require('./helpers/source');
 const A = require('./_assert.js');
@@ -184,7 +184,7 @@ async function drain(p, req) {
     A.eq(imagePartsIn(posts[0]), 0, label + ' 404: ...without the image part');
   }
 
-  // ---- 5. errorClass + the Commander's copy ----
+  // ---- 5. errorClass + the Master's copy ----
   {
     const raw = 'openai-compatible http 404 - [request req-1; type upstream_error; code 404] No endpoints found that support image input';
     const cls = classifyApiError(Object.assign(new Error(raw), { status: 404 }), {});

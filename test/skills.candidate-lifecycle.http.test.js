@@ -6,7 +6,7 @@ const fs = require('node:fs');
 const http = require('node:http');
 const path = require('node:path');
 const { SidecarFixture } = require('./helpers/sidecar-fixture.js');
-// the Commander's own words: on this non-Claude wire the run-context note leads the newest user message
+// the Master's own words: on this non-Claude wire the run-context note leads the newest user message
 const { lastUserWords } = require('./helpers/host-notes.js');
 const { makeSkillStore } = require('../sidecar/skillstore.js');
 const guard = require('../sidecar/skills/guard.js');
@@ -29,7 +29,7 @@ let seq = 0;
 function atomicJson(file, value) { fs.writeFileSync(file + '.tmp', value); fs.renameSync(file + '.tmp', file); }
 function seed(workspace) {
   // a sibling saved before review writes were staged: active, written by the background review, waiting for the
-  // Commander's approval (withheld from prompts)
+  // Master's approval (withheld from prompts)
   const rows = [JSON.stringify({ id: SIBLING_ID, agentId: 'agent', name: SIBLING, summary: 'Weekly brief procedure', body: SIBLING_BODY, createdBy: 'agent',
     writtenBy: 'background-review', guardAction: 'ask', contentDigest: digestOf({ body: SIBLING_BODY }), state: 'active', createdAt: 1, updatedAt: 1 })];
   const store = makeSkillStore({ io: { readAll: () => rows.map(row => JSON.parse(row)), append: row => rows.push(JSON.stringify(row)) },
@@ -311,7 +311,7 @@ const server = http.createServer((req, res) => {
     await check('skills-eval-03', async () => {
       await manage({ action: 'edit', body: BASELINE + '\n' });
       await api('POST', '/api/agent-skills/allow', { agentId: 'agent', id: seeded.id });
-      assert.equal((await active()).withheld, false, 'the Commander approved the edited skill');
+      assert.equal((await active()).withheld, false, 'the Master approved the edited skill');
       assert.match(await worker('agent', 'LIFECYCLE_PROPOSE: Read the edited procedure, then propose the exact copy procedure again.'), /Proposed revision/);
       const again = (await candidates()).find(c => c.name === NAME && c.status === 'pending');
       assert.ok(again, 'the agent proposed a revision of the edited skill');
@@ -324,7 +324,7 @@ const server = http.createServer((req, res) => {
     // refused before the route writes any approval, or the refused click releases the withheld sibling into prompts.
     await check('skills-eval-07', async () => {
       const sibling = async () => (await api('GET', '/api/agent-skills?agent=agent&body=1')).skills.find(s => s.id === SIBLING_ID);
-      assert.equal((await sibling()).withheld, true, 'precondition: the sibling waits for the Commander\'s approval');
+      assert.equal((await sibling()).withheld, true, 'precondition: the sibling waits for the Master\'s approval');
       const archive = (await candidates()).find(c => c.name === SIBLING && c.status === 'pending');
       assert.ok(archive && archive.skill.state === 'archived', 'the curator archive is pending');
       assert.ok((await candidates()).some(c => c.name === REPORTS && c.status === 'pending'), 'its heir merge is still a proposal');

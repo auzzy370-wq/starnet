@@ -1,7 +1,7 @@
 /* test/conveyor-link-tools.test.js — the floor builds LINKS (conveyor-links plan, phase B, 2026-09-28; Andrew: "yes merge it
    and start phase B").
 
-   Phase A put links in the save and the compiler, copied exactly from the belts. Phase B makes them what the Commander builds:
+   Phase A put links in the save and the compiler, copied exactly from the belts. Phase B makes them what the Master builds:
      CONNECT   — BELT, click a machine then the next: the lane is a link between exactly those two. It ends on a tile that
                  belongs to the destination alone, so machines placed side by side connect (no TOO CLOSE refusal), and no
                  tile of it but its own ends sits beside a junction. The audit's two stranded shapes — split → two agents
@@ -11,7 +11,7 @@
                  CODE lane is still its CODE lane whichever side it now leaves from.
      DELETE    — the machine's links go, its belts stay (loose); a machine put back where they end picks them up again.
      LOOSE     — a hand-laid belt that joins two machines becomes a link; one that joins none stays on the floor and in
-                 no plan (the Commander's call: loose belts route nothing).
+                 no plan (the Master's call: loose belts route nothing).
      STABLE    — every blueprint stamps to the very plan the ring rule gave it; reconciling twice changes nothing. */
 'use strict';
 const A = require('./_assert.js');

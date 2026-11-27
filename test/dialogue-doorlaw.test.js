@@ -4,7 +4,7 @@
    CONNECT — the two doors customers ask for on day one — start online). A line that names a system brings it
    online — but only COMMS lines did. The awakening ("its line is waiting for a crew: WORK › AUTOMATE › WORKFLOWS …") and the quick
    tour ("open WORK › AUTOMATE › WORKFLOWS", "BUILD › CONNECT › ABILITIES") speak through Dialogue.say / Dialogue.node, so they sent a
-   brand-new Commander to a dock button that was not there. Dialogue now applies the door law to every line it speaks. */
+   brand-new Master to a dock button that was not there. Dialogue now applies the door law to every line it speaks. */
 'use strict';
 const A = require('./_assert.js');
 const fs = require('fs');

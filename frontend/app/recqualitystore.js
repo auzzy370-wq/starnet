@@ -1,21 +1,21 @@
 /* VULTRON — recqualitystore.js : THE OUTCOME LOOP (the live half of the recommendation quality loop).
 
    The spine picks the best-grounded offer it can cite. This store answers the question nobody was asking before
-   it existed: DID THAT OFFER ACTUALLY HELP? A channel whose accepted offers produce work the Commander rates 👎
+   it existed: DID THAT OFFER ACTUALLY HELP? A channel whose accepted offers produce work the Master rates 👎
    — or work that never finishes — gets structurally quieter. A channel whose offers produce 👍 work earns a
    small, bounded edge. Nobody hand-tunes anything; the same earned-trust philosophy the autonomy dial already
    uses, applied to the station's own suggestions.
 
    HOW AN OUTCOME IS ATTRIBUTED (and why it can't be faked):
-     1. The Commander ACCEPTS an offer, AND the launch that accept triggers really starts. Only then does the
+     1. The Master ACCEPTS an offer, AND the launch that accept triggers really starts. Only then does the
         channel arm a PENDING stamp ({ channel, dim, id, at }) — an accept whose launch no-opped (a busy stream)
         arms nothing, because there is no work to attribute. It is not silent either: the caller settles that
-        refusal as `deferred` on the spot (right idea, wrong moment) and tells the Commander why.
+        refusal as `deferred` on the spot (right idea, wrong moment) and tells the Master why.
      2. The very next hero run START claims it (chat.js, at the same point it writes RUN_META) — so the stamp is
         visible on the run's own meta, and the run is the provable link between "the offer" and "the work". The
         stamp EXPIRES after PENDING_TTL_MS: past that window the next run is not this offer's work, and saying it
         was would be the app asserting a causal link the harness cannot prove.
-     3. The run's real outcome folds back: a clean finish is a weak positive; the Commander's own 👍/👌/👎 on that
+     3. The run's real outcome folds back: a clean finish is a weak positive; the Master's own 👍/👌/👎 on that
         run (the direct rateWork hand-off, never the bus) is the strong one.
      Where an accept spawns NO trackable work (a kept belief, an answered question, a re-confirm), the accept
      itself IS the outcome — a small positive, recorded once.
@@ -25,7 +25,7 @@
        ended in a stop / an error / a budget limit folds NOTHING — the station cannot honestly blame the offer
        for that, so it says nothing about it.
      · The floor (recquality.js Q_FLOOR ≥ 0.5) means quality alone can never silence a channel. Silencing is the
-       job of the per-channel caps and the Commander's own declines — never of a number the station computed.
+       job of the per-channel caps and the Master's own declines — never of a number the station computed.
      · Nothing user-facing ever asserts a quality score. It orders offers; it does not narrate them.
      · TWO CHANNELS ARE EXEMPT BY DESIGN and record no outcomes: `memory` (the run's own reflection deck) and
        `rate` (the rating of work just done). Neither is a suggestion the station CHOSE to make — the run earns
@@ -44,7 +44,7 @@ const RecQualityStore = (() => {
   const DENY_CAP = 100;      // re-confirm denial memory (FIFO) — bounded exactly like goalstore's offered set
   /* HOW LONG AN ARMED ACCEPT MAY WAIT FOR ITS RUN. The accept→run link is only honest while the two are the same
      moment: a "build it" whose launch is slow is still this offer's work; a stamp still sitting there minutes
-     later belongs to nothing the offer caused, and the Commander's next unrelated run must NOT inherit it. */
+     later belongs to nothing the offer caused, and the Master's next unrelated run must NOT inherit it. */
   const PENDING_TTL_MS = 3 * 60 * 1000;
   let state = null;          // { v:1, ch:{ channel: weight }, dim:{ dim: weight }, denied:{ fp:1 }, deniedOrder:[fp] }
   let deps = {};
@@ -174,24 +174,24 @@ const RecQualityStore = (() => {
     return noteOutcome(stamp, 'engaged');
   }
   // an offer was refused. "not now" is a signal about TIMING (the mildest thing we record); "no"/"never" is a
-  // signal about the offer itself. Both are real, both are the Commander's own words about this channel.
+  // signal about the offer itself. Both are real, both are the Master's own words about this channel.
   function noteDecline(stamp, deferred) { return noteOutcome(stamp, deferred ? 'deferred' : 'declined'); }
 
   /* ---------- the attribution stamp ---------- */
   /* called by chat.js at the exact point it writes RUN_META, for every run it starts. Returns the pending stamp
      (and binds it to this run) or null. HERO ONLY: a summoned worker's run is not the work an offer to the
-     Commander spawned.
+     Master spawned.
      THE STAMP EXPIRES (fixed 2026-08-04). It is claimed by the first hero run WITHIN PENDING_TTL_MS of the accept,
      and by nothing after that. Without the clock the stamp simply waited — so an accept whose launch never
-     happened stayed armed indefinitely and the Commander's next unrelated manual run, minutes or hours later,
+     happened stayed armed indefinitely and the Master's next unrelated manual run, minutes or hours later,
      was recorded as the work that offer produced. An expired stamp settles as `deferred`: the offer was accepted
      and no work followed it, which is a real, mild signal about this channel — and it is the ONLY thing the
      harness can honestly say about it.
      EXPIRY IS LAZY, AND THAT IS THE HONEST SCOPE OF IT. Nothing runs on a timer: an armed stamp is only ever
      examined here, so it folds its `deferred` when (and only when) a LATER HERO RUN STARTS. A session where the
-     Commander accepts an offer, the launch never happens, and they then start no further run records nothing —
+     Master accepts an offer, the launch never happens, and they then start no further run records nothing —
      and `pending` is memory-only, so a reload drops it entirely. Both are deliberate: the alternative is a timer
-     that writes a verdict about an offer while the Commander is away from the keyboard, on no new evidence.
+     that writes a verdict about an offer while the Master is away from the keyboard, on no new evidence.
      A run REFUSED at the moment of accept is a different case and is settled eagerly at the call site
      (suggeststore.js), because there the refusal is observed rather than merely un-observed. */
   function claimForRun(runId, agentId) {
@@ -212,7 +212,7 @@ const RecQualityStore = (() => {
   }
   function stampFor(runId) { return (runId && stamps.has(String(runId))) ? stamps.get(String(runId)) : null; }
 
-  // the Commander's own 👍/👌/👎 on a run an offer spawned — the strongest honest signal in the loop. Called
+  // the Master's own 👍/👌/👎 on a run an offer spawned — the strongest honest signal in the loop. Called
   // DIRECTLY from chat.js rateWork (this verdict never rides the bus), like the sibling growth stores.
   function noteVerdict(runId, verdict) {
     const stamp = stampFor(runId);
@@ -228,7 +228,7 @@ const RecQualityStore = (() => {
      actually got done. Anything else (stop / error / budget limit) folds NOTHING: the harness cannot honestly
      attribute an interrupted run to the quality of the suggestion that started it, so it stays quiet about it.
      A later 👍/👌/👎 on the same run folds SEPARATELY and deliberately: "it finished" and "it was any good" are
-     two different pieces of evidence, and the Commander's verdict is the one that carries weight. */
+     two different pieces of evidence, and the Master's verdict is the one that carries weight. */
   function onRunEnd(p) {
     if (!ready() || !p) return;
     const runId = String(p.runId || p.id || '');

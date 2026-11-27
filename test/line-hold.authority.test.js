@@ -74,7 +74,7 @@ async function refused(label, env, h, why, what) {
     rig.halted = true;
     const job = await refused('E-STOP', env, h, /E-STOP is engaged/);
     const k = job.continuation;
-    rig.halted = false;   // the Commander resumes the station
+    rig.halted = false;   // the Master resumes the station
     A.eq([get(env, id).status, rig.calls.length, JSON.stringify(get(env, id).continuation)], ['held', 2, JSON.stringify(k)], 'clearing E-STOP changed nothing: the job is still held, nothing ran by itself');
     const replay = owner.resume(id, say(c, 'approve', 'tok-1'));
     A.eq([replay.code, replay.refused, replay.replayed, replay.error === job.resumeRefused.why, rig.calls.length], [409, true, true, true, 2], 'the refused decision again is the SAVED refusal — it is not re-checked and never turns into an approval');

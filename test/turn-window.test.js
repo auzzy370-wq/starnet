@@ -91,7 +91,7 @@ const attached = { role: 'user', content: 'READ_ATTACHMENT', turnId: 'window_att
   attachments: [{ id: 'attachment-ref', name: 'note.txt', path: '.attachments/attachment-ref.txt', mediaType: 'text/plain', kind: 'file' }, { id: 'elsewhere', name: 'elsewhere.txt', path: '../outside/elsewhere.txt' }], taint: 'forged', taintKnown: true };
 window.apply([attached, newest], o, ctx);
 const attachedRow = store.all().find(r => r.turnId === attached.turnId && r.directive === true);
-// (attachment rows, S3) a carried turn is written like a new one: the directive holds the Commander's typed words, CLEAN whatever
+// (attachment rows, S3) a carried turn is written like a new one: the directive holds the Master's typed words, CLEAN whatever
 // provenance the page claimed, and each file it carried is an attachment row beside it. Taint follows the bytes a run re-sends
 // (attachments.resentOf), so the mere presence of a reference stamps nothing on the words.
 A.eq([attachedRow.taintKnown, Store.rowTaint(attachedRow), attachedRow.sourceRunId, attachedRow.content, attachedRow.attachments.map(a => a.id)], [true, null, undefined, 'READ_ATTACHMENT', ['attachment-ref']], 'a carried directive with files is written clean, never borrows the current run, and keeps its saved references');

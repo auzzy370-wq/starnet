@@ -5,7 +5,7 @@
    brief on {topic}" or "review {target} for bugs". Each recipe carries a tiny param form + a directive
    TEMPLATE; filling the params and launching it opens a fresh workstream and sends the agent that directive.
 
-   Built-ins are a FROZEN curated catalog. The Commander can also save their own (persisted in localStorage,
+   Built-ins are a FROZEN curated catalog. The Master can also save their own (persisted in localStorage,
    the same marketplace pattern as custom specialties) — the substrate the Phase-3 "auto-mint a recipe from
    what you keep asking for" moat move writes into.
 
@@ -61,7 +61,7 @@
     'data', 'general', 'code', 'planning'];
   /* THE VISIBLE buckets, in rail order, and the fold from a raw category onto one. Two categories can be
      DIFFERENT values and the same bucket ('code' and 'developer' both render under DEVELOPER), so anything
-     reasoning about what the Commander actually SEES must fold first — the marketplace rail delegates here
+     reasoning about what the Master actually SEES must fold first — the marketplace rail delegates here
      rather than keeping its own copy, so the rail and the recommender can never disagree about what "one
      per category" means. Legacy aliases fold; an unknown value falls back to 'general'. */
   const RAIL_BUCKETS = ['general', 'research', 'creator', 'ops', 'business', 'money', 'data', 'developer'];
@@ -121,7 +121,7 @@
   }
 
   /* ---- TYPED FILL-INS (launch-form input kinds) ----
-     A param declares WHAT KIND of value it wants, so the launch form can hand the Commander the right control
+     A param declares WHAT KIND of value it wants, so the launch form can hand the Master the right control
      instead of one undifferentiated textarea for everything ("point me at a file" used to mean "type a path
      from memory"). Every type still resolves to a plain STRING substituted into the directive by fillTask —
      the launch primitive is unchanged, so a typed recipe and an untyped one compose identically.
@@ -154,7 +154,7 @@
     if (type === 'choice' && options.length < 2) type = 'text';   // a picker with nothing to pick IS a text box
     let dflt = typeof p.default === 'string' ? p.default : '';
     // a choice's default must be one of its own options — otherwise the form would preselect a chip that isn't
-    // there and fillTask would substitute a value the Commander was never shown.
+    // there and fillTask would substitute a value the Master was never shown.
     if (type === 'choice' && dflt && !options.some(o => o.toLowerCase() === dflt.toLowerCase())) dflt = '';
     return Object.freeze({
       key: String(p.key),
@@ -311,7 +311,7 @@
       .replace(/\b\w/g, c => c.toUpperCase());       // Title-Case each word ('look_back' -> 'Look Back')
   }
   // derive the param form from a task TEMPLATE: each DISTINCT {token} becomes a required text input (humanized
-  // label). This is how an AUTHORED custom recipe gets its inputs — the template IS the spec, so the Commander
+  // label). This is how an AUTHORED custom recipe gets its inputs — the template IS the spec, so the Master
   // only writes the directive and the blanks fall out of it. A template with no tokens yields a one-tap mission.
   function paramsFromTemplate(task) {
     const seen = {}, out = [];
@@ -414,7 +414,7 @@
       emoji: r.emoji || '▸', tagline, blurb: r.blurb || '',
       accent: r.accent || '#7bc88a',
       // a saved custom carries its own ranking tags; pre-tags customs (or older saves) get them classified
-      // from their own text — so the Commander's own recipes rank in the feed just like the built-ins.
+      // from their own text — so the Master's own recipes rank in the feed just like the built-ins.
       tags: normTags(r.tags && Object.keys(r.tags).length ? r.tags : deriveTags(name + ' ' + tagline + ' ' + task)),
       // an authored custom supplies only the task TEMPLATE — derive its inputs from the {tokens} when no usable
       // params given. Check the NORMALIZED result (not the raw length) so a keyless/garbage params array from a
@@ -439,7 +439,7 @@
       sourceRunId: r.sourceRunId != null ? String(r.sourceRunId) : null,
       custom: true,
       // G3a seed callouts: a recipe the AGENT authored from an observed pattern (seedstore.save) carries this
-      // durable flag, so a later pitch/suggestion/digest that reuses it can CREDIT the Commander's saved seed.
+      // durable flag, so a later pitch/suggestion/digest that reuses it can CREDIT the Master's saved seed.
       // A hand-authored save-your-own recipe leaves it false — only agent-minted seeds get the callout.
       seedborn: !!r.seedborn,
       // when this custom was first saved / last saved (ms). Local provenance only — never exported. A record saved
@@ -486,7 +486,7 @@
   // THE launch primitive: substitute the param values into the recipe's directive template and return the
   // string the agent receives. Returns null for an unknown id/recipe. The recipe analogue of Specialties.compose
   // — the single, no-drift launch path. A FILLED value is inserted VERBATIM, so pasted code / logs / indentation
-  // / aligned tables survive untouched (the agent must run exactly what the Commander supplied). A blank optional
+  // / aligned tables survive untouched (the agent must run exactly what the Master supplied). A blank optional
   // falls back to its param default; only when a token resolves to nothing do we drop the seam whitespace it
   // would otherwise leave behind — and that trim only ever touches the LITERAL template segment, never user text.
   // Tokens that aren't params of this recipe are left as-is (author error, never a crash).
@@ -520,7 +520,7 @@
         .map(e => '- ' + e.dimension + ': ' + intake[e.dimension].trim().slice(0, 72));
       if (lines.length) out += '\n\nDecisions (chosen at launch — treat these as answered; do not re-ask them):\n' + lines.join('\n');
     }
-    // SOP: the procedure rides the directive so the agent follows the Commander's order, and the acceptance
+    // SOP: the procedure rides the directive so the agent follows the Master's order, and the acceptance
     // contract is STATED so the agent knows exactly what the host will check (the host checks it regardless).
     if (out && r.steps && r.steps.length) {
       out += '\n\nProcedure (follow in this order; do not skip or reorder steps):\n'
@@ -900,7 +900,7 @@
     // the haystack is the recipe's READABLE text (name + tagline + blurb) — deliberately NOT its tag keys. The
     // lanes are internal vocabulary ('code'/'research'/'general'), so a goal that merely contains the word
     // "general" used to score a point against every general-lane recipe in the catalog: twenty identical false
-    // hits and no way for the Commander to see why. Every hit is now a word they can find on the card itself.
+    // hits and no way for the Master to see why. Every hit is now a word they can find on the card itself.
     const hay = new Set(goalWords((recipe.name || '') + ' ' + (recipe.tagline || '') + ' ' + (recipe.blurb || '')));
     if (!hay.size) return [];
     const seen = {}, hits = [];
@@ -916,7 +916,7 @@
   function goalKeywordScore(recipe, goalText) { return goalKeywordHits(recipe, goalText).length; }
 
   /* MERGE NOTE (2026-07-28): the learned-topic lane landed its own stoplist here, deliberately scoped to filter
-     only which hit a REASON may NAME — never the score — because re-ranking every Commander's row was outside
+     only which hit a REASON may NAME — never the score — because re-ranking every Master's row was outside
      that lane's mandate, and it flagged "the underlying rank noise is real and worth its own decision". This
      branch IS that decision: the stoplist now lives INSIDE goalKeywordHits (above) and applies to the rank too,
      so hits and score can never disagree. Its `namableGoalHits` filter is therefore already satisfied by every
@@ -925,14 +925,14 @@
 
   /* ---- the LEARNED-TOPIC term (2026-07-28) ----
      The station's interest histogram (sidecar/interests.js, served to the browser via GET /api/scout and cached
-     in ProspectStore.interests()) knows WHAT the Commander keeps working on — "gpu price tracking", not just
+     in ProspectStore.interests()) knows WHAT the Master keeps working on — "gpu price tracking", not just
      "research". Until now the FOR YOU row could not read it. This folds it in as ONE MORE POSITIVE TERM.
 
      STRICTLY ADDITIVE, and that is the safety property: TopicMatch.match returns null unless a WARM topic
      (weight ≥ 0.8) covers a majority of the recipe's tokens, so on a cold/calibrating station the term is
      exactly 0 and every ranking is byte-identical to before. Because it can only ever RAISE a score, it can
      never shrink the survivor set the way the negative outcome term could (the 2026-07-26 blank-shelf trap) —
-     it can only promote a recipe the Commander's real, evidenced work points at.
+     it can only promote a recipe the Master's real, evidenced work points at.
 
      CAPPED on purpose: interests.fold grows a topic's weight by ~1 per observation with no ceiling, so an
      uncapped term would eventually swamp affinity, goals and outcomes alike and freeze the row on one subject. */
@@ -951,7 +951,7 @@
 
   /* forYouReason — the honest WHY for one FOR YOU card, recomputed from the SAME inputs that ranked it (pure,
      no state). Precedence is most-specific-evidence first: a learned topic names the actual subject and its
-     observation count; a goal match names the matched word; then the Commander's own verdicts, then launches.
+     observation count; a goal match names the matched word; then the Master's own verdicts, then launches.
      Returns '' when no term the caller can honestly phrase fired — the caller then falls back to its profile-
      affinity copy, or shows no reason at all. Truthful-telemetry law: every string here traces to a real
      persisted counter, so a card can never claim a reason the backend cannot prove. */
@@ -962,7 +962,7 @@
     if (m && TopicMatch && TopicMatch.reason) { const r = TopicMatch.reason(m); if (r) return r; }
     const gh = namableGoalHits(goalKeywordHits(recipe, opts.goalText || ''));
     if (gh.length) return 'it matches your goal: “' + gh[0] + '”';
-    // the PAIN/AMBITION term (momentum loop, 2026-08-21): the same word-wise matcher over what the Commander said
+    // the PAIN/AMBITION term (momentum loop, 2026-08-21): the same word-wise matcher over what the Master said
     // eats their time / what they keep meaning to do — the two highest-signal "automate this for me" dossier dims.
     const ph = namableGoalHits(goalKeywordHits(recipe, opts.painText || ''));
     if (ph.length) return 'it matches something you want off your plate: “' + ph[0] + '”';
@@ -980,18 +980,18 @@
   //   goalText        -> string  — the user's goals belief text (keyword-matched into the ranking as a small nudge).
   //   painText        -> string  — the user's PAIN + AMBITION belief text (dossier dims `pain`, `ambition`: what eats
   //                      their time / what they never find time for). Same word-wise matcher and weight as goals —
-  //                      these are the dims that literally name the work the Commander wants taken off their
+  //                      these are the dims that literally name the work the Master wants taken off their
   //                      shoulders, and the shelf used to ignore them entirely (momentum loop, 2026-08-21).
   //   launches        -> {id: {n, rated?}} or {id: n} — REAL per-recipe launch counts (the scout usage read), each
   //                      optionally carrying rate-the-work outcome counters {great, ok, miss}. Launching ranks a
-  //                      recipe up (capped nudge); the Commander's own verdicts rank what actually HELPED.
+  //                      recipe up (capped nudge); the Master's own verdicts rank what actually HELPED.
   //   topics          -> [row]   — the station's LEARNED interest topics (interests.summary rows, as served by
   //                      GET /api/scout and cached in ProspectStore.interests()). A warm topic that covers the
   //                      recipe adds a capped POSITIVE term — never subtracts, so it cannot empty the row.
   //   exclude         -> id      — a recipe to omit (e.g. the one already in the dossier).
   //   limit           -> N       — how many to return (default 4).
   // Signal blend: (profile affinity × 4) + (goal-keyword hits × 2) + min(launches, 5) + OUTCOME + TOPIC, where OUTCOME =
-  // min(great, 3) − 2·min(miss, 3) — asymmetric on purpose: a recipe the Commander keeps rating 👎 sinks fast and
+  // min(great, 3) − 2·min(miss, 3) — asymmetric on purpose: a recipe the Master keeps rating 👎 sinks fast and
   // can drop out of the row entirely (score ≤ 0 is filtered — the honest sink), while 👍 lifts it gently. Ratings
   // never count as a signal on their own (a rating implies a launch, which already signals). Tie-broken by original
   // catalog order so the result is STABLE for a fixed input (test-friendly). If EVERY signal is silent (no profile
@@ -1003,7 +1003,7 @@
 
      The bay printed its personalized "◈ FOR YOU" header off `UnderstandingStore.readiness()` alone. Readiness
      says the station has learned enough to be ASKED; it does not say this particular row used any of it. A
-     Commander with a filled dossier but no profile signal, no goal keyword that hits any of ~100 recipe names,
+     Master with a filled dossier but no profile signal, no goal keyword that hits any of ~100 recipe names,
      no launches and no warm topic gets `anySignal === false` and a category spread drawn in catalog order — and
      a header claiming those three cards are FOR THEM. That is the product's core law broken by a string.
 
@@ -1015,7 +1015,7 @@
      ⛔ AND `personalized` ALONE STILL OVERCLAIMS ON THE TOP-UP PATH (2026-08-05). "at least one card is for them"
      is not "this row was picked from your real work", and the header was reading the boolean as if it were. A
      one-hit row tops up from the SAME catalog spread the cold start uses, and those filler cards carry no why at
-     all — so a plural, whole-row claim sat over two cards the station had never seen the Commander touch. So the
+     all — so a plural, whole-row claim sat over two cards the station had never seen the Master touch. So the
      count rides out too: `scored` is how many cards a real term actually produced, `items.length` how many are
      shown. Equal → the whole row is earned. Fewer → the caller owes MIXED phrasing, not the full claim. */
   function rankRecipes(items, opts) { return rankRecipesExplained(items, opts).items; }
@@ -1034,7 +1034,7 @@
       const n = (u && typeof u === 'object') ? u.n : u;
       return (Number.isFinite(n) && n > 0) ? Math.min(5, Math.floor(n)) : 0;
     };
-    // the outcome term (lane B): the Commander's OWN rate-the-work verdicts on this recipe's runs. Capped both
+    // the outcome term (lane B): the Master's OWN rate-the-work verdicts on this recipe's runs. Capped both
     // ways and miss-heavy on purpose (a 👎 is rarer and better-informed than a 👍); bad counters read as zeros.
     const outcomeScore = (id) => {
       if (!launches || !id) return 0;
@@ -1079,7 +1079,7 @@
       // TOP UP a thin row. Now that goal matching is word-wise (not substring), a real goals belief legitimately
       // scores only a handful of recipes — which used to render a lonely one- or two-card shelf. Fill the rest
       // from the SAME honest category spread the cold start uses, drawing only on recipes that scored EXACTLY
-      // zero: a recipe the Commander rated 👎 carries a negative score and must stay sunk, never quietly readmitted.
+      // zero: a recipe the Master rated 👎 carries a negative score and must stay sunk, never quietly readmitted.
       const earned = top.length;   // how many cards a real term actually produced, BEFORE any filler
       if (top.length && top.length < limit) {
         const inRow = {}; top.forEach(r => { inRow[r.id] = true; });
@@ -1095,7 +1095,7 @@
     }
     // honest cold-start fallback: a bucket spread (first recipe of each distinct browse bucket), topped up with
     // the next recipes in order if there aren't enough distinct buckets to fill the row. NOTHING here is about
-    // this Commander — which is exactly what `personalized: false` tells the caller to say out loud.
+    // this Master — which is exactly what `personalized: false` tells the caller to say out loud.
     return { items: categorySpread(pool, limit, opts.spreadOffset), personalized: false, scored: 0 };
   }
   /* One recipe per distinct BROWSE BUCKET, then the remainder, clipped to n. Shared by the cold-start row and
@@ -1105,12 +1105,12 @@
      grew: core.js owns four legacy categories (research/code/writing/planning) and sits FIRST in the aggregate,
      so a 4-card cold-start row was filled entirely from core.js before any persona module was reached — the
      other hundred-odd recipes could never appear on a cold station no matter how many were added. It was not
-     even varied in the way the Commander sees it, since code+developer and writing+planning+ops each render
+     even varied in the way the Master sees it, since code+developer and writing+planning+ops each render
      under ONE rail chip. Folding to the bucket first fixes both: the row spans what the rail actually shows.
 
      `offset` rotates WHICH bucket the row starts from. Selection stays pure and deterministic — the same
      offset always yields the same row, so tests and the all-sunk fallback are unaffected — but a caller that
-     passes a real, changing counter (the marketplace passes how many times this Commander has opened the
+     passes a real, changing counter (the marketplace passes how many times this Master has opened the
      recipes tab) shows a different corner of the library on each visit instead of the same four cards forever.
      This claims nothing: the row is labelled as a varied lineup, never as popular or recommended, so rotating
      it stays inside the truthful-telemetry law — there is no assertion here that could become false. */

@@ -1,5 +1,5 @@
 /* node test/station-control.e2e.test.mjs — station.settings / station.control / station.power END TO END, in real
-   Chromium (2026-10-02, "the agent can do anything the Commander asks, safely").
+   Chromium (2026-10-02, "the agent can do anything the Master asks, safely").
 
    The unit suite proves the tools against stubs. Only this proves the chain the lead actually uses: a MOCK model finds
    the deferred tools with tool_search, reads the settings, and changes them → the REAL sidecar tools → page actions over
@@ -142,7 +142,7 @@ try {
   check('setup: two sessions and a researcher on the crew', !!setup && setup.sessions.indexOf('Research notes') >= 0 && setup.crew.some(c => /^researcher:/.test(c)), JSON.stringify(setup && { s: setup.sessions, c: setup.crew }));
   const researcherName = ((setup && setup.crew) || []).find(c => /^researcher:/.test(c)).split(':')[1];
 
-  // ---- ONE lead run: find the tools, read, then change the station the way a Commander would ask ----
+  // ---- ONE lead run: find the tools, read, then change the station the way a Master would ask ----
   mock.script = [
     { name: 'tool_search', args: { query: 'station settings' } },                                                              // 0
     { name: 'station_settings', args: {} },                                                                                       // 1
@@ -162,7 +162,7 @@ try {
     { name: 'station_control', args: { action: 'agent.model', args: { agent: 'agent', model: 'test/model2', provider: 'openrouter' } } } // 15
   ];
   const run = await leadRun(base, token, 'rename yourself Atlas, tidy my sessions, go green and bigger text, pause learning, cap spending at $7 a day, remove the researcher');
-  // Full Access is the Commander's zero-prompt posture: the untainted run (the $7 cap included) raised no card
+  // Full Access is the Master's zero-prompt posture: the untainted run (the $7 cap included) raised no card
   check('Full Access: no approval card on an untainted run', run.prompts.length === 0, JSON.stringify(run.prompts.map(x => x.tool)));
   const end = run.events.filter(e => e.name === 'agent.run.end').pop();
   check('the lead run completes', run.status === 200 && !!end && end.payload.reason === 'done', JSON.stringify(end && end.payload && end.payload.reason));
@@ -211,7 +211,7 @@ try {
   const errs = (diagnostics.exceptions || []).filter(e => !/favicon|ERR_ABORTED|net::ERR/i.test(String(e)));
   check('no uncaught page exceptions', errs.length === 0, errs.slice(0, 3).join(' | '));
 
-  /* ---- PHASE 2: ASK MODE, the way a Commander meets it. A second station with Full Access OFF; the Commander TYPES
+  /* ---- PHASE 2: ASK MODE, the way a Master meets it. A second station with Full Access OFF; the Master TYPES
      the request into COMMS; every change raises the real approval card, whose words come from the catalog. Approve the
      look and the cap; DENY Full Power — the deny must leave it off. ---- */
   const workspace2 = join(root, 'workspace2'), appPort2 = await freePort(), base2 = 'http://127.0.0.1:' + appPort2;
@@ -225,7 +225,7 @@ try {
   mock.script = [
     { name: 'tool_search', args: { query: 'station settings' } },
     // a COMMS-typed task settles its Task Brief before consequential tools (a real model does exactly this)
-    { name: 'brief_proceed', args: { objective: 'change the station settings the Commander asked for', deliverable: 'the settings changed' } },
+    { name: 'brief_proceed', args: { objective: 'change the station settings the Master asked for', deliverable: 'the settings changed' } },
     { name: 'station_control', args: { action: 'look.set', args: { look: { theme: 'blue' } } } },
     { name: 'station_power', args: { action: 'budget.set', args: { perDay: 9 } } },
     { name: 'station_power', args: { action: 'fullpower.set', args: { on: true } } }

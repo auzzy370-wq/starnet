@@ -3,7 +3,7 @@
    surface the floor is REAL — the office starts COMPUTE-ONLY (compute is the single freebie, so an agent can ALWAYS
    think and a brand-new agent works out of the box — never a dead wall) and the agent's REAL placed caps off the
    floor (extraObjects: dish→web · cabinet→files · workbench→terminal · …) are appended, so it grants exactly what
-   the Commander placed and nothing it didn't. AUTONOMOUS/headless surfaces (cron, Telegram, delegated workers) have
+   the Master placed and nothing it didn't. AUTONOMOUS/headless surfaces (cron, Telegram, delegated workers) have
    no in-the-moment floor UI, so they keep the full default office — placing-grants-reach is taught where the
    beginner is (the browser); silently stripping a scheduled/delegated run's web+files would regress shipped work.
 

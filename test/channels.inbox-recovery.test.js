@@ -120,7 +120,7 @@ const userCopies = (list, words) => (list || []).filter(m => m && m.role === 'us
     A.ok(!/Appended one line/.test(notice), 'no reply claims the work was just done');
     A.eq(userCopies(p2.store.loadHistory('tg_4242'), 'append audit line now'), 1, 'the transcript holds the request once, not twice');
 
-    // the Commander says "continue": that run is told what the interrupted attempt had already begun — once
+    // the Master says "continue": that run is told what the interrupted attempt had already begun — once
     await p2.hub.onInbound({ chatId: '4242', chatType: 'dm', userId: 'u1', text: 'continue', messageId: '7048', ts: 2 });
     A.eq(p2.runs.length, 1, 'a real follow-up runs normally');
     A.ok(/AN EARLIER REQUEST WAS INTERRUPTED/.test(p2.runs[0].system) && /begun 1 tool step/.test(p2.runs[0].system),
@@ -147,7 +147,7 @@ const userCopies = (list, words) => (list || []).filter(m => m && m.role === 'us
     p2.hub.onStatus({ state: 'up' });
     await waitFor(() => p2.store.ledger.pending('telegram').length === 0 && p2.sends.length >= 2);
     A.eq(p2.runs.length, 1, 'nothing could have happened twice, so the message runs again — once');
-    A.eq(userCopies(p2.runs[0].messages, words), 1, 'the second go sends the model the request ONCE, not as the Commander asking twice');
+    A.eq(userCopies(p2.runs[0].messages, words), 1, 'the second go sends the model the request ONCE, not as the Master asking twice');
     A.eq(p2.runs[0].retryUserRunId, firstRunId, 'the second go reuses the interrupted run\'s directive row (runOnce retryUserRunId)');
     A.eq(userCopies(p2.store.loadHistory('tg_55'), words), 1, 'the transcript files the request once');
     A.ok(/restarted/.test(p2.sends[0].text) && /had not begun any tool step/.test(p2.sends[0].text), 'the chat is told this is a second go after a restart');

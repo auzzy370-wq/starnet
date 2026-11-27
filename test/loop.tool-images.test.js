@@ -4,7 +4,7 @@
    saved a PNG and handed back a PATH, and browser.vision handed back a DESCRIPTION written by a second model.
    Either way the model steering the browser was working from prose about the screen instead of the screen.
 
-   These assertions pin the channel: the pixels reach the prompt in the same `image_url` shape the Commander's
+   These assertions pin the channel: the pixels reach the prompt in the same `image_url` shape the Master's
    own attachments already use (so no adapter needed a change), they are FENCED as untrusted, they are bounded,
    and they are inert unless the host opts in. */
 'use strict';
@@ -58,7 +58,7 @@ async function run(o) {
     A.eq(imgTurns.length, 1, 'a screenshot result puts one image turn into the transcript');
     const parts = imgTurns[0].content;
     A.eq(parts[0].type, 'text', 'the image is introduced by a label');
-    A.eq(parts[1].image_url.url, 'data:image/png;base64,' + PNG, 'the pixels ride as a data: image_url — the SAME shape Commander attachments use');
+    A.eq(parts[1].image_url.url, 'data:image/png;base64,' + PNG, 'the pixels ride as a data: image_url — the SAME shape Master attachments use');
     // Ordering is load-bearing: the image must follow the tool result, not precede it.
     A.ok(messages.indexOf(imgTurns[0]) > messages.findIndex(m => m.role === 'tool'), 'the image turn follows the tool result');
 

@@ -1,6 +1,6 @@
 /* sidecar/cron-guard.js — PROMPT-INJECTION TRIPWIRE for scheduled routines.
 
-   WHY THIS EXISTS (2026-07-25). A routine can now be granted the terminal and the Commander's MCP connectors
+   WHY THIS EXISTS (2026-07-25). A routine can now be granted the terminal and the Master's MCP connectors
    for UNATTENDED use (see inputpolicy.js GRANTABLE_UNATTENDED). Before that grant existed an injected routine
    prompt could not do much: there was no shell and no connector to hijack. Now there is, and the run
    auto-approves those tools by design — so the text that reaches the model becomes a real attack surface and
@@ -195,7 +195,7 @@
   }
 
   // Plain-language block line. It names WHAT tripped without quoting the payload back (echoing an injection
-  // into a panel/COMMS card is its own small hazard) and tells the Commander what to do.
+  // into a panel/COMMS card is its own small hazard) and tells the Master what to do.
   function blockMessage(patternId, where) {
     return 'Blocked: this routine\'s ' + where + ' matched the "' + patternId + '" injection pattern. '
       + 'Scheduled routines run unattended, so text that tries to override instructions or leak credentials is refused. '

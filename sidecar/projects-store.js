@@ -1,6 +1,6 @@
 /* sidecar/projects-store.js — the KNOWN-PROJECTS store (NS-5 Project Lens core).
 
-   Every folder the Commander BLESSES as a trusted project root (via the conversational path-trust
+   Every folder the Master BLESSES as a trusted project root (via the conversational path-trust
    prompt — see pathtrust.js / permissions.js) is durably remembered here, keyed by its normalized
    real path. This is the future AUTONOMY SURFACE: the night shift will only ever revisit blessed
    roots (that consumption lane is NS-5c, NOT this module — here we only make the set readable +

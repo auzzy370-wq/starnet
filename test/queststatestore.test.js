@@ -3,7 +3,7 @@
      • resume baseline is silent (no celebration storm on init, even for already-done quests);
      • an open→done edge celebrates EXACTLY ONCE — one SFX.quest sting, one COMMS broadcast,
        one quest-log rerender, a bounded row flourish, and NO StationUI.notify (notification diet,
-       2026-08-18: the bell is reserved for things that need the Commander) — and repeat syncs stay silent;
+       2026-08-18: the bell is reserved for things that need the Master) — and repeat syncs stay silent;
      • dismissal takes only for dossier quests, hides the quest, stops the curiosity nudge for that
        dimension, and SURVIVES A RELOAD (self-persisted localStorage key);
      • THE LAW: quests never mint XP and the store never emits on U.bus — both locked with tripwire stubs
@@ -103,7 +103,7 @@ QuestStateStore.reset();
 A.eq(global.localStorage.getItem('vultron.queststate.v1'), null, 'reset removes the self-persisted key');
 A.eq(QuestStateStore.sync(), [], 'a reset store degrades to no-ops until the next init');
 QuestStateStore.init();
-A.eq(QuestStateStore.isDismissed('dim:stack'), false, 'after reset+init, no prior Commander history remains');
+A.eq(QuestStateStore.isDismissed('dim:stack'), false, 'after reset+init, no prior Master history remains');
 
 /* ---------- source-level locks: the browser wiring (stationui/app/index.html are not node-loadable) ---------- */
 const stSrc = fs.readFileSync(path.join(__dirname, '../frontend/app/stationui.js'), 'utf8');

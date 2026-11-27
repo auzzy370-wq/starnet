@@ -1,13 +1,13 @@
-/* frontend/app/places.js — PLACES: every place in Vultron a Commander can be shown, in the words the UI itself uses.
+/* frontend/app/places.js — PLACES: every place in Vultron a Master can be shown, in the words the UI itself uses.
 
    WHY (Andrew 2026-10-04: "the agents [should] understand EVERYTHING about vultron … so it can basically use itself
    instead of the user having to navigate"): an agent could change ~45 settings from chat but could not put ONE window
-   in front of the Commander — "where are my deliverables?" got a menu path to read and click through. This is the one
+   in front of the Master — "where are my deliverables?" got a menu path to read and click through. This is the one
    list of where things are. The agent's station.show tool (sidecar/tools/builtin/station-show.js) takes its ids and
    describes them from it; the page (stationcommands.js station.show) opens each one through the SAME door its dock
    button, tab or menu entry uses. One list, so the tool, its description and the page can never name different places.
 
-   Each place: { id, words (the UI's own path — what the Commander sees), about (one line: what it is for),
+   Each place: { id, words (the UI's own path — what the Master sees), about (one line: what it is for),
    open: how the page reaches it — { term, section? } a window (StationUI.openTerm key + console section, aliases
    included), { agent: <dossier tab> } an agent's dossier tab, { desk: true } an agent's desk screen,
    { fn: 'build' | 'recruit' | 'recipes' | 'needs-you' } a door that is not a plain window }.
@@ -26,14 +26,14 @@
     // ---- WORK ----
     P('tasks', 'MY WORK › TASKS', 'the task board: planned work as cards; assigning a card hands it to an agent', { term: 'tasks' }),
     P('deliverables', 'MY WORK › DELIVERABLES', 'everything the crew finished, with its files', { term: 'deliverables' }),
-    P('to-review', 'MY WORK › DELIVERABLES › TO REVIEW', 'away runs and workflow jobs waiting for the Commander\'s rating (chats are rated in COMMS), at the top of DELIVERABLES', { term: 'outbox' }),
+    P('to-review', 'MY WORK › DELIVERABLES › TO REVIEW', 'away runs and workflow jobs waiting for the Master\'s rating (chats are rated in COMMS), at the top of DELIVERABLES', { term: 'outbox' }),
     P('recipes', 'MY WORK › RECIPES', 'ready-made jobs to start in one click', { fn: 'recipes' }),
     P('workflows', 'AUTOMATE › WORKFLOWS', 'conveyor lines of agents on the floor: send a job down a line, see each line\'s output', { term: 'workflows' }),
     P('schedules', 'AUTOMATE › SCHEDULES', 'routines: any job on a schedule (Vultron\'s own scheduler, never OS cron)', { term: 'automation', section: 'routines' }),
     P('new-schedule', 'AUTOMATE › SCHEDULES › NEW', 'the form for a new scheduled routine', { term: 'automation', section: 'routines-create' }),
     P('goal-loops', 'AUTOMATE › GOAL LOOPS', 'one objective repeated until it is done', { term: 'automation', section: 'loops' }),
     P('new-goal-loop', 'AUTOMATE › GOAL LOOPS › START', 'the form for a new goal loop', { term: 'automation', section: 'loops-start' }),
-    P('away-work', 'AUTOMATE › AWAY WORK', 'what agents work on between the Commander\'s messages', { term: 'automation', section: 'away' }),
+    P('away-work', 'AUTOMATE › AWAY WORK', 'what agents work on between the Master\'s messages', { term: 'automation', section: 'away' }),
     P('quests', 'QUESTS', 'the quest log: personal quests, goal steps and floor gaps', { term: 'quests' }),
     P('progress', 'QUESTS › PROGRESS', 'station level, systems coming online, the goal constellation', { term: 'quests', section: 'progress' }),
     P('trophies', 'TROPHY CASE', 'trophies the station has earned', { term: 'trophies' }),
@@ -49,7 +49,7 @@
     P('skill-library', 'CONNECT › ABILITIES › SKILLS', 'the procedures agents follow, installed on this station', { term: 'connectors', section: 'library' }),
     P('agent-skills', 'CONNECT › ABILITIES › SKILLS › LEARNED SKILLS', 'procedures agents created or learned themselves', { term: 'connectors', section: 'agent' }),
     P('skill-exchange', 'CONNECT › ABILITIES › SKILL MARKET › ADD FROM A LINK', 'inspect and install open SKILL.md procedures', { term: 'connectors', section: 'exchange' }),
-    P('extensions', 'CONNECT › ABILITIES › EXTENSIONS', 'the Commander\'s own hooks and plugins', { term: 'connectors', section: 'extensions' }),
+    P('extensions', 'CONNECT › ABILITIES › EXTENSIONS', 'the Master\'s own hooks and plugins', { term: 'connectors', section: 'extensions' }),
     P('channels', 'CONNECT › CHANNELS', 'message agents from Telegram, Discord, Slack, Matrix or Signal', { term: 'messaging' }),
     P('apps', 'APPS', 'the station\'s own apps, built by the crew', { term: 'apps' }),
     P('browser', 'BROWSER', 'the station browser agents use', { term: 'browser' }),
@@ -62,7 +62,7 @@
     P('agent-memory', 'CREW › AGENTS › MEMORY', 'what an agent remembers and how it learns', { agent: 'memory' }),
     P('agent-config', 'CREW › AGENTS › CONFIG', 'an agent\'s instructions, model, access and look', { agent: 'config' }),
     P('agent-desk', 'an agent\'s DESK', 'the agent\'s desk screen: what it is working on right now', { desk: true }),
-    P('you', 'CREW › YOU', 'the Commander\'s own dossier: about you, aims, preferences, what agents are told', { term: 'commander' }),
+    P('you', 'CREW › YOU', 'the Master\'s own dossier: about you, aims, preferences, what agents are told', { term: 'commander' }),
     // ---- SYSTEM ----
     P('settings', 'SETTINGS', 'every station setting', { term: 'settings' }),
     P('settings-ai', 'SETTINGS › AI & MODELS', 'AI providers, their keys and sign-ins, default and fallback models, Vultron credits (the STORE: balance, top up)', { term: 'settings', section: 'providers' }),
@@ -70,14 +70,14 @@
     P('settings-permissions', 'SETTINGS › PERMISSIONS', 'access and approval rules for the station or one agent', { term: 'settings', section: 'permissions' }),
     P('settings-spending', 'SETTINGS › SPENDING LIMITS', 'spending caps, recorded usage, and interrupted runs to settle', { term: 'settings', section: 'budget' }),
     P('settings-look', 'SETTINGS › LOOK & SOUND', 'lighting, colour, CRT effects, sound, agent voices and HINTS', { term: 'settings', section: 'appearance' }),
-    P('settings-alerts', 'SETTINGS › ALERTS', 'what pings the Commander and whether it chimes', { term: 'settings', section: 'notifs' }),
+    P('settings-alerts', 'SETTINGS › ALERTS', 'what pings the Master and whether it chimes', { term: 'settings', section: 'notifs' }),
     P('settings-remote', 'SETTINGS › REMOTE', 'pair a phone and control the station from anywhere', { term: 'settings', section: 'remote' }),
     P('settings-browser', 'SETTINGS › BROWSER', 'where the station browser runs, and RESET STATION BROWSER when it is stuck', { term: 'settings', section: 'browser' }),
     P('settings-app', 'SETTINGS › APP & BACKUP', 'startup, runtime limits, backups, updates, troubleshooting and ERASE EVERYTHING', { term: 'settings', section: 'system' }),
-    P('needs-you', 'SESSIONS › NEEDS YOU', 'every approval, question and decision waiting on the Commander, at the top of SESSIONS (also NOTIFICATIONS › NEEDS YOU)', { fn: 'needs-you' }),
-    P('notifications', 'NOTIFICATIONS', 'everything that happened and what is waiting on the Commander', { term: 'notifs' }),
+    P('needs-you', 'SESSIONS › NEEDS YOU', 'every approval, question and decision waiting on the Master, at the top of SESSIONS (also NOTIFICATIONS › NEEDS YOU)', { fn: 'needs-you' }),
+    P('notifications', 'NOTIFICATIONS', 'everything that happened and what is waiting on the Master', { term: 'notifs' }),
     P('updates', 'UPDATES', 'check for and install a Vultron update', { term: 'updates' }),
-    P('field-manual', 'FIELD MANUAL', 'the Commander\'s guide to Vultron', { term: 'manual' })
+    P('field-manual', 'FIELD MANUAL', 'the Master\'s guide to Vultron', { term: 'manual' })
   ]);
 
   const BY_ID = Object.create(null);

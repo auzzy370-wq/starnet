@@ -12,7 +12,7 @@
      - a DM is admitted only from the adapter's already-paired owner (a relay can never CLAIM ownership);
      - a group message must pass the adapter's own admission (allowlist, bots, allowedUsers, mention gate).
    The hub then derives owner authority from the adapter's paired owner exactly as for a polled message.
-   A channel with no adapter admission (the DEV_MODE dev hub, every inbound already the Commander) passes through
+   A channel with no adapter admission (the DEV_MODE dev hub, every inbound already the Master) passes through
    the field whitelist only. Pure: no fs, no network. */
 'use strict';
 

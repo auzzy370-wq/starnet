@@ -1,6 +1,6 @@
 'use strict';
 /* node test/provider-oauth-refresh-logout-race.e2e.test.js — a subscription token refresh that is still in flight
-   when the Commander signs out must never sign the station back in.
+   when the Master signs out must never sign the station back in.
 
    refreshCodexTokensOnce / refreshOAuthTokensOnce / an extra account's refresh awaited the token endpoint and then
    merged the response into whatever the store held NOW and saved it: a logout that landed during the await was

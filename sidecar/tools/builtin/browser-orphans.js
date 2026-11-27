@@ -9,7 +9,7 @@
 
    THE RULES THIS MODULE KEEPS:
      · Identity is the --user-data-dir on the command line, compared EXACTLY (normalized), never a prefix and never
-       the executable name: the Commander's own Chrome/Edge — same binary, other profile — can never match.
+       the executable name: the Master's own Chrome/Edge — same binary, other profile — can never match.
      · A process on that profile that descends from THIS sidecar (the browser it launched, and its helpers) is
        ours and alive: never touched here. Only processes whose ancestry does not reach this sidecar are orphans.
      · Kills are CONFIRMED by listing again. A survivor is reported, never assumed gone.

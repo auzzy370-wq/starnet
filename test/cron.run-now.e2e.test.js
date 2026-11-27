@@ -295,7 +295,7 @@ async function readNdjson(res) {
 
     /* A SESSION IS NAMED AFTER THE RUN IT IS NAMED AFTER. Hops share the routine's 'cron-<runId>' stream so the
        session shows the whole line — which means that stream now holds SEVERAL run rows, and the frontend used
-       to title/attribute the session from whichever row it read first. That titled the Commander's routine
+       to title/attribute the session from whichever row it read first. That titled the Master's routine
        session with the internal PIPELINE HANDOFF prompt and credited it to the LAST stage's agent (caught by
        looking at the real session rail, 2026-07-27). This locks the data the picker needs: the defining row is
        findable by runId, and it is the routine's own. */

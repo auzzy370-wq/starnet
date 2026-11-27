@@ -1,10 +1,10 @@
 /* VULTRON — threadstore.js : the live wiring around the NS-6 THREAD turn-in (the frontend hop that makes the
    thread ledger real).
 
-   The sidecar MINES a finished task run for "threads" — ideas the Commander floated but never acted on, each
+   The sidecar MINES a finished task run for "threads" — ideas the Master floated but never acted on, each
    grounded by a verbatim quote — and STASHES the candidates (never auto-commits; the memory/study law). This
    store fetches that stash on agent.run.end (via chat.js's beat wiring), gates it (session cap + anti-nag), and
-   routes the Commander's Keep / Edit / Discard verdict to POST /api/threads/turnin — the click IS the consent:
+   routes the Master's Keep / Edit / Discard verdict to POST /api/threads/turnin — the click IS the consent:
    keep/edit commits an OPEN thread on the durable ledger (night-shift propose draws from it), discard PERMANENTLY
    denylists the idea's fingerprint server-side (the "discard = never again" law).
 
@@ -125,7 +125,7 @@ const ThreadStore = (() => {
     markResolved(prop);
     return (r && typeof r === 'object') ? r : { ok: false };
   }
-  // IGNORE (the Commander left the card without deciding — it expired at the next run end): tally it;
+  // IGNORE (the Master left the card without deciding — it expired at the next run end): tally it;
   // IGNORE_LIMIT ignores stops the idea for good client-side. NOT resolved server-side — an ignored-once idea
   // may legitimately re-offer later (the second chance the 2× limit exists to give).
   function ignore(prop) {

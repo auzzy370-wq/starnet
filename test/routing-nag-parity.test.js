@@ -3,7 +3,7 @@
    REFIT (frontend/app/build.js VAL_LABEL) and the live world (frontend/app/world.js NAG_LABEL) each turn a
    compiled routing error into a short callout painted on the broken machine. They are two tables, and the
    world's projector does `if (!label) continue` — so a code present in one and missing from the other is a
-   real finding that the live floor SILENTLY DROPS. The Commander then sees a dead line and no reason
+   real finding that the live floor SILENTLY DROPS. The Master then sees a dead line and no reason
    anywhere: the exact failure this pair of tables exists to prevent. ORPHAN_JUNCTION shipped that way
    (2026-08-07 conveyor audit) — REFIT named it, the world said nothing.
 

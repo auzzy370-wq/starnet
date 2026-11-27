@@ -29,7 +29,7 @@
        already tracks (reads/browser/tool.search — injected as `isTracked`) are left to it: a turn containing one
        is not a candidate here, so the two guards never double-count the same repetition.
 
-   "Unattended" is decided by the HOST (index.js: every surface except the watched interactive Commander chat),
+   "Unattended" is decided by the HOST (index.js: every surface except the watched interactive Master chat),
    never here — the loop deliberately knows nothing about the surface it was launched from.
 
    Pure and deterministic: no clock, no randomness, no IO. Same turns in -> same decisions out. */

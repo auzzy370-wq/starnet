@@ -42,7 +42,7 @@ function words(k, chars) {
 // meets over the fold line, with nothing but the reply to fold (a huge newest message is the tail and cannot be folded away)
 const MID_REPLY = 2000, BIG_REPLY = 120000;
 
-// BIGREPLY in the NEWEST turn only: a fold carries the Commander's earlier words verbatim in its note, marker included, and the host quotes other
+// BIGREPLY in the NEWEST turn only: a fold carries the Master's earlier words verbatim in its note, marker included, and the host quotes other
 // runs' titles in a run's context, so every message is numbered G<n> (one counter for the whole test) and the newest turn is the highest number on the wire
 function bigNow(msgs) {
   const all = JSON.stringify(msgs), nums = (all.match(/G(\d+) TURN/g) || []).map(t => Number(t.slice(1, t.indexOf(' '))));

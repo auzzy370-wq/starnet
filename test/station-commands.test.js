@@ -5,9 +5,9 @@
    stubbed. That means station.deliver is exercised against genuine session records — the fold, the append,
    the idempotency and the refusals are proven against the same code the app runs, not a paraphrase of it.
 
-   What this exists to stop: delegation used to be agent-addressed only, so a run the Commander asked to
+   What this exists to stop: delegation used to be agent-addressed only, so a run the Master asked to
    happen in "research" was filed wherever the lead happened to be. These two verbs are how a session target
-   becomes real — station.sessions is what a name is resolved against, station.deliver is what the Commander
+   becomes real — station.sessions is what a name is resolved against, station.deliver is what the Master
    actually sees. Both must refuse loudly rather than half-succeed. */
 'use strict';
 const A = require('./_assert.js');
@@ -120,25 +120,25 @@ async function call(env, verb, args) {
   A.eq([byTitle.ok, byTitle.result.resolvedBy, trow && trow.rowId, trow && trow.turnId, trow && trow.streamId], [true, 'title', undefined, 'rcron-run-8', other.id], 'resolved by title: no row id from another stream, the turn id and this session\'s own stream');
 }
 
-// ---- station.deliver: the worker's answer lands in the session the Commander named ----
+// ---- station.deliver: the worker's answer lands in the session the Master named ----
 {
   const env = boot();
   const ws = env.W.create('research');
-  env.W.switch(env.W.generalId());          // the Commander is looking at General, not research
+  env.W.switch(env.W.generalId());          // the Master is looking at General, not research
   const before = env.page.rail;
   const out = await call(env, 'station.deliver', { streamId: ws.id, agentId: 'researcher', runId: 'run-1', prompt: 'summarise X', text: 'X in three points…' });
   A.eq(out.ok, true, 'the fold succeeded');
   A.eq(out.result.session, 'research', 'and reports which session it went into');
   const h = env.W.get(ws.id).history;
   A.eq(h.length, 2, 'two turns: the framing marker and the real answer');
-  A.eq(h[0].sys, true, 'the delegated instruction is a sys marker, not a user turn the Commander never typed');
+  A.eq(h[0].sys, true, 'the delegated instruction is a sys marker, not a user turn the Master never typed');
   A.ok(/delegated to researcher/.test(h[0].content), 'the marker names who it went to');
   A.eq(h[1].role, 'assistant', "the worker's answer is real dialogue");
   A.eq(h[1].content, 'X in three points…', 'delivered verbatim');
   A.eq(h[1].agentId, 'researcher', 'attributed to the WORKER, so renderHistory names the right speaker');
   A.ok(env.W.get(ws.id).runIds.indexOf('run-1') >= 0, 'the run is filed onto that session');
   A.eq(env.W.get(ws.id).lane, 'active', 'a real run advances the lane (hybrid-honest)');
-  A.ok(env.W.unread(ws.id), 'the rail flags it unread — the Commander has genuinely not seen this yet');
+  A.ok(env.W.unread(ws.id), 'the rail flags it unread — the Master has genuinely not seen this yet');
   A.ok(env.page.rail > before && env.page.persisted > 0, 'the rail re-renders and the save is written');
   A.eq(env.page.loaded.length, 0, 'a session that is NOT open is not force-rendered');
 }
@@ -402,7 +402,7 @@ for (const text of ['', 'Older partial work.']) {
   });
   A.eq(out.ok, true, 'split-brain delivery succeeds by stable title');
   A.eq(out.result.resolvedBy, 'title', 'the ack says the id mismatch was healed by title');
-  A.eq(env.W.get(local.id).history[1].content, 'three sourced ideas', 'the page the Commander is viewing receives the answer');
+  A.eq(env.W.get(local.id).history[1].content, 'three sourced ideas', 'the page the Master is viewing receives the answer');
   A.ok(env.W.get(local.id).runIds.indexOf('split-1') >= 0, 'the local session records the durable run id');
 }
 
@@ -417,7 +417,7 @@ for (const text of ['', 'Older partial work.']) {
   A.eq(started.ok, true, 'dispatch start is acknowledged');
   A.ok(env.C.isBusy(ws.id), 'the target session is visibly busy');
   A.eq(env.C.runIdOf(ws.id), 'live-1', 'its status is backed by the real worker run id');
-  A.eq(env.W.activeId(), env.W.generalId(), 'marking the target busy does not steal the Commander from General');
+  A.eq(env.W.activeId(), env.W.generalId(), 'marking the target busy does not steal the Master from General');
   const settled = await call(env, 'station.dispatch_end', {
     streamId: ws.id, sessionTitle: 'research', agentId: 'researcher', runId: 'live-1'
   });
@@ -474,7 +474,7 @@ for (const text of ['', 'Older partial work.']) {
   A.eq(g.history.length, before, 'still exactly once');
 }
 
-// delivering into the session the Commander is WATCHING re-renders it immediately
+// delivering into the session the Master is WATCHING re-renders it immediately
 {
   const env = boot();
   const ws = env.W.create('research');       // create() activates it
@@ -484,9 +484,9 @@ for (const text of ['', 'Older partial work.']) {
   A.ok(!env.W.unread(ws.id), 'and it is not marked unread — it is on screen');
 }
 
-/* ⛔ APPEND, NEVER REPLACE. A targeted session usually already holds the Commander's own conversation. The
+/* ⛔ APPEND, NEVER REPLACE. A targeted session usually already holds the Master's own conversation. The
    cron auto-session path may replace a history because it OWNS its stream; this one does not, and replacing
-   here would silently delete the thread the Commander asked to add work to. */
+   here would silently delete the thread the Master asked to add work to. */
 {
   const env = boot();
   const ws = env.W.create('research');
@@ -494,7 +494,7 @@ for (const text of ['', 'Older partial work.']) {
   await call(env, 'station.deliver', { streamId: ws.id, agentId: 'researcher', runId: 'run-1', text: 'delegated result' });
   const h = env.W.get(ws.id).history;
   A.eq(h.length, 3, 'the existing conversation survives');
-  A.eq(h[0].content, 'my own question', 'the Commander\'s first turn is untouched');
+  A.eq(h[0].content, 'my own question', 'the Master\'s first turn is untouched');
   A.eq(h[2].content, 'delegated result', 'the delegated answer is appended after it');
 }
 
@@ -548,17 +548,17 @@ for (const text of ['', 'Older partial work.']) {
   const env = boot({ agents: () => [{ id: 'researcher', name: 'RESEARCHER' }] });
   const out = await call(env, 'station.new_session', { title: 'research', agentId: 'researcher' });
   A.eq(out.ok, true, 'a named session is created');
-  A.eq(out.result.title, 'research', 'with the title the Commander said');
+  A.eq(out.result.title, 'research', 'with the title the Master said');
   A.eq(out.result.agentId, 'researcher', 'bound to the named crew member');
   A.eq(out.result.focused, false, 'not focused unless asked');
   A.ok(env.W.list().some(w => w.title === 'research'), 'and it exists in the real session store');
-  A.eq(env.W.activeId(), env.W.generalId(), 'a background create never steals what the Commander is looking at');
+  A.eq(env.W.activeId(), env.W.generalId(), 'a background create never steals what the Master is looking at');
   A.ok(env.page.rail > 0 && env.page.persisted > 0, 'the rail re-rendered and the save was written');
 
   // focus:true is the explicit "open it" ask — active session moves, thread renders
   const f = await call(env, 'station.new_session', { title: 'billing', focus: true });
   A.eq(f.ok, true, 'a focused create succeeds');
-  A.eq(env.W.activeId(), f.result.id, 'and the Commander is now looking at it');
+  A.eq(env.W.activeId(), f.result.id, 'and the Master is now looking at it');
   A.eq(env.page.loaded[env.page.loaded.length - 1], f.result.id, 'the thread rendered');
 }
 
@@ -577,7 +577,7 @@ for (const text of ['', 'Older partial work.']) {
   A.ok(!env.W.list().some(w => w.title === 'ops'), 'and no session was created');
 }
 
-/* ---- station.switch_session: focus by the name the Commander says — same resolution law as dispatch
+/* ---- station.switch_session: focus by the name the Master says — same resolution law as dispatch
    (exact id → exact title → unique substring; anything else refuses with the real names) ---- */
 {
   const env = boot();
@@ -586,7 +586,7 @@ for (const text of ['', 'Older partial work.']) {
   env.W.switch(env.W.generalId());
   const out = await call(env, 'station.switch_session', { session: 'research' });
   A.eq(out.ok, true, 'an exact title switches');
-  A.eq(env.W.activeId(), r.id, 'the Commander is now looking at it');
+  A.eq(env.W.activeId(), r.id, 'the Master is now looking at it');
   A.eq(env.page.loaded[env.page.loaded.length - 1], r.id, 'and the thread rendered');
   const part = await call(env, 'station.switch_session', { session: 'billing' });
   A.eq(part.ok, true, 'a unique substring resolves');
@@ -600,7 +600,7 @@ for (const text of ['', 'Older partial work.']) {
   const env = boot();
   env.W.create('research plan');
   env.W.create('research notes');
-  env.W.switch(env.W.generalId());   // the Commander is looking at General; a refusal must leave them there
+  env.W.switch(env.W.generalId());   // the Master is looking at General; a refusal must leave them there
   const ambig = await call(env, 'station.switch_session', { session: 'research' });
   A.eq(ambig.ok, false, 'an ambiguous name refuses');
   A.ok(/more than one session matches/.test(ambig.error) && /research plan/.test(ambig.error), 'explaining the ambiguity with the real names');
@@ -611,7 +611,7 @@ for (const text of ['', 'Older partial work.']) {
 }
 
 /* ---- station.read_session: the agent's EYES into other sessions. Exists because a lead asked "what did
-   the researcher do?" had no way to look, GUESSED, and denied real finished work to the Commander. ---- */
+   the researcher do?" had no way to look, GUESSED, and denied real finished work to the Master. ---- */
 {
   const env = boot();
   const ws = env.W.create('research');
@@ -625,7 +625,7 @@ for (const text of ['', 'Older partial work.']) {
   A.eq(out.ok, true, 'a named session can be read');
   A.eq(out.result.title, 'research', 'with its real title');
   A.eq(out.result.turns.length, 3, 'visible turns only — hidden/internal rows never leak');
-  A.eq(out.result.turns[0].speaker, 'commander', 'the Commander\'s turns are labeled');
+  A.eq(out.result.turns[0].speaker, 'commander', 'the Master\'s turns are labeled');
   A.eq(out.result.turns[1].speaker, 'station', 'sys markers are labeled as the station, not as speech');
   A.eq(out.result.turns[2].speaker, 'researcher', 'delegated work is attributed to the worker who did it');
   A.ok(/Phobos/.test(out.result.turns[2].text), 'and carries the real content');
@@ -647,7 +647,7 @@ for (const text of ['', 'Older partial work.']) {
   A.eq(lim.result.turns[1].speaker, 'researcher', 'and they are the LAST turns, not the first');
 }
 
-/* ---- station.read_session: a goal-loop step is the STATION's prompt, never the Commander's words (org P29-sys wiring) —
+/* ---- station.read_session: a goal-loop step is the STATION's prompt, never the Master's words (org P29-sys wiring) —
    a lead reading it must not tell the user "you asked me to continue…" ---- */
 {
   const env = boot();

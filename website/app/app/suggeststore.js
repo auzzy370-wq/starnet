@@ -2,7 +2,7 @@
    one-time First Pitch). Slice 3 of "the agent that points you."
 
    Where pitchstore.js fires ONCE (the graduation beat), this keeps the reverse value-flow alive: as the station
-   keeps learning about its Commander (the dossier grows via curiosity/the interview), the agent occasionally
+   keeps learning about its Master (the dossier grows via curiosity/the interview), the agent occasionally
    offers ONE fresh, tailored, buildable idea — gently. It reuses the pure pitch engine for content
    (Pitch.buildDirective / parsePitch) and the same reason-only model path (Harness.chat, placed:[]) so the idea
    is grounded in what the agent genuinely knows (the live system prompt carries the dossier block).
@@ -68,12 +68,12 @@ const SuggestStore = (() => {
     if (t) state.declinedTitles = pushBounded(state.declinedTitles, t, DECLINED_TITLE_CAP);
   }
   /* what the model must not propose again: everything already pitched, and everything explicitly refused. The
-     DECLINED half leads — "never suggest this" is a decision, and it is the one the Commander would be most
+     DECLINED half leads — "never suggest this" is a decision, and it is the one the Master would be most
      annoyed to see ignored. De-duped, newest-last, bounded by the directive's own cap. */
   /* ── THE EVIDENCE CONTRACT (rec perfection W2) ──────────────────────────────────────────────────────────
      groundQuote(raw) → the quote the nudge may SPEAK, or '' .
 
-     A model asked for the Commander's own words will supply something whether or not it has them. So the quote
+     A model asked for the Master's own words will supply something whether or not it has them. So the quote
      is checked against the station's real belief pool with the SAME token-overlap veto autojobs applies to its
      GROUNDS line (Autopilot.grounded / flattenBeliefs — resolved lazily, exactly as autojobs.js does it,
      because script order is not guaranteed). Two deliberate refusals, both fail-CLOSED:
@@ -93,7 +93,7 @@ const SuggestStore = (() => {
     try { ok = !!A.grounded(q, pool); } catch (_) { ok = false; }
     return ok ? q.slice(0, 200) : '';
   }
-  /* the Commander's goal's NEXT unfinished milestone, or '' (rec perfection W2). The server-side evidence pack
+  /* the Master's goal's NEXT unfinished milestone, or '' (rec perfection W2). The server-side evidence pack
      carries the active GOAL; the milestone tree is decomposed and tracked in the browser, so this is the one
      thing the pack structurally cannot know. Fail-open at every step: no store, no goal, no decomposition →
      '' → the directive is byte-identical to before. */
@@ -105,7 +105,7 @@ const SuggestStore = (() => {
     } catch (_) { return ''; }
   }
   // the receipt line, in the ONE grammar (recommend.js whyLine): «because you said "…"». Fail-open to the plain
-  // quoted form if the spine module is not loaded — the words are the Commander's either way.
+  // quoted form if the spine module is not loaded — the words are the Master's either way.
   function citeLine(quote) {
     const cited = 'you said “' + quote + '”';
     try { if (typeof Recommend !== 'undefined' && Recommend.whyLine) return Recommend.whyLine({ why: cited }); } catch (_) {}
@@ -179,7 +179,7 @@ const SuggestStore = (() => {
     if (acceptedRecommendation && acceptedRunId && String(p.runId || '') === acceptedRunId) {
       const oc = typeof RunOutcome !== 'undefined' ? RunOutcome.ofEnd(p, null) : { ok: p.reason === 'done', outcome: p.reason === 'cancelled' ? 'stopped' : p.reason === 'error' ? 'failed' : '' };
       const completed = oc.ok;   // (typed-outcomes) a SUCCEEDED run: a provider-cut 'done' is not clean
-      // a run the Commander STOPPED (to change the brief, say) is no verdict on the idea (review r7): never "declined: bad_quality" with
+      // a run the Master STOPPED (to change the brief, say) is no verdict on the idea (review r7): never "declined: bad_quality" with
       // quality -1, which down-ranked that kind of idea — the recommendation keeps the state it had. Review r8: nor is a run that asked a
       // question, was cut short, hit a limit, sent back nothing or was refused — only a FAILED run scores the idea -1, a succeeded one +1
       if (oc.ok || oc.outcome === 'failed') {
@@ -284,24 +284,24 @@ const SuggestStore = (() => {
       const fp = fingerprint(parsed.title);
       if (seenRecently(fp)) { const fam = familiarityNow(); if (fam != null) state.lastFamiliarity = fam; state.tasksSinceLast = 0; save(); return; }
 
-      /* THE GROUNDING VETO ON THE QUOTE (rec perfection W2). The model was asked for the Commander's OWN words
+      /* THE GROUNDING VETO ON THE QUOTE (rec perfection W2). The model was asked for the Master's OWN words
          this pitch stands on. A model that cannot find them will invent them — so the quote is kept ONLY when it
          shares real significant-token overlap with what the station actually knows (autopilot.js grounded(), the
          same veto autojobs uses on its GROUNDS line, over the same {dim:[text]} belief pool). No overlap → the
          quote is DROPPED and the nudge speaks exactly as it did before this contract existed: the model's own
-         WHY line, never framed as the Commander's speech. Fail-CLOSED on a missing engine or an empty pool: a
+         WHY line, never framed as the Master's speech. Fail-CLOSED on a missing engine or an empty pool: a
          check that cannot run has not passed, and this is the one field that would be spoken back as "you said". */
       const groundedQuote = groundQuote(parsed.evidence);
       const why = parsed.why ? (' ' + parsed.why) : '';
       const gap = parsed.gap ? (' i’d need one thing from you: ' + parsed.gap) : '';
-      // G3a seed callout: an idea that reuses a Commander-saved seed credits it inline (a credit line,
+      // G3a seed callout: an idea that reuses a Master-saved seed credits it inline (a credit line,
       // never a separate beat) — the mint→pitch loop, spoken closed.
       let credit = '';
       if (typeof SeedCredit !== 'undefined' && parsed.build && parsed.build.recipeId && typeof Recipes !== 'undefined' && Recipes.get) {
         const c = SeedCredit.creditForRecipe(Recipes.get(parsed.build.recipeId));
         if (c) credit = ' ' + c;
       }
-      /* THE RECEIPT, when there is one. A grounded quote is the Commander's own words, so it is spoken in the
+      /* THE RECEIPT, when there is one. A grounded quote is the Master's own words, so it is spoken in the
          ONE grammar every other recommendation surface uses (recommend.js whyLine → «because you said "…"»);
          an ungrounded or absent one renders nothing at all, and the line is byte-identical to today's. */
       const receipt = groundedQuote ? (' ' + citeLine(groundedQuote)) : '';
@@ -311,7 +311,7 @@ const SuggestStore = (() => {
       /* THE LEDGER MUST NOT CALL THE MODEL'S OWN PROSE A QUOTE (2026-08-05).
          `parsed.why` is the WHY line the aux model wrote about its own pitch. It was posted as
          `{ type: 'context', quote: parsed.why }` — the same shape the study and thread channels use for a
-         VERBATIM fragment they located in the Commander's words. Every downstream reader of this ledger
+         VERBATIM fragment they located in the Master's words. Every downstream reader of this ledger
          (evidenceCoverage, the preference fold, and the W2 evidence contract that will decide which citations
          may be spoken as "because you said") then sees a quote-typed row that nobody ever said. Type it for what
          it is: MODEL-AUTHORED RATIONALE. Nothing here is deleted — the text is still recorded, and a reader that
@@ -322,7 +322,7 @@ const SuggestStore = (() => {
          which belongs to W2's evidence contract, not to this slice. */
       /* …AND THE GROUNDED QUOTE IS REAL EVIDENCE, so it rides as a real quote-typed row beside that rationale
          (W2 completes what W3's typing fix opened): the row now distinguishes what the MODEL said about its
-         pitch from what the COMMANDER said that the pitch stands on. Only a quote that survived the veto is
+         pitch from what the MASTER said that the pitch stands on. Only a quote that survived the veto is
          ever written — evidenceCoverage counts grounded citations, never model prose wearing their clothes. */
       const evidenceRows = [];
       if (groundedQuote) evidenceRows.push({ id: 'suggest-evidence', type: 'quote', quote: groundedQuote });
@@ -337,11 +337,11 @@ const SuggestStore = (() => {
         // (accept corroborates, decline counter-evidences). An un-aimed idea settles nothing.
         if (probe) { try { if (typeof UnderstandingStore !== 'undefined' && UnderstandingStore.noteProbe) UnderstandingStore.noteProbe(probe.dim, accepted); } catch (_) {} }
         // THE OUTCOME LOOP (quality loop, Q2): a built idea SPAWNS A RUN, so nothing is credited here — the
-        // pending stamp is claimed by that run and the run's own outcome (a clean finish, and the Commander's
+        // pending stamp is claimed by that run and the run's own outcome (a clean finish, and the Master's
         // 👍/👌/👎 on it) is the evidence. A click is not a result. Declines/defers settle immediately.
         // THE STAMP IS ARMED OFF THE LAUNCH, NOT OFF THE CLICK (fixed 2026-08-04): doBuild refuses while the
         // agent is mid-run, and arming first left the stamp waiting for a run this offer never started — the
-        // Commander's next unrelated manual run then claimed it. Arm only when a run really kicked off.
+        // Master's next unrelated manual run then claimed it. Arm only when a run really kicked off.
         /* ⚠ AN ORDERING DEPENDENCY THIS RELIES ON, NAMED SO IT IS NOT BROKEN BY ACCIDENT: arming AFTER the launch
            is only safe because the run's id arrives ASYNCHRONOUSLY. chat.js claims the pending stamp inside the
            stream's `onRunId` callback (RUN_META, recClaimRun), which fires after the network round-trip — well
@@ -356,7 +356,7 @@ const SuggestStore = (() => {
           }
           /* A REFUSED LAUNCH IS A REAL EVENT, AND IT WAS SILENT (fixed 2026-08-04). doBuild returns false when
              the stream is busy — the guard above correctly stops the attribution stamp being armed on work that
-             never started, but then NOTHING happened: the loop learned nothing and the Commander was told
+             never started, but then NOTHING happened: the loop learned nothing and the Master was told
              nothing. They tapped "let's build it" and the beat simply vanished.
              What the harness can honestly say is exactly what a "not now" says — right idea, wrong moment — so
              that is the outcome folded, and the chip settles with one short line naming the real reason.
@@ -367,7 +367,7 @@ const SuggestStore = (() => {
              exact "right idea, wrong moment" shape this is. Leaving the row terminal at `accepted` would have
              counted a launch that never happened as a positive preference signal forever.
              NOTE this branch keys on `launched` ALONE — a successful launch with RecQualityStore absent must
-             never take the refused path (it would clear the accept and lie to the Commander mid-run). */
+             never take the refused path (it would clear the accept and lie to the Master mid-run). */
           else {
             acceptedRecommendation = null; acceptedRunId = null;
             ledgerPost({ id: recommendationId, state: 'declined', reason: 'wrong_time' });
@@ -397,7 +397,7 @@ const SuggestStore = (() => {
   // template. (Kept local rather than shared so pitchstore.js stays untouched.)
   /* RETURNS WHETHER A RUN ACTUALLY STARTED. Both launch paths refuse while the agent is mid-run (Chat.send
      silently no-ops when Chat.isBusy()), and the outcome loop's attribution stamp is armed off this answer —
-     so a "build it" that launched NOTHING used to leave the stamp armed, and the Commander's next unrelated
+     so a "build it" that launched NOTHING used to leave the stamp armed, and the Master's next unrelated
      manual run claimed it and moved this channel's weight on work it never caused. FAIL-CLOSED on purpose: a
      launcher that does not report `true` is treated as "no run started", because an unprovable launch must
      never become an attributed outcome. */

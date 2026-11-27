@@ -338,7 +338,7 @@ async function checkCandidateReview() {
   vm.runInNewContext('renderSkillCandidates(host, "agent", review);', ctx);
   const outdated = outdatedHost.children[0];
   A.ok(outdated.html.includes('<span class="sk-badge miss">OUTDATED</span>') && !outdated.html.includes('PROPOSED REVISION'), 'an outdated proposal is badged OUTDATED');
-  A.ok(outdated.html.includes('The active skill changed after this was proposed. Reject it, or wait for the agent\'s next revision.'), 'it says why and what the Commander can do');
+  A.ok(outdated.html.includes('The active skill changed after this was proposed. Reject it, or wait for the agent\'s next revision.'), 'it says why and what the Master can do');
   for (const attr of ['data-evaluation-suites', 'data-candidate-approve', 'data-candidate-acknowledge', 'data-suite-register', 'data-suite-json'])
     A.ok(!outdated.html.includes(attr), 'an outdated proposal has no ' + attr);
   A.ok(!/Last evaluation|Passed/.test(outdated.querySelector('[data-evaluation-result]').textContent), 'a stored receipt is not offered on an outdated proposal');
@@ -354,7 +354,7 @@ async function checkCandidateReview() {
     A.ok(h.children[0].html.includes('PROPOSED REVISION') && h.children[0].html.includes('data-candidate-approve') && h.children[0].html.includes('data-suite-register'), 'baseCurrent ' + baseCurrent + ' keeps the full card');
   }
 
-  // skills-eval-07: an archive proposal names the skill it archives into, so the Commander approves that one first.
+  // skills-eval-07: an archive proposal names the skill it archives into, so the Master approves that one first.
   const archiveHost = element(); ctx.host = archiveHost;
   ctx.review = { candidates: [{ candidateId: 'weekly-candidate-1', candidateDigest: 'archive-sha', revision: 1, baseCurrent: true,
     skill: { id: 'weekly', name: 'Weekly brief', body: 'Old steps', scope: 'agent', files: [], state: 'archived', absorbedInto: 'Reports' } }], evaluationSuites: [] };

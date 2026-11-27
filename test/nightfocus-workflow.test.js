@@ -1,9 +1,9 @@
 /* node test/nightfocus-workflow.test.js — REPEATED WORK becomes a night-focus candidate (2026-10-05 audit item 2).
 
-   workflow-takeover.js already proves "the Commander asked for this on ≥3 separate days and no routine covers it";
+   workflow-takeover.js already proves "the Master asked for this on ≥3 separate days and no routine covers it";
    the night focus ignored that. Proves the pure resolver's kind:'workflow' candidate:
      · scored by frequency × recency (3 asks today ≈ a project touched today; 6 asks outrank it; a stale one doesn't)
-     · why-lines cite the evidence: the count on separate days + the Commander's own wording
+     · why-lines cite the evidence: the count on separate days + the Master's own wording
      · evidence-or-null: count < 3, no quote, or undated → not a candidate (never an unexplained pick)
      · the focus survives the state round-trip as kind 'workflow' (not coerced to 'project')
      · a declared steer still outranks it; the host-side contract (nightFocusInputs passes `workflows`, a workflow

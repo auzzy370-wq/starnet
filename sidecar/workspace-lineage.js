@@ -56,7 +56,7 @@ function inspectWorkspaceLineage(deps) {
    live would steer the next station. Files stay where they are until the next boot: the running sidecar holds this
    generation open, so this is only the REQUEST, and workspace-recovery.js applyFreshRequest renames the generation into
    workspace-quarantine in its locked pre-claim phase (NEVER a delete: a wrong click is reversible by hand). The request
-   pins what the Commander saw (station-record.js freshFacts): if the workspace moves on before the apply, nothing is set
+   pins what the Master saw (station-record.js freshFacts): if the workspace moves on before the apply, nothing is set
    aside and lineage.lastFresh says why. It also keeps the external evidence roots this choice acknowledges. An ERASE stays
    erased: the clean generation carries the erase authority of the one it replaces (gh#101). */
 function requestFresh(deps) {

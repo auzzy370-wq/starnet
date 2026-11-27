@@ -37,7 +37,7 @@ function stubBridge(impl) {
   A.eq(bridge.seen[1].args.agentId, 'researcher', 'and the crew binding travels');
   A.eq(bridge.seen[1].args.focus, false, 'focus is never implied');
   const foc = await t.focusTool.run({ session: 'research' });
-  A.eq(JSON.parse(foc.content).title, 'research', 'session.focus returns where the Commander now is');
+  A.eq(JSON.parse(foc.content).title, 'research', 'session.focus returns where the Master now is');
   const peek = await t.peekTool.run({ session: 'research' });
   const pk = JSON.parse(peek.content);
   A.eq(pk.turns[0].speaker, 'researcher', "session.peek returns another session's real turns, attributed");

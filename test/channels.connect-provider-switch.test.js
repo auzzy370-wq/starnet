@@ -38,7 +38,7 @@ const { sandboxStore } = require('./helpers/credential-store-sandbox.js');
 const lift = name => { const s = sidecarFunctionSource(name); A.ok(s.length > 20, 'fixture: ' + name + ' is lifted'); return s; };
 const top = name => { const s = sidecarTopLevelFunction(name); A.ok(s.length > 20, 'fixture: ' + name + ' is lifted'); return s; };
 
-const OR_KEY = 'sk-or-COMMANDER-OWN';
+const OR_KEY = 'sk-or-MASTER-OWN';
 const STATION_OR = 'sk-or-STATION-KEYCHAIN';
 const ANT_ENV = 'sk-ant-ENV-OPERATOR';
 const LAN = 'http://192.168.1.40:1234/v1';
@@ -71,7 +71,7 @@ const OPTIONAL = ['normalizeProviderId', 'unknownProviderError', 'keptEndpointPr
 const LIFTED = RESOLVERS.map(lift).concat(OPTIONAL.map(n => sidecarFunctionSource(n)).filter(Boolean), HANDLERS.map(lift)).join('\n');
 
 /* One station: its runtime keys (the desktop keychain push), operator env, the roster agent the channel runs, and the
-   channel's saved records. The roster agent is on the provider the page reconnects with (the Commander moved it there). */
+   channel's saved records. The roster agent is on the provider the page reconnects with (the Master moved it there). */
 function station(opts) {
   const o = opts || {};
   const env = Object.assign({}, o.env || {});
@@ -157,7 +157,7 @@ const pageSync = (provider, model) => ({ agentId: 'agent', system: '', agentName
     const recOf = s => s.get()[ch] || {};
 
     // ======================= A: the saved KEY never follows a provider switch =======================
-    // A1. The record holds the Commander's OpenRouter key; the agent moves to Anthropic, and the station holds the
+    // A1. The record holds the Master's OpenRouter key; the agent moves to Anthropic, and the station holds the
     // operator's Anthropic env key. The reconnect sends no key. Before: the OpenRouter key was the explicit key, it beat
     // the env key, and every message sent it to api.anthropic.com.
     {
@@ -252,7 +252,7 @@ const pageSync = (provider, model) => ({ agentId: 'agent', system: '', agentName
     }
 
     // ======================= E: the desktop's real order: a sync on the new provider, then RECONNECT =======================
-    // The Commander picks a model on Anthropic (or the page boots on it). The page syncs first, with no key; RECONNECT
+    // The Master picks a model on Anthropic (or the page boots on it). The page syncs first, with no key; RECONNECT
     // comes later, if at all. Before the sync fix the sync moved the record to anthropic and kept the OpenRouter key and
     // endpoint, so every message ran on them at once, and the reconnect then saw a record already "saved for" anthropic.
     for (const [label, saved] of [

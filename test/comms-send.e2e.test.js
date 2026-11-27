@@ -244,7 +244,7 @@ const toolCalls = (events) => events.filter(e => e.name === 'agent.tool_call').m
       let asked = null;
       const events = await runWithConsent(B, headers, 'ping the dev chat', (p) => { asked = p; return 'once'; });
       A.ok(toolCalls(events).indexOf('channel.send') >= 0, 'channel.send was reachable');
-      A.ok(asked, 'messaging out asked the Commander first');
+      A.ok(asked, 'messaging out asked the Master first');
       A.eq(asked.tool, 'channel.send', 'the consent card names channel.send');
       const r = lastResult(events);
       A.ok(r && !r.payload.isError, 'the approved send succeeded: ' + JSON.stringify(r && r.payload).slice(0, 300));

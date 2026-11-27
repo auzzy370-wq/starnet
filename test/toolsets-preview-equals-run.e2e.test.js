@@ -3,7 +3,7 @@
    The lane's done-means: "/api/toolsets equals the captured provider tool list". The TOOLSETS readout used to describe
    capability FAMILIES (effectiveToolsets: granted by a prop / the profile / Full Access), while the run later applied the
    run authority, availability, crew and connector deferral and its own internal controls — so no readout could promise
-   what the model would be offered (a5 R5, Q8). Its `run` section now names ONE context — a task the Commander sends this
+   what the model would be offered (a5 R5, Q8). Its `run` section now names ONE context — a task the Master sends this
    agent from COMMS (desktop lead, interactive, a Task Brief, first turn) on a placement — and is decided by the same
    ProjectTools.projectTools that run calls. This test asks for that preview, then sends that very task through the real
    /api/run with a scripted provider and compares the preview's advertised list with the tool list the provider actually
@@ -21,7 +21,7 @@
    from the client source), so sample_plugin,x stays one refused id and never binds sample_plugin. A trailing space stays
    in the id as well (sample_plugin<space> is refused, never trimmed into sample_plugin). The world model never holds
    such an id (bindPlugin and placePluginTerminal refuse it, and the doc load keeps a pluginId only trimmed and only when
-   it passes /api/run's own pattern), so these rows guard the wire against a hand-built request; no terminal a Commander
+   it passes /api/run's own pattern), so these rows guard the wire against a hand-built request; no terminal a Master
    binds produces one.
 
    Every row is placed as World.heroCaps hands it to COMMS: the run receives those objects, and the preview is requested

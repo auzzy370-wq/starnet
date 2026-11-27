@@ -22,7 +22,7 @@
      makeRecallTool({ transcriptStore, ownStreamOnly, quoteRoom? }) -> { recallTool, register(registry) }
    At call time, ctx supplies streamId (the active workstream) — the local ranking tie-break and default scroll target.
    ownStreamOnly() (host-minted, never from args/text) pins EVERY shape to that one chat: a run a non-owner or a group
-   started — and any worker it delegates to — never reads the Commander's other workstreams. The run's host-minted
+   started — and any worker it delegates to — never reads the Master's other workstreams. The run's host-minted
    ctx.connectorAuthority.withholdTaste (the same tasteWithheld flag, already on every run's capCtx) pins it too.
 
    A READ OF ANOTHER SESSION IS A QUOTE (turn identity commit 11). Every word of another workstream this tool returns (a ranked hit, a
@@ -42,7 +42,7 @@
   'use strict';
   // the one rule for a stored row's provenance (transcriptstore.js rowTaint; docs/DECISIONS.md)
   const { rowTaint, UNVERIFIED_ROW } = transcripts;
-  // what a recalled row SAYS: the Commander's typed words and one '[attached: name]' per file it carried, never a file's text
+  // what a recalled row SAYS: the Master's typed words and one '[attached: name]' per file it carried, never a file's text
   // (turn-attachment.js textOf); a row that carried no file reads as its content, byte for byte. An attachment row says
   // '[attached: name]' itself.
   const rowText = (r) => (turnAttachment && typeof turnAttachment.textOf === 'function') ? turnAttachment.textOf(r) : String(r && r.content != null ? r.content : '');
@@ -120,7 +120,7 @@
         const streamId = ctx && ctx.streamId ? String(ctx.streamId) : null;
         if (!transcriptStore || typeof transcriptStore.view !== 'function') return { content: 'Conversation recall is unavailable.', summary: 'unavailable' };
         const limit = (Number(a.limit) > 0) ? Math.min(Number(a.limit), 20) : 5;
-        // a non-owner / group run (and its workers) reads ONLY its own chat — the Commander's other workstreams are private
+        // a non-owner / group run (and its workers) reads ONLY its own chat — the Master's other workstreams are private
         const authority = ctx && ctx.connectorAuthority;
         const pinned = (typeof d.ownStreamOnly === 'function' && d.ownStreamOnly() === true)
           || !!(authority && typeof authority === 'object' && authority.withholdTaste === true);

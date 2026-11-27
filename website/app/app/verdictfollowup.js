@@ -1,11 +1,11 @@
 /* VULTRON — verdictfollowup.js : the PURE engine for the VERDICT FOLLOW-UP (momentum loop, 2026-08-21).
 
    The rate-the-work beat used to end `◆ close` and `▼ missed` with the word "noted" — a dead question: the
-   Commander told the station its work fell short and nothing changed. A miss is the highest-information
-   moment the station ever gets about HOW this Commander wants work done, and it was thrown away.
+   Master told the station its work fell short and nothing changed. A miss is the highest-information
+   moment the station ever gets about HOW this Master wants work done, and it was thrown away.
 
    POPUP LAW (docs/NEXT.md 2026-08-21): a popup earns its pixels only when the answer CHANGES something
-   observable. This follow-up asks ONE thing — "what missed?" — and every chip maps to a Commander Dossier
+   observable. This follow-up asks ONE thing — "what missed?" — and every chip maps to a Master Dossier
    dimension, so the answer becomes a belief that rides into every later agent's briefing (Dossier.composeBlock).
    Nothing is asked on `▲ nailed it` (nothing to learn), nothing is asked twice for one run, and "skip" writes
    nothing. PURE + node-testable (a `VerdictFollowup` global in the browser, module.exports under node); the
@@ -22,9 +22,9 @@
   // unprompted" texture this lane exists to remove.
   const ASK_ON = ['ok', 'miss'];
 
-  // the chips. Each names a CAUSE in the Commander's own frame and the dossier dimension that cause informs.
-  // `text` is the belief written on tap — phrased as an OBSERVED fact about how this Commander wants work
-  // done (never the station's guess: the Commander chose the chip), and must read well inside a briefing.
+  // the chips. Each names a CAUSE in the Master's own frame and the dossier dimension that cause informs.
+  // `text` is the belief written on tap — phrased as an OBSERVED fact about how this Master wants work
+  // done (never the station's guess: the Master chose the chip), and must read well inside a briefing.
   const CHIPS = [
     { value: 'shorter',  label: 'too long — tighter next time',    dim: 'style',    text: 'Prefers tighter, shorter deliverables — a run was rated short of the mark for running long.' },
     { value: 'deeper',   label: 'too thin — go deeper',            dim: 'style',    text: 'Wants more depth and thoroughness — a run was rated short of the mark for being too thin.' },

@@ -17,7 +17,7 @@ cut it.
    Vultron's station teaches by building. (Locked: easier-than-the reference harness moat.)
 
 2. **The value flow is reversed.**
-   The agent figures out the Commander — dossier → First Pitch → ongoing ideas →
+   The agent figures out the Master — dossier → First Pitch → ongoing ideas →
    seeds. The user should never face a blank prompt wondering what agents are for.
    (Locked: First Pitch keystone, 2026-06-27.)
 

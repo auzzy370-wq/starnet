@@ -1,9 +1,9 @@
 /* node test/routine-grant-rebind.test.js — an agent-rewritten routine loses its unattended grants (2026-09-23 audit).
 
    Attack this closes: a run reads a hostile page (taint revokes its own shell), then calls routine.manage
-   update on a routine the Commander granted `workbench`, swapping the prompt for the payload, then run_now.
+   update on a routine the Master granted `workbench`, swapping the prompt for the payload, then run_now.
    The routine fired ~1 minute later with its standing shell grant intact. The grant belongs to the prompt
-   the Commander approved; an agent edit of that prompt now drops it. */
+   the Master approved; an agent edit of that prompt now drops it. */
 'use strict';
 const { readSidecarSource } = require('./helpers/source');
 const A = require('./_assert.js');

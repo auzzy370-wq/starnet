@@ -1,6 +1,6 @@
 /* node test/channels.telegram.chat-truth.e2e.test.js — LIVE proof of the 2026-10-23 channel fixes, through the REAL
    sidecar against a fake Telegram Bot API + fake provider (the group-allow e2e's harness):
-     - the "/" menu: a stranger-visible scope never carries the Commander's own command descriptions; the owner's DM does
+     - the "/" menu: a stranger-visible scope never carries the Master's own command descriptions; the owner's DM does
      - a desktop command typed on Telegram ("/version") is answered for free, never a paid model run
      - "/routine add" typed on Telegram makes a routine that delivers back to that chat, and says so
      - a closed group's "/allow @someone" (another bot's moderation command) admits nothing
@@ -158,7 +158,7 @@ async function waitUntil(fn, ms, label) {
   const ws = fs.mkdtempSync(path.join(os.tmpdir(), 'sk-chat-truth-'));
   const home = path.join(ws, 'home');
   fs.mkdirSync(home, { recursive: true });
-  // the Commander's own command, with a private note as its description
+  // the Master's own command, with a private note as its description
   fs.writeFileSync(path.join(ws, 'usercommands.json'), JSON.stringify({ commands: [
     { name: 'deploy_prod', type: 'alias', target: '/usage', desc: 'deploy main to 10.0.0.5' }
   ] }));
@@ -190,15 +190,15 @@ async function waitUntil(fn, ms, label) {
     const H = { 'X-Vultron-Token': token, Origin: B, 'Content-Type': 'application/json' };
     await waitUntil(() => tg.calls.some(c => c.method === 'getUpdates' && c.body && c.body.offset !== -1), 8000, 'telegram poll loop');
 
-    // ---- 1. the "/" menu before pairing: nothing the Commander wrote is in a scope a stranger can read ----
+    // ---- 1. the "/" menu before pairing: nothing the Master wrote is in a scope a stranger can read ----
     await waitUntil(() => menus().length >= 2, 8000, 'the connect-time menu publish');
     const atConnect = menus();
     const dflt = atConnect.find(b => !b.scope);
     const groups = atConnect.find(b => b.scope && b.scope.type === 'all_group_chats');
     A.ok(dflt && groups, 'default + all-groups menus published at connect');
     A.ok(!JSON.stringify(dflt).includes('deploy_prod'), 'the default (any DM) menu lists only the built-ins');
-    A.ok(groups.commands.some(c => c.command === 'deploy_prod'), 'groups can still tap the Commander\'s command by name');
-    A.ok(!JSON.stringify(atConnect).includes('10.0.0.5'), 'no stranger-visible menu carries the Commander\'s own description');
+    A.ok(groups.commands.some(c => c.command === 'deploy_prod'), 'groups can still tap the Master\'s command by name');
+    A.ok(!JSON.stringify(atConnect).includes('10.0.0.5'), 'no stranger-visible menu carries the Master\'s own description');
     A.ok(!atConnect.some(b => b.scope && b.scope.type === 'chat'), 'no owner scope before an owner exists');
 
     // ---- 2. pairing publishes the owner's own menu into the owner's DM only ----

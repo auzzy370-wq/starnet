@@ -1,5 +1,5 @@
 /* sidecar/mcp/catalog.js — the CURATED connector catalog: a vetted, categorized list of remote MCP
-   servers a Commander can one-click add, layered on the generic connector manager (mcp/manager.js).
+   servers a Master can one-click add, layered on the generic connector manager (mcp/manager.js).
 
    This module is PURE DATA + selectors — no I/O, no Date / Math.random — the honest "what can I plug in"
    list. Adding a connector is a data ROW here, never new code, exactly like dropping a skills/library/*.md
@@ -28,7 +28,7 @@
    until the child-process jail is a first-class connector transport.
 
    `official` = a first-party server run by the vendor it integrates (Stripe's own Stripe server), vs a
-   community/third-party host. The panel badges it so a Commander can prefer first-party. */
+   community/third-party host. The panel badges it so a Master can prefer first-party. */
 'use strict';
 (function (root, factory) {
   const api = factory();
@@ -451,7 +451,7 @@
         setupUrl: e.staticOauth.setupUrl || '', setupName: e.staticOauth.setupName || '',
         setupNote: e.staticOauth.setupNote || ''
       } : null,
-      // ALIASES — the names a Commander actually TYPES, which are frequently not the row's name and not in
+      // ALIASES — the names a Master actually TYPES, which are frequently not the row's name and not in
       // its blurb. "google drive" found nothing while a Google Workspace card sat on screen (2026-07-28);
       // relying on a term happening to appear in marketing copy is not a search. Ride into the card's
       // data-search attribute and into the agent's connect block, so the UI and the agent match the same words.

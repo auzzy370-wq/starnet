@@ -169,7 +169,7 @@ function makeTerminalTools(deps) {
      what a session holds (read: its scrollback; status: its command line, folder and output file), and sessions are
      keyed by AGENT, not by run, so as impact none they were offered, with no grant, to every run of that agent whose
      station holds the WORKBENCH (a delegated worker's kit, a bay room with one placed), on any surface and tainted or
-     not, which could then read and repeat the output of a terminal the Commander had that agent open. In this lane a
+     not, which could then read and repeat the output of a terminal the Master had that agent open. In this lane a
      watched run asks an exact per-call confirmation, an unattended ASK run (a routine granted the terminal included)
      is not offered them, a tainted run loses them, and an owner DM or Full Access keeps them. Declaring them none
      (quick win 8) was reverted in review; a rule scoped to the run that started the session waits for Andrew's

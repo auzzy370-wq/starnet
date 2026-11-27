@@ -15,7 +15,7 @@ const CHROME = '"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"';
 const SELF = 100;
 
 // A process table shaped like the one the 0.12.5 report described: OUR live station browser, an ORPHAN on the same
-// profile whose parent sidecar is gone, the Commander's own Chrome, a look-alike profile path, and a bare Chrome.
+// profile whose parent sidecar is gone, the Master's own Chrome, a look-alike profile path, and a bare Chrome.
 function table() {
   return [
     { pid: SELF, ppid: 1, cmd: 'node.exe sidecar/index.js' },
@@ -50,11 +50,11 @@ function fakeFs(files) {
   A.ok(O.sameDir(PROFILE_WIN + '\\', PROFILE_WIN.toLowerCase(), 'win32'), 'Windows compare ignores case and a trailing separator');
   A.ok(!O.sameDir(PROFILE_WIN + '-old', PROFILE_WIN, 'win32'), 'a look-alike profile path is NOT the station profile (no prefix match)');
 
-  /* ---- classify: ours vs orphans; the Commander's own Chrome never appears at all ---- */
+  /* ---- classify: ours vs orphans; the Master's own Chrome never appears at all ---- */
   const c = O.classify(table(), PROFILE_WIN, { selfPid: SELF, platform: 'win32' });
   A.eq(c.ours.map(p => p.pid), [200, 201], 'the browser THIS sidecar launched (and its helper) is ours');
   A.eq(c.orphans.map(p => p.pid).sort(), [300, 301, 302], 'the browser whose parent sidecar is gone (and its helpers) are the orphans');
-  A.ok(!c.procs.some(p => [400, 500, 600].includes(p.pid)), "the Commander's Chrome, a look-alike profile and a bare Chrome never match");
+  A.ok(!c.procs.some(p => [400, 500, 600].includes(p.pid)), "the Master's Chrome, a look-alike profile and a bare Chrome never match");
   A.eq(c.orphans.filter(p => p.browser).map(p => p.pid), [300], 'only pid 300 is a browser root (helpers carry --type=)');
 
   // The process table already names each owned helper. A recycled parent pid must not expand a kill to other programs.
@@ -74,7 +74,7 @@ function fakeFs(files) {
     const r = await O.sweep({ profileDir: PROFILE_WIN, platform: 'win32', selfPid: SELF, listProcesses: async () => rows, kill, sleep: async () => {}, fs: ffs });
     A.eq(killed[0], 300, 'the orphan browser ROOT is ended first');
     A.eq(killed, [300, 301, 302], 'every matching helper is ended separately');
-    A.ok(!killed.some(p => [SELF, 200, 201, 400, 500, 600].includes(p)), 'nothing of ours and nothing of the Commander is ever killed');
+    A.ok(!killed.some(p => [SELF, 200, 201, 400, 500, 600].includes(p)), 'nothing of ours and nothing of the Master is ever killed');
     A.ok(r.ok && r.found === 3 && r.survivors.length === 0, 'receipt: 3 orphan processes found, none survive');
     A.eq(r.ours, [200, 201], 'receipt names our own live browser');
     A.eq(r.locks.removed, [], 'locks are NOT cleared while our own browser still runs on the profile');
@@ -117,7 +117,7 @@ function fakeFs(files) {
     const alive = pid => rows.some(r => r.pid === pid);
     const r = O.sweepSync({ profileDir: PROFILE_WIN, platform: 'win32', selfPid: SELF, listProcesses: () => rows, kill, alive, sleep: () => {} });
     A.eq(killed, [300, 301, 302], 'every orphan is ended by its own pid, the browser root first');
-    A.ok(!killed.some(p => [SELF, 200, 201, 400, 500, 600].includes(p)), 'nothing of ours and nothing of the Commander is ever killed');
+    A.ok(!killed.some(p => [SELF, 200, 201, 400, 500, 600].includes(p)), 'nothing of ours and nothing of the Master is ever killed');
     A.ok(r.ok && r.found === 3 && r.killed.length === 3 && r.survivors.length === 0, 'receipt: 3 found, all 3 confirmed gone');
     A.eq(r.ours, [200, 201], 'receipt names our own live browser');
     A.ok(/ended 3 of 3 orphaned station-browser processes/.test(O.describeSweep(r)), 'and reads like the async receipt: ' + O.describeSweep(r));

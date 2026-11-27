@@ -5,7 +5,7 @@
    cron/workshop/night-shift run (the `internal` stream-prefix fold), a morning report that knew only the night
    shift, a drafts nudge, a workshop reveal, toasts. Coming back meant opening each one and stitching the story
    together yourself. This module folds ALL of it into ONE briefing — delivered as one assistant turn into ONE
-   durable session (stream 'briefing'), so the Commander reads one message and replying continues from it.
+   durable session (stream 'briefing'), so the Master reads one message and replying continues from it.
 
    PURE: no IO, no clock, no fs. The host (index.js) gathers the inputs from the real stores (runStore rows,
    validated pending workshop manifests, night-shift drafts, cron jobs, the resolved night focus) and owns the
@@ -360,10 +360,10 @@ function compose(input) {
 }
 
 /* absence({ through, now, seen, minAwayMs, firstWindowMs }) -> { brief, since?, through }
-   THE ABSENCE (live walk 10-14). `through` is the moment the Commander was last told OR last seen present. A page that
-   reloaded mid-session briefed everything that had ended since the PREVIOUS briefing — work the Commander had watched
+   THE ABSENCE (live walk 10-14). `through` is the moment the Master was last told OR last seen present. A page that
+   reloaded mid-session briefed everything that had ended since the PREVIOUS briefing — work the Master had watched
    land — as a new "While you were away", took the screen off the conversation whose approval was still waiting, and a
-   restart twelve minutes later appended a second one. Now the page stamps its presence (seen:true) while the Commander
+   restart twelve minutes later appended a second one. Now the page stamps its presence (seen:true) while the Master
    is here, and a delivery names the page's own away threshold (minAwayMs): a stamp fresher than that is a reload or a
    restart, not an absence — nothing is briefed and the stamp moves to now. The stamp never moves backwards.
    No threshold named → the original contract (brief whatever ended since the stamp). */
@@ -383,9 +383,9 @@ function absence(o) {
 function contextBlock(briefing) {
   const items = briefing && Array.isArray(briefing.items) ? briefing.items : [];
   if (!items.length) return '';
-  const L = ['[AWAY BRIEFING CONTEXT] This session is the station\'s "' + TITLE + '" report. The Commander is replying to it. What each item refers to:'];
+  const L = ['[AWAY BRIEFING CONTEXT] This session is the station\'s "' + TITLE + '" report. The Master is replying to it. What each item refers to:'];
   for (const it of items.slice(0, 16)) {
-    if (it.kind === 'build') L.push('- build "' + it.title + '": files in your workspace at workshop/' + it.runId + '/ (deliverable.json lists them). Still undecided — the Commander keeps/discards it from its session; you may read, extend, or copy it where they ask.');
+    if (it.kind === 'build') L.push('- build "' + it.title + '": files in your workspace at workshop/' + it.runId + '/ (deliverable.json lists them). Still undecided — the Master keeps/discards it from its session; you may read, extend, or copy it where they ask.');
     else if (it.kind === 'build-failed') L.push('- unfinished build "' + it.title + '" (run ' + it.runId + '): ' + it.why + '. Partial files may be in workshop/' + it.runId + '/.');
     else if (it.kind === 'build-stopped') L.push('- build "' + it.title + '" (run ' + it.runId + ') was stopped before it finished. Partial files may be in workshop/' + it.runId + '/.');
     else if (it.kind === 'routine') L.push('- routine "' + it.name + '"' + (it.jobId ? ' (job ' + it.jobId + ')' : '') + ': ' + it.runs + ' run(s), ' + failedOnly(it) + ' failed' + (it.unfinished ? ', ' + it.unfinished + ' did not finish' : '') + (it.stopped ? ', ' + it.stopped + ' stopped' : '') + '; latest run ' + (it.latest ? it.latest.runId : '?') + '.');

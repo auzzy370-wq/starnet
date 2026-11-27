@@ -143,7 +143,7 @@ async function waitFor(fn) { for (let n = 0; n < 200; n++) { if (await fn()) ret
     await assert.rejects(api.configure(led.id, { revision: removed.revision, members: ['researcher-2'], leadId: 'outside' }), /lead who remains/, 'a live lead outside the chat is still refused');
     crew = crewBefore;
 
-    // ---- the station-wide list says what is waiting on the Commander ----
+    // ---- the station-wide list says what is waiting on the Master ----
     const listed = (await api.list()).groups.find(x => x.id === q.id);
     for (const k of ['updatedAt', 'approvals', 'questions', 'busy', 'paused']) assert.ok(k in listed, 'list carries ' + k);
 

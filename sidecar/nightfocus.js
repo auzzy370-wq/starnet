@@ -72,14 +72,14 @@
   // the focus KINDS this resolver may declare. project/thread/goal are the NS-5b originals; 'quest' (an open
   // ledger quest) and 'northstar' (the confirmed inferred long-term direction) are the flagship cross-wire (a
   // night beat can actually ADVANCE a work quest / serve the star). Steering is still project/thread/goal only.
-  // 'workflow' (2026-10-05 audit item 2): work the Commander asked for on ≥3 separate days that no routine covers yet
+  // 'workflow' (2026-10-05 audit item 2): work the Master asked for on ≥3 separate days that no routine covers yet
   // (workflow-takeover.js's evidence) — repeated work is the clearest signal of what they want done.
   const FOCUS_KINDS = ['project', 'thread', 'goal', 'quest', 'northstar', 'workflow'];
   const WORKFLOW_MIN_COUNT = 3;               // the same bar workflow-takeover.js offers a routine at
 
   /* ---- the LEARNED-TOPIC TIE-BREAK (2026-07-28) ----
      Until now this resolver ranked purely on RECENCY: the most recently touched project won the night, whatever
-     the Commander actually keeps working ON. The station already learns that (interests.js — an evidence-backed
+     the Master actually keeps working ON. The station already learns that (interests.js — an evidence-backed
      topic histogram), and a focus that matches a warm topic is measurably more likely to be the thing worth
      moving. So a matched candidate gets a SMALL boost and cites the topic in its `why`.
 
@@ -89,7 +89,7 @@
      until a topic is WARM, so a cold station resolves the identical focus it resolved before this existed.
 
      Applied ONLY to the three evidence-derived kinds with real subject text (project / thread / quest). The goal
-     arc and the north star are the Commander's EXPLICIT direction with flat scores — boosting those by an
+     arc and the north star are the Master's EXPLICIT direction with flat scores — boosting those by an
      inferred topic would double-count the same signal and let an inference outrank a stated intent. */
   const TOPIC_BOOST_MAX = 0.2;
   function topicBoost(topics, corpus) {
@@ -267,9 +267,9 @@
       cands.push({ order: 1, score, focus: { kind: 'thread', ref: str(t.id), label: title, why, source: 'evidence', threadId: str(t.id), resolvedAt: now } });
     }
 
-    // open ledger QUESTS — the Commander's committed next steps (flagship cross-wire). A WORK quest (run/artifact
+    // open ledger QUESTS — the Master's committed next steps (flagship cross-wire). A WORK quest (run/artifact
     // contract) is the strongest kind here: a night beat can actually ADVANCE it (do the run / build the artifact).
-    // A prop/fact/attest quest is weaker evidence — its completion needs a capability/fact/Commander-verdict a beat
+    // A prop/fact/attest quest is weaker evidence — its completion needs a capability/fact/Master-verdict a beat
     // can't force. Scored in the THREAD neighbourhood (comparable evidence) so a fresh explicit quest beats a stale
     // project but a work quest can be chased over a bare thread.
     for (const q of (Array.isArray(inputs.quests) ? inputs.quests : [])) {
@@ -287,7 +287,7 @@
       cands.push({ order: 1, score, focus: { kind: 'quest', ref: str(q.id) || ('quest:' + title), label: title, why, source: 'evidence', resolvedAt: now } });
     }
 
-    // REPEATED WORK — a request the Commander made on ≥3 separate days (workflow-takeover.js clustering; the host
+    // REPEATED WORK — a request the Master made on ≥3 separate days (workflow-takeover.js clustering; the host
     // passes only ones no cron job covers yet). Scored by FREQUENCY × RECENCY: three asks this week sit beside a
     // project touched today; five or six outrank it. Evidence-or-null: no count ≥3 or no quote of their own words →
     // not a candidate (a focus must cite what produced it).

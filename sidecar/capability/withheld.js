@@ -1,9 +1,9 @@
 /* sidecar/capability/withheld.js — WHY a placed power is missing from THIS run, and what gets the work done instead.
 
-   ISSUE #77. A delegated worker in a project conversation (ASK mode, WORKBENCH placed) told the Commander "shell
+   ISSUE #77. A delegated worker in a project conversation (ASK mode, WORKBENCH placed) told the Master "shell
    execution is unavailable": its tool list held shell_bg_status/kill/wait but no shell_exec, tool_search answered
    with an unrelated browser tool, and its ground-truth note called it an "UNATTENDED routine" needing a
-   "per-routine grant" — none of which it, or the Commander, could act on.
+   "per-routine grant" — none of which it, or the Master, could act on.
 
    The withholding itself is BY DESIGN and stays: makeRunAuthority (inputpolicy.js) projects no workspace-process
    tool (shell.exec, shell.bg.write, terminal.start/write, verify.run, code.run) onto a non-interactive surface in ASK mode
@@ -22,10 +22,10 @@ function delegatedCommandGap(lead) {
   const who = String(lead == null ? '' : lead).trim() || 'the lead agent that delegated this task';
   return {
     why: 'you are a worker delegated by ' + who + ', and in ASK mode Vultron withholds command execution (' + COMMAND_TOOLS
-      + ') from delegated workers even when a WORKBENCH is placed: a command needs the Commander\'s approval in a watched '
+      + ') from delegated workers even when a WORKBENCH is placed: a command needs the Master\'s approval in a watched '
       + 'conversation, and a delegated run is not one',
     enable: 'put the exact command(s), and the folder to run them in, in your result for ' + who + ' so they can be run in '
-      + 'the Commander\'s watched conversation, where each command is approved under ASK. Placing more objects cannot change '
+      + 'the Master\'s watched conversation, where each command is approved under ASK. Placing more objects cannot change '
       + 'this; only Full Access for this agent (whole-computer authority) would'
   };
 }
@@ -33,7 +33,7 @@ function delegatedCommandGap(lead) {
 function routineCommandGap() {
   return {
     why: 'this is an unattended routine run and the routine has no terminal grant',
-    enable: 'the Commander grants this routine terminal access in the ROUTINES panel, or runs the command in a watched conversation'
+    enable: 'the Master grants this routine terminal access in the ROUTINES panel, or runs the command in a watched conversation'
   };
 }
 

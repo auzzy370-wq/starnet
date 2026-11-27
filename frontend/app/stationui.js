@@ -70,7 +70,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
   const runSeenAt = new Map();       // agentId -> performance.now() of the last counted run.start (agentLive's veto grace)
   /* LINE TEST (2026-09-29, handed over by the steptest-stuck investigation): a run on a line test's OWN stream — a step
      test's steptest-…, RUN ONE REAL JOB's sample-… (agent.run.start carries streamId) — is real work, but its words live in
-     the line's TEST view, not in the agent's COMMS: a Commander who opened COMMS saw nothing and read the row as stuck. The
+     the line's TEST view, not in the agent's COMMS: a Master who opened COMMS saw nothing and read the row as stuck. The
      crew row names it LINE TEST and its tip says where it shows and how it stops.
      (2026-09-30) A sample-… stream is also every job the WORK › AUTOMATE › WORKFLOWS window sends — real work, not a test — so the row says
      ON A WORKFLOW and its tip names both places one shows: the WORKFLOWS window, or a step test's TEST view in BUILD. */
@@ -92,7 +92,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
      the dial and crew wraps …), so a hook left armed after SETTINGS closed kept that whole closed window alive — 3,509
      elements found detached after a dock sweep, retained only by these two module variables. Closing SETTINGS drops them. */
   function dropSettingsRepaints() { repaintAutonomyDial = null; repaintPermAgents = null; }
-  /* Which PERMISSIONS crew rows the Commander has expanded, by agent id. MODULE scope, deliberately:
+  /* Which PERMISSIONS crew rows the Master has expanded, by agent id. MODULE scope, deliberately:
      the rows are <details> that paintCrew replaces wholesale, and the settings builder itself re-runs on
      every `rerender('settings')` (a tab swap, a live refresh) — so a Set declared inside that builder is
      a NEW Set each time and the row you just opened slams shut. Measured exactly that before moving it
@@ -561,17 +561,17 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
   }
   const termPos = {};   // key -> {left,top} remembered drag position — kills the dead-center pile-up
   const consoleSection = {};   // console key -> last-active section id, so reopening lands where the user was
-  // P2: hydrate the persisted window layout so a panel re-opens where the Commander left it, and consoles land
+  // P2: hydrate the persisted window layout so a panel re-opens where the Master left it, and consoles land
   // on the last section they were on — across a full reload, not just this session. Saved back on drag-end / retab.
   try { Object.assign(termPos, store.termPos || {}); Object.assign(termSize, store.termSize || {}); Object.assign(consoleSection, store.consoleSection || {}); } catch (_) {}
   /* ONE-SHOT: retire the window sizes persisted under the old per-window widths (2026-08-13).
      A remembered size is an INLINE width that outranks the shell's CSS, and every existing station has
      a pile of them — recorded against the nine hand-picked widths the two-size pass replaced, and often
      not chosen by anyone: fitTermInViewport bakes-and-persists a size whenever a window opens taller
-     than the band. Left in place they pin the old geometry forever, and the Commander would open the
+     than the band. Left in place they pin the old geometry forever, and the Master would open the
      app to exactly the mixed-size dock this pass exists to remove. Sizes only — remembered POSITIONS
      are untouched, because where you parked a window is still true after it changes width. Flagged so
-     it runs once and never eats a size the Commander drags from here on. */
+     it runs once and never eats a size the Master drags from here on. */
   try {
     if (!store.termSizeReset2) { store.termSizeReset2 = 1; Object.keys(termSize).forEach(k => delete termSize[k]); store.termSize = termSize; save(); }
   } catch (_) {}
@@ -633,7 +633,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
   /* The limits follow the SHELL, so `wide` reads the console tier too. Keying this on `opts.console`
      alone silently produced a THIRD window width: fitTermInViewport shrinks any window taller than the
      band and BAKES the result inline, and that bake is clamped to these limits — so a 1060px `wide`
-     window (TASK BOARD, QUEST LOG, COMMANDER DOSSIER) hit the panel tier's 960 maxWidth the first time
+     window (TASK BOARD, QUEST LOG, MASTER DOSSIER) hit the panel tier's 960 maxWidth the first time
      it opened tall and stuck there, 100px narrower than the consoles it is supposed to match. Measured
      live at 1440x900 before this line existed: 736 / 1104 / 1219 — three sizes, not two. */
   function terminalLimits(opts) {
@@ -716,7 +716,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     }
   });
   window.addEventListener('mouseup', () => {
-    // remember where the Commander parked this panel so it re-opens there, not back at dead-center
+    // remember where the Master parked this panel so it re-opens there, not back at dead-center
     if (termDrag) {
       const w = termDrag.w, k = Object.keys(open).find(key => open[key] === w);
       if (k && termDrag.moved) fitTermInViewport(w, k, true);
@@ -1054,7 +1054,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     syncBB(); syncScrim();
   }
   // P0 draft-loss guard: a window that holds a MODIFIED, unsaved editor (a CONFIG file / memory / commander
-  // belief textarea the Commander typed into) must not vanish on a stray ✕/Esc. The first close attempt arms a
+  // belief textarea the Master typed into) must not vanish on a stray ✕/Esc. The first close attempt arms a
   // 3s "close anyway" state with a visible banner; a second close within the window discards. Clean windows just
   // close. A field marks itself dirty via the delegated input listener in toggleTerm (sets data-dirty on typing);
   // saving/cancelling rerenders the pane, destroying the dirty textarea, so the flag can never go stale.
@@ -1141,7 +1141,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     const nav = mkEl('nav', 'fam-tabs'); nav.dataset.family = famId;
     nav.setAttribute('role', 'tablist'); nav.setAttribute('aria-label', fam.label);
     // the window is named for its MENU (MY WORK / AUTOMATE / CONNECT) — the lit tab says which part is showing,
-    // so the title never changes under the Commander as they move between tabs
+    // so the title never changes under the Master as they move between tabs
     const titleEl = w.querySelector('.term-title'); if (titleEl) titleEl.textContent = fam.label;
     const plate = w.querySelector('.term-foot-k'); if (plate) plate.textContent = fam.label;
     const x = w.querySelector('.term-x'); if (x) x.setAttribute('aria-label', 'Close ' + fam.label);
@@ -1251,7 +1251,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     // Opening a panel exits refit first so two features can't stack (see COHERENCE_MATRIX dim T).
     if (typeof Build !== 'undefined' && Build.isOpen && Build.isOpen()) { try { Build.close(); } catch (_) {} }
     // DOOR LAW (systems.js): whatever opened this window — the dock, a deep link, a quest, the agent — its station
-    // system is online from now on, so the dock never hides a window the Commander has been sent to.
+    // system is online from now on, so the dock never hides a window the Master has been sent to.
     if (typeof Systems !== 'undefined' && Systems.openedTerm) { try { Systems.openedTerm(key); } catch (_) {} }
     sfx('open');
     // re-measure the band before the window exists: the desktop titlebar mounts after this module
@@ -1411,7 +1411,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       else if (!ev.shiftKey && act === last) { ev.preventDefault(); first.focus(); }
     });
     /* BACKGROUND-POKE FORM PRESERVATION (generalizes buildTasks's kbLive capture/restore, 2026-08-04).
-       A swap:false rebuild is a DATA poke on a window the Commander may be typing into: builders repaint
+       A swap:false rebuild is a DATA poke on a window the Master may be typing into: builders repaint
        via innerHTML, which wiped in-progress field values (the quest journey metrics), stole focus and
        reset selection. Capture every form control's volatile state before the rebuild and restore it
        after — matched by id first, then by structural path. This replaces the earlier skip-while-dirty
@@ -1487,7 +1487,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     };
     w._isBuilding = () => building;   // the render contract: invalidate() owes a mid-build poke to this build's one follow-up
     const paint = (swap) => {
-      const keep = swap === false ? captureForms() : null;   // background poke: preserve what the Commander typed
+      const keep = swap === false ? captureForms() : null;   // background poke: preserve what the Master typed
       const outerScope = buildScope; buildScope = w._scope;   // scopeOf() inside this build (a console pane is built detached) is this window's
       try { builder(body); } finally { buildScope = outerScope; }
       if (keep && keep.length) restoreForms(keep);
@@ -1514,12 +1514,12 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
   /* swap=false → no body crossfade: a DATA poke repaints in place (the taskboard's kbLive precedent at
      `open.tasks._render(false)`). Default stays true so every existing caller — user-driven swaps —
      keeps its fade. Store pokes (quests) pass false: a background poll must never visibly blink a
-     panel the Commander is reading. */
+     panel the Master is reading. */
   // swap=false → no crossfade AND form-state preservation: a background DATA poke repaints in place with
   // every in-progress field value, focus and selection carried across the rebuild (see w._render).
   function rerender(key, swap) { if (open[key]) { delete staleWins[key]; delete staleFresh[key]; open[key]._render(swap !== false); } }   // a full rebuild settles any paint owed
   /* THE WINDOW RENDER CONTRACT (wave 4: gh#85, window-open-lag-1026, E14). rerender(key) is a SYNCHRONOUS full rebuild: right
-     for the Commander's own click, which must answer in the same frame, and wrong for everything else. A store that learns
+     for the Master's own click, which must answer in the same frame, and wrong for everything else. A store that learns
      something new does not need the window rebuilt this instant; it needs it to be right on the next frame. Six quest stores
      each poked the open QUEST LOG on every sync, so one tick rebuilt the whole window up to six times, and each rebuild ran
      the stores' syncs again.
@@ -1648,7 +1648,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
      `sec.onShow(bodyEl)` (optional) is the escape hatch for content that is EXPENSIVE and INVISIBLE.
      Building every pane up-front is what makes the single wiring pass work, but it also means a
      section nobody opened still paid for itself: SETTINGS ran the real world renderer over six
-     backdrop swatches — 600ms, measured — on every build of the panel, for a pane the Commander
+     backdrop swatches — 600ms, measured — on every build of the panel, for a pane the Master
      usually never scrolls to. onShow fires ONCE, the first time that pane is actually revealed
      (mount, tab click, or a search that shows every pane), so the cost follows the eyes. */
   function mountConsole(body, key, sections, opts) {
@@ -1797,7 +1797,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       }
       reveal(id);
       consoleSection[key] = id;
-      if (viaClick) saveWindowState();   // remember the section the Commander navigated to, across reloads
+      if (viaClick) saveWindowState();   // remember the section the Master navigated to, across reloads
       activeId = id;
       showGroup(id);
       Object.keys(panes).forEach(k => {
@@ -1929,7 +1929,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
 
     /* The MOUNT reveal is deferred one frame, unlike every later one. onShow targets are installed by
        the caller's wiring pass, which runs AFTER mountConsole returns — firing the landing section's
-       hook inline here would call it before it exists and silently skip the pane the Commander is
+       hook inline here would call it before it exists and silently skip the pane the Master is
        actually looking at. selectSection still runs synchronously so the pane itself is visible now. */
     const landing = activeId;
     selectSection(activeId, false);
@@ -2088,7 +2088,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
      markdown config files — identity.md / purpose.md / operating-manual.md compose the EXACT
      system prompt the model runs on, so editing one here re-shapes the agent for real (App's
      applyAgentConfig, injected as access.config.apply). memory.md is the agent's own notebook —
-     shown read-only and honestly labelled, because the agent writes it, not the Commander. */
+     shown read-only and honestly labelled, because the agent writes it, not the Master. */
   // DOSSIER is CONSOLE MODE: the five sub-tabs are console sections (ids brief|growth|record|memory|config),
   // so the ACTIVE section lives in consoleSection['agents'] (not a private var). agSection() reads it with a
   // 'brief' fallback; it's the single source of truth for the memory-live guard + the BRIEF-only tick.
@@ -2263,7 +2263,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     return '<div class="cf-card ag-del-card" id="ag-del-card"><div class="ag-del-row">' + delBtn + '</div></div>';
   }
 
-  // COMMANDER CONTROLS (dossier CONFIG › APPEARANCE): change this agent's SKIN. Uses the SAME genesis skin
+  // MASTER CONTROLS (dossier CONFIG › APPEARANCE): change this agent's SKIN. Uses the SAME genesis skin
   // catalog (DATA.SKINS — single source of truth) and reuses the .skin-thumb visual vocabulary from the create
   // screen. Wired in wireCommand. (DELETE lives in agDeleteRow, outside every group.)
   function agCommand(a) {
@@ -2357,7 +2357,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       '</div>';
 
     /* S2 RELIABILITY — the harness's OWN read, sitting under Satisfaction so the pair reads as what it is:
-       B is what the Commander SAID, B2 is what the station OBSERVED. Deliberately not merged into one score
+       B is what the Master SAID, B2 is what the station OBSERVED. Deliberately not merged into one score
        (a well-liked agent that keeps hitting its ceiling must be able to show both truths at once), and
        deliberately dossier-only — it is a number that can look bad, and the always-visible chrome is not where
        an honest bad number belongs. Excluded runs are NAMED, not silently dropped from the denominator. */
@@ -2434,11 +2434,11 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     if (!(typeof Harness === 'object' && Harness.agentSkillsRead)) return fail('skillbase unavailable');
     Harness.agentSkillsRead(agentId, { archived: true }).then(r => {
       const h = $('#gx-practice'); if (!h) return;
-      const now = present[sel]; if (!now || now.id !== agentId) return;   // the Commander moved on — never paint the wrong agent
+      const now = present[sel]; if (!now || now.id !== agentId) return;   // the Master moved on — never paint the wrong agent
       if (!r || !r.ok) return fail('could not read the skillbase');
       const p = Xp.practice(r.skills);
       // every exclusion is NAMED rather than silently shrinking the count (the same rule B2 follows for the
-      // runs it sets aside) — a withheld or never-used procedure is a real thing the Commander can act on.
+      // runs it sets aside) — a withheld or never-used procedure is a real thing the Master can act on.
       const aside = [];
       if (p.withheld) aside.push(p.withheld + ' withheld pending your approval');
       if (p.idle) aside.push(p.idle + ' written but never used yet');
@@ -2581,7 +2581,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       '<div class="mc-acts"><button class="bb sm" id="mc-reflect-save">SAVE</button><span class="msg" id="mc-reflect-msg"></span></div></div>' +
       // AWAITING A VERDICT — the durable high-stakes deck. Runs that finish while nobody is watching (a routine, a
       // night shift, a channel message) can raise a credential/PII/standing-instruction belief; it is neither kept
-      // nor dropped until the Commander rules on it, and it waits HERE across restarts. Hidden until non-empty.
+      // nor dropped until the Master rules on it, and it waits HERE across restarts. Hidden until non-empty.
       '<div class="gx-sec" id="mc-pending-sec" style="display:none;"><span class="gx-ref gold">?</span><span class="gx-title">Awaiting your decision</span><span class="gx-tag" id="mc-pending-count"></span></div>' +
       '<div class="mc-note" id="mc-pending-note" style="display:none;">Proposed memories and corrections — <b>these changes have not been applied</b>. <b>Keep</b> to apply one &middot; <b>Discard</b> to reject it.</div>' +
       '<div id="mc-pending-list" class="mc-list"></div>' +
@@ -2661,11 +2661,11 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
   }
 
   /* WHERE a belief came from. Memory used to form only on the watched browser run, so every record was
-     self-evidently the Commander's own conversation and needed no label. Unattended runs reflect now, so a belief
+     self-evidently the Master's own conversation and needed no label. Unattended runs reflect now, so a belief
      can arrive from a routine, a night shift, or a messaging channel — and "the agent believes this about me" and
      "someone said this in a group chat" are different claims. 'commander' renders NO chip: the ordinary case must
      stay quiet, or the label becomes noise nobody reads. */
-  // 'feedback' = the Commander's OWN rating / correction of a run (sidecar/feedbackmemory.js): it is theirs, so its
+  // 'feedback' = the Master's OWN rating / correction of a run (sidecar/feedbackmemory.js): it is theirs, so its
   // tip must never say it was learned unwatched. 'failure-review' = a lesson from a run that failed.
   const ORIGIN_LABEL = { schedule: '⏱ routine', nightshift: '◈ autonomy', api: '⇄ external app', feedback: '★ your rating', 'failure-review': '⚠ failed run' };
   const ORIGIN_TIP = { feedback: 'from your own rating of a run — every agent shapes its work to this', 'failure-review': 'a lesson taken from a run that failed' };
@@ -2786,7 +2786,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       const wsT = (typeof Workstreams !== 'undefined' && Workstreams.get) ? ((Workstreams.get(rec.streamId) || {}).title || null) : null;
       const sc = mkEl('span', 'mc-scope'); sc.textContent = '⊂ ' + (rec.projectRoot ? 'project' : (wsT || 'workstream')); sc.title = rec.projectRoot ? 'pinned requirements also follow this trusted project: ' + rec.projectRoot : 'working memory — scoped to this workstream (still cross-stream searchable)'; head.appendChild(sc);
     }
-    const org = originChip(rec.origin); if (org) head.appendChild(org);   // only when it was NOT the Commander's own run
+    const org = originChip(rec.origin); if (org) head.appendChild(org);   // only when it was NOT the Master's own run
     if (rec.pinned) { const p = mkEl('span', 'mc-pinflag'); p.textContent = '★ pinned'; head.appendChild(p); }
     card.appendChild(head);
 
@@ -2924,7 +2924,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
 
   // W3 per-agent AWAY-WORKSHOP surface (rebuilt 2026-07-15 UX audit — the queue was invisible, the cadence
   // unstated, and a broken shift indistinguishable from a waiting one). One card now answers the four questions
-  // a Commander actually has: is it on · what's on the build list (with each item's real state) · when does it
+  // a Master actually has: is it on · what's on the build list (with each item's real state) · when does it
   // build next (+ build now) · did the last shift work. Everything renders from /api/workshop/backlog server
   // truth (wireConfig fills #ag-ws-live async); the static shell asserts nothing it can't prove.
   function workshopCard(a) {
@@ -2977,7 +2977,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
      · Applying counts what actually changed and reports THAT number (an agent deleted from another
        surface mid-click must not be counted as converted). */
   /* THE ON ITS OWN RUNGS (org pass 10-14, call #57): the dial's rendered names in ONE place. The ids are the stored
-     autonomy.js INITIATIVE values and never change; the labels are what the Commander reads, so a trust offer or a
+     autonomy.js INITIATIVE values and never change; the labels are what the Master reads, so a trust offer or a
      PERMISSIONS notice that names a rung reads it from here and can never print the internal id ('leash').
      'leash' reads SMALL JOBS (its own tip's words): BUILD clashed with the BUILD dock, and DRAFT is untrue once
      the away workshop is on and jobs build real deliverables. */
@@ -3575,7 +3575,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     wireCommand(body, a);
   }
 
-  // wire the COMMANDER CONTROLS block (agCommand): SKIN thumbs → access.config.setSkin (live sprite swap), and
+  // wire the MASTER CONTROLS block (agCommand): SKIN thumbs → access.config.setSkin (live sprite swap), and
   // DELETE AGENT → an armed 2-click confirm (ArmConfirm) → access.config.deleteAgent. A disabled DELETE (hero /
   // last agent) is left inert. Guarded so a section without the block (or a missing access hook) is a safe no-op.
   function wireCommand(body, a) {
@@ -3598,7 +3598,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
         if (!skin || skin === a.skin) return;
         if (!(access.config && access.config.setSkin)) { notify('skin change unavailable', 'bad'); return; }
         // Every rebuild of the dossier body hands back a FRESH scroll container parked at 0 — so picking a
-        // skin threw the Commander to the top of CONFIG and they never saw the one they just chose. Carry
+        // skin threw the Master to the top of CONFIG and they never saw the one they just chose. Carry
         // the offset across. Capture it FIRST: setSkin repaints the portrait via StationUI.setRoster, which
         // detaches this pane before we ever reach the rerender below. `body` IS the console host (.con-pane),
         // so closest() — not querySelector(); the enclosing .term-body is what a rebuild writes INTO, so it
@@ -3913,7 +3913,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
   }
   function openAgent(i) { sel = i; if (open.agents) { if (minimized.agents) restoreTerm('agents'); rerender('agents'); } else toggleTerm('agents', 'AGENT DOSSIER', buildAgents, { console: true, className: 'dossier' }); }
 
-  /* SHOW A PLACE (station.show, 2026-10-04 — the agent puts a window in front of the Commander). Opens through the
+  /* SHOW A PLACE (station.show, 2026-10-04 — the agent puts a window in front of the Master). Opens through the
      window's own door (openTerm: aliases, the ONE MENU tab swap, a minimized window restored), then RAISES it when
      another window buries it — openTerm leaves an already-open window where it sits. Returns what is really on screen,
      so the agent's "it's open" is a read-back, never a hope. */
@@ -3946,7 +3946,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
      The agent's real tools come from the OBJECTS at its workstation (object = capability — see
      sidecar/capability/registry.js). This is an honest readout of that grant set: the real tool
      ids, and which actions pause for a one-click approval in COMMS (the P1.5 consent broker —
-     writes to the user's files ask the Commander before they run; the private notebook does not).
+     writes to the user's files ask the Master before they run; the private notebook does not).
      Kept in sync with the registry by hand; TERMINAL (shell.exec) is the registry's own "M5 next". */
   // each skill maps to the capability OBJECT that grants it (object = capability — the moat).
   // cap:null = COMPUTE, the always-on freebie; everything else needs its prop placed on the agent's floor.
@@ -4067,11 +4067,11 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
      sidecar's /api/skill-market listing: available, installed, built in (our bundled copy IS the published
      version), update, or tampered (its files changed on disk, so agents are not given it). */
   // gear is named with the BUILD MODE palette's own labels (SK_OBJ_NAME, shared with SKILL LIBRARY), so a card never
-  // names an object the Commander can't find
+  // names an object the Master can't find
   const skmGear = g => SK_OBJ_NAME[g] || String(g).toUpperCase();
   let skmFilter = 'all';
   // CATEGORY FOLDS (UX night 10-25): each shelf lists its categories as one-line folds (102 cards were one ~20,000px
-  // scroll). A fold the Commander opens stays open across the market's re-renders (an install repaints every card).
+  // scroll). A fold the Master opens stays open across the market's re-renders (an install repaints every card).
   const skmFoldOpen = new Set();
   const skmBusy = new Map();   // slug -> 'install' | 'uninstall' while a request is in flight (survives re-renders)
   let skmResult = null;        // { slug, text, ok } — the last install/remove result, shown on that card
@@ -4135,7 +4135,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       hint = gear.length ? 'Needs ' + esc(gear.join(', ')) + ' placed to be used.' : 'Ready to use as soon as it is installed.';
     }
     // gear an installed or installable skill still needs: the SAME → PLACE shortcut SKILL LIBRARY offers. The
-    // ORCHESTRATOR is not a prop — every run the Commander starts carries it (runtimeGranted) — so it never gets one.
+    // ORCHESTRATOR is not a prop — every run the Master starts carries it (runtimeGranted) — so it never gets one.
     const placeable = missing.filter(g => g !== 'orchestrator');
     const place = placeable.length && (e.status === 'available' || e.status === 'installed' || e.status === 'update')
       ? '<div class="sk-place-row">' + placeable.map(g => '<button class="sk-place" type="button" data-place="' + esc(g) + '" title="Open BUILD MODE to place ' + skArt(skmGear(g)) + esc(skmGear(g)) + '">→ PLACE ' + esc(skmGear(g)) + '</button>').join('') + '</div>' : '';
@@ -4231,7 +4231,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       const f = host.querySelector('[data-skm="' + CSS.escape(skmFocus) + '"] .cc-acts button:not([disabled])') || host.querySelector('[data-skm="' + CSS.escape(skmFocus) + '"] .cc-acts');
       skmFocus = '';
       // the card's category may have folded in this repaint (a search opened it): open it again before focusing, as the
-      // search's own fold when searching, else as the Commander's (they just acted inside it)
+      // search's own fold when searching, else as the Master's (they just acted inside it)
       const fold = f && f.closest('details.cc-group');
       if (fold && !fold.open) { fold.open = true; if (host.closest('.con-searching')) fold.dataset.searchOpened = '1'; else skmFoldOpen.add(fold.dataset.fold); }
       // focus a tick later: while searching, a repainted card's group stays display:none until the caller re-applies the
@@ -4263,7 +4263,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       skmApplyFilter($('#skm-list'));
     });
     host.addEventListener('click', async ev => {
-      // the Commander's own fold choice (the click lands before the fold toggles)
+      // the Master's own fold choice (the click lands before the fold toggles)
       const head = ev.target.closest('summary'), fold = head && head.parentElement;
       if (fold && fold.matches('details.cc-group') && fold.dataset.fold) { if (fold.open) skmFoldOpen.delete(fold.dataset.fold); else skmFoldOpen.add(fold.dataset.fold); return; }
       const place = ev.target.closest('[data-place]');
@@ -4276,7 +4276,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       const msg = $('#skm-msg');
       const card = b.closest('[data-skm]');
       const name = card ? (card.querySelector('.cc-identity b') || {}).textContent : slug;
-      const verb = b.textContent.trim();   // + INSTALL · UPDATE · UPDATE TO vX · REINSTALL · REMOVE — what the Commander clicked
+      const verb = b.textContent.trim();   // + INSTALL · UPDATE · UPDATE TO vX · REINSTALL · REMOVE — what the Master clicked
       skmBusy.set(slug, act === 'install' ? 'install' : 'uninstall');
       b.disabled = true; b.textContent = act === 'install' ? 'INSTALLING…' : 'REMOVING…';
       try {
@@ -4339,7 +4339,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
   }
 
   // The gear names here are the BUILD MODE palette's own labels (the cabinet cap's representative prop is the INTEL CAB),
-  // so a "place a …" nudge names something the Commander can actually find in the palette. skArt keeps the article
+  // so a "place a …" nudge names something the Master can actually find in the palette. skArt keeps the article
   // right for a vowel-initial label ("place an INTEL CAB", not "a INTEL CAB").
   const SK_OBJ_NAME = { cabinet: 'INTEL CAB', dish: 'DISH', workbench: 'WORKBENCH', studio: 'STUDIO', notebook: 'NOTEBOOK', jukebox: 'JUKEBOX', computer: 'COMPUTER', orchestrator: 'ORCHESTRATOR', connector: 'CONNECTOR' };
   // Each capability objectType → the representative placeable prop (CAP_PROP_MAP) and the BUILD MODE palette category tab
@@ -4408,7 +4408,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     return { ready: ready, needsGear: needsGear, off: off };
   }
 
-  let skLibOffOpen = false;   // the TURNED OFF fold, as the Commander last left it
+  let skLibOffOpen = false;   // the TURNED OFF fold, as the Master last left it
   function renderSkillLibrary(host, skills, agentId, placed) {
     if (!skills.length) { host.innerHTML = '<div class="sk-loading">No skills in the library yet.</div>'; return; }
     const placedSet = {}; (placed || []).forEach(p => placedSet[p] = true);
@@ -4463,7 +4463,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     html += section('READY TO USE', groups.ready);
     html += section('NEEDS GEAR', groups.needsGear);
     // TURNED OFF is one line (UX night 10-25): the library opened on 5 skills in use and then a wall of the 69 that are
-    // not. Opened, it stays open while the Commander switches skills on (every switch repaints the library).
+    // not. Opened, it stays open while the Master switches skills on (every switch repaints the library).
     if (groups.off.length) html += '<details class="sk-fold"' + (skLibOffOpen ? ' open' : '') + '><summary class="sec sk-state-sec">' + head('TURNED OFF', groups.off) + '</summary>' + groups.off.map(card).join('') + '</details>';
     host.innerHTML = html;
     const offFold = host.querySelector('details.sk-fold');
@@ -4867,7 +4867,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       const files = (s.files || []).length ? '<div class="sk-attr">Support files: ' + esc((s.files || []).map(f => f.path).join(', ')) + '</div>' : '';
       /* WITHHELD IS THE ONE THING THIS CARD MUST NOT HIDE. The skill guard can keep a saved skill
          out of the agent's prompt entirely; a card that looks identical either way would have the
-         Commander believe their agent is using a procedure it was never given. So: a badge, the
+         Master believe their agent is using a procedure it was never given. So: a badge, the
          reason, the finding categories, and — when the verdict is 'ask' — the button that clears
          it. A 'block' verdict shows no button, because no click can bless it (the sidecar refuses
          it too); the honest instruction is to edit out the flagged content. */
@@ -4990,7 +4990,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       btn.classList.add('busy');
       const action = act === 'pin' ? (skill.pinned ? 'unpin' : 'pin') : (skill.state === 'archived' ? 'restore' : 'archive');
       /* force: the pin exists to stop MODELS (a review pass, a curator pass) from rewriting or
-         filing away the Commander's own procedure. A Commander clicking their own card is the
+         filing away the Master's own procedure. A Master clicking their own card is the
          author, so the panel passes the override the sidecar requires — without it the button
          would simply fail on a pinned skill, which is a worse lie than no button. */
       const r = await Harness.agentSkillManage({ agentId, action, target: skill.id, force: true });
@@ -5030,7 +5030,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
      card (like Edit): the market name, the line on its card, a shelf, a license, the credit and the agreement. The
      sidecar sends the skill exactly as the library holds it; the line it prints is what the market answered. */
   const MARKET_SHELVES = ['Communication', 'Creative', 'Engineering', 'Marketing', 'Planning', 'Productivity', 'Research', 'Writing'];
-  const SHARE_CREDIT_KEY = 'vultron.communityMapCredit';   // one credit name for everything this Commander shares
+  const SHARE_CREDIT_KEY = 'vultron.communityMapCredit';   // one credit name for everything this Master shares
   function shareSkillToMarket(card, skill, agentId) {
     if (!communityLive()) return;
     const body = card.querySelector('.sk-body'); if (!body || body.dataset.sharing === '1' || body.dataset.editing === '1') return;
@@ -5214,7 +5214,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     const s = w.get(id); if (!s) return;
     if (typeof App !== 'undefined' && App.openWorkstream) App.openWorkstream(id);
     else { w.switch(id); if (typeof Chat === 'object' && Chat.load) Chat.load(s); sync(); }
-    const started = w.hasUserTurn ? w.hasUserTurn(s) : s.history.some(m => m.role === 'user');   // a packed history holds the Commander's turns: never send the title as a first message over it
+    const started = w.hasUserTurn ? w.hasUserTurn(s) : s.history.some(m => m.role === 'user');   // a packed history holds the Master's turns: never send the title as a first message over it
     workConversation('tasks');
     if (!started && s.title && typeof Chat === 'object' && Chat.send) Chat.send(s.title);
     // name the stream's OWN bound agent (s.agentId), resolved against the roster — never present[0], which is
@@ -5338,7 +5338,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
   // LIVE board refresh (P1, 2026-08-04): renderRail pokes the board on EVERY rail change (run start/end,
   // cron polls, background approvals). The old path was rerender('tasks') — a full rebuild that replayed
   // the swap-in crossfade + card entrance stagger (flicker), wiped the add-input's half-typed text, reset
-  // column scroll, and buildTasks's trailing focus() STOLE the keyboard from wherever the Commander was
+  // column scroll, and buildTasks's trailing focus() STOLE the keyboard from wherever the Master was
   // typing (chat composer included). kbLive tells buildTasks this rebuild is a background data refresh:
   // preserve input value/selection, focus and per-column scroll, suppress entrance motion (.kb-live-refresh),
   // and never move focus that wasn't already inside the board.
@@ -5617,7 +5617,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
   const SETTINGS_REPAINT_COALESCE_MS = 120;
   let settingsRepaintQueued = false;
   /* A BACKGROUND repaint keeps the reader's place (org P03 wiring): a status check / provider probe landing rebuilt the whole
-     console with a fresh .con-pane at scrollTop 0, so a Commander reading a card halfway down AI & MODELS (or a card an
+     console with a fresh .con-pane at scrollTop 0, so a Master reading a card halfway down AI & MODELS (or a card an
      error door just landed on) was thrown back to the top 5-15s after opening — a first-open probe may take its full 15s
      credential check. The same section's pane gets its scroll back; a section change (a tab click) is not a background poke. */
   function scheduleSettingsRepaint() {
@@ -5694,7 +5694,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
         // distinguish "never signed in" from the dead-refresh-token death the row must render differently.
         const unsaved = (j.connected && j.persistError) ? ('SIGN-IN NOT SAVED — ' + String(j.persistError).slice(0, 120) + '; it will be gone after a restart') : '';
         const next = { connected: !!(j && j.connected), expired: !!(j && j.expired), reason: (j && j.reason) || unsaved || '', region: (j && j.region) || '' };
-        // kimi (#70): the stored sign-in's region seeds the next sign-in's default (unless the Commander picked one)
+        // kimi (#70): the stored sign-in's region seeds the next sign-in's default (unless the Master picked one)
         if (pid === 'kimi' && next.region && typeof KimiRegion !== 'undefined') KimiRegion.noteSignedIn(next.region);
         // Same rule as codex above: compare what the row will actually DRAW, so a cold "not connected" answer
         // that matches the fallback does not force a full pane rebuild (and its fan-out) for nothing.
@@ -6203,7 +6203,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
         (p.id === 'kimi' && p.live ? kimiRegionHtml() : '') +
         (STACKABLE_OAUTH.indexOf(p.id) >= 0 ? oauthAccountsHtml(p.id) : '') +
         // the card's device-code box is drawn FROM oauthCardFlow, so a Settings repaint mid-sign-in (a status check
-        // landing, the first-open probes) redraws the code the Commander still has to type instead of losing it
+        // landing, the first-open probes) redraws the code the Master still has to type instead of losing it
         (wantsOAuthSignin || cardFlow
           ? '<div class="key-edit codex-inline prov-oauth-inline" id="prov-oauth-inline-' + esc(p.id) + '"' + (cardFlow ? '' : ' hidden') + '>' +
             '<span class="dim" id="prov-oauth-status-' + esc(p.id) + '">' + (cardFlow ? cardFlow.statusHtml : '') + '</span>' +
@@ -7331,7 +7331,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
   // Caps persist server-side and apply live; this is the ONLY UI for money limits (previously env-var-only).
   const BG_KEYS = ['perRun', 'perAgent', 'perDay', 'global'];
   // How a run is named in the STORE's RECENT ACTIVITY and in an unsettled row's tip — the same words on both, so the
-  // Commander can match a charge to its row. A skill evaluation run id is 'skill-eval-<evaluation>-<n>-<phase>-<digest>'
+  // Master can match a charge to its row. A skill evaluation run id is 'skill-eval-<evaluation>-<n>-<phase>-<digest>'
   // (skill-evaluation-runner.js), so its first 8 chars are the same for every one: name its evaluation, serial and phase.
   function creditRunTag(runId) {
     const s = String(runId == null ? '' : runId);
@@ -7372,7 +7372,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     const setMsg = (t, ok) => { if (msgEl) { msgEl.textContent = t || ''; msgEl.className = 'msg' + (ok ? ' ok' : ''); } };
     let loaded = false;
     // what each input was last painted with (+ whether that value was saved here) and the env defaults: SAVE posts only
-    // what the Commander changed — a posted untouched field became a SAVED cap, and a saved PER DAY is strict.
+    // what the Master changed — a posted untouched field became a SAVED cap, and a saved PER DAY is strict.
     let painted = {}, paintedEnv = {};
     const enable = value => { if (saveBtn) saveBtn.disabled = !value; if (resetBtn) resetBtn.disabled = !value; };
     enable(false);
@@ -7458,10 +7458,10 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       paintPools(st);
     };
     // UNKNOWN SPEND — an interrupted run, an unpriced skill evaluation or a damaged record line leaves one charge unknown
-    // (/api/budget/status `unsettled`, found at boot). Until the Commander settles it, each counts at its bound in every limit
+    // (/api/budget/status `unsettled`, found at boot). Until the Master settles it, each counts at its bound in every limit
     // shown as a possible explicit settlement: the per-run limit it started with, the charge a damaged line still records, or
-    // the assumption for one nobody can read. An interrupted run with no limit counts at nothing, so a limit the Commander
-    // chose that contains it refuses paid runs until it is settled. Settled by the amount the Commander enters, or in one
+    // the assumption for one nobody can read. An interrupted run with no limit counts at nothing, so a limit the Master
+    // chose that contains it refuses paid runs until it is settled. Settled by the amount the Master enters, or in one
     // click (COUNT AS, every row) at the figure the row names; the booking says which. Never a figure nobody chose.
     const unsettledEl = body.querySelector('#budget-unsettled');
     const BOUND_WORDS = { limit: 'ITS LIMIT', recorded: 'AS RECORDED', assumed: 'ASSUMED' };
@@ -7614,7 +7614,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
         const n = raw === '' ? 0 : Number(raw);   // blank -> "no cap" (0), matching the placeholder semantics
         if (!isFinite(n) || n < 0) { setMsg(k + ': enter a number ≥ 0 (leave blank or 0 for no cap)'); sfx('bad'); el.focus(); return; }
         const was = painted[k];
-        // Only a value the Commander CHANGED is a choice. Saving an untouched field turned the shipped soft day rail
+        // Only a value the Master CHANGED is a choice. Saving an untouched field turned the shipped soft day rail
         // into a strict saved cap (fail-closed whenever spend history is uncertain — DECISIONS.md "Strict vs soft").
         if (was && n === was.v) continue;
         // Typing the environment default back into a SAVED limit clears the override, so "back to default" is the real
@@ -8256,7 +8256,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       // shown only while helpers are actually running (paintHelpers toggles it) — an empty "no helpers" row was noise
       '<div class="set-sub" id="auto-helpers-sub" hidden><span class="set-sub-k">LIVE HELPERS</span><span class="set-sub-d">background sub-agents running now</span></div>' +
       '<div class="key-list" id="auto-helpers" hidden></div>';
-    /* ONE WORD: AUTONOMY (2026-09-29, Andrew: "should simply be autonomy"). What the Commander saw as two things —
+    /* ONE WORD: AUTONOMY (2026-09-29, Andrew: "should simply be autonomy"). What the Master saw as two things —
        the AUTONOMY dial and a separate NIGHT SHIFT section — is one thing: the dial, and what it did while they were
        away. This block (status, decision trail, last report) now renders INSIDE the AUTONOMY section, under the dial
        it reports on. "Night shift" stays only as the internal name of the server-side driver (routes, ids, files). */
@@ -9249,10 +9249,10 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
               .catch(() => { label.textContent = title + ' — could not reach the sidecar'; sfx('bad'); stop.disabled = false; });
           });
           // STEER — redirect a RUNNING helper mid-flight instead of killing it (G6: previously STOP was the
-          // Commander's only control). Inline station input (never window.prompt — OS-modal law); posts the
+          // Master's only control). Inline station input (never window.prompt — OS-modal law); posts the
           // exact generation this row painted, so a helper that finished/restarted meanwhile is refused by the
           // server's generation gate rather than steered blind. The note lands in the worker's next turn as a
-          // [from the Commander] steering note.
+          // [from the Master] steering note.
           const steerBtn = document.createElement('button');
           steerBtn.className = 'bb xs';
           steerBtn.textContent = 'STEER';
@@ -9747,7 +9747,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       // paint's DOM (the rows are replaced wholesale on every repaint, so nothing survives to leak).
       const wireCrew = () => {
         if (!crewList) return;
-        // record the open/closed intent as the Commander expresses it, so the next repaint restores it
+        // record the open/closed intent as the Master expresses it, so the next repaint restores it
         crewList.querySelectorAll('.perm-crew-row[data-profile-agent]').forEach(row => {
           row.addEventListener('toggle', () => {
             const id = String(row.dataset.profileAgent || '');
@@ -10011,7 +10011,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
   // background consent toast opens ITS session). key replaces an active toast for the same live condition, so
   // a recovery can never leave a stale red outage card on screen. transient (notification diet, 2026-08-18)
   // shows the toast but skips the persistent NOTIFICATIONS record — for one-tap confirmations of an action
-  // the Commander just performed ("copied", "archived"): confirming NOW is useful, filing it in the bell as
+  // the Master just performed ("copied", "archived"): confirming NOW is useful, filing it in the bell as
   // unread history is clutter.
   // NOTIFICATIONS THAT MEAN SOMETHING (Andrew 10-02: "keep the notifications, but actually make it more useful
   // instead of meaningless"): the bell keeps only what you'd want AFTER the moment — kind 'needs' (an agent is
@@ -10386,7 +10386,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     const saved = save(); badges(); rerender('notifs');
     return { cleared, waiting: liveWaitingCount(), saved };
   }
-  // what is waiting on the Commander right now: the NEEDS YOU list (its stored waits are rows of it), else, on a page
+  // what is waiting on the Master right now: the NEEDS YOU list (its stored waits are rows of it), else, on a page
   // without the live list, the stored entries
   function liveWaitingCount() {
     const NY = liveNeeds();
@@ -10726,10 +10726,10 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     }));
   }
 
-  /* ============== COMMANDER DOSSIER — the station-wide model of the USER (the glass box) ==============
+  /* ============== MASTER DOSSIER — the station-wide model of the USER (the glass box) ==============
      Phase A of docs/COMMANDER_DOSSIER_PLAN.md. ONE dossier, shared by every agent, that folds into each
-     agent's system prompt (DossierStore.composeBlock) so a new agent knows the Commander on day one. This
-     panel is the glass box: every belief the station holds about the Commander, grouped by dimension, with
+     agent's system prompt (DossierStore.composeBlock) so a new agent knows the Master on day one. This
+     panel is the glass box: every belief the station holds about the Master, grouped by dimension, with
      provenance — add / edit / pin / forget, all local-first. It reads + mutates DossierStore (which
      recomposes the live prompt + persists on each edit); the panel re-renders after a mutation. Belief text
      is rendered as textContent (never interpreted), mirroring the Memory Core's injection-safe discipline. */
@@ -10766,7 +10766,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
   function buildCommander(body) {
     const ds = CDS();
     const sum = ds ? ds.summary() : null;
-    if (!ds || !sum) { body.innerHTML = '<p class="dim">The Commander Dossier warms up once your agent is awake.</p>'; return; }
+    if (!ds || !sum) { body.innerHTML = '<p class="dim">The Master Dossier warms up once your agent is awake.</p>'; return; }
     const dims = ds.dims();
     body.innerHTML = '';
 
@@ -10877,7 +10877,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     ]);
   }
 
-  // AGENT BRIEFING — the panel's practical payoff: renders the VERBATIM Commander block that
+  // AGENT BRIEFING — the panel's practical payoff: renders the VERBATIM Master block that
   // composeSystemPrompt appends to every agent's system prompt (and DossierStore.pushToSidecar mirrors to
   // server-composed cron/night-shift runs via SK.dossierInject.withDossier). Showing the exact live string —
   // never a summary — is what keeps the glass box honest: what you read here IS what agents are told.
@@ -10926,7 +10926,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     return wrap;
   }
 
-  // the curiosity question-state for a still-blank dimension: has the station asked about it, and did the Commander
+  // the curiosity question-state for a still-blank dimension: has the station asked about it, and did the Master
   // wave it off / ignore it to the stop-forever limit? Shows nothing for a never-asked dimension; for a stopped one
   // it offers a re-enable (the escape hatch, mirroring Restore on the memory side). Returns an empty fragment-row
   // when there's nothing to say, so the caller can append unconditionally.
@@ -10953,7 +10953,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     const card = mkEl('div', 'cd-rec' + (b.pinned ? ' pinned' : '') + (b.source === 'study' ? ' cd-observed' : ''));
     const txt = mkEl('div', 'cd-body'); txt.textContent = b.text; card.appendChild(txt);   // textContent — belief text is never interpreted
     const metaRow = mkEl('div', 'cd-meta');
-    // GROWTH Tier 1: a STUDY-sourced belief (the station learned it from real work, not the Commander authoring it)
+    // GROWTH Tier 1: a STUDY-sourced belief (the station learned it from real work, not the Master authoring it)
     // gets a distinct "observed" tag so the glass box stays honest about provenance.
     if (b.source === 'study') { const tag = mkEl('span', 'cd-observed-tag'); tag.textContent = 'observed'; tag.title = 'the station proposed this from your work; you kept it'; metaRow.appendChild(tag); }
     // BRIEFING HONESTY: the composed block trims past its char cap (fair-share per dimension), so a belief can
@@ -11011,7 +11011,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
 
   // guided starters per dimension — the "+ add" editor and empty dimensions surface these so filling the
   // dossier in never starts from a blank textarea (the "it feels bare" fix). A chip only INSERTS its starter
-  // text for the Commander to finish; nothing is saved until they hit Save — a nudge, never a fabricated belief.
+  // text for the Master to finish; nothing is saved until they hit Save — a nudge, never a fabricated belief.
   const CD_PROMPTS = {
     identity:        [{ c: 'your role', s: 'I’m a ' }, { c: 'what you’re building', s: 'I’m building ' }, { c: 'where you’re based', s: 'I’m based in ' }],
     stack:           [{ c: 'languages', s: 'I mostly work in ' }, { c: 'daily tools', s: 'My daily tools are ' }, { c: 'don’t use', s: 'Don’t reach for ' }],
@@ -11037,7 +11037,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     return row;
   }
 
-  // a "+ add" affordance per dimension: expands to starter chips + a textarea so the Commander can teach the
+  // a "+ add" affordance per dimension: expands to starter chips + a textarea so the Master can teach the
   // station directly. row._open(starter) lets an empty dimension's inline chips jump straight into the editor.
   function cdAddRow(dim) {
     const row = mkEl('div', 'cd-add');
@@ -11074,7 +11074,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
   // honest-loot law: every quest pays out in real capability/work, and nothing here is gated behind a level.
 
   // W3: is the away-workshop grant on for the hero (the agent the quest-log queue button targets)? The queue
-  // affordance only appears when the grant is on — never offer to queue into a lane the Commander hasn't opened.
+  // affordance only appears when the grant is on — never offer to queue into a lane the Master hasn't opened.
   function heroAgent() {
     if (!Array.isArray(present)) return null;
     return present.find(a => a && a.id === 'agent') || present[0] || null;
@@ -11111,8 +11111,8 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     }
   }
   // §C — the GO destination token for a quest that has a real, already-existing openable surface (never a new
-  // window). null → no GO button. dossier → the Commander dossier; work/build → the TASK BOARD; a floor gap → BUILD MODE.
-  /* WHERE A QUEST IS ACTUALLY DONE. A build/work quest used to send the Commander to the TASK BOARD — a
+  // window). null → no GO button. dossier → the Master dossier; work/build → the TASK BOARD; a floor gap → BUILD MODE.
+  /* WHERE A QUEST IS ACTUALLY DONE. A build/work quest used to send the Master to the TASK BOARD — a
      board of OTHER work, where the quest itself does not appear and nothing tells you what to do next. The
      work happens in a conversation with an agent, so that is where the button goes: its OWN session, opened
      on the quest, with the ask already typed. The other two destinations were already right and are
@@ -11153,13 +11153,13 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
 
   /* THE QUEST'S OWN SESSION. Idempotent by TITLE: clicking START QUEST twice returns to the same conversation
      instead of littering the rail with duplicates (the same title-match idiom WorkQuestStore uses to refuse a
-     duplicate build). The composer is PREFILLED, never sent — the Commander's words stay theirs to edit, and
+     duplicate build). The composer is PREFILLED, never sent — the Master's words stay theirs to edit, and
      no turn is fabricated on their behalf (the OUTBOX ⊕ NEW SESSION precedent). Returns false honestly when
      the workstream seam is unavailable, so the caller can say so instead of dead-clicking. */
   /* USER-STUDY LOOP (2026-09-28, Andrew's call): START QUEST on a quest the AGENT executes now STARTS the work —
-     the Commander's click on START is the instruction, exactly like "Start this step" on a goal milestone
+     the Master's click on START is the instruction, exactly like "Start this step" on a goal milestone
      (GoalStore.acceptMilestone → launchDirective). It sends once, only into the quest's brand-new session and
-     only when COMMS is free; a return visit, a busy COMMS, or a quest the Commander performs (commander /
+     only when COMMS is free; a return visit, a busy COMMS, or a quest the Master performs (commander /
      together → "HELP ME PREPARE") keeps the prefill-and-edit path, so nothing is ever sent twice or behind their back. */
   function questSessionTitle(q) { return ('quest: ' + String((q && q.title) || 'a quest')).slice(0, 80); }
   function questOpenSession(q) {
@@ -11207,11 +11207,11 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
   }
   // QUEST V3 — the NORTH STAR + standing-refresh surface. Reads the last-good status off QuestRefreshStore
   // (the throttled /api/quests/refresh poll). Every line is real engine state: the long-term goal the station
-  // believes the Commander is chasing (with its provenance — a Commander-set goal vs an inference), the manual
+  // believes the Master is chasing (with its provenance — a Master-set goal vs an inference), the manual
   // REFRESH QUESTS action, the most recent honest attempt outcome (minted / rejected: why / skipped: why), and
   // when the next cycle is due. Absent store / no fetch yet -> a quiet, honest placeholder (never a fake value).
   /* ============== THE GOAL TRACK — the active goal drawn as a path (2026-08-13) ==============
-     Andrew's ask: show the Commander's goals at the top, in the spirit of a battle pass. The data was
+     Andrew's ask: show the Master's goals at the top, in the spirit of a battle pass. The data was
      already here and already honest — Goals.project decomposes the ACTIVE GOAL into 3-5 milestones and
      reports real done/total/pct — but it rendered as a header card plus one card per step, scattered
      through a grid of unrelated quests, so the PATH (the thing a pass makes legible at a glance) was
@@ -11261,7 +11261,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
 
   /* ============== THE PASS — the quest log as a battle pass (2026-10-19) ==============
      Andrew: "it should feel like a Fortnite battle pass, except the goals are based off the user's actual goals."
-     BattlePass.build (pure, battlepass.js) projects the sidecar's OWN Commander progression — level = tier, achievement
+     BattlePass.build (pure, battlepass.js) projects the sidecar's OWN Master progression — level = tier, achievement
      points = pass pts, achievement timestamps = the streak + this week's challenges — so every number here is one the
      journey ledger already proves. Rewards are cosmetic and applied on the spot (a rank title, an ASCII frame every
      five tiers); CLAIM is a per-viewer acknowledgement with a sting, never a gate. Drawn in plain ASCII so VT323 owns
@@ -11288,7 +11288,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
   }
   function passHtml() {
     const m = bpModel();
-    if (!m) return '<div class="q-journal-empty"><span aria-hidden="true">◇</span><h3>Pass offline</h3><p>Your Commander progression has not loaded yet. It appears here as soon as the station reports it.</p></div>';
+    if (!m) return '<div class="q-journal-empty"><span aria-hidden="true">◇</span><h3>Pass offline</h3><p>Your Master progression has not loaded yet. It appears here as soon as the station reports it.</p></div>';
     const f = m.frame, pad = n => String(n).padStart(2, '0');
     const s = m.streak;
     // the sidecar went quiet: these are the last VERIFIED numbers, not live ones — say so (sweep 10-20; the PROGRESS view
@@ -11379,7 +11379,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       }
       /* A FINISHED PATH IS NOT AN EMPTY ONE. Goals.project surfaces nothing for a completed goal (a done arc
          is history, by design), so the band used to snap straight back to "no goal path yet" the instant the
-         last milestone landed — telling a Commander who had just finished a four-step goal that they had
+         last milestone landed — telling a Master who had just finished a four-step goal that they had
          never had one. When the journey reports goals actually reached, say so and name the stage that work
          moved the station to, THEN offer the next one. Both numbers are the engine's own. */
       let reached = 0, stageName = '';
@@ -11495,8 +11495,8 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       const srcTag = ns.source === 'goal' ? 'your goal' : 'inferred';
       const proposed = ns.status === 'proposed';
       const unconf = proposed ? ' <span class="q-nstag q-unconf" title="the station inferred this — confirm or correct it">unconfirmed</span>' : '';
-      // propose-and-confirm: an inferred star is never silently adopted — the Commander confirms (adopt) or
-      // corrects (decline → denylisted, re-inferred next cycle). A Commander-set goal needs no verdict.
+      // propose-and-confirm: an inferred star is never silently adopted — the Master confirms (adopt) or
+      // corrects (decline → denylisted, re-inferred next cycle). A Master-set goal needs no verdict.
       const verdictRow = proposed
         ? '<div class="consent-btns q-mt q-ns-verdict">'
           + '<button class="consent-btn q-ns-yes">That’s it ✓</button>'
@@ -11514,7 +11514,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     // LAST OUTCOME — the most recent honest attempt (minted/none/rejected/skipped/error) the refresher recorded.
     const last = s && s.ledger && s.ledger.length ? s.ledger[s.ledger.length - 1] : null;
     const OUTCOME_LABEL = { minted: 'added a quest', advanced: 'step finished', none: 'nothing new needed', rejected: 'nothing passed', skipped: 'skipped', error: 'error' };
-    // The engine's own reason is kept verbatim on the row; these say what it MEANS for the Commander. A
+    // The engine's own reason is kept verbatim on the row; these say what it MEANS for the Master. A
     // rejected cycle is the confusing one — it reads as a failure when it is the station refusing to invent
     // a quest it cannot ground, so it says that outright rather than leaving "rejected" to be guessed at.
     const OUTCOME_PLAIN = {
@@ -11602,14 +11602,14 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
 
   // The three progression tracks stay deliberately separate:
   //   STATION XP = explicit feedback XP, station-wide (stationPrestigeHtml; each agent's own share lives in its dossier's GROWTH)
-  //   COMMANDER JOURNEY = real-world goal metrics + verified outcomes
+  //   MASTER JOURNEY = real-world goal metrics + verified outcomes
   //   STATION EVOLUTION = expressive history of distinct goals reached, never a capability gate
   function journeyHtml() {
     const JS = (typeof JourneyStore !== 'undefined') ? JourneyStore : null;
     if (JS && JS.sync) { try { JS.sync(); } catch (_) {} }
     const j = JS && JS.status ? JS.status() : null;
     const journeyState = JS && JS.state ? JS.state() : null;
-    if (!j) return '<div class="gx-sec"><span class="gx-title">COMMANDER JOURNEY</span></div>'
+    if (!j) return '<div class="gx-sec"><span class="gx-title">MASTER JOURNEY</span></div>'
       + '<div class="q-journey-card"><div class="sub dim">Progress is not available yet. It will appear when the station can load your records.</div></div>';
 
     const evo = j.evolution || { stage: 0, name: 'DRIFT', goalsReached: 0 };
@@ -11678,7 +11678,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     const progression = j.progression;
     const achievements = progression && Array.isArray(progression.achievements) ? progression.achievements.slice(-5).reverse() : [];
     const proofLabel = (kind, authority) => authority === 'commander-confirmed' ? 'You confirmed' : kind === 'metric' ? 'You recorded' : 'Vultron recorded';
-    const growthHtml = progression ? '<div class="q-commander-growth"><div class="q-journey-title">COMMANDER LEVEL ' + progression.level + '</div>'
+    const growthHtml = progression ? '<div class="q-commander-growth"><div class="q-journey-title">MASTER LEVEL ' + progression.level + '</div>'
       + '<div class="sub">' + progression.points + ' achievement points · ' + progression.pointsToNextLevel + ' to the next level</div>'
       + '<div class="sub dim">Confirmed goal activity and recorded metric checkpoints earn points across your goals. Confirming a completed goal earns 100 points. Setbacks never erase your history.</div>'
       + '<details class="q-growth-history"><summary>Recent achievements</summary>' + achievements.map(a => '<details class="sub q-achievement"><summary>◆ ' + esc(a.title || a.kind || 'Goal progress') + ' <span class="gx-tag">+' + (Number(a.points) || 0) + '</span></summary>'
@@ -11785,7 +11785,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
   function questJourneySaved(body, fields, clear, message) {
     const submitted = new Map(questJourneyFields(fields).filter(el => el.id).map(el => [el.id, el.value]));
     body.querySelectorAll('input,textarea,select').forEach(el => {
-      // If the Commander continued writing during an async save, that newer draft still belongs to them.
+      // If the Master continued writing during an async save, that newer draft still belongs to them.
       if (!submitted.has(el.id) || submitted.get(el.id) !== el.value) return;
       if (clear === true || (clear && typeof clear.has === 'function' && clear.has(el.id))) el.value = '';
       el.dataset.dirty = '0';
@@ -11888,20 +11888,20 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       }
       // W3: a "build this while I'm away" affordance on an OPEN, buildable quest (an accepted-but-unbuilt
       // pitch/quest). One click queues it onto the focused agent's away-workshop backlog. Only when the
-      // grant is on for that agent (else it would queue into a lane the Commander never opened).
+      // grant is on for that agent (else it would queue into a lane the Master never opened).
       const canQueue = q.status !== 'done' && (q.kind === 'work' || q.kind === 'station-gap') && workshopGrantOn();
       const queueBtn = canQueue
         ? '<button class="q-queue" data-qid="' + esc(q.id) + '" title="Build this while I’m away — queue it for the sandbox">◈</button>'
         : '';
       // §C — a GO affordance where a real, openable destination exists (never invents a window): dossier asks →
-      // the Commander dossier; work/build → the TASK BOARD; a floor gap → BUILD MODE. Absent target → no button.
+      // the Master dossier; work/build → the TASK BOARD; a floor gap → BUILD MODE. Absent target → no button.
       const goDest = questGoDest(q);
       const goBtn = goDest ? '<button class="q-go" data-dest="' + esc(goDest) + '" data-qid="' + esc(q.id) + '" title="Open where you do this next">' + esc(q.executionMode === 'commander' || q.executionMode === 'together' ? '▶ HELP ME PREPARE' : (GO_LABEL[goDest] || 'GO')) + '</button>' : '';
       // §C — EVERY open row answers "what do I do next": the honest completion condition in words.
       const cw = q.status !== 'done' ? questCompletesWhen(q) : '';
       const cwHtml = cw ? '<div class="sub q-cw"><span class="q-field-label">OBJECTIVE</span><span class="q-objective-mark" aria-hidden="true">◇</span> ' + esc(cw) + '</div>' : '';
       // §C — a pending attest (an agent proposed completion with evidence): the awaiting-confirmation badge + the
-      // inline Commander verdict. Confirm is single-click (→ done + the QuestState celebration); Not yet declines
+      // inline Master verdict. Confirm is single-click (→ done + the QuestState celebration); Not yet declines
       // (→ the quest stays open, a declineNote the agent sees next run). Truthful: only a real pending attest shows.
       const pend = (q.kind === 'ledger' && q.status !== 'done' && q.attest) ? q.attest : null;
       const attestHtml = pend
@@ -11980,7 +11980,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     const commanderJourney = typeof JourneyStore !== 'undefined' && JourneyStore.status ? JourneyStore.status() : null;
     const commanderLevel = commanderJourney && commanderJourney.progression && commanderJourney.progression.level;
     const journalCount = Number.isFinite(commanderLevel)
-      ? '<div class="q-journal-count"><strong>' + commanderLevel + '</strong><span>Commander<br>level</span></div>'
+      ? '<div class="q-journal-count"><strong>' + commanderLevel + '</strong><span>Master<br>level</span></div>'
       : '<div class="q-journal-count"><strong>' + open.length + '</strong><span>available quests</span></div>';
     const filtersHtml = '<nav class="q-filters" aria-label="Quest categories">' + categories.map(c =>
       '<button class="q-filter" data-category="' + c[0] + '" aria-pressed="' + (c === category) + '">' + c[1]
@@ -12007,7 +12007,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     /* LAZY PANES (the render contract): an open builds only the view on screen. A view is built the first time its tab is
        chosen and kept from then on, for this window's life: moving back to it rebuilds nothing, and a draft typed there
        is still there. Until then it is an empty panel marked data-lazy, so an open and every background repaint pay for
-       the views the Commander has looked at, not all five (PASS, the goal planner, the systems and journey readouts, the
+       the views the Master has looked at, not all five (PASS, the goal planner, the systems and journey readouts, the
        chapter archive). */
     const deepView = consoleSection.quests;
     const activeView = (questViews.find(v => v[0] === (deepView || body.dataset.questView)) || questViews[0])[0];
@@ -12054,7 +12054,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
         const focusInside = !!(ae && typeof body.contains === 'function' && body.contains(ae));
         const tabHadFocus = !!(ae && ae.dataset && ae.dataset.questView);
         builtViews.add(selectedView[0]);
-        rerender('quests', false);   // the Commander's own click: built in this frame, every typed field carried across
+        rerender('quests', false);   // the Master's own click: built in this frame, every typed field carried across
         // the control that was focused (its tab, or a PASS GO) was rebuilt away: focus lands on the view's tab, inside the window's trap
         const lost = focusInside && !(document.activeElement && body.contains(document.activeElement));
         if (tabHadFocus || lost) { const t = body.querySelector('#q-tab-' + selectedView[0]); if (t) t.focus(); }
@@ -12076,7 +12076,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
         ev.preventDefault(); const to = viewButtons[next].dataset.questView; viewButtons[next].click(); (body.querySelector('#q-tab-' + to) || viewButtons[next]).focus();
       });
     });
-    // a deep link (openTerm('quests', 'progress') — the top-bar COMMANDER gauge, NEW SYSTEM ONLINE) lands on its view once
+    // a deep link (openTerm('quests', 'progress') — the top-bar MASTER gauge, NEW SYSTEM ONLINE) lands on its view once
     if (consoleSection.quests) { body.dataset.questView = consoleSection.quests; delete consoleSection.quests; }
     selectQuestView(body.dataset.questView);
     wireSystems(body.querySelector('#q-systems'));
@@ -12144,7 +12144,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       rerender('quests', false);
       Array.from(body.querySelectorAll('.q-mission')).find(el => el.dataset.questSelect === b.dataset.questSelect)?.focus();
     }));
-    // COMMANDER JOURNEY writes are explicit. Empty/invalid numeric fields are rejected in the panel before the
+    // MASTER JOURNEY writes are explicit. Empty/invalid numeric fields are rejected in the panel before the
     // request, and every successful response re-renders from the backend's returned proof snapshot.
     body.querySelectorAll('.q-life-goal input,.q-metric input,.q-metric-create input').forEach(el => {
       el.addEventListener('input', () => { el.dataset.dirty = '1'; });
@@ -12493,7 +12493,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       else if (d) openTerm(d);
       sfx('click');
     }));
-    // §C — ATTEST VERDICT: the Commander's single-click confirm / decline on a ledger quest the agent reported
+    // §C — ATTEST VERDICT: the Master's single-click confirm / decline on a ledger quest the agent reported
     // done. Both route through QuestLedgerStore.confirm (yes → done + the QuestState celebration on the next
     // fold; no → the quest stays open with a declineNote). The store refetches immediately; then we re-render.
     body.querySelectorAll('.q-attest-yes').forEach(b => b.addEventListener('click', async ev => {
@@ -12553,7 +12553,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     // `wide` = wide width only). The old per-window pixel widths (460/540/560/620/640/760/1000) are
     // gone — they made eight windows read as eight unrelated apps. A window earns WIDE only by having
     // a rail, a card grid, or side-by-side columns; everything single-column is a PANEL.
-    commander:['YOU · COMMANDER DOSSIER',      buildCommander, { console: true, className: 'commander-console' }],   // focused profile, preferences, briefing, and record sections
+    commander:['YOU · MASTER DOSSIER',      buildCommander, { console: true, className: 'commander-console' }],   // focused profile, preferences, briefing, and record sections
     // NAV CONDENSE 2 (2026-08-04): 'skills' is no longer a window key — the skill library/agent-
     // skills sections live in the ABILITIES (connectors) console via AbilityLanes, and per-agent
     // capabilities live in the dossier's SKILLS tab. openTerm keeps the old keys alive as aliases
@@ -12689,7 +12689,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
   };
   // a door to a merged block lands ON it: opens every fold on the way down, then scrolls (setTimeout, never rAF — a
   // hidden or non-compositing tab never fires rAF). The window may still be swapping in, so it waits for the block;
-  // rows that load late above it (the services list) push it down, so it lands once more unless the Commander scrolled.
+  // rows that load late above it (the services list) push it down, so it lands once more unless the Master scrolled.
   function revealInTerm(key, anchor) {
     let tries = 0, landed = -1, pane = null;
     const land = () => {
@@ -12736,10 +12736,10 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
      prov-oauth-signin flow a click starts; on a card that shows no such key (a sign-in still listed as connected) it
      starts that same card flow itself (startCardSignin), so a RECONNECT door always reconnects.
      The section can paint a beat after openTerm, so the card is looked up again for up to ~3s; a repaint that replaces
-     the landed card re-lands on the new one until the Commander takes over the window (or ~20s).
+     the landed card re-lands on the new one until the Master takes over the window (or ~20s).
      ONE LIVE LANDING (org P03 review): a newer door ends the older landing before it opens anything. The newer door's
      openTerm repaints Settings, which replaces the older card, and the older stay() loop read that as "a repaint took my
-     card" and landed the pane back on the card the Commander had NOT just asked for (two cards marked). */
+     card" and landed the pane back on the card the Master had NOT just asked for (two cards marked). */
   let provLanding = null;   // the landing in flight ({ end }); focusProvider ends it before starting its own
   function focusProvider(pid, opts) {
     const o = opts || {};
@@ -12747,7 +12747,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     if (provLanding) { const prev = provLanding; provLanding = null; prev.end(); }
     openTerm('settings', 'providers');
     if (!id) return;
-    // the landing holds until the Commander takes over the window (pointer, wheel, key) or ~20s pass: a first-open probe
+    // the landing holds until the Master takes over the window (pointer, wheel, key) or ~20s pass: a first-open probe
     // can repaint Settings up to its 15s credential check + the model-list fetch after the door opened it (org P03 wiring;
     // a 4s window let a slow probe drop the view off the card). scheduleSettingsRepaint keeps the scroll; this re-marks.
     let tries = 0, pressed = false, touched = false, watched = null, marked = null;
@@ -12775,7 +12775,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       // a quarter-pane lift, not flush to the top: the cards above stay in view, so the landing reads as a place in
       // AI & MODELS rather than a lone card with no context
       if (pane) pane.scrollTop = Math.max(0, card.offsetTop - pane.offsetTop - Math.min(120, Math.round(pane.clientHeight * 0.25)));
-      // the mark stays until the Commander touches the window (or ~8s): a 2.4s flash was gone before the card was read
+      // the mark stays until the Master touches the window (or ~8s): a 2.4s flash was gone before the card was read
       card.classList.add('prov-landed'); marked = card;
       const unmark = () => { card.classList.remove('prov-landed'); w.removeEventListener('pointerdown', unmark, true); };
       w.addEventListener('pointerdown', unmark, true);
@@ -12886,7 +12886,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     wireNotifyLive();
     tick();
     /* the 1 s station tick runs through PollGate (idle CPU piece 3, 2026-10-20): 1 s while the station can be seen, a
-       30 s floor while the Commander is away, and one tick at once on return. The quest ledger and refresh syncs ride it. */
+       30 s floor while the Master is away, and one tick at once on return. The quest ledger and refresh syncs ride it. */
     if (!started) { started = true; tickTimer = (typeof PollGate !== 'undefined' && PollGate.every) ? PollGate.every(tick, { ms: 1000, immediate: false }) : setInterval(tick, 1000); }
   }
 

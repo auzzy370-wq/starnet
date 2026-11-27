@@ -1,12 +1,12 @@
 /* sidecar/routine-media.js — the files a scheduled routine's delivery carries into a chat.
 
    THE GAP (issue 2026-10-18, "Telegram messages cannot be automated to include images"). A routine's REPLY is what
-   reaches the Commander's chat (routine-delivery.js deliverCronResult), and an unattended run cannot channel.send at
+   reaches the Master's chat (routine-delivery.js deliverCronResult), and an unattended run cannot channel.send at
    all — it is scope 'execute', and the exec lockout (permissions.js tier 2.5) denies it with nobody there to approve. The
    delivery was words-only, so a routine that rendered an image or drew a chart could at best name its path:
    Telegram never received the picture.
 
-   THE FIX rides the delivery that is ALREADY approved. The Commander chose the destination when the routine was
+   THE FIX rides the delivery that is ALREADY approved. The Master chose the destination when the routine was
    saved; the files go to that same chat, read the way channel.send reads them (the host's readFile: only from inside
    the PRODUCING run's own private workspace or approved project root, so a project routine's relative name means its
    project — sidecar/egress-files.js), uploaded with the same transport call. No new reach: a file can only go where the
@@ -262,7 +262,7 @@
     // Live finding (haiku-4.5, 2026-10-18): told only the ATTACH format, the model still called channel.targets, found
     // no listed chat and wrote "I cannot send the image to you" into a delivery that carried the image. So the note
     // says up front that the STATION delivers, and rules out the lookup as well as the send.
-    return '\n\n[DELIVERY] The station sends this routine\'s reply to the Commander\'s ' + where + ' chat for you — do not '
+    return '\n\n[DELIVERY] The station sends this routine\'s reply to the Master\'s ' + where + ' chat for you — do not '
       + 'look up chat targets or call channel.send. To include a file you made (an image, chart or document in your '
       + 'workspace), end the reply with one line per file: ATTACH: <workspace-relative path> — up to ' + MAX_FILES
       + '; images arrive inline. Never write that the message or a file cannot be sent.';

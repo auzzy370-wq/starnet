@@ -47,7 +47,7 @@ const WorkSignalStore = (() => {
 
   // fold one real tool fire into its capability lane (+ the run's interest tag into that lane's tally).
   // ALL agents count (scout moderate-loosening, 2026-07-08): delegated/specialist tool work is still the
-  // Commander's workflow — the old hero-only gate starved the histogram whenever work was routed, which was
+  // Master's workflow — the old hero-only gate starved the histogram whenever work was routed, which was
   // a big reason the adaptive shelves never warmed up. The work the STATION does is the signal, whoever did it.
   function onToolCall(p) {
     if (!ready() || !learningOn()) return;

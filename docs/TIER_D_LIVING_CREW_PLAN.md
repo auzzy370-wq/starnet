@@ -23,7 +23,7 @@ patterns). What Tier D builds on, all in `frontend/app/world.js`:
   world.js:~1032; deep-lock; most of the quirk catalog) — D2 audits exactly which.
 - **Gaze primitives**: `setGlance` / `maybeGlance` / `dirToward` (Tier C's no-move head-turn) +
   Tier C's `neighborsOf(body, radius)` / `glanceAt` (world.js:1352, 1424).
-- **Commander presence**: `lastCursor = {wx, wy, t}` cached on mousemove (world.js:120-126, 570);
+- **Master presence**: `lastCursor = {wx, wy, t}` cached on mousemove (world.js:120-126, 570);
   cursor gaze-drift (world.js:1459-1465, 32% when fresh); hover rising-edge notice (world.js:572);
   deep-lock budget (~1/session). D4 extends this — it does not add a second cursor tracker.
 - **Work-wins law**: summon/task seizes any body instantly (`activity==='task'` block sits above all
@@ -56,11 +56,11 @@ patterns). What Tier D builds on, all in `frontend/app/world.js`:
 ## The four beats
 
 ### D1 — ATTENTIVE AUDIENCE (chat-stare) — ship first, highest feel-per-line
-When the Commander is chatting with agent X, X gives you its full attention.
+When the Master is chatting with agent X, X gives you its full attention.
 - **Bridge**: `chat.js` announces `World.setChatFocus(agentId)` on open / `setChatFocus(null)` on
   close (one call each; world.js owns all behavior). No other chat.js changes.
 - **Behavior**: while chatFocus is on an idle body: it stops (reuse `standStill`/stilling), turns,
-  and HOLDS on the Commander — facing south, drifting with `lastCursor` like the existing gaze-drift
+  and HOLDS on the Master — facing south, drifting with `lastCursor` like the existing gaze-drift
   so it tracks you around the screen. Wander/quirks/social suppressed for that body while held.
 - **The loop with typing**: when the agent starts its reply run, `setActivity('task')` seizes it as
   today — it breaks the stare, walks to its desk, types. When the run ends and chat is still open,
@@ -79,7 +79,7 @@ The hero has an inner life; the crew mostly wanders. Close the gap.
   `makePersonality(aid)` — same catalog, different weights = persistent individual habits (the
   pacer, the corner-starer, the one who sleeps). Persistence is what reads as personality.
 - **Keep hero-exclusive**: THE LONG STARE, deep-lock, FIRST LIGHT, mourning (the intimate
-  Commander-relationship beats stay special to the hero).
+  Master-relationship beats stay special to the hero).
 - **Retune under G5**: station-level quirk budget replaces per-body rates before this merges.
 
 ### D3 — SOCIAL ENCOUNTERS (Tier C grows legs — movement-based, still safe)
@@ -101,7 +101,7 @@ same invariants, per-pair long cooldowns, ONE live encounter station-wide:
   departure via the existing parting-glance machinery).
 
 ### D4 — THE CURSOR IS A CREATURE (glance + THE CHASE)
-Extends the existing Commander-presence stack; checks off the roadmap's "Mimic the cursor".
+Extends the existing Master-presence stack; checks off the roadmap's "Mimic the cursor".
 - **Crew cursor-drift**: give crew bodies a small share of the existing gaze-drift (hero keeps the
   larger share) — occasionally an idle crew member is just... watching your cursor.
 - **Cursor-mimic (head-only)**: rare quirk-band beat — an idle body TRACKS the moving cursor with
@@ -549,7 +549,7 @@ hold `U.irnd(3000, 7000)` ms; whole-encounter hard timeout `SOCIAL_HARD_MS = 250
 
 **All three beats shipped** (crew cursor-drift, cursor-mimic, THE CHASE). Single writer: `frontend/app/world.js`
 (+ this doc + the roadmap check-off). No chat.js edits. Commit `tier-d D4: the cursor is a creature …` (19c4c692)
-+ the cross-phase-sweep fixes. Builds on the EXISTING Commander-presence stack (`lastCursor`) — no second cursor
++ the cross-phase-sweep fixes. Builds on the EXISTING Master-presence stack (`lastCursor`) — no second cursor
 tracker; the only new input signal is `cursorMoveT` (a real-displacement stamp for "actively moving", distinct from
 `lastCursor.t` = mere presence).
 
@@ -671,7 +671,7 @@ way to SEE the beats — deferred to an attended check.
 ### What "the Overseer" resolved to (ground truth, grepped 2026-07-02)
 There is **no separate overseer concept in-world** — grep of `frontend/app/world.js` finds none. The OVERSEER is a
 UI/identity concept (app.js: "CREATE YOUR OVERSEER", the first agent runs the station and recruits the rest). In the
-canvas, the **HERO body `agent` (its `agent.id` is the literal `'agent'`) IS the Overseer** — the Commander's main
+canvas, the **HERO body `agent` (its `agent.id` is the literal `'agent'`) IS the Overseer** — the Master's main
 agent. So every D5 beat is on the HERO body only (gated `self === agent` where the shared want-engine could otherwise
 run it on crew), and rides existing hero machinery. **Zero crew behavior change.**
 

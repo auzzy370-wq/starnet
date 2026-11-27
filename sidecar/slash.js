@@ -417,7 +417,7 @@ function dynamicCommands(opts) {
     });
   }
 
-  // COMMANDER-DEFINED commands (sidecar/usercommands.js). Added BEFORE skills/recipes cannot take their names
+  // MASTER-DEFINED commands (sidecar/usercommands.js). Added BEFORE skills/recipes cannot take their names
   // but AFTER builtins, so a user command can never shadow a builtin — addCommand refuses a used name, which
   // means /help can never be redefined out from under someone.
   for (const u of (Array.isArray(opts.userCommands) ? opts.userCommands : [])) {
@@ -505,7 +505,7 @@ function dispatchDepth(input, opts, depth) {
   const c = hit.command;
   if (c.target && c.target.type === 'user') {
     // ALIAS: rewrite to the target and re-resolve through this same registry, so an alias can only ever reach
-    // a command the Commander could have typed — it inherits every guard the real command has.
+    // a command the Master could have typed — it inherits every guard the real command has.
     if (c.target.userType === 'alias') {
       if (depth >= MAX_ALIAS_DEPTH) return { ok: false, error: 'alias chain too deep (possible loop)', status: 400 };
       const line = (c.target.target + (hit.args ? ' ' + hit.args : '')).trim();

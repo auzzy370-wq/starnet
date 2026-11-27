@@ -32,7 +32,7 @@ const api = new Function('Harness', 'Date', consts + '\nconst _creditsReads = ne
   A.eq(calls.length, 2, 'six more repaints in ~1.5 s cost zero requests');
   now += 5 * 60000;
   await settle(api.creditsRead('/api/credits'));
-  A.eq(calls.length, 2, '"no account linked" holds for minutes — it changes only when the Commander links');
+  A.eq(calls.length, 2, '"no account linked" holds for minutes — it changes only when the Master links');
   api.forgetCreditsReads();
   await settle(api.creditsRead('/api/credits'));
   A.eq(calls.length, 3, 'LINK / UNLINK / RETRY / REFRESH forget it and read afresh');

@@ -13,7 +13,7 @@
    oldest dropped only when even a floor per message no longer fits, counted in an explicit
    "[k earlier user messages omitted]" line. Items are LENGTH-PREFIXED ("[user message: 57 chars]" + exactly 57
    chars), so any text — even text that looks like a header or the closing tag — round-trips byte-identical.
-   Commander steering notes (<steering_note> system messages) are the same class of words and ride along too;
+   Master steering notes (<steering_note> system messages) are the same class of words and ride along too;
    screenshot pixels handed back by a tool (a user-role message the loop builds) are not the user's words and do not.
 
    USAGE ANCHOR. The provider's prompt_tokens describes the PREVIOUS request; everything appended since (tool
@@ -100,7 +100,7 @@ function capItem(it, max) {
 
    INSTRUCTIONS FIRST, ACKNOWLEDGEMENTS LAST (consistency audit 2026-10-11). Fair share still cut a 1,500-char
    spec to ~480 chars once fifty folded messages shared the budget, and a long chat dropped its OLDEST messages
-   first — which is exactly where the Commander's standing instructions live ("always…", "never…", "from now
+   first — which is exactly where the Master's standing instructions live ("always…", "never…", "from now
    on…"). Each carried message now has a priority (messagePriority): an instruction-shaped message is dropped
    only after every ordinary one, a bare acknowledgement ("ok", "thanks", "continue") goes first, and the
    instructions are water-filled first with up to RULE_SHARE of the budget before ordinary messages share the
@@ -113,7 +113,7 @@ const RULE_SHARE = 0.6;
 const TASK_SHARE = 0.7;
 const RULE_RE = /\b(?:always|never|don['’]?t|do not|doesn['’]?t|must(?:n['’]?t)?|make sure|ensure|from now on|going forward|in (?:the )?future|next time|every time|remember|keep (?:it|them|this|that|the|using|to)|stop (?:doing|using|adding|making|saying)|no more|only (?:use|ever)|use only|instead of|rather than|prefer(?:s|red)?|i (?:want|need|like|hate|dislike|don['’]?t like)|avoid|(?:the )?rule|requirement|style|approved)\b/i;
 const ACK_RE = /^(?:ok(?:ay)?|k|thanks?(?: you)?|thx|ty|cool|nice|great|good|perfect|awesome|yes|yep|yeah|yup|no|nope|sure|continue|go(?: on| ahead)?|do it|proceed|next|lol|haha|done|got it|sounds good|looks good|lgtm)[\s.!?,]*$/i;
-// 2 = an instruction the Commander gave, 0 = a bare acknowledgement, 1 = everything else
+// 2 = an instruction the Master gave, 0 = a bare acknowledgement, 1 = everything else
 function messagePriority(text) {
   const t = String(text == null ? '' : text).trim();
   if (!t) return 0;

@@ -10,11 +10,11 @@
    it turns "paste a key for… something?" into "pick your platform". Each row is pure data:
 
      id       — stable slug
-     name     — what the Commander picks; servicekeys.deriveEnvVar(name) MUST equal envVar (locked by test)
+     name     — what the Master picks; servicekeys.deriveEnvVar(name) MUST equal envVar (locked by test)
      envVar   — the name the agent references as ${ENVVAR} in a header
      docsUrl  — the API reference. This rides into the system prompt, so the agent can look up endpoints
                 itself instead of guessing — the single highest-value field here.
-     apiBase  — the documented base URL, shown so a Commander can sanity-check what the agent will call
+     apiBase  — the documented base URL, shown so a Master can sanity-check what the agent will call
      authHint — the header shape, ONLY where verified. Omitted rather than guessed: a wrong hint would send
                 every agent down a broken path, which is worse than no hint (the agent reads docsUrl).
      note     — anything that would otherwise surprise the user (e.g. OAuth, per-store hosts)
@@ -297,7 +297,7 @@
     });
   }
 
-  // grouped view for the picker; `installed` marks platforms the Commander already has a key for.
+  // grouped view for the picker; `installed` marks platforms the Master already has a key for.
   function grouped(existingEnvVars) {
     const have = new Set(Array.isArray(existingEnvVars) ? existingEnvVars : []);
     return categories().map(c => ({

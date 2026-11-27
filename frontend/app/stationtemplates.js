@@ -1,8 +1,8 @@
 /* Furnished station builds. Room count excludes connecting corridors.
    WORK presets (2026-09-28 reimagining) also stamp one ready line from the Lines shelf (WorldModel.BLUEPRINTS), with
-   every step's instructions written and a sample job to try — so the station a Commander picks for their kind of work
+   every step's instructions written and a sample job to try — so the station a Master picks for their kind of work
    can run that work. LOOK presets are rooms and furniture only. No preset ever hires staff: every Bay stamps unbound,
-   carrying its shelf ROLE, and the setup guide (Build mode) is where the Commander picks or recruits who works it. */
+   carrying its shelf ROLE, and the setup guide (Build mode) is where the Master picks or recruits who works it. */
 'use strict';
 const StationTemplates = (() => {
   /* `purpose` is the kind of work a WORK preset is for, and `purposeLabel` names it in the onboarding purpose question's own
@@ -159,7 +159,7 @@ const StationTemplates = (() => {
     const issue = r.ready ? '' : unstaffed.length ? 'Choose an agent for ' + unstaffed.map(x=>x.name).join(', ') + '.' : r.blocking[0].what;
     return {...g,roles,key:comp.key,inboxId:inbox.id,ready:r.ready,blocking:r.blocking.map(b=>b.what),issue};
   }
-  /* recommend(text) -> a WORK preset id, or null: the station for what the Commander said they want help with. The five
+  /* recommend(text) -> a WORK preset id, or null: the station for what the Master said they want help with. The five
      onboarding purpose chips map one to one (Code & build → software, Research & brief → research, Write & edit →
      creative, Run tasks & ops → operations, A bit of everything → cozy); typed words are read for the same five kinds of
      work, first clear match wins (code before writing, so "write code" is code). Nothing clear → null, and the caller

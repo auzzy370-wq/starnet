@@ -7,7 +7,7 @@
    THE SHAPE NOW: the sidecar owns the truth (sidecar/away-briefing.js + POST /api/away/briefing/deliver): one
    durable "briefed through" stamp, everything unattended that ended after it folded into ONE assistant turn in
    ONE durable session (stream 'briefing', pinned, titled "While you were away"). This module only decides WHEN to
-   ask (boot, and the first input after a real absence), adopts that one session, opens it when the Commander
+   ask (boot, and the first input after a real absence), adopts that one session, opens it when the Master
    isn't mid-something (else it stays the single unread row), and renders tap-to-open chips for the briefed
    items. The per-run sessions still exist — they are the evidence and hold each build's keep/toss card — but
    they are reached FROM the briefing instead of each one shouting on return. Replying in the briefing continues
@@ -22,7 +22,7 @@ const Briefing = (() => {
   const TITLE = 'While you were away';
   const AWAY_MS = 30 * 60000;       // "genuinely away" — matches the sidecar's NIGHTSHIFT_AWAY_MS default
   const BOOT_DELAY_MS = 1600;       // let the floor + COMMS settle (same cadence family as ReturnStore)
-  const SEEN_EVERY_MS = 60000;      // presence stamps while the Commander is here — one a minute vs the 30-minute threshold
+  const SEEN_EVERY_MS = 60000;      // presence stamps while the Master is here — one a minute vs the 30-minute threshold
   let enabled = false, wired = false, inFlight = false;
   let lastInputAt = Date.now(), hiddenAt = 0;
   let bootSettled = false, lastSeenAt = 0;
@@ -32,7 +32,7 @@ const Briefing = (() => {
   const tzOffsetMin = () => { try { return -new Date().getTimezoneOffset(); } catch (_) { return 0; } };
   const hasWS = () => typeof Workstreams !== 'undefined' && Workstreams && Workstreams.adopt;
 
-  // the Commander is mid-something a focus jump would stomp (same probes WorkshopStore's reveal uses)
+  // the Master is mid-something a focus jump would stomp (same probes WorkshopStore's reveal uses)
   function engaged() {
     try { if (typeof Chat !== 'undefined' && Chat.isComposerEngaged && Chat.isComposerEngaged()) return true; } catch (_) { return true; }
     try { if (typeof Chat !== 'undefined' && Chat.isBusy && Chat.isBusy()) return true; } catch (_) {}
@@ -57,7 +57,7 @@ const Briefing = (() => {
       lastActiveAt: at || Date.now(), lastReadAt: 0, revive: true });
     if (!ws) return null;
     // the name is locked like a manual rename: a reply here must never re-title the briefing after that reply's
-    // topic. A Commander's own rename (titleAuto already false, a different title) is theirs and is kept.
+    // topic. A Master's own rename (titleAuto already false, a different title) is theirs and is kept.
     if (ws.titleAuto !== false) { ws.title = TITLE; ws.titleAuto = false; }
     if (Workstreams.pin) Workstreams.pin(STREAM, true);
     if (at && (+ws.lastActiveAt || 0) < at) ws.lastActiveAt = at;
@@ -138,16 +138,16 @@ const Briefing = (() => {
     log.appendChild(row);
   }
 
-  // has the Commander been gone (no input) long enough that new unattended work belongs to a briefing?
+  // has the Master been gone (no input) long enough that new unattended work belongs to a briefing?
   function isAway(now) { return ((now || Date.now()) - lastInputAt) >= AWAY_MS; }
   /* PRESENCE (live walk 10-14). The briefing stamp used to move only when a briefing was delivered, so a reload briefed
-     everything that had ended since the PREVIOUS one — work the Commander had watched land. While they are here the page
+     everything that had ended since the PREVIOUS one — work the Master had watched land. While they are here the page
      stamps their presence (throttled), and on the way out (tab hidden, reload, close) it stamps the moment they left.
      Never before the boot delivery settles and never while a delivery is in flight: a stamp racing ahead of a return
      would swallow the very absence it is about to brief. A page with the briefing OFF (the awakening) still stamps: a
      stamp delivers nothing, and without it a new station's first reload briefed its whole first session (review 10-14). */
   function stampPresence(leaving) {
-    // isAway: an idle page is not a present Commander — hiding or reloading it after an hour untouched must not erase that hour
+    // isAway: an idle page is not a present Master — hiding or reloading it after an hour untouched must not erase that hour
     if (!wired || !bootSettled || inFlight || isAway()) return;
     const now = Date.now();
     if (!leaving && now - lastSeenAt < SEEN_EVERY_MS) return;
@@ -185,7 +185,7 @@ const Briefing = (() => {
         window.addEventListener('keydown', noteInput, { capture: true, passive: true });
         window.addEventListener('pagehide', onPageHide);
         document.addEventListener('visibilitychange', onVisibility);
-      } catch (e) { console.warn('[briefing] could not watch for the Commander returning', e); }
+      } catch (e) { console.warn('[briefing] could not watch for the Master returning', e); }
     }
     if (enabled) setTimeout(() => deliver('boot').catch(e => console.warn('[briefing] boot delivery failed', e)).then(() => { bootSettled = true; }), BOOT_DELAY_MS);
   }

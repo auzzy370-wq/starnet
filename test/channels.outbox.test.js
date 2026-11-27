@@ -346,7 +346,7 @@ const ev = (events, reason) => events.filter(e => e[0] === 'channel.delivery' &&
     A.eq(r.ok, false, 'the send failed on the revoked token');
     A.eq(deliveriesOf(w, '55').length, 1, 'a refused credential is NOT a tombstone: the reply stays for the re-paired bot');
     A.eq(ev(events).map(e => e.reason), ['done'], 'and it is not reported as undeliverable');
-    revoked = false;   // the Commander re-pairs
+    revoked = false;   // the Master re-pairs
     hub.onStatus({ state: 'up' });
     await settle();
     A.eq(deliveriesOf(w, '55'), [], 'the re-paired channel\'s up delivers it');

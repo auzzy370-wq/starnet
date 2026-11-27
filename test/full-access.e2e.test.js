@@ -111,7 +111,7 @@ async function driveShell(fixture, decision) {
     A.ok(seeded.body && seeded.body.ok === true, 'DAVID starts in ASK mode');
 
     // threads-backend-06 / sidecar-index-10: nobody answers the COMMS card. The consent timer fail-closes, but the model
-    // must read "timed out", never "denied" (it used to tell the Commander "since you declined…").
+    // must read "timed out", never "denied" (it used to tell the Master "since you declined…").
     const before = provider.requests.length;
     const unanswered = await driveShell(fixture, 'unanswered');
     A.eq(unanswered.filter(e => e.name === 'permission.prompt').length, 1, 'ASK mode raises the shell card');

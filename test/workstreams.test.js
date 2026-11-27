@@ -15,7 +15,7 @@ const V1 = {
   agent: { id: 'agent', name: 'ULTRON', model: 'anthropic/claude-sonnet-4.5' },
   history: [
     { role: 'user', content: 'what is my purpose?' },
-    { role: 'assistant', content: 'to serve, Commander.' }
+    { role: 'assistant', content: 'to serve, Master.' }
   ],
   usage: { tokens: 1200, cost: 0.0345, calls: 3 },
   updatedAt: 1700000000000
@@ -305,14 +305,14 @@ A.ok(Array.isArray(tombDump.deletedIds) && tombDump.deletedIds.indexOf(shopId) >
 W.init(JSON.parse(JSON.stringify(tombDump)));
 A.ok(W.isDeleted(shopId) === true, 'tombstone survives init(serialize()) — a restart cannot resurrect');
 A.eq(W.adopt({ id: shopId, title: 'post-restart re-mint' }), null, 'post-restart adopt still refused');
-// revive:true is the ONE deliberate re-open path (the Commander clicked "review the work").
+// revive:true is the ONE deliberate re-open path (the Master clicked "review the work").
 const revived = W.adopt({ id: shopId, title: 'revived on purpose', revive: true });
 A.ok(revived && revived.id === shopId, 'adopt({revive:true}) deliberately brings the session back');
 A.ok(W.isDeleted(shopId) === false, 'revive clears the tombstone (the session behaves normally again)');
 // reset (NEW AGENT) clears tombstones with everything else.
 W.del(shopId); A.ok(W.isDeleted(shopId), 're-deleted before reset');
 W.reset();
-A.ok(W.isDeleted(shopId) === false, 'reset clears tombstones (a fresh Commander inherits none)');
+A.ok(W.isDeleted(shopId) === false, 'reset clears tombstones (a fresh Master inherits none)');
 
 /* ---------- TASK-BOARD TRUTH: kind field ('task' = board card, 'chat' = rail-only session) ---------- */
 W.reset();
@@ -566,7 +566,7 @@ A.eq([W.get(recoveredOrder.id).lastRunOk, W.get(recoveredOrder.id).lastRunReason
 
   A.eq([W.isUntouched(all), W.isUntouched(W.get('blank'))], [false, true], 'a packed history is messages, not a blank line');
   A.eq([W.turnCount(all), W.turnCount(tail), W.turnCount(W.get('plain')), W.turnCount('all')], [3, 5, 2, 3], 'the count names every row, packed ones included (by record or by id)');
-  A.eq([W.hasHistory(all), W.hasHistory(W.get('blank')), W.hasUserTurn(all), W.hasUserTurn(W.get('blank'))], [true, false, true, false], 'it has a history, and a Commander turn');
+  A.eq([W.hasHistory(all), W.hasHistory(W.get('blank')), W.hasUserTurn(all), W.hasUserTurn(W.get('blank'))], [true, false, true, false], 'it has a history, and a Master turn');
   A.eq(W.latestVisibleMessage(all), null, 'a fully packed session names no newest message: it cannot know it');
   A.eq(W.latestVisibleMessage(tail), answered, 'an inline tail after the packed run IS provably the newest message');
   A.eq(W.latestVisibleMessage(head), null, 'an inline row BEFORE a packed run is never taken for the newest: a stale line is worse than none');
@@ -596,7 +596,7 @@ A.eq([W.get(recoveredOrder.id).lastRunOk, W.get(recoveredOrder.id).lastRunReason
   A.eq(W.get('all').history, [], 'a save and a reload keep the packed form (nothing was read in between)');
   A.eq(W.serialize().workstreams.find(w => w.id === 'all').history, unreadHistory(), '…and writes it again');
 
-  // reading the rows back: in place, once, and never over what the Commander removed meanwhile
+  // reading the rows back: in place, once, and never over what the Master removed meanwhile
   W.init(doc());
   const held = W.get('tail'), ref = held.historyRef;
   const rows = [{ rowId: 1, role: 'user', content: 'one' }, { rowId: 2, role: 'assistant', content: 'two', typedText: 'typed' }, { rowId: 3, role: 'user', content: 'three' }];

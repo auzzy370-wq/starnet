@@ -98,7 +98,7 @@ function fakeChild() {
   A.eq(auto.code, 'autonomous', 'file mode obeys the unattended rule');
   A.ok(/file picker/.test(auto.reason), 'the autonomous refusal names the FILE picker: ' + auto.reason);
   const nowhere = FP.makeFolderPick({ platform: 'sunos', spawn: () => { throw new Error('nope'); } });
-  // a real dialog failure must name the control the Commander actually asked for.
+  // a real dialog failure must name the control the Master actually asked for.
   A.ok(/^file picker failed/.test(FP.interpret('win32', { code: -1, stdout: '', stderr: '' }, 'file').reason),
     'a failed FILE dialog says "file picker failed"');
   A.ok(/^folder picker failed/.test(FP.interpret('win32', { code: -1, stdout: '', stderr: '' }).reason),

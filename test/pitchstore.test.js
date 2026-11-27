@@ -63,7 +63,7 @@ const hn = { calls: [], next: { text: '' }, chat(args) { this.calls.push(args); 
 global.Harness = hn;
 
 let launchedRecipe = null, launchedDirective = null, recentTaskArg = '__unset__';
-const SYSTEM = 'SYSTEM PROMPT\nWHAT YOU KNOW ABOUT YOUR COMMANDER: goals — ship the dossier.';
+const SYSTEM = 'SYSTEM PROMPT\nWHAT YOU KNOW ABOUT YOUR MASTER: goals — ship the dossier.';
 const deps = {
   getSystem: () => SYSTEM,
   getName: () => 'NOVA',
@@ -278,7 +278,7 @@ A.eq(PitchStore._decide({ reason: 'done', agentId: 'agent' }), { go: true, reaso
       global.Chat = { nudge: (text, chips, cb) => { nudges.push({ text, chips, cb }); }, isBusy: () => false, clearNudge() {} };
       PitchStore.armFirstMove('  draft your sponsor-brief replies each morning  ');
       A.eq(PitchStore._state().firstMove, 'draft your sponsor-brief replies each morning', 'armFirstMove trims + persists the grabbed move');
-      readyState = { ready: false, reasons: ['no-direction'] };   // the grab outranks the gate — the Commander chose it
+      readyState = { ready: false, reasons: ['no-direction'] };   // the grab outranks the gate — the Master chose it
       A.eq(await PitchStore.offerStarter(), true, 'the armed first move is offered even below the readiness gate');
       A.eq(nudges.length, 1, 'exactly one nudge');
       A.ok(/the move you picked at my wake/.test(nudges[0].text), 'the nudge names the interview grab, never a generated guess');
@@ -356,7 +356,7 @@ A.eq(PitchStore._decide({ reason: 'done', agentId: 'agent' }), { go: true, reaso
       global.Chat = { isBusy: () => false, isComposerEngaged: () => true };
       PitchStore.onRunEnd({ reason: 'done', agentId: 'agent', runId: 'r-typing' });
       await tick(60);
-      A.eq(dlg.opened, 0, 'a Commander who is typing is never interrupted — the pitch steps aside');
+      A.eq(dlg.opened, 0, 'a Master who is typing is never interrupted — the pitch steps aside');
       A.eq(PitchStore._state().pitched, false, 'stepping aside leaves it un-pitched, so a later run end can offer it');
       delete global.Chat; PitchStore.reset(); PitchStore.init(deps); clearFakes();
     }

@@ -4,7 +4,7 @@
    like onboarding.test.js / beat-coordination.test.js — the honesty-critical wiring is locked by reading the
    source. THE INVARIANT: a requisitioned prop is a REAL placement through the same validated path as a hand
    placement (object=capability must stay honest — never a flag), and the offer only appears AFTER the
-   Commander has placed one piece by hand (the first placement is the lesson; the reps are the chore). */
+   Master has placed one piece by hand (the first placement is the lesson; the reps are the chore). */
 'use strict';
 const A = require('./_assert.js');
 const fs = require('fs');

@@ -5,8 +5,8 @@
    task-decision patterns. It does not infer certainty and does not duplicate a dossier already present in the
    caller's system prompt.
 
-   SECRETS (context-key-redact, 2026-10-28): every field is stored text the Commander or a model wrote, and some of it
-   holds a key the Commander pasted once (a run title, a brief's request, an evidence quote). Each one goes through
+   SECRETS (context-key-redact, 2026-10-28): every field is stored text the Master or a model wrote, and some of it
+   holds a key the Master pasted once (a run title, a brief's request, an evidence quote). Each one goes through
    prompt-scrub's scrubStored BEFORE it is clipped — the clip is what turns a whole, matchable key into an unmatchable
    fragment. There is no opt-out: a caller cannot hand compose() a field that skips it. */
 'use strict';
@@ -34,7 +34,7 @@ function composeOnce(input) {
   }
   // TASK BRIEF v2 — recipe intake: the launching recipe's DECLARED material decisions (normalized by
   // recipes.js — dimension ∈ the taskbrief-policy set). Aims any mid-run question at the right dimension
-  // even when the Commander skipped the launch chips; launch-tapped answers already ride the directive.
+  // even when the Master skipped the launch chips; launch-tapped answers already ride the directive.
   const intake = Array.isArray(input.recipeIntake) ? input.recipeIntake.slice(0, 3) : [];
   if (intake.length) {
     lines.push('<recipe_intake provenance="recipe-declared">');
@@ -85,35 +85,35 @@ function composeOnce(input) {
     for (const e of evidence.slice(0, 20)) lines.push('- ' + e);
     lines.push('</commander_evidence>');
   }
-  // ASK-WORTHINESS: dimensions the Commander has repeatedly waved off with "use your judgment". The tool gate
+  // ASK-WORTHINESS: dimensions the Master has repeatedly waved off with "use your judgment". The tool gate
   // (taskbrief-tools) refuses these outright; saying so here spends no turn discovering that, and names the
   // honest alternative — decide it, then surface the choice as a correctable assumption.
   const deferred = Array.isArray(input.deferredDimensions) ? input.deferredDimensions.slice(0, 8) : [];
   if (deferred.length) {
     lines.push('<deferred_decisions provenance="commander-observed">');
-    lines.push('The Commander has repeatedly answered "use your judgment" on these decision dimensions: '
+    lines.push('The Master has repeatedly answered "use your judgment" on these decision dimensions: '
       + deferred.map(d => sc(d, 24)).join(', ') + '. Do NOT ask about them. Choose the most sensible reversible default and state it as a correctable assumption in brief_proceed.');
     lines.push('</deferred_decisions>');
   }
   // AUTOMATION ASK (2026-10-01): the request itself asks for recurring / scheduled / automated work. Live runs
   // answered "set up automations for my shop" by pitching integrations it did not have and interviewing the
-  // Commander — creating nothing. Only present when the ask is about automation (see automationIntent()).
+  // Master — creating nothing. Only present when the ask is about automation (see automationIntent()).
   if (input.automationAsk) {
     lines.push('<automation_request provenance="the current request asks for automation">');
-    lines.push('Turn this into Vultron routines now. Settle the Task Brief with brief_proceed (state your assumptions: focus, times) instead of asking, then call routine_create in the same turn. Do not interview the Commander.');
+    lines.push('Turn this into Vultron routines now. Settle the Task Brief with brief_proceed (state your assumptions: focus, times) instead of asking, then call routine_create in the same turn. Do not interview the Master.');
     lines.push('- Build routines your own tools can run today (web research, watching public pages, drafting, summaries, checklists, reminders). Never wait on a connection or API key: create the runnable version and mention any upgrade in one line.');
     lines.push('- A broad goal ("help me run my shop") gets 2-5 distinct routines at sensible times. Plain-English schedules work: "weekdays at 8am", "mondays at 9am", "1st of every month".');
     lines.push('- Every run must deliver something useful on its own (fresh findings, a ready draft, a short decision list), never a blank template or generic advice. Each prompt is self-contained: task, sources, output format, what to flag. Results come back to this chat by default. Check routine_list first; never duplicate.');
     lines.push('- End by listing each routine (name, when, what it delivers) and say they can pause or edit them in AUTOMATE › SCHEDULES. With no routine_create tool, point them there instead.');
     lines.push('</automation_request>');
   }
-  // STANDING WORK (repeat sense, 2026-10-01): this request is the same work the Commander already had completed on
+  // STANDING WORK (repeat sense, 2026-10-01): this request is the same work the Master already had completed on
   // separate earlier days (workflow-takeover.js notice()). The agent may OFFER a routine — never create one unasked.
   const sw = input.standingWork;
   if (sw && Number(sw.count) >= 3 && Array.isArray(sw.dates)) {
     const day = t => { const d = new Date(Number(t)); return isFinite(d.getTime()) ? d.toDateString() : ''; };
     lines.push('<standing_work_notice provenance="observed: completed task history">');
-    lines.push('The Commander has now asked for this same work ' + Number(sw.count) + ' times on separate days (earlier: '
+    lines.push('The Master has now asked for this same work ' + Number(sw.count) + ' times on separate days (earlier: '
       + sw.dates.slice(-4).map(day).filter(Boolean).join('; ') + ').'
       + (Array.isArray(sw.quotes) && sw.quotes.length ? ' Earlier wording: ' + sw.quotes.map(q => '"' + sc(q, 160) + '"').join(' / ') + '.' : ''));
     lines.push('Do the current task fully first. Then, at the very END of your reply, offer ONCE in one short sentence to take it off their plate as a standing routine'

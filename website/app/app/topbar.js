@@ -1,10 +1,10 @@
 /* VULTRON — topbar.js : the TOPBAR INSTRUMENT-CLUSTER logic (read-only wiring).
 
-   The topbar holds one cockpit gauge group: COMMANDER (level + achievement progress)
+   The topbar holds one cockpit gauge group: MASTER (level + achievement progress)
    and the moved-up session-status instruments (UPLINK / ONLINE / save).
 
    This module OWNS none of the data. It is a pure read-only consumer:
-     - COMMANDER level   — read from JourneyStore's server-owned progression snapshot.
+     - MASTER level   — read from JourneyStore's server-owned progression snapshot.
                              Crew XP cannot write this headline or celebrate its level.
      - UPLINK / ONLINE / save — their markup was moved up from #bottombar .bb-right with ids
                              intact, so main.js save() and stationui.js tick()/flashSave() keep
@@ -19,7 +19,7 @@ const Topbar = (() => {
 
   const $ = sel => document.querySelector(sel);
 
-  // ---- Commander achievement sliver: read-only projection of durable Journey proof ----
+  // ---- Master achievement sliver: read-only projection of durable Journey proof ----
   function paintXp() {
     try {
       const j = typeof JourneyStore !== 'undefined' && JourneyStore.status ? JourneyStore.status() : null;
@@ -44,7 +44,7 @@ const Topbar = (() => {
         fill.style.width = pct + '%';
         const xp = $('#tb-station .tb-xp');
         // the station tooltip card, not the OS bubble (org pass 10-14, P28)
-        if (xp && xp.setAttribute) xp.setAttribute('data-tip', 'COMMANDER Lv ' + g.level + ' — ' + g.points + ' achievement points; ' + g.pointsToNextLevel + ' to the next level');
+        if (xp && xp.setAttribute) xp.setAttribute('data-tip', 'MASTER Lv ' + g.level + ' — ' + g.points + ' achievement points; ' + g.pointsToNextLevel + ' to the next level');
       }
     } catch (_) { /* honest no-op: leave the sliver where it is */ }
   }
@@ -161,7 +161,7 @@ const Topbar = (() => {
     if (wired) return;
     wired = true;
 
-    // ONE PROGRESS DOOR: the COMMANDER gauge opens QUESTS › PASS — the Lv it shows IS the pass tier (10-19; was Progress)
+    // ONE PROGRESS DOOR: the MASTER gauge opens QUESTS › PASS — the Lv it shows IS the pass tier (10-19; was Progress)
     const chip = document.getElementById('tb-station');
     if (chip) {
       chip.setAttribute('role', 'button'); chip.tabIndex = 0; chip.style.cursor = 'pointer';

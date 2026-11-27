@@ -1,4 +1,4 @@
-/* Discovery stays with the Commander profile; prepared work opens in Recipes.
+/* Discovery stays with the Master profile; prepared work opens in Recipes.
    Retain this module path and the saved discovery data when retiring the duplicate hub. */
 'use strict';
 (() => {

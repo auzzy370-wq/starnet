@@ -2,15 +2,15 @@
 
    THE WALK (C:/Users/andro/gen-trees/_logs/walk-evidence-0142, W-A1-b2 run dc6b2392-956d-49b3-9d39-bd56e9652c0c; the same
    shape in W-A1-b3 8a949c1a-6243-4e52-b80c-746f1d845ceb and W-A1-c e33f7df9-e0e1-4a63-bfe8-59b32846a701): an ASK run with
-   outside content in its context asked shell_exec. The post-taint exact-call card opened, the Commander clicked Approve
+   outside content in its context asked shell_exec. The post-taint exact-call card opened, the Master clicked Approve
    once, and the result was "not run yet — waiting on the task brief". The model settled the brief, made the IDENTICAL call
-   again, and the Commander was asked to approve the same command a second time. The first approval bought nothing.
+   again, and the Master was asked to approve the same command a second time. The first approval bought nothing.
 
    CAUSE (a5-ask-double-approval-trace.json): dispatch awaited the post-taint confirmation BEFORE the Task Brief gate; the
    held return dropped the dispatch-local one-shot, and the retry is a new dispatch that asks again.
 
    THE FIX UNDER TEST: a call the brief will hold is held before any card opens. This test drives that exact sequence through
-   the real sidecar — /api/run, a run tainted from its first turn (a Commander attachment), an unsettled Task Brief, the real
+   the real sidecar — /api/run, a run tainted from its first turn (a Master attachment), an unsettled Task Brief, the real
    shell.exec — with a scripted provider: shell_exec -> (held) -> brief_proceed -> the identical shell_exec -> done.
    On 748b0462595 it sees two shell.exec cards for one executed command; now it sees one. The separate contracts stay: the
    first call is still held (the brief is settled first), the card still approves only that one prepared call, and the
@@ -61,7 +61,7 @@ async function drive(fixture) {
       key: 'sk-or-v1-w-a1-fake', provider: 'openrouter', model: 'test/model',
       agentId: 'walker', streamId: 'w-a1-' + Date.now(), isTask: true,
       placed: [{ objectType: 'workbench' }],
-      // a Commander attachment: outside bytes in this run's context from its first turn (handleRun initialTaint)
+      // a Master attachment: outside bytes in this run's context from its first turn (handleRun initialTaint)
       messages: [{ role: 'user', content: 'Run the check command in the workbench and tell me what it prints.', attachments: [{ id: 'w-a1-missing', name: 'notes.txt', kind: 'file' }] }]
     })
   });
@@ -81,7 +81,7 @@ async function drive(fixture) {
       let ev; try { ev = JSON.parse(line); } catch (_) { continue; }
       events.push(ev);
       if (ev.name === 'agent.run.start') runId = ev.payload.runId;
-      // the Commander clicks Approve once on every card, exactly as in the walk
+      // the Master clicks Approve once on every card, exactly as in the walk
       if (ev.name === 'permission.prompt') await fixture.json('POST', '/api/consent', { runId, promptId: ev.payload.promptId, decision: 'once' });
     }
   }

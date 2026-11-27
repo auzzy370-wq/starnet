@@ -1,6 +1,6 @@
 /* frontend/app/apps.js — APPS: describe it, get it (2026-09-29).
 
-   The Commander names an app and says, in their own words, what it should be — a tracker, a timer, a dashboard,
+   The Master names an app and says, in their own words, what it should be — a tracker, a timer, a dashboard,
    a game, a feed that refreshes itself: anything. Vultron creates it at once (its window opens on a "building"
    page), then hands the build to the lead in the app's OWN COMMS session — so the work is visible, runs under the
    station's normal rules, and the page appears the moment the crew writes it. Changing an app is the same move
@@ -49,7 +49,7 @@
   }
   const find = (id) => list.find((a) => a.id === id) || null;
 
-  /* THE DOCK FOLLOWS THE LIST: no APPS button until the Commander has an app (NEW APP lives under BUILD until then);
+  /* THE DOCK FOLLOWS THE LIST: no APPS button until the Master has an app (NEW APP lives under BUILD until then);
      after that the APPS menu opens each app in one click. */
   function syncDock() {
     const group = document.querySelector('#bottombar .bb-group[data-group="apps"]');
@@ -270,7 +270,7 @@
       bar.innerHTML = '<div class="app-bar-row"><input class="apps-field app-change" maxlength="1500" autocomplete="off" aria-label="Describe a change to this app" placeholder="Describe a change — how it looks, what it shows, how it works">' +
         '<button class="apps-btn primary app-change-go" type="submit">CHANGE</button><button class="apps-btn app-refresh" type="button" hidden>⟳ REFRESH</button></div>' +
         '<div class="app-bar-status"><span class="app-status" role="status"></span><button class="apps-btn app-auto-toggle" type="button" aria-expanded="false">AUTO-UPDATE</button><button class="apps-btn app-arm" type="button" hidden>▶ TURN SCHEDULING ON</button></div>' +
-        // AUTO-UPDATE: how often, and what each update does — in the Commander's own words
+        // AUTO-UPDATE: how often, and what each update does — in the Master's own words
         '<div class="app-auto" hidden>' +
           '<div class="app-auto-h">Update this app by itself</div>' +
           '<div class="app-auto-every" role="group" aria-label="How often">' + CADENCES.map((c) => '<button class="apps-btn apps-chip" type="button" aria-pressed="false" data-every="' + c[0] + '">' + c[1] + '</button>').join('') + '</div>' +

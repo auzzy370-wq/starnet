@@ -7,7 +7,7 @@
 
 ## 1. The vision, reframed
 
-The Commander's idea: *the harness researches and gets to know the user over time, then recommends recipes and marketplace agents tailored to that user — a curated feed that sharpens the longer you use it.*
+The Master's idea: *the harness researches and gets to know the user over time, then recommends recipes and marketplace agents tailored to that user — a curated feed that sharpens the longer you use it.*
 
 The panel validated the instinct and sharpened it with two reframes that the moat + skeptic lenses both landed on:
 
@@ -88,10 +88,10 @@ The panel's code read found the substrate is ~70% there and **the single best si
 ## 7. The surfaces (UX) — three, ranked by how earned the attention is
 
 1. **PULL — "Recommended for you" shelf** pinned above `▮ CATALOG` in the Recruitment Bay (and the future Recipe library). The user opened the bay to browse, so a re-rank is pure value, zero interruption. Each card: ITEM (reuse `cardHTML`) + WHY + one-tap act. **Ship this first.**
-2. **SCHEDULED — "Station Briefing"** terminal (a 7th `BUILDERS` entry + a once-per-day dot like `#nf-badge`): a short daily standup the station gives its Commander. Suppressed entirely when confidence is low or nothing changed ("all quiet" beats inventing news).
+2. **SCHEDULED — "Station Briefing"** terminal (a 7th `BUILDERS` entry + a once-per-day dot like `#nf-badge`): a short daily standup the station gives its Master. Suppressed entirely when confidence is low or nothing changed ("all quiet" beats inventing news).
 3. **PUSH — at most one COMMS suggestion pill** (reuse `Chat.choices`), hard-gated: only when idle + just-shipped/session-open, max one per session.
 
-**Gamified framing:** the station is *getting to know its Commander* — surface a "STATION FAMILIARITY — calibrating… → 28% → sharpening" meter reusing the honest Confidence% pattern. Anti-spam is a hard budget, not a vibe.
+**Gamified framing:** the station is *getting to know its Master* — surface a "STATION FAMILIARITY — calibrating… → 28% → sharpening" meter reusing the honest Confidence% pattern. Anti-spam is a hard budget, not a vibe.
 
 ---
 
@@ -162,7 +162,7 @@ Affinity from observations; seed cold-start + first-seed-wins; EWMA recency deca
 
 ---
 
-## 12. Open decisions (Commander's call)
+## 12. Open decisions (Master's call)
 
 1. **Learning default: on or opt-in?** Phase 0 ships the `enabled` flag defaulting **ON** (purely local, the user's own data, reversible + transparent via the Phase 1 glass box) — but the consent beat in Phase 1 can flip this to opt-in if preferred. *Recommendation: on-by-default-with-easy-pause for local data.*
 2. **Recipe vs specialty priority for the first visible payoff** (Phase 1 vs Phase 2 ordering).

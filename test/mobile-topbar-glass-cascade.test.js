@@ -1,5 +1,5 @@
 /* mobile-topbar-glass-cascade.test.js — the phone-width topbar contract must survive the DEFAULT skin.
-   topbar.css/interface.css hide the COMMANDER level lamp at ≤600px so UPLINK (the link-truth lamp) keeps the
+   topbar.css/interface.css hide the MASTER level lamp at ≤600px so UPLINK (the link-truth lamp) keeps the
    room (locked by test/mobile-control-reachability.test.js). But glass is the default skin (glass-boot.js turns
    it on unless ?glass=0), and its bare-readout rules — `body.glass-demo:not(.hud-mode) #topbar #tb-station
    { display:grid }` and the `.tb-status` divider padding — out-rank a bare `#topbar #tb-station` at any width.

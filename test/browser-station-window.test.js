@@ -1,4 +1,4 @@
-/* node test/browser-station-window.test.js — the STATION browser is a real window the Commander uses
+/* node test/browser-station-window.test.js — the STATION browser is a real window the Master uses
    (sidecar/tools/builtin/browser.js session options preferVisible + noAttach; sidecar/browser-view.js). Proves, with a
    makeDriver SEAM (so the session's own mode + revive logic really runs):
      - preferVisible launches it as a window whatever a call asks (a visible:false navigate, a local test page), and
@@ -44,7 +44,7 @@ const tick = () => new Promise(r => setImmediate(r));
       await B.session.handoffSurface().front();
       A.eq(r.built[0].fronted, 1, 'front() raises the real window');
 
-      // ---- the Commander closes the window ----
+      // ---- the Master closes the window ----
       r.built[0].isAlive = false;
       let threw = false; try { B.session.handoffSurface(); } catch (_) { threw = true; }
       A.ok(threw, 'a closed window reads as "no page open" (never a stale picture)');

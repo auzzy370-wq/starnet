@@ -3,7 +3,7 @@
    THE BUG THIS CLOSES. A cron routine fires headless (cron-driver.js fireJob → runOnce with
    surface:'autonomous', trigger:'schedule'; RUN NOW — POST /api/cron/run — runs the same unattended
    path and stream, labelled trigger:'manual'). Its reply text is buffered server-side and only an
-   OUTCOME enum escapes on cron.result — so the Commander hears the HUD chime + the away-digest
+   OUTCOME enum escapes on cron.result — so the Master hears the HUD chime + the away-digest
    toast but can never READ what the routine actually produced. There was no session, no thread,
    no output. This module makes an unattended run appear as a real workstream the instant it fires
    (rail row, marked busy) and folds its durable transcript into that session when it completes —
@@ -14,7 +14,7 @@
    same transcriptStore every attended run uses. This layer is a READ-ONLY citizen of U.bus:
      · cron.fire {jobId, runId}  → ADOPT a workstream id 'cron-<runId>' (title = routine name from
        the /api/cron catalogue, agentId = the job's agent, lane 'active', history seeded with the
-       routine's prompt as the user turn) and mark it busy — WITHOUT stealing the Commander's
+       routine's prompt as the user turn) and mark it busy — WITHOUT stealing the Master's
        focus. The rail row appears immediately.
      · cron.result {jobId, runId, outcome} → GET /api/transcript?stream=cron-<runId>, fold the
        assistant turns into that session's history in chat.js's exact shape, clear busy, persist,
@@ -233,7 +233,7 @@ const AutoSessions = ((TurnMerge) => {
     const seed = (job && job.prompt) ? [seedRow(runId, job.prompt)] : [];
     const ws = Workstreams.adopt({ id: id, title: title, agentId: agentId, lane: 'active', history: seed,
       automation: { kind: 'routine', id: (job && job.id) || '', name: title } });
-    if (!ws) return null;   // a session the Commander DELETED stays deleted (adopt refused the tombstoned id)
+    if (!ws) return null;   // a session the Master DELETED stays deleted (adopt refused the tombstoned id)
     // mark the row busy via the SAME per-workstream channel state chat.js drives (Channels.begin) so the
     // rail's railRowState paints the pulsing "running" dot — reused, not a bespoke busy flag.
     if (hasCh() && !Channels.isBusy(id)) { Channels.begin(id, Date.now()); Channels.setStatus(id, 'thinking…'); }   // cron.fire IS server truth — skip the 'connecting…' unconfirmed state
@@ -312,7 +312,7 @@ const AutoSessions = ((TurnMerge) => {
   // ---- busy reconciliation: heal a session wedged 'RUNNING' after a mid-run SSE drop -----------
   // The busy state a cron fire sets (Channels.begin) is cleared ONLY by cron.result. If the SSE bridge drops
   // between fire and result, that event is LOST and the session stays RUNNING forever — which also blocks the
-  // Commander from typing into it (chat.js: `if (Channels.isBusy(ws.id)) return`). A run is recorded in the
+  // Master from typing into it (chat.js: `if (Channels.isBusy(ws.id)) return`). A run is recorded in the
   // runStore ONLY when it finishes, so: for each busy cron session, ask /api/runs whether its runId is now done;
   // if so, complete it (fold transcript + Channels.end). Fail-open, self-contained, no new events.
   let reconcilePoll = null;
@@ -398,7 +398,7 @@ const AutoSessions = ((TurnMerge) => {
         const jobName = (job && job.name) || run.cronJobName || '';
         if (existing && run.cronJobId) Workstreams.adopt({ id: sid, automation: { kind: 'routine', id: run.cronJobId, name: jobName || (existing.automation && existing.automation.name) || run.title || 'Routine' } });
         // a fire that landed before the catalogue loaded (a boot catch-up) was adopted as the placeholder 'Routine' —
-        // heal it to the routine's real name (only the placeholder; a Commander rename is theirs)
+        // heal it to the routine's real name (only the placeholder; a Master rename is theirs)
         if (existing && jobName && existing.title === 'Routine' && existing.titleAuto !== false) existing.title = jobName;
         const runId = String(sid).slice(STREAM_PREFIX.length);
         // A FIRE WHOSE WORK LINE STILL RUNS (review 5.3, the rule reconcileBusy keeps): its entry run's row lands before the line has run, and
@@ -425,7 +425,7 @@ const AutoSessions = ((TurnMerge) => {
           continue;
         }
         // adopt (idempotent) — an existing seed-only session is preserved by adopt; a while-away run is already DONE.
-        // A run that finished while the station was CLOSED arrives UNREAD (lastReadAt 0: the Commander has never
+        // A run that finished while the station was CLOSED arrives UNREAD (lastReadAt 0: the Master has never
         // opened it), so the rail lamp shows what ran while you were gone. A session already on this page keeps its own.
         Workstreams.adopt({ id: sid, title: jobName || String(run.title || 'Routine').split('\n')[0].slice(0, 80) || 'Routine', agentId: String(run.agentId || 'agent'), lane: 'active', history: (existing && existing.history) || [], automation: { kind: 'routine', id: run.cronJobId || '', name: jobName || run.title || 'Routine' }, lastReadAt: existing ? undefined : 0 });
         const ws = Workstreams.get(sid);
@@ -485,7 +485,7 @@ const AutoSessions = ((TurnMerge) => {
     // finished run gets folded + un-wedged; a still-live one arms the bounded poll.
     setTimeout(() => { backfill().then(() => { reconcileBusy(); armReconcilePoll(); }); }, 1400);
   }
-  function reset() { routines = null; stopReconcilePoll(); }   // a fresh Commander re-reads the catalogue; sessions are cleared by Workstreams.reset()
+  function reset() { routines = null; stopReconcilePoll(); }   // a fresh Master re-reads the catalogue; sessions are cleared by Workstreams.reset()
 
   return { init, reset, _internals: { onResult, beginSession, completeSession, foldTurns, recordOutcome, outcomeOfRun, whyOfRun, fireOf, settleOf, backfill, reconcileBusy, fetchTranscript, hasReadableOutput, loadRoutines, routineFor, validStream, streamOf } };
 })(typeof module !== 'undefined' && module.exports ? require('./turnmerge.js') : globalThis.TurnMerge);

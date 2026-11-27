@@ -18,7 +18,7 @@
        rather than emitting an unclosed <b>, which would 400 the whole chunk.
 
    Only http/https links become anchors — a `javascript:`/`tg:` URL in model output must never become a tappable
-   link on the Commander's phone.
+   link on the Master's phone.
 
    Length note: Telegram's 4096 cap counts the text AFTER entity parsing, so tags and `&amp;` expansion do not
    count against it. Chunking on the PLAIN text upstream therefore stays correct.

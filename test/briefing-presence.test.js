@@ -1,6 +1,6 @@
 /* node test/briefing-presence.test.js — THE ABSENCE, page side (frontend/app/briefing.js; live walk 10-14).
-   A reload briefed work the Commander had watched land, because the briefing stamp only moved when a briefing was
-   delivered. The page now stamps the Commander's PRESENCE ({ seen:true }) while they are here — throttled, on input,
+   A reload briefed work the Master had watched land, because the briefing stamp only moved when a briefing was
+   delivered. The page now stamps the Master's PRESENCE ({ seen:true }) while they are here — throttled, on input,
    when the tab is hidden and when the page goes away — and never before the boot delivery has settled or while a
    delivery is in flight (a stamp racing ahead of a return would swallow the very absence it was about to brief). */
 'use strict';
@@ -44,7 +44,7 @@ const tick = () => new Promise(r => setImmediate(r));
   now += 1000; handlers.pointerdown(); await tick();
   A.eq(seens().length, 0, 'the boot delivery itself moved the stamp: an input a second later needs no second one');
   now += 61000; handlers.pointerdown(); await tick();
-  A.eq(seens().length, 1, 'the Commander is here → the page stamps their presence');
+  A.eq(seens().length, 1, 'the Master is here → the page stamps their presence');
   now += 1000; handlers.keydown(); await tick();
   A.eq(seens().length, 1, 'stamps are throttled (one a minute is plenty for a 30-minute threshold)');
   now += 61000; handlers.keydown(); await tick();
@@ -78,20 +78,20 @@ const tick = () => new Promise(r => setImmediate(r));
   now += 61000; handlers.pointerdown(); await tick();
   A.eq(seens().length, before + 1, 'a reset station stamps nothing until its next page starts');
 
-  // THE AWAKENING (review 10-14): a new Commander's first session runs with the briefing OFF (enterGame passes
+  // THE AWAKENING (review 10-14): a new Master's first session runs with the briefing OFF (enterGame passes
   // enabled:false), but a presence stamp delivers nothing — it must still land, or the stamp stays 0 all session and the
   // first reload briefs the whole first session ("While you were away" over work they watched) and takes the screen.
   const t0 = timers.length, s0 = seens().length, d0 = delivers().length;
   B.init({ enabled: false, agentId: 'agent' });
   A.eq(timers.length, t0, 'the awakening asks for no boot briefing');
   now += 1000; handlers.pointerdown(); await tick();
-  A.eq(seens().length, s0 + 1, 'the awakening page stamps the Commander\'s presence on their first input');
+  A.eq(seens().length, s0 + 1, 'the awakening page stamps the Master\'s presence on their first input');
   A.eq(delivers().length, d0, '…and delivers nothing');
   handlers.pagehide(); await tick();
   A.ok(seens().length === s0 + 2 && seens()[s0 + 1].keepalive, 'a reload/close of the awakening stamps on the way out (the first reload is a reload)');
   now += 31 * 60000; handlers.pointerdown(); await tick();
   A.eq(delivers().length, d0, 'the awakening never delivers a briefing, even after an idle half hour');
-  A.eq(seens().length, s0 + 3, 'it stamps the return instead (the Commander is here again)');
+  A.eq(seens().length, s0 + 3, 'it stamps the return instead (the Master is here again)');
   A.eq(B.ownsReturn(), false, 'the awakening still does not own the return');
 
   Date.now = realNow;

@@ -54,14 +54,14 @@
    row (labelOnly decides its stamp, below); directiveRow() is { rowId, turnId, text } once the directive is proven durable.
 
    ATTACHMENT ROWS (attachment-rows-and-taint, S3; sidecar/turn-attachment.js). attachmentRows are the files the directive's turn
-   carried, as turn-attachment items. The directive row holds the Commander's words only, so each file is recorded beside it as
+   carried, as turn-attachment items. The directive row holds the Master's words only, so each file is recorded beside it as
    a role-system, kind 'attachment' row, written right after the directive (same turnId and sourceRunId). They are provenance,
    never dialogue, so a failure to write them is reported through onFailure and the rows stay pending for the next boundary: the
    directive is never rewritten, nothing is thrown, and the run is never blocked. Only the run that wrote the directive (or one
    handed the files of a directive it reuses, setAttachments) writes them, and every append is checked against the turn's LIVE
    rows, so a retry (which retracts the old rows) writes each file once and a resend or a continuation writes none twice.
    The directive row's own taint is the run's NON-attachment taint: the bare attachment stamp is what the attachment rows carry,
-   and the Commander's typed words are not bytes (a directive stamped only with the attachment source is written clean). A brief
+   and the Master's typed words are not bytes (a directive stamped only with the attachment source is written clean). A brief
    another agent wrote (`from`) is that agent's text, produced while it held the bytes, and keeps the stamp. A directive that says
    it is only the label of its files (setDirective's labelOnly: no typed words, so the row holds the files' NAMES, a third party's
    text) is never written clean, even by a run that sent no bytes: it carries the run's source, else the bare attachment stamp.
@@ -85,14 +85,14 @@ function makeRunTranscript(opts) {
   const runId = o.runId;
   const dispatchState = o.dispatchState === 'pending' || o.dispatchState === 'internal' ? o.dispatchState : undefined;
   const onFailure = typeof o.onFailure === 'function' ? o.onFailure : function () {};
-  // a delegated worker's directive was written by the agent that dispatched it, never typed by the Commander
+  // a delegated worker's directive was written by the agent that dispatched it, never typed by the Master
   const from = o.from ? String(o.from) : '';
   // the run's CURRENT taint source (null = clean), read at each write: a row written after untrusted content
   // entered the run carries it, so a later replay of that row restores the taint (transcriptstore.taintOf)
   const taintNow = typeof o.taint === 'function' ? function () { try { return o.taint() || null; } catch (e) { onFailure('taint', e); return null; } } : function () { return null; };
   let directive = '';
   let directiveWritten = false;
-  /* HOLD FOR A PASTED KEY (keys.save, 2026-10-25). On a run whose Commander message holds a key-shaped string the
+  /* HOLD FOR A PASTED KEY (keys.save, 2026-10-25). On a run whose Master message holds a key-shaped string the
      directive row would reach disk before the model could save that key to KEYS — raw, in a segment that is never
      rewritten. While o.hold() is true, start() and every boundary write nothing; the first boundary after it turns
      false (the host flips it when keys.save SUCCEEDS, so the store's redaction can name the key) drains everything in
@@ -150,10 +150,10 @@ function makeRunTranscript(opts) {
   }
 
   // the directive's taint: the run's own source unless that is the bare attachment stamp, which belongs to the attachment rows —
-  // the directive holds the Commander's typed words, not the file's bytes (see ATTACHMENT ROWS above). A directive another agent
+  // the directive holds the Master's typed words, not the file's bytes (see ATTACHMENT ROWS above). A directive another agent
   // wrote (`from`: a lead's brief to its worker) is model-written text, produced while the lead held the bytes: it keeps the stamp.
   // A directive with NO typed words holds only the label of the files, built from their names, which are a third party's text and not
-  // the Commander's words at all: it is never written clean, whatever the run held (a file that sent no bytes leaves the run
+  // the Master's words at all: it is never written clean, whatever the run held (a file that sent no bytes leaves the run
   // untainted), so it is never a clean owner row. The bare stamp is enough: it decays on replay as every attachment stamp does.
   function directiveTaint() {
     const t = taintNow();

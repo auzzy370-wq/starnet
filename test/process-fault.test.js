@@ -181,7 +181,7 @@ function harness(extra) {
     const q = A.fnBody(src, 'function quiesceForProcessFault()');
     A.ok(/contain\('triggers', \(\) => \{[\s\S]*clearInterval\(triggerPollTimer\);[\s\S]*triggerRunner\.haltAll\(\);[\s\S]*killAll\(null, \.\.\.triggerRunner\.inflights\(\)\);/.test(q), 'fault quiesce stops the folder poll, drops trigger queues and kills trigger-hub runs');
     A.ok(/let triggerPollTimer = setInterval\(/.test(src), 'the trigger poll timer is clearable');
-    // (wave 2 repair, conveyor-backend-08 and its siblings) the containment is the station's OWN fault, never the Commander's E-STOP:
+    // (wave 2 repair, conveyor-backend-08 and its siblings) the containment is the station's OWN fault, never the Master's E-STOP:
     // every hub run it kills is marked faulted FIRST (halt.js markFaulted), so a chat's notice, a STEP THROUGH, a hand-off and RUN ONE
     // REAL JOB name the fault — and a plain E-STOP never marks one
     A.ok(/markFaulted\(tgInflight, dcInflight, \.\.\.genericInflights, \.\.\.tgBotInflights, devInflight, stepTest \? stepTest\.inflight : null\);\s*killAll\(null, tgInflight, dcInflight, \.\.\.genericInflights, \.\.\.tgBotInflights, devInflight, stepTest \? stepTest\.inflight : null\);/.test(q), 'fault quiesce marks the channel, dev and step-test runs faulted before it kills them');
@@ -189,9 +189,9 @@ function harness(extra) {
     A.ok(/markFaulted\(\.\.\.handoffRunner\.inflights\(\)\); killAll\(null, \.\.\.handoffRunner\.inflights\(\)\);/.test(q), '…the hand-off runs');
     A.ok(/sampleInFlight\.stopCause = 'fault';[^\n]*markFaulted\(\(sampleHub && sampleHub\._internals\) \? sampleHub\._internals\.inflight : null\); killAll\(null,/.test(q), '…and the sample run, whose record and answer say the fault');
     const estop = A.fnBody(src, 'function handleHalt(req, res)');
-    A.ok(/runTable\.stopOwners\('estop'\) \+ killAll\(null,/.test(estop) && !/markFaulted|stopCause/.test(estop), 'the Commander\'s E-STOP marks no fault');
+    A.ok(/runTable\.stopOwners\('estop'\) \+ killAll\(null,/.test(estop) && !/markFaulted|stopCause/.test(estop), 'the Master\'s E-STOP marks no fault');
     const sample = A.fnBody(src, 'async function runSampleJob(readArgs)');
-    // The sample's shared job verdict preserves fault provenance; it never calls this the Commander's STOP.
+    // The sample's shared job verdict preserves fault provenance; it never calls this the Master's STOP.
     A.ok(/stopCause: sampleInFlight\.stopCause/.test(sample) && /jobError: result\.error/.test(sample)
       && require('../sidecar/routing/line-runner.js').outcomeOf({ stopped: true, stopCause: 'fault', runs: [] }).stop.code === 'station_fault',
       'the sample job record words a fault stop as the fault');

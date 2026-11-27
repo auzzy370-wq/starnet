@@ -54,7 +54,7 @@ assert.match(css, /\.live-voice-panel\s*\{[^}]*position:\s*fixed/s, 'controller 
 assert.match(css, /\.lv-head\s*\{[^}]*cursor:\s*grab/s, 'header advertises the drag affordance');
 assert.match(css, /\.lv-wave i\[data-src="self"\]/, 'the user side of the shared waveform has an explicit visual contract');
 assert.match(css, /\.lv-wave i\[data-src="agent"\]/, 'the agent side of the shared waveform has an explicit visual contract');
-assert.match(css, /\[data-state="hearing"\][\s\S]*?\.lv-heard[\s\S]*?display:\s*-webkit-box/, 'recognized words stay visible while the Commander is speaking');
+assert.match(css, /\[data-state="hearing"\][\s\S]*?\.lv-heard[\s\S]*?display:\s*-webkit-box/, 'recognized words stay visible while the Master is speaking');
 assert.match(css, /@media \(hover: none\), \(pointer: coarse\)[\s\S]*?\.lv-x\s*\{[^}]*pointer-events:\s*auto/, 'touch users always have a reachable close control');
 
 // Exercise the endpoint policy, not only its spelling. The chosen pause is the base truth; a partial that
@@ -73,7 +73,7 @@ assert.match(css, /@media \(hover: none\), \(pointer: coarse\)[\s\S]*?\.lv-x\s*\
 
 /* ⛔ LIVE VOICE OPENS AUDIBLE ON *BOTH* PATHS. Local Live has two entry points: start() when the bundled
    offline speech engine is available and startDictation() for explicit opt-out or a degraded/custom bundle.
-   Wiring the speaker auto-enable into start() alone leaves that fallback room muted, so the Commander can
+   Wiring the speaker auto-enable into start() alone leaves that fallback room muted, so the Master can
    talk but never hear an answer. Assert it per-function, not file-wide: a file-wide match would pass while
    one runtime path remained broken. */
 function bodyOf(name) {
@@ -303,11 +303,11 @@ assert.match(bodyOf('chipCommand'), /\.click\(\)/, 'a spoken pick clicks the REA
   assert.equal(matchChoice('', chips), -1, 'silence picks nothing');
 }
 {
-  // giving back the call's lease never undoes the Commander's own speaker choice (the whole law: voice-speaker.property)
+  // giving back the call's lease never undoes the Master's own speaker choice (the whole law: voice-speaker.property)
   const { speaker } = require(path.join(root, 'frontend', 'app', 'voice-state.js'));
   const store = {}, own = speaker({ key: 'k', storage: () => ({ getItem: k => (k in store ? store[k] : null), setItem: (k, v) => { store[k] = v; } }) });
   own.apply({ pref: true }); own.apply({ lease: 'live' }); own.apply({ release: 'live' });
-  assert.equal(own.isOn(), true, "giving back a lease never undoes the Commander's own speaker choice");
+  assert.equal(own.isOn(), true, "giving back a lease never undoes the Master's own speaker choice");
   assert.equal(store.k, '1', 'and the saved setting stays that choice');
 }
 

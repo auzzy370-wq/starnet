@@ -2,7 +2,7 @@
 
    THE GAP THIS CLOSES (rec-system audit, 2026-08-28). The harness records, for every run, whether it finished
    and why it failed — and routed NONE of it back into what the station proposes. The insights fold was consumed
-   by nothing but two widgets; a task shape the Commander failed at five times in a row looked identical to a
+   by nothing but two widgets; a task shape the Master failed at five times in a row looked identical to a
    proven one on every proactive surface. This module folds the run history into a bounded TRACK RECORD the
    evidence composer, the night-shift context pack and the quest ranker can consult.
 
@@ -15,10 +15,10 @@
       two data points are an anecdote, not a record (the taskbrief patterns bar, ≥2 there, ≥3 here because these
       lines steer work selection).
    3. ONLY DECIDED RUNS COUNT. reason 'done' is success; error/max_iters/budget/refusal/empty are failures the
-      harness itself named. 'cancelled' (the Commander's own hand) and 'clarifying' (a question, not an attempt)
+      harness itself named. 'cancelled' (the Master's own hand) and 'clarifying' (a question, not an attempt)
       classify NOTHING — the same rule recqualitystore holds for its outcome folds. internal rows (harness
       self-talk) are excluded wholesale.
-      THE COMMANDER'S VERDICT OUTRANKS THE HARNESS (2026-10-01): a 'done' run the Commander rated `miss` is a
+      THE MASTER'S VERDICT OUTRANKS THE HARNESS (2026-10-01): a 'done' run the Master rated `miss` is a
       failure ('rated_missed') — finishing is not the same as landing, and a record that called rejected work
       "proven" would steer the station toward exactly what they disliked. fold() takes the verdicts as an
       injected map (opts.verdicts: runId -> 'great'|'ok'|'miss'); absent = the harness reason alone, as before.
@@ -135,7 +135,7 @@
       const what = p.kind === 'recipe' ? '"' + p.label + '" (recipe)' : p.kind === 'model' ? p.label + ' (model)' : p.label + ' runs';
       if (p.verdict === 'proven') return what + ' — finished clean ' + p.ok + ' of ' + p.n + ' recent runs';
       const tf = p.topFail ? ' (top failure: ' + p.topFail.reason + ' ×' + p.topFail.count + ')' : '';
-      // "landed", not "finished": a run the Commander rated missed DID finish, it just didn't land
+      // "landed", not "finished": a run the Master rated missed DID finish, it just didn't land
       return what + ' — only ' + p.ok + ' of ' + p.n + ' recent runs landed' + tf;
     });
   }

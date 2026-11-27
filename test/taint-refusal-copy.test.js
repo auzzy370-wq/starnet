@@ -78,7 +78,7 @@ for (const reason of ['resumed run (taint unverifiable: run journal unreadable E
   A.ok(/handed over by lead-1/.test(worker) && /user attachment/.test(worker), 'the worker refusal still names the lead and the real source');
   A.ok(worker.indexOf(OFFER) < 0, 'a worker (autonomous, no prompt) is NOT offered "a watched chat can ask to approve this exact call"');
   A.ok(worker.indexOf('without that confirmation') < 0, 'and is not told to wait for a confirmation that never comes');
-  A.ok(/For the Commander: a new session whose history has no attachments or outside pages/.test(worker), 'the structural remedy remains, as the Commander\'s way forward');
+  A.ok(/For the Master: a new session whose history has no attachments or outside pages/.test(worker), 'the structural remedy remains, as the Master\'s way forward');
   A.ok(/report the withheld step plainly/.test(worker), 'the worker is still told to report the withheld step');
   // a connector (mcp:) call is forwarded to the lead's live prompt — there an approval IS possible, so it stays offered
   const connector = refuse({ label: 'worker connector', own: 'user attachment', handedIn: 'user attachment', o, tool: 'mcp.github.create_issue', surface: 'interactive', prompt: ask });

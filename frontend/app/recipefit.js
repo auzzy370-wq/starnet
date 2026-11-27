@@ -1,12 +1,12 @@
 /* VULTRON — recipefit.js : WHAT THIS STATION IS ACTUALLY READY TO RUN.
 
-   The recipes tab was a MENU: 98 cards, identical for everybody, and it was on the Commander to work out
+   The recipes tab was a MENU: 98 cards, identical for everybody, and it was on the Master to work out
    which of them applied to their situation. That is backwards — the station already knows its own
    situation. It knows the real project folders it has been granted, which channels are connected, which
-   capabilities are placed on the floor, what it has learned the Commander keeps working on, what has been
+   capabilities are placed on the floor, what it has learned the Master keeps working on, what has been
    launched before, and what is already running as a routine.
 
-   This module turns that into OFFERS: a catalog recipe, bound to the Commander's real context, carrying
+   This module turns that into OFFERS: a catalog recipe, bound to the Master's real context, carrying
    the evidence for why it is being offered. "The Graveyard" becomes "sweep the 3 project folders you have
    granted — nothing is watching them." The catalog stops being a menu and becomes a to-do list for THIS
    station, and it re-derives itself whenever the context changes.
@@ -64,23 +64,23 @@
     return Number(t.code) > 0;
   }
 
-  /* Buckets that ASSUME what kind of work the Commander does. A path grant says a folder exists; it says
+  /* Buckets that ASSUME what kind of work the Master does. A path grant says a folder exists; it says
      nothing about whether it holds client deliverables, invoices or a photo library. So "Client Check-In"
-     pointed at an unknown folder is guessing at the Commander's profession, and being confidently wrong
+     pointed at an unknown folder is guessing at the Master's profession, and being confidently wrong
      about who somebody is reads far worse than offering nothing. These need CORROBORATION — a learned
-     topic, or the Commander having run this recipe before — and until then the domain-neutral recipes,
+     topic, or the Master having run this recipe before — and until then the domain-neutral recipes,
      which are valid against any folder, hold the shelf. */
   const ASSUMES_DOMAIN = ['business', 'money', 'creator'];
   function assumesDomain(recipe) { return ASSUMES_DOMAIN.indexOf(str(recipe && recipe.category)) >= 0; }
 
   // param keys that name a SUBJECT — the slot a learned topic can honestly fill. Matched exactly, never by
-  // substring: a 'target' param on a code review wants a file, not the phrase the Commander has been reading about.
+  // substring: a 'target' param on a code review wants a file, not the phrase the Master has been reading about.
   const TOPIC_KEYS = ['topic', 'subject', 'area', 'question'];
   // param keys that name a PLACE — the slot a granted project root fills.
   const PLACE_KEYS = ['where', 'folder', 'records', 'project', 'documents', 'receipts', 'evidence'];
 
   /* PRE-FILL a recipe's params from real context. Returns { values, bound } where `bound` lists what was
-     actually filled and from what, so the caller can show the Commander exactly what it decided for them —
+     actually filled and from what, so the caller can show the Master exactly what it decided for them —
      a form that silently arrives pre-filled is a form that gets launched without being read. */
   function bind(recipe, ctx) {
     const values = {}, bound = [];
@@ -118,7 +118,7 @@
 
   /* THE EVIDENCE LINE. Every branch below is a statement about something COUNTED in ctx — nothing here
      describes the inside of a folder, the content of a message, or anything this module was not handed.
-     Ordered most-specific-first so the strongest real evidence is what the Commander reads. */
+     Ordered most-specific-first so the strongest real evidence is what the Master reads. */
   function why(recipe, ctx, n) {
     const needs = needsOf(recipe);
     const projects = arr(ctx.projects), channels = arr(ctx.channels), topics = arr(ctx.topics);
@@ -160,7 +160,7 @@
   }
 
   /* SCORE an offer. Deliberately dull arithmetic over real counters — no learned weights, so the ordering
-     is explainable from the evidence line the Commander can already see. Highest first, catalog order
+     is explainable from the evidence line the Master can already see. Highest first, catalog order
      breaks ties so the result is stable for a fixed ctx. */
   function score(recipe, ctx, n) {
     const needs = needsOf(recipe);
@@ -174,14 +174,14 @@
     if (needs.files && projects) s += 1;
     // a standing job the station could be running and is not
     if (needs.standing && !n.scheduled) s += 3;
-    // the Commander already voted with their hands
+    // the Master already voted with their hands
     if (n.launches > 0) s += Math.min(2, n.launches);
     if (n.great > 0) s += 1;
     // scale the miss penalty the way rankRecipes does (-2 per miss, capped): a flat -2 let a recipe with
-    // two misses survive on launch count alone, which is the Commander telling us twice and being ignored.
+    // two misses survive on launch count alone, which is the Master telling us twice and being ignored.
     if (n.miss > 0) s -= 2 * Math.min(3, n.miss);
     // UNMET NEEDS SINK IT. A connector recipe with no channel connected is an advert for a feature the
-    // Commander does not have — it belongs in the library, not on a shelf claiming the station is ready.
+    // Master does not have — it belongs in the library, not on a shelf claiming the station is ready.
     if (needs.channel && !channels) s -= 5;
     if (needs.folder && !projects) s -= 4;
     // a code recipe pointed at a real repo is a strong match (the DISqualifying half lives in eligible()).
@@ -206,7 +206,7 @@
   }
 
   /* Does anything besides "a folder exists" point at this recipe? A learned topic that the recipe's own
-     language covers, or the Commander having launched it before, both count — they are the Commander's
+     language covers, or the Master having launched it before, both count — they are the Master's
      own behaviour rather than our guess about them. */
   function corroborated(recipe, ctx) {
     const id = str(recipe && recipe.id);
@@ -236,7 +236,7 @@
   }
 
   /* Is there enough real context to offer anything honestly? A station with no granted project, no
-     connected channel and no learned topic knows NOTHING about its Commander, and a shelf claiming
+     connected channel and no learned topic knows NOTHING about its Master, and a shelf claiming
      otherwise would be theatre. The caller renders the plain library instead — which is the honest state. */
   function hasContext(ctx) {
     ctx = ctx || {};
@@ -245,7 +245,7 @@
 
   /* THE ENTRY POINT. offers(recipes, ctx, opts) -> [{ recipe, values, bound, why, score }]
      Excludes anything already running as a routine (it is handled — offering it again is noise) and
-     anything whose score fell at or below zero (an unmet need, or a recipe the Commander rated a miss). */
+     anything whose score fell at or below zero (an unmet need, or a recipe the Master rated a miss). */
   function offers(recipes, ctx, opts) {
     ctx = ctx || {};
     opts = opts || {};
@@ -258,7 +258,7 @@
       const n = counters(r, ctx);
       if (n.scheduled) return;                       // already running — not an offer
       const s = score(r, ctx, n);
-      if (s <= 0) return;                            // unmet need or sunk by the Commander's own verdict
+      if (s <= 0) return;                            // unmet need or sunk by the Master's own verdict
       const b = bind(r, ctx);
       const reason = why(r, ctx, n);
       if (!reason) return;                           // no honest thing to say = no card
@@ -282,7 +282,7 @@
   }
 
   /* A one-line, fully honest summary of WHAT THE STATION LOOKED AT — rendered above the shelf so the
-     Commander can audit the basis of every card below it. Truthful telemetry: if this line cannot be
+     Master can audit the basis of every card below it. Truthful telemetry: if this line cannot be
      built from real counters, there is no shelf. */
   function basis(ctx) {
     ctx = ctx || {};

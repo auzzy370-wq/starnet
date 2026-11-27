@@ -260,7 +260,7 @@ const ID_RE = /^[A-Za-z0-9_-]{1,40}$/;
     A.ok(!e.via, id + ' signs in directly — no aggregator detour');
     A.eq(e.staticOauth, null, id + ' rides dynamic registration, not a pre-registered client');
     A.eq(C.installConfig(id), null, id + ' is stood up by the sign-in flow, not one-click upsert');
-    A.ok(e.aliases.length >= 2, id + ' carries the names a Commander actually types');
+    A.ok(e.aliases.length >= 2, id + ' carries the names a Master actually types');
   }
   const oai = C.get('openai-devdocs');
   A.eq(oai.authType, 'none', 'OpenAI DevDocs is zero-setup');
@@ -281,13 +281,13 @@ const ID_RE = /^[A-Za-z0-9_-]{1,40}$/;
     A.ok(/^https:\/\/\S+/.test(e.url), id + ' has a concrete https endpoint');
     A.eq(e.staticOauth, null, id + ' rides dynamic registration');
     A.eq(C.installConfig(id), null, id + ' is stood up by the sign-in flow');
-    A.ok(e.aliases.length >= 2, id + ' carries the names a Commander actually types');
+    A.ok(e.aliases.length >= 2, id + ' carries the names a Master actually types');
   }
   const corpus = C.get('corpus-law');
   A.eq(corpus.authType, 'none', 'Corpus is zero-setup');
   A.eq(corpus.installable, true, 'Corpus installs with no key');
   A.ok(!C.get('covision'), 'Covision has no DCR — not listed');
-  // outward-spend rows must SAY so on the card — a Commander should never find out from the ad bill.
+  // outward-spend rows must SAY so on the card — a Master should never find out from the ad bill.
   A.ok(/REAL ad budget/.test(C.get('adspirer').blurb), 'Adspirer warns it spends real budget');
   A.ok(/LIVE campaigns/.test(C.get('markifact').blurb), 'Markifact warns it edits live campaigns');
 }

@@ -117,7 +117,7 @@ A.eq(C.pick({ blank: ['ambition'], dismissed: {}, asked: {}, count: 0, cap: 1, o
 A.eq(C.pick({ blank: ['ambition'], dismissed: {}, asked: {}, count: 1, cap: 1, order: ['ambition'] }),
   null, 'the session cap still silences an ordered ask');
 
-/* ---------- V3 §7 HUNT MODE — hungrier below the readiness gate, same Commander-signal protections ---------- */
+/* ---------- V3 §7 HUNT MODE — hungrier below the readiness gate, same Master-signal protections ---------- */
 A.eq(C.pick({ blank: ['goals'], dismissed: {}, asked: {}, count: 0, work: 0, hunting: true }),
   'goals', 'hunting waives the earned-work floor (the gap is the earning)');
 A.eq(C.pick({ blank: ['goals'], dismissed: {}, asked: {}, count: 1, work: 9, hunting: true }),

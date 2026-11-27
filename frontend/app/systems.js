@@ -4,7 +4,7 @@
    station SYSTEM that comes online the first time it matters (a finished job, a second crew member, an agent
    asking you to take its browser, you asking for something on a schedule...). Nothing is ever LOCKED:
      - every window still opens from a slash command, a deep link, a quest, an error door or the agent;
-     - THE DOOR LAW: the moment anything routes the Commander to a system (a window opens, a bay opens, an
+     - THE DOOR LAW: the moment anything routes the Master to a system (a window opens, a bay opens, an
        agent's reply names it in capitals), that system comes online — the app never points at a hidden door;
      - QUESTS › Progress lists every system, offline ones included, and any of them can be brought online
        with one click; SHOW EVERYTHING (here, in SETTINGS › LOOK & SOUND, on the first dock hint) brings all of
@@ -13,7 +13,7 @@
    someone who already uses them would be its own confusion. Only a station whose awakening starts after this
    ships grows its dock.
 
-   STATE is per Commander (keyed by the hero's createdAt epoch, so a fresh start on the same machine grows again)
+   STATE is per Master (keyed by the hero's createdAt epoch, so a fresh start on the same machine grows again)
    and lives in localStorage — it is a UI preference, never a harness claim. The job counter is this module's
    OWN counter (finished runs it watched end), never a pre-existing stat read back as if it were history.
 
@@ -48,7 +48,7 @@ const Systems = (() => {
   const BY_TERM = new Map();
   LIST.forEach(s => (s.terms || []).forEach(t => BY_TERM.set(t, s.id)));
 
-  // what the Commander types that means "this belongs on a schedule" / "reach me elsewhere"
+  // what the Master types that means "this belongs on a schedule" / "reach me elsewhere"
   const SCHEDULE_RX = /\b(every\s+(day|morning|night|evening|week|weekday|monday|tuesday|wednesday|thursday|friday|saturday|sunday|hour|month)|each\s+(day|morning|night|week)|daily|weekly|hourly|nightly|on a schedule|schedule[ds]?|remind me|recurring|routine)\b/i;
   const CHANNEL_RX = /\b(telegram|slack|discord|whatsapp|signal app|matrix|my phone|from my phone|text me|message me)\b/i;
 
@@ -61,7 +61,7 @@ const Systems = (() => {
   function load() { try { const r = JSON.parse(localStorage.getItem(KEY)); return r && r.v === 1 ? r : null; } catch (_) { return null; } }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (_) {} }
 
-  /* init({ epoch, fresh, crewCount }) — called once the game screen is entered. `fresh` = this Commander's
+  /* init({ epoch, fresh, crewCount }) — called once the game screen is entered. `fresh` = this Master's
      awakening has not happened yet (a brand-new station). An unknown epoch on an already-awake station = an
      existing station meeting this feature for the first time → everything online. */
   function init(opts) {
@@ -116,7 +116,7 @@ const Systems = (() => {
     if (typeof StationUI !== 'undefined' && StationUI.refreshSystems) { try { StationUI.refreshSystems(); } catch (_) {} }
   }
 
-  /* bring one system online. why = 'door' (something routed the Commander there — quiet, no fanfare beyond the
+  /* bring one system online. why = 'door' (something routed the Master there — quiet, no fanfare beyond the
      NEW marker, because they are already looking at it) | 'grow' (a milestone — the level-up beat). */
   function online(id, why) {
     const s = BY_ID.get(id);
@@ -147,7 +147,7 @@ const Systems = (() => {
     save(); apply(); announce(fresh);
   }
 
-  /* the Commander opened a system (any path): it is online, and no longer NEW */
+  /* the Master opened a system (any path): it is online, and no longer NEW */
   function opened(id) {
     if (!state) return;
     if (!isOnline(id)) online(id, 'opened');
@@ -168,7 +168,7 @@ const Systems = (() => {
     state.fresh = [];
     save(); apply();
   }
-  // the Commander ASKED for the small dock: back to the day-one buttons plus every system whose milestone this
+  // the Master ASKED for the small dock: back to the day-one buttons plus every system whose milestone this
   // station has already reached (the job counter runs in both modes, so a long-running station keeps those)
   function growWithMe() {
     if (!state) return;

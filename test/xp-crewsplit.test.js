@@ -1,6 +1,6 @@
 /* node test/xp-crewsplit.test.js — P3.2 CREW-RUN ATTRIBUTION (Xp.crewSplit).
 
-   A 👍 on a LEAD run has one Commander-defined value. A named worker run-end proves participation; spend and tool
+   A 👍 on a LEAD run has one Master-defined value. A named worker run-end proves participation; spend and tool
    volume describe execution shape but never the value of the outcome. The browser projection collapses duplicate
    workers and requests equal credit; the sidecar independently rebuilds the canonical list from durable child runs. */
 'use strict';
@@ -22,7 +22,7 @@ r = Xp.crewSplit({ leadDelta: 8, leadCost: 0.5, workers: [{ agentId: 'w1', usd: 
 A.eq(r.lead.delta, 8, 'the lead keeps its full delta regardless of the split');
 A.eq(r.workers.length, 1, 'a worker with provable cost is credited');
 A.eq(r.workers[0].agentId, 'w1', 'the credited worker is identified by its real agentId');
-A.eq(r.workers[0].delta, 8, 'worker credit is equal to the Commander verdict, not a cost fraction');
+A.eq(r.workers[0].delta, 8, 'worker credit is equal to the Master verdict, not a cost fraction');
 
 /* ---------- 4. spend cannot rank multiple contributors ---------- */
 r = Xp.crewSplit({ leadDelta: 10, leadCost: 0, workers: [{ agentId: 'big', usd: 0.9 }, { agentId: 'small', usd: 0.1 }] });

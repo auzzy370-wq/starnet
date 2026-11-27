@@ -451,7 +451,7 @@ async function plugin(id, source) {
     // ---- 5c'+. a plugin that wedges on EVERY use is recycled on every use, and says so truthfully (review 2026-10-21) ----
     // One wedge cycle is a hook timeout plus the whole silence budget (5 s + 120 s in production). A hold that kept it
     // down after its second silence kill was dropped: status() still called it an ordinary crash that restarts on its
-    // next use (and COMMS -> EXTENSIONS printed exactly that), so nothing the Commander saw was true. Without the hold
+    // next use (and COMMS -> EXTENSIONS printed exactly that), so nothing the Master saw was true. Without the hold
     // every word is: each cycle ends the process, status() says crashed with the honest reason, the log says what the
     // next use gets (a restart, or with the budget spent a refusal until a named time), and the next use gets that. Each hook pays its timeout, as on trunk, where it stayed wedged forever.
     // Timers scaled; the injected clock moves the production cycle (125 s) per cycle.

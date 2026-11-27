@@ -529,7 +529,7 @@
       }
     }
     // web_request needs the RUN's surface (host authority — never taken from tool args) and a resolver for
-    // the Commander's stored keys. Default: no keys and the strict surface, so an unwired caller can only
+    // the Master's stored keys. Default: no keys and the strict surface, so an unwired caller can only
     // make UNAUTHENTICATED requests rather than silently gaining credentials it was never handed.
     const surface = deps.surface === 'interactive' ? 'interactive' : 'autonomous';
     // The station READER (webreader.js): a shared headless cookie-less real Chrome that fetch/search
@@ -654,7 +654,7 @@
       ];
       // The READER outranks the paid fallback: a real local Chrome sails past the fingerprint checks
       // that throttle the scrape endpoints, costs nothing, and keeps search working with zero keys.
-      // browserNote: what the Commander is told when this search reached the browser rung and the browser was
+      // browserNote: what the Master is told when this search reached the browser rung and the browser was
       // down, still starting, or too slow — only when the rung was actually reached (an engine that answered first
       // makes the browser irrelevant to this search).
       let browserNote = '';
@@ -794,7 +794,7 @@
     //  Tool definitions (match sidecar/tools/tool.js shape)
     // ====================================================================
     /* ---------- web weather is an ANSWER, not an error ----------
-       Field data (2026-07-31, the Commander's own live workspace): the single biggest source of
+       Field data (2026-07-31, the Master's own live workspace): the single biggest source of
        mid-run "errors" users see is this file throwing on ordinary web reality — bot-blocked sites
        (http 403), dead links (http 404), throttled keyless engines. Each throw became
        "ERROR: tool web_fetch failed: http 403" in the transcript and a red ✗ chip in COMMS, and a
@@ -884,7 +884,7 @@
           // programmatic callers and tests keep the strict contract. NOT when no engine could even be reached
           // (__unreachable: offline / TLS broken here) — that is a genuine fault and stays an isError result.
           // …unless the station browser was DOWN (review 10-14): the browser is what gets past the engines' throttling, so a
-          // dead one is a station fault the Commander must hear about — named in the summary, never called web weather.
+          // dead one is a station fault the Master must hear about — named in the summary, never called web weather.
           // That browser is web_search's own (user report 10-28): the agent is told the browser tool is a separate one, so
           // a dead search helper never reads as "browsing is impossible" and ends a run that browser.navigate could finish.
           if (e && e.__allFailed && !e.__unreachable && e.__browserNote) return {
@@ -893,7 +893,7 @@
                      'That background browser belongs to web_search only: if you have the browser tool, browser.navigate ' +
                      'opens pages in its own, separate browser, which may still start. Otherwise use sources already gathered, ' +
                      'web_fetch a known URL directly, or finish and state the evidence limitation (name the background browser ' +
-                     'problem to the Commander).',
+                     'problem to the Master).',
             summary: 'no results · ' + e.__browserNote
           };
           if (e && e.__allFailed && !e.__unreachable) return {
@@ -966,7 +966,7 @@
       }
     };
 
-    /* ---------- web_request: call a third-party REST API with the Commander's key ----------
+    /* ---------- web_request: call a third-party REST API with the Master's key ----------
        WHY THIS EXISTS: before it, nothing in Vultron could send a custom header. web_fetch's whole schema
        is {url}, so ANY authenticated API meant handing the agent a full shell (shell.exec + curl), which
        needs a placed workbench and is a far larger grant than "make one HTTPS call". This tool is the
@@ -1099,14 +1099,14 @@
     // One refusal per resolver verdict, shared by ${KEY} headers and the auth descriptor.
     function keyRefusal(r, name) {
       if (r.reason === 'unattended') return 'this run is unattended and "' + r.name + '" is not approved for unattended use — approve it in CONNECT › ABILITIES › CONNECTED › API KEYS, or run this while watching';
-      if (r.reason === 'unresolved') return '"' + r.name + '" is kept in 1Password and could not be read (' + String(r.detail || 'not read yet') + ') — ask the Commander to unlock 1Password, then try again. Do not ask for the key itself';
+      if (r.reason === 'unresolved') return '"' + r.name + '" is kept in 1Password and could not be read (' + String(r.detail || 'not read yet') + ') — ask the Master to unlock 1Password, then try again. Do not ask for the key itself';
       // A MODEL-PROVIDER key is never handed to a tool and KEYS refuses to store one, so pointing at KEYS here sent
-      // agents to ask the Commander for "access" nobody can grant (2026-09-28: OpenRouter was already connected;
+      // agents to ask the Master for "access" nobody can grant (2026-09-28: OpenRouter was already connected;
       // the agent wanted the raw key to chase a transparent background image_generate could not make yet).
-      if (r.reason === 'reserved') return name + ' is a model-provider key: Vultron never hands provider keys to tools and API KEYS cannot store one, so do not ask the Commander for it. Use the built-in tools that already ride the station\'s connection instead: image_generate for images (transparent:true for a transparent background) and image_analyze to look at one.';
-      // A key pasted into chat is saved with keys.save (advertised only on a run whose Commander's messages hold one),
+      if (r.reason === 'reserved') return name + ' is a model-provider key: Vultron never hands provider keys to tools and API KEYS cannot store one, so do not ask the Master for it. Use the built-in tools that already ride the station\'s connection instead: image_generate for images (transparent:true for a transparent background) and image_analyze to look at one.';
+      // A key pasted into chat is saved with keys.save (advertised only on a run whose Master's messages hold one),
       // so the fix names that route too — "add it in KEYS" alone sent agents asking for "a new key" (2026-10-25).
-      return 'no enabled service key provides ' + name + ' — if the Commander pasted the key into this chat, save it with keys.save first; '
+      return 'no enabled service key provides ' + name + ' — if the Master pasted the key into this chat, save it with keys.save first; '
         + 'otherwise ask them to paste it here, or add it in CONNECT › ABILITIES › CONNECTED › API KEYS';
     }
 
@@ -1189,7 +1189,7 @@
         /* WHICH HEADER SLOTS ACTUALLY CARRY A SECRET. The redirect guard below used to decide this by NAME
            (authorization|cookie|x-api-key) — but the model picks the slot, and half the real API world puts
            the key somewhere else (X-Shopify-Access-Token, Private-Token, apikey, X-Auth-Token), so an open
-           redirect on a trusted host forwarded the Commander's key to the attacker verbatim. The host does
+           redirect on a trusted host forwarded the Master's key to the attacker verbatim. The host does
            not need to guess: the substitution happens right here, so record the exact keys it wrote into. */
         const secretHeaders = new Set();
         const headers = { 'User-Agent': UA, 'Accept': 'application/json, text/plain;q=0.9, */*;q=0.8' };

@@ -217,7 +217,7 @@ function stationUi(cloudSave, uiStore) {
       A.ok(zero.ok === false && zero.conflict === true && zero.reset === true, '2: a pre-reset copy at revision 0 is refused on the empty file (' + JSON.stringify(zero) + ')');
       A.eq(store.load('agent'), undefined, '2: the station file stays empty');
       A.eq(conflictFiles(root).length, 1, '2: and the copy is kept aside, never lost');
-      // RESTORE BACKUP of that same old station is the Commander's choice: it lands, and the wire flag is not stored
+      // RESTORE BACKUP of that same old station is the Master's choice: it lands, and the wire flag is not stored
       const host = sidecar(root);
       const cache = new Map();
       const p = page(host, cache);
@@ -374,7 +374,7 @@ function stationUi(cloudSave, uiStore) {
       const root = workspace();
       receipt(root, 7000);
       const host = sidecar(root, { noMerge: true });   // a station that refuses the merge: window C's conflict stands, with its banner
-      // a fresh station founded after the reset, then the Commander restores the old station's backup into it
+      // a fresh station founded after the reset, then the Master restores the old station's backup into it
       host.saveStore.save('agent', stationDoc({ agent: { id: 'agent', name: 'VEGA', createdAt: 8000 } }), { compareRevision: true });
       const imp = host.saveStore.save('agent', stationDoc({ _saveRevision: host.saveStore.load('agent')._saveRevision, updatedAt: 9000, _saveClient: 'import-page' }), { compareRevision: true });
       A.ok(imp.ok === true, '5: the restored backup (founded before the reset) is the station');

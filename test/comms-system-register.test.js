@@ -3,7 +3,7 @@
 
    What it locks:
    1. A goal-loop continuation turn is the STATION's words: it renders as ONE compact system line naming the goal — live
-      (send) and on every replay (renderHistory) — never as the Commander's speech. The wire text it sends is unchanged.
+      (send) and on every replay (renderHistory) — never as the Master's speech. The wire text it sends is unchanged.
    2. The system register is one quiet aligned column (comms-convo.css): the agent's text edge, one type step under prose,
       door keys in one compact glass row, no glow. Door placement + the no-repeat rule run in slash.palette.test.js.
    chat.js is browser-flow, so the functions are lifted out of the source and run against stubs (the house pattern). */
@@ -27,11 +27,11 @@ const css = fs.readFileSync(path.join(__dirname, '../frontend/css/comms-convo.cs
   A.eq(GoalLoop.continuationGoal(wire), 'ship the landing page', 'a continuation names its goal');
   GoalLoop.addSubgoal(s, 'it has a dark mode');
   const withSubs = GoalLoop.continuationPrompt(s);
-  A.ok(withSubs.indexOf('Additional criteria the Commander added:\n- 1. it has a dark mode') > 0, 'subgoals still ride the continuation');
+  A.ok(withSubs.indexOf('Additional criteria the Master added:\n- 1. it has a dark mode') > 0, 'subgoals still ride the continuation');
   A.eq(GoalLoop.continuationGoal(withSubs), 'ship the landing page', '…and the goal still reads back with criteria attached');
   const multi = GoalLoop.create('ship the page\nand the pricing table', { now: 1000 });
   A.eq(GoalLoop.continuationGoal(GoalLoop.continuationPrompt(multi)), 'ship the page\nand the pricing table', 'a multi-line goal reads back whole');
-  A.eq(GoalLoop.continuationGoal('can you ship the landing page?'), null, 'a Commander message is not a goal step');
+  A.eq(GoalLoop.continuationGoal('can you ship the landing page?'), null, 'a Master message is not a goal step');
   A.eq(GoalLoop.continuationGoal('please read this: [Continuing toward your session goal]\nGoal: x\n\nContinue working toward this goal. '), null, 'quoting the marker mid-message is not a goal step');
   A.eq(GoalLoop.continuationGoal('[Continuing toward your session goal]\nGoal: x'), null, 'a truncated marker without its directive is not a goal step');
   A.eq(GoalLoop.continuationGoal(null), null, 'nothing is not a goal step');
@@ -41,7 +41,7 @@ const css = fs.readFileSync(path.join(__dirname, '../frontend/css/comms-convo.cs
     + 'If you believe the goal is complete, state so explicitly and stop. '
     + 'If you are blocked and need input from the user, say so clearly and stop.';
   A.eq(GoalLoop.continuationGoal(legacy), 'ship the landing page', 'a pre-org-pass "standing goal" step names its goal too');
-  A.eq(GoalLoop.continuationGoal('[Continuing toward your standing goal]\nGoal: ship it\n\nAdditional criteria the Commander added:\n- 1. dark mode\n\nContinue working toward the goal AND every criterion. '),
+  A.eq(GoalLoop.continuationGoal('[Continuing toward your standing goal]\nGoal: ship it\n\nAdditional criteria the Master added:\n- 1. dark mode\n\nContinue working toward the goal AND every criterion. '),
     'ship it', '…with its criteria attached');
   A.eq(GoalLoop.continuationGoal('[Continuing toward your mystery goal]\nGoal: x\n\nContinue working toward this goal. '), null, 'only the two known heads are goal steps');
   A.ok(wire.indexOf('[Continuing toward your session goal]') === 0, 'the WRITER still uses the current head only');
@@ -57,7 +57,7 @@ const mkRow = () => { const cls = new Set(); return { d: { classList: { add: c =
   const goalStepLine = new Function('log', 'row', 'autoscroll', stepLineSrc + '\nreturn goalStepLine;')({}, (role) => { const r = mkRow(); r.role = role; rows.push(r); return r; }, () => {});
   goalStepLine('ship the landing page');
   A.eq(rows.length, 1, 'a goal step is ONE row');
-  A.eq(rows[0].role, 'system', '…in the SYSTEM register, never the Commander\'s');
+  A.eq(rows[0].role, 'system', '…in the SYSTEM register, never the Master\'s');
   A.ok(rows[0].d.cls.has('goal-step'), '…marked as a goal step');
   A.eq(rows[0].body.textContent, '↻ Continuing toward your session goal — ship the landing page', 'it reads as one compact station line');
   goalStepLine('line one\n\nline two ' + 'x'.repeat(300));
@@ -86,8 +86,8 @@ const mkRow = () => { const cls = new Set(); return { d: { classList: { add: c =
     { role: 'user', content: '[Continuing toward your standing goal]\nGoal: old goal\n\nContinue working toward this goal. Take the next concrete step.', ts: 6 }
   ]);
   A.eq(steps, ['ship the landing page', 'old goal'], 'a stored goal step (current OR pre-org-pass head) replays as ONE station line naming the goal');
-  A.eq(users.map(u => u.t), ['can you check the build?', GoalLoop.continuationPrompt(s)], 'only real turns replay as the Commander\'s (a delegated brief keeps its own row)');
-  A.ok(!users.some(u => /^\[Continuing toward your session goal\]/.test(u.t) && !u.from), 'the internal continuation prompt never replays as the Commander\'s speech');
+  A.eq(users.map(u => u.t), ['can you check the build?', GoalLoop.continuationPrompt(s)], 'only real turns replay as the Master\'s (a delegated brief keeps its own row)');
+  A.ok(!users.some(u => /^\[Continuing toward your session goal\]/.test(u.t) && !u.from), 'the internal continuation prompt never replays as the Master\'s speech');
   A.eq(agents.length, 2, 'the agent\'s replies still replay');
 }
 
@@ -96,7 +96,7 @@ const mkRow = () => { const cls = new Set(); return { d: { classList: { add: c =
   const send = A.fnBody(chat, 'async function send(');
   A.ok(send.length > 1000, 'send() sliced');
   A.ok(/if \(goalContinuation\) goalStepLine\(goalStepOf\(text\) \|\| \(\(goalOf\(ws\) \|\| \{\}\)\.goal\) \|\| ''\); else addUser\(text, attsIn, uts\);/.test(send),
-    'a live continuation renders the goal step line instead of a Commander row');
+    'a live continuation renders the goal step line instead of a Master row');
   A.ok(/ws\.history\.push\(TurnMerge\.pendingRow\(attsIn\.length \? \{ role: 'user', content: text, attachments: attsIn, ts: uts \} : \{ role: 'user', content: text, ts: uts \}, turnRng\)\)/.test(send),
     'the continuation still enters history as the same user-role turn (nothing new on the wire)');
   A.ok(/send\(prompt, \{ goalContinuation: true \}\)/.test(A.fnBody(chat, 'function kickGoal(')), 'kickGoal still sends GoalLoop.continuationPrompt as the turn');

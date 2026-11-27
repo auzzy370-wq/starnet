@@ -83,7 +83,7 @@ const Updates = (() => {
   function snapshot() {
     return Object.assign({}, state, { prefs: Object.assign({}, prefs) });
   }
-  // The Commander pressed SKIP VERSION on exactly this release. Automatic paths (startup, open, 6 h, a webview reload's
+  // The Master pressed SKIP VERSION on exactly this release. Automatic paths (startup, open, 6 h, a webview reload's
   // native pending update) leave it un-armed; only CHECK NOW shows it again. A critical release is never skippable.
   function isSkipped(update) {
     return !!(update && !update.critical && update.version && String(update.version) === prefs.ignoredVersion);
@@ -199,7 +199,7 @@ const Updates = (() => {
       prefs = CORE.recordCheckResult(prefs, r, Date.now());
       state.lastCheckedAt = r.checkedAt || Date.now();
       if (r.available && r.update && !manual && isSkipped(r.update)) {
-        // Found the release the Commander skipped: stay skipped (no card, no NEW chip, no toast).
+        // Found the release the Master skipped: stay skipped (no card, no NEW chip, no toast).
         state.update = null;
         state.phase = 'skipped';
       } else if (r.available && r.update) {
@@ -487,7 +487,7 @@ const Updates = (() => {
   }
   function remindLater() {
     if (!state.update) return;
-    // REMIND TOMORROW on the version the Commander skipped (CHECK NOW brought it back) is the newer choice: cancel the
+    // REMIND TOMORROW on the version the Master skipped (CHECK NOW brought it back) is the newer choice: cancel the
     // skip, or the automatic check a day later would find it still skipped and the promised reminder never arrives.
     if (prefs.ignoredVersion && prefs.ignoredVersion === String(state.update.version)) prefs = CORE.ignoreVersion(prefs, '');
     prefs = CORE.remindLater(prefs, state.update.version, Date.now());
@@ -548,7 +548,7 @@ const Updates = (() => {
     wire(body);
     // The window is the "check it now" place: opening it checks unless this launch already checked recently.
     // Deferred out of this render's stack; check() stamps sessionCheckAt and busy first, so its rerenders never re-enter. AUTO-CHECK off means
-    // no request the Commander didn't click (PRIVACY.md §6) — CHECK NOW stays the manual path.
+    // no request the Master didn't click (PRIVACY.md §6) — CHECK NOW stays the manual path.
     if (TAURI && CORE && !busy && !installing && prefs.autoCheck !== false && (state.phase === 'idle' || state.phase === 'current' || state.phase === 'skipped' || state.phase === 'error') &&
         CORE.shouldCheckOnOpen(sessionCheckAt, Date.now())) {
       Promise.resolve().then(() => check(false, 'open'));
@@ -575,7 +575,7 @@ const Updates = (() => {
         (notes ? '<pre class="up-notes">' + esc(notes) + '</pre>' : '<div class="up-meta">No release notes were provided.</div>');
       if (guardN > 0) {
         // GB-4 guard card: install was clicked while agents are live. The count is
-        // Channels-confirmed, and the choice is the Commander's, not a side effect.
+        // Channels-confirmed, and the choice is the Master's, not a side effect.
         out += '<div class="up-guard">' +
           esc(guardN === 1 ? '1 AGENT IS STILL WORKING' : guardN + ' AGENTS ARE STILL WORKING') +
           ' - INSTALLING RESTARTS VULTRON AND KILLS ' + (guardN === 1 ? 'ITS RUN' : 'THEIR RUNS') + '.</div>' +
@@ -591,14 +591,14 @@ const Updates = (() => {
     } else if (state.phase === 'current') {
       out += '<div class="up-empty">You have the latest Vultron (checked ' + esc(fmtTime(state.lastCheckedAt)) + ').</div>';
     } else if (state.phase === 'skipped') {
-      // Never "latest": a newer release exists, the Commander chose to skip it.
+      // Never "latest": a newer release exists, the Master chose to skip it.
       out += '<div class="up-empty">v' + esc(prefs.ignoredVersion) + ' is skipped. Press CHECK NOW to see it again.</div>';
     } else if (state.phase === 'checking') {
       out += '<div class="up-empty">Checking for a newer Vultron...</div>';
     } else if (state.phase === 'idle') {
       // Not checked this launch: say only what is known — when the last check ran and what it found.
       const known = prefs.availableVersion && prefs.availableVersion !== state.currentVersion && prefs.availableVersion !== prefs.ignoredVersion ? prefs.availableVersion : '';
-      // the last check found the release the Commander skipped: say so, as the skipped phase does — but only while it
+      // the last check found the release the Master skipped: say so, as the skipped phase does — but only while it
       // is still newer than the running build (an install of that version, or a later one, makes the skip stale)
       const skipped = !known && prefs.ignoredVersion && prefs.availableVersion === prefs.ignoredVersion &&
         isNewerVersion(prefs.ignoredVersion, state.currentVersion) ? prefs.ignoredVersion : '';

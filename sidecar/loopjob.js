@@ -4,10 +4,10 @@
    VERDICT instead of a clock:
 
      Routines (cron.js)      WHEN  — wall-clock cadence; an overrun occurrence is dropped, never chained.
-     Night Shift (nightshift.js) IDLE — fixed ~45min beats while the Commander is away; it picks its own focus.
+     Night Shift (nightshift.js) IDLE — fixed ~45min beats while the Master is away; it picks its own focus.
      Goal loop (frontend/app/goalloop.js) — judge-gated re-fire, but browser-only, one workstream, dies with the tab.
-     LOOP (this file)        UNTIL — the Commander's standing objective, iterated server-side, each iteration
-                                     parked for review, the next one triggered by the Commander's verdict.
+     LOOP (this file)        UNTIL — the Master's standing objective, iterated server-side, each iteration
+                                     parked for review, the next one triggered by the Master's verdict.
 
    This is the schedule-math analog of cron.js: PURE. Every function is a transform over (loop, inputs)
    with `now` INJECTED. There is NO Date.now / Math.random / new Date() / setTimeout / fs here, so it passes
@@ -31,7 +31,7 @@
 
    THE CONVERGENCE LAW. A 24/7 loop that cannot admit it is finished is a money fire: "find bug fixes"
    re-finds the same bug every pass until the budget dies. Two mechanisms, both here:
-     (a) `digest` hands every iteration the compacted history — what was already done, what the Commander
+     (a) `digest` hands every iteration the compacted history — what was already done, what the Master
          APPROVED, and above all WHY anything was REJECTED. A loop with no memory is not a loop, it is a
          retry storm.
      (b) `nextOutcomeFor` reads the model's own NOTHING-TO-DO declaration; loopjob-store counts the streak
@@ -58,7 +58,7 @@
      approves its own passes. So this counter reads the LEDGER, not the model's mood: a candidate that changed
      no file, landed no commit and filed no findings is a STALLED pass, and a loop that stalls stallStopAfter
      times in a row is parked 'paused' with the reason spelled out. It costs $0 to be parked and one click to
-     resume — the Commander decides, after seeing why, whether the loop had a point. */
+     resume — the Master decides, after seeing why, whether the loop had a point. */
   const STALL_STOP_DEFAULT = 3;   // consecutive passes that changed nothing before the loop parks itself
   const STALL_STOP_MAX = 20;
   const ECHO_MIN_TOKENS = 6;      // below this a summary is too short to compare by overlap; exact match only
@@ -154,7 +154,7 @@
 
   /* stackedAbove — every un-approved candidate with a HIGHER iteration number than n. This is the honest
      cost of a stacking review queue: iteration 5 was built on a tree that contains un-approved 3 and 4, so
-     rejecting 3 invalidates 4 and 5 too. The UI MUST show this count before the Commander clicks REJECT —
+     rejecting 3 invalidates 4 and 5 too. The UI MUST show this count before the Master clicks REJECT —
      a review gate that silently discards work the user could still see is a truthful-telemetry violation. */
   function stackedAbove(loop, n) {
     const num = parseInt(n, 10);
@@ -210,8 +210,8 @@
     if (!loop) return out('disabled', 'no such loop');
     if (inp.halted) return out('halted', 'station E-STOP engaged');
     // the SPECIFIC quiet states are checked before the generic `enabled` flag, because stop/dormant/pause all
-    // clear `enabled` and "disabled" would tell the Commander nothing about WHY. A loop that converged reads
-    // very differently from one the Commander stopped, and the UI must be able to say which.
+    // clear `enabled` and "disabled" would tell the Master nothing about WHY. A loop that converged reads
+    // very differently from one the Master stopped, and the UI must be able to say which.
     if (loop.state === 'done') return out('done', loop.stopReason || 'objective met');
     if (loop.state === 'stopped') return out('stopped', loop.stopReason || null);
     if (loop.state === 'dormant') return out('dormant', loop.stopReason || 'nothing left to do');
@@ -277,7 +277,7 @@
   /* digest — the LEDGER BLOCK handed to the next iteration. This is the single highest-leverage function in
      the subsystem: without it a "sweep for bugs" loop re-finds bug #1 every pass forever.
 
-     Ordering is deliberate — REJECTIONS FIRST, because a rejection is the Commander teaching the loop a
+     Ordering is deliberate — REJECTIONS FIRST, because a rejection is the Master teaching the loop a
      boundary and it must not be buried under history. Everything here is drawn from the durable iteration
      ledger; nothing is inferred, so every line is provable. */
   function digest(loop, ctx) {
@@ -307,7 +307,7 @@
     }
 
     if (rejected.length) {
-      lines.push('', 'THE COMMANDER REJECTED THESE — these are boundaries, respect them:');
+      lines.push('', 'THE MASTER REJECTED THESE — these are boundaries, respect them:');
       for (const it of rejected) lines.push('  #' + it.n + ' ' + (it.title || 'untitled') + ' — REASON: ' + it.verdictNote);
     }
     if (approved.length) {
@@ -345,7 +345,7 @@
       lines.push('  ' + (red.summary || 'the check failed'));
       lines.push('Fix THAT before anything else. The check is run by the station, not by you — you cannot see');
       lines.push('or change the command, and editing the tests, their config, or the scripts that define them');
-      lines.push('does NOT count as passing: it is detected, it stops the loop, and it wastes the Commander\'s time.');
+      lines.push('does NOT count as passing: it is detected, it stops the loop, and it wastes the Master\'s time.');
     }
     // a tampering flag is stated back plainly — a model that drifted there once must be told it was caught.
     const tampered = its.slice().reverse().find(it => it.check && it.check.tampered);
@@ -427,18 +427,18 @@
       // one. `error` is the real settled error string, never a generic "something went wrong".
       recent: its.slice(-5).map(it => ({
         n: it.n, outcome: it.outcome, title: it.title, error: it.error,
-        // verdictNote is the Commander's own reason. It rides the projection so the panel can show WHY
+        // verdictNote is the Master's own reason. It rides the projection so the panel can show WHY
         // something was rejected — otherwise the history reads as unexplained deletions.
         verdict: it.verdict, verdictNote: it.verdictNote || null,
         // the commit this iteration landed (S3). It rides the DECIDED rows too, not just the pending ones:
         // once a pass is approved it leaves `pending`, and without this its work would become invisible —
-        // the Commander could no longer see where the code they approved actually went.
+        // the Master could no longer see where the code they approved actually went.
         commit: it.commit || null,
         // 'no-change' | 'echo' when this candidate changed nothing (stallSignal) — the panel labels it honestly.
         stall: it.stall || null,
         endedAt: it.endedAt, usd: it.usd, check: it.check || null
       })),
-      // the check surface the panel renders its stepper from. `checkCmd` is shown so the Commander can see
+      // the check surface the panel renders its stepper from. `checkCmd` is shown so the Master can see
       // exactly what is being run at their project root — it is their command, and it must never be a mystery.
       checkCmd: loop.checkCmd || null,
       exitOn: loop.exitOn || 'never',

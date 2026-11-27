@@ -5,7 +5,7 @@
 - S3 `skills(turn-in)`: review-written versions are `ask` until approved (`skillstore.js` `writtenBy` + provenance
   ask); the COMMS skill aside carries use-it / discard / read-it-first.
 - S2 `skills(review)`: 90s grace; chip = non-final, next typed message = final correction, fires the review in the
-  Commander's words (`POST /api/growth/ratings/correction`); the correction run is stamped `correctionOf`.
+  Master's words (`POST /api/growth/ratings/correction`); the correction run is stamped `correctionOf`.
 - S4 `skills(goldens)`: `great` mints a golden per loaded skill (`sidecar/skills/goldens.js`, own file);
   `npm run eval:skills` drives goldens through the real run endpoint and reports per-skill pass RATES, naming
   the model — PLUMBING ONLY when a scripted model answered, never a fake consistency claim.
@@ -30,15 +30,15 @@ Vultron already has most of the machinery — the lane is to CONNECT it, not bui
 | Runtime agent skills (md body, per-agent, fsync'd) | `sidecar/skillstore.js`, `workspaces/skills.jsonl` | built |
 | Progressive disclosure (bm25 index per run, `skill.view` to load) | `sidecar/skills/runtime.js`, inject `index.js:15384` | built |
 | **Background skill review** (aux-model pass after big runs: patch/create skills) | `sidecar/skillreview.js`, `index.js:2618` | built, **not approval-gated**, fires only on ≥4 tools / ≥8 turns / ≥5000 chars |
-| Skill guard + Commander approval by body digest | `skills/guard.js`, `skills/gate.js`, `POST /api/agent-skills/allow` | built |
+| Skill guard + Master approval by body digest | `skills/guard.js`, `skills/gate.js`, `POST /api/agent-skills/allow` | built |
 | Run output persisted (`deliveryPrompt` 4k, `deliveryText` 24k) | `sidecar/runstore.js:213` | built — the golden substrate |
 | Offline eval over the REAL loop with a scripted provider | `scripts/eval/*`, `sidecar/providers/replay.js`, deterministic grader | built — nothing evaluates skills |
 | Verdict follow-up (miss → dossier belief) | `frontend/app/verdictfollowup.js` | built 08-21 |
 | Task archetype classifier (7 buckets) | `frontend/app/study.js:287` | built, coarse |
 
 **The gaps, precisely:**
-1. A rated `miss` is never an input to skill review — review triggers on run *size*, not on the Commander's verdict.
-2. The Commander's correction (what they type right after a miss) is not captured as a correction at all.
+1. A rated `miss` is never an input to skill review — review triggers on run *size*, not on the Master's verdict.
+2. The Master's correction (what they type right after a miss) is not captured as a correction at all.
 3. Skill writes are unreviewed; memory writes have a turn-in card, skills don't.
 4. No skill has a test. A skill edit can silently regress every task it governs.
 
@@ -47,16 +47,16 @@ Vultron already has most of the machinery — the lane is to CONNECT it, not bui
 ### Slice 1 — Verdict-triggered skill review (sidecar)
 `skillReview.shouldReviewRun` gains a second trigger: verdict ∈ {ok, miss} on a run that loaded or matched ≥1
 skill (or any run ≥2 tools). The review prompt receives the verdict + the follow-up chip (from the belief
-written by `verdictfollowup.js`) + `deliveryText`, and is told: *the Commander rated this short; patch the
+written by `verdictfollowup.js`) + `deliveryText`, and is told: *the Master rated this short; patch the
 governing skill so the next run does not repeat it; if no skill governs this task-class, create one.*
 - Ratchet test: a `miss` verdict on a small run MUST fire the review (the fail-open lesson — prove it fires).
 - Done = rate a mock run `miss` → `deliverable` event `skill.patched|skill.created` within the aux budget.
 
 ### Slice 2 — Correction capture (frontend + sidecar)
-After a `miss`/`ok` verdict, the NEXT Commander message within N minutes on the same stream is tagged
+After a `miss`/`ok` verdict, the NEXT Master message within N minutes on the same stream is tagged
 `correctionOf: <runId>` on RUN_META and sent to the sidecar as run context (`/api/run` body field, additive).
 The skill review for the original run waits for (or is re-armed by) this correction so the patch reflects the
-Commander's own words, not only a chip. Free text beats the six chips — this is the Hermes move.
+Master's own words, not only a chip. Free text beats the six chips — this is the Hermes move.
 - Done = rate miss → type "shorter, bullets only" → the skill body gains that instruction (prove over the
   skills API), and the correction run itself is NOT re-reviewed (no loop).
 
@@ -70,11 +70,11 @@ Accept → `active` + allow-by-digest; discard → archived + a `declined` mark 
 ### Slice 4 — Golden tests per skill (the consistency proof)
 A skill may carry `goldens[]`: `{ directive, expect: { contains[], notContains[], maxChars?, shape? } }`.
 Authoring is automatic: when a run governed by a skill is rated `great`, its `deliveryPrompt` + assertions
-derived from the skill's instructions become a golden candidate (Commander confirms in the same turn-in card).
+derived from the skill's instructions become a golden candidate (Master confirms in the same turn-in card).
 `scripts/eval/skills.mjs` runs every active skill's goldens through the REAL loop with the replay provider
 (deterministic) and, when a key is present, optionally a live model N× with the deterministic grader — report
 pass rate per skill. A proposed skill patch (slice 3) runs its goldens BEFORE the card, and the card shows
-"3/3 goldens still pass" or "breaks 1 of 3" — the Commander never accepts a regression blind.
+"3/3 goldens still pass" or "breaks 1 of 3" — the Master never accepts a regression blind.
 - Done = `npm run eval:skills` prints per-skill pass/fail; a patch that breaks a golden is flagged on the card.
 
 ## Order and scope

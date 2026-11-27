@@ -195,7 +195,7 @@ function hostFacts(scenario) {
   };
 }
 
-// a key-shaped string in the Commander's own turn (built at run time: no key-like literal sits in the source)
+// a key-shaped string in the Master's own turn (built at run time: no key-like literal sits in the source)
 function keyTexts(h) { return h.keyPaste ? ['my key ' + ['sk', 'proj', 'Ab3dE5fG7h'.repeat(4)].join('-')] : null; }
 
 function runOnceOptions(scenario, h) {

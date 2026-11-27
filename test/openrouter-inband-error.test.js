@@ -4,7 +4,7 @@
    an upstream failure after that arrives IN-BAND: `data: {"error":{"code":429,"message":"Provider returned error",
    "metadata":{"raw":"…"}}}`. The adapter threw `new Error(error.message)` marked ownMessage — so the numeric code was
    never read as a status and metadata.raw (the upstream's actual words) was dropped. Live on the sweep rig: an in-band
-   401 "User not found." classified `unknown`, was retried 7 times over ~106 s, and the Commander read "Something went
+   401 "User not found." classified `unknown`, was retried 7 times over ~106 s, and the Master read "Something went
    wrong on that turn — try again." The pre-stream path dropped metadata.raw the same way ("openrouter http 403 —
    Provider returned error"), hiding e.g. an upstream region refusal.
 

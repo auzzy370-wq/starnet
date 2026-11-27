@@ -2,7 +2,7 @@
    (idle CPU piece 3, 2026-10-20).
 
    THE RULE. Only the scheduling changed: the same 2.5 s beat while the station can be seen, the 30 s floor while the
-   Commander is away, and a catch-up read the moment they are back. What fresh() and unreachable() say — the rail's crew
+   Master is away, and a catch-up read the moment they are back. What fresh() and unreachable() say — the rail's crew
    lamp and the DELEGATED rows read them — is trunk's, byte for byte. After a long away the catch-up ask is out against a
    ledger older than three beats, and trunk's label says so until that read lands: that is the truth (nobody has
    checked the station for that long), so nothing here vouches for old data.

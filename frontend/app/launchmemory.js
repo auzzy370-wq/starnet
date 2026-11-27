@@ -1,11 +1,11 @@
 /* VULTRON — launchmemory.js : LAST-USED RECIPE INPUTS — kill the retype tax on every launch.
 
    The smallest possible practicality store (lane C of the recipe-system upgrade): every successful recipe
-   launch (RUN NOW / RUN NOW INSTEAD / SCHEDULE IT) saves the param values the Commander actually filled, and
+   launch (RUN NOW / RUN NOW INSTEAD / SCHEDULE IT) saves the param values the Master actually filled, and
    the next time that recipe's launch form opens, the fields come back prefilled — Morning Brief remembers its
    topic. CONFIRM-BY-SIGHT is the safety model: prefilled values sit visibly in the form and nothing launches
    until the RUN button, so a stale value is seen (and the form shows a "using your last inputs" hint) before
-   it can run. Values are the Commander's own local inputs — localStorage only, never pushed anywhere.
+   it can run. Values are the Master's own local inputs — localStorage only, never pushed anywhere.
 
    Bounded on every axis: at most MAX_RECIPES recipes kept (LRU by save time), each value clipped to
    VALUE_MAX chars, whole-store read/write fail-open (corrupt storage → empty memory, never a crash).

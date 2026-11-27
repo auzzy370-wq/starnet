@@ -1,6 +1,6 @@
 /* VULTRON — seedstore.js : the browser wiring for the SELF-GROWING SEED SHELF (pure engine: seeds.js).
 
-   When the mint detector (mintstore.js) has watched the Commander ask for the same shape of task enough times,
+   When the mint detector (mintstore.js) has watched the Master ask for the same shape of task enough times,
    the agent gently offers to AUTHOR it as a one-tap seed — a custom recipe whose {input} becomes a REQUIRED gap
    param (so a later run asks for the one thing that makes it theirs). Saving lands it in Recipes.list(), which
    means the First Pitch / ongoing-suggestion engines can then propose it too — the loop closes itself.
@@ -48,7 +48,7 @@ const SeedStore = (() => {
     Chat.nudge(s.line, (typeof Seeds !== 'undefined' ? Seeds.choices() : []), choice => {
       if (handled) return; handled = true;
       // THE OUTCOME LOOP (quality loop, Q2): saving a seed authors a recipe rather than launching a run, so the
-      // accept IS the outcome; a wave-off is the Commander's own signal about this channel. Fail-open.
+      // accept IS the outcome; a wave-off is the Master's own signal about this channel. Fail-open.
       // AND THE LEDGER'S HALF (dead-wires lane, 2026-08-28): the spine minted a `shown` row for this card
       // (RecLedger.note — seed is not OWN_LEDGER), and until now nothing ever answered it, so every seed offer
       // sat on the durable ledger as an unanswered impression forever. The verdict lands in both places.
@@ -73,7 +73,7 @@ const SeedStore = (() => {
       if (!s || typeof Recipes === 'undefined' || !Recipes.saveCustom) return;
       const params = (typeof Recipes.paramsFromTemplate === 'function') ? Recipes.paramsFromTemplate(s.task) : [];
       // seedborn: durable provenance — this recipe was AUTHORED BY THE AGENT from an observed pattern (not a
-      // hand-built custom), so a later pitch/suggestion/digest that reuses it can credit the Commander's seed (G3a).
+      // hand-built custom), so a later pitch/suggestion/digest that reuses it can credit the Master's seed (G3a).
       const draft = (typeof Recipes.draft === 'function')
         ? Recipes.draft({ name: s.title, task: s.task, params: params, seedborn: true })
         : { name: s.title, task: s.task, params: params, seedborn: true };

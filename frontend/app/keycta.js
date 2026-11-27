@@ -1,6 +1,6 @@
 /* VULTRON — keycta.js : the honest "your agent is awake but has no working brain" call-to-action.
 
-   THE ASYMMETRY THIS CLOSES: a Commander can complete the ENTIRE awakening with no key configured — the
+   THE ASYMMETRY THIS CLOSES: a Master can complete the ENTIRE awakening with no key configured — the
    ceremony degrades to its scripted spine (no live model), the agent ends up "ready" on screen, yet the
    first real task would fail with harness.js's honest 'no API key set'. This surfaces that gap the moment
    the awakening lands, in the world, as ONE standing banner pointing at SETTINGS.

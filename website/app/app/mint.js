@@ -1,10 +1,10 @@
 /* VULTRON — mint.js : THE AUTO-MINT engine — notice the jobs you keep asking for, and offer to save them.
 
-   The moat move (personalization P3 slice 2). As the Commander assigns tasks, this watches for a RECURRING
+   The moat move (personalization P3 slice 2). As the Master assigns tasks, this watches for a RECURRING
    SHAPE of request — "brief me on X", "fix the bug in Y", "summarize Z" — and, once a shape repeats enough,
    proposes turning it into a one-tap MISSION (a custom recipe) they own. It is the magic that fills the owned,
    exportable library: behaviour observed → a reusable asset the user keeps. PROPOSE-AND-CONFIRM only — mint.js
-   never saves anything; it surfaces candidates, the Commander reviews/edits/saves (or dismisses) each one.
+   never saves anything; it surfaces candidates, the Master reviews/edits/saves (or dismisses) each one.
 
    Deliberately CONSERVATIVE (single-user local data is sparse — the design panel's skeptic flagged this): it
    groups by a function-word SKELETON (keeps the verb + structural words, collapses the variable content), only
@@ -105,7 +105,7 @@
     const fixedLen = (prefix + suffix).replace(/\s/g, '').length;
     const avgLen = ex.reduce((a, b) => a + b.replace(/\s/g, '').length, 0) / ex.length;
     // the shared structure must be substantial — otherwise the bucket mixed genuinely different requests and the
-    // honest move is to propose the most-recent raw directive (the Commander can add their own {braces}).
+    // honest move is to propose the most-recent raw directive (the Master can add their own {braces}).
     if (fixedLen < 6 || fixedLen / avgLen < 0.35) return { template: ex[ex.length - 1], hasToken: false };
 
     // keep {input} from fusing onto an adjacent CONTENT token when the divergence is a pure append/prepend

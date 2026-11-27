@@ -79,7 +79,7 @@ A.ok(/change strategy instead of retrying the same bad path/.test(sidecar), 'wor
 A.ok(/Inspect before editing with fs_search\/fs_list\/fs_read/.test(sidecar), 'work discipline requires inspection before editing');
 // FILES BEFORE THE SHELL (2026-10-25, gpt-5.6-luna on v0.14.0 read a named project with dir / Select-String / type): reading
 // is routed to the file tools, and that rule comes BEFORE the shell cwd rule (it used to open the block)
-A.ok(/Read, list and search files with fs_read \/ fs_list \/ fs_search, full paths the Commander names included/.test(sidecar), 'work discipline routes file reads to the file tools, full paths included');
+A.ok(/Read, list and search files with fs_read \/ fs_list \/ fs_search, full paths the Master names included/.test(sidecar), 'work discipline routes file reads to the file tools, full paths included');
 A.ok(/not shell_exec \(dir, type, cat, Get-Content, Select-String\): the shell is for running tests, builds, git and scripts/.test(sidecar), 'work discipline keeps the shell for running things');
 const runCore = sidecarTopLevelFunction('runOnceCore');   // ordering inside the prompt runOnceCore builds, never across files
 A.ok(runCore.indexOf('Read, list and search files with fs_read') >= 0 && runCore.indexOf('Read, list and search files with fs_read') < runCore.indexOf('anchor shell_exec.cwd to that exact folder'), 'the file-tools rule comes before the shell cwd rule');
@@ -97,10 +97,10 @@ A.ok(/Final reports must name changed files, verification commands\/results/.tes
 // escalation. This is the block that stops "open the app on the user's screen and type into it".
 A.ok(/const\s+taskDoctrineNote\s*=/.test(sidecar), 'sidecar builds a dedicated task-doctrine prompt block');
 A.ok(/QUIETEST path that achieves the goal/.test(sidecar), 'task doctrine ranks tools quietest-first');
-A.ok(/ONLY when the Commander explicitly asked to see it on their screen or every quieter path failed/.test(sidecar), 'task doctrine demotes the visible screen to last resort');
+A.ok(/ONLY when the Master explicitly asked to see it on their screen or every quieter path failed/.test(sidecar), 'task doctrine demotes the visible screen to last resort');
 A.ok(/immediately continue down this ladder with the next safe, already-authorized route/.test(sidecar), 'task doctrine automatically continues after a dedicated integration is unavailable');
-A.ok(/Do not ask merely because the fallback is louder/.test(sidecar), 'task doctrine does not hand safe fallback selection back to the Commander');
-A.ok(/Ask only when that next route itself needs Commander authentication, exact consent, or a genuinely material choice/.test(sidecar), 'task doctrine preserves only irreducible human boundaries');
+A.ok(/Do not ask merely because the fallback is louder/.test(sidecar), 'task doctrine does not hand safe fallback selection back to the Master');
+A.ok(/Ask only when that next route itself needs Master authentication, exact consent, or a genuinely material choice/.test(sidecar), 'task doctrine preserves only irreducible human boundaries');
 A.ok(!/ask before using a louder path/.test(sidecar), 'the old cross-domain hand-back instruction is gone');
 A.ok(/VERIFY it took effect with a read-back tool/.test(sidecar), 'task doctrine requires outcome verification for world-changing actions');
 A.ok(/never a description, a plan, or a promise of future action/.test(sidecar), 'task doctrine defines the deliverable as a proven outcome');

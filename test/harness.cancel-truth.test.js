@@ -82,7 +82,7 @@ const fetchDown = async () => { throw new TypeError('Failed to fetch'); };
   /* ---- chat.js consent ack: a failed ack is surfaced, the card stays pending ---- */
   A.ok(/Promise\.resolve\(Harness\.consentAck\(Channels\.runIdOf\(ws\.id\), ev\.promptId\)\)\.then\(v => \{ if \(!\(v && v\.ok\)\) consentAckFailed\(ws, ev, v\); \}/.test(chatSrc), 'the onPermission ack checks ok and routes a failure to consentAckFailed');
   const ackFailed = A.fnBody(chatSrc, 'function consentAckFailed');
-  A.ok(/auto-denies on a timer/.test(ackFailed), 'the warning tells the Commander why it matters (the fail-closed timer is still running)');
+  A.ok(/auto-denies on a timer/.test(ackFailed), 'the warning tells the Master why it matters (the fail-closed timer is still running)');
   A.ok(!/clearPending|Channels\.setPending/.test(ackFailed), 'the pending card is left pending — it IS pending');
 
   A.report('harness.cancel-truth');

@@ -3,10 +3,10 @@
    Parallel to personas.js (the "how it TALKS" axis). The two compose: a "Witty Researcher"
    is a Researcher specialty wearing the witty persona. A specialty bundles a ready-made
    purpose.md + a tuned operating-manual.md + a recommended persona + a model-tier hint + a few
-   starter tasks + an accent suit — so the Commander can stand up a focused specialist in one tap
+   starter tasks + an accent suit — so the Master can stand up a focused specialist in one tap
    instead of authoring the whole dossier by hand.
 
-   Built-ins are FROZEN (the curated catalog). The Commander can also SAVE their current agent as a
+   Built-ins are FROZEN (the curated catalog). The Master can also SAVE their current agent as a
    CUSTOM specialty — persisted in localStorage — and re-deploy it later: that is the "marketplace."
 
    compose(idOrSpec) returns exactly the { purpose, manual } patch that App.applyAgentConfig already
@@ -30,7 +30,7 @@
   const DEFAULT_ID = shared.DEFAULT_ID || 'chief';
 
   // model-tier hints are ADVISORY only (the real model list is the live OpenRouter catalog) — a chip
-  // that nudges the Commander toward the right spend, never a hard requirement. Sourced from the shared
+  // that nudges the Master toward the right spend, never a hard requirement. Sourced from the shared
   // catalog so backend + frontend never drift on the tier vocabulary.
   const TIERS = Object.freeze(Object.assign({
     reasoning: 'deep reasoning — give it a top-tier model',
@@ -40,7 +40,7 @@
 
   // the interest vocabulary the personalization recommender ranks against (mirrors classify.js getTag).
   // Each spec carries a `tags` weight map over these lanes; the user-affinity engine scores a spec by how
-  // well its tags match what the Commander actually works on.
+  // well its tags match what the Master actually works on.
   const TAGS = shared.TAGS || ['code', 'research', 'general'];
 
   // normalize a loadout list of string ids (kit objectTypes / skill slugs) — deduped, trimmed, frozen.
@@ -82,7 +82,7 @@
       blurb: s.blurb || '',
       purpose: s.purpose || '',                       // -> purpose.md
       manual: s.manual || '',                         // -> operating-manual.md (standing orders)
-      persona: s.persona || 'friendly',              // recommended personaId (the Commander can override)
+      persona: s.persona || 'friendly',              // recommended personaId (the Master can override)
       model: TIERS[s.model] ? s.model : 'balanced',   // tier KEY (see TIERS); advisory
       accent: s.accent || '#ffaa33',                  // suggested avatar suit
       tags: Object.freeze(normTags(s.tags)),          // interest-lane weights the recommender ranks by
@@ -97,7 +97,7 @@
 
   /* ---------- the curated catalog ---------- *
      Each purpose folds into the prompt under "YOUR PURPOSE", each manual under "STANDING ORDERS …
-     always follow these"; both are written in the harness voice (real tools, the Commander, do the
+     always follow these"; both are written in the harness voice (real tools, the Master, do the
      work). Several tie into the station's real subsystems (messaging+cron, Cortex memory, PixelLab). */
   const BUILTINS = Object.freeze((shared.BUILTINS || []).map(freezeSpec));
   // the ARCHETYPE pool (deep cuts): full specs held OFF the default roster. Never gated — get() resolves
@@ -127,7 +127,7 @@
       persona: s.persona || 'friendly', model: TIERS[s.model] ? s.model : 'balanced',
       accent: s.accent || '#ffaa33',
       // a saved custom carries its own ranking tags; pre-tags customs (or older saves) get them classified
-      // from their own text — so the Commander's own specialists rank in the feed just like the built-ins.
+      // from their own text — so the Master's own specialists rank in the feed just like the built-ins.
       tags: normTags(s.tags && Object.keys(s.tags).length ? s.tags : deriveTags(purpose + ' ' + manual + ' ' + tagline)),
       starters: (s.starters || []).slice(),
       // LOADOUT (Class Loadouts S1): customs carry a loadout too so a saved class is a full loadout. S3 adds

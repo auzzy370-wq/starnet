@@ -1,7 +1,7 @@
 /* node test/nav-coach-dismiss.test.js — the first-hour dock tip stays retired (frontend/app/navdock.js; live walk 10-14).
    "Everything you run lives in these 4 docks… GOT IT" came back after a reload 40 minutes into heavy use: the tip fades
-   by itself after 15 s WITHOUT retiring (so a Commander who never noticed it sees it next session), and the dock-open
-   path that should retire it for good returned early because the tip was already hidden — the Commander had found
+   by itself after 15 s WITHOUT retiring (so a Master who never noticed it sees it next session), and the dock-open
+   path that should retire it for good returned early because the tip was already hidden — the Master had found
    every dock, and the station never wrote that down. Opening any dock now retires it whether or not it is on screen. */
 'use strict';
 const fs = require('fs');
@@ -63,7 +63,7 @@ const store = () => { const m = new Map(); return { getItem: k => (m.has(k) ? m.
   A.ok(/CustomEvent\('vultron:tutorial-ended'\)/.test(A.fnBody(tut, 'function tourEnded()') || ''), 'tourEnded fires vultron:tutorial-ended');
 }
 
-// the walk's path: the tip shows, fades by itself, then the Commander uses the docks for 40 minutes, then reloads
+// the walk's path: the tip shows, fades by itself, then the Master uses the docks for 40 minutes, then reloads
 {
   const ls = store();
   const p1 = page(ls);

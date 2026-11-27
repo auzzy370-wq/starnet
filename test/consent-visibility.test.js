@@ -85,7 +85,7 @@ const F = p => fs.readFileSync(path.join(__dirname, '..', p), 'utf8');
   // the summon channel keeps its own untouched fail-closed timer (no behavior change out of scope).
   A.ok(/setTimeout\(\(\) => finish\(null\), CONSENT_TIMEOUT_MS\)/.test(idx), 'sidecar: summon fail-closed timer untouched');
   // sidecar-index-14: AbortSignal.any is missing on Node 18/20.0-20.2; an unguarded call threw inside askHuman, so a
-  // delegated worker's first approval failed its tool call instead of showing the Commander a card.
+  // delegated worker's first approval failed its tool call instead of showing the Master a card.
   // EVERY sidecar file is scanned, so a guarded call that moves out of index.js stays covered. One reasoned
   // exception: sidecar/tools/builtin/cua-computer.js still makes two unguarded AbortSignal.any calls (outside this
   // fix's scope — fix them, then drop the exception). A hit on a comment line (one that starts with //, /* or *) is

@@ -168,7 +168,7 @@ ok(/const revoked = !CREDITS_URL[\s\S]{0,240}snap\.authStatus === 'invalid'/.tes
    /available = creditsLink\.configured\(\) && \(!credits\.configured\(\) \|\| revoked\)/.test(host),
   'remote revocation re-opens the normal LINK STATION flow without a manual local unlink');
 ok(/previous link was removed from your account/.test(app),
-  'genesis names the removed link and tells the Commander to reconnect credits');
+  'genesis names the removed link and tells the Master to reconnect credits');
 ok(/lk\.reason === 'link_revoked'[\s\S]{0,220}previous link was removed from your account/.test(stationui),
   'Settings renders the same relink recovery from backend truth');
 ok(/LINK SAVED · SERVICE UNAVAILABLE/.test(stationui) && /link saved on this station, but Vultron could not verify it/.test(app),

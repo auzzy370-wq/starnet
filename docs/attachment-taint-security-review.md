@@ -1,6 +1,6 @@
 # Attachment taint: security review (2026-11-04)
 
-What a Commander's attachment taints, for how long, and what moving from "any reference taints, for
+What a Master's attachment taints, for how long, and what moving from "any reference taints, for
 good" to "taint follows the bytes" lets through. This is the threat table behind the decision entry
 "Attachment taint is the bytes in the context" in [DECISIONS.md](DECISIONS.md), which also lists what
 Andrew decides.
@@ -18,7 +18,7 @@ folder (row 3), and stricter in two, where a run stays tainted longer than it ne
   name reached owner evidence, RECENT ACTIVITY, interests and briefs (row 3); now the row carries the
   attachment stamp and the run is marked `wordless`; (2) the binary-file note echoed the name and the
   media type raw on a run that the lane had made clean (row 3); (3) the label put the raw name into the
-  Commander-voice block of the earlier-conversation note and the server seed (row 3); now every echo of a
+  Master-voice block of the earlier-conversation note and the server seed (row 3); now every echo of a
   name goes through one rule, and the note shows a file once; (4) a dispatched worker's accepted answer
   was stamped from the run record's first source, so a read after the inherited attachment was dropped
   from the one row that is replayed (rows 2 and 7); now the record holds the row stamp beside it.
@@ -50,7 +50,7 @@ folder (row 3), and stricter in two, where a run stays tainted longer than it ne
 3. A row stamped with exactly `user attachment` stops tainting a replay. Any other stamp still does, and
    the stamp a run writes is the first source that is not the attachment, so a later page or file read is
    never hidden by it.
-4. The file's text is stored nowhere as the Commander's words: the Commander's row is the typed words and
+4. The file's text is stored nowhere as the Master's words: the Master's row is the typed words and
    each file is a hidden `attachment` row. A turn sent with no words stores the label of its files, which
    is built from their names (a third party's text): that row carries the attachment stamp, so it is never
    a clean owner row, and its run is marked `wordless`.
@@ -73,7 +73,7 @@ folder (row 3), and stricter in two, where a run stays tainted longer than it ne
   are in the prompt of the attaching turn and of the follow-up.
 - **Control.** The run is tainted before its first model call, so the call it is argued into is revoked
   (rule 2). Both turns, because the bytes ride on both. The attaching turn is never unlocked on the
-  grounds that the Commander chose the file: choosing it shows they wanted it read, not that its author
+  grounds that the Master chose the file: choosing it shows they wanted it read, not that its author
   is trusted.
 - **Proof.** Flow A of the e2e: runs 1-2 carry `user attachment`, and turn 2's learning receipt is flagged
   tainted. Flows G1 and G2: a worker handed a task by that lead is refused its key. The lock itself is
@@ -93,7 +93,7 @@ folder (row 3), and stricter in two, where a run stays tainted longer than it ne
   records it; the run record holds it as `rowTaintedBy` beside the first source, and a dispatched worker's
   accepted answer (written after the run ended) is stamped from it; the old "not tainted yet" guards on
   the later latches are gone. (b) Open by design: the
-  locked run could only say or write the thing, not run it (rule 2); the Commander's own words on turn 3
+  locked run could only say or write the thing, not run it (rule 2); the Master's own words on turn 3
   are the directive; and the file's text is in no stored row. A memory record it saves keeps its
   `taintedBy`, so a recall of it latches (row 4). A workspace file it writes does not: a local file read
   is not a taint source in v1 (`taint.js`), for a web page as much as for an attachment. What remains is

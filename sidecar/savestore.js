@@ -213,7 +213,7 @@
        door, leave a clean generation whose station record (station-record.js) carries the reset's time: the record module
        reads both doors' markers in every dialect with its one parser, and a marker it cannot read is bounded by the time
        the record was derived (so a station founded after that saves, while a copy from before it is still refused). A
-       missing station file there is the Commander's choice, not a lost file: a browser copy of the station from BEFORE that
+       missing station file there is the Master's choice, not a lost file: a browser copy of the station from BEFORE that
        reset must never write itself back. Only a station founded after it (agent.createdAt later than the reset) may
        re-seed the file; a copy with no founding time proves nothing and is refused. No reset = null.
        index.js injects its live record's resetAt; a store built without one (scripts, unit tests) asks the record module
@@ -312,7 +312,7 @@
        <agent>.save.pre-history-ref.json, once, BEFORE the replace (exclusive: a copy that is already there is never replaced). It is
        the main as it was (a drop-in for the main) plus `keptAt`, the stamp its 30 days count from.
 
-       It is a copy of EVERY conversation, which makes it the one place a chat the Commander deleted outlives the delete, so it is
+       It is a copy of EVERY conversation, which makes it the one place a chat the Master deleted outlives the delete, so it is
        bounded and it follows deletes (the same rules as the page's pre-migration copy, save.js): scrubKept(ids) cuts the conversations
        deleted — their records, the ~restored copies of them, the worker threads that were theirs and their rows in the undo
        checkpoint — out of it with an atomic rewrite (no .bak: that would keep them), and removes it whole when it cannot be read or
@@ -498,7 +498,7 @@
         let explicitRestore = false;
         if (options.compareRevision) {
           /* AN EXPLICIT BACKUP RESTORE (backup.js importFile: CloudSave.push(doc, { restore: true }) stamps _saveRestore). The
-             Commander chose to put that station back, so a reset generation's erase authority does not refuse it. A wire flag
+             Master chose to put that station back, so a reset generation's erase authority does not refuse it. A wire flag
              only: it never reaches the station file. */
           explicitRestore = doc._saveRestore === true;
           if (Object.prototype.hasOwnProperty.call(doc, '_saveRestore')) { doc = Object.assign({}, doc); delete doc._saveRestore; }
@@ -749,7 +749,7 @@
       // the host's read of a history's packed runs, for the restore handlers (null: none; save-restore.js then leaves such a session unplaced)
       inflate,
 
-      /* scrubKept(ids) — the conversations the Commander deleted are cut out of every kept pre-history-ref copy (see THE LAST FILE
+      /* scrubKept(ids) — the conversations the Master deleted are cut out of every kept pre-history-ref copy (see THE LAST FILE
          AN OLDER BUILD CAN READ). ids: session ids; the ~restored copies of them, their worker threads and their undo-checkpoint
          rows go with them. A copy that cannot be read, or cannot be written back, cannot be shown to be free of them: it is removed
          whole. -> { files: rewritten, removed: files removed whole, sessions: records cut }. Throws only when a copy that must go

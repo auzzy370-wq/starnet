@@ -83,7 +83,7 @@ const WHOLE = { clientHeight: 19, scrollHeight: 19, clientWidth: 150, scrollWidt
     '…its portrait the lead\'s, under the APPROVAL strip (a group sits with what it waits on), and no strip of its own');
   A.eq(NY.lineOf(grp), 'has an approval waiting', '(its line stays what the group waits on)');
   A.ok(!list.some(i => i.key === 'ask:p9'), 'an ask in a conversation this page does not hold is not listed');
-  A.ok(!list.some(i => /wr2|wr5/.test(i.key)), 'finished work and work the Commander stopped never need you');
+  A.ok(!list.some(i => /wr2|wr5/.test(i.key)), 'finished work and work the Master stopped never need you');
   A.ok(!list.some(i => i.key === 'worker:wr4'), 'a failure older than three days is history, not a to-do');
   A.eq(list.find(i => i.key === 'worker:wr3').what, 'interrupted when the station restarted', 'a worker a restart cut off says so (review 9: interrupted, never a stop)');
   A.eq(list.find(i => i.key === 'worker:wr1').what, 'failed: ran out of time', 'a failed worker says why in words, never the ledger\'s code');
@@ -265,7 +265,7 @@ function fakeRail() {
   clock = NOW + 60000; NY.render();
   A.eq(host.writes, 1, 'a minute passing does not rebuild the list');
   A.eq(host.rows.find(r => r.dataset.nyKey === 'ask:p2').ageEl.textContent, '3m', 'only the age text moves, in place');
-  A.ok(doc.activeElement === key('deny', 'ask:p2'), 'so the key the Commander is on keeps its focus');
+  A.ok(doc.activeElement === key('deny', 'ask:p2'), 'so the key the Master is on keeps its focus');
   pend.push({ wsId: 'proj', p: { promptId: 'p30', tool: 'fs.read', argsSummary: 'notes.md', askedAt: NOW - 30000 } });
   NY.render();
   A.eq(host.writes, 2, 'a new ask rebuilds the list');

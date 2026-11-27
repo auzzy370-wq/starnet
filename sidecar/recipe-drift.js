@@ -56,7 +56,7 @@ function isGood(row) {
   return v === 'not_assessed' || v === 'completed_verified' || v === 'verification_required';
 }
 /* A STOP IS ITS OWN OUTCOME (review r7, the family law): a run someone stopped finished nothing and failed nothing, so it is no evidence of
-   drift either way — it never raises verdict_regressed (the "⚠ recipe drift" bell 1.5 s after the Commander pressed Stop), never joins
+   drift either way — it never raises verdict_regressed (the "⚠ recipe drift" bell 1.5 s after the Master pressed Stop), never joins
    the baseline, and its streak mark is 'stop', never 'fail'. Drift is read from the latest run that was not stopped. */
 function stoppedRow(row) { return !!row && RunOutcome.ofRow(row).outcome === 'stopped'; }
 function outcomeMark(row) { return isGood(row) ? 'pass' : stoppedRow(row) ? 'stop' : 'fail'; }

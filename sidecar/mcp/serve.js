@@ -46,7 +46,7 @@ function log() { try { process.stderr.write('[mcp:serve] ' + Array.prototype.joi
 
 // ---- token discovery: explicit wins; else scrape the served page once (browser-identical) ------
 // ⛔ THE STATION'S API TOKEN IS PER-LAUNCH, SO A SCRAPED ONE GOES STALE. Vultron is a desktop app: the
-// Commander closes and reopens it constantly, and every launch mints a NEW token. This bridge is started once
+// Master closes and reopens it constantly, and every launch mints a NEW token. This bridge is started once
 // by the MCP client and lives for that client's whole session, so a token cached for the process lifetime meant
 // the FIRST station restart killed every tool ("/api/... returned HTTP 401") and the SSE feed (a silent
 // reconnect loop re-presenting the same dead token) until the user knew to restart their MCP client — which

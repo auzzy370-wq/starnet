@@ -11,7 +11,7 @@
      · an ask the STATION no longer holds (answered elsewhere, expired or withdrawn while this page was not listening)
        never reads "try again": the keys leave and the row says the approval is no longer waiting — your answer was not
        applied (no decision is claimed for it);
-     · a transport failure (the station did not answer) keeps the keys, so the Commander can answer again.
+     · a transport failure (the station did not answer) keeps the keys, so the Master can answer again.
    And chat.js answerConsent: the consent route's `gone` answer clears this page's record of the ask, its bell entry and
    its card (in neutral words), and rejects with gone:true — never the "Please try again" a refused answer gets. */
 'use strict';

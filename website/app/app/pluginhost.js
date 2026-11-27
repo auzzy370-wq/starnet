@@ -97,7 +97,7 @@
     const msg = entry.plugin.name + ': ' + String(text || '').slice(0, 280);
     const cls = kind === 'bad' ? 'bad' : (kind === 'warn' ? 'warn' : 'good');
     // transient: shown, never written into the station's notification history (a plugin cannot push the
-    // Commander's real approvals out of the bell)
+    // Master's real approvals out of the bell)
     if (ui && ui.notify) ui.notify(msg, cls, 'general', { transient: true });
   }
   // The station refused a call for this plugin (turned off, edited, removed): learn the new state so its windows
@@ -216,7 +216,7 @@
      Honest limits: the one request that loaded the foreign page has already been made — what a frame can reach is
      only its own plugin's/app's data, and it never stays on screen to pose as Vultron; and a page may send one hello
      ahead of a navigation (or hand its nonce to a page it opens), so a determined page can stay out of sight for one
-     hop. The guard is about what the Commander SEES in a Vultron window, not a network wall. */
+     hop. The guard is about what the Master SEES in a Vultron window, not a network wall. */
   const leaveLog = new Map();   // window key -> last time its frame was thrown out
   function watchLeave(key, body, entry) {
     entry.iframe.addEventListener('load', () => {
@@ -255,7 +255,7 @@
     // its state) because the station repainted. Same plugin code → keep the running frame.
     if (existing && def && existing.dataset.digest === def.plugin.digest) return;
     if (existing) forget(existing);
-    // An APP keeps its bar across a reload: the crew rewrites the page while the Commander is typing the next change.
+    // An APP keeps its bar across a reload: the crew rewrites the page while the Master is typing the next change.
     const keepBar = (def && def.app) ? body.querySelector(':scope > .app-bar') : null;
     const keepHeight = existing ? existing.style.height : '';
     for (const ch of Array.from(body.childNodes)) if (ch !== keepBar) ch.remove();

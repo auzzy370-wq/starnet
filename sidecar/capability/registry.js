@@ -22,7 +22,7 @@
       // notebook, which is why granting this under `notebook` left the tool ABSENT while the STATION QUESTS prompt
       // commanded its use — a truthful-telemetry break). A quest is the agent's OWN standing objective: knowing and
       // updating it is part of being able to think at all — the same freebie class as compute — with no outward
-      // mutation until the Commander confirms an attest. capId is 'quest', NOT 'compute': resolve.js treats a
+      // mutation until the Master confirms an attest. capId is 'quest', NOT 'compute': resolve.js treats a
       // 'compute' grant as the COMPUTE GATE (sets hasCompute and `continue`s — never a callable tool), so 'compute'
       // would make quest.update permanently absent. A distinct 'quest' capId surfaces as a real tool and stays honest
       // in every consumer — it has no TOOLSETS_META row (toolsets.js) so it is never a toggleable family (correct: a
@@ -51,7 +51,7 @@
       // execute + consent: see the SECURITY STOPGAP note in tools/builtin/code.js (vm child is not an isolation boundary)
       { capId: 'code', tool: 'code.run', scope: 'execute', requiresConsent: true, network: false },
       // HARNESS SELF-KNOWLEDGE: reading the station's own secret-free status is part of being able to
-      // operate at all, not a power the Commander should have to unlock with a DISH, CABINET or WORKBENCH.
+      // operate at all, not a power the Master should have to unlock with a DISH, CABINET or WORKBENCH.
       // A distinct capId is required because `compute` is the non-callable model gate in resolve.js.
       { capId: 'stationinfo', tool: 'station.inspect', scope: 'read', requiresConsent: false, network: false },
       // The operator manual's REFERENCE sections (navigation / props / troubleshooting), served on demand so the
@@ -59,7 +59,7 @@
       // station.inspect and the same always-present object, so the prompt's "call manual.read" can never name a
       // tool the run lacks. A constant text lookup: no IO, no network, no consent.
       { capId: 'stationinfo', tool: 'manual.read', scope: 'read', requiresConsent: false, network: false },
-      // SHOWING the station (2026-10-04): station.show opens a Vultron window/tab on the Commander's screen (frontend/app/places.js).
+      // SHOWING the station (2026-10-04): station.show opens a Vultron window/tab on the Master's screen (frontend/app/places.js).
       // Read scope + no consent: it changes only what they LOOK at (no harness state), so neither an approval card nor the Task
       // Brief gate stands between "show me" and the window; the page obeys only the run they are watching. Deferred: found by
       // tool_search "show open window" (the manual's navigation section names it), so it costs no prompt bytes.
@@ -79,9 +79,9 @@
       // not where the bytes live. (see tools/builtin/todo.js)
       { capId: 'taskplan', tool: 'todo', scope: 'write', requiresConsent: false, network: false },
       // PLUGIN AUTHORING (sidecar/tools/builtin/plugin-author.js) is deliberately NOT granted (Andrew 2026-09-30): what
-      // the Commander asks the crew for is an APP (below) — describe it, get it — never a plugin to review and approve.
-      // Plugins stay a power-user path the Commander takes himself in ABILITIES → CREATE / ADVANCED.
-      // APPS: the crew builds and fills the Commander's apps (sidecar/apps.js). Inert by construction — an app page is a
+      // the Master asks the crew for is an APP (below) — describe it, get it — never a plugin to review and approve.
+      // Plugins stay a power-user path the Master takes himself in ABILITIES → CREATE / ADVANCED.
+      // APPS: the crew builds and fills the Master's apps (sidecar/apps.js). Inert by construction — an app page is a
       // network-less sandbox and its data is whatever a crew run publishes — so nothing here asks first. Deferred.
       { capId: 'apps', tool: 'app.create', scope: 'write', requiresConsent: false, network: false, deferred: true },
       { capId: 'apps', tool: 'app.read', scope: 'read', requiresConsent: false, network: false, deferred: true },
@@ -120,18 +120,18 @@
     dish: [
       { capId: 'web', tool: 'web_search', scope: 'read', requiresConsent: false, network: true },
       { capId: 'web', tool: 'web_fetch', scope: 'read', requiresConsent: false, network: true },
-      // web_request calls a third-party API AS the Commander (it spends a stored key), so unlike the two
+      // web_request calls a third-party API AS the Master (it spends a stored key), so unlike the two
       // keyless readers above it always asks. Its unattended use is additionally gated per-key.
       { capId: 'web', tool: 'web_request', scope: 'execute', requiresConsent: true, network: true },
       // The INTEGRATION readout that keeps web_request honest: which connectors/keys are live, and which vetted
-      // ones the Commander could add but has not. Rides `dish` because web_request is the route a key is actually
+      // ones the Master could add but has not. Rides `dish` because web_request is the route a key is actually
       // spent through — a station with no dish has no reach to advertise. Local read, no network, no consent, no
       // secret (names and env-var names only). NOT deferred: it is the cure for not knowing what exists, so it
       // cannot itself be a tool the agent must already suspect exists to find. (see tools/builtin/connectors.js)
       { capId: 'web', tool: 'connectors.list', scope: 'read', requiresConsent: false, network: false },
-      // A key the Commander pastes into chat becomes a KEYS entry, spent by name through web_request (2026-10-25). The
-      // value comes only from the Commander's own turns, never the call's args (tools/builtin/keys.js). Deferred and
-      // left out of the deferred index: the run ADVERTISES it only when the Commander's recent messages hold a
+      // A key the Master pastes into chat becomes a KEYS entry, spent by name through web_request (2026-10-25). The
+      // value comes only from the Master's own turns, never the call's args (tools/builtin/keys.js). Deferred and
+      // left out of the deferred index: the run ADVERTISES it only when the Master's recent messages hold a
       // key-shaped string, so every other run pays nothing for it.
       { capId: 'web', tool: 'keys.save', scope: 'write', requiresConsent: false, network: false, deferred: true },
       // DEFERRED (`deferred: true`) — still GRANTED, just not advertised in every request. The browser family
@@ -151,7 +151,7 @@
       { capId: 'web', tool: 'browser.find', scope: 'read', requiresConsent: false, network: true },
       /* Deferred: browser.attach is a specialist door, not part of the ordinary browsing loop, and every
          tool in the front row costs prompt weight on every single request. An agent that needs the
-         Commander's real signed-in browser will find it through tool.search when the task calls for it —
+         Master's real signed-in browser will find it through tool.search when the task calls for it —
          which is also the moment a human is around to answer its consent card. */
       { capId: 'web', tool: 'browser.attach', scope: 'execute', requiresConsent: true, network: true, deferred: true },
       { capId: 'web', tool: 'browser.detach', scope: 'execute', requiresConsent: false, network: true, deferred: true },
@@ -160,7 +160,7 @@
       { capId: 'web', tool: 'browser.reset', scope: 'execute', requiresConsent: false, network: true, deferred: true },
       /* Deferred, same reasoning as attach: specialist moves, not the ordinary browse loop. pdf is a
          READ (render what is already on screen into the jail); intercept/emulate reshape only the
-         STATION browser and both refuse in attached mode (ownership — the Commander's own Chrome is
+         STATION browser and both refuse in attached mode (ownership — the Master's own Chrome is
          not the station's to reconfigure). */
       { capId: 'web', tool: 'browser.pdf', scope: 'read', requiresConsent: false, network: true, deferred: true },
       { capId: 'web', tool: 'browser.intercept', scope: 'execute', requiresConsent: false, network: true, deferred: true },
@@ -210,13 +210,13 @@
       // The dish is the station's antenna: it already means "this agent can reach OUT past the station walls".
       // Fetching a page and transmitting a message are the same physical claim on that prop, so outbound
       // messaging hangs here rather than on a new object type. It is its OWN capId — NOT 'web' — precisely so a
-      // Commander who wants search-and-browse without letting an agent message people can switch COMMS off
+      // Master who wants search-and-browse without letting an agent message people can switch COMMS off
       // alone in the TOOLSETS console (a shared capId would make that impossible; see toolsets.js).
       { capId: 'comms', tool: 'channel.targets', scope: 'read', requiresConsent: false, network: false },
-      // channel.send carries content OUT to a third party under the Commander's own bot identity — the single
+      // channel.send carries content OUT to a third party under the Master's own bot identity — the single
       // most consequential outward action in the tool surface and the obvious prompt-injection exfiltration
       // target. execute + consent, like web_request and the Spotify controls: it asks every time until the
-      // Commander grants it, and an autonomous run therefore cannot spend it off a cached grant.
+      // Master grants it, and an autonomous run therefore cannot spend it off a cached grant.
       { capId: 'comms', tool: 'channel.send', scope: 'execute', requiresConsent: true, network: true }
     ],
     // CONNECTORS: a 'connector' object is a DYNAMIC capability — its grants are the tools its configured MCP
@@ -290,7 +290,7 @@
       // tool rather than five verbs, because every schema here is re-sent on every turn (see the tool file).
       { capId: 'orchestrator', tool: 'routine.manage', scope: 'write', requiresConsent: true, network: false },
       // SESSIONS (2026-07-30): the lead's session verbs over the station bridge — list/create/focus a
-      // workstream by the name the Commander says, completing "make a session called X and have them work
+      // workstream by the name the Master says, completing "make a session called X and have them work
       // in it" (team.dispatch's `session` targets one; these are how it comes to exist). No consent: a
       // session spends nothing and is reversible, and every unresolvable name REFUSES rather than guessing.
       // ⛔ This registry is an ALLOWLIST — a tool registered but not declared here is exposed to NOBODY
@@ -317,7 +317,7 @@
       // the station builder (2026-09-29): plan a ready-made line on a copy (changes nothing), then build exactly that
       // plan behind the approval card (one undo, add-only)
       /* THE STATION BUILDER: deferred — found by tool_search "station builder" (the lead's note names it), each result
-         revealing the next tool. A floor change is a specialist job the Commander asks for, not a headline every run needs. */
+         revealing the next tool. A floor change is a specialist job the Master asks for, not a headline every run needs. */
       { capId: 'orchestrator', tool: 'station.map', scope: 'read', requiresConsent: false, network: false, deferred: true },
       { capId: 'orchestrator', tool: 'station.plan', scope: 'read', requiresConsent: false, network: false, deferred: true },
       { capId: 'orchestrator', tool: 'station.build', scope: 'write', requiresConsent: true, network: false, deferred: true },
@@ -325,9 +325,9 @@
       { capId: 'orchestrator', tool: 'station.make_prop', scope: 'write', requiresConsent: true, network: true, deferred: true },
       { capId: 'orchestrator', tool: 'station.test_line', scope: 'write', requiresConsent: true, network: true, deferred: true },
       { capId: 'orchestrator', tool: 'station.start_line', scope: 'write', requiresConsent: true, network: false, deferred: true },
-      /* STATION CONTROL (2026-10-02): the Commander's settings, read and changed from chat — the crew's model/approval/reach/
+      /* STATION CONTROL (2026-10-02): the Master's settings, read and changed from chat — the crew's model/approval/reach/
          personality/name/skin, sessions, the look, spending, autonomy, memory, connectors, skills, apps, projects. Deferred
-         (found by tool_search "settings"): a settings change is something the Commander asks for, not a headline every run
+         (found by tool_search "settings"): a settings change is something the Master asks for, not a headline every run
          needs. station.power holds only the escalations, in its own consent class, refused on unattended runs. */
       { capId: 'orchestrator', tool: 'station.settings', scope: 'read', requiresConsent: false, network: false, deferred: true },
       { capId: 'orchestrator', tool: 'station.control', scope: 'write', requiresConsent: true, network: false, deferred: true },
@@ -339,7 +339,7 @@
       { capId: 'orchestrator', tool: 'loop.manage', scope: 'write', requiresConsent: true, network: false }
     ],
     /* BUILDER (2026-10-11, the delegated Build Manager): a SLICE of the lead's station builder — see the floor, plan on a
-       copy, build behind the Commander's approval card — LENT by the lead to ONE dispatched worker for ONE job
+       copy, build behind the Master's approval card — LENT by the lead to ONE dispatched worker for ONE job
        (team.dispatch builder:true). Never placed and never in the full-power sweep: only the lead's dispatch confers it.
        Same capId as the orchestrator it is cut from, so the TASK DELEGATION switch turns it off with the rest. Making
        props (credits), testing and starting lines, and settings stay the lead's. */

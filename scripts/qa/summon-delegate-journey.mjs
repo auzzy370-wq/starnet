@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 // scripts/qa/summon-delegate-journey.mjs — `npm run qa:summon-delegate`
 //
-// THE WHOLE COMMANDER SENTENCE, END TO END:
+// THE WHOLE MASTER SENTENCE, END TO END:
 //   "hey overseer, make a new agent and have that agent do this work"
 //
 // A real sidecar + a REAL browser (rAF alive — the pose only exists while the world ticks) + a mock
 // model that drives the lead through the actual tool chain: brief.proceed -> team.summon -> team.dispatch.
-// It then proves the thing the Commander actually asked for:
+// It then proves the thing the Master actually asked for:
 //   the new agent EXISTS, owns a workstation BOUND TO IT (not the hero's), and does the delegated
 //   work SEATED AT THAT WORKSTATION.
 //
@@ -71,7 +71,7 @@ function startMock() {
           seen.brief++;
           return sse(res, call('call_b', 'brief_proceed', {
             objective: 'Create a research specialist and have it check the orbital relay',
-            deliverable: 'a status report from the new agent', audience: 'the Commander',
+            deliverable: 'a status report from the new agent', audience: 'the Master',
             success: 'the new agent reports the relay status'
           }));
         }
@@ -151,7 +151,7 @@ try {
     };
     requestAnimationFrame(tick); return 1; })()`);
 
-  // ---- THE ASK, typed at the overseer exactly as a Commander would ----
+  // ---- THE ASK, typed at the overseer exactly as a Master would ----
   await evalJS(cdp, `Chat.send('make a research agent and have it check the orbital relay')`);
   let state = null;
   for (let i = 0; i < 220; i++) {
@@ -178,7 +178,7 @@ try {
   ck('the summon result named the new agent AND its workstation', /"agentId"/.test(mock.seen.summonResult) && /workstation/.test(mock.seen.summonResult), mock.seen.summonResult);
   ck('the overseer then delegated to the agent it had just created', mock.seen.dispatch === 1 && !!NEW, 'newId=' + NEW);
   ck('the delegated worker actually ran (its own model call happened)', mock.seen.worker >= 1, 'worker calls=' + mock.seen.worker);
-  ck('the lead synthesized a final answer for the Commander', mock.seen.final >= 1);
+  ck('the lead synthesized a final answer for the Master', mock.seen.final >= 1);
 
   const mine = state.props.filter((p) => p.agentId === NEW);
   ck('a workstation exists and is bound to THAT new agent', mine.length === 1, J(mine));
@@ -191,7 +191,7 @@ try {
   ck('...SEATED there, not standing on open deck', !!seated, seated ? J(seated.rows) : 'never observed');
 
   // ---- THE OTHER HALF OF THE RULE: the Recruitment Bay must NOT seed ----------------------------
-  // Creating an agent BY HAND is a different intent: the Commander gets the new agent's chat plus a
+  // Creating an agent BY HAND is a different intent: the Master gets the new agent's chat plus a
   // SUGGESTION, and places the workstation wherever they want. Only an agent the overseer was ASKED
   // to create arrives with one. Run the bay's own call shape (marketplace.js: onPick(spec,{activate:true}))
   // on this same floor, so the two paths are compared against each other rather than in isolation.
@@ -209,7 +209,7 @@ try {
     const log = (document.getElementById('chat-log') || {}).textContent || '';
     const chips = [...document.querySelectorAll('#chat-log button, #chat-log .choice, #chat-log [data-choice]')].map((b) => (b.textContent || '').trim());
     return JSON.stringify({ suggests: /nowhere to sit|needs a desk|place one/i.test(log), chips: chips.slice(-6), focused: App.currentAgent ? App.currentAgent().id : null }); })()`));
-  ck('BAY: the Commander lands in the new agent\'s chat, as before', bayUi.focused === bay.id, 'focused=' + bayUi.focused);
+  ck('BAY: the Master lands in the new agent\'s chat, as before', bayUi.focused === bay.id, 'focused=' + bayUi.focused);
   ck('BAY: and is SUGGESTED a desk (the manual guidance survives untouched)',
     bayUi.suggests && bayUi.chips.some((c) => /place its desk/i.test(c)), J(bayUi.chips));
 } finally {

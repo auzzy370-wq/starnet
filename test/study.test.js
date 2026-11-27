@@ -207,7 +207,7 @@ const S = require('../frontend/app/study.js');
   A.eq(StudyStore.nextLive([badProp]), null, 'nextLive drops a declined belief');
   A.eq(StudyStore.isExhausted('pain', 'this belief is wrong and unwanted'), true, 'a declined belief is exhausted');
 
-  // FORGET → DENYLIST (2026-07-16 resurrect audit): declineText is the COMMANDER-panel Forget's denylist hook —
+  // FORGET → DENYLIST (2026-07-16 resurrect audit): declineText is the MASTER-panel Forget's denylist hook —
   // text-only (no proposal object exists for a belief already IN the dossier), same durability as discard.
   const resolvesBefore = resolveCalls.length;
   A.eq(StudyStore.declineText('a forgotten dossier belief', 'agent'), true, 'declineText accepts a real text');
@@ -263,7 +263,7 @@ const S = require('../frontend/app/study.js');
   slot.memoryProposed('run_1');                        // reflection's LLM round-trip finally lands
   A.eq(slot.memoryDeck(), 'queue', 'a memory deck arriving over a visible study card QUEUES — it never stacks');
   A.eq(slot.visibleBeat(), 'study', 'still exactly ONE visible beat (the study card) after the late memory.proposed');
-  slot.studyDone(true);                                // the Commander decides the study card; a deck is queued behind it
+  slot.studyDone(true);                                // the Master decides the study card; a deck is queued behind it
   A.eq(slot.visibleBeat(), 'memory', 'the queued memory deck takes the moment as the study card resolves');
   slot.memoryShown();                                  // renderTurninBatch's idempotent hard-claim
   A.eq(slot.visibleBeat(), 'memory', 'one visible beat: the memory deck');

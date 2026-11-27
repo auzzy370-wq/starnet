@@ -22,7 +22,7 @@ const CanonicalHistory = require('./channel-history.js');
    THE RUN HOST is scripted: it emits the shared/events.js agent.* contract (each payload validated) and journals each tool
    step's side effect on the world's disk, so a step run twice is counted whatever process ran it. Some runs end by asking
    (a TASK_QUESTION with two tagged options): the lifted hub's real TaskIntent and prompt registry make that a keyboard.
-   A run whose plan says ask (S6) stops at its first tool step for the Commander's permission: the lifted hub's real
+   A run whose plan says ask (S6) stops at its first tool step for the Master's permission: the lifted hub's real
    consent prompt, the channelAskConsent slice over the real makeConsentWait, and VULTRON REMOTE's real approvals index.
 
    FAULTS: send failures (retryable, refused for good, a refused credential), a lost response (the platform took it), a
@@ -383,7 +383,7 @@ function makeWorld(seed, opts) {
           // loop.js asks the run's signal between announcing a step and dispatching it (isCancelled): a run stopped right
           // there — a newer message, a stop, or the hub when the step's mark could not be written — dispatches nothing
           if (ro.signal && ro.signal.aborted) break;
-          // (S6) the broker stops this step for the Commander's permission: the run waits here, and anything but a yes skips it
+          // (S6) the broker stops this step for the Master's permission: the run waits here, and anything but a yes skips it
           if (plan.ask && s === 0) {
             run.decision = await ro.prompt({ name: 'fs.write', args: { path: 'notes.md' } }, { scope: 'write' });
             if (gen !== w.gen) return hang();

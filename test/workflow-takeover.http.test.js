@@ -32,7 +32,7 @@ const DAY = 86400000;
   seedOccasions('unknown-',Array(3).fill('Prepare the weekly payroll tally from finance totals'),'unknown');
   seedOccasions('internal-origin-',Array(3).fill('Prepare monthly reactor maintenance from station telemetry'),'internal-origin');
   seedOccasions('missing-origin-',Array(3).fill('Prepare monthly orchard irrigation from rainfall measurements'),'missing-origin');
-  // (2026-10-12) a channel group guest's clean original carries no owner-directive stamp: it is not the Commander's work
+  // (2026-10-12) a channel group guest's clean original carries no owner-directive stamp: it is not the Master's work
   seedOccasions('guest-',Array(3).fill('Prepare the weekly greenhouse rota from volunteer sheets'),'guest');
   const borrowedText='Prepare monthly equipment calibration from laboratory readings';
   seedOccasions('borrowed-',Array(3).fill(borrowedText),'unknown');

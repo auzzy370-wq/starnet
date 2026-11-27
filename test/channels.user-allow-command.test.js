@@ -1,5 +1,5 @@
-/* node test/channels.user-allow-command.test.js — a Commander's own /allow or /deny keeps running in a DM.
-   0.14.0 added /allow and /deny as hub built-ins (group admission), and built-ins are parsed before the Commander's
+/* node test/channels.user-allow-command.test.js — a Master's own /allow or /deny keeps running in a DM.
+   0.14.0 added /allow and /deny as hub built-ins (group admission), and built-ins are parsed before the Master's
    own commands — so an "allow" or "deny" they defined in usercommands.json under 0.13.x silently stopped running over
    messaging and the owner got "/allow and /deny are for groups" instead. The built-in only means something in a
    group; in a direct chat theirs runs again. Real hub + the real slash registry; no network, no sidecar. */
@@ -40,7 +40,7 @@ const msg = (text, chatType, userId) => ({ channel: 'telegram', chatId: chatType
     const t = build(FILE);
     await t.hub.onInbound(msg('/allow'));
     await t.hub.onInbound(msg('/deny@halcyonbot'));
-    A.eq(t.slashCalls, ['/allow', '/deny'], 'both reached the registry as the Commander\'s commands');
+    A.eq(t.slashCalls, ['/allow', '/deny'], 'both reached the registry as the Master\'s commands');
     A.eq(t.sends, ['ran usage', 'ran tools'], 'and answered with their targets');
     A.eq(t.runs.length, 0, 'no model run');
   }

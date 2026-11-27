@@ -176,7 +176,7 @@ export const dismissRefitGuide = `(() => {
 // Every key UI state: the floor at rest + each of the 15 dock panels.
 // Re-derived from the post-nav-condense dock (frontend/index.html #bottombar, 2026-08-05):
 // ROUTINES+LOOPS collapsed into AUTOMATION, SKILLS merged into ABILITIES (the connectors term),
-// REWIND+LOGBOOK joined the Commander dossier, UPDATES is its own SYSTEM window again, and
+// REWIND+LOGBOOK joined the Master dossier, UPDATES is its own SYSTEM window again, and
 // QUESTS gained a dock door. State names stay stable where the surface persisted (the atlas and
 // golden baselines key on them); only renamed/removed surfaces change names.
 export function buildStates() {
@@ -187,7 +187,7 @@ export function buildStates() {
     // ONE recruit door now (#bb-recruit): the old ROSTER/SUMMON split collapsed into a single
     // bay whose class dossier carries both verbs, so one state captures it.
     { name: 'crew-recruit',    drive: openSel('#bb-recruit', 'RECRUIT'),           wait: 1800 },
-    { name: 'crew-commander',  drive: openSel('[data-term="commander"]', 'COMMANDER') },
+    { name: 'crew-commander',  drive: openSel('[data-term="commander"]', 'MASTER') },
     // WORK group
     { name: 'work-tasks',      drive: openSel('[data-term="tasks"]', 'TASKS') },
     // DELIVERABLES: the backend-backed run-artifact + Workshop library. The panel fetches

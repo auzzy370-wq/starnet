@@ -118,7 +118,7 @@ async function call(base, route, method, body) {
     A.eq((await call(base, '/api/update/cancel', 'POST', {})).body.frozen, false, 'a failed install thaws it');
 
     // ---- 2. STATION-LESS WITH DATA ON DISK, no journal: what a WAKE cut short wrote is still protected ----
-    const dossier = await call(base, '/api/dossier', 'POST', { block: 'COMMANDER DOSSIER\n- written before the first save' });
+    const dossier = await call(base, '/api/dossier', 'POST', { block: 'MASTER DOSSIER\n- written before the first save' });
     A.eq(dossier.status, 200, 'a pre-founding dossier write lands (WAKE writes before its first save)');
     A.eq(await station(), 'none', 'and founds nothing');
     const data = await call(base, '/api/update/prepare', 'POST', { targetVersion: '9.9.9', browserStore: {} });

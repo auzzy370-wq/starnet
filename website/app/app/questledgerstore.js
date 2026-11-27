@@ -13,14 +13,14 @@
    colliding with the v1 'work' kind's handlers.
 
    Writes:
-     • confirm(id, ok, note) → POST /api/quests/confirm — the Commander's attest verdict (yes→done, no→declineNote).
+     • confirm(id, ok, note) → POST /api/quests/confirm — the Master's attest verdict (yes→done, no→declineNote).
      • dismiss(id)           → POST /api/quests/dismiss  — wave a ledger quest off forever (backend denylist).
    Both refetch immediately so the row reflects the verdict without waiting for the next poll.
 
    It also surfaces a pending attest (an agent proposed completion with evidence) as ONE COMMS beat via the
    shared Chat.nudge lifecycle — one beat per attest, guarded so it never interrupts a live post-run beat
    (falls back to the ambient Chat.broadcast line). The row-level confirm is the primary surface; the beat
-   is the glance that points the Commander at it.
+   is the glance that points the Master at it.
 
    NO U.bus emits (the frozen shared/events.js contract is owned elsewhere). node-exportable for its test. */
 'use strict';
@@ -90,7 +90,7 @@ const QuestLedgerStore = (() => {
   }
   // ONE glance per new quest: a terse ambient COMMS line (Chat.broadcast — Lane 1's queue means it is never
   // dropped by the celebration coalesce). NO StationUI.notify (notification diet, 2026-08-18): the quest log
-  // is the quest surface — the bell is reserved for things that need the Commander. Guarded: in a headless/test
+  // is the quest surface — the bell is reserved for things that need the Master. Guarded: in a headless/test
   // context (no Chat) this is a silent no-op, never a throw.
   function announceNewQuest(q) {
     const title = String((q && q.title) || (q && q.id) || 'a quest').replace(/\s+/g, ' ').trim() || 'a quest';
@@ -203,7 +203,7 @@ const QuestLedgerStore = (() => {
   // init on enter-game: a clean fetch so the first quest-log render already has the ledger (the tick keeps it fresh).
   // seededOnce resets so the incoming ledger seeds the new-quest baseline silently (no toast-storm on enter).
   function init() { cache = []; lastFetch = 0; notified.clear(); seenOpen.clear(); seededOnce = false; refetch(); }
-  // a fresh Commander inherits no ledger cache (mirrors the sibling stores' reset).
+  // a fresh Master inherits no ledger cache (mirrors the sibling stores' reset).
   function reset() { cache = []; lastFetch = 0; notified.clear(); seenOpen.clear(); seededOnce = false; }
 
   return { init, sync, quests, pendingAttests, confirm, dismiss, disposition, report, paused, reset, _shape: shape, _apply: apply, _seededOnce: () => seededOnce };

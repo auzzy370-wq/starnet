@@ -177,7 +177,7 @@ async function ready(c) { await c.updates.init(); await c.updates.check(true, 't
   }
   {
     // A refused download is the updater working. Tauri rejects the invoke with the plugin's bare Display text
-    // (minisign-verify 0.2.5 / reqwest): the Commander must read that NOTHING was installed, not a crypto library error.
+    // (minisign-verify 0.2.5 / reqwest): the Master must read that NOTHING was installed, not a crypto library error.
     const sig = makeCase({ installError: 'The signature verification failed' });
     await ready(sig); const refused = await sig.updates.install();
     A.ok(/^Update refused: the download did not match the signed Vultron release\./.test(refused.error), 'a bad signature reads as a refusal: ' + refused.error);

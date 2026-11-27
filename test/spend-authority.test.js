@@ -29,7 +29,7 @@ for(const code of ['EACCES','EIO']) {
 assert.deepEqual(loadBounded({strict:true,fs:{readFileSync(){throw missing;}}},'ledger',100),[]);
 assert.throws(()=>loadBounded({strict:true,fs:{readFileSync(p){return p.endsWith('.1')?'x'.repeat(110)+'\n':'{}\n';}}},'ledger',100),/truncat/i);
 console.log('spend authority: unreadable history, configured scopes, opt-in policy, failed append, missing file and truncated history PASS');
-// Admission durability is independent of whether the Commander configured a quota.
+// Admission durability is independent of whether the Master configured a quota.
 let starts=0, finishes=0;
 const journal=makeLedger({clock,nextId:()=> 'entry-'+finishes,io:{readAll:()=>[],append(){},beginRun(){starts++;},finishRun(){finishes++;}}});
 assert.equal(journal.beginRun('one','a'),true);assert.equal(journal.beginRun('one','a'),true);assert.equal(starts,1);
@@ -64,14 +64,14 @@ console.log('spend admission: receipt failure, repeated checks, independent sett
   assert.equal(appended.length,0,'refusals book nothing');
   const row=L.settleUnsettled('x',0.3);
   assert.deepEqual([row.runId,row.agentId,row.usd,row.turns,row.ts,row.attested,row.model],['x','a',0.3,0,50,true,'(unknown)'],'one attested row at the dispatch time');
-  assert.equal(row.attestedAs,'entered','the row says the Commander entered the charge');assert.deepEqual(appended[0],row,'the durable row carries the same attestation');
+  assert.equal(row.attestedAs,'entered','the row says the Master entered the charge');assert.deepEqual(appended[0],row,'the durable row carries the same attestation');
   assert.equal(appended.length,1);assert.deepEqual(finished,['x'],'the receipt is removed through finishRun');
   assert.deepEqual([L.health().complete,L.health().readError,L.health().unsettledRuns],[true,null,0],'history is complete again');
   assert.equal(L.unsettledRuns().length,0);assert.throws(()=>L.settleUnsettled('x',0.3),e=>e.code==='not_unsettled','never twice');
   assert.equal(makeBudget({clock,ledger:L,caps:{day:5}}).check('t','a',0),null,'the chosen cap works again');
 }
 {
-  // a run counted at its per-run limit says so: the row never claims the Commander entered that figure
+  // a run counted at its per-run limit says so: the row never claims the Master entered that figure
   const appended=[];
   const L=makeLedger({clock,io:{readAll:()=>[],unsettled:()=>[{runId:'y',agentId:'a',ts:60,runCapUsd:0.5},{runId:'z',agentId:'a',ts:61}],append(e){appended.push(e);},finishRun(){}}});
   const lim=L.settleUnsettled('y',0.5,'limit');
@@ -115,7 +115,7 @@ console.log('spend admission: receipt failure, repeated checks, independent sett
   makeBudget({clock,ledger:S,caps:{day:5},strictScope:()=>false}).check('s1','a',0,0,null,{provider:'p'});
   assert.equal(soft[0].provider,'p','the soft-unknown path forwards the receipt meta too');
 }
-console.log('spend recovery: kept rows, strict refusal, Commander settle, live-run guard, write failure, receipt meta PASS');
+console.log('spend recovery: kept rows, strict refusal, Master settle, live-run guard, write failure, receipt meta PASS');
 
 // Dispatch receipts preserve explicit BYOK as well as managed; absence is not false.
 for (const managed of [true, false, undefined]) {

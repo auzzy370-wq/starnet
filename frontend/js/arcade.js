@@ -1,7 +1,7 @@
 /* VULTRON — arcade.js : "BREACH PROTOCOL" — the playable arcade cabinet.
    Clicking an arcade cabinet in the quarters opens a real game: a phosphor
    Space-Invaders descendant where rogue scraper-bots besiege the station and
-   the Commander mans the point-defense turret. Renders into a low-res canvas
+   the Master mans the point-defense turret. Renders into a low-res canvas
    inside a prop window (PROPTERM mounts/unmounts it), colors pulled live from
    the active theme so it matches the terminal skin. A top-5 STATION RECORDS board
    persists in localStorage — the house crew hold the seed scores until you take them. */
@@ -55,7 +55,7 @@ const ARCADE = (() => {
       '0000111111110000', '0011111111111100', '0111111111111110',
       '1101101101101101', '1111111111111111', '0011100110011100', '0000100000010000'
     ]],
-    // the Commander's turret (ULTRON pattern head — eyes drawn separately)
+    // the Master's turret (ULTRON pattern head — eyes drawn separately)
     turret: [[
       '0000001000000', '0000011100000', '0000011100000', '0111111111110',
       '1111111111111', '1111111111111', '1111111111111', '1111111111111'
@@ -70,7 +70,7 @@ const ARCADE = (() => {
       'ULTRON> Hostile botnet detected on approach vector.',
       'ULTRON> The turret is calibrated. You are not.',
       'ULTRON> VYBES holds the record. This bothers me.',
-      'ULTRON> Token accepted. Try to be efficient, Commander.'
+      'ULTRON> Token accepted. Try to be efficient, Master.'
     ],
     wave: [
       'ULTRON> Wave purged. They never learn.',
@@ -90,7 +90,7 @@ const ARCADE = (() => {
     ],
     hi: 'ULTRON> New station record. VYBES is going to sulk.'
   };
-  /* Never let the attract loop claim VYBES holds a record the Commander already took. */
+  /* Never let the attract loop claim VYBES holds a record the Master already took. */
   function attractQuip(board) {
     const top = board && board[0];
     return U.pick(top && top.name !== 'VYBES' ? Q.attract.filter(q => q.indexOf('VYBES') < 0) : Q.attract);
@@ -99,7 +99,7 @@ const ARCADE = (() => {
   /* ---------- score board ----------
      The cabinet keeps a real top-5 ledger, not just a single hi-score: every finished
      (or abandoned) run posts its score + the wave it died on, and the board persists to
-     localStorage. The house crew hold the seed records until the Commander takes them. */
+     localStorage. The house crew hold the seed records until the Master takes them. */
   const HOUSE = [
     { name: 'VYBES', score: 2600, wave: 6 },
     { name: 'ATLAS', score: 1840, wave: 5 },

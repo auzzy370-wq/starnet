@@ -42,7 +42,7 @@ A.eq(glowing(), 'toggle', 'a new gap lights the BUILD toggle');
 item.laidOut = true; DG.tick();
 A.eq(glowing(), 'item', 'the dock opened: the glow moves to BUILD MODE inside it');
 
-/* ---- 3. closing the dock = the Commander looked: every open gap is seen ---- */
+/* ---- 3. closing the dock = the Master looked: every open gap is seen ---- */
 item.laidOut = false; DG.tick();
 A.eq(glowing(), 'none', 'the dock closed again: the gap is seen and BUILD goes dark');
 A.ok(JSON.parse(store[DG.SEEN_KEY]).includes('sq:rex:dish'), 'the seen gap is remembered under its own key');
@@ -55,7 +55,7 @@ gaps.push({ id: 'sq:kaze:shell', status: 'open', firstSeenAt: 25000 });
 DG.tick();
 A.eq(glowing(), 'toggle', 'the next new gap lights BUILD again');
 refit = true; DG.tick();
-A.eq(glowing(), 'none', 'entering BUILD MODE clears it (the Commander is where the fix is made)');
+A.eq(glowing(), 'none', 'entering BUILD MODE clears it (the Master is where the fix is made)');
 refit = false; DG.tick();
 A.eq(glowing(), 'none', 'and leaving BUILD MODE does not relight a gap already seen');
 

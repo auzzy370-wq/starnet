@@ -212,7 +212,7 @@ async function recommendations(B, headers) {
     A.ok(!fs.existsSync(path.join(path.dirname(ws), 'escape.txt')), 'no escaped write at the workspace parent');
     A.ok(!fs.existsSync(path.join(ws, 'agent', 'escape.txt')), 'no escaped write at the agent-jail root (../ from workshop was refused)');
 
-    // ===== 4. APPROVE → SHIP — keep copies the artifact OUT to a Commander folder; the archetype UP-weights. =====
+    // ===== 4. APPROVE → SHIP — keep copies the artifact OUT to a Master folder; the archetype UP-weights. =====
     const dest = path.join(os.tmpdir(), 'ns-ship-' + Date.now());
     const keep = await fetch(B + '/api/workshop/decide', { method: 'POST', headers, body: JSON.stringify({ agentId: 'agent', runId: runId, decision: 'keep', destPath: dest }) });
     const keepJ = await keep.json();

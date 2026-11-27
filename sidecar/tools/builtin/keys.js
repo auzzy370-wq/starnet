@@ -1,4 +1,4 @@
-/* sidecar/tools/builtin/keys.js — `keys.save`: a key the Commander pastes into chat becomes a KEYS entry.
+/* sidecar/tools/builtin/keys.js — `keys.save`: a key the Master pastes into chat becomes a KEYS entry.
 
    WHY THIS EXISTS (user report 2026-10-25, Saleshandy + Etsy). Every other harness lets an agent spend an API key the
    user pastes into the conversation. Vultron's only route was the KEYS panel (now CONNECT › ABILITIES › CONNECTED ›
@@ -11,23 +11,23 @@
    This tool closes that seam the way KEYS already works: the pasted value is STORED as a service key (servicekeys.js,
    via the host's own save), so it is spent by NAME through web_request `${NAME}` / the shell env exactly like a key
    added in the panel, and from that moment the known-value redaction scrubs it out of every transcript, stream line
-   and save. COMMS swaps the paste in the Commander's bubble and saved history for keyPlaceholder(envVar) when it sees
+   and save. COMMS swaps the paste in the Master's bubble and saved history for keyPlaceholder(envVar) when it sees
    this tool's ok result (agent.tool_call + agent.tool_result — no new event; POST /api/servicekeys/scrub does the swap).
 
    THE KEY NEVER RIDES THE TOOL CALL. The model names the service (and, only when a message holds two key-like
-   strings, the first characters of the one it means); the HOST finds the value in the Commander's own recent
+   strings, the first characters of the one it means); the HOST finds the value in the Master's own recent
    messages. So the raw key is never in the call's args (which stream to the page and wait on approval cards), and —
-   the injection guard — a value can only ever come from text the Commander typed: a web page or a connector result
-   is not a user turn, and a run that did not come from the Commander (a routine, a group member, a forwarded
+   the injection guard — a value can only ever come from text the Master typed: a web page or a connector result
+   is not a user turn, and a run that did not come from the Master (a routine, a group member, a forwarded
    message, a delegated worker) gets no owner texts at all (ownerTexts() returns null).
 
    makeKeyTools({ ownerTexts, save, tainted? }) -> { saveTool, register(reg), _internals }
-     ownerTexts : () -> string[] newest-first | null   — the Commander's own recent user turns; null = this run was
-                                                         not started by the Commander, so nothing can be saved
+     ownerTexts : () -> string[] newest-first | null   — the Master's own recent user turns; null = this run was
+                                                         not started by the Master, so nothing can be saved
      save       : ({ name, key, docsUrl }) -> { ok, record:{name,envVar,autonomous,unattendedSupported}, existed,
                                                sameValue, saved } | { ok:false, error }
                                                — the host's KEYS upsert (verified persist, env apply, catalog policy)
-     tainted    : () -> bool — the run has read content the Commander did not author; it may add a key but never
+     tainted    : () -> bool — the run has read content the Master did not author; it may add a key but never
                                REPLACE a saved one (an injected page must not swap a working key for another string)
      onSaved    : (envVar) -> void — after a successful save (the host releases the run's transcript hold) */
 'use strict';
@@ -81,8 +81,8 @@
     return (Array.isArray(texts) ? texts : []).slice(0, OWNER_TURNS).some(t => findKeyCandidates(t).length > 0);
   }
 
-  /* ownerRun(origin, deps) -> bool — is this run's directive the COMMANDER'S OWN words (release review F9, 2026-10-25)?
-     The same host-minted origin facts TrustedLearning.eligible already uses for "the Commander gave this directive":
+  /* ownerRun(origin, deps) -> bool — is this run's directive the MASTER'S OWN words (release review F9, 2026-10-25)?
+     The same host-minted origin facts TrustedLearning.eligible already uses for "the Master gave this directive":
      the watched COMMS directive they typed (ownerDirective — never a recipe template or a retry of one) or an
      owner-admitted channel DM, minus every run whose "user" turn is somebody else's words — a group session (the
      shared transcript, other agents' replies included), a line hand-off, a delegated or child run, a recovery replay,
@@ -99,7 +99,7 @@
     return d.eligible(Object.assign({}, o, { handoff, source })) === true;
   }
 
-  // What the Commander's bubble (and the saved chat) shows where the pasted key was. One ASCII form everywhere.
+  // What the Master's bubble (and the saved chat) shows where the pasted key was. One ASCII form everywhere.
   // "API KEYS" is the block's own label in CONNECT › ABILITIES › CONNECTED (readiness review R15: never a path the app does not show)
   function keyPlaceholder(envVar) { return '[' + str(envVar) + ' saved in API KEYS]'; }
 
@@ -115,7 +115,7 @@
     return s;
   }
 
-  // The one the model meant, from the Commander's turns (newest first). -> { key } | { error }
+  // The one the model meant, from the Master's turns (newest first). -> { key } | { error }
   function pickKey(texts, hint) {
     const want = str(hint);
     let crowded = null;
@@ -125,14 +125,14 @@
       if (found.length > 1 && !crowded) crowded = found;
     }
     if (crowded) {
-      return { error: 'the Commander\'s message holds ' + crowded.length + ' key-like strings (starting '
+      return { error: 'the Master\'s message holds ' + crowded.length + ' key-like strings (starting '
         + crowded.slice(0, 5).map(k => '"' + k.slice(0, 4) + '…"').join(', ') + '). Call keys.save again with starts_with set to the first few characters of the key for this service.' };
     }
     return { error: want
       // the hint is echoed by its first 8 chars only: this result skips the registry's scrub, and a model that passed a
       // whole key as starts_with must not see it repeated back
-      ? 'no key starting "' + (want.length > 8 ? want.slice(0, 8) + '…' : want) + '" is in the Commander\'s recent messages. Check the characters, or leave starts_with out.'
-      : 'no API key is in the Commander\'s recent messages (a key-shaped one may already show as [redacted-…] there). Ask the Commander to paste the key into this chat again, then call keys.save.' };
+      ? 'no key starting "' + (want.length > 8 ? want.slice(0, 8) + '…' : want) + '" is in the Master\'s recent messages. Check the characters, or leave starts_with out.'
+      : 'no API key is in the Master\'s recent messages (a key-shaped one may already show as [redacted-…] there). Ask the Master to paste the key into this chat again, then call keys.save.' };
   }
 
   function makeKeyTools(deps) {
@@ -143,14 +143,14 @@
       // its result never holds a key: a refusal names candidates by their first 4 chars ("sk-p…", which the registry's
       // stored-text scrub read as masked keys), success names the saved key's NAME (review r3)
       resultScrub: false,
-      description: 'The Commander pasted an API key into this chat: save it to API KEYS so you can use it. Name the service; '
-        + 'the station finds the key in the Commander\'s own recent message, stores it, and replaces it in the chat with '
+      description: 'The Master pasted an API key into this chat: save it to API KEYS so you can use it. Name the service; '
+        + 'the station finds the key in the Master\'s own recent message, stores it, and replaces it in the chat with '
         + 'a placeholder. Then call the API with web_request using the key\'s NAME in a header, e.g. '
         + '{"x-api-key": "${SALESHANDY_API_KEY}"}. Never write the raw key in a tool call.',
       schema: {
         type: 'object', required: ['service'],
         properties: {
-          service: { type: 'string', description: 'The service the key is for, as the Commander would name it, e.g. "Saleshandy". It becomes the env var name (SALESHANDY_API_KEY).' },
+          service: { type: 'string', description: 'The service the key is for, as the Master would name it, e.g. "Saleshandy". It becomes the env var name (SALESHANDY_API_KEY).' },
           starts_with: { type: 'string', description: 'Only when the message holds more than one key: the first few characters of the one for this service.' },
           docs_url: { type: 'string', description: 'Optional: the service\'s API reference URL, kept with the key.' }
         }
@@ -163,8 +163,8 @@
         let texts = null;
         try { texts = typeof d.ownerTexts === 'function' ? d.ownerTexts() : null; } catch (_) { texts = null; }
         if (!Array.isArray(texts)) {
-          throw new Error('keys.save only takes a key the Commander typed into this conversation, and this run was not started by them '
-            + '(a routine, a group member, a forwarded message or a delegated worker). Ask the Commander to paste it in their own chat with you, or add it in CONNECT › ABILITIES › CONNECTED › API KEYS.');
+          throw new Error('keys.save only takes a key the Master typed into this conversation, and this run was not started by them '
+            + '(a routine, a group member, a forwarded message or a delegated worker). Ask the Master to paste it in their own chat with you, or add it in CONNECT › ABILITIES › CONNECTED › API KEYS.');
         }
         const hint = str(args.starts_with);
         if (hint && hint.length < HINT_MIN) throw new Error('starts_with needs at least ' + HINT_MIN + ' characters.');
@@ -180,11 +180,11 @@
         if (typeof d.onSaved === 'function') d.onSaved(envVar);   // the run's transcript hold lets go (the host flips a flag)
         const lines = [
           (r.sameValue ? 'This key was already saved in API KEYS as ' : (r.existed ? 'Replaced the saved key for ' + rec.name + ' — it is now in API KEYS as ' : 'Saved ' + rec.name + '\'s key in API KEYS as ')) + envVar + '.'
-            + (r.saved === false ? ' WARNING: it works for this session but could not be verified on disk — tell the Commander it may not survive a restart.' : ''),
+            + (r.saved === false ? ' WARNING: it works for this session but could not be verified on disk — tell the Master it may not survive a restart.' : ''),
           'Use it with web_request by its NAME in a header, never the value: e.g. {"Authorization": "Bearer ${' + envVar + '}"} or {"x-api-key": "${' + envVar + '}"} — check the service\'s API docs for the header it wants. In the shell it is the env var ' + envVar + '.',
           rec.unattendedSupported === false
-            ? 'It works only while the Commander is watching or messaging you directly; this service does not support unattended use.'
-            : (rec.autonomous === true ? '' : 'It works while the Commander is watching or messaging you directly. For routines and Night Shift, the Commander turns on its unattended switch in CONNECT › ABILITIES › CONNECTED › API KEYS.'),
+            ? 'It works only while the Master is watching or messaging you directly; this service does not support unattended use.'
+            : (rec.autonomous === true ? '' : 'It works while the Master is watching or messaging you directly. For routines and Night Shift, the Master turns on its unattended switch in CONNECT › ABILITIES › CONNECTED › API KEYS.'),
           'Do not repeat the key.'
         ].filter(Boolean);
         return { content: lines.join('\n'), summary: 'saved ' + envVar };

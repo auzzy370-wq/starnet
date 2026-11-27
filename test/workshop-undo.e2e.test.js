@@ -4,7 +4,7 @@
    item; before this there was no reverse operation. POST /api/workshop/undo deletes exactly the files the keep
    copied out (each verified gone), removes only now-empty dirs the keep created, and flips the durable decision
    back to PENDING so /pending re-lists it. This EL-3-style escape test boots the ACTUAL sidecar with a mock
-   OpenRouter and drives the true round-trip the Commander would:
+   OpenRouter and drives the true round-trip the Master would:
      grant → queue → shift (build a real deliverable on disk) → decide keep (copy OUT) → undo (remove the copy).
    It asserts ON-DISK truth at every step, and proves the honesty guarantees the feature exists for:
      • undo removes EXACTLY the kept files and returns them in `removed` (destPath is empty afterwards);

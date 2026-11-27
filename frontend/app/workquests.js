@@ -1,6 +1,6 @@
 /* VULTRON — workquests.js : the PURE work-quest generator (G1c) — an accepted idea becomes a trackable build.
 
-   When the Commander says "build it" to a First Pitch or an ongoing idea (pitchstore/suggeststore doBuild),
+   When the Master says "build it" to a First Pitch or an ongoing idea (pitchstore/suggeststore doBuild),
    that acceptance is a real commitment worth tracking. This engine turns it into a multi-step WORK quest whose
    steps are REAL progress, never invented busywork:
      • a RECIPE build with param-gaps → one step per still-missing required param (each answered gap ticks a
@@ -10,7 +10,7 @@
 
    The honest-quest + XP laws (same as stationquests/maintquests):
      • completion is the REAL build happening (the recipe launched / the run finished) — never a claim.
-     • DISMISSAL = STOP FOREVER (the Commander changed their mind; the anti-nag law).
+     • DISMISSAL = STOP FOREVER (the Master changed their mind; the anti-nag law).
      • NO XP — the payout is the real build, plus the shared celebration. XP still flows only from rating the
        finished work (xp.js law).
    If the accepted idea was SEEDBORN, the store passes a credit line (G3a SeedCredit) which the card carries —
@@ -192,7 +192,7 @@
         // a build SOMEONE STOPPED (review r7) did not error out: said as the stop
         : e.stalledReason === 'cancelled' ? 'the run was stopped before it finished'
         : e.stalledReason === 'cut_short' ? 'the reply was cut short'
-        // review r8: a run that ASKED is waiting on the Commander's answer, never "errored out" ('clarifying', or the outcome 'asked' a 'done'
+        // review r8: a run that ASKED is waiting on the Master's answer, never "errored out" ('clarifying', or the outcome 'asked' a 'done'
         // + Task Brief end stalls under, workqueststore); an empty reply, an interruption and a reviewer's hold each say themselves
         : (e.stalledReason === 'clarifying' || e.stalledReason === 'asked') ? 'the run asked you a question — answer it first'
         : e.stalledReason === 'empty' ? 'the model sent back an empty reply'
@@ -204,7 +204,7 @@
         kind: 'work',
         runId: e.runId || null,
         stalled: stalled,   // Tier 2 (additive): consumers tracking a bound build (goalstore.questLive) need stalled-vs-in-flight without parsing the title
-        // a build whose run asked a question waits on the Commander — never "stalled" (review r8)
+        // a build whose run asked a question waits on the Master — never "stalled" (review r8)
         title: (done ? 'built — ' : (stalled ? ((e.stalledReason === 'clarifying' || e.stalledReason === 'asked') ? '⚑ waiting on you: ' : '⚑ stalled: ') : '⚑ build: ')) + (e.title || 'a build'),
         desc: done
           ? ('done — the build ran.' + credit)

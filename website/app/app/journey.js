@@ -1,4 +1,4 @@
-/* VULTRON — journey.js: pure presentation helpers for the Commander journey.
+/* VULTRON — journey.js: pure presentation helpers for the Master journey.
    Journey progress is separate from agent XP and from station-size tier. It never gates capabilities. */
 'use strict';
 (function (root, factory) {

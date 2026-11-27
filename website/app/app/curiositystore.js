@@ -1,7 +1,7 @@
 /* VULTRON — curiositystore.js : the thin wiring around the pure just-in-time curiosity engine (curiosity.js).
 
    Holds the state the pure engine can't: the per-SESSION nudge count (in memory, resets each run of the app —
-   keeps "one gentle ask per session"), the persisted set of dimensions the Commander has waved off (so a
+   keeps "one gentle ask per session"), the persisted set of dimensions the Master has waved off (so a
    dismissed question never returns), AND a persisted per-dimension ASKED count (so a question shown-and-ignored
    across enough sessions stops for good — the fix for the "same question over and over" loop: an ignored nudge
    now leaves a DURABLE mark, not just an in-memory one that resets on reload). Self-persists to its own
@@ -51,7 +51,7 @@ const CuriosityStore = (() => {
   // the dimension to gently ask about now, or null. Reads the dossier's still-blank dimensions live.
   // The ask ORDER is the understanding engine's value-of-information ranking (weight × remaining gap, best
   // first) when available — the one earned question targets what most sharpens the station's model of the
-  // Commander — and falls back to the canonical dossier order when it isn't (fail-open, behavior unchanged).
+  // Master — and falls back to the canonical dossier order when it isn't (fail-open, behavior unchanged).
   function voiOrder() {
     try {
       if (typeof UnderstandingStore !== 'undefined' && UnderstandingStore.read) {
@@ -72,7 +72,7 @@ const CuriosityStore = (() => {
     return Curiosity.pick({ blank: sum.blank, dismissed: state.dismissed, asked: state.asked, count: sessionCount, work: workCount, order: voiOrder(), hunting: hunting() });
   }
 
-  // spend this session's budget AND durably tally the ask on this dimension (called whether or not the Commander
+  // spend this session's budget AND durably tally the ask on this dimension (called whether or not the Master
   // answers). The persisted asked-count is what lets pick() stop raising a shown-and-ignored dimension for good —
   // without it, the in-memory session cap resets on reload and the same question loops forever.
   function markShown(dim) {
@@ -84,7 +84,7 @@ const CuriosityStore = (() => {
   // counter only ever reflects IGNORES (decision 1). Without this, a dimension answered-then-forgotten stays silenced.
   function markAnswered(dim) { if (ready() && dim && state.asked && state.asked[dim] != null) { delete state.asked[dim]; save(); } }
 
-  // observability: the question-state for ONE dimension, for the COMMANDER DOSSIER readout.
+  // observability: the question-state for ONE dimension, for the MASTER DOSSIER readout.
   //   { asked:count, dismissed:bool, stopped:bool } — stopped = waved off OR asked-and-ignored to the limit.
   function statusOf(dim) {
     if (!ready() || !dim) return { asked: 0, dismissed: false, stopped: false };

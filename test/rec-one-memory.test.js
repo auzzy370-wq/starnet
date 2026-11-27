@@ -6,7 +6,7 @@
 
      1. THE SHARED MATCH KEY — the browser's normalization is byte-for-byte the sidecar's, so a title declined on
         one side is the same key on the other. If these drift, suppression silently disagrees across the app.
-     2. THE WRITE — the spine's offers become `shown` rows; the Commander's answer becomes that row's terminal
+     2. THE WRITE — the spine's offers become `shown` rows; the Master's answer becomes that row's terminal
         state; the channels that mint their own rows, and the two that are not offers at all, are refused.
      3. THE READ — an explicitly declined title is matched exactly (never fuzzily), and every failure mode of the
         read leaves the station ranking as if this module did not exist.
@@ -78,7 +78,7 @@ A.eq(RecLedger.normKey('draft the q3 report') === RecLedger.normKey('draft the q
   A.eq(rows[0].kind, 'seed', 'the row carries the channel as its kind (so the ledger can learn a per-kind weight)');
   A.eq(rows[0].title, 'summarize my inbox', 'the row is titled with the PROPOSAL, which is what the declined memory matches on');
   A.eq(rows[0].evidence[0].type, 'rationale',
-    'the station-composed why line is typed RATIONALE, never a quote of the Commander (the W3 law, applied here)');
+    'the station-composed why line is typed RATIONALE, never a quote of the Master (the W3 law, applied here)');
   A.eq(rows[0].evidence[0].quote, undefined, '…and it never lands in the quote column');
   A.eq(rows[0].target, Ledger.fingerprint('summarize my inbox'),
     'the row target is the ledger’s OWN fingerprint shape, so replay can find it later');
@@ -86,7 +86,7 @@ A.eq(RecLedger.normKey('draft the q3 report') === RecLedger.normKey('draft the q
   // …and a verbatim-carrying channel may say so
   RecLedger.note({ kind: 'thread', title: 'automate the weekly digest', why: 'you said “I keep rebuilding this digest”', evidenceKind: 'verbatim' });
   const t = h.posts().filter(b => b && b.kind === 'thread')[0];
-  A.eq(t.evidence[0].type, 'quote', 'a channel carrying the Commander’s real words may type its evidence as a quote');
+  A.eq(t.evidence[0].type, 'quote', 'a channel carrying the Master’s real words may type its evidence as a quote');
 
   // the refusals
   const before = h.posts().length;
@@ -147,7 +147,7 @@ A.eq(RecLedger.normKey('draft the q3 report') === RecLedger.normKey('draft the q
   A.eq(st.id + '/' + st.state + '/' + st.reason, shown.id + '/completed/completed',
     '…as state `completed` on the SAME row the impression minted');
 
-  // the Commander's rating becomes outcome.quality — the number replay() folds
+  // the Master's rating becomes outcome.quality — the number replay() folds
   A.eq(RecLedger.settle('seed', 'great', 'run-1'), true, 'a 👍 after the finish still finds the row');
   const oc = h.posts().slice(-1)[0];
   A.eq(oc.id, shown.id, 'the quality lands on the same row');
@@ -206,7 +206,7 @@ STEPS.push(async () => {
   A.eq(RecLedger._declinedKeys().length, 2, 'the untitled declined row contributed no phantom key');
 
   // the learned weight
-  A.eq(RecLedger.preferenceOf('seed', ['seed']), 0.4, 'a kind the Commander has accepted reads positive');
+  A.eq(RecLedger.preferenceOf('seed', ['seed']), 0.4, 'a kind the Master has accepted reads positive');
   A.eq(RecLedger.preferenceOf('recruit', ['recruit']), -0.6, '…and one they keep declining reads negative');
   A.eq(RecLedger.preferenceOf('arc', ['arc', 'dim:goals']), 0.2, 'a kind with no history still reads its traits');
   A.eq(RecLedger.preferenceOf('nosuchkind', []), 0, 'nothing to read is 0 — never a fabricated lean');
@@ -279,7 +279,7 @@ A.eq(Recommend.preferenceTerm({ preference: 900 }), Recommend.PREF_MAX, 'a weigh
 A.eq(Recommend.preferenceTerm({ preference: -900 }), -Recommend.PREF_MAX, '…both ways');
 
 // it is TWO-SIDED, unlike strength and quality — that is the whole point, so lock it
-A.ok(Recommend.preferenceTerm({ preference: 0.5 }) > 0, 'a liked kind is genuinely PROMOTED (the Commander’s yes counts)');
+A.ok(Recommend.preferenceTerm({ preference: 0.5 }) > 0, 'a liked kind is genuinely PROMOTED (the Master’s yes counts)');
 A.ok(Recommend.preferenceTerm({ preference: -0.5 }) < 0, '…and a disliked one demoted');
 
 // it reorders inside a band…
@@ -289,7 +289,7 @@ A.ok(Recommend.preferenceTerm({ preference: -0.5 }) < 0, '…and a disliked one 
   const disliked = Object.assign({ kind: 'seed', preference: -0.75 }, base);
   A.eq(Recommend.sameBand('seed', 'recruit'), true, 'seed and recruit share a band (precondition)');
   A.ok(Recommend.score(liked) > Recommend.score(disliked),
-    'a lower-ranked kind the Commander keeps saying yes to outranks a higher-ranked one they keep declining');
+    'a lower-ranked kind the Master keeps saying yes to outranks a higher-ranked one they keep declining');
   A.eq(Recommend.pick([disliked, liked]).kind, 'recruit', '…and pick() really returns it');
 }
 // …and never across one, at any combination of every modifier at its extreme
@@ -377,7 +377,7 @@ STEPS.push(async () => {
   A.eq(dropped, 1, 'the sweep drops exactly the one unanswered, expired row');
   const ids = led.read().entries.map(e => e.id);
   A.eq(ids.indexOf('e1'), -1, 'the lapsed impression is gone (it was never answerable, so it may not depress acceptance)');
-  A.ok(ids.indexOf('e2') >= 0, 'a row the Commander ANSWERED is kept forever — an expiry is never a verdict');
+  A.ok(ids.indexOf('e2') >= 0, 'a row the Master ANSWERED is kept forever — an expiry is never a verdict');
   A.ok(ids.indexOf('e3') >= 0, 'a row that declared no expiry is untouched');
   A.ok(led.declinedTexts().indexOf('answered in time') >= 0, '…and the kept decline still feeds the index');
   A.eq(await led.sweep(0), 0, 'a sweep with no clock does nothing');
@@ -420,7 +420,7 @@ const pitchSrc = read('frontend/app/pitchstore.js');
 A.ok(/Chat\.askBudgetSpent\(\)\) return \{ go: false, reason: 'ask-budget' \}/.test(pitchSrc),
   'the First Pitch defers on a spent budget (and stays un-pitched, so it returns at a quieter moment)');
 // every spend sits after the pitch is put on screen (Dialogue.node of the presented pitch): an answered one, and one the
-// Commander stepped aside from once it was on screen (comms-owner arbiter review 10-27) — never the latency line or a model hiccup
+// Master stepped aside from once it was on screen (comms-owner arbiter review 10-27) — never the latency line or a model hiccup
 {
   const fire = A.fnBody(pitchSrc, '  async function fire(p) {');
   const shown = fire.indexOf('Dialogue.node({ lines: presented');
@@ -461,7 +461,7 @@ const rqsSrc = read('frontend/app/recqualitystore.js');
 A.ok(/forward\(stamp\.channel, 'completed', runId\)/.test(A.fnBody(rqsSrc, 'function onRunEnd(p)')),
   'a clean finish of an attributed run reaches the durable ledger, not just localStorage');
 A.ok(/forward\(stamp\.channel, v, String\(runId \|\| ''\)\)/.test(A.fnBody(rqsSrc, 'function noteVerdict(runId, verdict)')),
-  '…and so does the Commander\'s own 👍/👌/👎 on it');
+  '…and so does the Master\'s own 👍/👌/👎 on it');
 A.ok(/deps\.recLedger !== undefined\) \? deps\.recLedger : \(typeof RecLedger !== 'undefined'/.test(rqsSrc),
   'the forward is injectable for the node test and defaults to the global — no wiring step to forget');
 // seed and routine answer the spine rows their cards minted (they were permanently-`shown` orphans)

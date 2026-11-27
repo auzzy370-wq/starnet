@@ -74,7 +74,7 @@ job is to make that reasoning airtight, not to wave at it.
   (`tickNeeds`, `decideIdle`, `maybeQuirk`, the `plan*` / `quirk*` target pickers, `wander`, `arrive`,
   and helpers they call that act on the current body). **Leave on `agent`** every genuine hero-identity
   reference: the module export, camera/focus, FIRST LIGHT (`firstwake`), and anything keyed to "the one
-  the Commander is looking at." A missed rename (crew mutate hero) and an over-eager rename (hero beat
+  the Master is looking at." A missed rename (crew mutate hero) and an over-eager rename (hero beat
   driven by a crew body) are the two failure modes — both are hunted.
 - **Crew body state init.** When a crew body is placed/spawned, initialize the full state shape the
   engine reads — `pers = makePersonality(id)`, `needs {rest,stim,social}`, the cooldown fields

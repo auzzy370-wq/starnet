@@ -15,9 +15,9 @@ for (const stop of [
   A.eq(result.error, stop.why, stop.code + ': preserves the exact line stop words');
   A.ok(!result.delivered, stop.code + ': existing successful rows cannot override the stop');
 }
-A.eq(outcomeOf({ stopped: true, runs: done }).outcome, 'stopped', 'a Commander stop is its own outcome');
+A.eq(outcomeOf({ stopped: true, runs: done }).outcome, 'stopped', 'a Master stop is its own outcome');
 const fault = outcomeOf({ stopCause: 'fault', runs: done });
-A.ok(fault.stop.code === 'station_fault' && /station hit an internal fault/.test(fault.error), 'a station fault never blames the Commander');
+A.ok(fault.stop.code === 'station_fault' && /station hit an internal fault/.test(fault.error), 'a station fault never blames the Master');
 A.eq(outcomeOf({ onLine: false, runs: done }).stop.code, 'wrong_line', 'a sample that missed its named line says so');
 A.eq(outcomeOf({ runs: done, line: { partial: 'writer failed' } }).stop.code, 'partial_join', 'a missing join branch is not a complete job');
 A.eq(outcomeOf({ runs: [], refusedSaid: 'no model is configured' }).error, 'no model is configured', 'a refusal before a run retains the admission words');

@@ -11,7 +11,7 @@
      - each memory-store key prefix (notebook:, pending:, declined: ...)     key: memory:<prefix>
 
    and requires a row for each in forget-wiring.js's STORES table: a registered entry that purges it, or an exemption with the reason it is kept
-   (Q4: routines the Commander created, delivered workspace files, learned skill files; Q5: the declined list; settings, secrets, counters). A NEW
+   (Q4: routines the Master created, delivered workspace files, learned skill files; Q5: the declined list; settings, secrets, counters). A NEW
    store with no row fails here, so it chooses before it ships; a row whose store is gone fails too, so the table stays a map of what exists. The
    wiring is then built for real (stub stores) to prove that every row names an entry that is registered, that every exemption is registered with
    its reason, and that every entry has a source and a forget. */

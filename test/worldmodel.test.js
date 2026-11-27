@@ -662,7 +662,7 @@ A.eq(JSON.stringify(WM.deserialize({ rooms: {}, order: [], props: [], edges: [{ 
   // ADOPTION: an UNBOUND workstation in the spawn room is taken over, never duplicated beside
   const st = WM.create();
   st.ensureWorkstation('agent');
-  const spare = st.addProp({ t: 'console', x: 2, y: 5, w: 2, h: 1, block: true });   // Commander built it, never bound it
+  const spare = st.addProp({ t: 'console', x: 2, y: 5, w: 2, h: 1, block: true });   // Master built it, never bound it
   const r = st.ensureWorkstation('scout-2');
   A.ok(r.ok && r.adopted, 'a free workstation in the spawn room is adopted rather than duplicated');
   A.eq(r.id, spare.id, 'the adopted prop is the one that was already standing there');
@@ -691,7 +691,7 @@ A.eq(JSON.stringify(WM.deserialize({ rooms: {}, order: [], props: [], edges: [{ 
   const r = st.ensureWorkstation('scout-2');
   A.ok(r.ok && !r.adopted, 'a free desk in a distant room is NOT adopted');
   A.eq(r.roomId, st.spawnRoomId(), 'the summoned agent is seated in the spawn room instead');
-  A.eq(st.propById(remote.id).agentId, undefined, 'the Commander\'s unbound lab console is left untouched');
+  A.eq(st.propById(remote.id).agentId, undefined, 'the Master\'s unbound lab console is left untouched');
 }
 {
   // no space anywhere → an honest failure, never a phantom desk

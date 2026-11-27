@@ -78,7 +78,7 @@ function makeRemoteHost(d) {
      phone as a display row with its `deliverable` field and never as prose. Only the thread asks for it; every replay array (the legacy
      window a send hands the model, the previews, the activity feed) keeps filtering with isProse, so a file row never reaches a model. */
   const isFileRow = (m) => !!m && m.role === 'system' && m.kind === 'deliverable' && !!TurnMerge.deliverableOf(m);
-  /* A NOTE THE RUN READ is a row of the thread too (commit 10): the station's canonical steer row (kind steer, the Commander's words),
+  /* A NOTE THE RUN READ is a row of the thread too (commit 10): the station's canonical steer row (kind steer, the Master's words),
      shown as a display row and, outside the rollback window, replayed to the model as the user line '[steering] <words>' that the
      station's own replay makes of it. Never prose of the agent's. keeps(true) is the thread (prose, file rows, steer rows); keeps('steer')
      is a replay window outside window:legacy (prose and steer rows); anything else is prose only, byte for byte as before. */
@@ -244,7 +244,7 @@ function makeRemoteHost(d) {
     const rec = { ac, agentId: o.agentId, streamId, deviceId: o.deviceId || '', startedAt: now() };
 
     // the conversation so far: the desk's memory of this session plus anything the station recorded since
-    // Outside the rollback window (A2-REB-1) a reply the Commander steered is never replayed with the note inside the agent's message:
+    // Outside the rollback window (A2-REB-1) a reply the Master steered is never replayed with the note inside the agent's message:
     // it is split at its notes (TurnMerge.splitSteer, the one helper the desk's window uses), and the station's own steer rows ride as
     // the user lines they replay as. window:legacy keeps today's rows byte for byte.
     const legacyRows = (windowMode() === 'legacy' ? mergedTurns(streamId, 100) : TurnMerge.splitSteer(mergedTurns(streamId, 100, 'steer').map(steerLine))).map(m => ({ role: m.role, content: m.content }));
@@ -313,7 +313,7 @@ function makeRemoteHost(d) {
       turnId, ...TurnKinds.clientTurnTime(o, now()), turnRowId: (Number.isSafeInteger(o.turnRowId) && o.turnRowId > 0) ? o.turnRowId : undefined,
       surface: 'interactive', prompt, ownerTrusted: true, floorless: true, broadcast: true, reflect: true,
       // A PHONE WORKS WITH THE DESK'S PERMISSIONS (Andrew 2026-10-02: "full access so I can vibe code on the go"): an
-      // agent on Full Access acts from the phone without asking, exactly as at the desk. A phone the Commander marked
+      // agent on Full Access acts from the phone without asking, exactly as at the desk. A phone the Master marked
       // ALWAYS ASK (desk > Remote > that phone) never inherits Full Access or the station bypass: every gated step asks
       // on the phone. Host-minted, never from text, and it rides into delegated workers (run-origin.js). If the
       // setting cannot be read, the phone asks (never more power on an error).

@@ -7,7 +7,7 @@ not merged into integration and not an installed-build or release-readiness clai
 
 ## Reconciliation
 
-- Retained the updated Commander achievement progression inside the refined header.
+- Retained the updated Master achievement progression inside the refined header.
 - Combined session attention with the newer category filters and grouped automation history.
   Attention mode keeps every pending session individually reachable across categories and archives.
 - Preserved the newer Extensions interface and scoped styling from trunk.

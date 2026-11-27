@@ -1,6 +1,6 @@
 /* node test/verdictfollowup.test.js — the pure verdict follow-up engine (frontend/app/verdictfollowup.js).
    Locks the POPUP LAW (docs/NEXT.md 2026-08-21): a short-of-the-mark verdict asks ONE thing and every chip
-   maps to a real Commander Dossier dimension so the answer CHANGES something (a belief in every briefing);
+   maps to a real Master Dossier dimension so the answer CHANGES something (a belief in every briefing);
    praise asks nothing; skip writes nothing; the written belief cites the run that taught it. */
 'use strict';
 const A = require('./_assert.js');

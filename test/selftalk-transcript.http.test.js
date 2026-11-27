@@ -1,7 +1,7 @@
 'use strict';
 // A streamless internal run (the quiet title call, the goal judge, pitch …) is the station talking to itself: a real
 // sidecar files its rows in 'global' stamped 'internal', so recall and the conversation view never read them as the
-// Commander's words (bug 4dee26ba). A Commander run on 'global' keeps its rows exactly as before.
+// Master's words (bug 4dee26ba). A Master run on 'global' keeps its rows exactly as before.
 const assert = require('node:assert/strict');
 const http = require('node:http');
 const { SidecarFixture } = require('./helpers/sidecar-fixture.js');
@@ -36,10 +36,10 @@ const server = http.createServer((req, res) => {
     assert(!turns.some(t => /ocelot/i.test(String(t.content))), 'the quiet title call is not shown as global dialogue: ' + JSON.stringify(turns));
     await run({ messages: [{ role: 'user', content: 'COMMANDER_GLOBAL: note the ocelot count' }] });
     turns = await globalTurns();
-    assert.deepEqual(turns.filter(t => t.role === 'user').map(t => t.content), ['COMMANDER_GLOBAL: note the ocelot count'], 'a Commander run on global keeps its own rows');
+    assert.deepEqual(turns.filter(t => t.role === 'user').map(t => t.content), ['COMMANDER_GLOBAL: note the ocelot count'], 'a Master run on global keeps its own rows');
     await fixture.restart();
     turns = await globalTurns();
     assert.deepEqual(turns.filter(t => t.role === 'user').map(t => t.content), ['COMMANDER_GLOBAL: note the ocelot count'], 'the stamp survives a restart');
-    console.log('selftalk-transcript: a streamless internal run is filed as self-talk; a Commander global run is unchanged; both survive restart PASS');
+    console.log('selftalk-transcript: a streamless internal run is filed as self-talk; a Master global run is unchanged; both survive restart PASS');
   } finally { await fixture.dispose(); server.closeAllConnections(); await new Promise(r => server.close(r)); }
 })().catch(e => { console.error(e.stack || e); process.exitCode = 1; });

@@ -627,7 +627,7 @@ body.no-curve #stage-wrap::before { background: none; box-shadow: none; }
 /* ===== COMMS as a CONVERSATION (not a stack of boxes) =====
    De-boxed + grouped by speaker: consecutive turns from the same speaker collapse under ONE
    name header (the repeated label is hidden), tied together by a thin side rail — agent on the
-   left, Commander on the right. Every turn is a plain grouped message; the live streaming row is
+   left, Master on the right. Every turn is a plain grouped message; the live streaming row is
    just the newest one. Per-message HH:MM stamps come from each turn's REAL recorded ts (comms.css
    .cmsg-ts) — a legacy turn with no stored ts renders no stamp rather than a fabricated one. */
 .cmsg { font-size: 16px; line-height: 1.4; min-width: 0; max-width: 100%; position: relative; }   /* min-width:0 lets long tokens wrap instead of stretching the column; position anchors the copy button */
@@ -674,7 +674,7 @@ body.no-curve #stage-wrap::before { background: none; box-shadow: none; }
   color: var(--ph-dim); opacity: .8; word-break: break-word;
 }
 
-/* the Commander: right-aligned with a gold right rail — a party opposite the agent, no heavy box.
+/* the Master: right-aligned with a gold right rail — a party opposite the agent, no heavy box.
    min-width keeps a one-word message ("hi") from collapsing to a cramped sliver against the rail. */
 .cmsg.user { align-self: flex-end; min-width: 4.5em; max-width: 86%; text-align: left; border-right: 2px solid var(--gold); padding-right: 11px; }
 .cmsg.user .who { color: var(--gold); text-align: right; }
@@ -877,7 +877,7 @@ body.no-curve #stage-wrap::before { background: none; box-shadow: none; }
 .turnin-edit:focus { outline: none; border-color: var(--ph); }
 
 /* ── THE OFFER CARD (recommendation spine) ────────────────────────────────────────────────────────────
-   ONE shape for every proactive consent offer: eyebrow → evidence (the Commander's own words) → proposal
+   ONE shape for every proactive consent offer: eyebrow → evidence (the Master's own words) → proposal
    → consent. It is the SAME gold-inset .turnin hardware, not a new visual language — only the internal
    rhythm is unified, which was the named friction (seven inconsistent card shapes). Matte throughout: no
    gloss, no second box, no OS-painted control anywhere; the only additions are a quieter eyebrow, a lit
@@ -896,7 +896,7 @@ body.no-curve #stage-wrap::before { background: none; box-shadow: none; }
   display: inline-flex; align-items: center; justify-content: center;
   width: 11px; height: 11px; flex: 0 0 11px; font-size: 10px; line-height: 1; letter-spacing: 0;
 }
-/* THE EVIDENCE — the Commander's own words. It is the reason the card exists, so it reads as the lit
+/* THE EVIDENCE — the Master's own words. It is the reason the card exists, so it reads as the lit
    line: full width, phosphor-bright, with a hairline beneath separating citation from proposal. */
 .rec-item > .rec-evidence {
   grid-column: 1 / -1; min-width: 0; overflow-wrap: anywhere;
@@ -1123,7 +1123,7 @@ body.no-curve #stage-wrap::before { background: none; box-shadow: none; }
 }
 .mc-edit:focus { outline: none; border-color: var(--ph); }
 
-/* COMMANDER DOSSIER (Phase A): the station-wide glass box — one model of the user, every belief editable */
+/* MASTER DOSSIER (Phase A): the station-wide glass box — one model of the user, every belief editable */
 .cd-fam { display: inline-flex; align-items: center; gap: 7px; }
 .cd-fk { display: inline-block; width: 120px; height: 6px; border-radius: 3px; background: var(--ph-faint); border: 1px solid var(--ph-dim); overflow: hidden; vertical-align: middle; }
 .cd-ff { display: block; height: 100%; background: var(--gold); }
@@ -1141,7 +1141,7 @@ body.no-curve #stage-wrap::before { background: none; box-shadow: none; }
 .cd-stat-l { font-size: 10px; letter-spacing: .1em; color: var(--ph-dim); text-transform: uppercase; }
 .cd-founded { margin-top: 9px; font-size: 11px; color: var(--ph-dim); letter-spacing: .3px; }
 .cd-founded b { color: var(--ph); }
-/* AGENT BRIEFING — the verbatim Commander block agents receive (the panel's practical payoff): a recessed
+/* AGENT BRIEFING — the verbatim Master block agents receive (the panel's practical payoff): a recessed
    terminal well in the CRT vocabulary; the text glows softly because it IS live prompt material. */
 .cd-brief { margin: 12px 0 2px; padding: 10px 12px; background: var(--ink); border: 1px solid var(--ph-dim); border-radius: 5px; box-shadow: inset 0 0 18px rgba(var(--ph-rgb), .06); }
 .cd-brief-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 7px; }
@@ -1173,7 +1173,7 @@ body.no-curve #stage-wrap::before { background: none; box-shadow: none; }
 .cd-reenable:hover { border-color: var(--ph); border-style: solid; }
 .cd-rec { padding: 7px 10px; border-radius: 3px; background: var(--ph-faint); border: 1px solid var(--ph-faint); border-left: 2px solid var(--ph-dim); margin-bottom: 7px; }
 .cd-rec.pinned { border-left-color: var(--gold); }
-.cd-rec.cd-observed { border-left-color: var(--ph-mid, var(--ph-dim)); border-left-style: dashed; }   /* GROWTH Tier 1: a station-observed (study) belief reads distinct from a Commander-authored one */
+.cd-rec.cd-observed { border-left-color: var(--ph-mid, var(--ph-dim)); border-left-style: dashed; }   /* GROWTH Tier 1: a station-observed (study) belief reads distinct from a Master-authored one */
 .cd-body { color: var(--ph-bright); font-size: 14px; line-height: 1.4; white-space: pre-wrap; word-break: break-word; }
 .cd-meta { margin-top: 6px; font-size: 11px; color: var(--ph-dim); letter-spacing: 0.3px; }
 .cd-observed-tag { display: inline-block; margin-right: 6px; padding: 0 5px; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink); background: var(--ph-dim); border-radius: 2px; vertical-align: 1px; }
@@ -1219,7 +1219,7 @@ body.no-curve #stage-wrap::before { background: none; box-shadow: none; }
 /* TASK BRIEF — the host-validated recommended default on a task question: gold-marked so one tap accepts
    the suggestion. Rendered ONLY when the durable brief carries a REAL recommendation (the brief_ask path);
    marker-path questions carry no MODEL recommendation and stay plain chips there — but they may still wear a
-   GROUNDED chip, which is derived from the Commander's own answered history rather than from the unvalidated
+   GROUNDED chip, which is derived from the Master's own answered history rather than from the unvalidated
    question, so it cannot be fabricated. Accent via --gold-rgb, never a literal amber. */
 .choice.suggested { color: var(--gold); border-color: var(--gold); text-shadow: 0 0 5px rgba(var(--gold-rgb), .45); }
 .choice.suggested:hover, .choice.suggested:focus-visible {
@@ -1238,7 +1238,7 @@ body.no-curve #stage-wrap::before { background: none; box-shadow: none; }
 .choice.confirm:disabled { color: var(--ph-dim); border-color: rgba(var(--ph-rgb), .28);
   background: none; cursor: default; box-shadow: none; text-shadow: none; }
 .tq-reason { font-size: 13px; color: var(--ph-dim); letter-spacing: 0.3px; margin-top: 3px; }
-/* a GROUNDED suggestion is provable (the Commander's own answered history, with a count), so it earns the
+/* a GROUNDED suggestion is provable (the Master's own answered history, with a count), so it earns the
    gold voice the ★ chip wears; the model's unprovable guess stays in the dim register above. */
 .tq-reason.grounded { color: var(--gold); }
 .task-conversation { border:1px solid var(--ui-edge); border-left:3px solid var(--gold); border-radius:var(--r-sm); padding:16px 18px; margin:8px 0; background:var(--ui-face),var(--panel2); box-shadow:inset 0 1px 0 var(--ui-highlight),0 3px 10px rgba(0,0,0,.2); min-width:0; }
@@ -1290,7 +1290,7 @@ body.no-curve #stage-wrap::before { background: none; box-shadow: none; }
 }
 .tb-read-cap { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--ph-dim); }
 .tb-read-cap2 { margin-top: 8px; }   /* the second caption ("assuming — …") opens a new block, so it needs air above */
-/* the objective is the headline — the one line the Commander must be able to disagree with at a glance */
+/* the objective is the headline — the one line the Master must be able to disagree with at a glance */
 .tb-read-head {
   font-size: 15px; line-height: 1.3; letter-spacing: 0.3px; margin-top: 2px;
   color: var(--ph-bright); text-shadow: 0 0 5px var(--ph-glow2); overflow-wrap: anywhere;
@@ -1377,7 +1377,7 @@ body.no-curve #stage-wrap::before { background: none; box-shadow: none; }
   display: flex; align-items: center;
 }
 /* the read-gate cue: hidden until a narration beat finishes typing; the beat then waits for the
-   Commander, so the blink is an invitation, not a countdown. Blink dies under reduced motion. */
+   Master, so the blink is an invitation, not a countdown. Blink dies under reduced motion. */
 .fnv-more { display: none; flex: 0 0 auto; color: var(--ph-dim); font-size: 14px; letter-spacing: 1px; user-select: none; }
 .fnv-more.show { display: block; animation: fnv-more-blink 1.2s steps(2, start) infinite; }
 .fnv-dialogue.no-anim .fnv-more.show { animation: none; }
@@ -2221,7 +2221,7 @@ body.no-curve #stage-wrap::before { background: none; box-shadow: none; }
 .ov-actions { display: flex; align-items: center; gap: 12px; }
 
 /* ===== RESUME / RECOVERY banner — shown when re-entering an existing station whose creds went missing.
-   Phosphor-styled (gold inset rule + bloom), it reassures the Commander the agent is safe and locks the
+   Phosphor-styled (gold inset rule + bloom), it reassures the Master the agent is safe and locks the
    identity fields below so a resume can't silently re-spec the agent. ===== */
 .ov-recovery {
   margin: 10px 22px 0; padding: 9px 14px; font-size: 16px; letter-spacing: .4px;
@@ -3029,7 +3029,7 @@ body:has(#terms > .term:not(.term-min-hidden)) #nav-coach { visibility: hidden; 
 }
 .ws-title { flex: 1; min-width: 0; font-size: 14px; color: var(--ph); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ws-row.sel .ws-title { color: var(--ph-bright); }
-/* UNREAD: the stream did real work since the Commander last had it open (lastActiveAt > lastReadAt) —
+/* UNREAD: the stream did real work since the Master last had it open (lastActiveAt > lastReadAt) —
    a small gold spark beside the meta + a lit title. Clears the moment the row is opened. */
 /* The separate gold unread spark is RETIRED. It existed because the dot was busy encoding the lane
    and could not say "not seen yet"; now that the dot says exactly that, the spark repeated it 200px
@@ -3498,7 +3498,7 @@ body:not(.rows-inbox) #workstreams .ws-row.attn:not(.renaming):has(> .ws-agent-g
 .ag-foot-row { font-size: 11px; color: var(--ph-dim); letter-spacing: .4px; margin-top: 4px; }
 .ag-foot-row b { color: var(--ph); font-weight: normal; }
 
-/* COMMANDER CONTROLS — dossier BRIEF: change skin + delete agent */
+/* MASTER CONTROLS — dossier BRIEF: change skin + delete agent */
 .ag-command { margin: 10px 0 8px; display: flex; flex-direction: column; gap: 12px; }
 .ag-cmd-sec { border-top: 1px solid var(--hair, rgba(255,255,255,.08)); padding-top: 8px; }
 .ag-cmd-lbl { font-size: 10px; color: var(--ph-dim); letter-spacing: 2px; margin-bottom: 6px; }
@@ -3727,7 +3727,7 @@ body:not(.rows-inbox) #workstreams .ws-row.attn:not(.renaming):has(> .ws-agent-g
 .q-lede { margin: -2px 0 9px; font-size: 10.5px; opacity: .6; }
 /* STEADY SHELL, the `.term.console.dossier`/`.dlv-win` reasoning: quest data changes (a fold, a poke, a
    completed step) change content height, and a never-moved window is CSS-centred — content-fit height
-   would re-centre the whole window on every such change, sliding the card the Commander is reading out
+   would re-centre the whole window on every such change, sliding the card the Master is reading out
    from under their eyes. Fixed height; the quest list scrolls inside instead.
    `--con-h` is declared on `.term.console`, which this window is NOT — restate the same formula here
    (an undefined var would make the height silently invalid → back to content-fit, the bug this exists
@@ -3815,8 +3815,8 @@ body:not(.rows-inbox) #workstreams .ws-row.attn:not(.renaming):has(> .ws-agent-g
 .q-oc-skipped, .q-oc-rejected { color:var(--ph-dim); }
 .q-oc-error  { color:#e88; border-color:#e88; }
 
-/* COMMANDER JOURNEY — three truthful, non-gating progression tracks. The card only renders the sidecar's
-   durable proof snapshot; controls are explicit Commander writes, never inferred engagement telemetry. */
+/* MASTER JOURNEY — three truthful, non-gating progression tracks. The card only renders the sidecar's
+   durable proof snapshot; controls are explicit Master writes, never inferred engagement telemetry. */
 .q-journey-card { border:1px solid var(--ph-glow2); border-radius:2px; background:rgba(0,0,0,.18); padding:10px 11px; margin-bottom:12px; }
 .q-evolution { display:flex; align-items:center; justify-content:space-between; gap:12px; padding-bottom:9px; margin-bottom:9px; border-bottom:1px solid var(--ph-glow2); }
 .q-evolution-name { margin-top:2px; color:var(--gold); font-family:inherit; font-size:17px; letter-spacing:.16em; text-shadow:0 0 8px rgba(var(--gold-rgb),.35); }
@@ -4001,7 +4001,7 @@ body.crew-rail-off #screen-game.active {
   background: var(--panel);
   box-shadow: 0 0 0 2px var(--ph), 0 0 0 3.5px rgba(0,0,0,.9), 0 0 22px var(--ph-glow2), inset 0 0 40px rgba(0,0,0,.85);
 }
-/* MOBILE CONTROL REACHABILITY: a touch-only Commander has no hardware Escape key, so
+/* MOBILE CONTROL REACHABILITY: a touch-only Master has no hardware Escape key, so
    DONE and every editor action must stay on the glass. The title owns row one and six
    compact station keys share row two. */
 @media (max-width: 600px) {
@@ -4839,7 +4839,7 @@ input[type=number].key-input:disabled { opacity: .55; cursor: not-allowed; }
 #budget-pools .bg-pool-hit { display: flex; align-items: center; gap: 10px; border: 1px solid var(--warn); background: rgba(0,0,0,.32); padding: 6px 9px; margin: 2px 0 8px; font-size: 12.5px; color: var(--warn); }
 #budget-pools .bg-pool-hit b { color: var(--ph-bright); }
 #budget-pools .bg-pool-hit .bb { flex: 0 0 auto; margin-left: auto; }
-/* INTERRUPTED-run rows — a run whose charge was never booked; the Commander enters it (SETTLE) or counts it at its
+/* INTERRUPTED-run rows — a run whose charge was never booked; the Master enters it (SETTLE) or counts it at its
    per-run limit. Rendered ONLY while /api/budget/status lists one. Same warn vocabulary as the CAP-HIT row; the
    explanation lives in the row's data-tip, never a sentence under it. */
 #budget-unsettled .bg-unsettled { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; border: 1px solid var(--warn); background: rgba(0,0,0,.32); padding: 6px 9px; margin: 2px 0 8px; font-size: 12.5px; color: var(--warn); }
@@ -4955,7 +4955,7 @@ select.fbc-sel:focus { border-color: var(--ph); box-shadow: inset 0 2px 5px rgba
 .ab-route-go { flex: 0 0 auto; color: var(--ph-dim); font-size: 14px; line-height: 1.3;
   transition: color var(--t-fast) var(--ease-out), translate var(--t-fast) var(--ease-out); }
 .ab-route:hover .ab-route-go { color: var(--ph-bright); translate: 2px 0; }
-/* Searching means the Commander already named the thing — the results are the answer, so the
+/* Searching means the Master already named the thing — the results are the answer, so the
    question stops taking up the top of the pane. */
 .con-searching .ab-router { display: none; }
 
@@ -5271,7 +5271,7 @@ select.fbc-sel:focus { border-color: var(--ph); box-shadow: inset 0 2px 5px rgba
    NO height transition here: the window already animates open via term-power (scaleY 0.012->1), and adding a
    height tween on top left the box measurable at ~4px mid-animation. */
 /* WIDE — the second (and last) window size. `.term.wide` is WIDTH ONLY: it gives a non-console window
-   (TASK BOARD's three lanes, QUEST LOG's card grid, the COMMANDER DOSSIER's two columns) the same
+   (TASK BOARD's three lanes, QUEST LOG's card grid, the MASTER DOSSIER's two columns) the same
    shell as the consoles without mounting the console rail markup. --term-w-wide is declared on `.term`
    in style.css so both selectors read ONE token. See the two-sizes note there. */
 .term.wide { width: var(--term-w-wide); max-width: var(--term-w-wide); }
@@ -5895,7 +5895,7 @@ button:disabled, select:disabled, input:disabled, textarea:disabled {
 .lp-why { margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--ph-faint); }
 .lp-why-in { width: 100%; }
 .lp-why-cost { font-size: 11px; color: var(--bad); }
-/* the dock badge — how many loop results are waiting on the Commander */
+/* the dock badge — how many loop results are waiting on the Master */
 .bb { position: relative; }
 .lp-badge {
   position: absolute; top: 4px; right: 6px; min-width: 15px; height: 15px; padding: 0 4px;
@@ -6100,7 +6100,7 @@ button:disabled, select:disabled, input:disabled, textarea:disabled {
 .dlv-more[hidden] { display: none; }
 .dlv-sec { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
 .dlv-sec h5 { margin: 0; font-size: 9.5px; letter-spacing: 2px; color: var(--ph-dim); font-weight: 500; }
-/* the Commander's own words — quoted, never paraphrased */
+/* the Master's own words — quoted, never paraphrased */
 .dlv-quote { margin: 0; font-size: 12px; line-height: 1.5; color: var(--text); opacity: 0.85;
   border-left: 2px solid var(--ph-faint); padding-left: 9px; overflow-wrap: anywhere; }
 /* the agent's REAL recorded closing message; scrolls in place rather than pushing the actions off-screen */

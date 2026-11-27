@@ -1,6 +1,6 @@
 /* sidecar/skills/goldens.js — GOLDENS PER SKILL (consistency loop, slice 4, 2026-08-22).
 
-   "Consistency" only matters once the Commander is satisfied: a `great` verdict FREEZES what they liked, a
+   "Consistency" only matters once the Master is satisfied: a `great` verdict FREEZES what they liked, a
    `miss` REWRITES the procedure (skillreview.js). This module is the freeze half — pure, clock-injected,
    no filesystem: index.js owns the file, scripts/eval/skills.mjs owns the runner.
 
@@ -8,7 +8,7 @@
      { id, skillId, agentId, runId, directive, reference: { text (capped), words, chars, keywords[] }, mintedAt }
    check(golden, outputText) is DETERMINISTIC and model-free: the candidate must land within a length band of
    the reference and share enough of the reference's distinctive keywords (bag-of-words overlap). That is an
-   honest *shape + content* consistency measure — it is NOT a judgment of quality (the Commander already gave
+   honest *shape + content* consistency measure — it is NOT a judgment of quality (the Master already gave
    that: `great`). Thresholds are explicit and reported alongside the verdict, never hidden in a boolean. */
 'use strict';
 

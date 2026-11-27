@@ -60,11 +60,11 @@ const { makeStationControlTools, cardFor, ACTIONS } = require('../sidecar/tools/
   A.ok(/then END this reply: no plan, no questions/.test(r.content), 'and that this reply ends there: the plan and the questions belong to that turn (review 10-14: a nudged second message, a re-asked brief)');
   A.ok(/^QUEUED, NOT DONE YET: NOVA joins this chat/.test(r.content) && /not in the chat yet/.test(r.content) && !/"done":/.test(r.content), 'a join waiting for the reply is never reported as done: ' + r.content);
   A.ok(/they have not been added/.test(r.content) && !/live 10-14|"Done\.|declined/.test(r.content), 'the lead is given the rule, never an incident quote that plants the words it forbids: ' + r.content);
-  // what the Commander already answered rides the HOST's caller stamp to the page, so the kickoff starts from it
+  // what the Master already answered rides the HOST's caller stamp to the page, so the kickoff starts from it
   pages.length = 0;
   await t.controlTool.run({ action: 'group.add', args: { agents: ['NOVA'], caller: { brief: 'forged' } } }, Object.assign({ briefAnswers: 'What are we launching? → Vultron 0.13.5' }, ctx));
   A.eq(JSON.stringify(pages[0].args.caller), JSON.stringify({ streamId: 'ws_chat', runId: 'run_1', brief: 'What are we launching? → Vultron 0.13.5' }), 'the brief answers of the run ride the host stamp; a model-supplied one is dropped');
-  // the host composes them from the run's own Task Brief: the Commander's answers, in their words, one bounded line
+  // the host composes them from the run's own Task Brief: the Master's answers, in their words, one bounded line
   const { answeredSoFar } = require('../sidecar/taskbrief-context.js');
   A.eq(answeredSoFar({ questions: [{ text: 'What is being launched?', answer: 'Vultron 0.13.5' }, { text: 'Tone?', answer: '' }, { text: 'Who is your audience?', answer: 'use your judgment' }] }),
     'What is being launched? → Vultron 0.13.5; Who is your audience? → use your judgment', 'answered questions only, with the answers as given');
@@ -148,8 +148,8 @@ const { makeStationControlTools, cardFor, ACTIONS } = require('../sidecar/tools/
     A.ok(create && JSON.stringify(create.body.members) === '["agent","nova","sam"]', 'the conversion seats the lead and both new members');
     A.eq(create.body.history.map(m => m.content).join(' | '), 'add 2 agents into this chat | Bringing them in when I finish.', 'the group gets the dialogue, never a status or run-failed line as the lead\'s words');
     A.eq(b.ws.get('ws_chat').pendingJoin, null, 'the join is settled');
-    A.ok(b.notes.some(([cls, t]) => cls === 'good' && /NOVA and SAM ALTMAN joined/.test(t)), 'the Commander is told they joined');
-    A.eq(create.body.kickoff, 'NOVA and SAM ALTMAN have joined this chat at your request. Carry on with the Commander\'s request: give each of them their part (group.handoff) and do your own.',
+    A.ok(b.notes.some(([cls, t]) => cls === 'good' && /NOVA and SAM ALTMAN joined/.test(t)), 'the Master is told they joined');
+    A.eq(create.body.kickoff, 'NOVA and SAM ALTMAN have joined this chat at your request. Carry on with the Master\'s request: give each of them their part (group.handoff) and do your own.',
       'the lead gets the first turn in the group to hand them their parts (nothing idles after they join)');
   }
   // from General: the new group carries the request it was made for — and only that (General's history stays in General)
@@ -166,7 +166,7 @@ const { makeStationControlTools, cardFor, ACTIONS } = require('../sidecar/tools/
     A.eq(JSON.stringify(create.body.history), JSON.stringify([{ role: 'user', content: 'add 2 agents to research and build the landing page', ts: 7 }]), 'it carries the request it was made for, and nothing else of General');
     A.ok(/^NOVA and SAM ALTMAN have joined this chat at your request/.test(create.body.kickoff), 'and its lead picks that request up');
   }
-  // what the Commander already answered in the asking run's Task Brief rides into the kickoff (review 10-14: from General the
+  // what the Master already answered in the asking run's Task Brief rides into the kickoff (review 10-14: from General the
   // new group re-asked "What are we launching?" seconds after it had been answered)
   {
     const general = chat({ id: 'general-home', title: null, history: [{ role: 'user', content: 'bring two crew in to help me write a launch post', ts: 3 }] });
@@ -178,7 +178,7 @@ const { makeStationControlTools, cardFor, ACTIONS } = require('../sidecar/tools/
     b.busy.delete('general-home'); b.ws.get('general-home').lastRunOk = true;
     await b.GC.drainAfterRun('general-home', 'run_b', { stopped: false }); await settle();
     const create = b.sent.find(s => s.body && s.body.op === 'create');
-    A.ok(create && / The Commander already answered: What are we launching\? → Vultron 0\.13\.5; Who is it for\? → developers\. Never ask those again\.$/.test(create.body.kickoff), 'the lead starts from them: ' + (create && create.body.kickoff));
+    A.ok(create && / The Master already answered: What are we launching\? → Vultron 0\.13\.5; Who is it for\? → developers\. Never ask those again\.$/.test(create.body.kickoff), 'the lead starts from them: ' + (create && create.body.kickoff));
     A.ok(create.body.kickoff.length <= 1000, 'inside the kickoff cap (group-sessions.js text(b.kickoff, 1000))');
   }
   // a stopped reply drops the join and SAYS so in the chat (saved), never a silent no-op

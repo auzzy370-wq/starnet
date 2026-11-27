@@ -79,7 +79,7 @@ Introduce additional equipment, another agent, or a conveyor only when it helps 
 
 Use one contextual COMMS/coach message at a time. Completed or dismissed help stays dismissed; help remains reachable later. Do not add a large permanent guidance panel over the station.
 
-Give the existing categories crisp responsibilities: Tasks tracks work, Deliverables opens produced files/builds, Recipes starts prepared jobs, Automation manages repeated work, Quests tracks meaningful goals/progress, and Commander owns editable knowledge about the user. Link records across these categories with the current context preserved. Remove the My Work menu entry and hub after moving its unique source controls to Commander and relevant start/repeat/result actions to their established surfaces. Existing discovery data and work records survive.
+Give the existing categories crisp responsibilities: Tasks tracks work, Deliverables opens produced files/builds, Recipes starts prepared jobs, Automation manages repeated work, Quests tracks meaningful goals/progress, and Master owns editable knowledge about the user. Link records across these categories with the current context preserved. Remove the My Work menu entry and hub after moving its unique source controls to Master and relevant start/repeat/result actions to their established surfaces. Existing discovery data and work records survive.
 
 **Done when:** on a fresh configured station, a novice can choose an action, start it, understand its progress, and find the result without being taught the menu hierarchy or placing unnecessary equipment.
 
@@ -123,7 +123,7 @@ The repeated experience should be: ask or accept useful work, see its real execu
 
 When Vultron proposes equipment, recruitment, or a repeatable workflow, explain the concrete benefit from the user's activity. If it has observed repeated weekly report work, it may offer to schedule that report. It must not fabricate repetition or imply ongoing monitoring of accounts the user has not connected.
 
-One relevant suggestion with a reason and a direct action is enough. “Not useful” should help suppress similar suggestions. Use Commander for learned facts, sources, and corrections; show the supporting reason at the suggestion. Reconcile local-storage and model-transmission explanations. Preserve existing pause/forget controls.
+One relevant suggestion with a reason and a direct action is enough. “Not useful” should help suppress similar suggestions. Use Master for learned facts, sources, and corrections; show the supporting reason at the suggestion. Reconcile local-storage and model-transmission explanations. Preserve existing pause/forget controls.
 
 Make quests celebrate useful milestones and help the user pursue their actual goal. Keep deeper progression history available without adding more default gauges. Engagement comes from useful results, visible activity, personal ownership, and growing understanding; capability access must not depend on points or a tutorial sequence.
 
@@ -179,8 +179,8 @@ These are starting points, not claims that only these files require changes. Rec
 - Station and equipment: `frontend/app/build.js`, `frontend/app/tutorial.js`, `frontend/app/windows/connectors.js`, current selected-object cards and world labels.
 - First useful task: `frontend/app/onboarding.js`, `frontend/app/chat.js`, `frontend/app/firstvalue.js`, existing marketplace/recipe launch.
 - Category cleanup: current station navigation and `frontend/app/workhub.js`; preserve discovery/source data while relocating unique controls.
-- Proactive help: `frontend/app/recommend.js`, `beatcard.js`, current Commander, quest, and recommendation stores. Preserve one evidence-backed voice.
+- Proactive help: `frontend/app/recommend.js`, `beatcard.js`, current Master, quest, and recommendation stores. Preserve one evidence-backed voice.
 
-The implementation preserves the runtime and station: read-only equipment explanations, purpose-based prop search, corrected optional tour, existing-category navigation, draft creation in Recipes, sources in Commander, clearer workflow/routine/completion labels and expandable technical details. The duplicate My Work destination is retired. The new behavior contract and PR-review prompts keep these explanations consistent.
+The implementation preserves the runtime and station: read-only equipment explanations, purpose-based prop search, corrected optional tour, existing-category navigation, draft creation in Recipes, sources in Master, clearer workflow/routine/completion labels and expandable technical details. The duplicate My Work destination is retired. The new behavior contract and PR-review prompts keep these explanations consistent.
 
 This does not constitute sign-off on every exit condition above. Fresh-user sessions remain outstanding. Automatic return from every connector setup, affected-agent canvas highlights and broader quest refinements remain follow-through; this pass reuses the existing supported connection and workflow mechanisms. Matching service names now share one catalog entry with an expandable alternative API connection. Record tested journeys in the implementation receipt rather than treating this plan as proof of completed behavior.

@@ -3,7 +3,7 @@
    Every surface that takes a turn names it with a turnId (TurnKinds grammar): the desk page mints one per optimistic row, the
    phone host 'ph' + runId, the channel hub one per inbox receipt, the station 'r' + runId for everything else. A resend or a
    retry of a turn carries the same turnId, so the station can find the directive it already wrote and reuse it instead of
-   filing the Commander's words twice (bug b30c1c8e: a retry after keys.save wrote a second user row, because the old check
+   filing the Master's words twice (bug b30c1c8e: a retry after keys.save wrote a second user row, because the old check
    compared the stored, key-named text with the request's redacted text byte for byte).
 
    Pure over its arguments: the transcript store, the run's options and injected callbacks. No clock, no fs.
@@ -39,7 +39,7 @@
                                              run's capacity ('overflow'): hostAuthored, isError, none of the read's words
 
    THE DIRECTIVE IS CAPTURED ONCE, BEFORE EXPANSION (commit 4; bug e7dcb889). runOnceCore reads the newest user message
-   before attachments.expandForRun turns its files into text, so every reader of "what the Commander asked" reads the same
+   before attachments.expandForRun turns its files into text, so every reader of "what the Master asked" reads the same
    words: never a file's bytes, never the loop's screen-capture turn, never a repair prompt.
      capture(messages, { typedDirective, turnId, recovery })
                                              { text, label, attachments, turnId, typedTitleSource, captured: true }, or
@@ -60,7 +60,7 @@
                                              without attachments keeps the trunk bytes exactly. When the wording is only the
                                              label the row also says labelOnly: true, and the run transcript stamps it
      labelOnly(d)                            a directive with no typed words whose whole wording is the label of its files
-                                             (the names, a third party's text): not the Commander's words, so its row is never
+                                             (the names, a third party's text): not the Master's words, so its row is never
                                              a clean owner row and its run is recorded wordless (index.js)
      install(runTranscript, d, contentBytes, kind, report, reused)
                                              the ONE decision of what a run writes for its directive: a new directive is
@@ -242,14 +242,14 @@ function wording(d) {
 }
 // the content a turn that carried files stores as its directive row (the wording, never the expanded text); '' for a turn without files or a null capture
 function attachedWording(d) { return d && Array.isArray(d.attachments) && d.attachments.length ? wording(d) : ''; }
-// A directive with no typed words whose whole wording is the label of its files: the Commander said nothing, and the names in the label are
-// a third party's text. Its row must never be taken for the Commander's words (owner evidence, ambient activity, interests, briefs), and
+// A directive with no typed words whose whole wording is the label of its files: the Master said nothing, and the names in the label are
+// a third party's text. Its row must never be taken for the Master's words (owner evidence, ambient activity, interests, briefs), and
 // the run that answered it must not be either (the run record says so: wordless). false for a null capture, a recovery and any typed words.
 function labelOnly(d) { return !!d && !String(d.text || '').trim() && !!String(d.label || ''); }
 function row(d, contentBytes, kind) {
   if (!d) return contentBytes;
   const only = labelOnly(d) ? { labelOnly: true } : null;
-  // THE CLEAN DIRECTIVE: with attachments the row's content is the Commander's wording, never contentBytes (the expanded text,
+  // THE CLEAN DIRECTIVE: with attachments the row's content is the Master's wording, never contentBytes (the expanded text,
   // whose file bytes are a third party's words). The files ride as attachment rows (install); the refs stay for the thumbnails.
   // With no typed words the wording is the label of the files: the row says so (labelOnly) and the run transcript stamps it.
   if (Array.isArray(d.attachments) && d.attachments.length) return Object.assign({ text: wording(d), typed: wording(d), attachments: d.attachments, kind }, only);

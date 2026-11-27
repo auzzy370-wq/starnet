@@ -1,10 +1,10 @@
-/* node test/skills.worker-shared-approval.test.js — an approved skill the Commander shared reaches a worker.
+/* node test/skills.worker-shared-approval.test.js — an approved skill the Master shared reaches a worker.
 
    Customer report f702f2f6: a skill shown Active and approved loaded for the watched lead, while an autonomous worker
-   asking for the same skill was told it needed the Commander's approval in ABILITIES > SKILLS, and work stopped.
+   asking for the same skill was told it needed the Master's approval in ABILITIES > SKILLS, and work stopped.
 
    Real store + package mirror + guard + gate + skill tools, approval bound the way the allow route binds it (the
-   digest of the hydrated bytes the Commander read). The seam this locks: a worker's OWN pending proposal of the same
+   digest of the hydrated bytes the Master read). The seam this locks: a worker's OWN pending proposal of the same
    name (its background review drafts one after a run) shadowed the approved station skill, because the lookup prefers
    the asker's own record — and a pending-only proposal is not an active skill. The asker's own ACTIVE skill still
    wins, and a proposal with nothing else behind its name still answers that it awaits approval. */
@@ -34,10 +34,10 @@ try {
   const index = who => runtime.composeIndex(store.listAccessible(who, { includeArchived: true }), { gate: s => gate.decide(s) }).text;
   const BODY = '1. Open https://example.com/generate\n2. Make the image the brief asks for.';
 
-  // an imported (community) skill with a URL: the guard asks, so it needs the Commander's approval
+  // an imported (community) skill with a URL: the guard asks, so it needs the Master's approval
   const w = store.write({ agentId: 'agent', name: 'Image Gen', summary: 'make images', body: BODY, setup: 'Needs the studio prop.', createdBy: 'community' });
   A.ok(w.ok && w.skill.guardAction === 'ask', 'the imported skill needs approval: ' + (w.skill && w.skill.guardAction));
-  A.ok(store.share({ actor: 'user', agentId: 'agent', target: w.skill.id, scope: 'station' }).ok, 'the Commander shares it with the station');
+  A.ok(store.share({ actor: 'user', agentId: 'agent', target: w.skill.id, scope: 'station' }).ok, 'the Master shares it with the station');
   A.eq(tools().viewTool.run({ name: 'Image Gen' }, { agentId: 'nova' }).summary, 'withheld', 'before approval a worker is refused');
   // approve exactly as handleAgentSkillAllow does: the digest of the hydrated bytes just read
   const read = store.view('agent', w.skill.id, { includeArchived: true, bump: false });

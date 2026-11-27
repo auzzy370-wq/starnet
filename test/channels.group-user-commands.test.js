@@ -1,4 +1,4 @@
-/* node test/channels.group-user-commands.test.js — the Commander's OWN commands (usercommands.json) in a bot's
+/* node test/channels.group-user-commands.test.js — the Master's OWN commands (usercommands.json) in a bot's
    groups and on every channel (2026-10-18: "custom commands cannot be created for botted groups").
 
    Five breaks, each reproduced against the real adapter + hub + slash registry before the fix:
@@ -149,7 +149,7 @@ const settle = () => new Promise(r => setTimeout(r, 10));
     A.eq(rows.map(r => r.command), ['standup', 'disk', 'disk_usage'], 'every command is listed, dashes as underscores');
     A.ok(rows.every(r => /^[a-z0-9_]{1,32}$/.test(r.command) && r.description.length >= 1 && r.description.length <= 256), 'every row fits Telegram\'s grammar');
     A.eq(rows[0].description, 'Runs /routine list', 'an alias without a description names its target');
-    A.eq(rows[2].description, 'How much the station spent', 'the Commander\'s own description wins');
+    A.eq(rows[2].description, 'How much the station spent', 'the Master\'s own description wins');
     A.ok(!/echo/.test(rows[1].description), 'an exec row never publishes its shell snippet to the group');
     const clash = menuEntries([{ name: 'status', type: 'alias', target: '/usage' }, { name: 'copy', type: 'alias', target: '/usage' }], reserved);
     A.eq(clash, [], 'a name a built-in owns is never listed (the built-in would run)');
@@ -158,7 +158,7 @@ const settle = () => new Promise(r => setTimeout(r, 10));
     A.eq(both.map(r => r.description), ['Runs /tools'], 'a dashed name whose _ form is another command defers to that exact command');
   }
 
-  // ---- 5. wiring: every channel control-surface hub carries the registry + the Commander's names ----
+  // ---- 5. wiring: every channel control-surface hub carries the registry + the Master's names ----
   {
     const idx = readSidecarSource();
     const surfaces = ['telegram', 'telegram-bot', 'discord', 'slack', 'matrix', 'signal', 'dev'];
@@ -168,11 +168,11 @@ const settle = () => new Promise(r => setTimeout(r, 10));
         runSlashForChannel: () => 'shared-registry', userCommandEntries: () => [{ name: 'standup' }]
       });
       A.eq(hooks.runSlash('/standup', {}), 'shared-registry', kind + ': the merged bag reaches the shared slash owner');
-      A.eq(hooks.userCommandNames(), ['standup'], kind + ': the merged bag reads the Commander command names');
+      A.eq(hooks.userCommandNames(), ['standup'], kind + ': the merged bag reads the Master command names');
     }
     for (const kind of ['sample', 'trigger', 'handoff']) A.ok(!Bags.productionHubBag(kind).props.some(p => p.key === 'runSlash' || p.key === 'userCommandNames'),
       kind + ': a one-job hub has no ambient chat command authority');
-    A.ok(/function publishCommandMenu[\s\S]{0,700}channelMenuCommands\(\)/.test(idx), 'the published menu includes the Commander\'s commands');
+    A.ok(/function publishCommandMenu[\s\S]{0,700}channelMenuCommands\(\)/.test(idx), 'the published menu includes the Master\'s commands');
     A.ok(/userExecRefusal\(out\.directive\.name, \{ chatType: ctx\.chatType/.test(idx), 'runSlashForChannel words its refusal per chat');
   }
 

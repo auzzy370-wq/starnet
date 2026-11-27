@@ -261,7 +261,7 @@ function makeAcpClient(port, onPermission) {
       // the bridge asks for the roster persona (the desktop's: COMMS, Approve/Deny buttons, FORK rows), so it also says it is
       // an editor and the station appends its EDITOR_NOTE after it; never the terminal's note
       const sys = mock.systems().join(' ');
-      A.ok(sys.indexOf('[EDITOR] The Commander is talking to you from their code editor') >= 0, 'the editor run is told it has no station on screen (the [EDITOR] note)');
+      A.ok(sys.indexOf('[EDITOR] The Master is talking to you from their code editor') >= 0, 'the editor run is told it has no station on screen (the [EDITOR] note)');
       A.ok(sys.indexOf('[TERMINAL]') < 0, 'and is never told it is in the terminal');
     }
 

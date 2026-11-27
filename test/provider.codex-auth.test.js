@@ -195,7 +195,7 @@ function jwt(claims) {
 
     // security audit 2026-09-25: an explicit logout leaves a signed-out TOMBSTONE in the current workspace. The
     // legacy copy is still on disk (migration copies, never deletes), and it must NOT be pulled back in on the next
-    // boot — that silently signed the Commander back in after they logged out.
+    // boot — that silently signed the Master back in after they logged out.
     store[currentFile] = tokenStore.SIGNED_OUT;
     let resurrected = null;
     const afterLogout = tokenStore.loadCodexTokensWithMigration({
@@ -211,7 +211,7 @@ function jwt(claims) {
 
     /* ⛔ A CREDENTIAL MUST NOT CROSS AN ISOLATION BOUNDARY. Every test boot, dev seed and QA journey points
        SKYNET_WORKSPACES at a fresh temp dir. The candidate scan used to run there too, so booting the sidecar
-       with a temp workspace COPIED the Commander's live ChatGPT refresh token into os.tmpdir() — and a
+       with a temp workspace COPIED the Master's live ChatGPT refresh token into os.tmpdir() — and a
        "clean-room" boot silently inherited their real sign-in, so a fresh-install test was never fresh. */
     const tempRoot = pathMod.join(pathMod.sep === '\\' ? 'C:\\' : '/', 'tmp', 'sk-probe-abc123');
     const tempFiles = tokenStore.candidateCodexTokenFiles({

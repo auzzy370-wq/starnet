@@ -1,10 +1,10 @@
-/* VULTRON — dossier.js : the PURE Commander Dossier engine — what the STATION knows about its Commander.
+/* VULTRON — dossier.js : the PURE Master Dossier engine — what the STATION knows about its Master.
 
-   Phase A of the Commander Dossier (docs/COMMANDER_DOSSIER_PLAN.md): one station-wide, dimensioned,
+   Phase A of the Master Dossier (docs/COMMANDER_DOSSIER_PLAN.md): one station-wide, dimensioned,
    local-first model of the human, unifying signals that today are thin + scattered. This is the durable
    BELIEF layer — a small set of named dimensions (identity / stack / goals / style / standing_orders / pain / ambition / people / schedule),
    each holding human-readable beliefs with provenance — that compose into every agent's system prompt so
-   the whole station knows the Commander. (The live affinity vector in profile.js is the SEPARATE "what
+   the whole station knows the Master. (The live affinity vector in profile.js is the SEPARATE "what
    you work on" signal; this engine never rewrites it — the store reads it for the panel only.)
 
    PURE + testable, mirroring profile.js / xp.js: a `Dossier` global in the browser, module.exports under
@@ -35,9 +35,9 @@
     { key: 'schedule',        label: 'Schedule & cadence', lead: 'Schedule & cadence (timezone, work hours, when work should land)' }
   ];
   const DIM_KEYS = DIMS.map(d => d.key);
-  // which onboarding doc seeds which dimension (the Commander already authored these at the awakening).
+  // which onboarding doc seeds which dimension (the Master already authored these at the awakening).
   const DOC_SEEDS = [
-    { doc: 'context', dim: 'identity' },         // context.md = about the Commander & their world
+    { doc: 'context', dim: 'identity' },         // context.md = about the Master & their world
     { doc: 'purpose', dim: 'goals' },            // purpose.md = the mission
     { doc: 'manual',  dim: 'standing_orders' }   // operating-manual.md = standing rules
   ];
@@ -51,23 +51,23 @@
   const TEXT_CHARS = 280;    // a single belief is capped (mirrors the §5.2 memory-record content cap)
 
   // ONBOARDING V3 (docs/ONBOARDING_V3_PLAN.md §5): every belief carries an evidence WEIGHT — how the station
-  // came to hold it. 'stated' = the Commander's own words; 'synth' = model-synthesized FROM their words;
+  // came to hold it. 'stated' = the Master's own words; 'synth' = model-synthesized FROM their words;
   // 'observed' = learned from real work (study); 'seed' = mechanically copied from a config doc. The readiness
   // gate (understanding.js) counts only non-seed beliefs — a canned/doc-copied line can never convince the
-  // station it "knows" its Commander (the blitz-through-onboarding poison this field exists to kill).
+  // station it "knows" its Master (the blitz-through-onboarding poison this field exists to kill).
   const WEIGHTS = ['stated', 'synth', 'observed', 'seed'];
 
   function isKey(k) { return DIM_KEYS.indexOf(k) >= 0; }
   function isWeight(w) { return WEIGHTS.indexOf(w) >= 0; }
   // resolve a belief's weight, inferring honestly for legacy records that predate the field: a study-observed
-  // belief is 'observed'; anything else was authored by (or with) the Commander — 'stated'.
+  // belief is 'observed'; anything else was authored by (or with) the Master — 'stated'.
   function weightOf(b) {
     if (b && isWeight(b.weight)) return b.weight;
     if (b && (b.observedAt || b.source === 'study')) return 'observed';
     return 'stated';
   }
-  /* PROVENANCE (turn identity commit 14/16, qa/bugs/3e926b6a). A belief the STATION learned from real work (a study proposal the Commander kept)
-     names the run it was learned from (sourceRunId, and the evidence run). A belief the Commander stated, confirmed or authored, and a doc seed,
+  /* PROVENANCE (turn identity commit 14/16, qa/bugs/3e926b6a). A belief the STATION learned from real work (a study proposal the Master kept)
+     names the run it was learned from (sourceRunId, and the evidence run). A belief the Master stated, confirmed or authored, and a doc seed,
      names no session: it is not derived. A DERIVED belief with no run on record is UNSOURCED - it may have been learned from a session that is
      since deleted, and nothing can say. */
   function derived(b) { return !!b && weightOf(b) === 'observed'; }
@@ -107,15 +107,15 @@
       if (cur) {
         cur.text = text; cur.updatedAt = now;
         /* A CALLER MAY RE-STAMP PROVENANCE ON AN EXISTING BELIEF (2026-08-04). Only updatedAt moved before, which
-           left a belief the Commander had just CONFIRMED OUT LOUD still recorded as the mechanical seed it started
+           left a belief the Master had just CONFIRMED OUT LOUD still recorded as the mechanical seed it started
            as (EVIDENCE_WEIGHT.seed = 0) — so its dimension's confidence never rose, it read stale again three
            weeks later, and the station asked "still true?" about the same belief every three weeks forever. The
-           re-stamp is truthful: the Commander really did just state it. Omit source/weight and nothing moves. */
+           re-stamp is truthful: the Master really did just state it. Omit source/weight and nothing moves. */
         if (belief.source && typeof belief.source === 'string') cur.source = belief.source;
         if (isWeight(belief.weight)) cur.weight = belief.weight;
         /* …and the EVIDENCE REFERENCE, when the caller explicitly declares one (additive, 2026-08-04; DEFAULTED
            OFF — omit the field and the stored ref is untouched, exactly as before). The re-confirm card needs it:
-           it upgrades a station-authored belief to commander/stated, and without a marker saying the Commander
+           it upgrades a station-authored belief to commander/stated, and without a marker saying the Master
            AFFIRMED the station's wording rather than authored it, every later card renders `you said "…"` about
            words they never spoke. Same shape/normalization as the insert path below. */
         if (belief.evidenceRef && typeof belief.evidenceRef === 'object') {
@@ -138,9 +138,9 @@
         runId: (typeof belief.evidenceRef.runId === 'string') ? belief.evidenceRef.runId : null,
         kind: (typeof belief.evidenceRef.kind === 'string') ? belief.evidenceRef.kind.slice(0, 40) : ''
       } : null,
-      // Phase B (study): when the STATION observed a belief from real work (not the Commander authoring it), stamp
-      // WHEN — the COMMANDER panel renders a study-sourced belief with an "observed" tag + this timestamp. Only a
-      // finite number is kept (never a guessed 0), so a Commander-authored belief carries none.
+      // Phase B (study): when the STATION observed a belief from real work (not the Master authoring it), stamp
+      // WHEN — the MASTER panel renders a study-sourced belief with an "observed" tag + this timestamp. Only a
+      // finite number is kept (never a guessed 0), so a Master-authored belief carries none.
       observedAt: (Number.isFinite(belief.observedAt) && belief.observedAt > 0) ? belief.observedAt : null,
       createdAt: now, updatedAt: now, pinned: false
     });
@@ -173,7 +173,7 @@
     return arr;
   }
 
-  // seed dimensions from the onboarding docs the Commander already authored — ONCE PER DOC (tracked in
+  // seed dimensions from the onboarding docs the Master already authored — ONCE PER DOC (tracked in
   // seededFrom). First-seed-wins, so a doc that is empty at first init seeds later when the awakening fills
   // it, a forgotten seed never reappears on reload, and re-entering the game never duplicates a belief.
   // the belief a doc seeded, still exactly as seeded: mechanical provenance, and its text equal to what was copied
@@ -197,7 +197,7 @@
            operating-manual.md later and every prompt carried BOTH "STANDING ORDERS: <new manual>" and the dossier's
            "Standing orders: <old manual>" forever — an old instruction recalled beside the new one. Now, when the
            CANONICAL docs (the Overseer's — opts.resync) change, the seed belief follows them IF it is still the
-           untouched copy. A belief the Commander edited, re-confirmed or forgot is theirs and is never touched; an
+           untouched copy. A belief the Master edited, re-confirmed or forgot is theirs and is never touched; an
            EMPTY doc is never treated as a deletion (unloaded and cleared look the same here). */
         if (!opts.resync || !text) continue;
         const clipped = clip(text);
@@ -223,7 +223,7 @@
     return dossier;
   }
 
-  // the compact COMMANDER block folded into every agent's system prompt. DURABLE BELIEFS ONLY (no volatile
+  // the compact MASTER block folded into every agent's system prompt. DURABLE BELIEFS ONLY (no volatile
   // affinity signal) so it is byte-identical for identical state — the cached prefix stays warm. Returns ''
   // when nothing is known (a cold station adds nothing to the prompt). Empty dimensions are omitted, never
   // guessed. Capped at maxChars (whole-word backoff so the cap never splits a word mid-token).
@@ -231,13 +231,13 @@
     opts = opts || {};
     const cap = Number.isFinite(opts.maxChars) ? opts.maxChars : BLOCK_CHARS;
     // opts.completeOnly: after the first delete the block is composed from beliefs whose provenance is complete - an UNSOURCED derived belief
-    // stays in the panel but leaves every prompt (it returns when the Commander confirms or edits it: that makes it theirs, not derived)
+    // stays in the panel but leaves every prompt (it returns when the Master confirms or edits it: that makes it theirs, not derived)
     const only = opts.completeOnly === true || (opts.completeOnly == null && dossier && dossier.completeOnly === true);
     const held = key => { const all = beliefs(dossier, key); return only ? all.filter(b => !derived(b) || runIdsOf(b).length) : all; };
     // known dims in compose-PRIORITY order (pitch-critical first) so a trim never silently loses the keystone dims.
     const known = COMPOSE_ORDER.map(k => DIMS.find(d => d.key === k)).filter(d => d && held(d.key).length);
     if (!known.length) return '';
-    const head = 'WHAT YOU KNOW ABOUT YOUR COMMANDER (the station has learned this — honor it; if anything here is wrong, the Commander will correct it):';
+    const head = 'WHAT YOU KNOW ABOUT YOUR MASTER (the station has learned this — honor it; if anything here is wrong, the Master will correct it):';
     const lineOf = d => '- ' + d.lead + ': ' + held(d.key).map(b => b.text).join('; ');
     let body = head + '\n' + known.map(lineOf).join('\n');
     if (body.length <= cap) return body;   // fast path: everything fits (the common case)
@@ -269,7 +269,7 @@
     if (ids.length > 256) return { sourceRunIds: ids.slice(0, 256), complete: false };
     return { sourceRunIds: ids, complete };
   }
-  /* purgeRuns(dossier, runIds, now) -> how many beliefs went: the DERIVED beliefs learned from a deleted session's runs. A belief the Commander
+  /* purgeRuns(dossier, runIds, now) -> how many beliefs went: the DERIVED beliefs learned from a deleted session's runs. A belief the Master
      stated or confirmed is theirs and stays whatever it was first inferred from. The dossier remembers that a delete happened
      (completeOnly): from then on its prompt block is composed from complete beliefs only. */
   function purgeRuns(dossier, runIds, now) {

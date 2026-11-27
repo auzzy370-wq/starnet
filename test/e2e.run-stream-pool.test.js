@@ -39,7 +39,7 @@ function startMockProvider() {
         const messages = parsed.messages || [];
         const toolNames = (parsed.tools || []).map(t => t && t.function && t.function.name);
         const lastUser = messages.map(m => m.role).lastIndexOf('user');
-        const words = String(userWords(messages[lastUser] || {}) || '').trim();   // the Commander's own words (host notes stripped)
+        const words = String(userWords(messages[lastUser] || {}) || '').trim();   // the Master's own words (host notes stripped)
         const used = messages.slice(lastUser + 1).filter(m => m.role === 'assistant').flatMap(m => m.tool_calls || []).map(t => t.function && t.function.name);
         res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' });
         const call = (name, args) => {
@@ -112,7 +112,7 @@ const queuedOn = (pool) => Object.values(pool.requests).reduce((n, a) => n + a.l
     SKYNET_OPENROUTER_BASE: mock.base, VULTRON_OPENROUTER_BASE: mock.base,
     SKYNET_OPENROUTER_KEY: 'sk-or-v1-local-proof', VULTRON_OPENROUTER_KEY: 'sk-or-v1-local-proof',
     SKYNET_DEFAULT_MODEL: 'test/model', VULTRON_DEFAULT_MODEL: 'test/model',
-    SKYNET_FULL_ACCESS: '', VULTRON_FULL_ACCESS: ''   // ASK mode: every write waits on the Commander
+    SKYNET_FULL_ACCESS: '', VULTRON_FULL_ACCESS: ''   // ASK mode: every write waits on the Master
   } });
   const pools = [];
   try {

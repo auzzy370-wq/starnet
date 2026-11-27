@@ -55,7 +55,7 @@ for (const actor of ['agent', 'background-review', 'skill-review', 'curator']) {
   const pendingView = tools.viewTool.run({ name: 'Brief' }, { agentId: 'a' });
   A.eq(pendingView.summary, 'pending', 'pending view fails closed even without guard dependency');
   // skills-eval-15: a proposal is named as a proposal, never as something the skill guard withheld.
-  A.ok(/is a proposal awaiting the Commander's evaluation and approval/.test(pendingView.content) && !/skill guard/.test(pendingView.content) && pendingView.content.indexOf(BODY) < 0,
+  A.ok(/is a proposal awaiting the Master's evaluation and approval/.test(pendingView.content) && !/skill guard/.test(pendingView.content) && pendingView.content.indexOf(BODY) < 0,
     'a pending view says it awaits approval, not a guard hold: ' + pendingView.content);
   A.ok(!runtime.composeLoaded([r.skill]), 'preload fails closed for pending full body');
   f.reload(); A.eq(proposal(f.s).skill.body, BODY, 'pending bytes survive restart');
@@ -84,7 +84,7 @@ for (const action of ['edit', 'patch', 'write_file', 'remove_file', 'archive']) 
   A.eq(f.mirrors.length, 1, 'failed append never writes candidate to active mirror');
   f.reload(); A.eq(read(f.s).body, BODY, 'failed append is safe across restart');
   A.eq(proposal(f.s).status, 'pending', 'failed append preserves pending decision');
-  A.ok(f.promote(c, receipt).ok, 'valid host receipt plus Commander approval promotes');
+  A.ok(f.promote(c, receipt).ok, 'valid host receipt plus Master approval promotes');
   A.eq(f.calls.at(-1).baseline.body, BODY, 'host verifier receives full baseline');
   A.eq(f.calls.at(-1).candidate.body, c.skill.body, 'host verifier receives full candidate');
   A.eq(f.s.view('a', 'Brief', { bump: false }).body, c.skill.body, 'canonical promoted body beats stale package mirror');
@@ -102,7 +102,7 @@ for (const change of ['body', 'files', 'summary', 'baseline', 'pin']) {
   if (change === 'body') f.s.manage({ agentId: 'a', action: 'patch', target: 'Brief', find: 'Check.', replace: 'Check twice.', sourceRunId: 'run-r' });
   if (change === 'files') f.s.manage({ agentId: 'a', action: 'write_file', target: 'Brief', path: 'scripts/check.js', content: 'return 1;', sourceRunId: 'run-r' });
   if (change === 'summary') f.s.manage({ agentId: 'a', action: 'edit', target: 'Brief', summary: 'new tasks', sourceRunId: 'run-r' });
-  if (change === 'baseline') f.s.manage({ agentId: 'a', action: 'edit', target: 'Brief', body: 'Commander correction', createdBy: 'user' });
+  if (change === 'baseline') f.s.manage({ agentId: 'a', action: 'edit', target: 'Brief', body: 'Master correction', createdBy: 'user' });
   if (change === 'pin') f.s.manage({ agentId: 'a', action: 'pin', target: 'Brief', createdBy: 'user' });
   A.eq(f.promote(c, receipt).ok, false, change + ' race refuses old approval');
   A.eq(f.promote(proposal(f.s), receipt).ok, false, change + ' cannot reuse receipt for current candidate');
@@ -170,7 +170,7 @@ for (const change of ['body', 'files', 'summary', 'baseline', 'pin']) {
   A.eq(actions, ['propose'], 'observer sees proposal action');
   A.eq(events[0].title, 'Proposed skill: Brief', 'a brand-new skill is labeled a proposed skill, not a revision');
   A.eq(infos, [{ isNew: true }], 'the observer is told a brand-new proposal is new, so its deliverable title can say so');
-  A.ok(/^Proposed new skill "Brief"\. It is not active until the Commander evaluates and approves it in ABILITIES > SKILLS\.$/.test(r.content), 'new-skill reply: ' + r.content);
+  A.ok(/^Proposed new skill "Brief"\. It is not active until the Master evaluates and approves it in ABILITIES > SKILLS\.$/.test(r.content), 'new-skill reply: ' + r.content);
   const g = fixture(); seed(g); const revEvents = [], revInfos = [];
   const revision = makeSkillTools({ store: g.s, onManage: (s, c, action, info) => revInfos.push(info) }).writeTool.run({ name: 'Brief', body: BODY + '\n3. Check.' }, { agentId: 'a', emit: (type, value) => revEvents.push(value) });
   A.ok(/^Proposed revision for skill "Brief"\..*the active version is unchanged\.$/.test(revision.content), 'revision reply: ' + revision.content);
@@ -236,7 +236,7 @@ for (const change of ['body', 'files', 'summary', 'baseline', 'pin']) {
   A.eq(proposal(f.s).candidateDigest, c.candidateDigest, 'pending replacement is not overwritten by retirement');
   A.eq(read(f.s).state, 'active', 'pending replacement keeps active procedure available');
 }
-// "No measurable improvement" is the Commander's explicit acknowledgement: it reaches the host verifier
+// "No measurable improvement" is the Master's explicit acknowledgement: it reaches the host verifier
 // only when sent, and the promotion record says it was acknowledged rather than measured.
 {
   const seen = [];
@@ -283,7 +283,7 @@ for (const change of ['body', 'files', 'summary', 'baseline', 'pin']) {
   A.eq(g.promote(into, g.issue(into)).ok, false, 'archive into an umbrella that is not active yet is refused');
 }
 // The archive is bound to the heir version it was built on, so the click order cannot route around it: a rejected
-// or outdated merge never lets the archive through, and the refusal does not send the Commander to approve a merge
+// or outdated merge never lets the archive through, and the refusal does not send the Master to approve a merge
 // that can no longer be approved. An archive into a live heir that already carries the content needs nothing more.
 {
   const consolidation = () => {
@@ -294,7 +294,7 @@ for (const change of ['body', 'files', 'summary', 'baseline', 'pin']) {
     return { f, heir: rows.find(c => c.name === 'Reports'), sibling: rows.find(c => c.name === 'Weekly brief') };
   };
   let { f, heir, sibling } = consolidation();
-  A.ok(f.s.rejectCandidate({ agentId: 'a', candidateId: heir.candidateId, candidateDigest: heir.candidateDigest }).ok, 'Commander rejects the merge');
+  A.ok(f.s.rejectCandidate({ agentId: 'a', candidateId: heir.candidateId, candidateDigest: heir.candidateDigest }).ok, 'Master rejects the merge');
   const afterReject = f.promote(sibling, f.issue(sibling));
   A.eq(afterReject.ok, false, 'archive is refused once its merge was rejected');
   A.ok(/not approved/.test(afterReject.error || '') && /reject this archive/.test(afterReject.error || ''), 'refusal says the merge was not approved and to reject the archive');
@@ -302,13 +302,13 @@ for (const change of ['body', 'files', 'summary', 'baseline', 'pin']) {
   f.s.compact(); f.reload();
   A.eq(f.promote(sibling, f.issue(sibling)).ok, false, 'the heir binding survives compaction and restart');
   ({ f, heir, sibling } = consolidation());
-  f.s.manage({ agentId: 'a', target: 'Reports', action: 'edit', body: 'Commander rewrite of reports.', createdBy: 'user' });
+  f.s.manage({ agentId: 'a', target: 'Reports', action: 'edit', body: 'Master rewrite of reports.', createdBy: 'user' });
   const outdated = f.promote(sibling, f.issue(sibling));
   A.eq(outdated.ok, false, 'archive is refused while its merge is outdated');
   A.ok(!/first/.test(outdated.error || '') && /reject this archive/.test(outdated.error || ''), 'an outdated merge is not offered as the next step');
   ({ f, heir, sibling } = consolidation());
   A.ok(f.promote(heir, f.issue(heir)).ok, 'merge approves');
-  f.s.manage({ agentId: 'a', target: 'Reports', action: 'edit', body: 'Commander rewrite of reports.', createdBy: 'user' });
+  f.s.manage({ agentId: 'a', target: 'Reports', action: 'edit', body: 'Master rewrite of reports.', createdBy: 'user' });
   const changed = f.promote(sibling, f.issue(sibling));
   A.eq(changed.ok, false, 'archive is refused when the heir changed after the archive was proposed');
   A.ok(/changed after this archive/.test(changed.error || ''), 'refusal says the heir changed');
@@ -355,7 +355,7 @@ for (const change of ['body', 'files', 'summary', 'baseline', 'pin']) {
 }
 // COMMS veto of a reflection save. Reflection writes are proposals now, so the veto must reject the proposal: a
 // plain archive with no writer was refused (a revision) or answered 'no such skill' (a new skill), and the
-// proposal stayed approvable. Only a save that is an active skill is archived, as the Commander.
+// proposal stayed approvable. Only a save that is an active skill is archived, as the Master.
 {
   const f = fixture(); seed(f);
   const created = f.s.write({ agentId: 'a', name: 'Standup notes', summary: 'Standup', body: BODY, createdBy: 'reflection', sourceRunId: 'run-1' });
@@ -372,7 +372,7 @@ for (const change of ['body', 'files', 'summary', 'baseline', 'pin']) {
   const v3 = f.s.veto({ agentId: 'a', target: 'brief' });
   A.ok(v3.ok && v3.action === 'archive', 'veto of an active save archives it');
   A.eq(read(f.s).state, 'archived', 'the active save is archived directly');
-  A.eq(f.s.candidates('a').length, 0, 'the Commander\'s archive is not a proposal');
+  A.eq(f.s.candidates('a').length, 0, 'the Master\'s archive is not a proposal');
   const v4 = f.s.veto({ agentId: 'a', target: 'never-saved' });
   A.ok(!v4.ok && /no such skill/.test(v4.error), 'a record already gone says no such skill');
   const g = fixture(); seed(g);
@@ -450,13 +450,13 @@ for (const change of ['body', 'files', 'summary', 'baseline', 'pin']) {
   f.reload();
   const gate = makeSkillGate({ guard, approvals: { get() { return null; } } });
   A.eq(gate.decide(read(f.s, 'Legacy')).visible, false, 'precondition: legacy review-written version is withheld');
-  A.ok(f.s.manage({ agentId: 'a', target: 'Legacy', action: 'archive', createdBy: 'user' }).ok, 'Commander archives it');
-  A.ok(f.s.manage({ agentId: 'a', target: 'Legacy', action: 'restore', createdBy: 'user' }).ok, 'Commander restores it');
+  A.ok(f.s.manage({ agentId: 'a', target: 'Legacy', action: 'archive', createdBy: 'user' }).ok, 'Master archives it');
+  A.ok(f.s.manage({ agentId: 'a', target: 'Legacy', action: 'restore', createdBy: 'user' }).ok, 'Master restores it');
   A.eq(read(f.s, 'Legacy').writtenBy, 'background-review', 'archive and restore keep the writer of these bytes');
   A.eq(gate.decide(read(f.s, 'Legacy')).visible, false, 'archive and restore do not approve review-written bytes');
-  A.ok(f.s.manage({ agentId: 'a', target: 'Legacy', action: 'write_file', path: 'references/note.txt', content: 'A note.', createdBy: 'user' }).ok, 'Commander attaches a support file');
-  A.eq(gate.decide(read(f.s, 'Legacy')).visible, false, 'a support file attached by the Commander keeps the review stamp');
-  A.ok(f.s.manage({ agentId: 'a', target: 'Legacy', action: 'remove_file', path: 'references/note.txt', createdBy: 'user' }).ok, 'Commander removes it again');
+  A.ok(f.s.manage({ agentId: 'a', target: 'Legacy', action: 'write_file', path: 'references/note.txt', content: 'A note.', createdBy: 'user' }).ok, 'Master attaches a support file');
+  A.eq(gate.decide(read(f.s, 'Legacy')).visible, false, 'a support file attached by the Master keeps the review stamp');
+  A.ok(f.s.manage({ agentId: 'a', target: 'Legacy', action: 'remove_file', path: 'references/note.txt', createdBy: 'user' }).ok, 'Master removes it again');
   A.eq(gate.decide(read(f.s, 'Legacy')).visible, false, 'removing a support file keeps the review stamp');
   const approved = read(f.s, 'Legacy');
   const blessed = makeSkillGate({ guard, approvals: { get(a, id, d) { return d === approved.contentDigest ? { digest: d } : null; } } });
@@ -486,19 +486,19 @@ for (const change of ['body', 'files', 'summary', 'baseline', 'pin']) {
   const g = fixture(); seed(g);
   g.s.manage({ agentId: 'a', target: 'Brief', action: 'patch', find: 'concise', replace: 'short', createdBy: 'background-review' });
   c = proposal(g.s); g.s.rejectCandidate({ agentId: 'a', candidateId: c.candidateId, candidateDigest: c.candidateDigest });
-  A.eq(g.s.curate('a', { now: 100000, staleMs: 10, archiveMs: 1e9 }).stale, 1, 'aged Commander skill still goes stale');
+  A.eq(g.s.curate('a', { now: 100000, staleMs: 10, archiveMs: 1e9 }).stale, 1, 'aged Master skill still goes stale');
 }
-// A proposal outdated by a Commander edit is listed as outdated (reject-only), and the refusal says what to do.
+// A proposal outdated by a Master edit is listed as outdated (reject-only), and the refusal says what to do.
 {
   const f = fixture(); seed(f); f.s.manage({ agentId: 'a', action: 'edit', target: 'Brief', body: BODY + '\n3. Check.' });
   const c = proposal(f.s);
   A.eq(c.baseCurrent, true, 'a fresh proposal is current');
-  f.s.manage({ agentId: 'a', action: 'edit', target: 'Brief', body: 'Commander correction', createdBy: 'user' });
+  f.s.manage({ agentId: 'a', action: 'edit', target: 'Brief', body: 'Master correction', createdBy: 'user' });
   A.eq(proposal(f.s).baseCurrent, false, 'the list marks a proposal outdated by an active edit');
   A.eq(f.s.candidate('a', c.candidateId).baseCurrent, false, 'the single-candidate read agrees');
   const refused = f.promote(c, f.issue(c));
   A.eq(refused.ok, false, 'an outdated proposal cannot be promoted');
-  A.ok(/reject it/.test(refused.error) && !/regenerate/.test(refused.error), 'refusal names an action the Commander can take');
+  A.ok(/reject it/.test(refused.error) && !/regenerate/.test(refused.error), 'refusal names an action the Master can take');
   A.ok(f.s.rejectCandidate({ agentId: 'a', candidateId: c.candidateId, candidateDigest: c.candidateDigest }).ok, 'an outdated proposal can still be rejected');
 }
 // skills-eval-07 (host half): the approve route precommits a digest approval for the candidate's bytes before it calls
@@ -538,7 +538,7 @@ for (const change of ['body', 'files', 'summary', 'baseline', 'pin']) {
   f.reload();
   A.eq(gate.decide(read(f.s, 'Umbrella')).visible, true, 'the umbrella stays available after aging and restart');
   A.eq(read(f.s, 'Reviewed').guardAction, 'ask', 'a legacy review-written version keeps its provenance ask');
-  A.eq(gate.decide(read(f.s, 'Reviewed')).visible, false, 'and stays withheld until the Commander approves it');
+  A.eq(gate.decide(read(f.s, 'Reviewed')).visible, false, 'and stays withheld until the Master approves it');
   f.s.manage({ agentId: 'a', action: 'patch', target: 'Umbrella', find: 'concise', replace: 'checked', createdBy: 'curator' });
   const widened = proposal(f.s); A.ok(f.promote(widened, f.issue(widened)).ok, 'a new curator revision promotes');
   A.eq(read(f.s, 'Umbrella').guardAction, 'ask', 'a promoted curator revision is review-written (its approval is digest-keyed)');

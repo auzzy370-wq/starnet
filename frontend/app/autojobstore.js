@@ -2,7 +2,7 @@
    the autonomy layer.
 
    It does two things, both routed through the same flow (reason-only model call → parse → approval beat → schedule):
-   - PROACTIVE (fire-once): after the First Pitch, once the Commander has turned autonomy on (Initiative ≥ propose)
+   - PROACTIVE (fire-once): after the First Pitch, once the Master has turned autonomy on (Initiative ≥ propose)
      and the station knows enough, it offers — ONCE — a few standing-job proposals on a clean run.end. Hard-gated +
      anti-nag; the manual entry takes over after.
    - MANUAL: the ROUTINES panel's "propose standing jobs" button calls propose() directly (an explicit ask always
@@ -127,12 +127,12 @@ const AutoJobStore = (() => {
   // fire-once bookkeeping (a manual run never burns or needs the flag).
   /* THE ROUTINE PROPOSALS ARE AN OFFER (comms-owner arbiter, wave 1). The panel opened with no offer and covered the whole of COMMS,
      message box included, for the model call and every proposal. Now it ends above the message box and steps aside, unanswered,
-     when the Commander picks a conversation, sends a turn or an ask reaches them: the model call is aborted, the proposal on screen
-     is left as it was shown (no answer is recorded for the Commander), and the proactive offer is not spent unless the Commander
+     when the Master picks a conversation, sends a turn or an ask reaches them: the model call is aborted, the proposal on screen
+     is left as it was shown (no answer is recorded for the Master), and the proactive offer is not spent unless the Master
      answered at least one proposal. Esc is the panel's own "leave it — not now" (a dismiss, as before).
      NEVER A NAG LOOP (review 10-27): a proactive offer that stepped aside (or was Esc'd before any proposal) is not offered again
      this session (asideThisSession), so it costs at most one model call per session until it is answered. And the honest
-     done-line still reaches the Commander: Esc consumes only its own "not now" (the line after it is read like any other), and a
+     done-line still reaches the Master: Esc consumes only its own "not now" (the line after it is read like any other), and a
      step-aside with routines already scheduled leaves that line in the transcript (Chat.localLine) instead of saying nothing. */
   const JOBS_ASIDE = { aside: true }, JOBS_NOT_NOW = { notNow: true };
   let asideThisSession = false;
@@ -180,7 +180,7 @@ const AutoJobStore = (() => {
 
       // G4 feature 2: a MISSION BOARD is placed → the proposals get a BODY. Park them in the pending ledger (the
       // board pin-feed + quest log project them), close the panel, and let the agent walk-and-pin. No inline
-      // Dialogue approval — the Commander decides at the board / quest log (approve → the real cron POST). The
+      // Dialogue approval — the Master decides at the board / quest log (approve → the real cron POST). The
       // fire-once flag is still spent (the offer was delivered — it now lives on the board, not in a settings toggle).
       if (boardPlaced()) {
         if (Dialogue.isOpen()) Dialogue.close();
@@ -202,14 +202,14 @@ const AutoJobStore = (() => {
         if (existsAmong(pr.title, live)) continue;   // already a live routine with this name — don't offer a dup
         const rid = 'routine:' + nameFp(pr.title) + ':' + Date.now();
         /* GROUNDS IS THE MODEL'S OWN PROSE, NOT A QUOTE (2026-08-05). It went to the ledger as
-           `type:'dossier', quote:` — the evidence type that means "this is a verbatim thing the Commander's
+           `type:'dossier', quote:` — the evidence type that means "this is a verbatim thing the Master's
            own record says". autojobs.js parses GROUNDS out of the aux reply and V.grounded only checks that it
            OVERLAPS what the station knows; the words are still the model's. Same mis-typing the suggest ledger
            carried one file over, same fix: rationale/text. Both ledgerPosts in this file (here and pinProposals). */
         ledgerPost({ id: rid, surface: 'routine', kind: 'routine', title: pr.title, target: nameFp(pr.title), traits: ['routine', 'cadence:' + (pr.cadenceId || 'unknown')], evidence: [{ id: 'routine-grounds', type: 'rationale', text: pr.grounds || pr.why || '' }], readiness: { ready: true, reasons: [] }, modelVersion: 'autojobs-v2' });
         const picked = await until(Dialogue.node({ lines: AutoJobs.proposalLines(pr), options: AutoJobs.approveChoices(), dismissable: true, dismissLabel: 'leave it — not now' }));
         // unanswered: the row stays 'shown' (the ledger's unanswered state, left to expire) — 'deferred' is an ANSWER the
-        // ledger keeps as the Commander's, and they gave none (the goal path's arc records nothing for the same step-aside)
+        // ledger keeps as the Master's, and they gave none (the goal path's arc records nothing for the same step-aside)
         if (picked === JOBS_ASIDE) { steppedAside = true; break; }
         if (picked === JOBS_NOT_NOW) arm();   // that Esc is spent: the done-line after it waits to be read
         const choice = picked === JOBS_NOT_NOW ? { value: '', skip: true, dismissed: true } : picked;   // Esc = "leave it — not now"
@@ -220,9 +220,9 @@ const AutoJobStore = (() => {
         } else if (choice) ledgerPost({ id: rid, state: 'declined', reason: 'wrong_thing' });
       }
       if (steppedAside) {
-        standDown();   // the Commander moved on: the panel closes over nothing they went to…
+        standDown();   // the Master moved on: the panel closes over nothing they went to…
         await leaveDoneLine();   // …but what was already scheduled (and whether it will run) is still said, in the transcript
-        // an offer the Commander already answered in part was delivered: spent, so a declined proposal is not offered again
+        // an offer the Master already answered in part was delivered: spent, so a declined proposal is not offered again
         if (opts.proactive && answered > 0) { state.proposed = true; save(); }
         return { scheduled };
       }
@@ -268,7 +268,7 @@ const AutoJobStore = (() => {
   function pendingCount() { return (state && Array.isArray(state.pending)) ? state.pending.length : 0; }
   function findPending(id) { return (state && Array.isArray(state.pending)) ? state.pending.find(p => p && p.id === id) : null; }
   // APPROVE: schedule the real cron routine (the SAME POST /api/cron path the Dialogue flow uses), then drop the
-  // card. Returns { ok }. A failed POST leaves the card pinned so the Commander can retry — never a silent loss.
+  // card. Returns { ok }. A failed POST leaves the card pinned so the Master can retry — never a silent loss.
   async function acceptPending(id) {
     const pr = findPending(id);
     if (!pr || !ready()) return { ok: false };

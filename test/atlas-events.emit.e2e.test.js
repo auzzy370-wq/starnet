@@ -6,7 +6,7 @@
        prove no false supersede, then forward a task on the SAME chat and assert the genuine supersede event
        and prior work-item id on SSE. A harmless canned shell call proves the forwarded-content lock on wire.
      · workshop.decided (finding cf61a8e9; shared/events.js:140, emit sidecar/index.js:~6749) — emit-only
-       telemetry when the Commander decides a pending deliverable. Driven deterministically via the 'later'
+       telemetry when the Master decides a pending deliverable. Driven deterministically via the 'later'
        decision (no manifest/disk needed): POST /api/workshop/decide {decision:'later'} emits it on the bus.
 
    Zero model spend: the mocked provider returns a canned stream (pricing 0); no real key is ever sent. Run
@@ -19,7 +19,7 @@ const os = require('os');
 const fs = require('fs');
 const { spawn } = require('child_process');
 const { bootToken } = require('./_httpToken.js');
-// the run-context note is the leading text of the newest user message on a non-Claude chat wire: match the Commander's own words
+// the run-context note is the leading text of the newest user message on a non-Claude chat wire: match the Master's own words
 const { userWords, loopNotes } = require('./helpers/host-notes.js');
 const { allocatePort, BIND_REFUSED } = require('./helpers/ports.js');
 

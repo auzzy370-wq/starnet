@@ -34,12 +34,12 @@ function makeConsentWait(deps) {
   const onAutoDeny = typeof deps.onAutoDeny === 'function' ? deps.onAutoDeny : null;
   /* TIMEOUT IS NOT A NO (2026-10-11). An unanswered prompt still fail-closes, but a caller may ask for the timer's
      expiry to resolve with its OWN decision word (channels pass 'timeout'; the broker maps it to a distinct denial the
-     model reads as "nobody answered", never "the Commander declined") and to hear about it (onTimeout -> the chat is
+     model reads as "nobody answered", never "the Master declined") and to hear about it (onTimeout -> the chat is
      told the action did not run). An abort/disconnect stays a plain 'deny'. Absent = byte-identical to before. */
   const timeoutDecision = typeof deps.timeoutDecision === 'string' && deps.timeoutDecision ? deps.timeoutDecision : 'deny';
   /* A WITHDRAWN ASK IS NOT A NO EITHER (review 10-14). An abort (the run stopped, the page went away) or a prompt never shown
      resolves with the caller's abortDecision when it names one — the capability consent passes 'cancelled', which the broker
-     keeps CLOSED but marks withdrawn, so a worker whose ask died with its run never tells the Commander "you declined".
+     keeps CLOSED but marks withdrawn, so a worker whose ask died with its run never tells the Master "you declined".
      The finisher carries it (finish.abortDecision) for the host's own teardown. Absent = a plain 'deny', as before. */
   const abortDecision = typeof deps.abortDecision === 'string' && deps.abortDecision ? deps.abortDecision : 'deny';
   const onTimeout = typeof deps.onTimeout === 'function' ? deps.onTimeout : null;

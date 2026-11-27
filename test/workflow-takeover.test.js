@@ -124,7 +124,7 @@ console.log('workflow-takeover: repeat sense (paraphrase, guards, notice, cadenc
 
 // UPGRADE (sweep 2026-10-02): a decision 0.12.5 saved has no core, and its id was idFor([agent, project, signature(text)]).
 // "Don't offer this again" and a snooze from 0.12.5 still hold in 0.13 — the new id rule (the cluster's oldest member) never
-// matched them, so a NEVER was re-offered the day the Commander upgraded.
+// matched them, so a NEVER was re-offered the day the Master upgraded.
 {
   const crypto = require('node:crypto');
   const legacy = text => 'workflow-' + crypto.createHash('sha256').update(['agent', '', W.signature(text)].join('\n')).digest('hex').slice(0, 24);
@@ -205,7 +205,7 @@ console.log('workflow-takeover: repeat sense (paraphrase, guards, notice, cadenc
   assert.equal(notice.count, 4);
   assert.equal(live.candidates().length, 1);
   assert.equal(live.candidates()[0].count, 3);
-  assert.match(CC.compose({ standingWork: notice }), /The Commander has now asked/);
+  assert.match(CC.compose({ standingWork: notice }), /The Master has now asked/);
   assert.equal(live.impressions.length, 1, 'an eligible notice records its impression');
   assert.ok(clean.rows.every((row, i) => row.sourceRunId !== clean.briefs[i].runId), 'the positive proof does not depend on the finishing run id');
 
@@ -307,9 +307,9 @@ console.log('workflow-takeover: repeat sense (paraphrase, guards, notice, cadenc
   assert.equal(host(history()).notice(CANARY), null, 'quoted current directives cannot trigger standing-work owner claims');
   assert.equal(host(history()).notice(CLEAN, 'another-agent'), null, 'notice stays with its owning agent');
   assert.equal(host(history()).notice(CLEAN, 'agent', '/fixture/project-b'), null, 'notice stays within its project');
-  // (2026-10-12) a channel group guest asking the same thing is not the Commander asking again; the owner's own DM is
+  // (2026-10-12) a channel group guest asking the same thing is not the Master asking again; the owner's own DM is
   const guestAsk = host(history());
-  assert.equal(guestAsk.notice(CLEAN, 'agent', PROJECT, { channelSender: true, channelSenderOwner: false }), null, 'a channel guest request never counts as the Commander asking again');
+  assert.equal(guestAsk.notice(CLEAN, 'agent', PROJECT, { channelSender: true, channelSenderOwner: false }), null, 'a channel guest request never counts as the Master asking again');
   assert.equal(guestAsk.impressions.length, 0, 'and records no shown impression');
   assert.ok(host(history()).notice(CLEAN, 'agent', PROJECT, { channelSender: true, channelSenderOwner: true }), 'the bound owner in a direct chat still gets the notice');
 

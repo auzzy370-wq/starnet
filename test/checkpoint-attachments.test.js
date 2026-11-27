@@ -11,7 +11,7 @@
         the object store, the older rollback points are lost, and the restore list is one row;
      3. forgetAttachments leaves a repo alone whose history holds none of the paths (no reset, same head), and is idempotent;
      4. a path outside .attachments/ is never searched for (the deleted-session call cannot be turned into a wipe of delivered work);
-     5. a project root (the Commander's own folder) keeps its own ignore rules: nothing is added to it. */
+     5. a project root (the Master's own folder) keeps its own ignore rules: nothing is added to it. */
 'use strict';
 const A = require('./_assert.js');
 const fs = require('fs');
@@ -123,14 +123,14 @@ function runGit(args, opts) {
     try {
       const scoped = makeCheckpointStore({ fs, pathMod: path, root, runGit, clock, keep: 50, scopeIdOf: p => require('crypto').createHash('sha256').update(String(p)).digest('hex').slice(0, 32), allowWorkTree: () => true });
       fs.mkdirSync(path.join(proj, '.attachments'), { recursive: true });
-      fs.writeFileSync(path.join(proj, '.attachments', 'theirs.txt'), 'the Commander\'s own folder named .attachments\n');
+      fs.writeFileSync(path.join(proj, '.attachments', 'theirs.txt'), 'the Master\'s own folder named .attachments\n');
       fs.writeFileSync(path.join(proj, 'main.txt'), 'project\n');
       const sp = await scoped.snapshot(aid, { runId: 'r4', turn: 0, label: 'project', workTree: proj, authorizedWorkTree: true });
       A.ok(sp && sp.created, 'a project root snapshot was taken');
       const scopeDirs = fs.readdirSync(path.join(root, '.checkpoints', aid, 'roots'));
       const pgit = path.join(root, '.checkpoints', aid, 'roots', scopeDirs[0], 'git');
       const files = (await runGit(['--git-dir', pgit, '--work-tree', proj, 'ls-tree', '-r', '--name-only', 'HEAD'], { cwd: proj })).stdout.split('\n').filter(Boolean).sort();
-      A.eq(files, ['.attachments/theirs.txt', 'main.txt'], 'the Commander\'s own folder is snapshotted whole: the exclude belongs to the agent\'s workspace repo only');
+      A.eq(files, ['.attachments/theirs.txt', 'main.txt'], 'the Master\'s own folder is snapshotted whole: the exclude belongs to the agent\'s workspace repo only');
       A.ok(!fs.existsSync(path.join(pgit, 'info', 'exclude')) || !/\.attachments/.test(fs.readFileSync(path.join(pgit, 'info', 'exclude'), 'utf8')), 'and no exclude line was added to that repo');
     } finally { fs.rmSync(proj, { recursive: true, force: true }); }
 

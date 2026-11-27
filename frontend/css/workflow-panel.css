@@ -7,7 +7,7 @@
    you type or read back, and state as a change of EDGE / FILL / RAIL — never an outer glow.
    READABLE AND ROOMY (2026-09-30, Andrew: "tiny text … the older uglier vultron look and buttons … easy to use,
    simplified … consistent with the rest of vultron"): the panel speaks at the STATION's size now — body 17px at a
-   1.45 line (COMMS reads at that size), titles 22px, nothing a Commander reads under 14px — and wears the Build
+   1.45 line (COMMS reads at that size), titles 22px, nothing a Master reads under 14px — and wears the Build
    Library's keys: 8px glass buttons, 36px tall, one weight (no wide-tracked small caps). Cards breathe (10–12px
    radius, 10–14px padding) and the line diagram is a row of real cards, not thumbnails of cards.
    Theme tokens only, so every phosphor set re-tints it. The one local colour is the loop/edited cyan the
@@ -101,7 +101,7 @@
 
 /* THE LINE, DRAWN (the panel's "system view"): trigger ▸ docks in compiled order ▸ OUTBOX, loops as back-arcs. One
    recessed bay — a darker well with the faint layout grid — so the machine reads as set INTO the glass; every part is a
-   full glass card a Commander can read and click, joined by a plain belt with the + that adds to it.
+   full glass card a Master can read and click, joined by a plain belt with the + that adds to it.
    THE MAP (2026-09-30): each card leads with the part's own floor art, so the diagram is this line's machines and not a
    wireframe of boxes; and a one-row diagram stays PINNED at the top of the scroll (.pin) while the picked part's editor
    moves under it — the well is opaque for that, the same dark bay over the panel's own sheet. */
@@ -426,7 +426,7 @@ textarea.wf-io:focus { outline: none; border-color: var(--ph); box-shadow: var(-
 .wf-panel select { min-height: 36px; font-size: 17px; }   /* (its drawn chevron and padding stay the shared select's) */
 
 /* LINE TRIGGERS (2026-09-23): folder / webhook rows on the INBOX. The URL and the once-only key are readouts the
-   Commander copies, so they wrap anywhere and select as one token; the key box is the only lit (gold-edged) object. */
+   Master copies, so they wrap anywhere and select as one token; the key box is the only lit (gold-edged) object. */
 .lt-row { padding: 8px 0 10px; border-bottom: 1px dashed var(--wf-edge); }
 .lt-row:last-child { border-bottom: 0; }
 .lt-acts { padding-left: 1.15em; margin-top: 6px; }

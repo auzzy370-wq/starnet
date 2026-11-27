@@ -1,4 +1,4 @@
-/* sidecar/autonotify.js — autonomy B4: ping the Commander over a connected channel (Telegram/Discord) when an
+/* sidecar/autonotify.js — autonomy B4: ping the Master over a connected channel (Telegram/Discord) when an
    AUTONOMOUS (cron) run PRODUCES WORK. Opt-in + anti-spam: ONLY a clean 'ok' outcome pings — a 'silent' run (the
    routine decided there was nothing to report; the autonomous persona carries a [SILENT] hint) or a 'failed' run
    never does. Pure + injected-deps (no IO / clock / rng) → node-testable; index.js wires the live channel send +

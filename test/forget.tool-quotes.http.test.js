@@ -1,7 +1,7 @@
 'use strict';
 /* node test/forget.tool-quotes.http.test.js — A SESSION A RUN READ IS FORGOTTEN WITH THE SESSION (turn identity commit 11, A2-MIG-02, A2-FP-01/02).
 
-   One REAL station (SidecarFixture) and a scripted model; the run reads session S through the real recall_conversation tool, the Commander
+   One REAL station (SidecarFixture) and a scripted model; the run reads session S through the real recall_conversation tool, the Master
    deletes S (POST /api/save with forgetIds, exactly what the page sends), and every word the run took from S must leave every reader:
 
      setup   S says a codeword once. T's run recalls it and answers with it; U is a control that never reads S.

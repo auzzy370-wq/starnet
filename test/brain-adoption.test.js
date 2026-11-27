@@ -79,7 +79,7 @@ function world(opts) {
     A.eq(w.state.model, 'grok-4', 'the model comes from the sign-in’s own catalog (a foreign slug is not sent to xAI)');
   }
 
-  /* ---- a brain that CAN run is never switched out from under the Commander ---- */
+  /* ---- a brain that CAN run is never switched out from under the Master ---- */
   {
     const w = world({ keys: { openrouter: 'sk-or-1' }, ready: { grok: true } });
     A.eq(await w.api.adoptSignedInProvider(), { provider: 'openrouter', changed: false }, 'a page-held key keeps the pick');
@@ -107,7 +107,7 @@ function world(opts) {
     A.eq((await g.api.adoptSignedInProvider('grok')).provider, 'grok', 'and so is Grok when its card was the one');
   }
 
-  /* ---- an already-valid model slug is left exactly as the Commander had it ---- */
+  /* ---- an already-valid model slug is left exactly as the Master had it ---- */
   {
     const w = world({ ready: { grok: true }, model: 'grok-4' });
     await w.api.adoptSignedInProvider();

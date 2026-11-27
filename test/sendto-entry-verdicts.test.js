@@ -1,7 +1,7 @@
 /* node test/sendto-entry-verdicts.test.js — SEND TO carries the sending job's ENTRY VERDICTS (review finding conveyor-backend-04).
 
    Before: every SEND TO hand-off ran the target line's job on the trigger hub, whose entryTaint made EVERY hand-off an untrusted
-   entry — so a job the Commander typed into LINE A lost Full Access on LINE B (its connector / shell steps refused), while the same
+   entry — so a job the Master typed into LINE A lost Full Access on LINE B (its connector / shell steps refused), while the same
    steps drawn as ONE line kept it. Now the sending job's verdicts ride the hand-off — FAIL CLOSED:
      · the channel hub stamps the chain seed with entryTrusted / hostPowerKept, POSITIVE only, from the very verdicts it ran the entry
        run and every hop under (channels/hub.js);
@@ -15,7 +15,7 @@
    run-origin.js + taint.js exactly as runOnceCore does for a Full Access agent:
      1. HUB      — the hooks only narrow; a throwing / non-boolean hook fails closed; the seed stamp mirrors the run verdicts.
      2. CHAIN    — shipped() carries the verdicts only as a literal true.
-     3. RIDES ON — a Commander-typed A keeps Full Access on B and C (B's entry run = an in-line hop's verdict); a webhook-, forwarded-
+     3. RIDES ON — a Master-typed A keeps Full Access on B and C (B's entry run = an in-line hop's verdict); a webhook-, forwarded-
                    or attachment-started A stays untrusted on B and C; a non-owner sender's A stays withheld on B and C; a legacy
                    shipment (no verdicts) and a lineage without them stay untrusted + withheld; a host that does not forward the hooks
                    keeps today's lock.
@@ -247,29 +247,29 @@ function world(opts) {
   }
 
   /* ---------- 3. RIDES ON ---------- */
-  // (a) the Commander typed the job into LINE A (the sample route's owner surface): B and C keep Full Access
+  // (a) the Master typed the job into LINE A (the sample route's owner surface): B and C keep Full Access
   {
     const w = world();
     await w.entryHub({ channel: 'sample', ownerSurface: true, streamId: 'sample-cmd1' }).onInbound(msg('Research Mars and publish it', { channel: 'sample', chatId: 'smp' }));
     await w.settle();
     const a = w.on('A'), b = w.on('B'), c = w.on('C');
     A.ok(a.length === 2 && b.length === 2 && c.length === 2, 'the job ran A (2 steps) → B (2 steps) → C (2 steps): ' + JSON.stringify(w.runs.map(r => r.line)));
-    A.ok(w.shipped.length >= 2 && w.shipped[0].entryTrusted === true && w.shipped[0].hostPowerKept === true, 'A\'s shipment carries the Commander job\'s verdicts');
+    A.ok(w.shipped.length >= 2 && w.shipped[0].entryTrusted === true && w.shipped[0].hostPowerKept === true, 'A\'s shipment carries the Master job\'s verdicts');
     const inLineHop = pick(a[1]);
-    A.eq(inLineHop, { untrusted: false, withheld: false, fullAccess: true, shellAllowed: true }, 'an IN-LINE hop of the Commander\'s job keeps Full Access (the baseline)');
+    A.eq(inLineHop, { untrusted: false, withheld: false, fullAccess: true, shellAllowed: true }, 'an IN-LINE hop of the Master\'s job keeps Full Access (the baseline)');
     A.eq(pick(b[0]), inLineHop, 'B\'s entry run gets the SAME verdict as an in-line hop: Full Access kept, the tainted shell step allowed');
     A.eq(b[0].initialTaint, 'upstream line output', '…while still starting tainted by the upstream line\'s output');
     A.eq(pick(b[1]), inLineHop, '…and so does B\'s own hop');
     A.eq([pick(c[0]), pick(c[1])], [inLineHop, inLineHop], 'C (handed on from B) keeps it too');
   }
-  // (a') the Commander in their own Telegram DM: the same
+  // (a') the Master in their own Telegram DM: the same
   {
     const w = world();
     await w.entryHub({ channel: 'telegram', isOwner: () => true }).onInbound(msg('Research Mars'));
     await w.settle();
     A.ok(w.on('B').length === 2 && w.on('B').concat(w.on('C')).every(r => !r.untrusted && !r.withheld && r.shellAllowed), 'the owner\'s Telegram DM job keeps Full Access on B and C — ' + JSON.stringify(w.on('B').concat(w.on('C')).map(pick)));
   }
-  // (a'') the SAME Commander job on a host that does not forward the hooks (the trunk before the host half): today's lock
+  // (a'') the SAME Master job on a host that does not forward the hooks (the trunk before the host half): today's lock
   {
     const w = world({ forward: false });
     await w.entryHub({ channel: 'sample', ownerSurface: true, streamId: 'sample-nofwd' }).onInbound(msg('Research Mars', { channel: 'sample', chatId: 'smp' }));

@@ -2,14 +2,14 @@
 
    When an agent hits a genuine fork whose answer is a DURABLE preference (format, tone, ask-first vs
    run-with-it — never a one-off task detail), it may ask ONCE instead of guessing: the question rides its
-   normal reply (ending the turn — the honest mechanic; no fake mid-stream pause), the Commander answers via
+   normal reply (ending the turn — the honest mechanic; no fake mid-stream pause), the Master answers via
    chips at the run boundary, and the pick does double duty — it steers the task immediately AND banks into
-   the dossier's style dimension as a Commander-authored belief (the highest-quality evidence there is:
+   the dossier's style dimension as a Master-authored belief (the highest-quality evidence there is:
    given in context, about a real decision, immediately acted on).
 
    SELF-RETIRING by construction: the fork instruction only enters the system prompt while the style model's
    confidence is LOW (the same understanding.js floor that aims the VOI question and the belief probes) —
-   once the station knows how the Commander likes work done, the forks stop appearing at all. The system
+   once the station knows how the Master likes work done, the forks stop appearing at all. The system
    asks LESS the longer it's used.
 
    This engine is the pure half: the directive block, the reply-marker parser, the confidence gate, and the
@@ -60,7 +60,7 @@
       + '\\|\\|[ \\t]*((?:[^\\n]*?[^\\n \\t])??)[ \\t]*$';
   }
   /* ONE CASE RULE (rc review 2026-10-14). The keyword carries its own case, so every regex built from it — here, in the loop's
-     "this reply waits on the Commander" check (sidecar/loop.js) and the phone push — agrees on what a marker is. FORK in
+     "this reply waits on the Master" check (sidecar/loop.js) and the phone push — agrees on what a marker is. FORK in
      capitals or title case: a lowercase "fork:" is prose or code ("const fork: Fork = a || b"), never a marker. TASK_QUESTION
      in any case: the word is unmistakable. No regex built from these takes the `i` flag. */
   const FORK_KEY = '\\bF(?:ORK|ork)', TASK_KEY = '[Tt][Aa][Ss][Kk]_[Qq][Uu][Ee][Ss][Tt][Ii][Oo][Nn]';
@@ -100,22 +100,22 @@
   }
 
   // the conditional system-prompt block. Only composed when shouldOffer() said yes — the caller never
-  // includes it otherwise, so a well-understood Commander's prompt carries zero fork machinery.
+  // includes it otherwise, so a well-understood Master's prompt carries zero fork machinery.
   function directive() {
     return [
       'MID-TASK PREFERENCE FORK (you may use this AT MOST ONCE per task, or not at all):',
       'If — and only if — you hit a genuine fork where the choice reveals a DURABLE preference about how your',
-      'Commander likes work done (format, tone, depth, ask-first vs run-with-it), you may ask instead of guessing.',
+      'Master likes work done (format, tone, depth, ask-first vs run-with-it), you may ask instead of guessing.',
       'Never use it for one-off task details (which file, which URL — just ask those normally or decide).',
       'To ask, end your reply with exactly one line in this format (2-3 short options, || and | are literal):',
       'FORK: <the question, one short line> || <option A> | <option B> | <option C, optional>',
-      'HARD FORMAT RULE while this block is present: if your reply ends by offering the Commander a choice or',
+      'HARD FORMAT RULE while this block is present: if your reply ends by offering the Master a choice or',
       'asking their preference (formats, tone, length, "want A or B?", "should I keep/save/shorten…?"), that',
-      'question MUST be the FORK line — never plain prose. Same question, but the Commander answers with one',
+      'question MUST be the FORK line — never plain prose. Same question, but the Master answers with one',
       'tap and the station keeps the answer permanently. A reply that needs no question needs no FORK line.',
       'Example — instead of ending with "Want me to keep this casual, or make it formal?", end with:',
       'FORK: keep this casual, or formal? || casual | formal',
-      'Your Commander answers with one tap; their answer arrives as their next message AND the station remembers',
+      'Your Master answers with one tap; their answer arrives as their next message AND the station remembers',
       'it permanently — so never ask a fork twice, and never ask what the briefing above already tells you.'
     ].join('\n');
   }
@@ -185,8 +185,8 @@
     });
   }
 
-  // the dossier belief a pick banks: the Commander's answer, with the question kept as context so the
-  // belief stays legible in the COMMANDER panel ("bullets — asked: summary format?").
+  // the dossier belief a pick banks: the Master's answer, with the question kept as context so the
+  // belief stays legible in the MASTER panel ("bullets — asked: summary format?").
   function beliefText(question, answer) {
     const a = String(answer == null ? '' : answer).trim();
     const q = String(question == null ? '' : question).trim().replace(/\?+$/, '');
@@ -267,7 +267,7 @@
   function taskDirective(contextBlock) {
     const lines = [
       'TASK CONTEXT — LISTEN BEFORE YOU BUILD:',
-      'Before consequential work, decide whether the Commander already supplied enough context for the result they actually want.',
+      'Before consequential work, decide whether the Master already supplied enough context for the result they actually want.',
       'Proceed immediately when the task is clear. Infer low-impact details with reversible defaults; do not turn a good request into an interview.',
       'Research before asking: inspect the granted project, conversation, task brief, and available sources when they can answer the gap.',
       'Ask only when different plausible answers would materially change the outcome, audience, deliverable, source of truth, safety, or acceptance boundary.',
@@ -275,10 +275,10 @@
       'Listen before choosing the next question. Read the ENTIRE answer: extract volunteered sources, audience, constraints, steps, exceptions and corrections, even when they answer more than you asked. Call brief_update after each conversational answer. Include a complete revised snapshot with verbatim quotes and sourceIds; separate your interpretations from assumptions and unresolved unknowns. Do not ask for information already supplied.',
       'Choose the next move by usefulness: proceed immediately when the next useful action is clear; ask a targeted follow-up only when its answer changes that action; or show a small draft/example using sample in brief_ask when reacting is easier than describing. A sample is provisional text, never a claim of an existing file or completed action.',
       'Conversational discovery normally needs one or two exchanges; six is an emergency ceiling, not a target. Do not fill every field, conduct a generic interview, or keep asking for cosmetic preferences. Use uncertainty about low-impact details as a reason to produce a reversible draft.',
-      'Legacy mode:choice remains available for concrete exclusive decisions: 2-3 options (or multiSelect:true up to 6), at most two asking calls. Independent questions can be bundled in also; never pre-bundle exploratory follow-ups that depend on what the Commander says.',
-      'If the Commander said "use your judgment", "just do it", or equivalent, choose the most sensible reversible default and act.',
+      'Legacy mode:choice remains available for concrete exclusive decisions: 2-3 options (or multiSelect:true up to 6), at most two asking calls. Independent questions can be bundled in also; never pre-bundle exploratory follow-ups that depend on what the Master says.',
+      'If the Master said "use your judgment", "just do it", or equivalent, choose the most sensible reversible default and act.',
       'When brief_ask, brief_update and brief_proceed are available, use them as the authoritative protocol. through in brief_update is request before any answers, otherwise the latest answered question id. Facts contain dimension, text (your working interpretation), quote (verbatim user words), and sourceId (request or question id). Never invent evidence. Keep this context local to the task, not the global dossier. Call brief_proceed immediately before the first consequential tool; the host blocks writes/executes until you do.',
-      'In brief_proceed, every assumption must be a DECISION a reasonable person could have made differently — what you are including, excluding, or treating as the source of truth — and something the Commander could actually overturn.',
+      'In brief_proceed, every assumption must be a DECISION a reasonable person could have made differently — what you are including, excluding, or treating as the source of truth — and something the Master could actually overturn.',
       'State a STYLE, TONE, or AESTHETIC assumption ONLY when the task produces an authored artifact whose look or voice you had to choose (a document, deck, page, image, UI, anything another person will read), and then name what you picked AND what you rejected ("gritty and readable, not decorative"). There, guess boldly — a corrected guess teaches more than a hedge. At most ONE such assumption per brief.',
       'NEVER restate your normal defaults as assumptions. "Style: brief and direct", "Tone: friendly", "Aesthetic: plain and readable" are how you always work — they are noise, not decisions, and they bury the one assumption that mattered. A question answered in chat needs no taste assumption at all.',
       'Use brief_ask to pause on a material unknown. It validates the decision dimension, distinct options, recommended default, research status, and whole-task question budget.',

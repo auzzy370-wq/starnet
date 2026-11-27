@@ -32,18 +32,18 @@ const APP = path.join(ROOT, 'frontend/app');
   for (const f of ['goalstore', 'journeystore', 'maintqueststore', 'stationqueststore', 'workqueststore', 'queststatestore', 'questledgerstore', 'questrefreshstore', 'dossierstore'])
     A.ok(/StationUI\.invalidate\('quests'\)/.test(read('frontend/app/' + f + '.js')), f + ': its quest-log poke goes through invalidate');
   // the background pokes outside the stores: a chat answer landing in the dossier, a specialty applied, a key saved from
-  // the CTA or the command bar, the Update Center's own state. These are not the Commander clicking in that window.
+  // the CTA or the command bar, the Update Center's own state. These are not the Master clicking in that window.
   // any spelling of the synchronous call (with or without a swap argument) is caught
   A.ok(!/\.rerender\(\s*'commander'/.test(read('frontend/app/chat.js')) && /StationUI\.invalidate\('commander', null, \{ fresh: true \}\)/.test(read('frontend/app/chat.js')), 'chat.js: an answer landing repaints the dossier through invalidate (fresh: the new belief shows)');
   A.ok(!/\.rerender\(\s*'agents'/.test(read('frontend/app/app.js')) && /StationUI\.invalidate\('agents', null, \{ fresh: true \}\)/.test(read('frontend/app/app.js')), 'app.js: a specialty applied repaints the open dossier through invalidate, its editor showing the new purpose');
   A.ok(/Updates\.init\(\{ notify: StationUI\.notify, rerender: key => StationUI\.invalidate\(key, null, \{ fresh: true \}\) \}\)/.test(read('frontend/app/app.js')), 'the Update Center is handed the background door (fresh: its controls show the new state)');
   for (const f of ['keycta', 'stationcommands']) A.ok(!/\.rerender\(\s*'settings'/.test(read('frontend/app/' + f + '.js')), f + '.js: a key saved elsewhere repaints SETTINGS through invalidate');
-  // RATCHET: the synchronous door from outside stationui.js is for the Commander's own clicks. The count only goes down.
+  // RATCHET: the synchronous door from outside stationui.js is for the Master's own clicks. The count only goes down.
   const outside = fs.readdirSync(APP).filter(f => f.endsWith('.js') && f !== 'stationui.js')
     .concat(fs.readdirSync(path.join(APP, 'windows')).filter(f => f.endsWith('.js')).map(f => 'windows/' + f));
   const syncCalls = outside.reduce((n, f) => n + (read('frontend/app/' + f).match(/(?:\bStationUI(?:\.h)?|\bui|\bUI\(\)|\b[Hh])\.rerender\s*\(/g) || []).length, 0);
   A.eq(outside.filter(f => /\{[^}]*\brerender\b[^}]*\}\s*=\s*(?:StationUI|H|h)\b/.test(read('frontend/app/' + f))), [], 'no module destructures rerender out of StationUI (it would hide from this count)');
-  const CEILING = 4;   // pluginhost.js swaps a frame whose code changed (3), automation.js opens AWAY WORK on the Commander's click (1)
+  const CEILING = 4;   // pluginhost.js swaps a frame whose code changed (3), automation.js opens AWAY WORK on the Master's click (1)
   A.ok(syncCalls <= CEILING, 'synchronous rerender calls from outside stationui.js: ' + syncCalls + ' (ceiling ' + CEILING + '; it only goes down)');
   A.ok(/StationUI\.h\.rerender\('automation'\)/.test(read('frontend/app/windows/automation.js')), '(the ceiling counts real sites: automation.js still has its click-driven one)');
 }
@@ -57,7 +57,7 @@ const APP = path.join(ROOT, 'frontend/app');
     A.ok(!/\brerender\(/.test(body), fn.trim() + ': a background path repaints through invalidate, never a synchronous rebuild');
   }
   const inFile = (sui.match(/\brerender\('/g) || []).length;
-  const FILE_CEILING = 106;   // the Commander's own clicks (QUEST LOG, SETTINGS, the dossier, NOTIFICATIONS' buttons) - it only goes down
+  const FILE_CEILING = 106;   // the Master's own clicks (QUEST LOG, SETTINGS, the dossier, NOTIFICATIONS' buttons) - it only goes down
   A.ok(inFile <= FILE_CEILING, 'synchronous rerender(\'...\') calls inside stationui.js: ' + inFile + ' (ceiling ' + FILE_CEILING + ')');
 }
 
@@ -132,7 +132,7 @@ function rig() {
   const good = r.win(); r.open.trophies = good;
   r.invalidate('apps'); r.invalidate('trophies'); r.frame();
   A.eq(good.paints, 1, 'one window\'s throwing builder never drops another window\'s owed paint');
-  A.ok(/if \(swap === true\) \{\s*body\.classList\.remove\('swap-in'\)/.test(sui), 'only the Commander\'s own swap crossfades (a fresh or draft-keeping background paint never blinks)');
+  A.ok(/if \(swap === true\) \{\s*body\.classList\.remove\('swap-in'\)/.test(sui), 'only the Master\'s own swap crossfades (a fresh or draft-keeping background paint never blinks)');
   A.ok(/const keep = swap === false \? captureForms\(\) : null;/.test(sui), '...and only a draft-keeping paint carries fields across');
   A.ok(/function rerender\(key, swap\) \{ if \(open\[key\]\) \{ delete staleWins\[key\]; delete staleFresh\[key\];/.test(sui), 'a synchronous rebuild settles the paint owed to that window (no second rebuild next frame)');
 }

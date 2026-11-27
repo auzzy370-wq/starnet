@@ -7,7 +7,7 @@
      · independent edits: APPROVE #2, then REJECT #1 -> #1 reverted, #2 kept as "approved" — a pass built on rejected
        work survives, exactly the tree state the law says the app must never assert;
      · dependent edits (#2 builds on #1's code): APPROVE #2, then REJECT #1 -> 409 with raw git conflict hints, and
-       #1 can never be rejected again — the Commander is left able only to keep work they want gone.
+       #1 can never be rejected again — the Master is left able only to keep work they want gone.
    Now an approval of #N while an older candidate is still unreviewed is refused (409, names the one to review
    first) on BOTH the HTTP and the store seam, so the cascade stays whole: rejecting #1 discards #2 and the tree
    loses both. Approving twice stays a 409. */

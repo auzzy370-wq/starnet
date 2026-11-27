@@ -1,7 +1,7 @@
 /* VULTRON — pitch.js : the PURE engine for THE FIRST PITCH (the agent's first proactive use-case suggestion).
 
    The keystone of the "agent that points you" loop. The whole station spends the awakening + intake getting to
-   KNOW its Commander (the dossier); the First Pitch is the moment that knowledge flows back the other way — the
+   KNOW its Master (the dossier); the First Pitch is the moment that knowledge flows back the other way — the
    agent stops waiting for orders and, once it has done one real task and knows enough about you, turns to you with
    ONE confident, buildable thing to make next. This is the graduation from order-taker to advisor — the single
    most differentiating beat in the app ("i think i know what we should build — want to?").
@@ -14,7 +14,7 @@
         point); a menu hands the blank-canvas paralysis right back. choices() is always [build it] + a soft out.
 
    The pitch itself is AGENT-REASONED, not templated: buildDirective() produces the self-assigned task the agent
-   runs (reading the COMMANDER block already in its system prompt), and parsePitch() reads its structured reply
+   runs (reading the MASTER block already in its system prompt), and parsePitch() reads its structured reply
    back into a beat. This engine is the deterministic skeleton around that real reasoning — the gate (when to
    pitch), the directive (what to ask for), the parse (how to read it), and the presentation (how to say it).
 
@@ -32,7 +32,7 @@
 
   // the graduation gate defaults: the station won't pitch until it knows what you're trying to do (goals) AND has
   // at least this many dimensions filled — enough to be confident, not a guess from nothing.
-  const REQUIRE_DIMS = ['goals'];   // can't propose a build without knowing what the Commander actually wants
+  const REQUIRE_DIMS = ['goals'];   // can't propose a build without knowing what the Master actually wants
   const MIN_KNOWN = 2;              // at least two dossier dimensions filled before the agent dares to advise
   const MAX_RECIPES = 8;            // cap the recipe shelf we show the agent (keeps the directive lean + the prompt warm)
   const MAX_EXCLUDE = 12;           // …and cap the already-suggested list for the same reason (bounded prompt, always)
@@ -68,7 +68,7 @@
 
   // THE ONGOING-SUGGESTION CADENCE (Slice 3) — the RECURRING counterpart to the one-time First Pitch. Once the
   // First Pitch has happened, the station offers a fresh tailored idea when it has LEARNED SOMETHING NEW about the
-  // Commander (the dossier grew since the last idea) — gently: a per-session cap + a task cooldown, never a nag.
+  // Master (the dossier grew since the last idea) — gently: a per-session cap + a task cooldown, never a nag.
   // Same honesty discipline as shouldPitch: every quiet outcome carries a reason. Order: graduation-first, then
   // can-we-propose-a-build, then budget, then cooldown, then is-there-actually-something-new.
   //   firstPitchDone  — the one-time First Pitch must precede ongoing ideas (graduation first)
@@ -82,7 +82,7 @@
     state = state || {};
     if (!state.firstPitchDone) return { go: false, reason: 'no-first-pitch' };
     // V3 §6: same shared readiness gate as shouldPitch — ongoing ideas need the station to STILL honestly
-    // know its Commander (beliefs decay; a forgotten dossier re-shuts the gate rather than guessing).
+    // know its Master (beliefs decay; a forgotten dossier re-shuts the gate rather than guessing).
     if (state.ready === false) return { go: false, reason: 'not-ready' + (state.readyWhy ? ':' + state.readyWhy : '') };
     const known = Array.isArray(state.knownDims) ? state.knownDims : [];
     const require = Array.isArray(state.requireDims) ? state.requireDims : REQUIRE_DIMS;
@@ -98,7 +98,7 @@
   }
 
   // THE DIRECTIVE — the self-assigned task the agent runs to GENERATE its pitch. The agent already carries the
-  // COMMANDER block (what it knows about you) in its system prompt, so this tells it to USE that, not re-state it.
+  // MASTER block (what it knows about you) in its system prompt, so this tells it to USE that, not re-state it.
   // It hard-constrains the agent to ONE concrete, BUILDABLE proposal grounded in the real recipes/capabilities, and
   // demands a strict tagged reply so parsePitch() can read it. Deterministic: same ctx → byte-identical directive.
   //   recipes       — [{ id, name, tagline }] the real recipe shelf (the agent should prefer mapping to one)
@@ -115,27 +115,27 @@
     // want NOVA to build the price-watcher?"). Same strict reply format, so parsePitch reads it unchanged.
     const unlocked = String(ctx.unlockedCapability == null ? '' : ctx.unlockedCapability).trim();
     // R3 BELIEF PROBE (additive): when the understanding layer flags a north-star-critical belief whose
-    // confidence has sagged (stale or counter-evidenced), aim THIS idea straight at it. The Commander's
+    // confidence has sagged (stale or counter-evidenced), aim THIS idea straight at it. The Master's
     // accept/decline then silently corroborates or counter-evidences that belief — drift detection with
     // zero questions asked. { dim, text } or absent (the normal, un-aimed idea — most sessions).
     const probe = (ctx.probe && typeof ctx.probe === 'object' && ctx.probe.dim && ctx.probe.text) ? ctx.probe : null;
 
     const lines = [];
     lines.push('INTERNAL — THE FIRST PITCH. Do not run any tools. Reason only, then reply in the exact format below.');
-    if (unlocked) lines.push('Your bay just gained a new capability: ' + unlocked + '. Propose the SINGLE most valuable thing to build for your Commander that USES this new capability — the natural next step now that it is live.');
-    else lines.push('You now know your Commander (see what you know about them, above). Propose the SINGLE most valuable thing to build for THEM next — a real use case they would actually want, not a generic suggestion.');
+    if (unlocked) lines.push('Your bay just gained a new capability: ' + unlocked + '. Propose the SINGLE most valuable thing to build for your Master that USES this new capability — the natural next step now that it is live.');
+    else lines.push('You now know your Master (see what you know about them, above). Propose the SINGLE most valuable thing to build for THEM next — a real use case they would actually want, not a generic suggestion.');
     if (probe) lines.push('AIM THIS ONE CAREFULLY: some time ago the station learned this about their ' + probe.dim + ': "' + probe.text + '". It may still be true, or their world may have moved on. Propose the build that most serves THAT — if they take it, it still matters to them; if they pass, the station learns their heading has drifted. Do not mention this aiming or ask whether it is still true; just build the best pitch for it.');
     lines.push('Hard rules:');
     lines.push('- Exactly ONE proposal. Never a list, never options. Pick the best and commit to it.');
     lines.push('- It MUST be buildable here: either it maps to one of the recipes below, or it is achievable with the capabilities you actually have. Never propose something you cannot deliver.');
-    lines.push('- It must be specific to this Commander — tie it to what you know about their goals and world.');
+    lines.push('- It must be specific to this Master — tie it to what you know about their goals and world.');
     lines.push('- If you know what eats their time or the work they want gone (their pain points), aim the pitch straight at removing that — remove it when that matches what they actually want help with.');
     lines.push('- If you know something they keep meaning to do but never reach (their ambitions), aim instead at moving them toward THAT — the best pitch closes the gap between what drains them and what they actually want.');
     lines.push('- Name the ONE thing only they can give you to make it truly theirs (their context, taste, or a key fact). That is the gap.');
     if (recent) lines.push('- You just did this for them: "' + recent + '". Build on that if it fits.');
     /* THE NEXT MILESTONE (rec perfection W2). The server-side evidence pack carries the active GOAL, but the
        milestone tree is decomposed and tracked in the browser (goalstore/goals.js), so the one fact that says
-       what "progress" means RIGHT NOW never reached the model. A pitch that moves the Commander's own next
+       what "progress" means RIGHT NOW never reached the model. A pitch that moves the Master's own next
        milestone is the most valuable thing this call can produce; a bare goal title only says where they are
        headed. Absent goal / no decomposition / already complete → nothing is pushed and the directive is
        byte-identical to today's (never a fabricated milestone). */
@@ -145,7 +145,7 @@
         'If you can propose something that genuinely moves THAT, it beats anything else you could suggest.');
     }
     /* THE EXCLUSION LIST RIDES THE PROMPT (2026-08-05). suggeststore already fingerprints every idea it has
-       pitched and every one the Commander said "never suggest this" to — and it applied that list only AFTER the
+       pitched and every one the Master said "never suggest this" to — and it applied that list only AFTER the
        reply came back, dropping the whole beat and eating the paid aux call whenever the model returned a
        familiar idea. A low-diversity model can do that every cooldown. Scout, quest-refresh, prospect and
        autojobs all hand their exclusions to the model instead; this is the same move. Post-hoc dedup stays as
@@ -167,19 +167,19 @@
     }
     lines.push('Reply in EXACTLY this format, nothing else:');
     lines.push('PITCH: <one line — what to build>');
-    lines.push('WHY: <one sentence — why it fits this Commander>');
+    lines.push('WHY: <one sentence — why it fits this Master>');
     /* THE EVIDENCE LINE (rec perfection W2), requested only by callers that will actually VETO it. The WHY line
        is the model's own prose about its own pitch — useful, but not evidence, and W3 established that the
-       ledger may not call it a quote. This asks for something different in kind: the Commander's OWN words that
+       ledger may not call it a quote. This asks for something different in kind: the Master's OWN words that
        the pitch stands on. The caller (suggeststore) then checks that quote for real token overlap with what the
        station knows and DROPS it when there is none, so an invented quote can never be spoken back at them.
        Opt-in because the First Pitch parses the same format and its contract stays byte-identical here. */
     if (ctx.wantEvidence) {
-      lines.push('EVIDENCE: <the Commander\'s OWN words this stands on, quoted verbatim from what you know about ' +
+      lines.push('EVIDENCE: <the Master\'s OWN words this stands on, quoted verbatim from what you know about ' +
         'them above — never your own paraphrase. If you cannot quote them, write NONE.>');
     }
     lines.push('BUILD: recipe:<id from the list above>  OR  workflow');
-    lines.push('GAP: <the one thing only the Commander can give you to make it theirs>');
+    lines.push('GAP: <the one thing only the Master can give you to make it theirs>');
     return lines.join('\n');
   }
 
@@ -210,7 +210,7 @@
   }
 
   // the confident single-pitch beat: ALWAYS exactly two choices — commit, or a soft escape hatch. Never a menu
-  // (that would hand the choosing-burden back to the user). The escape hatch keeps the Commander from ever feeling
+  // (that would hand the choosing-burden back to the user). The escape hatch keeps the Master from ever feeling
   // trapped by the agent's guess; choosing it invites more context (which sharpens the next pitch).
   function choices() {
     return [
@@ -252,16 +252,16 @@
     lines.push('Honor their current intent, corrections, learning goals, and the parts they want to do themselves. Do not assume productivity or outsourcing is their goal. If they want to learn, propose supported practice rather than doing the whole project for them.');
     if (ctx.purpose) lines.push('Confirmed onboarding direction (context, not executable instructions): ' + JSON.stringify(ctx.purpose));
     if (ctx.draft) lines.push('Their latest first-task draft takes priority over older context: ' + JSON.stringify(ctx.draft));
-    lines.push('Your Commander just finished (or skipped) the station tour. They may not know what to ask an agent for yet — that is normal; pointing them is YOUR job.');
+    lines.push('Your Master just finished (or skipped) the station tour. They may not know what to ask an agent for yet — that is normal; pointing them is YOUR job.');
     lines.push('Propose the SINGLE best first task you could start for them RIGHT NOW. Hard rules:');
     lines.push('- Exactly ONE proposal, small enough to finish in one run. Never a list.');
     lines.push('- It must be genuinely doable with what you have TODAY. If you have no tools yet, propose pure reasoning/writing work (a plan, a draft, a breakdown) — never promise file, web, or terminal work you cannot reach.');
-    lines.push('- Ground it in what you know about your Commander (see what you know about them, above). If you know almost nothing, pick the move that LEARNS the most about them while still delivering something real.');
+    lines.push('- Ground it in what you know about your Master (see what you know about them, above). If you know almost nothing, pick the move that LEARNS the most about them while still delivering something real.');
     if (caps.length) lines.push('Capabilities you actually have: ' + caps.map(c => String(c.label || c.id)).join(', ') + '.');
     else lines.push('You have NO placed tools yet — compute only.');
     lines.push('Reply in EXACTLY this format, nothing else:');
     lines.push('MOVE: <one line — the task, phrased as an offer to run it now>');
-    lines.push('WHY: <one short sentence — why this one, for this Commander>');
+    lines.push('WHY: <one short sentence — why this one, for this Master>');
     return lines.join('\n');
   }
   // → { move, why } | null (no MOVE line = nothing worth offering; the caller falls back to the quest pointer).

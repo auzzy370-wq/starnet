@@ -1,6 +1,6 @@
 /* node test/channels.workline-transcript.test.js — regression guard for the FABRICATED TURN (fix df3fdcf3).
 
-   THE DEFECT. When a Commander draws belts downstream of an entry dock, hub.js runs the whole work line and
+   THE DEFECT. When a Master draws belts downstream of an entry dock, hub.js runs the whole work line and
    the reply that leaves is the LAST stage's. But it also wrote that delivered text into the ENTRY DOCK's
    transcript, so SCOUT's history recorded the EDITOR's final paragraph as its own assistant turn —
    byte-identical to the editor's. Stage one never said it, and on the very next message the dock would

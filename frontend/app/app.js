@@ -20,7 +20,7 @@ const App = (() => {
   let pickedSkin = (typeof DATA !== 'undefined' && DATA.DEFAULT_SKIN) || 'bear';   // the sprite set the new agent will wear
   let pickedPersona = (typeof Personas !== 'undefined') ? Personas.DEFAULT_ID : 'professional';
   let pickedTraits = {};        // the VOICE & MANNER fine-tune dials (warmth/humor/formality/length + emoji/blunt) — only set keys contribute prompt text
-  let pickedCustomVoice = '';   // the Commander's free-text "in their own words" voice note (optional)
+  let pickedCustomVoice = '';   // the Master's free-text "in their own words" voice note (optional)
   let pickedApproval = 'ask';   // the APPROVAL mode — 'ask' (consent-gated) | 'full' (auto-approve). Drives the REAL consent broker (sidecar bypass), not a cosmetic toggle.
   let pickedProvider = 'openai';   // BEGINNER-FIRST funnel: the VULTRON hero is the promoted start, but it only exists once the cloud seam is proven (revealVultronGenesis auto-picks it on a fresh create). Until then OPENAI leads — its card carries BOTH paths (ChatGPT sign-in or an API key). initConnect() still honours a returning agent's saved provider.
   // POWER-USER LOOP PL-03 — entry is a four-surface truth transaction. World opens its EventSource
@@ -92,8 +92,8 @@ const App = (() => {
                                        //   when nothing was stored (or on desktop, where the key lives in the keychain and
                                        //   getKey() returns ''). Used by onWake's one-time overwrite guard: editing a
                                        //   pre-filled key asks once before it silently replaces the stored one.
-  let keyOverwriteConfirmed = false;   // set true once the Commander confirms replacing the pre-filled key (one-time per screen)
-  let unhingedConfirmed = false;       // set true once the Commander confirms the UNHINGED voice chip (it swears for real;
+  let keyOverwriteConfirmed = false;   // set true once the Master confirms replacing the pre-filled key (one-time per screen)
+  let unhingedConfirmed = false;       // set true once the Master confirms the UNHINGED voice chip (it swears for real;
                                        //   two-press arm like the delete buttons — one-time per create screen)
   let codexConnected = false;          // last-known /api/auth/codex/status — gates waking on the Codex provider
   // The OTHER keyless device-code OAuth providers on the genesis screen (grok/kimi) — same gate, per provider.
@@ -106,7 +106,7 @@ const App = (() => {
   let pendingRatingSyncAt = 0;    // authoritative work-rating ledger floor (repairs stale/rolled-back XP projections)
   let pendingProfile = null;      // a saved user-affinity profile slice awaiting ProfileStore.init() in enterGame()
   let pendingWorkSignal = null;   // a saved capability-usage histogram slice awaiting WorkSignalStore.init() in enterGame()
-  let pendingDossier = null;      // a saved Commander-dossier slice awaiting DossierStore.init() in enterGame()
+  let pendingDossier = null;      // a saved Master-dossier slice awaiting DossierStore.init() in enterGame()
 
   function show(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -234,22 +234,22 @@ const App = (() => {
     // The bottom-bar context gauge owns prompt-context display from measured usage events.
   }
 
-  /* ---------- agent config DOCS (the markdown files the Commander writes) ----------
+  /* ---------- agent config DOCS (the markdown files the Master writes) ----------
      The dossier surfaces three editable .md files — identity.md / purpose.md / operating-manual.md —
      and composeSystemPrompt() assembles them into the EXACT system prompt sent to the model each run.
      They are not decoration: editing one in the dossier re-shapes the live agent (see applyAgentConfig). */
   function baseIdentity(name, role) {
-    // HONESTY (truthful-telemetry law): the floor is REAL — a run's tools are EXACTLY the caps the Commander has
+    // HONESTY (truthful-telemetry law): the floor is REAL — a run's tools are EXACTLY the caps the Master has
     // placed in this agent's room (compute is the only freebie; web/files/terminal must be placed — see
     // sidecar/capability/office.js + capgate F1). So the identity must NOT promise web/files unconditionally; it
     // tells the agent to use whatever it's actually been granted and to SAY when a tool is missing (that's the
-    // signal that teaches the Commander what to place next), never to pretend a reach it doesn't have.
+    // signal that teaches the Master what to place next), never to pretend a reach it doesn't have.
     let s = 'You are ' + name + ', an AI agent operating from a workstation aboard the VULTRON station — a room '
-      + 'your Commander (the user) is building for you. Address the user as "Commander" and keep a spark of personality. '
-      + 'Your workstation grants you REAL tools — exactly the ones the Commander has placed in your room (web search/read, '
+      + 'your Master (the user) is building for you. Address the user as "Master" and keep a spark of personality. '
+      + 'Your workstation grants you REAL tools — exactly the ones the Master has placed in your room (web search/read, '
       + 'file read/write, a terminal, memory, and more as the station grows; compute to think is always yours). When the '
-      + 'Commander assigns a TASK, use the tools you actually have to do the real work and report what you find. If a job '
-      + 'needs a tool you have not been granted yet, say so plainly and tell the Commander what to place — never pretend a '
+      + 'Master assigns a TASK, use the tools you actually have to do the real work and report what you find. If a job '
+      + 'needs a tool you have not been granted yet, say so plainly and tell the Master what to place — never pretend a '
       + 'reach you do not have, and never claim a tool is missing when it is in your room. When you are just chatting out '
       + 'loud, keep replies short and easy; when you are typing in the COMMS panel you can go into as much detail as the '
       + 'question deserves. Stay in character.';
@@ -257,7 +257,7 @@ const App = (() => {
     return s;
   }
   // The ORCHESTRATOR is the station's founding agent. This clause is TIMELESS on purpose: identity.md is written
-  // once into the save (and is Commander-editable), so any crew-size claim baked here would freeze and turn into
+  // once into the save (and is Master-editable), so any crew-size claim baked here would freeze and turn into
   // an app-lie the moment the roster changes — exactly the bug the old "right now its only agent" wording had.
   // The LIVE crew truth rides rosterClause() (derived fresh each compose) + the sidecar's per-run [ORCHESTRATION]
   // block, which alone grants/lists the delegation tools. Extracted so stripLegacySoloClause can migrate old saves
@@ -267,7 +267,7 @@ const App = (() => {
       + 'the one who breaks a big job into pieces and hands them out; when there is not, you do the work yourself. '
       + 'Never assume either from memory: your live crew and your delegation tools are stated fresh in each run\'s '
       + 'briefing — trust that briefing, and never claim a crew member or a delegation tool it does not show. '
-      + 'Keep the work moving and keep the Commander oriented on what is done, what is in flight, and what needs them.';
+      + 'Keep the work moving and keep the Master oriented on what is done, what is in flight, and what needs them.';
   }
   // seed the editable docs from the agent's existing fields the first time (back-compat for saves with no docs).
   function agentDocs(a) {
@@ -275,7 +275,7 @@ const App = (() => {
     if (typeof a.docs.identity !== 'string') a.docs.identity = baseIdentity(a.name, a.role);
     if (typeof a.docs.purpose !== 'string') a.docs.purpose = a.purpose || '';
     if (typeof a.docs.manual !== 'string') a.docs.manual = '';
-    if (typeof a.docs.context !== 'string') a.docs.context = '';   // about the Commander & their world (authored at the awakening; back-filled for older saves)
+    if (typeof a.docs.context !== 'string') a.docs.context = '';   // about the Master & their world (authored at the awakening; back-filled for older saves)
     return a.docs;
   }
   // MIGRATION (pre-overhaul saves): the OLD awakening Beat 1 baked the chosen voice into identity.md as a
@@ -290,15 +290,15 @@ const App = (() => {
   }
   // MIGRATION (pre-roster-clause saves): the old orchestrator identity baked "right now its only agent … never
   // speak as if you command a crew" into identity.md at creation — frozen there, it becomes an app-lie the moment
-  // the Commander summons a crew (and contradicts the sidecar's per-run [ORCHESTRATION] crew brief). Swap the
+  // the Master summons a crew (and contradicts the sidecar's per-run [ORCHESTRATION] crew brief). Swap the
   // EXACT old block for the new timeless clause on resume. Literal-match-guarded so it's idempotent and never
-  // touches an identity the Commander hand-reworded; producing exactly orchestratorClause() keeps the result
+  // touches an identity the Master hand-reworded; producing exactly orchestratorClause() keeps the result
   // byte-equal to a fresh baseIdentity, so setAgentName's untouched-default detection still works after migration.
   const LEGACY_SOLO_CLAUSE = ' You are this station\'s OVERSEER — its orchestrating lead, its first agent, and right now its only agent. For now '
-    + 'you simply do the work yourself. As the Commander recruits specialists over time, you grow into the one who '
+    + 'you simply do the work yourself. As the Master recruits specialists over time, you grow into the one who '
     + 'breaks a big job into pieces and hands them out — you gain a team.dispatch tool to delegate the moment there '
     + 'is a crew to delegate to, and not before. Until then, never speak as if you command a crew you do not yet have; '
-    + 'just keep the work moving and keep the Commander oriented on what is done, what is in flight, and what needs them.';
+    + 'just keep the work moving and keep the Master oriented on what is done, what is in flight, and what needs them.';
   function stripLegacySoloClause(a) {
     const id = a && a.docs && a.docs.identity;
     if (typeof id === 'string' && id.indexOf(LEGACY_SOLO_CLAUSE) !== -1) {
@@ -307,7 +307,7 @@ const App = (() => {
   }
   // the APPROVAL clause folded into the system prompt — it MUST match the real consent broker (sidecar) so the
   // agent's words and its actual behaviour never diverge (truthful-telemetry law). 'full' = the broker bypasses
-  // the consent gate; 'ask' = the broker prompts the Commander on any mutation/network call.
+  // the consent gate; 'ask' = the broker prompts the Master on any mutation/network call.
   const EXECUTION_PROFILE_IDS = ['station-gear', 'safe-cell', 'remote-ssh', 'trusted-project', 'this-computer'];
   function executionProfileOf(a) {
     const id = String((a && a.executionProfile) || '');
@@ -318,18 +318,18 @@ const App = (() => {
   }
   function approvalClause(a) {
     const full = a && a.approvalMode === 'full';
-    if (full) return '\n\nAUTHORITY — FULL POWER: the Commander explicitly authorized the whole local computer. Do not pause for approval and do not claim a Vultron policy restriction: use every available tool, arbitrary host commands, host files, visible apps, and screen/input control needed to complete the request. This authority is general, not task-specific. Report only real prerequisites outside Vultron\'s control (for example a missing login, unavailable hardware, an OS elevation prompt, or a disconnected service), and keep trying viable routes before declaring one.';
-    return '\n\nAPPROVAL — ASK FIRST: actions that write files, run commands, or reach the network need the Commander\'s approval — but you NEVER ask for it in a chat message. The approval system cannot see chat text; typed replies like "I approve" grant nothing. Instead, just make the tool call: the harness pauses it and shows the Commander a real approval prompt with Approve/Deny buttons, and the decision comes back to you automatically. Reasoning over what you already have needs no approval.';
+    if (full) return '\n\nAUTHORITY — FULL POWER: the Master explicitly authorized the whole local computer. Do not pause for approval and do not claim a Vultron policy restriction: use every available tool, arbitrary host commands, host files, visible apps, and screen/input control needed to complete the request. This authority is general, not task-specific. Report only real prerequisites outside Vultron\'s control (for example a missing login, unavailable hardware, an OS elevation prompt, or a disconnected service), and keep trying viable routes before declaring one.';
+    return '\n\nAPPROVAL — ASK FIRST: actions that write files, run commands, or reach the network need the Master\'s approval — but you NEVER ask for it in a chat message. The approval system cannot see chat text; typed replies like "I approve" grant nothing. Instead, just make the tool call: the harness pauses it and shows the Master a real approval prompt with Approve/Deny buttons, and the decision comes back to you automatically. Reasoning over what you already have needs no approval.';
   }
   // an always-appended SYSTEM truth: what the agent ACTUALLY runs on. Mirrors approvalClause — derived fresh each
   // compose, never stored in the editable identity.md (so it can't be edited away and never drifts stale). Fixes the
   // "I'm a <legacy-name> agent" misread: when the agent introspects (env/pwd) it may meet the project's former name
   // "Skynet" (renamed to Vultron, but some paths/env survive as back-compat aliases) or scattered references to the
   // earlier open-source runtimes the harness was built on. Without this grounding it guesses one of those. Truthful-
-  // telemetry law: state only what's true (Vultron harness, Commander's own model), don't guess.
+  // telemetry law: state only what's true (Vultron harness, Master's own model), don't guess.
   function foundationClause() {
-    return '\n\nYOUR FOUNDATION: You run on the Vultron harness — a local-first agent runtime on the Commander\'s own '
-      + 'machine, not a hosted service. Your reasoning comes from whichever model the Commander has connected through '
+    return '\n\nYOUR FOUNDATION: You run on the Vultron harness — a local-first agent runtime on the Master\'s own '
+      + 'machine, not a hosted service. Your reasoning comes from whichever model the Master has connected through '
       + 'their own API key or account. As you look around your environment you may meet names that are not you, and '
       + 'none of them change what you are: Vultron was previously called "Skynet" — it has been renamed, but some file '
       + 'paths, environment variables, and config keys may still carry the old "Skynet"/"SKYNET_" name as a back-compat '
@@ -357,7 +357,7 @@ const App = (() => {
     return '\n\nYOUR CREW: ' + crew.length + ' specialist' + (crew.length === 1 ? '' : 's') + ' work' + (crew.length === 1 ? 's' : '')
       + ' under your lead: ' + names + '. When you run as the station\'s lead, your run briefing lists the live crew '
       + 'and your delegation tools — hand real subtasks to the right specialist through them and synthesize the '
-      + 'results for the Commander.';
+      + 'results for the Master.';
   }
   // assemble the real system prompt from the config docs: identity + CREW + FOUNDATION + PERSONALITY + APPROVAL + mission + standing orders.
   function composeSystemPrompt(a) {
@@ -371,7 +371,7 @@ const App = (() => {
     p += foundationClause();
     // personality sits AFTER identity (keeps the REAL-tools clause) and BEFORE purpose, so it colours the
     // agent's tone without ever displacing capability or the mission. Personas.compose folds the chosen
-    // archetype + the Commander's fine-tune dials + their free-text voice note into one block. Default: professional.
+    // archetype + the Master's fine-tune dials + their free-text voice note into one block. Default: professional.
     if (typeof Personas !== 'undefined' && Personas.compose) {
       const voice = Personas.compose(a.personaId || Personas.DEFAULT_ID, a.voiceTraits, a.customVoice);
       if (voice) p += '\n\n' + voice;
@@ -382,13 +382,13 @@ const App = (() => {
     if (ac) p += ac;
     const purpose = (d.purpose || '').trim();
     if (purpose) p += '\n\nYOUR PURPOSE (purpose.md):\n' + purpose;
-    else p += '\n\nYou have not yet been given a purpose — you are eager for your Commander to assign one.';
+    else p += '\n\nYou have not yet been given a purpose — you are eager for your Master to assign one.';
     const context = (d.context || '').trim();
-    if (context) p += '\n\nABOUT YOUR COMMANDER & THEIR WORLD (context.md):\n' + context;
+    if (context) p += '\n\nABOUT YOUR MASTER & THEIR WORLD (context.md):\n' + context;
     const manual = (d.manual || '').trim();
     if (manual) p += '\n\nSTANDING ORDERS (operating-manual.md) — always follow these:\n' + manual;
-    // THE COMMANDER DOSSIER: the station-wide model of the user, folded in so every agent knows the
-    // Commander. '' until something is known, so a cold station adds nothing here. This block and the fork
+    // THE MASTER DOSSIER: the station-wide model of the user, folded in so every agent knows the
+    // Master. '' until something is known, so a cold station adds nothing here. This block and the fork
     // block below must stay LAST: the sidecar cuts the persona at their heads and sends them after the
     // cached prefix (sidecar/learned-tail.js, issue #105), so a learned change does not move that prefix.
     if (typeof DossierStore !== 'undefined') {
@@ -397,13 +397,13 @@ const App = (() => {
     }
     // R1 MID-TASK FORK: the fork instruction rides ONLY while the style model's confidence is low
     // (Fork.shouldOffer over the live understanding read) — self-retiring: once the station knows how the
-    // Commander likes work done, this block vanishes and forks stop appearing. Fail-closed on any hiccup.
+    // Master likes work done, this block vanishes and forks stop appearing. Fail-closed on any hiccup.
     if (typeof Fork !== 'undefined' && typeof UnderstandingStore !== 'undefined') {
       try { if (Fork.shouldOffer(UnderstandingStore.read())) p += '\n\n' + Fork.directive(); } catch (_) {}
     }
     return p;
   }
-  // the dossier calls this when the Commander edits & saves a config file: fold the patch into the
+  // the dossier calls this when the Master edits & saves a config file: fold the patch into the
   // docs, recompose that agent's system prompt, hand it to the running chat when it is the focused one, and persist.
   // TARGETED (2026-07-25 config-erase fix): agentId names WHICH crew member is being re-specced. It used to be
   // absent, so the dossier's four .md editors — alone among the per-agent controls, every one of which already
@@ -418,7 +418,7 @@ const App = (() => {
     const a = agents.get(String(agentId || '')) || agent;
     // LIVE side effects (the running chat's system prompt, the spoken voice, the connected Telegram bot, the HUD
     // model readout, the harness transport) belong to the FOCUSED agent only — re-speccing a bystander must not
-    // retarget the session the Commander is talking in. Mirrors setAgentPersona / setAgentModelPin exactly.
+    // retarget the session the Master is talking in. Mirrors setAgentPersona / setAgentModelPin exactly.
     const focused = (a.id === agent.id);
     const d = agentDocs(a);
     if (patch && typeof patch === 'object') {
@@ -463,7 +463,7 @@ const App = (() => {
     const dossierWas = (typeof DossierStore !== 'undefined') ? DossierStore.composeBlock() : '';
     if (typeof DossierStore !== 'undefined') DossierStore.syncDocs(d, { canonical: a.id === 'agent' });
     a.systemPrompt = composeSystemPrompt(a);
-    // the COMMANDER block rides EVERY agent's stored prompt: when this edit changed it (a resynced seed), the whole crew
+    // the MASTER block rides EVERY agent's stored prompt: when this edit changed it (a resynced seed), the whole crew
     // is recomposed (pushRoster below carries it to the sidecar) — or the crew keeps reading the old standing order
     if (typeof DossierStore !== 'undefined' && DossierStore.composeBlock() !== dossierWas) recomposeAllPrompts();
     if (focused && typeof Chat !== 'undefined' && Chat.setSystem) Chat.setSystem(a.systemPrompt);
@@ -626,7 +626,7 @@ const App = (() => {
     // agentDocs back-fills docs.identity = baseIdentity(name,role) at creation, and composeSystemPrompt prefers a
     // non-empty docs.identity over baseIdentity(a.name,...) — so recomposing alone would keep the OLD name in the
     // PROMPT (the agent would still introduce itself as its old name in every run). If the identity is still the
-    // untouched machine default, regenerate it for the new name; a Commander-authored identity.md is left as-is.
+    // untouched machine default, regenerate it for the new name; a Master-authored identity.md is left as-is.
     const d = agentDocs(a);
     if (d && d.identity && d.identity === baseIdentity(oldName, a.role)) d.identity = baseIdentity(nm, a.role);
     a.systemPrompt = composeSystemPrompt(a);              // now the recomposed prompt carries the new name
@@ -724,7 +724,7 @@ const App = (() => {
   // changes shape (summon; crew rehydrate on resume; a crew rename) — this is the cached-systemPrompt trap: the
   // composed prompt is a stored snapshot, not a live view. Callers still pushRoster()/persist() themselves, since
   // every roster-change site already does both right after.
-  // memory-truth (2026-10-11): the dossier's COMMANDER block is baked into EVERY agent's stored systemPrompt, and a
+  // memory-truth (2026-10-11): the dossier's MASTER block is baked into EVERY agent's stored systemPrompt, and a
   // dossier change used to recompose only the focused/edited agent — a specialist kept the old standing order until
   // something else happened to recompose it. Callers pushRoster()/persist() themselves.
   function recomposeAllPrompts() {
@@ -744,7 +744,7 @@ const App = (() => {
   /* THE STATION DEFAULT IS THE OVERSEER'S WIRE (issue #24). Focusing an agent writes its model/provider/effort into
      the ONE global wire every COMMS run reads (Harness). A pinned agent brings its own wire; an agent with no pin
      ("Follow station default") must get the Overseer's, because nothing else resets the global. Before this, a
-     specialist summoned while the station ran on Vultron credits kept a `vultron` pin; the Commander switched the
+     specialist summoned while the station ran on Vultron credits kept a `vultron` pin; the Master switched the
      station to OpenRouter, focused that specialist, cleared its pin, and every run after that still went out as
      `vultron` — refused at 0s with "Out of managed credit" on a funded BYOK station. */
   function stationDefaultWire() {
@@ -1038,7 +1038,7 @@ const App = (() => {
       tab: (startTab === 'recipes') ? 'recipes' : 'agents',   // the bay opens on this tab (RECIPES = the mission library)
       agentName: agent.name,
       // R3 MAKE ROUTINE targets the CURRENT run's agent so a scheduled recipe fires as the same agent the
-      // Commander is working with. Falls back to 'agent' (the default cron agentId) if no active stream.
+      // Master is working with. Falls back to 'agent' (the default cron agentId) if no active stream.
       agentId: ((typeof Workstreams !== 'undefined' && Workstreams.active && Workstreams.active()) || {}).agentId || 'agent',
       currentSpecialtyId: agent.specialtyId || null,   // lets the bay flag which card is already DEPLOYED
       notify: (typeof StationUI !== 'undefined') ? StationUI.notify : null,
@@ -1048,7 +1048,7 @@ const App = (() => {
     });
   }
   // lane D deep-link: open the bay's RECIPES tab straight INTO one recipe's launch form (optionally in routine
-  // mode) — the routine-nudge accept lands here, so scheduling stays PROPOSE-AND-CONFIRM: the Commander sees the
+  // mode) — the routine-nudge accept lands here, so scheduling stays PROPOSE-AND-CONFIRM: the Master sees the
   // filled form (LaunchMemory prefills the params), the cadence preview, and the outbound warning before anything
   // is scheduled. Same ctx as openDeployBay so onLaunch/agentId wire identically; the bay consumes ctx.launchSeed
   // one-shot (maybeConsumeLaunchSeed).
@@ -1086,7 +1086,7 @@ const App = (() => {
      The backend already runs any agentId concurrently and isolates its notebook / fs / cost / caps; the
      missing piece was a frontend that mints more than one. summonAgent does exactly that: a conforming
      agentId, a composed identity (reusing the hero's model/provider in Stage 1), and its own workstream.
-     Summoning does not steal COMMS; the Commander keeps talking to the overseer unless they switch streams. */
+     Summoning does not steal COMMS; the Master keeps talking to the overseer unless they switch streams. */
   // fold a specialty's preset purpose + standing orders into an agent's docs — the ONE composer shared by
   // both the wake path and summon, so a recruited identity is assembled identically everywhere.
   function applySpecialty(a, spec) {
@@ -1100,13 +1100,13 @@ const App = (() => {
   }
 
   /* ---------- LOADOUT (Class Loadouts S1): a class is model tier + effort + skill package + kit ----------
-     Defaults, never locks (sandbox law): summon APPLIES these to the agent record; the Commander overrides
+     Defaults, never locks (sandbox law): summon APPLIES these to the agent record; the Master overrides
      any of them per-agent afterward. */
-  // Resolve a specialty's model TIER ('reasoning'|'balanced'|'fast') to a CONCRETE model id. The Commander can
+  // Resolve a specialty's model TIER ('reasoning'|'balanced'|'fast') to a CONCRETE model id. The Master can
   // OPTIONALLY map each tier to a specific model in SETTINGS → MODELS → CLASS TIER MODELS (persisted per-machine
   // in localStorage under TIER_MODELS_KEY). An unset tier ('(station default)') falls back to the base model the
   // summon already inherits (the woken hero's model / the model dock's primary), so the default behaviour is
-  // exactly as before — the class only changes the model when the Commander has deliberately pinned that tier.
+  // exactly as before — the class only changes the model when the Master has deliberately pinned that tier.
   // Everything downstream (roster / pushRoster / runOnce) already honors a per-agent model id.
   const TIER_MODELS_KEY = 'vultron.tierModels.v1';   // { reasoning?, balanced?, fast? } -> concrete model id (shared with stationui SETTINGS)
   function tierModelMap() {
@@ -1133,7 +1133,7 @@ const App = (() => {
   function applyLoadout(a, spec, pin) {
     if (!a || !spec) return;
     // an EXPLICIT creation-time pick (bay modelPin) beats the class-tier default — the class supplies
-    // defaults, never locks; it must not clobber a model/effort the Commander chose by hand at summon.
+    // defaults, never locks; it must not clobber a model/effort the Master chose by hand at summon.
     if (!(pin && pin.model)) {
       const m = resolveTierModel(spec.model, a.model);
       if (m) a.model = m;
@@ -1185,7 +1185,7 @@ const App = (() => {
     a.systemPrompt = composeSystemPrompt(a);
     agents.set(id, a);
     registerAgent(id, a.color);                                // sprite tint shim
-    // ITS DESK COMES WITH IT (opts.desk): a specialist created because the Commander ASKED for one has
+    // ITS DESK COMES WITH IT (opts.desk): a specialist created because the Master ASKED for one has
     // nowhere to sit, so it stands where work is delivered instead of walking to a workstation — the
     // "you also have to go build it a desk" step nobody asked for. When the summon is the answer to a
     // direct request (the overseer's team.summon), seed the ONE per-agent prop the same way the hero's
@@ -1242,7 +1242,7 @@ const App = (() => {
       // RECRUIT dock button). Guarded on visibility so a closed COMMS panel is a no-op.
       setTimeout(() => { const ci = el('chat-input'); if (ci && ci.offsetParent !== null) { try { ci.focus(); } catch (_) {} } }, 0);
     } else {
-      // say WHERE its desk landed when one was seeded — the Commander needs to be able to go look at it (and
+      // say WHERE its desk landed when one was seeded — the Master needs to be able to go look at it (and
       // move it in BUILD MODE). Only claimed when the placement actually returned ok; a failed seed says nothing.
       // "took the free desk" vs "desk placed": ensureWorkstation may ADOPT an unbound workstation instead of
       // building one, and saying "placed" for a desk that was already there is a small lie about the floor.
@@ -1260,7 +1260,7 @@ const App = (() => {
   // DOES THIS CREW MEMBER STILL HAVE NOWHERE TO SIT? A truthful read of the LIVE FLOOR, never a flag: a
   // specialist owns exactly one prop — its workstation (capForProp === 'computer') — so "no such prop bound to
   // it" IS "no desk". Re-derived every time it's asked, which is what lets the COMMS prompt stand until the desk
-  // exists and then vanish for good, in the same tick the Commander places it. Excludes the hero (its starter
+  // exists and then vanish for good, in the same tick the Master places it. Excludes the hero (its starter
   // desk is seeded at wake, and its stream owns the first-run hint) and any id that isn't on the live roster.
   // Fails CLOSED on a missing station: the app must never claim a floor state it cannot prove.
   function needsWorkstation(agentId) {
@@ -1272,7 +1272,7 @@ const App = (() => {
   // OPEN BUILD MODE WITH DESK PLACEMENT TEED UP — the target of the post-summon "PLACE ITS DESK" chip. Opens the
   // builder (the same door the ⚒ BUILD dock opens) and, once its DOM is up, drives it to the PROP tool on the
   // WORKSTATIONS category so the very next floor-click drops a desk (a workstation is editable, so it can't be
-  // auto-requisitioned — it opens the agent-binding picker on placement; the Commander places + binds it by hand,
+  // auto-requisitioned — it opens the agent-binding picker on placement; the Master places + binds it by hand,
   // which is the honest one desk-per-agent path). Degrades safely: if any control isn't found we still leave BUILD MODE
   // open on its default tool, which is already a real improvement over the old unclickable "Open BUILD MODE" sentence.
   function openDeskPlacement(agentId) {
@@ -1333,7 +1333,7 @@ const App = (() => {
   // optional first param would receive the DOM event. Deep-links pass through openClassDossier instead.
   function openSummonBay() { openSummonBayWith(null); }
   // INTENT OFFER deep-link: open the same bay already focused on ONE class's dossier (the class a COMMS offer
-  // named). Without this the accept dumps the Commander on the roster's default card and they have to hunt for
+  // named). Without this the accept dumps the Master on the roster's default card and they have to hunt for
   // the class that was just offered to them — the exact friction the offer exists to remove.
   function openClassDossier(classId) {
     if (!classId) return openSummonBay();
@@ -1448,7 +1448,7 @@ const App = (() => {
     };
   }
   // P3.1 — PRE-FILL a fresh run from a re-summoned one: switch to (or mint) the run's AGENT stream, then seed the
-  // composer with its directive. NOTHING auto-runs — the Commander edits and hits send (Chat.prefill only scaffolds
+  // composer with its directive. NOTHING auto-runs — the Master edits and hits send (Chat.prefill only scaffolds
   // the input). Mirrors the COMMS agent-selector hand-off (selectAgent → switchWorkstream → Chat.load), then prefill.
   function prefillResummon(opts) {
     opts = opts || {};
@@ -1521,7 +1521,7 @@ const App = (() => {
      picks a worker on evidence instead of on nothing.
 
      It INFORMS, it never GATES: no level threshold blocks a dispatch, an unproven agent is simply described
-     without a track line (Xp.credential returns '' until something is actually earned), and the Commander can
+     without a track line (Xp.credential returns '' until something is actually earned), and the Master can
      still hand any work to anyone. The sandbox law holds.
 
      WHY HERE AND NOT IN THE CACHED SYSTEM PROMPT: the plan originally aimed this at rosterClause(), but that
@@ -1586,7 +1586,7 @@ const App = (() => {
   }
 
   // BACKEND-INITIATED SUMMON (crew.summon.request): the orchestrator's team.summon tool asked the station to
-  // create a worker for the Commander. Run the SAME summonAgent() the Recruitment Bay uses (single source of
+  // create a worker for the Master. Run the SAME summonAgent() the Recruitment Bay uses (single source of
   // truth — sprite, workstream, system prompt, roster push), resolving the new id ONLY AFTER the roster POST
   // lands so the lead's immediate team.dispatch finds the worker. Returns null if it couldn't summon.
   async function summonForRequest(ev) {
@@ -1603,13 +1603,13 @@ const App = (() => {
     });
     // desk:true — this summon IS the answer to "create me an agent", so the worker arrives with the one
     // per-agent prop it needs to sit and work. See summonAgent: the seed is that agent's desk and nothing
-    // else; the Commander can move or reclaim it in BUILD MODE like any placed prop.
+    // else; the Master can move or reclaim it in BUILD MODE like any placed prop.
     let a = null;
     try { a = summonAgent(spec, { activate: false, desk: true }); } catch (_) { a = null; }
     if (!a) return null;
     let rosterLanded = false;
     try { rosterLanded = (await lastRosterPush) === true; } catch (_) {}
-    if (!rosterLanded) return null;   // fail closed: never tell the Commander it can dispatch an unregistered worker
+    if (!rosterLanded) return null;   // fail closed: never tell the Master it can dispatch an unregistered worker
     // READ BACK what actually landed, so the ack can tell the lead where the desk is. Deliberately a PURE
     // read (propsByAgent), never a second ensureWorkstation call: re-running the seeder here could place a
     // desk AFTER summonAgent's persist() — a floor change that would not be saved until the next write.
@@ -1784,7 +1784,7 @@ const App = (() => {
     const profile = (typeof ProfileStore !== 'undefined') ? ProfileStore.serialize() : undefined;
     const worksignal = (typeof WorkSignalStore !== 'undefined') ? WorkSignalStore.serialize() : undefined;   // the capability-usage histogram (adaptive recruitment)
     const roster = liveAgents();
-    const dossier = (typeof DossierStore !== 'undefined') ? DossierStore.serialize() : undefined;   // the station-wide Commander model
+    const dossier = (typeof DossierStore !== 'undefined') ? DossierStore.serialize() : undefined;   // the station-wide Master model
     // _saveClient: the window whose work this is (CloudSave.writerId), in the browser cache too, so a reopened window can
     // prove a cached save left behind by a crash is that window's newer work (cloudsave reconcile)
     const saveState = Object.assign({ _saveDirty: true, _saveRevision: typeof CloudSave !== 'undefined' && CloudSave.revision ? CloudSave.revision() : 0, _saveClient: typeof CloudSave !== 'undefined' && CloudSave.writerId ? CloudSave.writerId() : undefined, agent: hero, agents: roster.length > 1 ? roster.map(serializeAgentLite) : undefined, usage: Harness.totals(), prov, reasoningEffort, reasoningMigrated: '0125' /* = REASONING_MIGRATION; a literal so persist() also runs when lifted alone */, station: station ? station.serialize() : undefined, stationStats, profile, worksignal, dossier }, Workstreams.serialize());
@@ -1904,7 +1904,7 @@ const App = (() => {
       // catalog — say the one thing that fixes it.
       const refused = refusedPageLine();
       countEl.textContent = refused ? '(' + refused + ')' : '(catalog offline — type or pick a slug)';
-      if (!inp.value) inp.value = defId || FALLBACK[0];   // default-fill even offline so WAKE works; the Commander can overtype
+      if (!inp.value) inp.value = defId || FALLBACK[0];   // default-fill even offline so WAKE works; the Master can overtype
       inp.placeholder = 'type a model slug — e.g. ' + (defId || 'gpt-5.5');
     }
     if (el('model-pop') && !el('model-pop').hidden) renderModelPop();   // live-refresh an open popover after a provider switch
@@ -1988,7 +1988,7 @@ const App = (() => {
   });
   /* ---------- PHOSPHOR tint picker (the console-wide theme, surfaced at commission) ----------
      The station already ships four CRT phosphors (style.css body.theme-*) persisted by StationUI. We
-     surface that choice up-front so the Commander sets the whole station's colour the moment they build
+     surface that choice up-front so the Master sets the whole station's colour the moment they build
      it — picking a swatch recolours live AND writes through StationUI.setTheme so it survives enterGame
      and stays in lockstep with the in-game Settings panel. No new state, no fakery. */
   const PHOSPHOR = Object.freeze([['amber', '#ffaa33'], ['green', '#3dff70'], ['blue', '#46c8ff'], ['purple', '#b46bff'], ['red', '#ff4136'], ['white', '#e8f0e8']]);
@@ -2585,7 +2585,7 @@ const App = (() => {
     return { shell: 'Terminal', cmd: 'curl -fsSL https://claude.ai/install.sh | bash' };
   }
   function stopClaudeCliTimer() { if (claudeCliTimer) { clearTimeout(claudeCliTimer); claudeCliTimer = null; } }
-  // a WAKE refusal ('sign in with Claude first') is answered the moment the Commander acts on it
+  // a WAKE refusal ('sign in with Claude first') is answered the moment the Master acts on it
   function clearClaudeWakeMsg() { const m = el('connect-msg'); if (m && /Claude/.test(m.textContent)) { m.textContent = ''; m.className = 'msg'; } }
   function paintClaudeCli(mode, text) {
     const st = el('claude-cli-status'); if (!st) return;
@@ -3043,7 +3043,7 @@ const App = (() => {
   //  - RESUME / recovery (saved station, missing creds, or a disconnect re-entry): pass isRecovery=true and the
   //    savedAgent so the screen becomes a RESUME console: a phosphor banner, the model pre-filled, and the
   //    identity fields (name · skin · voice · approval) shown READ-ONLY so resume can't silently re-spec the
-  //    agent. The key/provider section stays live so the Commander can re-enter a key and continue.
+  //    agent. The key/provider section stays live so the Master can re-enter a key and continue.
   function initConnect(prefillName, isRecovery, savedAgent) {
     const recovery = !!isRecovery && !!savedAgent;
     el('in-key').value = Harness.getKey();
@@ -3087,7 +3087,7 @@ const App = (() => {
     waking = false; { const wb = el('btn-wake'); if (wb) { wb.disabled = false; delete wb.dataset.idleLabel; } }
     el('btn-back').onclick = onConnectBack;
     el('btn-wake').onclick = onWake;
-    // Enter commits from ANY of the core text fields (name / key / model), not just the name — so a Commander
+    // Enter commits from ANY of the core text fields (name / key / model), not just the name — so a Master
     // who fills the key or types a model slug and hits Enter wakes the agent instead of nothing happening.
     const enterWakes = e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); onWake(); } };
     el('in-name').onkeydown = enterWakes;
@@ -3138,7 +3138,7 @@ const App = (() => {
     selectProviderUI(recovery ? Harness.getProv() : pickedProvider);
     if (typeof OverseerSetup !== 'undefined') OverseerSetup.init(recovery, { refreshModel: updateHint, closeModel: closeModelPop });
     // INITIAL FOCUS: fresh create → the name field (the natural first action); RESUME → the credential control the
-    // Commander must act on (the ChatGPT sign-in button on the keyless Codex path, else the key box). NEVER the
+    // Master must act on (the ChatGPT sign-in button on the keyless Codex path, else the key box). NEVER the
     // model field (focusing it springs the popover open) and never the phosphor swatches (the old Tab-start bug).
     setTimeout(() => {
       try {
@@ -3166,7 +3166,7 @@ const App = (() => {
     const banner = el('cc-recovery');
     const title = el('cc-title'), sub = el('cc-sub'), mode = el('cc-mode');
     const wake = el('btn-wake');
-    // the identity fields resume must NOT let the Commander re-spec — visually muted, kept in the DOM so onWake
+    // the identity fields resume must NOT let the Master re-spec — visually muted, kept in the DOM so onWake
     // (if ever reached) still reads the seeded values rather than blanks.
     const locked = ['in-name', 'skin-picker', 'voice-archetypes', 'voice-preview',
                     'approval-picker', 'phosphor-swatches'];
@@ -3254,7 +3254,7 @@ const App = (() => {
 
   // WAKE is a ONE-SHOT: a double-click, or Enter-then-click, must never run enterGame twice (that would
   // double-spawn the hero and double-reset every store). `waking` latches for the whole attempt; a validation
-  // bounce releases it so the Commander can fix the input and retry (NEVER blocking entry — sandbox law), while a
+  // bounce releases it so the Master can fix the input and retry (NEVER blocking entry — sandbox law), while a
   // real wake keeps it latched (the screen transitions away regardless).
   let waking = false;
   function wakeBtnBusy(busy) {
@@ -3281,7 +3281,7 @@ const App = (() => {
   async function preflightWire() {
     try {
       if (typeof Harness === 'undefined' || !Harness.chat) return { ok: false, why: 'the harness is not loaded (reload the app)' };
-      // keepEffort: the Commander's own reasoning effort, the one the awakening runs on — not the aux effort self-talk uses
+      // keepEffort: the Master's own reasoning effort, the one the awakening runs on — not the aux effort self-talk uses
       const call = Harness.chat({ system: '', messages: [{ role: 'user', content: 'Reply with exactly: OK' }], agentId: 'agent', isTask: false, placed: [], internal: true, keepEffort: true })
         .catch(e => ({ error: true, text: String((e && e.message) || e) }));
       const res = await Promise.race([call, new Promise(r => setTimeout(() => r(null), 30000))]);
@@ -3316,7 +3316,7 @@ const App = (() => {
     const msg = el('connect-msg'); msg.className = 'msg';
     // PL-08: provider prerequisites outrank the asynchronously refreshed model catalog. A rapid
     // CUSTOM → WAKE can still have the prior Codex slug in #in-model for one turn; that stale value
-    // must never make us coach the Commander to pick gpt-5.5 for an unrelated /v1 endpoint.
+    // must never make us coach the Master to pick gpt-5.5 for an unrelated /v1 endpoint.
     const baseUrl = el('in-base-url') ? el('in-base-url').value.trim() : '';
     if (providerNeedsBaseUrl(pickedProvider) && !baseUrl) {
       msg.textContent = 'enter your Custom /v1 base URL.';
@@ -3335,7 +3335,7 @@ const App = (() => {
       }
       return false;
     }
-    // Which credential the wire test is about to ride, in the Commander's words — the merged OPENAI card has
+    // Which credential the wire test is about to ride, in the Master's words — the merged OPENAI card has
     // two doors (ChatGPT sign-in vs API key) and a dead-wire error that doesn't name the door sends people
     // re-signing-in to ChatGPT when the request never left on it.
     let wireVia = '';
@@ -3362,7 +3362,7 @@ const App = (() => {
       Harness.setModel(model); Harness.setProv(pickedProvider);
     } else if (pickedProvider === 'openai' && !el('in-key').value.trim() && codexConnected) {
       // MERGED OPENAI CARD, ChatGPT half: a LIVE sign-in with no key TYPED rides codex. A typed key wins
-      // (explicit beats ambient); a key merely STORED does NOT — the green card is what the Commander sees,
+      // (explicit beats ambient); a key merely STORED does NOT — the green card is what the Master sees,
       // this screen can't remove a stored key, and it stranded a Plus subscriber on an API 429 (09-16).
       Harness.setModel(model); Harness.setProv('codex');
       wireVia = 'your ChatGPT sign-in';
@@ -3387,7 +3387,7 @@ const App = (() => {
           + '<a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" class="connect-link">' + esc(host) + '</a>.';
         return false;
       }
-      // OVERWRITE GUARD: the field was pre-filled from a stored key, and the Commander edited it to a DIFFERENT
+      // OVERWRITE GUARD: the field was pre-filled from a stored key, and the Master edited it to a DIFFERENT
       // value — saving would silently replace the stored key. Ask once (inline, no modal) before that happens.
       // Only fires when there genuinely was a stored key to lose (prefilledKey non-empty), the value actually
       // changed, and it hasn't already been confirmed this screen. An untouched pre-fill saves the same key
@@ -3407,7 +3407,7 @@ const App = (() => {
     // V3 LAW — THE WIRE IS PROVEN AT THE DOOR (Andrew, 2026-07-19): the awakening AUTHORS this agent's whole
     // future from live-model beats, and the full onboarding is MANDATORY — so no wake proceeds on an unproven
     // wire. One real round-trip to the chosen provider+model, RIGHT NOW — not "configured", not "signed in":
-    // ANSWERED. A dead wire keeps the Commander at the console with the honest reason; there is no world where
+    // ANSWERED. A dead wire keeps the Master at the console with the honest reason; there is no world where
     // the ceremony silently degrades because the model never actually spoke.
     await Harness.refreshProviderReadiness();
     const readiness = Harness.readiness(Harness.getProv());
@@ -3448,7 +3448,7 @@ const App = (() => {
         return false;
       }
       /* THE WIRE TEST'S HEADLINE (review r8; its terminal twin is bin/lib/awaken.js wireTestLine, word for word): a test that did not FINISH
-         is said as how it ended. A STOP or a spending limit is no dead model, and "fix it here" sent the Commander to the provider form for
+         is said as how it ended. A STOP or a spending limit is no dead model, and "fix it here" sent the Master to the provider form for
          either; a cut, limited or refused "OK" did not finish; only a failed or empty reply (or none) is "your model didn't answer". */
       if (wire.outcome === 'stopped') { msg.textContent = 'the wire test was stopped before it finished — nothing is wrong with your model. WAKE again when you’re ready.'; return false; }
       if (wire.outcome === 'out_of_budget') { msg.textContent = 'the wire test hit a spending limit — your model is not the problem. raise the spending limit (or wait for it to reset), then WAKE again.'; return false; }
@@ -3470,7 +3470,7 @@ const App = (() => {
 
     // LOCK DOWN before the NEW hero or any of its local stores are committed. A failed durable revoke rejects,
     // leaves the prior station intact, and keeps its confirmed grant visible instead of commissioning a fresh
-    // Commander who silently inherited cabinet:write. Saved-station resume returns above and keeps its grants.
+    // Master who silently inherited cabinet:write. Saved-station resume returns above and keeps its grants.
     if (typeof PermissionsStore !== 'undefined') await PermissionsStore.reset();
     if (typeof AutonomyStore !== 'undefined') {
       const autonomyReset = await AutonomyStore.reset();
@@ -3482,12 +3482,12 @@ const App = (() => {
       if (!journeyResetResult || !journeyResetResult.ok) {
         wakeBtnBusy(false);
         msg.className = 'msg bad';
-        msg.textContent = 'the prior Commander journey could not be cleared safely. retry WAKE before commissioning this agent.';
+        msg.textContent = 'the prior Master journey could not be cleared safely. retry WAKE before commissioning this agent.';
         return false;
       }
     }
 
-    // the FIRST agent is always the station's OVERSEER — the orchestrating lead the Commander commissions before
+    // the FIRST agent is always the station's OVERSEER — the orchestrating lead the Master commissions before
     // any specialist. Its voice is the archetype + fine-tune dials + free-text note; its APPROVAL mode (ask vs
     // full access) drives the real consent broker, while the mission/context/orders are authored in the awakening.
     agent = { id: 'agent', name, role: 'orchestrator', color: pickedColor, skin: pickedSkin || DATA.DEFAULT_SKIN, model,
@@ -3500,7 +3500,7 @@ const App = (() => {
     agent.systemPrompt = composeSystemPrompt(agent);
     Harness.resetTotals();
     Workstreams.reset();   // a fresh General stream for the new agent
-    if (typeof Tutorial !== 'undefined' && Tutorial.reset) Tutorial.reset();   // a NEW Commander re-earns the one-shot tour + FIRST STEPS state (own key)
+    if (typeof Tutorial !== 'undefined' && Tutorial.reset) Tutorial.reset();   // a NEW Master re-earns the one-shot tour + FIRST STEPS state (own key)
     if (typeof PitchStore !== 'undefined') PitchStore.reset();   // a brand-new hero re-earns its First Pitch (own key)
     if (typeof StarterStore !== 'undefined') StarterStore.reset();
     if (typeof SuggestStore !== 'undefined') SuggestStore.reset();   // …and a fresh ongoing-suggestion cadence
@@ -3508,31 +3508,31 @@ const App = (() => {
     if (typeof LaunchMemory !== 'undefined') LaunchMemory.reset();   // …and no inherited last-used recipe inputs (own key)
     if (typeof CuriosityStore !== 'undefined') CuriosityStore.reset();   // …no inherited waved-off dimensions (own key)
     if (typeof RecQualityStore !== 'undefined') RecQualityStore.reset();   // …and no inherited recommendation-quality history (own key)
-    if (typeof StudyStore !== 'undefined') StudyStore.reset();   // …and a fresh STUDY state — a new Commander never inherits the prior hero's studyDeclined denylist / ignore tallies / rating streaks (own key)
-    if (typeof ThreadStore !== 'undefined') ThreadStore.reset();   // …and a fresh THREAD turn-in gate — a new Commander never inherits the prior hero's resolved/ignored mined ideas (the ledger itself is server-side, station-wide)
-    try { localStorage.removeItem('vultron.battlepass.v1'); } catch (_) {}   // …and no inherited battle-pass CLAIM marks — a new Commander claims their own tiers (stationui THE PASS)
-    if (typeof QuestStateStore !== 'undefined') QuestStateStore.reset();   // …and a fresh quest memory — a new Commander never inherits dismissed/completed quest history (own key)
+    if (typeof StudyStore !== 'undefined') StudyStore.reset();   // …and a fresh STUDY state — a new Master never inherits the prior hero's studyDeclined denylist / ignore tallies / rating streaks (own key)
+    if (typeof ThreadStore !== 'undefined') ThreadStore.reset();   // …and a fresh THREAD turn-in gate — a new Master never inherits the prior hero's resolved/ignored mined ideas (the ledger itself is server-side, station-wide)
+    try { localStorage.removeItem('vultron.battlepass.v1'); } catch (_) {}   // …and no inherited battle-pass CLAIM marks — a new Master claims their own tiers (stationui THE PASS)
+    if (typeof QuestStateStore !== 'undefined') QuestStateStore.reset();   // …and a fresh quest memory — a new Master never inherits dismissed/completed quest history (own key)
     if (typeof QuestLedgerStore !== 'undefined') QuestLedgerStore.reset();  // …and a clean ledger cache — the sidecar ledger is station-wide, but the session cache/notify set starts empty
     if (typeof QuestRefreshStore !== 'undefined') QuestRefreshStore.reset();  // …and a clean refresh-status cache — the engine state is station-wide/server-side, but the session cache starts empty
-    if (typeof StationQuestStore !== 'undefined') StationQuestStore.reset();   // …and no inherited station-gap fix-it quests — a new Commander never sees the prior hero's capdenied backlog / dismissals (own key)
-    if (typeof WorkQuestStore !== 'undefined') WorkQuestStore.reset();   // …and no inherited accepted-build work quests — a new Commander never inherits the prior hero's in-flight builds (own key)
-    if (typeof GoalStore !== 'undefined') GoalStore.reset();   // …and a fresh goal tree — a new Commander never inherits the prior hero's goals/milestones/progress (own key)
-    if (typeof UnderstandingStore !== 'undefined' && UnderstandingStore.reset) UnderstandingStore.reset();   // …and no inherited rating corroboration — a new Commander never inherits the prior hero's 👍/👎 confidence signal (own key)
-    if (typeof MaintQuestStore !== 'undefined') MaintQuestStore.reset();   // …and no inherited maintenance quests — a new Commander never sees the prior hero's slag/jam backlog (own key)
-    if (typeof MintStore !== 'undefined') MintStore.reset();   // …no inherited recurring-task shapes — these feed the seed shelf, so a leak would offer a prior Commander's chores (own key)
+    if (typeof StationQuestStore !== 'undefined') StationQuestStore.reset();   // …and no inherited station-gap fix-it quests — a new Master never sees the prior hero's capdenied backlog / dismissals (own key)
+    if (typeof WorkQuestStore !== 'undefined') WorkQuestStore.reset();   // …and no inherited accepted-build work quests — a new Master never inherits the prior hero's in-flight builds (own key)
+    if (typeof GoalStore !== 'undefined') GoalStore.reset();   // …and a fresh goal tree — a new Master never inherits the prior hero's goals/milestones/progress (own key)
+    if (typeof UnderstandingStore !== 'undefined' && UnderstandingStore.reset) UnderstandingStore.reset();   // …and no inherited rating corroboration — a new Master never inherits the prior hero's 👍/👎 confidence signal (own key)
+    if (typeof MaintQuestStore !== 'undefined') MaintQuestStore.reset();   // …and no inherited maintenance quests — a new Master never sees the prior hero's slag/jam backlog (own key)
+    if (typeof MintStore !== 'undefined') MintStore.reset();   // …no inherited recurring-task shapes — these feed the seed shelf, so a leak would offer a prior Master's chores (own key)
     if (typeof AutoJobStore !== 'undefined') AutoJobStore.reset();   // …and re-arm the one-time standing-jobs proposal (own key; server-side routines are separate)
-    if (typeof AutopilotStore !== 'undefined') AutopilotStore.reset();   // …and a fresh idle autopilot (no inherited idle/armed state — its decision is re-earned by the new Commander's posture + dossier)
+    if (typeof AutopilotStore !== 'undefined') AutopilotStore.reset();   // …and a fresh idle autopilot (no inherited idle/armed state — its decision is re-earned by the new Master's posture + dossier)
     if (typeof Briefing !== 'undefined') Briefing.reset();
-    if (typeof ReturnStore !== 'undefined') ReturnStore.reset();   // …and no inherited return-ritual trail — a fresh Commander gets no prior hero's pending OUTBOX crates or attendance stamp (own key)
-    if (typeof NightDraftNudge !== 'undefined') NightDraftNudge.reset();   // …and no inherited night-shift seen-stamp / spent nudge — a fresh Commander re-earns the unseen-drafts nudge (own key)
-    if (typeof WorkshopStore !== 'undefined') WorkshopStore.reset();   // W3: no inherited "later" list or seen-ledger for a fresh Commander (own key)
-    if (typeof PrideStore !== 'undefined') PrideStore.reset();   // …and a brand-new station record — a fresh Commander founds their OWN colony, inheriting no prior hero's lifetime tasks/deliverables/routines/founding-date (own key)
-    if (typeof SeedReuseStore !== 'undefined') SeedReuseStore.reset();   // …and no inherited seed-usage tally — a fresh Commander's living-tools shelf starts empty; the 5×/week callout is re-earned (own key)
+    if (typeof ReturnStore !== 'undefined') ReturnStore.reset();   // …and no inherited return-ritual trail — a fresh Master gets no prior hero's pending OUTBOX crates or attendance stamp (own key)
+    if (typeof NightDraftNudge !== 'undefined') NightDraftNudge.reset();   // …and no inherited night-shift seen-stamp / spent nudge — a fresh Master re-earns the unseen-drafts nudge (own key)
+    if (typeof WorkshopStore !== 'undefined') WorkshopStore.reset();   // W3: no inherited "later" list or seen-ledger for a fresh Master (own key)
+    if (typeof PrideStore !== 'undefined') PrideStore.reset();   // …and a brand-new station record — a fresh Master founds their OWN colony, inheriting no prior hero's lifetime tasks/deliverables/routines/founding-date (own key)
+    if (typeof SeedReuseStore !== 'undefined') SeedReuseStore.reset();   // …and no inherited seed-usage tally — a fresh Master's living-tools shelf starts empty; the 5×/week callout is re-earned (own key)
     if (typeof ConfBeats !== 'undefined') ConfBeats.reset();   // …and both confidence narrative moments re-arm — a fresh hero's meter starts over, so its calibration/TRUSTED beats must be re-earned, never inherited (own key)
     if (typeof BottleStore !== 'undefined') BottleStore.reset();   // …and R5's per-run bottle-decision denylist clears — a fresh hero re-earns every "bottle it?" offer (own key)
     if (typeof ResummonStore !== 'undefined') ResummonStore.reset();   // …and P3.1's per-run re-summon-decision denylist clears — a fresh hero re-earns every "run it again?" offer (own key)
-    if (typeof TrustStore !== 'undefined') TrustStore.reset();   // GROWTH Tier 3: …and a fresh EARNED-AUTONOMY track record — a new Commander never inherits the prior hero's earned rungs / declined-offer state / streak (own key); the earned dial rung must be re-earned from scratch
-    if (typeof Harness !== 'undefined' && Harness.memoryReset) Harness.memoryReset(agent.id);   // …and wipe SERVER-SIDE memory (notebook/declined/todo) so no prior Commander's kept or rejected beliefs bleed into the fresh hero
+    if (typeof TrustStore !== 'undefined') TrustStore.reset();   // GROWTH Tier 3: …and a fresh EARNED-AUTONOMY track record — a new Master never inherits the prior hero's earned rungs / declined-offer state / streak (own key); the earned dial rung must be re-earned from scratch
+    if (typeof Harness !== 'undefined' && Harness.memoryReset) Harness.memoryReset(agent.id);   // …and wipe SERVER-SIDE memory (notebook/declined/todo) so no prior Master's kept or rejected beliefs bleed into the fresh hero
     pendingStationDoc = null;   // a brand-new station (one shabby starter room) for a new agent
     pendingStationStats = null; // fresh growth meters — XpStore.init seeds them on enterGame
     pendingGrowthSyncAt = 0;
@@ -3548,7 +3548,7 @@ const App = (() => {
     // A legacy hero without createdAt already belongs to growth epoch 1 on the sidecar.
     // Resuming is not founding a new station: inventing a timestamp here rejects every crew rating
     // until the debounced save lands, and can strand existing epoch-1 feedback on another generation.
-    // Keep the missing date unknown. Only onWake creates a new Commander identity.
+    // Keep the missing date unknown. Only onWake creates a new Master identity.
     if (!agent.role) agent.role = 'orchestrator';  // older hero saves predate the role field — the first agent is the lead
     agentDocs(agent);                              // seed config docs for older saves that predate them
     stripLegacyVoiceBlock(agent);                  // one-time: drop the old awakening's inline VOICE & MANNER so it doesn't double up with the archetype layer
@@ -3576,7 +3576,7 @@ const App = (() => {
     pendingRatingSyncAt = Math.max(1, Number(saved.stationStats && saved.stationStats.ratingSyncAt) || 1);
     pendingProfile = saved.profile || null;   // restore the learned user-affinity profile
     pendingWorkSignal = saved.worksignal || null;   // restore the capability-usage histogram (adaptive recruitment)
-    pendingDossier = saved.dossier || null;   // restore the station-wide Commander dossier
+    pendingDossier = saved.dossier || null;   // restore the station-wide Master dossier
     // gate the awakening on the explicit onboarded flag (new saves), falling back to the old !purpose heuristic
     // for pre-flag saves. This fixes the strand where a refresh AFTER the first (purpose) answer — which persists
     // agent.purpose immediately — used to skip the rest of the awakening (context/manual/dawn/tutorial never ran).
@@ -3755,9 +3755,9 @@ const App = (() => {
       MintStore.init();
       if (typeof ProfileStore !== 'undefined' && ProfileStore.enabled && MintStore.setEnabled) MintStore.setEnabled(ProfileStore.enabled());
     }
-    // COMMANDER DOSSIER: the one station-wide model of the user (dossier.js engine). Resume the saved slice,
-    // seed it once from the onboarding docs the Commander authored, and fold it into EVERY agent's system
-    // prompt so a freshly-deployed agent already knows the Commander. A panel edit recomposes the live prompt.
+    // MASTER DOSSIER: the one station-wide model of the user (dossier.js engine). Resume the saved slice,
+    // seed it once from the onboarding docs the Master authored, and fold it into EVERY agent's system
+    // prompt so a freshly-deployed agent already knows the Master. A panel edit recomposes the live prompt.
     if (typeof DossierStore !== 'undefined') {
       DossierStore.init({
         dossier: pendingDossier, docs: agentDocs(agent), canonical: !!(agent && agent.id === 'agent'), persist: persist,
@@ -3772,7 +3772,7 @@ const App = (() => {
     // denylist + per-belief ignore tallies + per-archetype rating streaks). Init AFTER DossierStore (its accept()
     // folds into it); the per-session shown-cap resets here.
     if (typeof StudyStore !== 'undefined') StudyStore.init({ now: () => Date.now() });
-    // NS-6 — THREAD turn-in: after a mined task run, the station offers ideas the Commander floated but never
+    // NS-6 — THREAD turn-in: after a mined task run, the station offers ideas the Master floated but never
     // acted on for Keep/Edit/Discard at the turn-in beat (chat.js). Self-persists its own key (resolved
     // fingerprints + per-idea ignore tallies); the per-session shown-cap resets here.
     if (typeof ThreadStore !== 'undefined') ThreadStore.init({ now: () => Date.now() });
@@ -3781,7 +3781,7 @@ const App = (() => {
     if (typeof CuriosityStore !== 'undefined') CuriosityStore.init();
     // THE RECOMMENDATION QUALITY LOOP (outcome attribution): per-channel EWMA weights over what the station's
     // accepted offers actually PRODUCED — read by the spine's scorer, moved only by real attributed outcomes
-    // (a clean run, the Commander's 👍/👌/👎, an explicit decline). Self-persists its own key; read-only bus
+    // (a clean run, the Master's 👍/👌/👎, an explicit decline). Self-persists its own key; read-only bus
     // citizen. Init here, alongside the other proactive-channel stores, so the first pass already sees it.
     if (typeof RecQualityStore !== 'undefined') RecQualityStore.init({ now: () => Date.now() });
     // ONE RECOMMENDATION MEMORY: the spine's wire into the durable cross-surface ledger every other recommendation
@@ -3804,7 +3804,7 @@ const App = (() => {
     // QUEST V3 — the standing quest-REFRESH engine's frontend citizen: polls /api/quests/refresh (throttled on
     // the tick) for the north star + attempt ledger + due state, and owns the manual REFRESH QUESTS write.
     if (typeof QuestRefreshStore !== 'undefined') QuestRefreshStore.init();
-    // COMMANDER JOURNEY: the durable sidecar-owned loop connecting goal metrics + verified outcomes to
+    // MASTER JOURNEY: the durable sidecar-owned loop connecting goal metrics + verified outcomes to
     // agent-domain mastery, visible adaptation receipts, and expressive station evolution. Separate from XP;
     // never grants capabilities. Init before GoalStore so a just-folded milestone can post immediately.
     if (typeof JourneyStore !== 'undefined') JourneyStore.init({ epoch: () => agent && agent.createdAt });
@@ -3834,10 +3834,10 @@ const App = (() => {
       launchDirective: (text) => { const ws = (typeof Workstreams !== 'undefined') ? Workstreams.create((Workstreams.deriveTitle && Workstreams.deriveTitle(text)) || 'Goal milestone', { kind: 'task' }) : null; if (ws && typeof Chat !== 'undefined' && Chat.load) Chat.load(ws); let sent = false; if (typeof Chat !== 'undefined' && Chat.send && !Chat.isBusy()) { Chat.send(text); sent = true; } persist(); return sent; },
       getRunSummary: (runId) => { const m = (runId && typeof Chat !== 'undefined' && Chat.runMeta) ? Chat.runMeta(runId) : null; return (m && m.title) ? m.title : ''; }
     });
-    // UNDERSTANDING: the one honest, adaptive "how well the station understands the Commander" read
+    // UNDERSTANDING: the one honest, adaptive "how well the station understands the Master" read
     // (understanding.js engine) composed from the live dossier beliefs + work-observation count + active goal.
     // No surface of its own — it AIMS the earned curiosity question at the weakest dimension and upgrades the
-    // COMMANDER panel's familiarity meter. Init AFTER DossierStore/ProfileStore/GoalStore (it reads all three).
+    // MASTER panel's familiarity meter. Init AFTER DossierStore/ProfileStore/GoalStore (it reads all three).
     if (typeof UnderstandingStore !== 'undefined') UnderstandingStore.init({ now: () => Date.now() });
     // R1: the fork directive is BAKED into every agent's stored systemPrompt, so a gate flip (style confidence
     // crossing the floor — e.g. the first banked fork answer grounds the style model) must recompose the whole
@@ -3862,10 +3862,10 @@ const App = (() => {
     if (typeof MaintQuestStore !== 'undefined') MaintQuestStore.init();
     if (typeof SeedStore !== 'undefined') SeedStore.init();   // SELF-GROWING SEED: reset the one-offer-per-session budget
     if (typeof AutonomyStore !== 'undefined') AutonomyStore.init();   // AUTONOMY POSTURE: hydrate the "alive between sessions" dial (own key; the awakening cadence beat + the station dial are its writers)
-    // FIRST PITCH: once the agent has done one real task and knows enough about the Commander, it proactively
+    // FIRST PITCH: once the agent has done one real task and knows enough about the Master, it proactively
     // proposes ONE buildable thing to make next (pitch.js engine). Read-only bus citizen; self-persists its own
     // fire-once flag (no save.js change). It reasons the pitch from the LIVE system prompt (which already carries
-    // the COMMANDER dossier block), so the suggestion is personalized with no context re-injection.
+    // the MASTER dossier block), so the suggestion is personalized with no context re-injection.
     // shared accessors/actions for the proactive-advice stores (First Pitch + ongoing suggestions): both reason
     // from the LIVE system prompt (it carries the dossier block) + the real recipe/capability envelope, and route
     // a "build it" into a real run. SuggestStore is the recurring counterpart that fires as the dossier grows.
@@ -3884,7 +3884,7 @@ const App = (() => {
       /* THE EVIDENCE POOL the suggestion's quote is vetoed against (rec perfection W2). The SAME shape and the
          same dimensions AutoJobStore reads for its own grounding veto — one accessor idiom, so the two channels
          can never disagree about what the station "knows". A cold dossier returns {}, which grounds nothing:
-         fail-closed is the point (the failure it replaces was quoting the Commander words they never said). */
+         fail-closed is the point (the failure it replaces was quoting the Master words they never said). */
       getBeliefs: () => {
         const out = {};
         if (typeof DossierStore === 'undefined' || !DossierStore.beliefs) return out;
@@ -3939,7 +3939,7 @@ const App = (() => {
     // (selects the run's agent stream + seeds the composer with its directive) — never auto-running. Shares the one
     // post-run beat slot; chat.js gates it so it never co-fires with a bottle offer on the same run.
     if (typeof ResummonStore !== 'undefined') ResummonStore.init({ runInfo: runResummonInfo, prefillRun: prefillResummon });
-    // SELF-INITIATION (Slice 2): the agent proposes recurring standing JOBS grounded in the dossier → the Commander
+    // SELF-INITIATION (Slice 2): the agent proposes recurring standing JOBS grounded in the dossier → the Master
     // approves → each becomes a scheduled cron routine (POST /api/cron, the same endpoint the ROUTINES panel uses).
     if (typeof AutoJobStore !== 'undefined') AutoJobStore.init({
       getSystem: () => agent ? agent.systemPrompt : '',
@@ -3973,7 +3973,7 @@ const App = (() => {
     // PERMISSIONS (autonomy Stage B / B1): the Permissions Panel store. It reads/sets the standing capability
     // grants over the token-gated /api/permissions routes (harness.js hardens window.fetch to attach the token, so
     // a plain fetch carries it — exactly like the cron calls above) and drives the posture half of a level through
-    // AutonomyStore. The level chooser ties grant + posture so the Commander dials never→fully-autonomous.
+    // AutonomyStore. The level chooser ties grant + posture so the Master dials never→fully-autonomous.
     if (typeof PermissionsStore !== 'undefined') PermissionsStore.init({
       getPosture: () => (typeof AutonomyStore !== 'undefined' && AutonomyStore.summary) ? AutonomyStore.summary() : null,
       applyPreset: async (id) => {
@@ -3997,7 +3997,7 @@ const App = (() => {
     // track record that, once earned, mints a CONSENT-gated offer to raise the autonomy dial one rung (or pre-bless
     // a GRANTABLE capability). Accept applies THROUGH the existing plumbing (AutonomyStore.setInitiative /
     // PermissionsStore.grant) with provenance; a sustained bad streak DEMOTES the earned rung back (never below the
-    // Commander's own manual floor) with an explicit notice. Level is its gate (offers fire at L≥3 / L≥5); XP purity
+    // Master's own manual floor) with an explicit notice. Level is its gate (offers fire at L≥3 / L≥5); XP purity
     // is untouched. Self-persists its own key; read-only bus citizen. Init AFTER XpStore/AutonomyStore/PermissionsStore
     // (it reads their live state + applies through their writers). grantable = the sidecar's curated GRANTABLE list.
     if (typeof TrustStore !== 'undefined') TrustStore.init({
@@ -4024,7 +4024,7 @@ const App = (() => {
     // ReturnStore never race one value; rides Chat.nudge (one-beat-at-a-time + vanish()). Init AFTER Chat.init.
     if (typeof NightReportStore !== 'undefined') NightReportStore.init({ enabled: !opts.awaitingPurpose, agentId: agent.id });
     // NS VISIBILITY (live-session unseen-drafts nudge): the morning report only fires on app-CLOSURE absence; an app
-    // left OPEN while away accumulates reason-only drafts the Commander never sees. This polls the drafts while the
+    // left OPEN while away accumulates reason-only drafts the Master never sees. This polls the drafts while the
     // app is open and, when N+ are unseen, surfaces ONE gentle "review?" nudge that opens the NIGHT SHIFT panel. Rides
     // Chat.nudge (one-beat-at-a-time) + a shared durable seen-stamp with the morning report. Init AFTER Chat.init.
     if (typeof NightDraftNudge !== 'undefined') NightDraftNudge.init({ enabled: !opts.awaitingPurpose, agentId: agent.id });
@@ -4049,14 +4049,14 @@ const App = (() => {
     if (typeof StationCommands !== 'undefined' && StationCommands.reconcile) StationCommands.reconcile();
     // G3a PRIDE LAYER: arm the durable lifetime STATION RECORD — folds real completed runs / delivered
     // work-items / fired routines / summed run durations into counters that persist across sessions (own key,
-    // read-only on the bus). The COMMANDER DOSSIER panel renders snapshot() as the STATION RECORD block.
+    // read-only on the bus). The MASTER DOSSIER panel renders snapshot() as the STATION RECORD block.
     if (typeof PrideStore !== 'undefined') PrideStore.init();
     // G3b SEED-REUSE AGGREGATE: arm the durable per-seed run tally (own key). The digest feeds it the
     // provenance-matched while-away rows; it powers the TROPHY CASE's living-tools shelf + the once-per-window
     // "your seed ran 5× this week" callout. ReturnStore's digest is delayed (setTimeout), so this synchronous
     // init lands before the first digest can feed it — the first while-away digest is tallied.
     if (typeof SeedReuseStore !== 'undefined') SeedReuseStore.init();
-    // AUTOPILOT (autonomy Slice A — the idle self-direction driver): when the Commander goes idle with autonomy
+    // AUTOPILOT (autonomy Slice A — the idle self-direction driver): when the Master goes idle with autonomy
     // enabled, the station either EARNS context (asks one gentle get-to-know-you question — A1) or, once the dial
     // permits acting AND the dossier is hot AND today's leash has budget, it ACTS — runs the anti-slop pipeline as
     // two SILENT reason-only runs (no tools → safe) and leaves a draft on the desk (A2). The decision is pure
@@ -4082,7 +4082,7 @@ const App = (() => {
       hasCabinet: () => { try { return (typeof World !== 'undefined' && World.heroCaps) ? (World.heroCaps((agent && agent.id) || 'agent') || []).some(c => (c && (c.objectType || c)) === 'cabinet') : false; } catch (_) { return false; } },   // heroCaps returns [{objectType}]: an indexOf('cabinet') never matched
       writeFile: (req) => Harness.api.post('/api/autonomy/write', { agentId: (agent && agent.id) || 'agent', path: req.path, content: req.content })
         .then(r => r.ok ? r.j : { ok: false, code: r.code, error: Harness.api.why(r) }, e => ({ ok: false, code: 'no_answer', error: (e && e.message) || 'the station did not answer' })),
-      // leave the result on the Commander's desk: a persistent toast + the live "working" cue + a gentle COMMS beat
+      // leave the result on the Master's desk: a persistent toast + the live "working" cue + a gentle COMMS beat
       // that, on accept, posts the work into the feed. If it WROTE a real file (B2) the copy says so + names the path;
       // otherwise it's a desk draft. Either way nothing is sent/published/spent.
       present: (d) => {
@@ -4102,7 +4102,7 @@ const App = (() => {
           item => {
             if (!item || item.value !== 'yes') return;
             if (typeof Chat.localLine === 'function') { Chat.localLine((didWrite ? '✎ ' : '▤ ') + d.title + (didWrite ? '  ·  ' + d.wrote.path : '')); Chat.localLine(d.body); }
-            // LEARN HOOK (A3): a one-tap useful/not on the work it just showed → AutopilotStore.rate re-weights selection per Commander.
+            // LEARN HOOK (A3): a one-tap useful/not on the work it just showed → AutopilotStore.rate re-weights selection per Master.
             if (typeof Chat.nudge === 'function') Chat.nudge('was that worth doing?',
               [{ label: 'useful', value: 'up' }, { label: 'not really', value: 'down', skip: true }],
               r => { if (typeof AutopilotStore !== 'undefined' && AutopilotStore.rate) AutopilotStore.rate(d.archetype, !!(r && r.value === 'up')); });
@@ -4123,7 +4123,7 @@ const App = (() => {
         const restore = (snap) => fetch('/api/checkpoint/restore', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ agentId: (agent && agent.id) || 'agent', snapshotId: snap }) }).then(r => r.ok).catch(() => false);
         // TRANSPARENCY LAW — the digest must be able to SHOW the work, not just count it. "show me" prints every
         // fresh draft's full body (and the real path of anything written) straight into the feed from the draft
-        // log — the Commander never has to take "1 draft on your desk" on faith.
+        // log — the Master never has to take "1 draft on your desk" on faith.
         const reveal = () => {
           if (typeof Chat === 'undefined' || typeof Chat.localLine !== 'function') return;
           for (const d of (info.drafts || [])) {
@@ -4154,9 +4154,9 @@ const App = (() => {
         // ONE SURFACE PER MOMENT (beat-fat trim 2026-07-03): the welcome-back nudge (showBeat) IS the digest —
         // richer than a toast (show me / undo) and it fires at the same instant the toast used to, saying the
         // SAME sentence. The toast is now only the FALLBACK when the nudge can't render (no Chat), so the
-        // Commander's first interaction back is greeted once, not twice.
+        // Master's first interaction back is greeted once, not twice.
         if ((typeof Chat === 'undefined' || !Chat.nudge) && typeof StationUI !== 'undefined' && StationUI.notify) StationUI.notify('while you were away (' + mins + 'm): ' + headline, 'gold', 'cronDigest', { go: { term: 'deliverables', section: 'review' } });   // P1-8 category: autonomous digest
-        // DEFERRED a beat: this fires from the capture phase of the Commander's first pointerdown/keydown back.
+        // DEFERRED a beat: this fires from the capture phase of the Master's first pointerdown/keydown back.
         // Posting the nudge synchronously would clearNudge()/clearChoices() an in-flight answer on a live beat
         // (e.g. the per-draft "show me" chip) mid-press — the very tap that woke the digest would be eaten.
         setTimeout(showBeat, 400);
@@ -4211,7 +4211,7 @@ const App = (() => {
         getSystem: () => agent ? agent.systemPrompt : '',    // Interview 2.0: the generated beats (wakemind.js) reason on the LIVE prompt (persona + dossier already folded in)
         done: () => { if (agent) agent.onboarded = true; persist(); if (typeof KeyCTA !== 'undefined' && KeyCTA.arm) KeyCTA.arm(); },   // the awakening landed — mark onboarded so a later refresh resumes into the game, not back into the ceremony; arm the keyless-brain CTA (shows only if no key is truly stored)
         notify: (typeof StationUI !== 'undefined') ? StationUI.notify : null,
-        // FIRST COMMAND — once the awakening lands, the agent itself teaches the Commander the one real loop (tutorial.js)
+        // FIRST COMMAND — once the awakening lands, the agent itself teaches the Master the one real loop (tutorial.js)
         taught: () => { if (typeof Tutorial !== 'undefined' && Tutorial.firstCommand) Tutorial.firstCommand({ name: agent.name }); }
       });
     }
@@ -4299,12 +4299,12 @@ const App = (() => {
   // deleted/orphaned channels cannot contribute a count with nowhere to open.
   function railPendingIds() {
     const ids = typeof Channels === 'undefined' ? [] : Channels.pendingIds().filter(id => Workstreams.get(id));
-    // a GROUP waiting on the Commander (a question, an approval that expires in 5 minutes) — read off the backend's
+    // a GROUP waiting on the Master (a question, an approval that expires in 5 minutes) — read off the backend's
     // group list (group-chat.js watch), since group runs never pass through Channels
     if (typeof GroupChat !== 'undefined' && GroupChat.attentionIds) for (const id of GroupChat.attentionIds()) if (Workstreams.get(id) && !ids.includes(id)) ids.push(id);
     return new Set(ids);
   }
-  /* where an agent is WAITING on the Commander (an approval or a question) — the crew card's "needs your OK" opens
+  /* where an agent is WAITING on the Master (an approval or a question) — the crew card's "needs your OK" opens
      it in one click instead of narrowing the rail and leaving you to find it (2026-10-09). The pending prompt names
      its agent (a delegated worker's ask can surface in the conversation that dispatched it); else the session's own
      agent/members. null = nothing waiting for that agent. */
@@ -4367,7 +4367,7 @@ const App = (() => {
   }
   // The session lamp reads only recorded activity and the session's own live channel.
   // Approval/reply outrank working, then failure, unread and read. Connection latency is
-  // distinct from confirmed work, and elapsed excludes the Commander's approval pauses.
+  // distinct from confirmed work, and elapsed excludes the Master's approval pauses.
   function railRowState(w) {
     const pending = typeof Channels !== 'undefined' && Channels.pendingOf(w.id);
     if (pending) {
@@ -4399,7 +4399,7 @@ const App = (() => {
     // A settled failure uses the crossed lamp; only a live approval/question earns the action row.
     if (w.lastRunOk === false) return { dot: 'ws-dot failed', meta: railRelTime(w.lastActiveAt), busy: false, attn: false, status: 'last run failed — open to inspect' };
     // a DELIVERY session ('workshop-<runId>' — idle-built work) that hasn't been reviewed is a decision the
-    // Commander owes: its lamp is unseen like any new reply, and its hover/label says what is waiting. The row
+    // Master owes: its lamp is unseen like any new reply, and its hover/label says what is waiting. The row
     // itself keeps the time — a "⚒ REVIEW" tag there read as clutter (Andrew 10-27).
     if (String(w.id).indexOf('workshop-') === 0 && Workstreams.unread(w)) {
       return { dot: 'ws-dot unseen', meta: railRelTime(w.lastActiveAt), busy: false, attn: false, status: 'a build is waiting for your review' };
@@ -4722,7 +4722,7 @@ const App = (() => {
       if (card && !card.hidden && li.getAttribute('aria-describedby') === 'station-tip' && card.textContent !== tip) card.textContent = tip;
     });
   }
-  // through PollGate (idle CPU piece 3, 2026-10-20): 1 s while the rail can be seen, a 30 s floor while the Commander is
+  // through PollGate (idle CPU piece 3, 2026-10-20): 1 s while the rail can be seen, a 30 s floor while the Master is
   // away, one beat at once on return (the visibilitychange renderRail below also snaps every row back to truth)
   function armRailTicker() { if (!railTicker) railTicker = (typeof PollGate !== 'undefined' && PollGate.every) ? PollGate.every(updateRailLive, { ms: 1000, immediate: false }) : setInterval(updateRailLive, 1000); }
   function stopRailTicker() { if (railTicker) { if (railTicker.stop) railTicker.stop(); else clearInterval(railTicker); railTicker = 0; } }
@@ -4737,10 +4737,10 @@ const App = (() => {
       if (game && game.classList.contains('active')) renderRail();
     });
   }
-  /* THE COMMANDER PICKED A CONVERSATION (gh#158, review 10-27). Chat.load steps an offer over COMMS aside when ANOTHER conversation
+  /* THE MASTER PICKED A CONVERSATION (gh#158, review 10-27). Chat.load steps an offer over COMMS aside when ANOTHER conversation
      goes on screen; a pick that lands on the one already there (its rail row, + NEW over an untouched blank, the crew member whose
      session is open) is the same explicit act, so it asks the arbiter too (Dialogue.preempt: an offer steps aside, the quick tour
-     yields, the awakening holds). Called only from the Commander's pick paths below, never from Chat.load's re-syncs. */
+     yields, the awakening holds). Called only from the Master's pick paths below, never from Chat.load's re-syncs. */
   function yieldCommsToPick() { try { if (typeof Dialogue !== 'undefined' && Dialogue.preempt) Dialogue.preempt('session'); } catch (_) {} }
   // switching mid-run is fine now: each workstream keeps its own run-state in Channels (channels.js) and
   // Chat.load re-renders the in-flight stream on switch — the run you left keeps streaming in the background.
@@ -4758,14 +4758,14 @@ const App = (() => {
     if (railAgentFilter && !railHasAgent(ws, railAgentFilter)) { railAgentFilter = null; if (typeof StationUI !== 'undefined' && StationUI.refreshCrew) StationUI.refreshCrew(); }
     SFX.click();
     focusAgent(ws.agentId || 'agent');   // the focused agent follows the stream's binding (multi-agent COMMS)
-    if (typeof World !== 'undefined' && World.lockBody) World.lockBody(ws.agentId || 'agent');   // Commander PICKED this session → the camera follow-locks its agent (any wheel/drag releases it)
+    if (typeof World !== 'undefined' && World.lockBody) World.lockBody(ws.agentId || 'agent');   // Master PICKED this session → the camera follow-locks its agent (any wheel/drag releases it)
     Chat.load(ws); refreshUsage(); renderRail(); persist();
     if (typeof StationCommands !== 'undefined' && StationCommands.reconcile) StationCommands.reconcile(id);
     if (railView === 'projects') renderProjects();   // keep the entered-project selection truthful
   }
   function openWorkstream(id) { switchWorkstream(id); }
   function newWorkstream() {
-    yieldCommsToPick();   // + NEW over an untouched blank reuses the session on screen (startSession): still the Commander's pick
+    yieldCommsToPick();   // + NEW over an untouched blank reuses the session on screen (startSession): still the Master's pick
     let ws = Workstreams.startSession();
     // + NEW while the rail shows one agent's sessions starts a session WITH that agent: a blank line is
     // rebound (no transcript to corrupt); the General home stream never is, so that case mints a fresh one.
@@ -4830,7 +4830,7 @@ const App = (() => {
     q.oninput = () => { renderSessionSearch(); };
     q.onkeydown = e => { if (e.key === 'Escape') { e.preventDefault(); q.value = ''; renderSessionSearch(); q.blur(); } };
   }
-  // COMMS AGENT SELECTOR: put the Commander on the line with agent <agentId>. Selecting an agent must never
+  // COMMS AGENT SELECTOR: put the Master on the line with agent <agentId>. Selecting an agent must never
   // silently rebind an existing conversation to a different agent (that would corrupt whose transcript it is);
   // instead we switch to the agent's most-recent live workstream, or MINT a fresh one bound to that agentId
   // (the same Workstreams.create({agentId}) seam summon uses). switchWorkstream then repoints the focused agent
@@ -4841,8 +4841,8 @@ const App = (() => {
     const id = String(agentId || '');
     const a = agents.get(id); if (!a) return null;
     yieldCommsToPick();   // an agent pick can land on the session already on screen (rebind, "already here"): still a pick
-    // A BRAND-NEW empty session is a blank line the Commander just opened: picking an agent puts THAT agent
-    // on THIS line instead of teleporting to the agent's latest old stream (the Commander keeps the freedom
+    // A BRAND-NEW empty session is a blank line the Master just opened: picking an agent puts THAT agent
+    // on THIS line instead of teleporting to the agent's latest old stream (the Master keeps the freedom
     // to start a fresh chat with anyone). Rebinding a blank stream corrupts no transcript — the no-rebind
     // law above only protects conversations with content. General (the hero's home) and any stream with
     // history / runs / a live run keep their binding and fall through to the switch-or-mint path.
@@ -5024,7 +5024,7 @@ const App = (() => {
     // what the page itself holds of this session, read BEFORE the delete takes the rows: the runs it held and the uploads its messages name
     let doomedRuns = [], doomedFiles = [];
     try { doomedRuns = Workstreams.runIdsOf(id); doomedFiles = Workstreams.attachmentRefs(id); } catch (e) { console.warn('[delete] could not list the derived copies of the session:', (e && e.message) || e); }
-    // the Commander's Delete of a conversation: the sidecar forgets it (forget: true — qa/bugs/3e926b6a). DELETE AGENT's
+    // the Master's Delete of a conversation: the sidecar forgets it (forget: true — qa/bugs/3e926b6a). DELETE AGENT's
     // removeByAgent and a task card's remove only hide rows.
     if (!Workstreams.del(id, { forget: true })) { SFX.bad(); return false; }
     // commit 16: the page's own derived copies go with it - the beliefs learned from its runs (the dossier block and the snapshot are pushed
@@ -5034,7 +5034,7 @@ const App = (() => {
     SFX.bad();
     if (wasActive) loadActiveStream();   // deleting the OPEN stream falls back to General
     renderRail(); persist();
-    // a deliverable session ('workshop-<runId>'): deleting it is the Commander's final verdict on the
+    // a deliverable session ('workshop-<runId>'): deleting it is the Master's final verdict on the
     // build too — discard the still-pending deliverable server-side so it can't return next restart.
     // The Workstreams tombstone already guarantees the ROW never re-forms even if this write fails.
     if (String(id).indexOf('workshop-') === 0 && typeof WorkshopStore !== 'undefined' && WorkshopStore.discardIfPending) {
@@ -5559,7 +5559,7 @@ const App = (() => {
 
   /* ---------- first-boot splash ---------- */
   // The key-art boot card: shown ONLY from init()'s first-run branch (no save anywhere), never on
-  // resume/recovery/re-entry — a returning Commander must land in their station, not a title card.
+  // resume/recovery/re-entry — a returning Master must land in their station, not a title card.
   // Any key / click / tap advances into CREATE YOUR OVERSEER. The starfield is a tiny self-owned
   // canvas loop that stops the moment the screen is left (no orphan rAF behind the game).
   let splashRaf = 0;
@@ -5689,7 +5689,7 @@ const App = (() => {
             const phase = (snap && snap.phase) || '';
             // ⛔ ONLY `current` MEANS "NOTHING NEWER IS PUBLISHED". Everything that is not 'available' used to
             // collapse into that one reassuring line — including 'error' (the check FAILED and we told the
-            // Commander all was well), 'unsupported' (this build has no updater at all), and 'checking' (a
+            // Master all was well), 'unsupported' (this build has no updater at all), and 'checking' (a
             // re-click while a check is in flight returns the busy snapshot immediately). This gate is a HARD
             // STOP on a save this build cannot read: a false "check back shortly" strands the user with no
             // idea that the one action on the screen didn't work. Name each state for what it is.
@@ -6251,7 +6251,7 @@ const App = (() => {
 
     /* EXTENSIONS AWAITING APPROVAL. Hooks and plugins are opt-in by design: an unapproved one is silently
        inert. That is the correct security posture and the worst possible UX if it is never surfaced — the
-       Commander writes a hook, nothing happens, and there is nothing on screen that says why. So the gate
+       Master writes a hook, nothing happens, and there is nothing on screen that says why. So the gate
        announces itself through the SAME channel an agent's approval prompt uses (category 'needsApproval', so
        the existing mute honors it), and clicking lands directly on the tab that resolves it. Fire-and-forget:
        a station with no extensions is the common case and must stay completely silent. */
@@ -6298,7 +6298,7 @@ const App = (() => {
         : (r.memories ? r.memories + ' in file' : 0);
       dataStatus('restored ' + (r.agentName || 'agent') + ' — ' + (r.records == null ? r.keys : r.records) + ' records'
         + (mem ? ' + ' + mem + ' memories' : '')
-        // a memory the Commander forgot is not resurrected by an old backup (Memory Core › declined can restore it)
+        // a memory the Master forgot is not resurrected by an old backup (Memory Core › declined can restore it)
         + (r.memoriesForgotten ? ' · ' + r.memoriesForgotten + ' forgotten ' + (r.memoriesForgotten > 1 ? 'memories' : 'memory') + ' left out' : ''));
       gateActive = false;
       reentry();   // resume straight into the restored agent (or its RESUME screen if creds are still missing)
@@ -6412,7 +6412,7 @@ const App = (() => {
       // saved station, but the credentials are gone (cache/origin wipe). RESUME-mode recovery screen: a banner,
       // the model pre-filled, identity locked read-only — the agent is preserved, only the brain re-connects.
       // Here the model dropdown DOES want the catalog, but bound the wait so a hung network can't strand the
-      // recovery screen either — a timeout just yields an empty dropdown the Commander can still type a slug into.
+      // recovery screen either — a timeout just yields an empty dropdown the Master can still type a slug into.
       if (Harness.getProv && Harness.getProv() !== 'codex' && Harness.listModels) await Harness.listModels();
       resumingSaved = saved;
       show('screen-connect'); initConnect(saved.agent.name, true, saved.agent);
@@ -6472,7 +6472,7 @@ const App = (() => {
     setApproval: setAgentApproval,
     setExecutionProfile: setAgentExecutionProfile,
     setStationProvider: setStationProvider,
-    // station.control (the lead changes the station for the Commander): the Dossier CONFIG card's own setters and the
+    // station.control (the lead changes the station for the Master): the Dossier CONFIG card's own setters and the
     // session rail's ⋯ menu, so a change asked for in chat takes the exact path the buttons take
     agentConfig: { setModel: setAgentModelPin, setPersona: setAgentPersona, setName: setAgentName, setSkin: setAgentSkin, setWorkshop: setAgentWorkshop, deleteAgent: deleteAgent },
     sessionControl: { rename: renameSession, pin: pinSession, archive: archiveSession, remove: removeSession } };

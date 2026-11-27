@@ -1,6 +1,6 @@
 /* VULTRON — bottlestore.js : R5 "BOTTLE A RUN" — save what actually worked as a reusable recipe.
 
-   The marketplace grows from real successes: when an INTERACTIVE run went well — the Commander rated the hero's
+   The marketplace grows from real successes: when an INTERACTIVE run went well — the Master rated the hero's
    work 👍 — and that run was NOT itself launched from a recipe, the station offers, once, to bottle the directive
    as a custom recipe. One tap opens the R2 editor pre-filled with a deterministic proposal (Recipes.mintFromRun);
    nothing auto-saves — the user confirms/edits/saves there. Mirrors the agent-skill sourceRunId "save what worked"

@@ -46,7 +46,7 @@ const WORKER_ONLY = composeOffice({ surface: 'autonomous', lead: false });
   A.ok(Array.isArray(kit), 'CAP_REGISTRY has a builder object');
   A.eq(kit.map(g => g.tool), ['station.map', 'station.plan', 'station.build'], 'the lent builder is exactly map, plan and build');
   A.ok(kit.every(g => g.capId === 'orchestrator' && g.deferred === true), 'cut from the orchestrator capId (one TASK DELEGATION switch) and deferred like the lead\'s');
-  A.eq(kit.map(g => [g.scope, g.requiresConsent]), [['read', false], ['read', false], ['write', true]], 'map and plan change nothing; every build asks the Commander');
+  A.eq(kit.map(g => [g.scope, g.requiresConsent]), [['read', false], ['read', false], ['write', true]], 'map and plan change nothing; every build asks the Master');
   const orch = new Map(CAP_REGISTRY.orchestrator.map(g => [g.tool, g]));
   for (const g of kit) A.eq([g.scope, g.requiresConsent, g.network], [orch.get(g.tool).scope, orch.get(g.tool).requiresConsent, orch.get(g.tool).network], g.tool + ' carries the SAME rules the lead\'s copy does');
   // a worker holding the lent kit resolves it, deferred (found by tool_search "station builder")
@@ -69,7 +69,7 @@ const WORKER_ONLY = composeOffice({ surface: 'autonomous', lead: false });
   A.eq(dispatchTool.schema.properties.workers.items.properties.builder, { type: 'boolean' }, 'a worker takes builder: boolean');
   A.ok(/BUILDER: builder:true lends that worker your station\.map\/plan\/build for this job; builds follow your approval setting\./.test(dispatchTool.description), 'the dispatch tool says what builder:true lends');
   // review threads-backend-13: under Full Access or a cached grant a lent build shows no card, so never promise one
-  A.ok(!/asks the Commander|approves each build/.test(dispatchTool.description), 'the dispatch tool never promises a card on every build');
+  A.ok(!/asks the Master|approves each build/.test(dispatchTool.description), 'the dispatch tool never promises a card on every build');
   await dispatchTool.run({ workers: [{ agentId: 'builder', prompt: 'rebuild the lab', builder: true }, { agentId: 'scout', prompt: 'look around' }] }, leadCtx(LEAD));
   A.eq(ro.calls.length, 2, 'both workers ran');
   A.eq(types(ro.calls[0]), ['builder', 'workbench'], 'the Build Manager runs with the lent builder on top of the workbench');

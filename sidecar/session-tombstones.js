@@ -1,14 +1,14 @@
 /* sidecar/session-tombstones.js — THE SIDECAR'S OWN RECORD OF DELETED SESSIONS (qa/bugs/3e926b6a, P1 privacy).
 
-   The Commander deletes a session from the rail (⋯ › Delete › Confirm delete). The page drops the row and keeps its
+   The Master deletes a session from the rail (⋯ › Delete › Confirm delete). The page drops the row and keeps its
    id in the save's `deletedIds`, so the row never re-forms. The sidecar kept every word of it: the durable transcript
    still served it to resume, recall_conversation still searched it, the evidence pack still quoted its first line as
    RECENT ACTIVITY in unrelated runs, and memories written in it still rode later prompts. Delete is armed, toasts
    "deleted", and is a separate control from Archive, so the reading is plain: that conversation is not fed back to a
    model again.
 
-   ONLY THE COMMANDER'S DELETE OF A CONVERSATION FORGETS. The save carries two lists: `deletedIds` (every row the page
-   removed, so it never re-forms) and `forgetIds`, the subset the Commander deleted as a conversation (the rail's
+   ONLY THE MASTER'S DELETE OF A CONVERSATION FORGETS. The save carries two lists: `deletedIds` (every row the page
+   removed, so it never re-forms) and `forgetIds`, the subset the Master deleted as a conversation (the rail's
    Delete, station.control session.delete — Workstreams.del(id, { forget: true })). A row removed as a side effect is
    in deletedIds only and is NOT forgotten: DELETE AGENT's removeByAgent archives the agent's record (the route adopts
    its ratings into the hero's notebook, and deleting an agent must not erase the record of what it did), and a task
@@ -42,7 +42,7 @@
    forgetSessionMemory() is the purge of what a deleted session left in memory, pure over the injected stores. Only
    what the session wrote goes: a record CREATED in it (by one of its runs, or filed under its stream) is removed; a
    record created elsewhere loses only the versions the session's runs wrote (rolled back to its newest version from
-   elsewhere) and the proof quoted from it. A rating verdict on one of its runs keeps the verdict and the Commander's
+   elsewhere) and the proof quoted from it. A rating verdict on one of its runs keeps the verdict and the Master's
    words, minus what quoted the deleted work (feedbackmemory.js forgetRatedWork). */
 'use strict';
 
@@ -87,7 +87,7 @@ function makeSessionTombstones(deps) {
   }
 
   /* observe(forgetIds, deletedIds?) — fold the save's current lists in. Returns the ids this call stamped (fresh
-     deletes), oldest first. Only forgetIds (the Commander's deletes of a conversation) stamps a fresh delete; a value
+     deletes), oldest first. Only forgetIds (the Master's deletes of a conversation) stamps a fresh delete; a value
      that is not an array teaches nothing: an older page that never wrote the list must not read as "every deletion was
      undone". The FIRST read is ADOPTED (see the header): every id in either list is stamped and recorded as purged,
      and none is returned as fresh; adopted() lists them. It needs one of the two lists (an older save holds only
@@ -138,7 +138,7 @@ function makeSessionTombstones(deps) {
     const at = deletedAt(streamId);
     return at > 0 && num(ts) <= at;
   }
-  /* latestAt() -> ms: the newest stamp of a delete the Commander MADE after this ledger first read the save (0 = none). An adopted
+  /* latestAt() -> ms: the newest stamp of a delete the Master MADE after this ledger first read the save (0 = none). An adopted
      stamp (the first read's) is skipped: it records when the ledger learned of an old delete, not when a delete happened, so it
      must not read as "a delete since" to a run whose rows say they may have read any session (the saturated quote stamp, commit
      11: latestDeleteAt() >= the run's saturation time). unpurged() skips adopted stamps for the same reason (they are born purged). */
@@ -150,7 +150,7 @@ function makeSessionTombstones(deps) {
     }
     return latest;
   }
-  /* freshAt(streamId) -> ms: the stamp of a delete the Commander MADE (0 = never deleted, or deleted before this ledger's first read).
+  /* freshAt(streamId) -> ms: the stamp of a delete the Master MADE (0 = never deleted, or deleted before this ledger's first read).
      deletedAt answers every stamp; the read-time belt over a derived record must not drop what I7's limit (d) keeps, so it asks this. */
   function freshAt(streamId) {
     const id = String(streamId == null ? '' : streamId);
@@ -250,7 +250,7 @@ function notebookRecordBound(r, scope) {
 /* forgetRecord(r, scope) -> { record, kind, versions } — what the deleted sessions wrote into ONE notebook record, taken
    out of it. record === r: nothing of theirs is in it. record null: remove it.
      CREATED in a deleted session: removed (kind 'removed'). A rating verdict on one of its runs (origin 'feedback',
-       not filed under the stream) is the exception: the verdict and the Commander's rating words stay, without the
+       not filed under the stream) is the exception: the verdict and the Master's rating words stay, without the
        directive and the reference that quoted the deleted work (FeedbackMemory.forgetRatedWork, kind 'verdict');
        one with no words of its own is removed.
      CREATED elsewhere: when its current version is a deleted run's revision, it ROLLS BACK to its newest version from

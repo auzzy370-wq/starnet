@@ -1,8 +1,8 @@
 /* VULTRON — marketplace.js : THE RECRUITMENT BAY — a premium "personnel registry" of agent classes.
 
-   Renders the Specialties catalog (built-ins + the Commander's saved customs) as a roster of engraved
+   Renders the Specialties catalog (built-ins + the Master's saved customs) as a roster of engraved
    class SEALS (a challenge-coin per class, drawn by classicons.js — NEVER a character skin; the skin is
-   the Commander's own choice at summon). A two-pane character-select layout: the roster grid on the left,
+   the Master's own choice at summon). A two-pane character-select layout: the roster grid on the left,
    a live CLASS DOSSIER on the right that re-themes to whichever class is in focus. Self-contained overlay
    (scrim + console), owns its DOM + events, themes purely off the shared CRT vars (marketplace.css).
 
@@ -96,7 +96,7 @@ const Marketplace = (() => {
      and delegated to here. They used to be a second copy living in this file, which is a standing invitation
      for the rail and the recommender to disagree about what "one per category" means (they did: the FOR-YOU
      spread walked raw categories while the rail folded them). ORDER IS THE SCAN ORDER: the rail is how a
-     Commander who cannot yet name their use case finds one, so it runs work-shaped buckets first, then the
+     Master who cannot yet name their use case finds one, so it runs work-shaped buckets first, then the
      life domains. `.mkt-lanes` wraps (flex-wrap), so a rail this long lays out as two tidy rows.
 
      Read LAZILY, never at module scope: this file is written to survive `Recipes` being absent entirely
@@ -113,7 +113,7 @@ const Marketplace = (() => {
   // “because matches your focus on code” was not a sentence — the leading “it” is what makes it one.
   const BECAUSE = { code: 'it matches your focus on code', research: 'it matches your focus on research', general: 'it fits your day-to-day ops' };
   const ACK_KEY = 'vultron.profile.ack.v1';
-  /* The cold-start row's rotation seed: a REAL count of how many times this Commander has opened the recipes
+  /* The cold-start row's rotation seed: a REAL count of how many times this Master has opened the recipes
      tab, persisted so it survives a reload. With 12 browse buckets and a 3-card shelf, a fixed spread would
      show the same three corners of the library forever and the other nine would only ever be found by
      browsing. This ONLY selects which bucket the varied lineup starts from — it is not a ranking signal, it
@@ -230,7 +230,7 @@ const Marketplace = (() => {
   /* ---------- the door's INTENT (wave-1 comms-owner-arbiter, gh#117) ----------
      The bay is opened by several doors, and each used to pick its own mode from a bag of flags (mode / tab / summon). What the
      window then offered depended on which flags that door remembered: a classes view in deploy mode (re-spec only) still wore
-     the RECRUITMENT BAY nameplate, so a Commander who opened the Recruitment Bay to grow the crew could read it as "this bay can
+     the RECRUITMENT BAY nameplate, so a Master who opened the Recruitment Bay to grow the crew could read it as "this bay can
      only re-spec" (gh#117, v0.13.3: "the only available option is DEPLOY TO SKYNET"). Now every door names its intent and ONE
      table decides the mode, the library tab and the nameplate:
        recruit                          CREW › RECRUIT and every recruit deep link: RECRUIT <NAME> leads, RE-SPEC … INSTEAD is second
@@ -293,7 +293,7 @@ const Marketplace = (() => {
     try { if (typeof DiscoveryStore !== 'undefined' && DiscoveryStore.refresh) DiscoveryStore.refresh(); } catch (_) {}
     tab = (ctx.mode !== 'pick' && ctx.tab === 'recipes' && hasRecipes()) ? 'recipes' : 'agents';
     // count the VISIT, not the render — forYouShelfHTML re-runs on every filter and search keystroke, and
-    // seeding the rotation from that would reshuffle the shelf under the Commander's cursor as they type.
+    // seeding the rotation from that would reshuffle the shelf under the Master's cursor as they type.
     if (tab === 'recipes') bumpRecipeVisits();
     glassOpen = !acked();
     scoutLogOpen = false;
@@ -336,7 +336,7 @@ const Marketplace = (() => {
   }
   /* INTENT-OFFER class seed (the launchSeed pattern, AGENTS tab): app.js seeds ctx.classSeed = { id } before
      opening the bay, so accepting a COMMS offer lands on the dossier of the class that was offered rather than
-     on the roster's default card — otherwise the Commander has to go find it again, which is the friction the
+     on the roster's default card — otherwise the Master has to go find it again, which is the friction the
      offer exists to remove. An ARCHETYPE is not on the default roster, so its card only renders once the
      SPECIALIST ARCHIVE is expanded: seeding one opens the archive too, or the dossier would name a class with
      no visible card. One-shot (cleared before any render) and a graceful no-op on an unknown id. */
@@ -494,7 +494,7 @@ const Marketplace = (() => {
     }
     if (tab === 'recipes' && hasRecipes()) {
       // R6 CATEGORY RAIL — persona buckets (developer/research/creator/ops/general) + ALL + MINE, each with a
-      // live count. MINE holds the Commander's own customs (saved / forked / imported). An IMPORT button sits at
+      // live count. MINE holds the Master's own customs (saved / forked / imported). An IMPORT button sits at
       // the end of the rail (file → validate → save as custom); EXPORT lives per-recipe in the dossier.
       const builtins = Recipes.builtins(), customs = Recipes.customs();
       const all = builtins.concat(customs);
@@ -511,8 +511,8 @@ const Marketplace = (() => {
         '<button class="mkt-import bb sm" title="import a recipe from a JSON file">⇪ IMPORT</button>' +
         '<input type="file" id="mkt-import-file" accept="application/json,.json" hidden>';
     } else {
-      // FILTER counts span the WHOLE roster — built-ins AND the Commander's customs (audit item 8) — so a lane
-      // count never undercounts a class the Commander authored. MINE = the customs scope chip (mirrors RECIPES).
+      // FILTER counts span the WHOLE roster — built-ins AND the Master's customs (audit item 8) — so a lane
+      // count never undercounts a class the Master authored. MINE = the customs scope chip (mirrors RECIPES).
       const customs = has() ? Specialties.customs() : [];
       const pool = Specialties.builtins().concat(customs);
       const counts = { all: pool.length, code: 0, research: 0, general: 0, mine: customs.length };
@@ -656,7 +656,7 @@ const Marketplace = (() => {
   function matchq(it) {
     if (!query) return true;
     // search spans name + tagline + blurb AND the class CODE (e.g. "ENG") + purpose text (audit item 8), so a
-    // Commander can find a class by its stamp or by what it actually does, not just its name.
+    // Master can find a class by its stamp or by what it actually does, not just its name.
     const hay = (it.name || '') + ' ' + (it.tagline || '') + ' ' + (it.blurb || '') + ' ' +
       (it.purpose || '') + ' ' + codeOf(it);
     return hay.toLowerCase().includes(query);
@@ -708,7 +708,7 @@ const Marketplace = (() => {
     const customs = filt(Specialties.customs());
     const hasAnyCustoms = Specialties.customs().length > 0;
 
-    // MINE view: the Commander's own specialists only (matches the RECIPES-tab MINE chip).
+    // MINE view: the Master's own specialists only (matches the RECIPES-tab MINE chip).
     if (laneFilter === 'mine') {
       html += sectH('▮ YOUR CLASSES');
       html += customs.length
@@ -718,7 +718,7 @@ const Marketplace = (() => {
       return html;
     }
 
-    // customs pinned ABOVE the built-in catalog when the Commander has some AND isn't searching (their own classes
+    // customs pinned ABOVE the built-in catalog when the Master has some AND isn't searching (their own classes
     // are the more relevant pick); otherwise CLASS ROSTER leads (beginners keep it above the fold) and YOUR
     // SPECIALISTS + the build tile sit at the bottom. (audit item 7 reconciled with item 3)
     const pinCustoms = hasAnyCustoms && !query;
@@ -849,7 +849,7 @@ const Marketplace = (() => {
       return html + '<button class="bb sm mkt-recipe-saveas">＋ SAVE A RECIPE</button>' + yours('mine', query ? 'none of your recipes match your search.'
         : 'no saved recipes yet — hit “＋ save a recipe” above, TWEAK any recipe into your own, or ⇪ IMPORT one from a file.');
     }
-    // YOUR RECIPES leads the library whenever you HAVE any — the Commander's own work is not an appendix to a
+    // YOUR RECIPES leads the library whenever you HAVE any — the Master's own work is not an appendix to a
     // 50-card catalog. With none saved, the invitation stays below the library where it reads as a next step.
     if (customs.length) html += yours('top', '');
     const libLabel = catFilter === 'all' ? 'RECIPE LIBRARY' : ((CAT_LABEL[catFilter] || catFilter) + ' RECIPES');
@@ -890,7 +890,7 @@ const Marketplace = (() => {
   // SUMMON-only: pick the new agent's APPEARANCE (its own choice — independent of class). A LIVE preview
   // STAGE (shared SkinStage) plays the picked/hovered skin's real walk cycle big enough to actually read —
   // a 40px still of a chunky sprite is unidentifiable. The picker wells are large + smooth-downscaled so the
-  // Commander can judge a skin at a glance; the selected well carries the bracket-ring active treatment.
+  // Master can judge a skin at a glance; the selected well carries the bracket-ring active treatment.
   function summonSkinBarHTML() {
     if (!(ctx && ctx.mode === 'pick' && ctx.summon) || typeof DATA === 'undefined' || !DATA.SKINS) return '';
     if (!pickedSummonSkin || !DATA.SKINS[pickedSummonSkin]) pickedSummonSkin = DATA.DEFAULT_SKIN;
@@ -959,7 +959,7 @@ const Marketplace = (() => {
       '</div>' +
     '</button>';
   }
-  // lane F: the honest-life chip — the Commander's OWN launch count for this recipe (never anyone else's, never
+  // lane F: the honest-life chip — the Master's OWN launch count for this recipe (never anyone else's, never
   // a fake "popular"), plus a rated arrow once their own verdicts point somewhere (great>miss ▲ / miss>great ▽).
   // Every number derives from the scout usage read (ProspectStore.launches — real persisted telemetry).
   function recipeLifeChip(r) {
@@ -1393,7 +1393,7 @@ const Marketplace = (() => {
      order — so it keeps the glyph and does NOT get the eyebrow. Stamping "NOTICED" on a spread would be the
      header telling the same lie item 6 fixes one function below. `noticedHead` is for earned rows only. */
   /* ⛔ THE NAME IS USER TEXT, AND THIS RETURN VALUE GOES STRAIGHT INTO innerHTML (2026-08-05). `ctx.agentName`
-     is whatever the Commander typed when they named the agent (app.js does not HTML-escape it on the way in),
+     is whatever the Master typed when they named the agent (app.js does not HTML-escape it on the way in),
      and `.toUpperCase()` neuters nothing — `<img onerror=…>` uppercases to a tag that still parses. Five shelf
      headers in this file compose through here; every sibling render around them already escapes. So does this
      one now. The tails are literals today, but they ride esc() too so a future caller cannot re-open the hole. */
@@ -1476,7 +1476,7 @@ const Marketplace = (() => {
       const goalHits = specGoalHits(s, gt);
       const goal = goalHits.length;
       // the LEARNED-TOPIC term: strictly additive and capped, and exactly 0 until a WARM topic covers the class —
-      // so a cold station ranks byte-identically to before, and this can only ever PROMOTE a class the Commander's
+      // so a cold station ranks byte-identically to before, and this can only ever PROMOTE a class the Master's
       // real observed work points at. It can never shrink the shelf.
       const tm = specTopicMatch(s, topics);
       const topic = tm ? TopicMatch.term(tm, SPEC_TOPIC_SCALE, SPEC_TOPIC_CAP) : 0;
@@ -1501,7 +1501,7 @@ const Marketplace = (() => {
   }
   /* ── THE SHARED DECLINED MEMORY, ON THE SHELVES (one-memory lane, 2026-08-05) ──────────────────────────
      Every personalized shelf here consults the ONE cross-surface declined read (RecLedger — the browser wire
-     into sidecar/recommendation-ledger.js) before it ranks: a class or recipe the Commander explicitly waved
+     into sidecar/recommendation-ledger.js) before it ranks: a class or recipe the Master explicitly waved
      off — here, at a COMMS card, anywhere — is not shown to them as a recommendation again. Exact normalized
      name match only, the declinedindex.js bar; fail-open, so an unreachable ledger suppresses nothing.
      LIBRARY vs SHELF, stated: the declined read gates only the RECOMMENDATION rows. The class stays in the
@@ -1547,9 +1547,9 @@ const Marketplace = (() => {
   }
   function recShelfHTML() {
     if (typeof Specialties === 'undefined' || !Specialties.builtins().length) return '';
-    // ADAPTIVE RECRUITMENT: when the station has a WARM read of the Commander's real workflow (the capability
+    // ADAPTIVE RECRUITMENT: when the station has a WARM read of the Master's real workflow (the capability
     // histogram past its floor), the shelf becomes a CURATED next-hire pick — the class whose kit covers the work
-    // the Commander actually does, with a why derived from a real persisted counter. The curated list already
+    // the Master actually does, with a why derived from a real persisted counter. The curated list already
     // excludes rostered classes and only surfaces classes the work TOUCHES, so it never fabricates a pick. When the
     // signal is cold/thin (or learning is off), fall through to today's honest rankSpecs shelf UNCHANGED.
     shelfShownClassIds = new Set();   // fresh per paint — the gap shelf below dedups against what THIS render shows
@@ -1586,7 +1586,7 @@ const Marketplace = (() => {
       '<div class="mkt-rec-rail">' + cards.map(x => recCardHTML(x.s, x.why)).join('') + '</div>';
   }
   /* ---------- UNCOVERED: a warm learned topic NOBODY on the crew handles (2026-07-28) ----------
-     The curated shelf above can only ever rank classes whose kit the Commander's work ALREADY touches, so it can
+     The curated shelf above can only ever rank classes whose kit the Master's work ALREADY touches, so it can
      never surface the recommendation that actually grows the station: "you keep asking about X and no one here
      can do it." This shelf answers that from two real persisted counters — the topic's own observation count and
      the crew's actual coverage — and renders ONLY when both say so. Empty (cold topics, or a crew that already
@@ -1601,7 +1601,7 @@ const Marketplace = (() => {
       /* the shared declined read, PLUS the cross-shelf dedup (one-memory lane): the curated/lineup shelf just
          above can rank the same class this shelf's gap points to, and two adjacent shelves recommending the same
          hire back-to-back reads as the bay repeating itself. The shelf ABOVE keeps the card (its evidence names
-         the Commander's own work, the stronger claim); this one shows its next-best uncovered topic instead. */
+         the Master's own work, the stronger claim); this one shows its next-best uncovered topic instead. */
       .filter(x => x.s && x.s.id !== excludeId && !shelfDeclined(x.s.name)
         && !(shelfShownClassIds && shelfShownClassIds.has(x.s.id)));
     if (!cards.length) return '';
@@ -1610,9 +1610,9 @@ const Marketplace = (() => {
       noticedHead('work you keep doing that nobody on the crew handles') + '</div>' +
       '<div class="mkt-rec-rail">' + cards.map(x => recCardHTML(x.s, x.why)).join('') + '</div>';
   }
-  /* ---------- PROSPECTS: bespoke DRAFTS the station authored from the Commander's real work (Slice 4) ----------
+  /* ---------- PROSPECTS: bespoke DRAFTS the station authored from the Master's real work (Slice 4) ----------
      Distinct from the curated shelf (which ranks EXISTING classes): a prospect is a brand-new spec the catalog
-     doesn't contain, DRAFTED by the station and awaiting the Commander's confirm (never auto-saved/summoned).
+     doesn't contain, DRAFTED by the station and awaiting the Master's confirm (never auto-saved/summoned).
      Honest labelling: "DRAFTED FOR YOU" + a provenance note. Clicking opens the EXISTING custom-class builder
      pre-filled with the draft (mirrors the R5 recipeMint seed path); dismiss denylists it. */
   function prospectShelfHTML() {
@@ -1640,7 +1640,7 @@ const Marketplace = (() => {
   }
   /* ---------- R6: the "FOR YOU" row (ranked by dossier interest lanes + goal-text keyword match) ----------
      The plan's discovery-front recommender. Distinct from the profile-affinity "RECOMMENDED FOR YOU" shelf above:
-     FOR YOU blends the SAME profile affinity with the Commander's GOALS belief text (keyword-matched into the rank),
+     FOR YOU blends the SAME profile affinity with the Master's GOALS belief text (keyword-matched into the rank),
      and ALWAYS renders (with an honest category-spread fallback when the profile is thin AND no goals are set) — so
      even a cold-start user gets a varied, non-arbitrary starting row. Never a fake "popular" ordering. Shown only in
      the un-filtered top-level view (no active category/search) so it doesn't fight the filtered grid below. */
@@ -1650,7 +1650,7 @@ const Marketplace = (() => {
       return (DossierStore.beliefs('goals') || []).map(b => b && b.text).filter(Boolean).join(' ');
     } catch (_) { return ''; }
   }
-  // the PAIN + AMBITION dims — what eats the Commander's time and what they never get to. Read exactly like
+  // the PAIN + AMBITION dims — what eats the Master's time and what they never get to. Read exactly like
   // goals; the ranker gives them the same weight and names them honestly in the card's why (momentum loop).
   function painText() {
     try {
@@ -1667,10 +1667,10 @@ const Marketplace = (() => {
     // the affinity scorer only feeds the rank when learning is ON and the profile has signal; else rankRecipes
     // leans on goal text, then the honest category-spread fallback.
     const scoreFn = (ps && ps.score && !learningOff) ? (tags => ps.score(tags)) : null;
-    // launches = the Commander's OWN real per-recipe launch counts (scout usage read) — engagement feeds the rank.
+    // launches = the Master's OWN real per-recipe launch counts (scout usage read) — engagement feeds the rank.
     let launches = null; if (!learningOff) { try { launches = (typeof ProspectStore !== 'undefined' && ProspectStore.launches) ? ProspectStore.launches() : null; } catch (_) {} }
     // topics ride the SAME glass-box switch as the affinity scorer: the learned histogram IS a model of the
-    // Commander, so learning OFF means it may not rank anything (consent), and — because a positive term flips
+    // Master, so learning OFF means it may not rank anything (consent), and — because a positive term flips
     // `anySignal` — it also guarantees the row can never shrink: whenever topics are live the profile is live
     // too, so the positive filter was already engaged and an additive term can only ever ADD survivors.
     const topics = learningOff ? [] : learnedTopics();
@@ -1686,13 +1686,13 @@ const Marketplace = (() => {
     // who cannot yet name a use case, so three NEW domains beats one new and two they already skipped.
     const rankOpts = { score: scoreFn, goalText: gt, painText: pt, launches: launches, topics: topics, preferenceModel: preferenceModel, limit: 3, spreadOffset: recipeVisits() * 3 };
     // ASK THE RANKER WHAT IT ACTUALLY DID. `ready` only says the station has learned enough to be asked; it does
-    // NOT say this row used any of it. A ready Commander whose profile, goals, launches and topics all come up
+    // NOT say this row used any of it. A ready Master whose profile, goals, launches and topics all come up
     // silent gets a catalog-order category spread — and used to get "◈ FOR YOU" printed over it.
     // the shared declined read gates the INPUT (see readyShelfHTML): a declined recipe never enters the rank,
     // and the ranker's own spread/top-up keeps the row at three from the recipes that remain — the FOR YOU
     // shelf-sink law (a negative term must never EMPTY the shelf) holds because this excludes, never down-ranks.
     let pool = Recipes.list().filter(r => !shelfDeclined(r && r.name));
-    // …and the floor under that law: a Commander who has ✕'d EVERY recipe used to lose the row entirely (live, sweep/
+    // …and the floor under that law: a Master who has ✕'d EVERY recipe used to lose the row entirely (live, sweep/
     // onboarding 2026-10-20: 45 declines → no FOR YOU shelf at all). Show the library again, saying exactly that.
     const exhausted = !pool.length && Recipes.list().length > 0;
     if (exhausted) pool = Recipes.list();
@@ -1717,7 +1717,7 @@ const Marketplace = (() => {
 
        ⛔ AND THE CLAIM IS SIZED TO THE ROW, NOT TO THE BOOLEAN (2026-08-05). `personalized` goes true on ONE real
        hit, and rankRecipesExplained then TOPS THE ROW UP from the same cold-start category spread — filler cards
-       that carry no why at all, because nothing about them is about this Commander. The plural whole-row claim
+       that carry no why at all, because nothing about them is about this Master. The plural whole-row claim
        "picked from your real work" therefore sat over two catalog cards the station had never seen touched: the
        honest-header fix, still overclaiming one path down. Three states, one per thing that actually happened. */
     const scored = Number.isFinite(ranked.scored) ? ranked.scored : (ranked.personalized ? items.length : 0);
@@ -1742,8 +1742,8 @@ const Marketplace = (() => {
      (pure, node-tested); everything here is gathering and painting.
 
      ⛔ IT RENDERS NOTHING WHEN THERE IS NO CONTEXT. A station with no project granted and no channel
-     connected knows nothing about its Commander, and a "ready for you" shelf on top of that is theatre.
-     RecipeFit.offers returns [] and the Commander sees the honest library instead.
+     connected knows nothing about its Master, and a "ready for you" shelf on top of that is theatre.
+     RecipeFit.offers returns [] and the Master sees the honest library instead.
 
      ⛔ AND IT NEVER BLOCKS THE PAINT. Every input is read from an already-cached best-effort fetch; a
      sidecar that is down means a smaller shelf or none, never a stalled tab. */
@@ -1751,12 +1751,12 @@ const Marketplace = (() => {
      and `[]` is TRUTHY — so the `if (fitX) return` guard above short-circuited every later call. ONE transient
      /api/projects hiccup (a sidecar restart, a slow first paint) therefore killed the READY shelf for the rest of
      the session: RecipeFit was handed zero projects forever, decided the station knows nothing about its
-     Commander, and correctly rendered nothing. The shelf did not look broken — it looked EMPTY, which is its own
+     Master, and correctly rendered nothing. The shelf did not look broken — it looked EMPTY, which is its own
      honest state, so the bug is invisible. This file already documents the exact fix twenty lines into the module
      (loadSkillCatalog: leave the cache null, clear the in-flight marker, return an empty value for THIS call so
      the current paint degrades instead of throwing); these two are now the same shape.
 
-     Invalidation is the other half: a Commander who grants a folder or connects a channel does it in ANOTHER
+     Invalidation is the other half: a Master who grants a folder or connects a channel does it in ANOTHER
      panel and comes BACK to the bay, so re-opening the bay drops both caches (invalidateFit, called from open()).
      A stale-forever "ready" shelf is the same lie as an empty one.
 
@@ -1929,7 +1929,7 @@ const Marketplace = (() => {
     return mp.candidates() || [];
   }
   function suggestedShelfHTML() {
-    // two honest sources share this shelf: auto-mint candidates (exact task shapes the Commander keeps typing)
+    // two honest sources share this shelf: auto-mint candidates (exact task shapes the Master keeps typing)
     // and SCOUT recipe drafts (server-authored from the learned interests, each carrying its evidence-grounded WHY).
     const cands = suggestedMissions();
     const drafts = scoutRecipeDrafts();
@@ -1983,7 +1983,7 @@ const Marketplace = (() => {
      (a draft landed), rejected, none (the model judged the library already covers it), expired (a stale draft
      aged out), accepted/dismissed (your own verdict), or error. GET /api/scout returns the tail; the bay reads
      it via ProspectStore.ledger(). Rendering it here makes the engine VISIBLE: a dismissed draft is no longer
-     the whole story — the Commander can see what the station tried and the honest reason each time. Collapsed by
+     the whole story — the Master can see what the station tried and the honest reason each time. Collapsed by
      default; EVERY line comes straight from the payload — nothing invented (no fabricated "trying…" filler). */
   const SCOUT_OUT = {
     staged:    { label: 'MINTED',    cls: 'ok' },
@@ -2039,7 +2039,7 @@ const Marketplace = (() => {
       '</div></div>';
   }
   /* ---------- FOUND ON YOUR PROJECTS: the environment-discovery shelf ----------
-     The first surface where the station proposes work the Commander never typed. Every card's FOUND line is the
+     The first surface where the station proposes work the Master never typed. Every card's FOUND line is the
      repo's own text (a TODO marker, the porcelain status), read from a BLESSED root by the sidecar's bounded
      scan — nothing is model-authored, so nothing can be invented. Renders '' until a real server read lands
      (the scoutColdState law: the frontend may not assert discovery state it can't prove) and '' when the shelf
@@ -2171,7 +2171,7 @@ const Marketplace = (() => {
 
   /* ---------- wiring: prospects (station-drafted new classes) ----------
      REVIEW & SAVE seeds the EXISTING custom-class builder with the draft (kit/skills/text pre-filled) — the
-     Commander reviews, edits, and confirms → a normal custom specialty is saved (summon path unchanged). Accepting
+     Master reviews, edits, and confirms → a normal custom specialty is saved (summon path unchanged). Accepting
      removes the prospect from staging (accept, not denylist). Dismiss denylists the fingerprint + re-renders. */
   function wireProspect(scope) {
     const sc = scope || root;
@@ -2217,7 +2217,7 @@ const Marketplace = (() => {
   /* ---------- wiring: dossier (the action button + custom edit/delete) ---------- */
   /* CONFIGURE panel wiring. It lives in the dossier now, which changes ONE rule that used to be free: the name
      field is INSIDE the element renderDossier() replaces, so a keystroke may never trigger a dossier repaint —
-     that would tear the focused input out from under the Commander mid-word. Every name-driven surface is
+     that would tear the focused input out from under the Master mid-word. Every name-driven surface is
      therefore patched in place (counter, helper, aria-invalid, and every .mkt-candidate-name echo including the
      CTA's). Called from wireDossier so it re-binds on both a full stage render and a dossier-only repaint. */
   function wireSummonConfig(sc) {
@@ -2280,7 +2280,7 @@ const Marketplace = (() => {
         else pickedSummonModel = null;
         sfx('click');
         // patch the helper only — a renderDossier here would rebuild the <select> and re-run its async populate,
-        // flashing the choice the Commander just made back to blank until the catalog resolves again.
+        // flashing the choice the Master just made back to blank until the catalog resolves again.
         const help = sc.querySelector('#mkt-model-help');
         if (help) help.innerHTML = modelHelpHTML((focusAgent && Specialties.get(focusAgent)) || null);
         const choice = sc.querySelector('.mkt-model-choice');
@@ -2317,7 +2317,7 @@ const Marketplace = (() => {
     if (deployBtn) {
       if (ctx && ctx.mode === 'pick') {
         // SUMMON (pick mode) — additive, never destructive, so it fires on the first click (no arm). The P0 fix
-        // (audit #6): hand back { activate:true } so summonAgent LANDS the Commander in the new agent's chat
+        // (audit #6): hand back { activate:true } so summonAgent LANDS the Master in the new agent's chat
         // thread (focus + Chat.load) instead of quietly toasting from behind the still-open bay. The desk-placement
         // chip lives in summonAgent's activate branch, so routing through it delivers that guidance too. Non-summon
         // pick (the wake screen) has no live agent to activate — it just hands the chosen spec back.
@@ -2338,7 +2338,7 @@ const Marketplace = (() => {
             close();
           };
           if (ctx.summon && summonNameIssue()) {
-            // no re-render: the field is always on screen now, so send the Commander straight to it.
+            // no re-render: the field is always on screen now, so send the Master straight to it.
             sfx('bad'); note('name is too long — use 18 characters or fewer', 'bad');
             const input = root.querySelector('#mkt-summon-name');
             if (input) { try { input.scrollIntoView({ block: 'center' }); } catch (_) {} input.focus(); }
@@ -2550,7 +2550,7 @@ const Marketplace = (() => {
       }
     });
     /* DISCOVERY findings: HAND IT posts the accepted verdict and PREFILLS the COMMS composer with a directive
-       that carries the finding's own citation — NOTHING auto-runs, the Commander edits and hits send
+       that carries the finding's own citation — NOTHING auto-runs, the Master edits and hits send
        (Chat.prefill only scaffolds; the resummon law verbatim). Dismiss denylists the fingerprint server-side
        forever → arm/confirm, same weight as the scout's. */
     sc.querySelectorAll('.mkt-disc-take').forEach(b => b.addEventListener('click', () => {
@@ -2609,7 +2609,7 @@ const Marketplace = (() => {
         if (!hasRecipes()) return;
         const res = Recipes.importRecipe(parsed);
         if (!res.ok) { sfx('bad'); note('could not import: ' + (res.error || 'malformed recipe file'), 'bad'); return; }
-        // land the Commander on their freshly imported recipe (MINE view, dossier focused on it).
+        // land the Master on their freshly imported recipe (MINE view, dossier focused on it).
         focusRecipe = res.recipe.id; catFilter = 'mine'; view = 'grid';
         if (res.renamedFrom) {
           sfx('click'); note('imported as “' + res.recipe.name + '” — “' + res.renamedFrom + '” already exists. to replace it, delete the old one and rename this', 'warn');
@@ -2622,10 +2622,10 @@ const Marketplace = (() => {
   }
 
   /* ---------- IMPORT AGENT — the Hermes / OpenClaw migration flow ----------
-     A one-click path for a Commander arriving from OpenClaw or hermes-agent: detect installs (or pick a folder),
+     A one-click path for a Master arriving from OpenClaw or hermes-agent: detect installs (or pick a folder),
      preview exactly what the scan found, then RECRUIT mints a Vultron agent with the persona/orders/memory
      pre-filled. Every field shown comes straight from /api/harness/scan — nothing is invented (truthful telemetry).
-     Keys are NEVER read or transferred; the preview says so and ABILITIES › CONNECTED › API KEYS is where the Commander re-enters them.
+     Keys are NEVER read or transferred; the preview says so and ABILITIES › CONNECTED › API KEYS is where the Master re-enters them.
      Backend routes (built in parallel this session): POST /api/harness/detect, POST /api/harness/scan. The folder
      fallback reuses the existing POST /api/projects/pickfolder. If a route is missing the flow degrades to an honest
      empty/error state — it never fakes a detection or a scan. */
@@ -3065,7 +3065,7 @@ const Marketplace = (() => {
       ? '◷ fills the blanks ONCE, then runs the same directive on your chosen cadence as <b class="mkt-runas-name">' + esc(runAsName()) + '</b> — it becomes a ROUTINE (manage or stop it any time in AUTOMATE › SCHEDULES).'
       : '▸ opens a new session and starts this workflow with <b>' + esc(who) + '</b>.';
     /* WHAT GETS SENT — the filled directive, live. The dossier shows the raw template with its {tokens}; the last
-       thing the Commander saw before committing used to be a form full of blanks, so the actual instruction the
+       thing the Master saw before committing used to be a form full of blanks, so the actual instruction the
        agent receives was never visible anywhere. This renders the REAL output of Recipes.fillTask against the
        values in the form right now (including the intake decisions appended at the bottom), refreshed on every
        keystroke and chip tap — the same primitive the launch itself calls, so it cannot drift from what runs. */
@@ -3105,7 +3105,7 @@ const Marketplace = (() => {
     const missing = Recipes.requiredMissing(r, values);
     if (missing.length) {
       sfx('bad');
-      // mark what the Commander can SEE: a choice row's carrier input is hidden, so redden its chip row instead
+      // mark what the Master can SEE: a choice row's carrier input is hidden, so redden its chip row instead
       // (a red outline on a display:none input is an invisible error, and focusing it does nothing at all).
       missing.forEach(k => {
         const f = stage.querySelector('.mkt-p-in[data-key="' + k + '"]');
@@ -3260,7 +3260,7 @@ const Marketplace = (() => {
       makeRoutine(r, values, schedule);
     });
 
-    // focus the first control the Commander can actually type in — a choice row's carrier input is hidden, so
+    // focus the first control the Master can actually type in — a choice row's carrier input is hidden, so
     // reaching for `.mkt-p-in` blindly would focus nothing and leave the form feeling dead on open.
     const first = stage.querySelector('textarea.mkt-p-in, input[type="text"].mkt-p-in, select.mkt-p-in') ||
       stage.querySelector('.mkt-p-chip');
@@ -3278,7 +3278,7 @@ const Marketplace = (() => {
       enabled: true, deliver: 'local', repeat: { times: null },
       meta: { recipeId: r.id },
       // ONE ARM RULE (org wire AUTO-P16-1): SCHEDULE IT is a save like the SCHEDULES form's — a scheduling switch nobody ever set is
-      // turned on; one the Commander turned off stays off (POST /api/cron arm:true → armOnSaveIfUnset). The reply's `scheduler` says which.
+      // turned on; one the Master turned off stays off (POST /api/cron arm:true → armOnSaveIfUnset). The reply's `scheduler` says which.
       arm: true
     };
     // SOP recipes: the acceptance contract rides the routine's meta bag (additive provenance) so every scheduled
@@ -3372,7 +3372,7 @@ const Marketplace = (() => {
     return html;
   }
   // the KIND of control a fill-in gets at launch (recipes.js PARAM_TYPES). Authoring it here is what lets a
-  // recipe ask for a file with a real chooser instead of hoping the Commander types a path correctly.
+  // recipe ask for a file with a real chooser instead of hoping the Master types a path correctly.
   const PARAM_TYPE_OPTS = [
     { id: 'text', label: 'text' },
     { id: 'choice', label: 'pick one' },
@@ -3620,7 +3620,7 @@ const Marketplace = (() => {
     repaint();
 
     const save = stage.querySelector('.mkt-do-recipe-save');
-    let dupArmedFor = null;   // SAME-NAME GUARD: the name the Commander already saw the clash warning for
+    let dupArmedFor = null;   // SAME-NAME GUARD: the name the Master already saw the clash warning for
     if (save) save.addEventListener('click', () => {
       const editing = editingRecipeId && hasRecipes() ? Recipes.get(editingRecipeId) : null;
       const name = (stage.querySelector('#mkt-r-name').value || '').trim();
@@ -3735,7 +3735,7 @@ const Marketplace = (() => {
      NO tool / skill / model / effort pickers. They were never what decided an agent's reach: tools resolve per turn
      from the station + the agent's power settings (sidecar resolveTools), skills are ADD-only over the ones enabled
      in SKILLS, and model + effort are picked on the recruit card (applied at summon). The old "choose at least one
-     tool" gate asked the Commander to configure something that changed nothing — so the page now says what is
+     tool" gate asked the Master to configure something that changed nothing — so the page now says what is
      true: tools and skills come built in. A loadout carried in from a station draft or an edited class still rides
      along untouched (buildKit/buildSkills/buildEffort/buildModel) — it only ever ADDS focus, never restricts. */
   const BUILD_ACCENTS = ['#ffaa33', '#7bc88a', '#6fa8bf', '#b790c0', '#cf8a7d', '#88b6c4', '#ffd34a', '#6fbcc0', '#9fc0c4'];

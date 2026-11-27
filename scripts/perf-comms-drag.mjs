@@ -52,7 +52,7 @@ try {
   await sleep(2500);
   results.gpu = await evalJS(cdp, `(() => { const c = document.createElement('canvas').getContext('webgl'); const d = c && c.getExtension('WEBGL_debug_renderer_info'); return d ? c.getParameter(d.UNMASKED_RENDERER_WEBGL) : 'none'; })()`);
 
-  // A real Commander's COMMS is full: fill it with replies shaped like the app's own (headings, bold,
+  // A real Master's COMMS is full: fill it with replies shaped like the app's own (headings, bold,
   // code, lists) by cloning whatever message nodes exist, else plain report-ish blocks.
   results.filled = await evalJS(cdp, `(() => {
     const log = document.getElementById('chat-log');
@@ -60,7 +60,7 @@ try {
     const md = '## Findings\\nChecked the **build pipeline** and the \`sidecar/loop.js\` retry path. Three things stand out:\\n\\n- The **cache** is cold on every run.\\n- Retries double-count tokens.\\n- The deploy step never reports its exit code.\\n\\n\`\`\`\\nnpm run test:fast\\n  1036 passing\\n\`\`\`\\n\\nNext I would fix the retry accounting first, since it skews every cost readout on the station.';
     for (let i = 0; i < ${msgs}; i++) {
       const u = document.createElement('div'); u.className = 'cmsg user';
-      u.innerHTML = '<span class="cmsg-head"><span class="who">COMMANDER</span><span class="cmsg-ts">12:0' + (i % 10) + '</span></span><span class="body">check the build pipeline and tell me what is slow</span>';
+      u.innerHTML = '<span class="cmsg-head"><span class="who">MASTER</span><span class="cmsg-ts">12:0' + (i % 10) + '</span></span><span class="body">check the build pipeline and tell me what is slow</span>';
       log.appendChild(u);
       const d = document.createElement('div'); d.className = 'cmsg agent no-anim';
       d.innerHTML = '<span class="cmsg-head"><span class="who">AGENT</span><span class="cmsg-ts">12:0' + (i % 10) + '</span></span>';

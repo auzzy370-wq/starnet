@@ -2,7 +2,7 @@
 
    Locks the capability AND its containment: an agent can message a chat a human already opened with this
    station, and cannot message anything else. The second half is the point — channel.send is the one tool that
-   carries content out to a third party under the Commander's own bot identity, so free-form addressing would
+   carries content out to a third party under the Master's own bot identity, so free-form addressing would
    turn any prompt injection into an exfiltration primitive.
 
    Since channel-delivery-ledger S4 the HOST sends: the tool hands it the whole body once, with the run, the chat's agent,
@@ -206,8 +206,8 @@ const TARGETS = [
 
   /* ---- the gate: channel.send is capability- AND consent-gated ------------------------------------
      This is the enforcement that makes the containment story real. channel.targets sends nothing, but the list is
-     the Commander's chats, so a watched run confirms each listing and an unattended run is never offered it;
-     channel.send asks every time until the Commander grants it, so an autonomous run cannot quietly message
+     the Master's chats, so a watched run confirms each listing and an unattended run is never offered it;
+     channel.send asks every time until the Master grants it, so an autonomous run cannot quietly message
      people off a stale grant. */
   {
     let sends = 0;
@@ -230,7 +230,7 @@ const TARGETS = [
     A.eq(sends, 0, 'capability denial sends nothing');
 
     /* channel.targets DECLARES external-unknown too, the lane it always fell into (B3, release 0.14.2: as impact none
-       every unattended, non-owner chat and tainted run holding the DISH could list the Commander's chats). It needs no
+       every unattended, non-owner chat and tainted run holding the DISH could list the Master's chats). It needs no
        consent grant (requiresConsent false); the run authority is what asks. delegated-command-gap.test locks its
        projection and taint on every lane. */
     const targetsGrant = { agentId: 'agent', room: 'office', hasCompute: true, tools: ['channel.targets'], approvalRules: {} };

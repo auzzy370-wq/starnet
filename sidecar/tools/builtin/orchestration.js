@@ -35,7 +35,7 @@
   // deferred (index.js ZERO-CREW DIET), so the workers it just started must be one call away, not one search away.
   const BACKGROUND_CONTROLS = Object.freeze(['team.subagents', 'team.steer', 'team.interrupt', 'team.resume']);
   /* WHAT THE LEAD READS of a background start (rc walk 10-14: "The task is running under runId 8b7d03a9-2b85-…" — the lead
-     quoted the start row's internals to the Commander). The handle it needs to watch, steer or stop the worker (id +
+     quoted the start row's internals to the Master). The handle it needs to watch, steer or stop the worker (id +
      generation), who it is and its state — nothing else. The run ids, the prompt it just wrote and the empty event log stay
      in the durable record, where team.subagents reads them when they are asked for. A row with no id (a refused worker)
      passes through whole: its reason is the message. A worker its lead bounded says so (BOUNDED_LABEL). */
@@ -350,7 +350,7 @@
   /* WHY THE HOST STOPPED A REGISTRY WORKER (Step 2 F2/F3). subagents.js aborts a worker's own controller with a
      coded reason: 'parent_cancelled' (the run that started it was cancelled) or 'worker_stalled' (the liveness
      check saw no progress). The run itself only knows it was cancelled; the row the lead receives must say which,
-     so a stalled worker never reads as a Commander stop and neither reads as finished work. '' = not a host stop. */
+     so a stalled worker never reads as a Master stop and neither reads as finished work. '' = not a host stop. */
   function hostStopCode(signal) {
     const r = signal && signal.aborted ? signal.reason : null;
     const code = r && typeof r === 'object' ? String(r.code || '') : '';
@@ -502,7 +502,7 @@
     // The EFFECTIVE approval posture of a delegated run — 'full' | 'ask' — read from the host as a thunk so it
     // reflects the live roster at dispatch time. A worker SHARES the lead's consent broker (see runWorker), so the
     // posture baked into its own roster identity ("APPROVAL — FULL ACCESS…" / "ASK FIRST…") is the WRONG one
-    // whenever the two differ: an engineer the Commander granted full access, dispatched by an ask-mode overseer,
+    // whenever the two differ: an engineer the Master granted full access, dispatched by an ask-mode overseer,
     // was told "never wait for a go-ahead" while every write actually paused for a prompt. Truthful telemetry
     // applies to the prompt too, so the effective posture is appended LAST and explicitly supersedes it.
     const approvalPosture = () => {
@@ -516,7 +516,7 @@
         + 'worker, so you inherit the LEAD agent\'s approval posture, not your own: '
         + (p === 'full'
           ? 'FULL ACCESS. Run your tools directly — do not pause to ask, and never request approval in text.'
-          : 'ASK FIRST. Writes and network calls (and commands, when shell_exec is in your tool list) are shown to the Commander for approval when you call the '
+          : 'ASK FIRST. Writes and network calls (and commands, when shell_exec is in your tool list) are shown to the Master for approval when you call the '
             + 'tool — so still just make the tool call, but expect a pause, and carry on without it if it is declined.');
     }
     function workerSystem(base) {
@@ -524,7 +524,7 @@
       const liveContext = typeof deps.getTaskContext==='function' ? String(deps.getTaskContext() || '') : taskContext;
       if (!liveContext) return identity;
       return identity + '\n\n' + liveContext
-        + '\n\n[DELEGATED EXECUTION] Treat the task context above as settled input from the Commander. Do not ask the Commander another discovery question. If a truly blocking gap remains, report that gap to the lead agent.';
+        + '\n\n[DELEGATED EXECUTION] Treat the task context above as settled input from the Master. Do not ask the Master another discovery question. If a truly blocking gap remains, report that gap to the lead agent.';
     }
     /* LEAD CONTEXT HANDOFF (G6 closure). A worker's opening message was ONLY the prompt string: whatever the
        lead had already established — discovered file paths, findings, constraints, decisions — was lost unless
@@ -533,7 +533,7 @@
        itself stays last (recency); the structured-result REPAIR run replays the same opening message verbatim
        (it reuses this composed string), and restart-resume rebuilds it from the durable record's own `context`
        field — a resumed worker never silently loses its handoff. Distinct from `taskContext` above: that block
-       is the HOST-assembled Commander evidence in the system prompt; this one is the LEAD-authored, per-worker
+       is the HOST-assembled Master evidence in the system prompt; this one is the LEAD-authored, per-worker
        working state. */
     const HANDOFF_CONTEXT_MAX = 8000;
     function handoffContext(raw) { return String(raw == null ? '' : raw).trim().slice(0, HANDOFF_CONTEXT_MAX); }
@@ -550,14 +550,14 @@
     /* THE HAND-OFF BETWEEN WORKERS (2026-10-13 live walkthrough). A sequential dispatch ran its workers one after
        another but told each one NOTHING about the ones before it: asked for "a researcher finds 3 launch emails, a
        copywriter drafts ours from them", the copywriter re-did the research from scratch (25 web steps), ran out of
-       its slice, and the Commander got no email after paying for both. Each later worker in a SEQUENTIAL dispatch now
+       its slice, and the Master got no email after paying for both. Each later worker in a SEQUENTIAL dispatch now
        opens with what the earlier workers returned (bounded) plus the exact files they saved, and may READ those
        exact files (host-resolved, read-only, this run only — see pathtrust readGrants). A worker that read outside
        content passes that taint on: the next worker starts under the same limits. Parallel workers run at the same
        time, so nothing is handed between them. */
     const EARLIER_HEADER = '[EARLIER WORKERS IN THIS HAND-OFF — their finished output is your input. Build on it; do not redo their work. You can fs_read the files listed under each one at those exact paths.]';
     const EARLIER_EACH_MAX = 3000, EARLIER_MAX = 8000;
-    // user-visible text for a row whose `result` carries a model-directed note (the timeout row): never shown to the Commander
+    // user-visible text for a row whose `result` carries a model-directed note (the timeout row): never shown to the Master
     const shownText = new WeakMap();
     const userTextOf = (row) => shownText.has(row) ? shownText.get(row) : String((row && row.result) || '');
     const workerName = (aid) => { const id = (crewNow && crewNow.get && crewNow.get(aid)) || null; return String((id && id.name) || aid || 'worker').toUpperCase(); };
@@ -595,8 +595,8 @@
       }
       return { text: blocks.join('\n\n').slice(0, EARLIER_MAX), reads, taint: taintOfRows(usable) || '' };
     }
-    /* A WORKER'S CLOCK STOPS WHILE IT WAITS ON THE COMMANDER. The slice is for the worker's work: an fs_write approval
-       sitting unanswered (the Commander was in BUILD MODE) used to drain it, and the worker was cut off with its draft
+    /* A WORKER'S CLOCK STOPS WHILE IT WAITS ON THE MASTER. The slice is for the worker's work: an fs_write approval
+       sitting unanswered (the Master was in BUILD MODE) used to drain it, and the worker was cut off with its draft
        unsaved. hold()/release() pause the slice around every consent prompt; the dispatch credits the held time back to
        the whole wall clock (bounded, so a prompt nobody answers can't hold a dispatch open forever). Needs the host
        clock — without one (bare unit callers) the slice runs as before. */
@@ -748,7 +748,7 @@
     }
 
     /* SESSION TARGETING (2026-07-30). Delegation used to be agent-addressed only: the lead could say WHO, never
-       WHERE, so a worker's run was filed under whatever session the LEAD was in. The Commander asked for a session
+       WHERE, so a worker's run was filed under whatever session the LEAD was in. The Master asked for a session
        called "research", got the researcher, and watched the work land somewhere else while the lead reported
        success. `session` on a worker closes that: it resolves to a real workstream id, which rides into runOnce as
        streamId (so runStore + transcriptStore file the run there for real) and back to the page as a delivery.
@@ -840,7 +840,7 @@
     }
 
     /* THE VISIBLE HALF. runOnce already filed the run under this streamId (runStore + transcriptStore), so the
-       durable record is true either way; this is what puts the worker's answer in front of the Commander, in the
+       durable record is true either way; this is what puts the worker's answer in front of the Master, in the
        session they named. Failure is REPORTED on the row, never swallowed: a lead that says "it's in research"
        when the fold failed is the same lie as misfiling it. */
     /* the reason a worker's DELIVERY carries (typed-outcomes): a 'done' end that did not SUCCEED names its outcome (a provider-cut reply
@@ -886,7 +886,7 @@
       return envelope;
     }
 
-    // Busy state belongs to the TARGET session, not whichever session the Commander is currently viewing.
+    // Busy state belongs to the TARGET session, not whichever session the Master is currently viewing.
     // This is intentionally best-effort: a missing page must never delay or cancel paid worker work.
     function noteSessionActivity(verb, job, runId, delivery) {
       if (!station || !job.streamId) return;
@@ -904,7 +904,7 @@
       // The registry timeout is now only a BACKSTOP: it sits a minute above the dispatch's own budget so the
       // in-tool wall clock (which returns partial rows) always fires first. Letting the registry's timeout be the
       // primary mechanism is what threw away every completed worker's result (2026-07-26 audit finding A).
-      // + the bounded time workers may spend paused on the Commander's approval (pausableSlice credits it back)
+      // + the bounded time workers may spend paused on the Master's approval (pausableSlice credits it back)
       timeoutMs: dispatchBudgetMs + (hasClock ? APPROVAL_HOLD_MAX_MS : 0) + 60000,
       // CONSENT-GATED (2026-07-14, closes the parked P1): delegation fans out REAL autonomous agent loops that
       // spend budget — if untrusted content in the lead's context (a fetched page, a channel message) injects
@@ -918,7 +918,7 @@
          chat" while dispatching. This is the description the model reads when it picks; it now says where a worker works and
          names the one call that seats crew in this chat (station.control group.add, deferred). Tightened elsewhere to pay
          for it (payload.budget: lead-with-crew tool bytes), nothing dropped. */
-      description: 'Delegate subtasks to your specialist crew, each worker in its own thread (never in this chat). Each runs its OWN real agent loop (web, files, memory) and returns its result for you to synthesize. To bring crew INTO this chat to work with the Commander, use station.control group.add instead (tool_search "group add"). Address workers by the agentId listed under YOUR TEAM. background:true starts watchable workers while you keep working. SESSIONS: a worker\'s `session` (the session\'s NAME, as the Commander says it) runs and files that subtask in that session; without it, its work is filed on this conversation\'s card. A name not on this station is REFUSED, not guessed, and that worker does not run. FILES: in a conversation scoped to a trusted project, a worker\'s RELATIVE paths (fs_write, image_generate, voice_generate) land in that project folder, where fs_read finds them by the same path; otherwise each worker saves into its OWN private workspace. After the dispatch you may fs_read EXACTLY the files a worker\'s row lists (artifacts[].abs); never guess another path. That list proves what each worker saved; the Commander sees those files as cards. ORDER: workers run one after another, each handed the earlier ones\' results and files; list a worker that needs another\'s output AFTER it; parallel:true only for independent subtasks. COMMANDS: in ASK mode a delegated worker cannot run shell commands (shell_exec / verify_run are withheld unless that worker has Full Access, WORKBENCH or not); run them here yourself, or have the worker return the exact commands. BUILDER: builder:true lends that worker your station.map/plan/build for this job; builds follow your approval setting.',
+      description: 'Delegate subtasks to your specialist crew, each worker in its own thread (never in this chat). Each runs its OWN real agent loop (web, files, memory) and returns its result for you to synthesize. To bring crew INTO this chat to work with the Master, use station.control group.add instead (tool_search "group add"). Address workers by the agentId listed under YOUR TEAM. background:true starts watchable workers while you keep working. SESSIONS: a worker\'s `session` (the session\'s NAME, as the Master says it) runs and files that subtask in that session; without it, its work is filed on this conversation\'s card. A name not on this station is REFUSED, not guessed, and that worker does not run. FILES: in a conversation scoped to a trusted project, a worker\'s RELATIVE paths (fs_write, image_generate, voice_generate) land in that project folder, where fs_read finds them by the same path; otherwise each worker saves into its OWN private workspace. After the dispatch you may fs_read EXACTLY the files a worker\'s row lists (artifacts[].abs); never guess another path. That list proves what each worker saved; the Master sees those files as cards. ORDER: workers run one after another, each handed the earlier ones\' results and files; list a worker that needs another\'s output AFTER it; parallel:true only for independent subtasks. COMMANDS: in ASK mode a delegated worker cannot run shell commands (shell_exec / verify_run are withheld unless that worker has Full Access, WORKBENCH or not); run them here yourself, or have the worker return the exact commands. BUILDER: builder:true lends that worker your station.map/plan/build for this job; builds follow your approval setting.',
       schema: {
         type: 'object', required: ['workers'], properties: {
           workers: {
@@ -928,7 +928,7 @@
                 agentId: { type: 'string' }, prompt: { type: 'string' },
                 resultSchema: { type: 'object', description: 'Strict JSON result contract: the host validates the final result and allows one bounded repair; invalid output is never accepted as done.' },
                 context: { type: 'string', description: 'What YOU already established that this worker needs (file paths, findings, constraints, decisions), placed before the prompt as settled knowledge so it is not re-derived. Do not restate the subtask.' },
-                // WHERE the work lands. A session NAME (what the Commander calls it) or its exact id. Omit to run
+                // WHERE the work lands. A session NAME (what the Master calls it) or its exact id. Omit to run
                 // in the current session — see resolveSessions for why an unmatched name never falls back to that.
                 session: { type: 'string' },
                 // THE LENT BUILDER: this worker gets station.map / plan / build for this job (BUILDER_KIT above)
@@ -947,14 +947,14 @@
         const leadId = (ctx && ctx.agentId) || 'agent';
         const crew = roster() || new Map();
         crewNow = crew;
-        // wall-clock time this dispatch's workers spent waiting on the Commander's approval (credited back, bounded)
+        // wall-clock time this dispatch's workers spent waiting on the Master's approval (credited back, bounded)
         let heldTotal = 0;
         const creditHeld = (ms) => { heldTotal = Math.min(APPROVAL_HOLD_MAX_MS, heldTotal + (Number(ms) || 0)); };
         // ...and the time its foreground workers spent held by the run's spend pool (poolHoldClock: not their time)
         const family = poolHoldClock(ctx);
         // NO SILENT CAPS (2026-07-26 orchestration audit): the cap used to `slice(0, maxWorkers)` and say nothing,
         // so a 6-worker decomposition became a 4-worker dispatch reporting "4 done" — and the lead then wrote the
-        // Commander a confident final answer covering two subtasks that never ran. The overflow now comes BACK as
+        // Master a confident final answer covering two subtasks that never ran. The overflow now comes BACK as
         // explicit not-dispatched rows (see overflowRows) so the model can see, and re-dispatch, exactly what it lost.
         const asked = Array.isArray(args.workers) ? args.workers : [];
         const reqs = maxWorkers ? asked.slice(0, maxWorkers) : asked.slice();
@@ -1007,7 +1007,7 @@
           // PER-WORKER WALL CLOCK (2026-07-26 audit finding A). Before this, the ONLY clock was the registry's
           // tool timeout over the WHOLE dispatch: one slow worker ate the shared budget, the registry rejected, and
           // every ALREADY-COMPLETED worker's result was thrown away — the lead received the string "team.dispatch
-          // timed out" and nothing else, after the Commander had paid for all of them. Each foreground worker now
+          // timed out" and nothing else, after the Master had paid for all of them. Each foreground worker now
           // gets its own slice on its OWN abort controller (chained to the parent, so E-STOP still cascades), so a
           // straggler is stopped ALONE and comes back as one honest `timeout` row while its siblings' work survives.
           // Background workers pass no wallMs — outliving the tool call is the whole point of background:true.
@@ -1047,7 +1047,7 @@
           let timedOut = false, timer = null, slice = null;
           if (ac) {
             const expire = () => { timedOut = true; abort(ac); };
-            // the slice pauses while this worker waits on the Commander (see pausableSlice) — host clock required
+            // the slice pauses while this worker waits on the Master (see pausableSlice) — host clock required
             if (hasClock) slice = pausableSlice(wallMs, expire, now, creditHeld);
             else timer = setTimeout(expire, wallMs);
           }
@@ -1058,13 +1058,13 @@
               result: (partial ? partial + '\n\n' : '')
                 + '[STOPPED — ' + (bound ? BOUNDED_LABEL + ': ' : '') + 'this worker used up its ' + Math.round(wallMs / 1000) + 's slice of the dispatch wall clock'
                 + (partial ? '; the text above is its PARTIAL work' : ' before returning any text')
-                + '. Do not present it as complete: either re-dispatch this subtask ' + (bound ? 'without bounded' : 'alone') + ', or tell the Commander this part is unfinished.]',
+                + '. Do not present it as complete: either re-dispatch this subtask ' + (bound ? 'without bounded' : 'alone') + ', or tell the Master this part is unfinished.]',
               usd: (res && res.usd) || 0,
               taintedBy: taintOfRun(res) || undefined
             };
             // what it DID save before the clock ran out still counts (and still hands on)
             if (res && Array.isArray(res.artifacts) && res.artifacts.length) row.artifacts = res.artifacts.map(a => Object.assign({}, a, { agentId: job.agentId, workspace: job.agentId }));
-            // the bracketed note is for the LEAD; the Commander sees the partial work only (the card already says it ran out of time)
+            // the bracketed note is for the LEAD; the Master sees the partial work only (the card already says it ran out of time)
             shownText.set(row, partial);
             return row;
           };
@@ -1110,10 +1110,10 @@
               // ever consulted. So of the WORKBENCH grant a worker receives, shell.exec and verify.run never reach the
               // model at all; only its background-shell and browser-test tools survive. Widening that is a deliberate
               // permissions-surface decision, not something to fix by editing this comment.
-              // ...and the worker's slice pauses while one of those prompts waits on the Commander (pausableSlice)
+              // ...and the worker's slice pauses while one of those prompts waits on the Master (pausableSlice)
               consent: holdDuringConsent(ctx && ctx.consent, slice),
               // a BACKGROUND worker outlives its lead's turn, so its asks must too (index.js askHuman): they wait on the
-              // Commander past the lead's end instead of being denied by it, and still fail closed on the consent timeout
+              // Master past the lead's end instead of being denied by it, and still fail closed on the consent timeout
               detachedConsent: o2.background === true,
               extraObjects: kitFor(job.builder),   // + the LENT BUILDER when the lead dispatched it with builder:true
               maxCostUsd: perWorker,           // a runaway worker can't blow the lead's per-run ceiling
@@ -1197,7 +1197,7 @@
           // WORK VISIBILITY (ghost-file fix): what the worker PROVABLY produced (its runOnce artifact ledger),
           // stamped with the OWNING agentId. Each name is relative to the WORKER's run base (its project, else its
           // private workspace) — the lead reads them only at the host-resolved real paths below (they are already shown
-          // to the Commander as cards via the forwarded deliverable events). Never invent paths beyond this list.
+          // to the Master as cards via the forwarded deliverable events). Never invent paths beyond this list.
           if (artifacts.length) {
             row.artifacts = artifacts.map(a => Object.assign({}, a, { agentId: job.agentId, workspace: job.agentId }));
             // the REAL location of each saved file (host-resolved against the worker run's own base, existing files only),
@@ -1249,7 +1249,7 @@
         const waves = [];
         for (let i = 0; i < jobs.length; i += size) waves.push(jobs.slice(i, i + size));
         const leftAt = (w) => hasClock
-          ? dispatchBudgetMs - (now() - startedAt - heldTotal - family.heldMs())   // waiting on the Commander or the spend pool is not the workers' time
+          ? dispatchBudgetMs - (now() - startedAt - heldTotal - family.heldMs())   // waiting on the Master or the spend pool is not the workers' time
           : dispatchBudgetMs - Math.floor(dispatchBudgetMs * w / waves.length);   // no clock: fixed even shares
         const notStartedRow = (job) => ({
           agentId: job.agentId, reason: 'not-dispatched', usd: 0,
@@ -1472,7 +1472,7 @@
               taintedBy: r.taintedBy || '' };
           };
           // a FOREGROUND clone's result already went back to the lead inside its run: only a background one is the overseer's
-          // to report on (parentStreamId set), or the Commander would get that result a second time
+          // to report on (parentStreamId set), or the Master would get that result a second time
           const view = subagents.start({ ...projectOptions(ctx), leadId, parentRunId: (ctx && ctx.runId) || '', parentStreamId: args.background && deps.coordinateResults === true && ctx && ctx.streamId !== 'global' ? ctx.streamId : '', agentId: ephemeralId, prompt: prompt, context: task.context, runId: newId(), resultSchema: task.resultSchema, bounded: task.bounded === true, onlyHost: task.onlyHost || '', originLimits: originLimitsOf(ctx) }, runner);
           return { label, view, done, started: true };
         };
@@ -1492,13 +1492,13 @@
       }
     };
 
-    // team.summon: the LEAD creates a NEW worker on the crew, LIVE, for the Commander — the same action the
-    // Commander takes in the Recruitment Bay. CONTRACT: emits crew.summon.request down the run stream (added to
+    // team.summon: the LEAD creates a NEW worker on the crew, LIVE, for the Master — the same action the
+    // Master takes in the Recruitment Bay. CONTRACT: emits crew.summon.request down the run stream (added to
     // shared/events.js); the browser runs the real summonAgent() and POSTs /api/summon/ack with the new agentId,
     // which resolves ctx.summon (mirroring the consent round-trip). The new id is returned so the lead can hand it
     // work with team.dispatch in the SAME run. consent-gated (APPROVAL beat); ctx.summon is only present on a
     // live interactive lead run, so a headless/worker call degrades to a clear "not available" message.
-    // THE DESK RIDES ALONG: an agent created because the Commander asked for one is useless standing on bare
+    // THE DESK RIDES ALONG: an agent created because the Master asked for one is useless standing on bare
     // deck, so the browser's summon seeds that agent's workstation too and reports WHERE on the ack. That is the
     // only prop this path places, and only for the agent being created — team.summon is not a build tool.
     // Class Loadouts S1: the specialist class list is composed from the SHARED catalog (deps.classes =
@@ -1513,7 +1513,7 @@
       timeoutMs: 180000,
       name: 'team.summon', capability: 'orchestrator', impact: 'none', scope: 'write', requiresConsent: true,
       briefExempt: true,   // hiring is station setup, not the deliverable: never held behind the Task Brief (taskbrief-policy canMutate)
-      description: 'Summon a NEW specialist agent onto the crew for the Commander, live, as the Recruitment Bay does. Use it when the specialist you need does not exist yet; one already under YOUR TEAM takes work through team.dispatch. Pick a class with specId (one of: ' + SPEC_IDS + ') or describe a custom one with name + purpose. The station places the new agent\'s workstation with it, so never tell the Commander to go build it a desk. Returns the new agentId: bring it INTO this chat with station.control group.add, or hand it work with team.dispatch. In APPROVAL mode the Commander confirms the summon first.',
+      description: 'Summon a NEW specialist agent onto the crew for the Master, live, as the Recruitment Bay does. Use it when the specialist you need does not exist yet; one already under YOUR TEAM takes work through team.dispatch. Pick a class with specId (one of: ' + SPEC_IDS + ') or describe a custom one with name + purpose. The station places the new agent\'s workstation with it, so never tell the Master to go build it a desk. Returns the new agentId: bring it INTO this chat with station.control group.add, or hand it work with team.dispatch. In APPROVAL mode the Master confirms the summon first.',
       schema: {
         type: 'object', required: ['name'], properties: {
           name: { type: 'string' },        // the new agent's display name (e.g. "RESEARCHER")
@@ -1524,7 +1524,7 @@
         }
       },
       run: async (args, ctx) => {
-        if (!ctx || typeof ctx.summon !== 'function') return { content: 'Summoning is only available on the live station (an interactive run). Ask the Commander to summon this agent from the Recruitment Bay.', summary: 'unavailable' };
+        if (!ctx || typeof ctx.summon !== 'function') return { content: 'Summoning is only available on the live station (an interactive run). Ask the Master to summon this agent from the Recruitment Bay.', summary: 'unavailable' };
         const a = args || {};
         const spec = {
           name: String(a.name || '').trim().slice(0, 40),
@@ -1540,18 +1540,18 @@
         // the station resolves { agentId, desk }; a bare id string is still accepted (older stubs/callers).
         const newId = (ack && typeof ack === 'object') ? ack.agentId : ack;
         const desk = (ack && typeof ack === 'object' && ack.desk) ? String(ack.desk) : '';
-        // said to the Commander in the second person: the model echoes a result's wording ("The Commander declined …", rc walk 10-14)
-        if (!newId) return { content: 'No agent was created: the summon was declined on its card, or the station did not respond. If you mention it, say it to the Commander as "you".', summary: 'declined' };
+        // said to the Master in the second person: the model echoes a result's wording ("The Master declined …", rc walk 10-14)
+        if (!newId) return { content: 'No agent was created: the summon was declined on its card, or the station did not respond. If you mention it, say it to the Master as "you".', summary: 'declined' };
         // DESK: a summoned specialist needs a workstation to sit and work at, so the station sorts its desk as
         // part of THIS summon. Reported only when the station named a room — never assumed, so the reply can't
-        // promise furniture the floor doesn't have (and can't tell the Commander to go build a second one).
+        // promise furniture the floor doesn't have (and can't tell the Master to go build a second one).
         // Worded "workstation is in X", not "placed": the station may have bound a free desk it already had.
         const out = { agentId: newId, name: spec.name || spec.specId };
         if (desk) out.workstation = desk;
-        /* NEXT: the two things a new hire is for, by the Commander's words (rc walk 10-14: "bring two crew in to help me write
+        /* NEXT: the two things a new hire is for, by the Master's words (rc walk 10-14: "bring two crew in to help me write
            a launch post" summoned two, then background-dispatched them — the chat never got them). In this chat with the
-           Commander = station.control group.add; a job in its own thread = team.dispatch. */
-        out.next = 'to work IN this chat with the Commander: station.control {"action": "group.add", "args": {"agents": [' + JSON.stringify(out.name) + ']}}; a job in its own thread: team.dispatch';
+           Master = station.control group.add; a job in its own thread = team.dispatch. */
+        out.next = 'to work IN this chat with the Master: station.control {"action": "group.add", "args": {"agents": [' + JSON.stringify(out.name) + ']}}; a job in its own thread: team.dispatch';
         // revealTools: a crewless lead holds team.dispatch DEFERRED (index.js ZERO-CREW DIET) and every lead holds station.control
         // deferred — the agent it just summoned must be one call away for either, not one search away. A no-op wherever a
         // name is already advertised or not granted (loop.js reveal).

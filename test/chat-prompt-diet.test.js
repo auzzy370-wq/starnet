@@ -30,7 +30,7 @@ once("if (isTask && resolved.tools.indexOf('skill.view') >= 0) {", 'the runtime 
 A.ok(src.indexOf("(system || '') + runtimeBlock + toolNote") < 0, 'the runtime block no longer leads the appended payload');
 // (context-key-redact, 2026-10-28: the kill-switch path's per-run blocks ride inside PromptScrub.scrubStored(…))
 once("+ deliverableNote + crewCallNote + runtimeBlock), { isTask, internal, tools: resolved.tools });", 'the runtime block rides LAST in the appended payload');
-// The explicit skill PRELOAD ("/skill Name" or body.preloadSkills) is a Commander request and stays ungated.
+// The explicit skill PRELOAD ("/skill Name" or body.preloadSkills) is a Master request and stays ungated.
 once("    if (resolved.tools.indexOf('skill.view') >= 0) {", 'explicit skill preload keeps its own (isTask-free) gate');
 
 A.report('chat-prompt-diet.test');

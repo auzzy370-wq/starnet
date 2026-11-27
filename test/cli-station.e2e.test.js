@@ -237,7 +237,7 @@ function hermetic(profile) {
       return seen.map(s => s.sys).join('\n');
     };
     const termSys = await termRun({ streamId: 'cli-agent', rosterSystem: true, client: 'terminal' });
-    A.ok(termSys.indexOf('[TERMINAL] The Commander is talking to you from the Vultron terminal CLI') >= 0, 'the terminal run carries the [TERMINAL] note');
+    A.ok(termSys.indexOf('[TERMINAL] The Master is talking to you from the Vultron terminal CLI') >= 0, 'the terminal run carries the [TERMINAL] note');
     A.ok(termSys.indexOf('using Vultron from its TERMINAL CLI') >= 0, 'and the terminal manual pointer, not the desktop manual');
     A.ok(termSys.indexOf('name the object to place in the Vultron desktop app to grant it') >= 0, 'and the capability note sends missing gear to the desktop app (the run\'s viewer reached summarizeCapabilities): ' + (termSys.match(/You do NOT have[^\n]*\n[^\n]*/) || [''])[0].slice(0, 300));
     const deskSys = await termRun({ streamId: 'desk-e2e-8', placed: [{ objectType: 'cabinet' }] });

@@ -66,9 +66,9 @@ const Glossary = require('../frontend/app/glossary.js');
   A.eq(closedManual, 2, 'replay closes the Field Manual before the Dialogue lesson can be covered');
   A.ok(/fm-replay/.test(tutorialSrc) && /replay\.onclick = \(\) =>/.test(tutorialSrc), 'Field Manual renders and wires REPLAY QUICK TOUR');
   const resetState = vm.runInContext('Tutorial.reset()', context);
-  A.eq(resetState.firstCommandDone, false, 'new-Commander reset re-arms the one-shot tour');
-  A.eq(resetState.seen, {}, 'new-Commander reset clears inherited coachmark history');
-  A.eq(resetState.brief, {}, 'new-Commander reset clears inherited FIRST STEPS progress');
+  A.eq(resetState.firstCommandDone, false, 'new-Master reset re-arms the one-shot tour');
+  A.eq(resetState.seen, {}, 'new-Master reset clears inherited coachmark history');
+  A.eq(resetState.brief, {}, 'new-Master reset clears inherited FIRST STEPS progress');
   A.eq(tutorialRemovals, 1, 'tutorial reset explicitly removes vultron.tutorial.v1');
 
   // Release clarity regression: Genesis must route each editable choice to its real home, and the work
@@ -78,11 +78,11 @@ const Glossary = require('../frontend/app/glossary.js');
   const stationUiSrc = fs.readFileSync(path.join(root, 'frontend', 'app', 'stationui.js'), 'utf8');
   const appSrc = fs.readFileSync(path.join(root, 'frontend', 'app', 'app.js'), 'utf8');
   A.ok(/Workstreams\.reset\(\);[\s\S]{0,240}Tutorial\.reset\(\)/.test(appSrc),
-    'the real new-Commander reset funnel clears tutorial ownership before entering the station');
+    'the real new-Master reset funnel clears tutorial ownership before entering the station');
   A.ok(indexSrc.includes('agent setup in CREW › AGENTS') && indexSrc.includes('model in COMMS') && indexSrc.includes('SYSTEM › SETTINGS'),
     'Genesis routes editable setup to the real agent, model, and settings surfaces');
-  A.eq(indexSrc.includes('everything here is re-editable later in the Commander Dossier'), false,
-    'Genesis no longer sends agent configuration to the Commander Dossier');
+  A.eq(indexSrc.includes('everything here is re-editable later in the Master Dossier'), false,
+    'Genesis no longer sends agent configuration to the Master Dossier');
   A.ok(/\{ id: 'tasks', k: 'tasks', label: 'TASKS', tip: '[^']*[Pp]lanned work[^']*' \}/.test(stationUiSrc),
     'WORK describes TASKS as planned board work instead of claiming every run lives there');
   A.ok(stationUiSrc.includes('<b>NO TASKS</b>') && /id="kb-in"[^>]*aria-label="New task"/.test(stationUiSrc),

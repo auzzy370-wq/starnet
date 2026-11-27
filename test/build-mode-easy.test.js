@@ -38,9 +38,9 @@ A.ok(/browser\.append\(makePropMount\(\)\)/.test(build) && !/browser\.append\(ma
 const mount = fn('makePropMount');
 A.ok(/const box = makePropPanel\(\);/.test(mount), '…which wraps the props lane\'s own panel, untouched');
 A.ok(/makeJob && makeJob\.status !== 'done' && makeJob\.status !== 'failed'\) \|\| !!makePreview \|\| !!makeMsg/.test(mount) && /const open = makeOpen \|\| busy;/.test(mount),
-  '…held OPEN while a paid job runs, a preview or a message waits (a job the Commander paid for is never hidden behind a key)');
+  '…held OPEN while a paid job runs, a preview or a message waits (a job the Master paid for is never hidden behind a key)');
 A.ok(/inp\.addEventListener\('focus', \(\) => \{ makeOpen = true;/.test(mount) && /door\.onclick = \(\) => \{ makeOpen = true; chooseLibrarySection\('decoration'\);/.test(build),
-  '…and opens when its field takes the focus, or the EQUIPMENT/ABILITIES door sends the Commander to it');
+  '…and opens when its field takes the focus, or the EQUIPMENT/ABILITIES door sends the Master to it');
 A.ok(/\.refit-makeprop\.is-compact > :not\(\.refit-makeprop-head\):not\(\.refit-makeprop-cta\) \{ display: none !important; \}/.test(easy) && /\.is-compact \.refit-makeprop-cta \.bb \{/.test(easy),
   'at rest it is ONE row: the title and the credits key (conversion stays in view)');
 A.ok(/\.refit-overlay\[data-catalog="true"\] \.refit-hint \.refit-hint-keys \{ display: none; \}/.test(easy) && /white-space: nowrap; overflow: hidden; text-overflow: ellipsis; \}/.test(easy),

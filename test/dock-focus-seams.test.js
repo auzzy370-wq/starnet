@@ -1,4 +1,4 @@
-/* node test/dock-focus-seams.test.js — the live walk's (10-14) dock / focus seams, each locked where the Commander meets it:
+/* node test/dock-focus-seams.test.js — the live walk's (10-14) dock / focus seams, each locked where the Master meets it:
      #0   a CREW / WORK / BUILD / SYSTEM dock menu opens ABOVE every open station window (it opened behind them, so BUILD
           MODE and SETTINGS were unreachable while any window was open)
      #1   an approval or MY READ card that lands while you follow the exchange stays in view: a press (the composer, the

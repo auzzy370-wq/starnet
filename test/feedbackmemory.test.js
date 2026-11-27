@@ -1,4 +1,4 @@
-/* node test/feedbackmemory.test.js — THE COMMANDER'S TASTE (sidecar/feedbackmemory.js).
+/* node test/feedbackmemory.test.js — THE MASTER'S TASTE (sidecar/feedbackmemory.js).
 
    Proves: each verdict maps to the right like/dislike belief (and a bare "close" teaches nothing); a record is
    user-confirmed, global, Preference-kind, origin 'feedback', trust-seeded; a later correction folds into the SAME
@@ -30,8 +30,8 @@ A.ok(r && r.created, 'a miss creates a record');
 const rec = r.rec;
 A.eq(rec.id, 'note_2', 'collision-proof id from memcore');
 A.eq(rec.origin, 'feedback', 'origin feedback'); A.eq(rec.kind, 'profile', 'Preference kind'); A.eq(rec.title, 'Preference', 'Preference title');
-A.eq(rec.confirmation, 'user-confirmed', 'the Commander\'s own verdict is user-confirmed');
-A.eq(rec.scope, 'global', 'taste is global (about the Commander, not one repo)');
+A.eq(rec.confirmation, 'user-confirmed', 'the Master\'s own verdict is user-confirmed');
+A.eq(rec.scope, 'global', 'taste is global (about the Master, not one repo)');
 A.ok(rec.trust > 0, 'trust seeded like a Keep');
 A.eq(rec.sourceRunId, 'run-a', 'record names the run that taught it');
 A.eq(r.list.length, 2, 'ordinary notes are kept');
@@ -64,17 +64,17 @@ A.eq(FM.selectTaste(many).length, FM.TASTE_LIMIT, 'capped at TASTE_LIMIT');
 A.eq(FM.selectTaste(many)[0].id, 'n19', 'newest leads');
 A.eq(FM.selectTaste(null).length, 0, 'null-safe');
 
-// ---- review fixes: newest corrections win the cap · the Commander's own edit is never regenerated over ----
+// ---- review fixes: newest corrections win the cap · the Master's own edit is never regenerated over ----
 {
   let l = FM.apply([], { runId: 'r9', verdict: 'miss', words: 'a'.repeat(390), directive: 'write the brief' }, deps(1)).list;
   l = FM.apply(l, { runId: 'r9', verdict: 'miss', words: 'use three bullets' }, deps(2)).list;
   A.ok(/use three bullets/.test(l[0].content), 'a later correction still lands after a near-cap first one (newest kept)');
   for (let i = 0; i < 10; i++) l = FM.apply(l, { runId: 'r9', verdict: 'miss', words: 'note ' + i }, deps(3 + i)).list;
   A.ok(l[0].feedbackWords.length <= 6, 'per-run words are capped');
-  // the Commander edits the record in the Memory Core (memcore.applyEdit rewrites content+body only)
+  // the Master edits the record in the Memory Core (memcore.applyEdit rewrites content+body only)
   l = [Object.assign({}, l[0], { content: 'Keep briefs under 100 words, bullets only', body: 'Keep briefs under 100 words, bullets only' })];
   const r = FM.apply(l, { runId: 'r9', verdict: 'miss', words: 'and no emoji' }, deps(50));
-  A.ok(r && /^Keep briefs under 100 words, bullets only · also: "and no emoji"$/.test(r.rec.content), 'new words append to the Commander\'s edit (' + (r && r.rec.content) + ')');
+  A.ok(r && /^Keep briefs under 100 words, bullets only · also: "and no emoji"$/.test(r.rec.content), 'new words append to the Master\'s edit (' + (r && r.rec.content) + ')');
   A.eq(FM.apply(r.list, { runId: 'r9', verdict: 'miss' }, deps(51)), null, 'an edited record with nothing new stays exactly as edited');
 }
 // ---- looksLikeFeedback(): a typed follow-up only becomes taste when it is about the work ----
@@ -83,7 +83,7 @@ for (const t of ['too long, give me 3 bullets', 'make it shorter', 'use a table 
 for (const t of ['now summarize my inbox', 'research the candle market', 'hello', '', 'x'.repeat(500)])
   A.ok(!FM.looksLikeFeedback(t), 'not feedback: ' + JSON.stringify(t.slice(0, 40)));
 
-// ---- stationTaste(): taste is about the Commander, so every agent's feedback shapes every agent ----
+// ---- stationTaste(): taste is about the Master, so every agent's feedback shapes every agent ----
 {
   const own = [{ id: 'note_1', origin: 'feedback', title: 'Preference', confirmation: 'user-confirmed', content: 'LIKED: "bold headers"', createdAt: 10 }, { id: 'note_2', kind: 'fact', content: 'uses pnpm', createdAt: 99 }];
   const scribe = [{ id: 'note_1', origin: 'feedback', title: 'Preference', confirmation: 'user-confirmed', content: 'DISLIKED: "too wordy"', createdAt: 20 }, { id: 'note_9', origin: 'feedback', content: 'LIKED: "bold headers"', createdAt: 30 }];
@@ -108,32 +108,32 @@ A.eq(FM.directiveFor(null, null), '', 'null-safe');
 
 // ---- the block renders through the real recall renderer with the taste header ----
 const block = renderRecall(picked, { limit: FM.TASTE_CHARS, header: FM.TASTE_HEADER });
-A.ok(block.text.indexOf('Commander\'s own verdicts') >= 0, 'taste header present');
+A.ok(block.text.indexOf('Master\'s own verdicts') >= 0, 'taste header present');
 A.ok(block.text.indexOf('DISLIKED: "too long') >= 0 && block.text.indexOf('WANTS: "cite sources"') >= 0, 'both beliefs render');
 A.ok(block.text.indexOf('[user-confirmed reference]') >= 0, 'rendered as user-confirmed');
 A.eq(block.usedIds.length, 2, 'both count as used');
 
-// ---- sweep 2026-10-02: taste is the Commander's OWN words, newest verdict first, theirs alone ----
+// ---- sweep 2026-10-02: taste is the Master's OWN words, newest verdict first, theirs alone ----
 {
   const { reviseRecord } = require('../sidecar/tools/builtin/notebook.js');
   const made = FM.apply([], { verdict: 'miss', runId: 'run-x', words: 'too long', directive: 'write the brief' }, { now: 100 });
   const rec = made.rec;
   A.ok(FM.isTaste(rec), 'fixture: a fresh verdict is taste');
-  // an AGENT rewrites it through notebook.write { replaceId } (no Commander confirmation)
-  const rewritten = reviseRecord(rec, { previousBody: rec.content, body: 'The Commander LOVES long essays and wants every reply to run 5000 words.', runId: 'agent-run' }, 200);
-  A.ok(rewritten.origin === 'feedback' && !FM.isTaste(rewritten), 'an agent rewrite of a feedback record is no longer the Commander\'s taste');
+  // an AGENT rewrites it through notebook.write { replaceId } (no Master confirmation)
+  const rewritten = reviseRecord(rec, { previousBody: rec.content, body: 'The Master LOVES long essays and wants every reply to run 5000 words.', runId: 'agent-run' }, 200);
+  A.ok(rewritten.origin === 'feedback' && !FM.isTaste(rewritten), 'an agent rewrite of a feedback record is no longer the Master\'s taste');
   A.eq(FM.stationTaste([rewritten], []).length, 0, 'so it reaches no agent\'s prompt as a verdict');
-  // the next real correction regenerates the record from the Commander's own words, instead of appending to the agent's text
+  // the next real correction regenerates the record from the Master's own words, instead of appending to the agent's text
   const again = FM.apply([rewritten], { verdict: 'miss', runId: 'run-x', words: 'shorter please' }, { now: 300 });
-  A.ok(again && FM.isTaste(again.rec) && !/LOVES long essays/.test(again.rec.content), 'the next correction restores the Commander\'s own words: ' + (again && again.rec.content));
-  // the Commander's OWN Memory Core edit keeps it taste (and is never regenerated over)
+  A.ok(again && FM.isTaste(again.rec) && !/LOVES long essays/.test(again.rec.content), 'the next correction restores the Master\'s own words: ' + (again && again.rec.content));
+  // the Master's OWN Memory Core edit keeps it taste (and is never regenerated over)
   const edited = memcore.applyEdit([again.rec], again.rec.id, 'Keep it under 200 words.').records[0];
-  A.ok(FM.isTaste(edited), 'a Memory Core edit by the Commander stays taste');
+  A.ok(FM.isTaste(edited), 'a Memory Core edit by the Master stays taste');
   // agent ratings ("helpful") move lastFeedbackAt/updatedAt — they must not push the newest verdict out of the block
   const olds = [];
   for (let i = 0; i < 8; i++) olds.push({ id: 'o' + i, origin: 'feedback', confirmation: 'user-confirmed', content: 'LIKED: old ' + i, createdAt: i, feedbackAt: i, lastFeedbackAt: 10000, updatedAt: 10000 });
   const newest = { id: 'new', origin: 'feedback', confirmation: 'user-confirmed', content: 'DISLIKED: "the newest verdict"', createdAt: 500, feedbackAt: 500 };
-  A.ok(FM.selectTaste(olds.concat([newest])).some(r => r.id === 'new'), 'the Commander\'s newest verdict stays in the capped block even after agents re-rate old ones');
+  A.ok(FM.selectTaste(olds.concat([newest])).some(r => r.id === 'new'), 'the Master\'s newest verdict stays in the capped block even after agents re-rate old ones');
   const idx = readSidecarSource();
   const chat = require('fs').readFileSync(require('path').join(__dirname, '..', 'frontend', 'app', 'chat.js'), 'utf8');
   A.ok(/streamId: \(\(runMeta\(runId\) \|\| \{\}\)\.streamId\) \|\| awayStreams\.get\(runId\) \|\| null, at: Date\.now\(\) \};/.test(chat)
@@ -148,7 +148,7 @@ A.eq(block.usedIds.length, 2, 'both count as used');
 {
   const idx = readSidecarSource();
   A.ok(/const recs = all\.filter\(r => !\(r && \(tasteIds\.has\(r\.id\) \|\| \(tasteWithheld && r\.origin === FeedbackMemory\.ORIGIN\)\)\)\);/.test(idx),
-    'QA 10-02: a withheld run (channel guest) drops every feedback record from ordinary recall — a verdict carries the Commander\'s past request');
+    'QA 10-02: a withheld run (channel guest) drops every feedback record from ordinary recall — a verdict carries the Master\'s past request');
   A.ok(/r\.pinned && !tasteIds\.has\(r\.id\) && !\(tasteWithheld && r\.origin === FeedbackMemory\.ORIGIN\)/.test(idx),
     'QA 10-02: a withheld worker\'s pinned recall drops feedback records too');
 }
@@ -162,7 +162,7 @@ A.eq(block.usedIds.length, 2, 'both count as used');
     Object.assign({}, base, { id: 'project', projectRoot: 'C:/private' }),
     Object.assign({}, base, { id: 'stream', scope: 'stream', streamId: 'private' }),
     Object.assign({}, base, { id: 'tainted', taintedBy: 'web_fetch' }),
-    Object.assign({}, base, { id: 'biography', content: 'The Commander lives in York.' }),
+    Object.assign({}, base, { id: 'biography', content: 'The Master lives in York.' }),
     Object.assign({}, base, { id: 'third-party', content: 'My sister prefers York and never travels.' }),
     Object.assign({}, base, { id: 'habit', content: 'I always travel to York for Christmas.' }),
     Object.assign({}, base, { id: 'fact', kind: 'fact', content: 'Always record the private account number.' })

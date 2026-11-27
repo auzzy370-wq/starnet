@@ -1,7 +1,7 @@
 'use strict';
 /* node test/forget.tool-quotes.timing.http.test.js — WHEN THE DELETE LANDS (turn identity commit 11, A2-FP-01, A2-FP-R01).
 
-   A run reads session S through the real recall tool, and the Commander deletes S at the worst moments. One REAL station and a scripted model whose
+   A run reads session S through the real recall tool, and the Master deletes S at the worst moments. One REAL station and a scripted model whose
    calls the test holds open and releases. Every leg has its own session, its own run and its own word, and each asserts the same thing from a different
    side: after the save that deleted S answered 200, no upstream body of the run holds S's word, no row the run wrote after the read is in a reader, and
    the rows it wrote before the read are.
@@ -94,7 +94,7 @@ const recall = (query, then) => ctx => ctx.made('recall_conversation') === 0 ? {
       await rig.crash();
       await Promise.race([Promise.all([a.done, b.done, c.done]), sleep(3000)]);
       await rig.resume();
-      // one continuation is PREPARED while S still exists (the Commander said yes, then deleted S before the run was started)
+      // one continuation is PREPARED while S still exists (the Master said yes, then deleted S before the run was started)
       const before = ((await rig.json('GET', '/api/run-recoveries')).body.recoveries || []);
       const preA = before.find(r => r.streamId === 't3');
       A.ok(preA && preA.canAutoContinue === true, '(3) before the delete the interrupted run is continuable');
@@ -175,7 +175,7 @@ const recall = (query, then) => ctx => ctx.made('recall_conversation') === 0 ? {
         "});"
       ].join('\n'));
       const made = await rig.json('POST', '/api/hooks/create', { event: 'post_tool_call', command: 'node "' + hook + '" "' + signal + '" "' + started + '"', name: 'hold the read' });
-      A.eq(made.status, 200, '(5) the hook is installed (the Commander typed it: approved)');
+      A.eq(made.status, 200, '(5) the hook is installed (the Master typed it: approved)');
       const held = gate();
       up.behave = recall('bilby', () => ({ hold: held, partial: 'continuing' }));
       const t5Start = Date.now();

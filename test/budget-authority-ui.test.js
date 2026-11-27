@@ -30,7 +30,7 @@ const tick=()=>new Promise(r=>setImmediate(r));
    fmtUsd:n=>'$'+n,sfx(){},document:{createElement:mkNode,createTextNode:t=>({textContent:String(t)})}});
   return {node,posts,gets};
  };
- // ---- SPEND-3: SAVE posts only what the Commander changed; typing the default back into a saved limit clears it ----
+ // ---- SPEND-3: SAVE posts only what the Master changed; typing the default back into a saved limit clears it ----
  {
   const envDefaults={perRun:0,perAgent:0,perDay:25,global:0};
   const st={caps:{...envDefaults},saved:{},envDefaults,spentToday:0,lifetime:0,runs:0,accounting:{complete:true,durable:true}};
@@ -48,7 +48,7 @@ const tick=()=>new Promise(r=>setImmediate(r));
   h2.node('#bg-perDay').value='30';h2.node('#bg-save').click();await tick();
   assert.deepEqual(h2.posts[1],['/api/budget/caps',{perDay:30}],'a real new value is saved');
  }
- // ---- SPEND-1/2: the copy names the cause; interrupted runs are listed and settled only by the Commander ----
+ // ---- SPEND-1/2: the copy names the cause; interrupted runs are listed and settled only by the Master ----
  {
   const base={caps:{perRun:0,perAgent:0,perDay:75,global:0},saved:{perDay:75},envDefaults:{perRun:0,perAgent:0,perDay:25,global:0},spentToday:null,lifetime:null,runs:null};
   const settledReply={...base,spentToday:1.62,lifetime:3,runs:4,unsettled:[],atLeast:null,accounting:{complete:true,durable:true,readError:null,writeError:null}};
@@ -74,7 +74,7 @@ const tick=()=>new Promise(r=>setImmediate(r));
   const h2=harness(st,()=>settledReply);await tick();
   const [, usd, settle]=h2.node('#budget-unsettled').children[1].children;
   usd.value='0.42';settle.click();await tick();
-  assert.deepEqual(h2.posts[0],['/api/budget/settle',{runId:'r2',usd:0.42}],'SETTLE posts exactly what the Commander entered');
+  assert.deepEqual(h2.posts[0],['/api/budget/settle',{runId:'r2',usd:0.42}],'SETTLE posts exactly what the Master entered');
   // a FAILED settle still changed the server (the run is dropped; accounting turns into a write error): the panel re-reads
   // /api/budget/status, so the stale row vanishes and the spend line says the write-error truth
   let server=st;

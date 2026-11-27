@@ -1,4 +1,4 @@
-/* node test/journey.test.js — pure Commander journey presentation helpers. */
+/* node test/journey.test.js — pure Master journey presentation helpers. */
 'use strict';
 const A = require('./_assert.js');
 const J = require('../frontend/app/journey.js');

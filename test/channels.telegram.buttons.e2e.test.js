@@ -20,7 +20,7 @@ const os = require('os');
 const fs = require('fs');
 const { spawn } = require('child_process');
 const { bootToken } = require('./_httpToken.js');
-// the run-context note is the leading text of the newest user message on a non-Claude chat wire: key on the Commander's own words
+// the run-context note is the leading text of the newest user message on a non-Claude chat wire: key on the Master's own words
 const { userWords } = require('./helpers/host-notes.js');
 const { canonical, publishFloor, fetchApi } = require('./helpers/saved-floor.js');
 const { allocatePort, BIND_REFUSED } = require('./helpers/ports.js');
@@ -253,7 +253,7 @@ const lastUserTurn = (req) => {
 
     await waitUntil(() => llm.requests.length > beforeRuns, 8000, 'follow-up run');
     A.ok(llm.requests.some(r => lastUserTurn(r) === 'the production cluster'),
-      'the model receives the option\'s OWN TEXT as the next user turn — identical to the Commander typing it');
+      'the model receives the option\'s OWN TEXT as the next user turn — identical to the Master typing it');
     await waitUntil(() => tg.sends.some(s => /Deploying now\./.test(String(s.text || ''))), 8000, 'follow-up reply');
     A.ok(tg.sends.some(s => /Deploying now\./.test(String(s.text || ''))), 'the follow-up answer is delivered');
 

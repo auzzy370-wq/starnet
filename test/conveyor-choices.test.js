@@ -6,7 +6,7 @@
         one undo). A choice the floor cannot make (the branches never meet) says why.
    3b — ONE TEST CONTROL. The four test buttons became one TEST with three named modes: WATCH IT · FREE, STEP THROUGH ·
         REAL, RUN ONE REAL JOB. The top bar's TEST opens that view and still plays the free walkthrough in one click.
-   4a — START FROM INTENT. The Commander's own onboarding goal is read for the SHAPE of the work and the matching
+   4a — START FROM INTENT. The Master's own onboarding goal is read for the SHAPE of the work and the matching
         ready-made line leads the Conveyors tab, their words quoted ("FOR YOUR GOAL").
    4b — SAVE, AND TURN IT ON. While scheduling is off, saving a schedule offers the switch in the same click. */
 'use strict';
@@ -147,7 +147,7 @@ const splitOf = plan => Object.keys(plan.junctions).find(k => plan.junctions[k].
   A.eq(s('newsletter'), null, '"news" inside "newsletter" is not research (word boundaries)');
   A.eq(s(''), null, 'no words, no card');
   for (const id of ['revision_loop', 'research_line', 'code_foundry', 'build_test', 'second_opinion']) A.ok(WM.BLUEPRINTS.some(b => b.id === id), 'the suggested line exists in the catalog: ' + id);
-  A.ok(/for \(const k of \['goals', 'ambition', 'pain'\]\)/.test(build) && /WorkflowLine\.suggestLineFor\(t\)/.test(build), 'the goal is the Commander\'s own dossier words');
+  A.ok(/for \(const k of \['goals', 'ambition', 'pain'\]\)/.test(build) && /WorkflowLine\.suggestLineFor\(t\)/.test(build), 'the goal is the Master\'s own dossier words');
   // (2026-09-30: the quote is the goal tile's hover tip and accessible description — no sentence under a tile)
   A.ok(/FOR YOUR GOAL/.test(build) && /addLineCell\(grid, goal\.bp, '“' \+ goal\.quote \+ '” — ' \+ goal\.why, true\)/.test(build) && /b\.dataset\.tip = name [^\n]*\(why \? '\\n' \+ why : ''\)/.test(build), 'the card quotes them and is the same line card (fit + MAKE ROOM included)');
 }

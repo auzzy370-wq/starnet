@@ -15,7 +15,7 @@
      W9 the memo never serves a stale copy: a message the loop rewrites IN PLACE is re-scrubbed from its new content
      W10 a saved SERVICE KEY reaches the wire as its name ('[INSTANTLY_API_KEY saved in API KEYS]'); a held credential
          with no digit (a Gmail app password) is scrubbed; a connector's ordinary env/header values (an email, a
-         project id) are not credentials, so the Commander's live turn naming them is byte-identical */
+         project id) are not credentials, so the Master's live turn naming them is byte-identical */
 'use strict';
 const A = require('./_assert.js');
 const { collectSecretValues } = require('../sidecar/secret-values.js');

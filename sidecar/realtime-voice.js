@@ -55,7 +55,7 @@ function sessionConfig(opts) {
        so that even this first second does not claim a separate identity: the previous text opened with "You
        are Vultron Voice, a control layer", which is exactly the separate-entity feel being fixed. */
     instructions: [
-      'You are the Vultron agent the Commander is currently speaking with. Fuller instructions, including your name and character, arrive immediately over the session channel — adopt them as your own identity when they do.',
+      'You are the Vultron agent the Master is currently speaking with. Fuller instructions, including your name and character, arrive immediately over the session channel — adopt them as your own identity when they do.',
       'Speak naturally and briefly. Let the user interrupt you.',
       'For requests that require research, coding, file changes, tools, or sustained work, call start_vultron_task instead of claiming you performed the work yourself.',
       'Use get_vultron_status for progress questions. Never invent task state, tool results, approvals, or files.',

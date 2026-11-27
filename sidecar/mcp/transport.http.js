@@ -7,7 +7,7 @@
    makeHttpTransport({ url, token?, headers?, fetchImpl?, timeoutMs?, protocolVersion?, onError? }) -> transport
      transport = { send(message)->Promise, onMessage(cb), close(), }
 
-   SECURITY: the Commander configures the server URL deliberately (unlike web_fetch, where the MODEL
+   SECURITY: the Master configures the server URL deliberately (unlike web_fetch, where the MODEL
    picks the URL), so loopback IS allowed — local MCP servers are common. The one guard: refuse http://
    for a NON-local host, so a bearer token is never sent in cleartext over the network. */
 'use strict';
@@ -49,7 +49,7 @@
 
   /* `/^127\./` was UNANCHORED, so it matched the public hostname `127.0.0.1.evil.com` — and this predicate is
      the module's ONE guard ("refuse http:// for a non-local host, so a bearer token is never sent in
-     cleartext"). A connector URL of http://127.0.0.1.evil.com/mcp therefore shipped the Commander's OAuth
+     cleartext"). A connector URL of http://127.0.0.1.evil.com/mcp therefore shipped the Master's OAuth
      bearer over plaintext HTTP to whoever owns that domain. An IPv4 loopback literal is four numeric octets
      and nothing else; anything with a trailing label is a NAME. Also folds the FQDN root label so
      `localhost.` classifies the same as `localhost`, and recognizes the IPv4-mapped IPv6 form Node renders

@@ -5,7 +5,7 @@
      • earned MILESTONES + completed QUESTS (dossier / station-arc / capability-gap fix-its) — every quest
        whose real thing genuinely happened. The date comes from the durable QuestState memory (completedAt),
        NEVER invented: a completion with no knowable date renders "date unknown", never 1969.
-     • the LIVING TOOLS shelf — Commander-saved seeds with their lifetime reuse counts (fed by the G3b
+     • the LIVING TOOLS shelf — Master-saved seeds with their lifetime reuse counts (fed by the G3b
        seed-reuse aggregate). Honest counts only; a seed that never ran is not a trophy.
 
    HONESTY RULES (Part 4 laws, inherited from floorstats/pride):

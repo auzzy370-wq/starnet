@@ -61,7 +61,7 @@ Every page gets `vultron-kit.css` and `vultron-kit.js` injected first in `<head>
 the lowest layer, so **any CSS you write wins** without `!important`. The page background is transparent: the
 window's glass is your background.
 
-**Tokens** (always the station's live values; they repaint when the Commander changes the phosphor):
+**Tokens** (always the station's live values; they repaint when the Master changes the phosphor):
 `--ph --ph-bright --ph-dim --ph-faint --ink --text --gold --bg --panel --panel2`
 `--ph-rgb --ph-bright-rgb --gold-rgb` (use as `rgba(var(--ph-rgb), .2)`)
 `--ok --ok-rgb --bad --bad-rgb --warn` (semantic, constant across themes)

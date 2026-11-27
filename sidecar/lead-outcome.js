@@ -16,7 +16,7 @@
 
    of({ reason, finishReason, failureCode, clarifying, ownError }) -> { outcome, failureCode, ok, reason }
      reason is the word a REASON-keyed reader gets (RunOutcome.reasonOf's rule, with the own error read too): 'done' only for a
-     SUCCEEDED run; a 'done' end reads 'cut_short', 'clarifying' (it asked the Commander a question) or 'error' (its own error
+     SUCCEEDED run; a 'done' end reads 'cut_short', 'clarifying' (it asked the Master a question) or 'error' (its own error
      outranked it); no end at all reads 'error'. Any other reason is its own while it names the outcome (a refused 'error' reads 'refusal').
    ofResult(loopResult, { clarifying, ownError }) — the same, over runOnceCore's loop result.
    Pure: facts in, outcome out — no clock, no IO. */

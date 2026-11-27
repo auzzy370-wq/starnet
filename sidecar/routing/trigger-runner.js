@@ -63,7 +63,7 @@ function makeTriggerRunner(deps) {
   const lineRunner = d.lineRunner || makeLineRunner({ runOnce: async () => {}, now, newId, emit, label: d.label });
   const bumpQueue = typeof d.bumpQueue === 'function' ? d.bumpQueue : function () { return 0; };
   const halted = typeof d.halted === 'function' ? d.halted : function () { return false; };
-  // the halt is the station's own process-fault containment, not the Commander's E-STOP: only the words differ (see handoff-runner)
+  // the halt is the station's own process-fault containment, not the Master's E-STOP: only the words differ (see handoff-runner)
   const faulted = typeof d.faulted === 'function' ? d.faulted : function () { return false; };
   const dayCap = typeof d.dayCap === 'function' ? d.dayCap : function () { return { cap: null, spent: 0 }; };
   const runsFor = typeof d.runsFor === 'function' ? d.runsFor : function () { return []; };

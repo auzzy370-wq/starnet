@@ -1,6 +1,6 @@
-/* VULTRON — interview.js : the PURE engine for THE INTAKE INTERVIEW (Commander Dossier, Phase B).
+/* VULTRON — interview.js : the PURE engine for THE INTAKE INTERVIEW (Master Dossier, Phase B).
 
-   The station actively gets to know its Commander: a short, optional, skippable Q&A — one question per
+   The station actively gets to know its Master: a short, optional, skippable Q&A — one question per
    blank dossier dimension — whose answers become durable dossier beliefs. This is the "deeply research the
    user" move made real (the user is asked directly; nothing is inferred and nothing reaches outside the
    conversation). The flow/COMMS half lives in intake.js (a thin controller mirroring onboarding.js); ALL
@@ -28,7 +28,7 @@
   // prompt-informing, never gate-opening; only their typed words are 'stated'.
   const QUESTIONS = [
     { dim: 'identity',
-      pre: 'let me actually get to know my Commander — not just take orders from a silhouette.',
+      pre: 'let me actually get to know my Master — not just take orders from a silhouette.',
       ask: 'what does a typical day look like for you? what do you spend most of your time doing?',
       chips: [{ label: 'skip', value: '', skip: true }] },
 
@@ -129,8 +129,8 @@
   /* ⛔ A TYPED SKIP IS A SKIP. The interview's own opening line invites it — "answer or tap, 'skip' anything" —
      and the chip is literally labelled `skip`, so typing the word is the behaviour the copy TEACHES. But a
      skip was recognised only from the CHIP (`explicitSkip`) or an empty string, so the typed word fell through
-     as the Commander's own words and was written to the dossier at weight 'stated' — the strongest belief the
-     station holds, the one that opens the readiness gate and rides every prompt. The Commander's stated goal
+     as the Master's own words and was written to the dossier at weight 'stated' — the strongest belief the
+     station holds, the one that opens the readiness gate and rides every prompt. The Master's stated goal
      for the month became "skip".
      WHOLE-ANSWER MATCH ONLY, never a substring: "skip the standup prep" is a real answer about a real
      recurring task and must land untouched. Punctuation and case are stripped first so "Skip." counts. */
@@ -141,14 +141,14 @@
   function isSkipAnswer(text) {
     const t = String(text == null ? '' : text).trim().toLowerCase().replace(/[.,!?/\-–—'’"]+/g, ' ').replace(/\s+/g, ' ').trim();
     // a reply with no letter or digit in ANY script (emoji, symbols, punctuation) says nothing to extract — a
-    // non-answer like a typed skip, never the Commander's 'stated' words (sweep/onboarding 2026-10-20).
+    // non-answer like a typed skip, never the Master's 'stated' words (sweep/onboarding 2026-10-20).
     return t === '' || SKIP_ANSWERS.has(t) || !/[\p{L}\p{N}]/u.test(t);
   }
 
   // turn an answer into a durable dossier belief, or null for a blank/skip (never store an empty belief).
   // source:'interview' is the provenance the dossier panel shows ("from the intake interview").
   // V3 §5 (interim until the S4 scene-register bank rewrite): an answer that IS a canned chip string is
-  // mechanically-produced text, not the Commander's words — it lands with weight 'seed' (informs the prompt,
+  // mechanically-produced text, not the Master's words — it lands with weight 'seed' (informs the prompt,
   // never opens the readiness gate). A typed answer is theirs: weight 'stated'.
   function beliefFromAnswer(question, text) {
     if (!question) return null;

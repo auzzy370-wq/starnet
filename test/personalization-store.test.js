@@ -18,7 +18,7 @@ const path = require('path').win32;
   A.eq(paused.enabled, false, 'pause is durable sidecar authority');
   A.eq(store.read().revision, 1, 'pause advances the auditable revision');
   const forgotten = await store.markForgotten(20);
-  A.eq(forgotten.enabled, false, 'forget does not silently undo the Commander pause');
+  A.eq(forgotten.enabled, false, 'forget does not silently undo the Master pause');
   A.eq(forgotten.revision, 2, 'forget advances the auditable revision');
   A.report('personalization-store.test');
 })().catch(e => { A.ok(false, e.stack || e); A.report('personalization-store.test'); });

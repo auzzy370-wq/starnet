@@ -1,6 +1,6 @@
 /* VULTRON — goalstore.js : the live wiring around the pure GOAL-TREE engine (goals.js) — GROWTH Tier 2.
 
-   The glue that turns a flat dossier goals-belief into a confirmed, persisted PATH the Commander watches fill in:
+   The glue that turns a flat dossier goals-belief into a confirmed, persisted PATH the Master watches fill in:
      • THE DECOMPOSITION FLOW — when a goals-dim belief exists with no goal tree yet, it runs the pure
        Goals.buildDirective through the EXISTING reason-only model path (the same Harness.chat plumbing pitchstore
        uses: placed:[], isTask:false, internal:true), parses the reply (Goals.parseDecomposition, value-floor +
@@ -58,7 +58,7 @@ const GoalStore = (() => {
   function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (_) {} }
   function poke() { try { if (typeof StationUI !== 'undefined' && StationUI.invalidate) StationUI.invalidate('quests'); } catch (_) {} }
   function capHistory(s) {
-    // Completed chapters belong to the Commander. Never evict them to make room for a new goal.
+    // Completed chapters belong to the Master. Never evict them to make room for a new goal.
   }
 
   // defensively rebuild the persisted slice — every goal + milestone re-validated, junk dropped (never a crash).
@@ -132,7 +132,7 @@ const GoalStore = (() => {
     return [];
   }
 
-  // A Commander-authored goal can exist before it has a confirmed milestone tree. Surface that state explicitly
+  // A Master-authored goal can exist before it has a confirmed milestone tree. Surface that state explicitly
   // instead of letting the QUEST LOG claim there is "no goal". Goals already represented by an active/completed
   // tree are excluded; the active projection renders those from the authoritative tree instead.
   function unplannedGoal() {
@@ -231,11 +231,11 @@ const GoalStore = (() => {
     try {
       const directive = Goals.buildDirective(belief.text);
       const system = deps.getSystem ? deps.getSystem() : '';
-      // evidence:true (W2): a decomposition proposes the MILESTONES of the Commander's own goal — the open
+      // evidence:true (W2): a decomposition proposes the MILESTONES of the Master's own goal — the open
       // threads and recent activity are exactly what makes those milestones theirs rather than generic.
       const res = await Harness.chat({ system, messages: [{ role: 'user', content: directive }], agentId: 'agent', isTask: false, placed: [], internal: true, evidence: true });
       if (!res || res.error || (res.outcome && res.outcome !== 'succeeded')) return failed();   // only a reply whose run SUCCEEDED (review r7: Harness.chat's stamped outcome — a cut, limited or stopped reply's partial text is no complete answer)
-      // milestones read as plain words — the library's markdown → one line (no '**' / '`' typed at the Commander, none stored)
+      // milestones read as plain words — the library's markdown → one line (no '**' / '`' typed at the Master, none stored)
       const plain = (typeof Deliverables !== 'undefined' && Deliverables.plainLine) ? Deliverables.plainLine : undefined;
       const texts = Goals.parseDecomposition(res.text, { redact: deps.redact, plain });
       if (texts.length < MIN_PATH) return failed();   // under-decomposed / unusable — the confirm panel would drop it anyway
@@ -262,12 +262,12 @@ const GoalStore = (() => {
     return goal;
   }
   // NOT-NOW: mark this belief state offered so it re-surfaces only after the belief changes (never nags). The
-  // Commander can still return to the arc anytime; this just stops the proactive confirm beat for this belief.
+  // Master can still return to the arc anytime; this just stops the proactive confirm beat for this belief.
   function declineDecomposition(belief) { if (ready() && belief) { markOffered(belief); } }   // markOffered saves
   // record the belief state as decided (FIFO-capped, mirrors studystore's resolved set) + drop the spend-once cache
   // for it — a decided belief's cached path can never leak into a later, different offer.
   // PUBLIC (2026-08-04): the re-confirm card's "not now" chip records the belief state as decided through this
-  // same door, so a question the Commander deferred re-surfaces only when the belief itself changes — one
+  // same door, so a question the Master deferred re-surfaces only when the belief itself changes — one
   // not-now discipline for every proactive ask about a goals belief, not two.
   function markOffered(belief) {
     if (!ready() || !belief) return;
@@ -383,7 +383,7 @@ const GoalStore = (() => {
     if (title.length < 4) return { ok: false, error: 'Tell Vultron a little about what you want to do first.' };
     if (typeof Harness === 'undefined' || !Harness.chat) return { ok: false, error: 'Planning is unavailable. You can still write your own plan below.' };
     try {
-      // keepEffort: the Commander asked for this plan and edits it — their reasoning effort, not the aux one
+      // keepEffort: the Master asked for this plan and edits it — their reasoning effort, not the aux one
       const res = await Harness.chat({ system: deps.getSystem ? deps.getSystem() : '', agentId: 'agent',
         isTask: false, placed: [], internal: true, evidence: true, keepEffort: true,
         messages: [{ role: 'user', content: 'Help me shape this ambition into a small, editable starting plan: ' + title

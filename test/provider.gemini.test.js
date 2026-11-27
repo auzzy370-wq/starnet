@@ -198,7 +198,7 @@ async function collect(provider, req) { const out = []; for await (const e of pr
   }
 
   A.eq(_internals.finishFor('MAX_TOKENS', false), 'length', 'MAX_TOKENS -> length');
-  /* ---- THINKING. This adapter published ['none'] and sent no thinking parameter at all, so a Commander on
+  /* ---- THINKING. This adapter published ['none'] and sent no thinking parameter at all, so a Master on
        their own Gemini key ran a NON-thinking Gemini. Two contracts, and sending BOTH to a Gemini 3 model is
        a documented error — so the split is asserted, not assumed. ---- */
   {
@@ -320,7 +320,7 @@ async function collect(provider, req) { const out = []; for await (const e of pr
     const p = makeGeminiProvider({ fetch: async () => new Response(sse, { status: 200, headers: { 'Content-Type': 'text/event-stream' } }), key: 'k' });
     const evs = [];
     for await (const e of p.stream({ model: 'gemini-3-pro', messages: [{ role: 'user', content: 'hi' }] })) evs.push(e);
-    A.eq(evs.filter(e => e.type === 'text').map(e => e.delta).join(''), 'The answer is 4.', 'a thought part NEVER reaches the answer the Commander reads');
+    A.eq(evs.filter(e => e.type === 'text').map(e => e.delta).join(''), 'The answer is 4.', 'a thought part NEVER reaches the answer the Master reads');
     A.eq(evs.filter(e => e.type === 'reasoning').length, 1, 'it comes back as reasoning instead, so nothing is silently discarded');
   }
 

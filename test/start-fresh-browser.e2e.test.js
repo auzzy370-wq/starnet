@@ -3,7 +3,7 @@
    The two requests rename this whole generation at the next boot, and the station browser's durable profile lives inside it.
    On Windows any open handle under a directory refuses its rename, and both routes used to end with a bare process.exit(75):
    the station's Chrome outlived the sidecar, an orphan still holding its profile, so the very boot that should set the
-   generation aside found it held, and an explicit recovery the Commander had chosen failed closed. POST
+   generation aside found it held, and an explicit recovery the Master had chosen failed closed. POST
    /api/lineage/start-fresh and /api/lineage/recover now close the browser, sweep the profile and leave through the graceful
    path.
 

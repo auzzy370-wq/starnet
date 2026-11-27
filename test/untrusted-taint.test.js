@@ -1,6 +1,6 @@
 /* node test/untrusted-taint.test.js — the tool-RESULT injection defence.
 
-   The prompt scanner (cron-guard) covers text the Commander wrote. It cannot help once a granted routine
+   The prompt scanner (cron-guard) covers text the Master wrote. It cannot help once a granted routine
    FETCHES attacker-authored text mid-run — a hostile page, a compromised MCP server, a poisoned upstream
    result. Neither this harness nor the reference one solved that with pattern-matching, because the content
    is arbitrary and legitimate work constantly quotes attack commands.
@@ -126,7 +126,7 @@ A.eq(taint.postTaintBoundary(FS_WRITE, { taintedBy: 'web_fetch', surface: 'auton
   A.ok(/const taintPolicy = require\('\.\/taint\.js'\)/.test(src), 'index.js uses the shared taint policy (no second copy)');
   A.ok(/initialTaint: o\.initialTaint \? String\(/.test(src), 'the run tracks and names initial untrusted provenance');
   // Execute the host's attachment classification. Only real outside bytes (an attachment) taint the run: text the
-  // Commander typed stays owner authority even with a code fence, a quote or "example:" in it (review sidecar-index-01).
+  // Master typed stays owner authority even with a code fence, a quote or "example:" in it (review sidecar-index-01).
   // That quoted text is kept out of LEARNING alone, by a host-computed flag the request body can never set.
   const attachmentStart = src.indexOf('// USER ATTACHMENTS:');
   const attachmentEntry = src.slice(attachmentStart, src.indexOf('retryUserRunId:', attachmentStart));
@@ -177,12 +177,12 @@ A.eq(taint.postTaintBoundary(FS_WRITE, { taintedBy: 'web_fetch', surface: 'auton
     const history = classify([{ role: 'user', content: '', attachments: [attachment] }, { role: 'user', content: typed }]);
     A.eq(history.initialTaint, null, 'an earlier attachment\'s reference in the incoming history derives no taint (its bytes are re-sent for two turns only, and then runOnceCore latches them)');
     A.eq(history.learningInput.content, typed, 'only the newest typed input gains owner attribution');
-    // (2026-10-12) Quoted material in the Commander's own message withholds LEARNING, never execution: this used to
+    // (2026-10-12) Quoted material in the Master's own message withholds LEARNING, never execution: this used to
     // assert initialTaint 'quoted user material', which locked an ordinary "Fix this crash: ```…```" run's tools and
     // replayed that lock into every later turn of the conversation.
     const quoted = classify([{ role: 'user', content: '> I prefer quoted instructions.' }]);
-    A.eq(quoted.initialTaint, null, 'quoted text the Commander typed does not lock tools, grants or workers');
-    A.eq(quoted.quotedOwnerInput, true, 'quoted text the Commander typed is flagged for the learning-only exclusion');
+    A.eq(quoted.initialTaint, null, 'quoted text the Master typed does not lock tools, grants or workers');
+    A.eq(quoted.quotedOwnerInput, true, 'quoted text the Master typed is flagged for the learning-only exclusion');
     A.eq(quoted.learningInput, null, 'quoted material cannot establish an owner preference');
     // the review's own repro shapes: a pasted stack trace, a quoted file name, "example" before a line break
     for (const text of ['Run the tests and fix this:\n```\nTypeError: cannot read \'id\' of undefined\n```',
@@ -282,15 +282,15 @@ A.eq(taint.postTaintBoundary(FS_WRITE, { taintedBy: 'web_fetch', surface: 'auton
     A.eq(droppedQuoted([{ role: 'user', content: 'Plan the launch.' }], longWindow, true), true, 'the dropped-rows check never clears a quote the replay check already found');
   }
   // WHOSE WORDS (review memory-learning-06): the earlier-conversation note of a run a non-owner or a group chat started
-  // (tasteWithheld, host-minted, inherited by its workers) never presents the dropped messages as the Commander's words.
+  // (tasteWithheld, host-minted, inherited by its workers) never presents the dropped messages as the Master's words.
   {
     const renderLine = src.match(/\n\s*(const earlier = EarlierConversation\.render\(dropped, \{ windowTokens: ctxMgr\.contextLimit, searchTool, ownerVoice: !tasteWithheld \}\);)/);
     A.ok(!!renderLine, 'the earlier-conversation render call passes ownerVoice: !tasteWithheld');
     const note = (tasteWithheld) => vm.runInNewContext('(() => { ' + renderLine[1] + ' return earlier && earlier.note; })()', {
       EarlierConversation: require('../sidecar/earlier-conversation.js'), ctxMgr: { contextLimit: 200000 }, searchTool: '', tasteWithheld,
       dropped: [{ role: 'user', content: 'Always ship the dark theme first.' }, { role: 'assistant', content: 'Will do.' }] });
-    A.ok(/not the Commander's instructions/.test(note(true)) && !/from the Commander/.test(note(true)), 'a group or guest run carries the dropped messages as chat context, not the Commander\'s words');
-    A.ok(/from the Commander/.test(note(false)) && /still holds/.test(note(false)), 'the Commander\'s own chat still carries their dropped words as standing');
+    A.ok(/not the Master's instructions/.test(note(true)) && !/from the Master/.test(note(true)), 'a group or guest run carries the dropped messages as chat context, not the Master\'s words');
+    A.ok(/from the Master/.test(note(false)) && /still holds/.test(note(false)), 'the Master\'s own chat still carries their dropped words as standing');
   }
   A.ok(/revokedByTaint\.isSource\(liveTool, c\)/.test(src), 'taint is latched from the tool and path that produced the content');
   // A result with real content taints WHETHER OR NOT the call succeeded. The old rule required !r.isError on
@@ -359,7 +359,7 @@ A.eq(taint.postTaintBoundary(FS_WRITE, { taintedBy: 'web_fetch', surface: 'auton
   A.ok(/makeHub: \(hooks\) => makeTriggerHub\(Object\.assign\(\{\}, hooks, \{ persona: HANDOFF_PERSONA, entryTaint: 'upstream line output' \}\)\)/.test(idx), 'SEND TO hand-off runs (another line\'s output) begin tainted');
   // every agent-chain hop runs through the ONE hop executor (sidecar/routing/line-runner.js), which starts it tainted by construction
   const runner = fs.readFileSync(path.join(root, 'sidecar', 'routing', 'line-runner.js'), 'utf8');
-  A.ok(/const UPSTREAM_TAINT = 'upstream agent output';/.test(runner) && /initialTaint: h\.entry \? null : UPSTREAM_TAINT,/.test(runner), 'agent-chain hops cannot treat upstream output as Commander-authored');
+  A.ok(/const UPSTREAM_TAINT = 'upstream agent output';/.test(runner) && /initialTaint: h\.entry \? null : UPSTREAM_TAINT,/.test(runner), 'agent-chain hops cannot treat upstream output as Master-authored');
 }
 
 // ---- SAME-ORIGIN API CONTINUATION (owner decision 2026-10-12, Etsy-factory Publisher report) ----

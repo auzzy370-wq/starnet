@@ -144,7 +144,7 @@ function fileRows(store, input) {
   }
   if (!wanted.length) return { rows: [], skipped };
   // Complete is deliberate: a recent tail cannot prove a file was never written. Proof includes undone rows, so a retry
-  // cannot resurrect a file the Commander removed from the thread.
+  // cannot resurrect a file the Master removed from the thread.
   const proof = store.view('proof', o.streamId, { sourceRunId: o.runId, complete: true });
   if (!Array.isArray(proof)) throw unavailable('File-row transcript proof is unavailable');
   const held = new Map();

@@ -31,7 +31,7 @@
 
 /* KimiRegion — which Kimi deployment the NEXT sign-in goes to (#70). A Kimi account is either Global (kimi.ai) or
    China (kimi.com) and can only sign in at its own deployment; the sidecar stores the chosen region WITH the
-   credential and routes refreshes + inference to it. This only remembers the Commander's pick for the next sign-in
+   credential and routes refreshes + inference to it. This only remembers the Master's pick for the next sign-in
    (a per-browser convenience) and what the sidecar last reported for the stored sign-in. Default for a fresh
    sign-in: the stored sign-in's region when one is known, else Global. DOM-free. */
 const KimiRegion = (() => {

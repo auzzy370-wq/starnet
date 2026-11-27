@@ -1,4 +1,4 @@
-/* node test/routine-keys.e2e.test.js — real-sidecar proof that unattended runs use the key the Commander connected
+/* node test/routine-keys.e2e.test.js — real-sidecar proof that unattended runs use the key the Master connected
    in a BROWSER page (#89), and that routines saved before 0.13.2 heal their toolset list (#58 / A3).
 
    Boots the actual sidecar (no env key, a mock OpenRouter) and drives the exact surfaces the reports named:
@@ -133,7 +133,7 @@ const toolNames = call => ((call && call.body.tools) || []).map(t => (t && t.fun
     const end = events(ran.text).filter(e => e.name === 'agent.run.end').pop();
     A.eq(end && end.payload && end.payload.reason, 'done', 'the routine run completes: ' + ran.text.slice(-300));
     const emptyCall = callFor(mock.calls, 'ROUTINE-EMPTY');
-    A.eq(emptyCall && emptyCall.auth, 'Bearer ' + PAGE_KEY, 'the provider saw the key the Commander saved in the page');
+    A.eq(emptyCall && emptyCall.auth, 'Bearer ' + PAGE_KEY, 'the provider saw the key the Master saved in the page');
     A.ok(toolNames(emptyCall).some(n => /^web_/.test(n)), 'the routine whose toolsets were lost to [] now has web tools: ' + toolNames(emptyCall).join(','));
     const labelRun = await runNow(ids.label);
     A.eq(labelRun.status, 200, 'the label routine runs');

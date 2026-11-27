@@ -52,7 +52,7 @@ const throwsMsg = async (fn) => { try { await fn(); return ''; } catch (e) { ret
     // the crew finds app.create by searching "app": its description must keep OUTSIDE builds away (a Netlify site and
     // a React todo became Vultron apps on 10-02 before this line)
     const createDesc = tools.defs.find(d => d.name === 'app.create').description;
-    A.ok(/INSIDE Vultron/.test(createDesc) && /NOT for anything meant to run, be published or be shipped outside Vultron/.test(createDesc) && /framework codebase/.test(createDesc) && /add-on for the Commander's own web browser/.test(createDesc), 'app.create says it is only for apps inside Vultron, never a site/project/script to ship elsewhere');
+    A.ok(/INSIDE Vultron/.test(createDesc) && /NOT for anything meant to run, be published or be shipped outside Vultron/.test(createDesc) && /framework codebase/.test(createDesc) && /add-on for the Master's own web browser/.test(createDesc), 'app.create says it is only for apps inside Vultron, never a site/project/script to ship elsewhere');
     // (sweep 2026-10-02) …without the words people SEARCH for those asks: tool_search matches description substrings and
     // shows only the first sentence, so "a website, a React project, a browser extension" made it reveal app.create as
     // the top hit for exactly "browser extension" / "host a site" / "react project"
@@ -118,7 +118,7 @@ const throwsMsg = async (fn) => { try { await fn(); return ''; } catch (e) { ret
     A.ok(/THE APP IS THE DELIVERY/.test(job.prompt) && /never put the result in your reply instead/.test(job.prompt), 'the routine is told the app, not its reply, is the delivery');
     A.ok(/real date is in your \[RUNTIME\] block/.test(job.prompt) && !/FIRST call app\.read/.test(job.prompt), 'the routine points at the real date in its [RUNTIME] block (no tool call just to learn the date)');
     A.ok(/app\.write the whole new file/.test(job.prompt) && /app\.check/.test(job.prompt), 'an automated update may change the app ITSELF (rewrite + check the page), not only its data');
-    A.eq((await apps.describe(a.id)).schedule.task, 'research today\'s AI news', 'describe gives the task back (the AUTO-UPDATE box shows the Commander\'s own words)');
+    A.eq((await apps.describe(a.id)).schedule.task, 'research today\'s AI news', 'describe gives the task back (the AUTO-UPDATE box shows the Master\'s own words)');
     let desc = await apps.describe(a.id);
     A.ok(desc.schedule && desc.schedule.nextRunAt === null && desc.schedule.held === 'off' && desc.schedule.armed === false && desc.updatedAt === clock, 'describe withholds a disarmed fire and keeps the last update');
     A.eq(job.nextRunAt, '2027-01-01T09:00:00Z', 'withholding the clock does not change the stored schedule');
@@ -163,13 +163,13 @@ const throwsMsg = async (fn) => { try { await fn(); return ''; } catch (e) { ret
     A.ok(s2.jobId === s1.jobId && jobs.get(s1.jobId).schedule === 'every 6h' && /two/.test(jobs.get(s1.jobId).prompt), 'a second SAVE edits the same routine in place');
     { let seenPatch = null; const upd = cron.update; cron.update = async (jid, p) => { seenPatch = p; return upd(jid, p); };
       await apps.schedule(a.id, { every: 'every 6h', task: 'crew task', byAgent: true });
-      A.ok(seenPatch && seenPatch.byAgent === true && /as the crew set it up/.test(seenPatch.prompt) && !/Commander's own words/.test(seenPatch.prompt), 'QA 10-02: a crew edit reaches the station as the crew (its grants drop) and never claims to be the Commander\'s words');
+      A.ok(seenPatch && seenPatch.byAgent === true && /as the crew set it up/.test(seenPatch.prompt) && !/Master's own words/.test(seenPatch.prompt), 'QA 10-02: a crew edit reaches the station as the crew (its grants drop) and never claims to be the Master\'s words');
       await apps.schedule(a.id, { every: 'every 6h', task: 'two' });
-      A.ok(seenPatch && seenPatch.byAgent === false && /Commander's own words/.test(seenPatch.prompt), 'the Commander\'s own SAVE stays the Commander\'s words');
+      A.ok(seenPatch && seenPatch.byAgent === false && /Master's own words/.test(seenPatch.prompt), 'the Master\'s own SAVE stays the Master\'s words');
       // review 10-02: a crew edit that changes only HOW OFTEN keeps the exact prompt — no grant drop, no relabel
       const before = seenPatch.prompt;
       await apps.schedule(a.id, { every: 'every 12h', task: 'two', byAgent: true });
-      A.ok(seenPatch && seenPatch.byAgent === false && seenPatch.prompt === before && seenPatch.schedule === 'every 12h', 'a crew schedule-only change keeps the prompt byte-for-byte (grants and the Commander\'s words stay)');
+      A.ok(seenPatch && seenPatch.byAgent === false && seenPatch.prompt === before && seenPatch.schedule === 'every 12h', 'a crew schedule-only change keeps the prompt byte-for-byte (grants and the Master\'s words stay)');
       cron.update = upd; }
     A.ok(!jobs.has('orphan'), 'an orphan routine of the same app (from a race) is retired');
     A.ok(told.every((t) => t[0] === 'data'), 'a schedule change refreshes the bar only — it never reloads the open app window');

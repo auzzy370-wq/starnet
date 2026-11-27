@@ -133,16 +133,16 @@ A.eq(CP.dayTag(ago(1), T), 'yesterday', '1 day → yesterday');
 A.eq(CP.dayTag(ago(3), T), '3d ago', '3 days → Nd ago');
 A.eq(CP.dayTag(0, T), '', 'undated → empty tag');
 
-// USER-STUDY LOOP — the station's own reason-only calls are not the Commander's activity: the internal run is
-// excluded AND its directive row (which the transcript files as a 'user' line on the Commander's stream) drops too.
+// USER-STUDY LOOP — the station's own reason-only calls are not the Master's activity: the internal run is
+// excluded AND its directive row (which the transcript files as a 'user' line on the Master's stream) drops too.
 {
   const selfTalk = 'INTERNAL — GOAL DECOMPOSITION. Do not run any tools. Reason only, then reply in the exact format below.';
   const p = CP.assemble({
     runs: [{ runId: 'internal', title: selfTalk.slice(0, 120), ts: ago(0), streamId: 'ws-main', internal: true }, { title: 'Draft the launch post', ts: ago(0), streamId: 'ws-main' }],
-    chats: [{ role: 'user', content: selfTalk + '\nYour Commander has this goal: …', ts: ago(0), streamId: 'ws-main', sourceRunId: 'internal', rowId: 1 },
+    chats: [{ role: 'user', content: selfTalk + '\nYour Master has this goal: …', ts: ago(0), streamId: 'ws-main', sourceRunId: 'internal', rowId: 1 },
             { role: 'user', content: 'Can you draft the launch post for Friday?', ts: ago(0), streamId: 'ws-main', sourceRunId: 'owner', rowId: 2 }]
   }, { now: T });
-  A.ok(!p.activityLines.some(l => /GOAL DECOMPOSITION/.test(l)), 'an internal call never reads as the Commander\'s recent work or asks');
+  A.ok(!p.activityLines.some(l => /GOAL DECOMPOSITION/.test(l)), 'an internal call never reads as the Master\'s recent work or asks');
   A.ok(p.contextActivityLines.some(l => /Draft the launch post/.test(l)) && p.activityLines.some(l => /launch post for Friday/.test(l)), 'general run context and proven owner asks on the same stream are kept');
 }
 // Exercise the real host projection, then the real pure pack: a source regex cannot prove that private
@@ -246,7 +246,7 @@ A.eq(CP.dayTag(0, T), '', 'undated → empty tag');
   A.eq(result.projected.chats.map(m => m.content), [clean.content, multiline.content],
     'only known-clean non-internal owner strings reach the pack; quotes are checked over full content before clipping');
   A.eq(result.pack.counts.runs, 2, 'real core excludes internal flags and streams from the accepted run rows');
-  /* A DELETED SESSION IS NOT RECENT ACTIVITY (qa/bugs/3e926b6a): the Commander deleted ws-deleted; its opening line rode
+  /* A DELETED SESSION IS NOT RECENT ACTIVITY (qa/bugs/3e926b6a): the Master deleted ws-deleted; its opening line rode
      every later run's RECENT ACTIVITY. The real host projection asks the host's deleted-session test of every run row. */
   const asked = [];
   const afterDelete = host({
@@ -331,10 +331,10 @@ A.eq(CP.dayTag(0, T), '', 'undated → empty tag');
     A.eq(alwaysFiltered.projected.chats.map(m => m.content), [clean.content], 'owner provenance filtering remains active with personalization enabled=' + enabled);
     A.eq(alwaysFiltered.projected.briefs.length, 0, 'unsupported briefs remain excluded with personalization enabled=' + enabled);
 
-    // The general Commander evidence reader must consume this filtered host pack in either preference mode.
+    // The general Master evidence reader must consume this filtered host pack in either preference mode.
     // No raw run/transcript stores are provided here: a private bypass cannot satisfy the activity assertion.
     const evidenceFn = A.fnBody(src, 'function commanderEvidenceInputs(evidence)');
-    A.ok(evidenceFn.length < 4000 && /return \{ dossier:/.test(evidenceFn), 'extract the shared Commander evidence reader');
+    A.ok(evidenceFn.length < 4000 && /return \{ dossier:/.test(evidenceFn), 'extract the shared Master evidence reader');
     let packReads = 0;
     const evidence = vm.runInNewContext('(' + evidenceFn + ')()', {
       Date: { now: () => T },

@@ -5,7 +5,7 @@
    it with no offer, so nothing could hand COMMS back. The audit counted the panel's openers; two more mid-game ones (the First
    Pitch, the routine proposals) did the same. This ratchet scans every frontend/ script for `Dialogue.open(` and classifies each
    call by the owner kind the arbiter gives it (dialogue.js OWNER_RULES):
-     offer    — passes `offer: { notNow, stepAside }`: ends above the message box, steps aside for the Commander. REQUIRED for
+     offer    — passes `offer: { notNow, stepAside }`: ends above the message box, steps aside for the Master. REQUIRED for
                 every opener, with both ways out;
      tour     — tour:true / owner:'tour': the opt-in quick tour (yields a session pick). Allowed only in tutorial.js;
      ceremony — neither: the FIRST-RUN awakening, which IS the conversation. Allowed only in onboarding.js, and only for the
@@ -85,7 +85,7 @@ for (const [kind, allow] of [['ceremony', CEREMONY_ALLOWANCE], ['tour', TOUR_ALL
   for (const [file, lines] of Object.entries(byFile)) {
     const n = allow[file] || 0;
     A.ok(lines.length <= n, kind + ' openers in ' + file + ': ' + lines.length + ' (allowed ' + n + ') at lines ' + lines.join(', ') +
-      ' — a panel opened mid-game must pass offer: { notNow, stepAside } so it steps aside for the Commander (gh#158)');
+      ' — a panel opened mid-game must pass offer: { notNow, stepAside } so it steps aside for the Master (gh#158)');
   }
   for (const [file, n] of Object.entries(allow)) {
     const have = (byFile[file] || []).length;

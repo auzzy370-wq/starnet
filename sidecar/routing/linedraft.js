@@ -1,7 +1,7 @@
 /* sidecar/routing/linedraft.js — SET IT UP FOR ME (2026-09-30, Andrew: "the easiest conveyor system we can possibly put together … clear
    as day"). The WORKFLOWS window's NEW WORKFLOW turns "what should it make?" into a line to place: which of the starters it offers
    fits, a short plain name, each step's standing instructions, and a first job to send. Nothing is placed here: the window shows the
-   draft — the steps, who does them, what each will do — and lays the line on the floor only when the Commander presses CREATE.
+   draft — the steps, who does them, what each will do — and lays the line on the floor only when the Master presses CREATE.
 
    PURE (no IO, no clock): normalizeInput bounds what the window sent (the description, the starters it offers and each one's step
    roles, in order), buildPrompt writes the ONE model prompt, parseDraft reads the model's JSON back and trusts it only for a starter

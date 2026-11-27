@@ -15,7 +15,7 @@ const os = require('os');
 const fs = require('fs');
 const { spawn } = require('child_process');
 const { bootToken } = require('./_httpToken.js');
-// the run-context note is the leading text of the newest user message on a non-Claude chat wire: match the Commander's own words
+// the run-context note is the leading text of the newest user message on a non-Claude chat wire: match the Master's own words
 const { userWords } = require('./helpers/host-notes.js');
 const { allocatePort, BIND_REFUSED } = require('./helpers/ports.js');
 const HOST = '127.0.0.1';

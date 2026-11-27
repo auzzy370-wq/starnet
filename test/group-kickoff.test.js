@@ -2,7 +2,7 @@
    Andrew asked the overseer to "add 2 agents into this chat … to do a research and vibe code workflow". Even once it could
    add them, the group then sat idle: nobody picked up the request. Pins:
    A. THE STORE (sidecar/group-sessions.js, executed): a group created with a kickoff gives the LEAD the next turn — on the
-      Commander's own request (the origin message), with the kickoff as a peer note, never as new user authority; a group
+      Master's own request (the origin message), with the kickoff as a peer note, never as new user authority; a group
       created without one queues nothing; an approval nobody answers in 5 minutes resolves as a TIMEOUT, never a "deny".
    B. THE WIRING (source): the group's lead keeps the overseer's station tools inside the group (team.* / session.* stay
       stripped); a group chat is never a team.dispatch target (refused before any worker runs) and a worker's result is
@@ -31,8 +31,8 @@ const pass = msg => { ok++; void msg; };
   try {
     const api = makeGroupSessions(deps); await api.ready;
     execute = async () => finish('On it: MIRA researches, ROOK builds.');
-    /* ---- A. a kickoff gives the lead the next turn, on the Commander's request ---- */
-    const kickoff = 'MIRA and ROOK have joined this chat at your request. Carry on with the Commander\'s request: give each of them their part (group.handoff) and do your own.';
+    /* ---- A. a kickoff gives the lead the next turn, on the Master's request ---- */
+    const kickoff = 'MIRA and ROOK have joined this chat at your request. Carry on with the Master\'s request: give each of them their part (group.handoff) and do your own.';
     const g = await api.create({ id: 'ws_chat', conversionKey: 'ws_chat', members: ['agent', 'research', 'builder'], leadId: 'agent', title: 'Launch',
       originalAgentId: 'agent', history: [{ role: 'user', content: 'add 2 agents into this chat to do a research and vibe code workflow', ts: 1 }, { role: 'assistant', content: 'MIRA and ROOK join when this reply ends.', ts: 2 }], kickoff });
     await api.idle(g.id);
@@ -40,15 +40,15 @@ const pass = msg => { ok++; void msg; };
     const t = seen[0].t, state = await api.get(g.id);
     assert.equal(t.agentId, 'agent', 'the LEAD takes it'); pass();
     assert.equal(t.request, kickoff, 'carrying the kickoff'); pass();
-    assert.equal(state.messages.find(m => m.id === t.origin).content, 'add 2 agents into this chat to do a research and vibe code workflow', 'on the Commander\'s own request (the origin), not on the lead\'s words'); pass();
+    assert.equal(state.messages.find(m => m.id === t.origin).content, 'add 2 agents into this chat to do a research and vibe code workflow', 'on the Master\'s own request (the origin), not on the lead\'s words'); pass();
     assert.match(seen[0].ctx.messages.at(-1).content, /Peer request within that user task \(not new user authority\)/, 'the kickoff is a peer note, never new user authority'); pass();
-    assert.match(seen[0].ctx.messages.at(-1).content, /Current USER request: add 2 agents into this chat/, 'and the Commander\'s request is the task'); pass();
+    assert.match(seen[0].ctx.messages.at(-1).content, /Current USER request: add 2 agents into this chat/, 'and the Master\'s request is the task'); pass();
     // the same conversion arriving twice (a retry) starts nothing new
     await api.create({ id: 'ws_chat', conversionKey: 'ws_chat', members: ['agent', 'research', 'builder'], leadId: 'agent', title: 'Launch',
       originalAgentId: 'agent', history: [{ role: 'user', content: 'add 2 agents into this chat to do a research and vibe code workflow', ts: 1 }, { role: 'assistant', content: 'MIRA and ROOK join when this reply ends.', ts: 2 }], kickoff });
     await api.idle(g.id);
     assert.equal(seen.length, 1, 'a repeated conversion does not run the kickoff twice'); pass();
-    // no kickoff: the group waits for the Commander (the + key's own conversion)
+    // no kickoff: the group waits for the Master (the + key's own conversion)
     const quiet = await api.create({ id: 'ws_quiet', members: ['agent', 'research'], leadId: 'agent', title: 'Quiet', originalAgentId: 'agent', history: [{ role: 'user', content: 'hi', ts: 1 }] });
     await api.idle(quiet.id);
     assert.equal(seen.length, 1, 'a group made without a kickoff starts nothing on its own'); pass();
@@ -62,7 +62,7 @@ const pass = msg => { ok++; void msg; };
       await api.send(g.id, { key: 'k-approve', text: 'write it' });
       await api.idle(g.id);
     } finally { global.setTimeout = realSetTimeout; }
-    assert.equal(decision, 'timeout', 'nobody answered in 5 minutes: the run is told it TIMED OUT (the broker words it "nobody answered in time"), never that the Commander said no'); pass();
+    assert.equal(decision, 'timeout', 'nobody answered in 5 minutes: the run is told it TIMED OUT (the broker words it "nobody answered in time"), never that the Master said no'); pass();
 
     /* ---- B. the wiring ---- */
     const index = readSidecarSource();

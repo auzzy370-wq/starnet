@@ -205,7 +205,7 @@ function makeApps(deps) {
   }
 
   // ---- schedule (an ordinary routine; the app remembers which) --------------------------------------------------
-  // ONE schedule change at a time per app: the crew's app.schedule and the Commander's SAVE racing would each
+  // ONE schedule change at a time per app: the crew's app.schedule and the Master's SAVE racing would each
   // create a routine and retire the same old one — leaving an orphan firing forever
   const scheduleLocks = new Map();
   function schedule(id, spec) {
@@ -237,16 +237,16 @@ function makeApps(deps) {
     }
     if (!task) throw new Error('say what each refresh should do (`task`), e.g. "gather what the crew finished this week and publish the recap"');
     // a crew edit that leaves the TASK as it was (only `every` changed) is no rewrite: the routine keeps its exact prompt, so it
-    // keeps its grants and the Commander's words stay theirs (review 2026-10-02 — the label alone used to read as a new prompt)
+    // keeps its grants and the Master's words stay theirs (review 2026-10-02 — the label alone used to read as a new prompt)
     const crewRewrite = !!(spec && spec.byAgent) && !(meta.schedule && meta.schedule.task === task);
     const keptJob = (old && meta.schedule && meta.schedule.task === task) ? cron.get(old) : null;
     const prompt = (spec && spec.byAgent && keptJob && typeof keptJob.prompt === 'string') ? keptJob.prompt : 'Refresh the Vultron app "' + meta.name + '" (app id: ' + id + ').\n\n' +
       'Today\'s real date is in your [RUNTIME] block — your own sense of the date is out of date; the task is about today.\n\n' +
-      (crewRewrite ? 'TASK (what each update should do, as the crew set it up): ' : 'TASK (the Commander\'s own words for every update): ') + task + '\n\n' +
+      (crewRewrite ? 'TASK (what each update should do, as the crew set it up): ' : 'TASK (the Master\'s own words for every update): ') + task + '\n\n' +
       'Do what the task says. New or current INFORMATION goes in with app.publish (find it with tool.search "app publish"): app "' + id + '", ' +
       'using the SAME key and data shape the app\'s page reads (check with app.read { app: "' + id + '" }). ' +
       'If the task asks the app ITSELF to change — its look, layout, what it shows or how it works — rewrite the page: app.read { app: "' + id + '", path: "index.html" }, then app.write the whole new file, then app.check it; keep everything that already works. ' +
-      'For this routine THE APP IS THE DELIVERY: an update that neither publishes nor writes did nothing — the Commander sees only what you publish or write, so never put the result in your reply instead. ' +
+      'For this routine THE APP IS THE DELIVERY: an update that neither publishes nor writes did nothing — the Master sees only what you publish or write, so never put the result in your reply instead. ' +
       'Your final reply is one short line saying what changed in the app.';
     const name = 'App: ' + meta.name;
     let out;

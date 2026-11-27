@@ -1,9 +1,9 @@
 /* node test/intake-plain-questions.test.js — the intake interview asks PLAIN questions, rendered as written.
 
-   Found live by the onboarding sweep (2026-10-20) on a fresh station, COMMANDER › Start a guided interview:
+   Found live by the onboarding sweep (2026-10-20) on a fresh station, MASTER › Start a guided interview:
    1. The stack question rendered as "so i reach for the right tools instead of guessing —what’s open on your
       screen right now? that’s the honest answer." Answered literally ("just this Vultron window"), it was saved
-      as the Commander's STATED stack. Several asks still carried the retired scene register — a hypothetical
+      as the Master's STATED stack. Several asks still carried the retired scene register — a hypothetical
       ("say i work for you for a year, free and tireless — what exists at the end…"), "catch yourself
       complaining", "the rule you catch yourself repeating" — the decode-work the PLAIN-QUESTION LAW
       (docs/ONBOARDING_V3_PLAN.md §1, Andrew 2026-07-20) bans: personality lives in reactions, never in questions.
@@ -11,7 +11,7 @@
       question rendered glued: "guessing —what’s", "silhouette.what does".
 
    Behavioral: the REAL intake.js runs in a vm against a recording Chat stub, so the assertion is on the line
-   the Commander actually sees. */
+   the Master actually sees. */
 'use strict';
 const fs = require('node:fs');
 const path = require('node:path');

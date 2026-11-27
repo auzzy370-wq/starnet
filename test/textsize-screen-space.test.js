@@ -149,7 +149,7 @@ for (const prop of ['grid-template-rows', 'grid-template-columns', 'padding', 'g
     `${prop} is cabinet — every px must be calc(<designed>px * var(--cz)), or the frame eats the ` +
     `station again. Not riding the multiplier: ${left.join(', ') || 'none'}`);
 }
-// --chat-w rides the multiplier too, so a width the Commander dragged means the same thing at
+// --chat-w rides the multiplier too, so a width the Master dragged means the same thing at
 // every text size instead of silently meaning 45% more at HUGE.
 A.ok(/var\(--chat-w[^)]*\)\s*\*\s*var\(--cz\)/.test(grid || ''),
   'the dragged COMMS width is measured in the same visual frame as the rest of the cabinet');

@@ -325,7 +325,7 @@ const QUIET = { SKYNET_THREAD_MINE: '0', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_
 
   /* ================= BOOT 4 — a PAUSE that lands mid-extraction wins (personalization authority) =================
      runScoutCycle checked the pause once at entry, then folded + persisted whatever the extraction call returned.
-     Here the extraction call is HELD in flight; the Commander pauses learning; then the reply lands. Nothing may be
+     Here the extraction call is HELD in flight; the Master pauses learning; then the reply lands. Nothing may be
      folded, persisted or noted (scanDocumentSource's re-check rule), and the call's spend is still booked. */
   {
     const mock = await startMock({
@@ -348,7 +348,7 @@ const QUIET = { SKYNET_THREAD_MINE: '0', SKYNET_SKILL_REVIEW: '0', SKYNET_SKILL_
       }
       A.ok(mock.held.extraction, 'PAUSE ARM: the live extraction call is in flight (held by the mock)');
       const off = await (await fetch(B + '/api/personalization', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Vultron-Token': token, Origin: B }, body: JSON.stringify({ enabled: false }) })).json();
-      A.eq(off.enabled, false, 'PAUSE ARM: the Commander paused learning while the call was in flight');
+      A.eq(off.enabled, false, 'PAUSE ARM: the Master paused learning while the call was in flight');
       const interestsFile = path.join(ws, 'scout.interests.json');
       const before = fs.existsSync(interestsFile) ? fs.readFileSync(interestsFile, 'utf8') : null;
       mock.release();

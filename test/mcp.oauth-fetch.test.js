@@ -80,7 +80,7 @@ const V6 = { address: '2606:2800:220:1:248:1893:25c8:1946', family: 6 };
       A.ok(ok === 200 && asked.length === 0 && agents.length === 0 && fetched.length === 1 && !fetched[0].init.dispatcher, url + ': allowed, an IP literal needs no DNS and no pin (' + ok + ')');
     }
 
-    // publicDestination: the custom authorization endpoint's check (the Commander's browser opens it, the sidecar does not)
+    // publicDestination: the custom authorization endpoint's check (the Master's browser opens it, the sidecar does not)
     reset(); answer = () => [V4];
     const dest = await f.publicDestination('https://auth.example/authorize?x=1');
     A.ok(Object.isFrozen(dest) && dest.href === 'https://auth.example/authorize?x=1' && dest.policy === 'connectorOauth' && dest.addresses.length === 1, 'publicDestination: a frozen Destination of the connectorOauth row');

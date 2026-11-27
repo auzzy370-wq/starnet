@@ -83,7 +83,7 @@ const ghost = read('frontend/app/ghostline.js'), outbox = read('frontend/app/win
 A.ok(/RunOutcome\.ofRow\(r\)\.ok : r\.reason === 'done'\) && r\.stepTest !== true &&/.test(world), 'a step-test run is never a shipment on the pallet (and only a SUCCEEDED run is one: typed-outcomes)');
 A.ok(/function start\(\) \{[\s\S]{0,420}lineStatsSoon\(\);/.test(world), 'the floor coming back to life re-asks its line numbers');
 
-/* ---------- R3 + X1: the INBOX card never answers for the Commander, and it says where it went ---------- */
+/* ---------- R3 + X1: the INBOX card never answers for the Master, and it says where it went ---------- */
 {
   const sc = chat.slice(chat.indexOf('  function sampleCard(opts) {'), chat.indexOf('  /* W3 — THE DELIVERY CARD'));
   A.ok(/const sayCovered = \(\) => \{ if \(covered\(\)/.test(sc) && /under the question your agent is asking/.test(sc), 'an open question over COMMS: a notice says the card is under it');

@@ -1,6 +1,6 @@
 /* node test/session-tombstones.test.js — A DELETED SESSION IS FORGOTTEN (qa/bugs/3e926b6a, P1 privacy).
 
-   The Commander deletes a session from the rail. Before this fix the sidecar never learned it: the durable transcript
+   The Master deletes a session from the rail. Before this fix the sidecar never learned it: the durable transcript
    kept serving the deleted words to resume, recall_conversation searched and listed them, and memories written there
    rode later prompts. This proves each context path on the real modules (temp dirs, real fs):
 
@@ -15,13 +15,13 @@
         and the segment index ranks among the rows it may return (a deleted session never takes a slot).
      4. MEMORY — forgetSessionMemory removes what the deleted session wrote, over the real memory-store and threads-store:
         records created there go; a record created elsewhere rolls back to its newest version from elsewhere; a rating
-        verdict keeps the verdict and the Commander's words without the deleted work's quotes; pending proposals and
+        verdict keeps the verdict and the Master's words without the deleted work's quotes; pending proposals and
         open threads go; everyone else's stays.
      5. CROSS-SESSION READS — a read of the deleted session by id (station.read_session's transcript read, a worker's
         sessionContext, the away briefing's last words) comes back empty; other sessions read as before.
      6. THE HOST WIRING (sidecar/index.js, static): the store reads through the ledger, every accepted station save and
         the boot save feed it, and the run-history readers that quote titles to a model skip a deleted session's runs.
-     7. WHO FORGETS: only the Commander's Delete of a conversation (the save's forgetIds). DELETE AGENT and a task
+     7. WHO FORGETS: only the Master's Delete of a conversation (the save's forgetIds). DELETE AGENT and a task
         card's remove hide rows and forget nothing: the ratings the agent-delete route adopted keep their directive and
         feedbackRef, the threads mined there stay, and those conversations read as before. */
 'use strict';
@@ -245,7 +245,7 @@ const clockAt = start => { let t = start; return { now: () => t, set: v => { t =
       A.ok(/\(on: design the quokka landing page\)/.test(liked.content) && liked.feedbackRef, 'the fixture verdict quotes the rated work (the bug\'s premise)');
       await store.update('notebook:agent', () => [
         { id: 'note_1', title: 'Quokka', body: 'The quokka codeword is Wallaby-Seven', scope: 'stream', streamId: 'ws_gone', sourceRunId: 'run_gone_1', createdAt: 4000 },
-        { id: 'note_2', title: 'Pet', body: 'The Commander keeps a pet quokka', scope: 'global', streamId: null, sourceRunId: 'run_gone_2', createdAt: 4500 },
+        { id: 'note_2', title: 'Pet', body: 'The Master keeps a pet quokka', scope: 'global', streamId: null, sourceRunId: 'run_gone_2', createdAt: 4500 },
         deploy, twoKept, middle,
         { id: 'note_3d', title: 'Corrected', body: 'revised in the deleted chat', scope: 'global', sourceRunId: 'run_keep', updatedSourceRunId: 'run_gone_2', revision: 1, createdAt: 100 },
         laterKept,
@@ -258,7 +258,7 @@ const clockAt = start => { let t = start; return { now: () => t, set: v => { t =
         { id: 'note_11', kind: 'profile', origin: 'feedback', title: 'Preference', body: 'LIKED: "dark mode"', content: 'LIKED: "dark mode"', scope: 'global', streamId: null, sourceRunId: 'run_gone_3', confirmation: 'user-confirmed', createdAt: 4700 }
       ]);
       await store.update('notebook:scribe', () => [{ id: 'note_1', title: 'Scribe saw it', body: 'quokka relayed', scope: 'global', sourceRunId: 'run_gone_2', createdAt: 4500 }]);
-      await appendPending(store, 'agent', 'run_gone_1', [{ id: 'p1', content: 'Commander SSN-shaped secret from the deleted chat' }], 4000);
+      await appendPending(store, 'agent', 'run_gone_1', [{ id: 'p1', content: 'Master SSN-shaped secret from the deleted chat' }], 4000);
       await appendPending(store, 'agent', 'run_keep', [{ id: 'p1', content: 'a pending proposal from the kept chat' }], 4200);
       await threads.add({ id: 'th_gone', title: 'Build a quokka tracker', spec: 'quokka', sourceRef: { streamId: 'ws_gone', runId: 'run_gone_1', date: 4000 } }, 4000);
       await threads.add({ id: 'th_keep', title: 'Ship the platypus plan', spec: 'platypus', sourceRef: { streamId: 'ws_keep', runId: 'run_keep', date: 4200 } }, 4200);
@@ -286,16 +286,16 @@ const clockAt = start => { let t = start; return { now: () => t, set: v => { t =
       A.eq([e.body, e.history.map(h => h.body)], ['u2 text', ['u0 text']], 'a record whose current text is from elsewhere only loses the deleted run\'s version from its history');
       A.eq([rec('note_4').body, 'statedBy' in rec('note_4'), rec('note_4').confirmation], ['always reply tersely', false, 'inferred'], 'a proof quoting the deleted session goes, and with it the stated authority it gave');
       A.eq(rec('note_5').history.map(h => h.body), ['the original'], 'a kept record loses the revision text the deleted session wrote');
-      // RATING VERDICTS: the verdict and the Commander's words keep steering; what quoted the deleted work goes
+      // RATING VERDICTS: the verdict and the Master's words keep steering; what quoted the deleted work goes
       const v = rec('note_7');
       A.eq([v.content, v.body, v.feedbackVerdict, v.feedbackWords, v.feedbackDirective, 'feedbackRef' in v, v.confirmation],
         ['LIKED: "matte, no gloss"', 'LIKED: "matte, no gloss"', 'great', ['matte, no gloss'], '', false, 'user-confirmed'],
-        'a like on a deleted session\'s run keeps the verdict and the Commander\'s words, without the directive or the reference to the deleted work');
+        'a like on a deleted session\'s run keeps the verdict and the Master\'s words, without the directive or the reference to the deleted work');
       A.ok(FeedbackMemory.isTaste(v), '…and it is still taste');
       const block = FeedbackMemory.renderTaste(FeedbackMemory.selectTaste(nb), lines => ({ text: lines.map(l => l.body + ' ' + l.content).join('\n') }), { agentId: 'agent' }).text;
       A.ok(/liked: "matte, no gloss"/.test(block) && /short bullets/.test(block), 'both verdicts still ride every later prompt\'s taste block: ' + block.slice(0, 300));
       A.ok(!/quokka/.test(block), '…and no word of the deleted session does');
-      A.eq([rec('note_9').content, rec('note_9').feedbackEdited], ['I love bold type', true], 'a verdict the Commander edited keeps their wording, minus the deleted work\'s directive');
+      A.eq([rec('note_9').content, rec('note_9').feedbackEdited], ['I love bold type', true], 'a verdict the Master edited keeps their wording, minus the deleted work\'s directive');
       A.eq([rec('note_10').feedbackDirective, rec('note_10').content], ['summarize the platypus plan', keptRating.content], 'a verdict on a kept session\'s run is untouched');
       A.eq(rec('note_11').content, 'LIKED: "dark mode"', 'an older verdict this module cannot rebuild keeps its stored words');
       A.eq(store.get('notebook:scribe'), [], 'another agent\'s notebook loses what the deleted session\'s run wrote there');
@@ -325,7 +325,7 @@ const clockAt = start => { let t = start; return { now: () => t, set: v => { t =
       const store = makeMemoryStore({ fs, path, workspaces: dir });
       const runs = [{ runId: 'run_review', streamId: 'workshop-run_review', ts: 500 }, { runId: 'run_new', streamId: 'ws_new', ts: 1500 }];
       await store.update('notebook:agent', () => [
-        { id: 'note_1', title: 'Deploy target', body: 'The Commander deploys to fly.io region iad', scope: 'global', sourceRunId: 'run_review', createdAt: 500 },
+        { id: 'note_1', title: 'Deploy target', body: 'The Master deploys to fly.io region iad', scope: 'global', sourceRunId: 'run_review', createdAt: 500 },
         { id: 'note_2', title: 'New', body: 'written in a session deleted after the upgrade', scope: 'global', sourceRunId: 'run_new', createdAt: 1500 }
       ]);
       A.eq(ledger.observe(['workshop-run_review']), [], 'the first boot of this build reads a delete made before it: no fresh delete');
@@ -339,7 +339,7 @@ const clockAt = start => { let t = start; return { now: () => t, set: v => { t =
     } finally { remove(dir); }
   }
 
-  // ---------------- 7. who forgets: only the Commander's Delete of a conversation ----------------
+  // ---------------- 7. who forgets: only the Master's Delete of a conversation ----------------
   // Review (blocking): DELETE AGENT's removeByAgent and a task card's remove put rows in deletedIds, and the sidecar
   // purged them as session deletes — stripping the ratings /api/agent/delete had just adopted into the hero's notebook
   // (their directive and DESIGN ANCHOR feedbackRef), the threads mined there, and the conversations themselves. Here
@@ -384,7 +384,7 @@ const clockAt = start => { let t = start; return { now: () => t, set: v => { t =
       W.reset();
       const bakery = W.create('Bakery landing page', { agentId: 'scribe', activate: false });   // the scribe's rated work
       const card = W.create('Order flour', { kind: 'task', activate: false });                   // a task-board card
-      const diary = W.create('Private diary', { activate: false });                               // the Commander deletes this
+      const diary = W.create('Private diary', { activate: false });                               // the Master deletes this
       const worker = W.adopt({ id: 'ws_diary_worker', title: 'worker thread', worker: true, parentStreamId: diary.id, agentId: 'scribe' });
       A.ok(!!worker, 'the diary has a delegated worker thread');
       const clock = clockAt(1000);
@@ -404,7 +404,7 @@ const clockAt = start => { let t = start; return { now: () => t, set: v => { t =
         scribeNb = out.list;
       }
       await store.update('notebook:scribe', () => scribeNb);
-      await store.update('notebook:agent', () => [{ id: 'note_1', title: 'Diary', body: 'the Commander wrote about their week', scope: 'stream', streamId: diary.id, sourceRunId: 'run_diary', createdAt: 1300 },
+      await store.update('notebook:agent', () => [{ id: 'note_1', title: 'Diary', body: 'the Master wrote about their week', scope: 'stream', streamId: diary.id, sourceRunId: 'run_diary', createdAt: 1300 },
         { id: 'note_2', title: 'Worker', body: 'the worker read the diary', scope: 'global', sourceRunId: 'run_diary_worker', createdAt: 1350 }]);
       await threads.add({ id: 'th_bakery', title: 'Add a bakery order form', spec: 'bakery', sourceRef: { streamId: bakery.id, runId: 'run_bakery_1', date: 1100 } }, 1100);
       await threads.add({ id: 'th_diary', title: 'Plan the week from the diary', spec: 'diary', sourceRef: { streamId: diary.id, runId: 'run_diary', date: 1300 } }, 1300);
@@ -417,7 +417,7 @@ const clockAt = start => { let t = start; return { now: () => t, set: v => { t =
       A.ok(adopted.every(r => r.feedbackRef && r.feedbackDirective), '…each with its directive and its DESIGN ANCHOR reference');
       A.eq(await page.deleteAgent('scribe'), true, 'DELETE AGENT is accepted');
       A.ok(saved.deletedIds.indexOf(bakery.id) >= 0 && !W.get(bakery.id), 'its session left the rail (deletedIds, so the row never re-forms)');
-      A.ok(saved.forgetIds.indexOf(bakery.id) < 0, '…but it is not a conversation the Commander deleted (not in forgetIds)');
+      A.ok(saved.forgetIds.indexOf(bakery.id) < 0, '…but it is not a conversation the Master deleted (not in forgetIds)');
       A.ok(!!W.get(worker.id), '…and a worker thread it holds stays with the conversation that asked for it');
       A.eq(ledger.observeSave(saved), [], 'so the save that removes it forgets nothing');
       // a task card's remove (station.manage_task calls Workstreams.del(task.id), no forget)
@@ -425,9 +425,9 @@ const clockAt = start => { let t = start; return { now: () => t, set: v => { t =
       ctx.persist();
       A.eq([ledger.observeSave(saved), saved.deletedIds.indexOf(card.id) >= 0, saved.forgetIds.indexOf(card.id) < 0], [[], true, true], 'a task card\'s remove hides the row and forgets nothing');
       A.eq([ledger.deletedAt(bakery.id), ledger.deletedAt(card.id)], [0, 0], 'their history and recall read as before (no stamp)');
-      // the Commander's rail Delete of the diary
+      // the Master's rail Delete of the diary
       clock.set(3000);
-      A.eq(page.deleteWorkstream(diary.id), true, 'the Commander deletes the diary from the rail');
+      A.eq(page.deleteWorkstream(diary.id), true, 'the Master deletes the diary from the rail');
       A.eq(saved.forgetIds, [diary.id, worker.id], 'the rail Delete marks the conversation forgotten, and its worker thread with it');
       A.eq(ledger.observeSave(saved), [diary.id, worker.id], 'only those are fresh deletes for the sidecar');
       A.eq(ledger.unpurged().map(e => e.id).sort(), [diary.id, worker.id].sort(), '…and only their memory is due a purge');
@@ -437,8 +437,8 @@ const clockAt = start => { let t = start; return { now: () => t, set: v => { t =
       const nb = store.get('notebook:agent');
       A.eq(nb.filter(r => r.adoptedFrom === 'scribe'), before, 'DELETE AGENT never strips adopted taste: both ratings survive the purge byte for byte');
       A.ok(nb.filter(r => r.adoptedFrom === 'scribe').every(r => r.feedbackRef && /bakery/.test(r.feedbackDirective)), '…their feedbackRef and directive included');
-      A.ok(/LIKED the result of: design the landing page for the bakery/.test(before[0].content) && /DISLIKED: "too busy, fewer colours" \(on: redo the bakery hero\)/.test(before[1].content), '…in the words the Commander rated');
-      A.eq([counts.notes, nb.some(r => r.id === 'note_1'), nb.some(r => r.id === 'note_2')], [2, false, false], 'the Commander\'s Delete still forgets what the diary and its worker wrote');
+      A.ok(/LIKED the result of: design the landing page for the bakery/.test(before[0].content) && /DISLIKED: "too busy, fewer colours" \(on: redo the bakery hero\)/.test(before[1].content), '…in the words the Master rated');
+      A.eq([counts.notes, nb.some(r => r.id === 'note_1'), nb.some(r => r.id === 'note_2')], [2, false, false], 'the Master\'s Delete still forgets what the diary and its worker wrote');
       A.eq(threads.list().map(t => t.id), ['th_bakery'], 'the idea mined from the deleted agent\'s session stays open; the diary\'s goes');
       // the page lists round-trip; a revive takes the id out of both (the sidecar keeps its stamp); NEW AGENT clears both
       W.init(JSON.parse(JSON.stringify(W.serialize())));

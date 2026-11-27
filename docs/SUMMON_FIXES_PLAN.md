@@ -21,7 +21,7 @@ Summoned agents (`App.summonAgent`, `app.js:198`) become crew bodies via `World.
 
 ## Bug 1 / Phase 2 — The per-agent PC rule + summon guidance
 
-### Clarified design (Commander, 2026-06-22)
+### Clarified design (Master, 2026-06-22)
 
 > **Each agent MUST have its OWN dedicated PC.** Not its own *room* — multiple agents may share a
 > room (e.g. 3–4 agents passing work between them). But every agent needs a distinct computer.

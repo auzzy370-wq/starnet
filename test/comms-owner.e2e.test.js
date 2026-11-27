@@ -1,17 +1,17 @@
-/* node test/comms-owner.e2e.test.js — THE COMMANDER CAN ALWAYS REACH THE MESSAGE BOX, in real Chromium on a real station
+/* node test/comms-owner.e2e.test.js — THE MASTER CAN ALWAYS REACH THE MESSAGE BOX, in real Chromium on a real station
    (wave-1 B8 comms-owner-arbiter: gh#158, gh#117).
 
    gh#158 (v0.14.0): with the first-task hand-off pending, "select an existing session … the right panel stays on 'Your first
    task' … Create and select a new session. The same onboarding panel remains, with no message box." Done means: with
-   handoffPending set, selecting a session leaves #chat-input visible and focusable. This drives the chain a Commander meets:
+   handoffPending set, selecting a session leaves #chat-input visible and focusable. This drives the chain a Master meets:
      1. a returning station boots with handoffPending set (+ a draft) → tutorial.onEnterGame re-offers the hand-off — now as an
         OFFER: the message box is on screen, a real click at its centre lands on it, and it takes focus;
-     2. the Commander CLICKS another session in the rail (a real mouse event) → the hand-off steps aside, COMMS shows that session,
+     2. the Master CLICKS another session in the rail (a real mouse event) → the hand-off steps aside, COMMS shows that session,
         #chat-input is visible and focusable, the first task stays pending and its draft is in the ↑ recall;
      2b. a pick that lands on the conversation ALREADY on screen does the same (review 10-27; gh#158 "create and select a new
         session"): reload → re-offered → a real click on the active session's own rail row steps it aside; then + NEW makes a
         blank, reload → re-offered over that blank → a real click on + NEW (which reuses the blank on screen) steps it aside;
-     3. reload → re-offered (still an offer); the Commander types a task into the message box and presses Enter → the hand-off
+     3. reload → re-offered (still an offer); the Master types a task into the message box and presses Enter → the hand-off
         steps aside and is COMPLETE (handoffPending false); reload again → it is never offered over COMMS again;
      4. gh#117: CREW › RECRUIT opens the RECRUITMENT BAY whose main key is RECRUIT <NAME>, on screen and clickable; MY WORK's
         door opens the same window titled MY WORK.
@@ -82,7 +82,7 @@ const path = require('node:path');
     '--remote-debugging-port=' + cdpPort, '--window-size=1440,900', '--user-data-dir=' + profile, 'about:blank'], { stdio: 'ignore' });
 
   const DRAFT = 'Sort my inbox into three piles';
-  // Andrew's real view + a station that already has a pending first task (what a v0.14.0 Commander carried into the update)
+  // Andrew's real view + a station that already has a pending first task (what a v0.14.0 Master carried into the update)
   const SEED = `(() => { try { if (sessionStorage.getItem('co-seeded')) return; sessionStorage.setItem('co-seeded', '1');
     localStorage.setItem('vultron.pitch.v1', JSON.stringify({ v: 1, pitched: false, handoffPending: true, handoffDraft: ${JSON.stringify(DRAFT)} }));
     localStorage.setItem('vultron.station.v1', JSON.stringify({ v: 1, settings: { theme: 'custom', themeHue: 216, themeSat: 100, themeGlow: 20, panelBright: -100, flicker: false, textScale: 90, sessionRow: 'inbox' } }));
@@ -144,7 +144,7 @@ const path = require('node:path');
     box = await evalJS(cdp, BOX);
     check('boot: clicking the message box focuses it', box.focused, JSON.stringify(box));
 
-    /* ---- 2. the Commander clicks another session in the rail ---- */
+    /* ---- 2. the Master clicks another session in the rail ---- */
     const made = await evalJS(cdp, `(() => { const w = Workstreams.create('Continue Scrap Yard Crew Development', { activate: false }); if (App.refreshRail) App.refreshRail(); return w ? w.id : null; })()`);
     check('a second session exists in the rail', !!made, String(made));
     await sleep(400);
@@ -206,7 +206,7 @@ const path = require('node:path');
     await cdp.send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13 });
     await sleep(900);
     box = await evalJS(cdp, BOX);
-    check('send: the hand-off stepped aside for the Commander’s own turn', !box.panel, JSON.stringify(box));
+    check('send: the hand-off stepped aside for the Master’s own turn', !box.panel, JSON.stringify(box));
     check('send: a task sent from COMMS completes the hand-off (handoffPending false)', box.pending === false, JSON.stringify(box));
     for (let i = 0; i < 60 && mock.turns.length === turnsBefore; i++) await sleep(250);
     check('send: the task reached the model (a real run)', mock.turns.slice(turnsBefore).some(t => t.indexOf('three oldest emails') >= 0), JSON.stringify(mock.turns.slice(-3).map(t => t.slice(0, 120))));

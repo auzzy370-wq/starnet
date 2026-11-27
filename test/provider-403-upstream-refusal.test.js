@@ -75,7 +75,7 @@ const REJECTED = /rejected the API key/i;
     A.eq(classifyApiError(safety, { model: REQ.model }).reason, 'content_policy_blocked', 'OpenRouter xAI 403 naming its safety check: content_policy_blocked');
   }
 
-  // ---- 3. what the Commander reads, on BOTH friendlyerror paths ----
+  // ---- 3. what the Master reads, on BOTH friendlyerror paths ----
   const managedRaw = String(managedErr && managedErr.message);
   for (const [label, F] of both) {
     const v = F.friendlyError(managedRaw);

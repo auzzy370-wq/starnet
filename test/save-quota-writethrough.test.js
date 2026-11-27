@@ -11,7 +11,7 @@
    quota the way WebKit/WebView2 do: setItem throws once the origin's total would pass it.
 
    Scenarios: S1 clean stale cache, S2 dirty stale cache (the macOS report's cache carried _saveDirty:true), each:
-   small station saves → history grows past the quota → the Commander refits the room → the page reloads.
+   small station saves → history grows past the quota → the Master refits the room → the page reloads.
    C1 control: an offline-only edit in the cache still wins over an older durable copy (no regression).
    G guards: re-entry and startCreation never read the stale/removed cache after the cache failed.
    B boot: a stale CLEAN cache plus a newer station file the cache cannot hold resumes the station file in memory.

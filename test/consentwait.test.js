@@ -193,23 +193,23 @@ async function settled(p) { let v, done = false; p.then(x => { v = x; done = tru
     const r = await reg.dispatch({ name: 'fs_write', args: {}, id: 'c1' }, { canRun: () => true, canUse: () => ({ ok: true }), agentId: 'a', room: 'office', consent: async () => g });
     A.ok(/approval timed out for fs_write/.test(r.content) && /not a refusal/i.test(r.content) && !/consent denied/.test(r.content), 'the model reads "timed out", never "denied": ' + r.content);
     A.eq(r.summary, 'denied', 'still a terminal non-run (the loop never routes around it)');
-    /* the Commander's own No reads as theirs, said to them (rc walk 10-14: "consent denied for team.dispatch: denied" came
-       back to the Commander as "The Commander declined the dispatch" — they ARE the Commander) */
+    /* the Master's own No reads as theirs, said to them (rc walk 10-14: "consent denied for team.dispatch: denied" came
+       back to the Master as "The Master declined the dispatch" — they ARE the Master) */
     const no = broker.grant('deny', { name: 'team_dispatch' }, { scope: 'execute', capability: 'orchestrator' });
     A.ok(no.allow === false && no.reason === 'denied', 'a Deny on the card is the broker\'s "denied"');
     let ran = false;
     reg.register({ impact: 'none', name: 'team_dispatch', requiresConsent: true, scope: 'execute', capability: 'orchestrator', schema: { type: 'object' }, run: async () => { ran = true; return 'ran'; } });
     const d = await reg.dispatch({ name: 'team_dispatch', args: {}, id: 'c2' }, { canRun: () => true, canUse: () => ({ ok: true }), agentId: 'a', room: 'office', consent: async () => no });
     A.ok(!ran && d.summary === 'denied', 'a denied call never runs and stays terminal');
-    A.ok(/^consent denied for team_dispatch: the Commander said no on the approval card, so it was NOT run\./.test(d.content), 'it says who said no: ' + d.content);
-    A.ok(/If you mention it, say it to them as "you" \("you declined …"\)\./.test(d.content) && !/the Commander declined/i.test(d.content), 'and how to say it to them (second person), never planting the third-person words: ' + d.content);
+    A.ok(/^consent denied for team_dispatch: the Master said no on the approval card, so it was NOT run\./.test(d.content), 'it says who said no: ' + d.content);
+    A.ok(/If you mention it, say it to them as "you" \("you declined …"\)\./.test(d.content) && !/the Master declined/i.test(d.content), 'and how to say it to them (second person), never planting the third-person words: ' + d.content);
     const other = await reg.dispatch({ name: 'team_dispatch', args: {}, id: 'c3' }, { canRun: () => true, canUse: () => ({ ok: true }), agentId: 'a', room: 'office', consent: async () => ({ allow: false, reason: 'no consent channel — interactive prompt not wired' }) });
-    A.ok(/consent denied for team_dispatch: no consent channel/.test(other.content) && !/said no/.test(other.content), 'a refusal nobody gave keeps its own reason (never "the Commander said no")');
+    A.ok(/consent denied for team_dispatch: no consent channel/.test(other.content) && !/said no/.test(other.content), 'a refusal nobody gave keeps its own reason (never "the Master said no")');
   }
 
   /* A WITHDRAWN ASK IS NOT A NO (review 10-14): an ask whose run stopped (abort) or that was never shown resolves with the
      caller's abortDecision; the capability consent passes 'cancelled', the broker keeps it CLOSED but withdrawn, and the
-     model reads "withdrawn — nobody said no", never "the Commander said no" (a worker would tell them "you declined"). */
+     model reads "withdrawn — nobody said no", never "the Master said no" (a worker would tell them "you declined"). */
   {
     const clock = makeClock(), sig = makeSignal(), pending = new Map();
     const wait = makeConsentWait({ pending, signal: sig, timeoutMs: 1000, extendMs: 5000, timeoutDecision: 'timeout', abortDecision: 'cancelled',

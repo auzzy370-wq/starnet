@@ -4,7 +4,7 @@
    they never GATE it"); the Initiative/Reach dial was user-set only (autonomy.js) with no path from performance
    to posture. This engine closes it: a demonstrated track record (real runs + a positive-feedback streak + a
    calibrated satisfaction %) MINTS a one-tap OFFER — "you've earned it, may I raise the leash one rung?" — that
-   the Commander CONSENTS to (never a silent escalation). The earned rung persists with provenance, and a
+   the Master CONSENTS to (never a silent escalation). The earned rung persists with provenance, and a
    sustained bad streak DEMOTES it back (with an explicit notice — trust is bidirectional).
 
    THE DESIGN LAWS (locked by Andrew's prior decisions — encoded here as constants, not prose):
@@ -16,7 +16,7 @@
        proposes a key from the caller's GRANTABLE list (permgrants — cabinet:write today). Never reach-out.
      • LEVEL GATES WHEN OFFERS MAY FIRE. This is level's first mechanical consumer: an initiative offer needs
        L≥3, a grant offer needs L≥5. XP purity is untouched — the OFFER is gated, the capability still needs the
-       Commander's tap. No number here feeds back into xp.js.
+       Master's tap. No number here feeds back into xp.js.
      • HONEST PROVENANCE. Every offer carries {earnedAt, runs, confidence, streak} so the dial can show an EARNED
        badge + the real track record behind it. Nothing is fabricated — every field is read off the folded state.
 
@@ -203,7 +203,7 @@
     }
 
     // ---- GRANT PRE-BLESS — rarer (higher bars). Only after initiative can no longer be raised toward the ceiling
-    // (or its raise isn't ready) do we consider pre-blessing a GRANTABLE capability the Commander hasn't granted. ----
+    // (or its raise isn't ready) do we consider pre-blessing a GRANTABLE capability the Master hasn't granted. ----
     const grantable = Array.isArray(ctx.grantable) ? ctx.grantable : [];
     const held = new Set(Array.isArray(ctx.grants) ? ctx.grants : []);
     const grantReady = snap.level >= GRANT_MIN_LEVEL
@@ -229,7 +229,7 @@
   }
 
   // ---- THE DEMOTION DECISION (pure read; the store applies + notices). trust is bidirectional: a sustained bad
-  //   streak OR a confidence collapse retires an EARNED rung back toward — but NEVER below — the Commander's own
+  //   streak OR a confidence collapse retires an EARNED rung back toward — but NEVER below — the Master's own
   //   manual floor. Returns { demote } where demote is null OR { from, to, why }.
   //   ctx: { earned:{ initiative:{ to, floor } } | null, xp } — `earned.initiative` is the store's record of the
   //        rung IT raised (to) and the manual floor it must never go below (floor). Only an earned rung demotes. ----
@@ -246,7 +246,7 @@
 
     const from = INITIATIVE.indexOf(earned.to) >= 0 ? earned.to : null;
     if (!from) return { demote: null };
-    // step DOWN one rung, but never below the Commander's own manual floor (the rung they set before we raised it).
+    // step DOWN one rung, but never below the Master's own manual floor (the rung they set before we raised it).
     const floorRank = INITIATIVE.indexOf(earned.floor) >= 0 ? rankInit(earned.floor) : 0;
     const toRank = Math.max(floorRank, rankInit(from) - 1);
     if (toRank >= rankInit(from)) return { demote: null };             // already at/below the floor — nothing to take

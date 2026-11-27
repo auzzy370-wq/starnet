@@ -31,7 +31,7 @@ assert(!prompt.includes('EXTERNAL_INJECTION'));
 assert.equal(compactPacket(tainted).messages.length, 0);
 assert(!JSON.stringify(compactPacket(tainted)).includes('EXTERNAL_INJECTION'));
 assert.equal(buildLearningEvidence({ ...tainted, learningEvidence: { version: 1, source: 'host', tainted: true } }).eligible, false);
-// Quoted material the Commander TYPED does not taint the run (review sidecar-index-01), but the host marks its
+// Quoted material the Master TYPED does not taint the run (review sidecar-index-01), but the host marks its
 // evidence trusted-only: the reviewer sees the separately captured owner directive and checks, never the quote.
 const quotedOwner = { ...input, learningEvidence: { ...source, trustedOnly: true }, memories: [{ body: 'QUOTED_OWNER_MEMORY' }],
   messages: [{ role: 'user', content: 'The email says:\n> QUOTED_OWNER_MATERIAL' }, { role: 'assistant', content: 'QUOTED_OWNER_ASSISTANT' }] };

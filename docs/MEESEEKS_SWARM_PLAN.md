@@ -33,7 +33,7 @@ itself** — anonymous, ephemeral, spawns in → does its one task → vanishes 
 Codex "Task tool" concept). It is explicitly NOT a persistent roster agent:
 
 - **Persistent agents** (created / summoned) = permanent profiles with bodies, desks, identity,
-  XP. They exist until the Commander removes them. Delegating to them via `team.dispatch` is
+  XP. They exist until the Master removes them. Delegating to them via `team.dispatch` is
   **not** a Meeseeks — they keep their own body and walk to their own desk.
 - **Meeseeks** = an ephemeral self-clone spawned by `team.spawn`. No roster entry, no home,
   no persistence. The population of blue sprites literally IS the live sub-agent fan-out.

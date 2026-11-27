@@ -88,7 +88,7 @@ async function connect({ binary: requested, signal, clock, timeoutMs = 20000 }) 
     client?.close('Computer control closed');
     closePromise = (async () => {
       // Graceful private-daemon shutdown also closes its UIA helper. This must
-      // not close applications the Commander asked us to open.
+      // not close applications the Master asked us to open.
       if (daemon) {
         try { await cli(['stop', '--socket', socket]); }
         catch { failNote('computer.runtime.stop', 'Private driver stop failed; terminating only owned processes'); }

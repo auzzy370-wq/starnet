@@ -62,7 +62,7 @@ A.ok(/if \(slow && !takeoverOnly && isHeroRun && runId\) \{ queueStudy\(runId, a
 
 // the pass asks the PURE spine who speaks, and exactly one candidate ever fires
 /* one-memory lane (2026-08-05): the pick now runs over `live` — the candidate list AFTER the shared
-   cross-surface declined memory has removed anything the Commander already waved off elsewhere. */
+   cross-surface declined memory has removed anything the Master already waved off elsewhere. */
 A.ok(/const winner = Recommend\.pick\(live, recUnderstanding\(\)\);/.test(passBody),
   'the pass ranks every candidate through Recommend.pick (one voice, best-first, or silence)');
 A.ok(/if \(recAlreadyDeclined\(c\)\)/.test(passBody),
@@ -220,7 +220,7 @@ stubSeedWill = false;
 /* ---------- 4. G2.4: the rate-the-work control can never STARVE (source guards, same idiom as §1) ----------
    Rating is the PRIMARY leveling input (XP law), so every path where the turn-in "owns the moment" (or a
    focused panel holds the slot) must still funnel an unrated run into the standalone beat: an empty
-   proposal fetch, an off-stream batch (notify-only), a deck the Commander finished without rating, and
+   proposal fetch, an off-stream batch (notify-only), a deck the Master finished without rating, and
    a tutorial/intake panel blocking the 650ms moment. */
 const iMaybe = chatSrc.indexOf('function maybeStandaloneRate');
 A.ok(iMaybe > 0, 'chat.js defines maybeStandaloneRate (the one funnel for a starved rating)');

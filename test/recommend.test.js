@@ -166,10 +166,10 @@ A.eq(Recommend.whyLine({ why: 'because the last 3 runs hit this wall' }), 'becau
 A.eq(Recommend.whyLine({ why: 'Since you keep hand-launching it' }), 'because you keep hand-launching it', 'other connectives normalize too');
 A.eq(Recommend.whyLine({ why: 'You mentioned Sundays.' }), 'because you mentioned Sundays', 'a leading capital joins mid-sentence; trailing punctuation goes');
 A.eq(Recommend.whyLine({ why: 'MCP connectors keep timing out' }), 'because MCP connectors keep timing out', 'an acronym keeps its case');
-/* THE SPINE NEVER REWRITES THE COMMANDER'S WORDS. Lower-casing "a plain leading capital" mangled the evidence
+/* THE SPINE NEVER REWRITES THE MASTER'S WORDS. Lower-casing "a plain leading capital" mangled the evidence
    itself — proper nouns, languages, products and people's names all got de-capitalized inside their own quote. */
 A.eq(Recommend.whyLine({ why: 'Python is the stack you work in' }), 'because Python is the stack you work in',
-  'a proper noun is NOT de-capitalized (it is the Commander’s word, not the spine’s framing)');
+  'a proper noun is NOT de-capitalized (it is the Master’s word, not the spine’s framing)');
 A.eq(Recommend.whyLine({ why: 'Andrew ships on Fridays' }), 'because Andrew ships on Fridays', 'nor is a person’s name');
 A.eq(Recommend.whyLine({ why: 'you said “Python is my stack”' }), 'because you said “Python is my stack”',
   'a quoted citation passes through verbatim');
@@ -193,7 +193,7 @@ A.eq(/\bsetTimeout\b|Date\.now|Math\.random/.test(src), false, 'recommend.js is 
 
 /* ── 11. THE ONE CARD GRAMMAR (source-lock — chat.js is DOM-flow, not node-loadable) ──
    Every proactive consent offer renders through ONE renderer, in one order:
-   eyebrow → evidence (the Commander's words) → proposal → consent buttons. */
+   eyebrow → evidence (the Master's words) → proposal → consent buttons. */
 const fs = require('fs'), path = require('path');
 const chatSrc = fs.readFileSync(path.join(__dirname, '..', 'frontend', 'app', 'chat.js'), 'utf8');
 const cssSrc = fs.readFileSync(path.join(__dirname, '..', 'frontend', 'css', 'app.css'), 'utf8');
@@ -234,7 +234,7 @@ A.eq(Recommend.whyLine({ why: reasonOf({ launches: { r1: { n: 3, rated: { great:
 for (const v of ['it matches your focus on code', 'it matches your focus on research', 'it fits your day-to-day ops']) {
   A.ok(mktSrc.indexOf("'" + v + "'") > 0, 'the affinity copy reads as a sentence after the framing: ' + v);
 }
-/* ── 11b. THE CARD NEVER PUTS WORDS IN THE COMMANDER'S MOUTH (truthful telemetry, 2026-08-04) ──
+/* ── 11b. THE CARD NEVER PUTS WORDS IN THE MASTER'S MOUTH (truthful telemetry, 2026-08-04) ──
    `because you said "…"` was rendered for EVERY citation the card had. But study.js falls back to the run's
    DIRECTIVE when the model returns no QUOTE line (evidenceRef.kind = 'directive'), and a directive is very often
    machine-composed (routine, recipe, scheduled brief); threadmine locates its quote in the whole exchange, which
@@ -253,21 +253,21 @@ for (const [fn, probe] of [['function studyCard(', /recCite\(prop\.evidence, pro
   A.ok(probe.test(A.fnBody(chatSrc, fn)), fn.replace(/^(async )?function |\($/g, '') + ' cites by SOURCE, never blanket "you said"');
 }
 A.ok(/prop\.speaker === 'user'/.test(A.fnBody(chatSrc, 'function threadCiteKind(')),
-  'a mined thread claims speech only when threadmine located the quote in the Commander’s own turns');
+  'a mined thread claims speech only when threadmine located the quote in the Master’s own turns');
 /* …and a DOSSIER belief is cited by ITS recorded provenance, so the arc and the re-confirm card can no longer
-   render a study-OBSERVED goal as words the Commander spoke (that is the exact mis-attribution above, on the one
+   render a study-OBSERVED goal as words the Master spoke (that is the exact mis-attribution above, on the one
    card whose whole subject is whether the station's memory can be trusted). */
 const citeKindBody = A.fnBody(chatSrc, 'function beliefCiteKind(');
 A.ok(citeKindBody.length > 0, 'chat.js derives a belief’s citation kind from the belief itself');
-A.ok(/w === 'stated' \|\| src === 'commander'/.test(citeKindBody), 'only Commander-authored evidence may be rendered as speech');
+A.ok(/w === 'stated' \|\| src === 'commander'/.test(citeKindBody), 'only Master-authored evidence may be rendered as speech');
 A.ok(/return '';/.test(citeKindBody), 'an observed / synthesised / seeded belief falls back to the neutral quote that claims no speaker');
 /* …and the two provenance holes the re-sweep found in that predicate (2026-08-04):
      · source:'curiosity' was a blanket "you said" — but a CANNED CHIP tap lands as weight:'seed'
-       (interview.js beliefFromAnswer), i.e. the station's own sentence read back as the Commander's words. A
+       (interview.js beliefFromAnswer), i.e. the station's own sentence read back as the Master's words. A
        TYPED answer is already 'stated', so the clause bought nothing and cost the truth.
      · CONFIRMED must be checked BEFORE stated/commander: the re-confirm card upgrades a station-authored belief
        to commander/stated (truthfully — an affirmation IS a statement of the content), so without the earlier
-       check every later card would quote words the Commander never spoke. */
+       check every later card would quote words the Master never spoke. */
 A.eq(/src === 'curiosity'/.test(citeKindBody), false,
   'a curiosity answer is NOT blanket-quoted as speech — a canned chip tap is the station’s own sentence');
 A.ok(/if \(ref === 'confirmed'\) return 'confirmed';/.test(citeKindBody),
@@ -286,7 +286,7 @@ A.eq(/\brecQuote\(/.test(chatSrc), false, 'and nothing calls it');
 // …and the producer stamps that discrimination in the first place
 A.ok(/speaker: \(nq && spoken\.indexOf\(nq\) >= 0\) \? 'user' : 'other'/.test(fs.readFileSync(path.join(__dirname, '..', 'sidecar', 'threadmine.js'), 'utf8')),
   'threadmine stamps WHO said the quote it mined');
-// a cut directive ends in an ellipsis, so the citation can never read as a sentence the Commander never finished
+// a cut directive ends in an ellipsis, so the citation can never read as a sentence the Master never finished
 A.ok(/dir\.length > 140 \? \(dir\.slice\(0, 139\) \+ '…'\) : dir/.test(fs.readFileSync(path.join(__dirname, '..', 'frontend', 'app', 'study.js'), 'utf8')),
   'a truncated directive citation is visibly truncated');
 

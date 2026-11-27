@@ -106,7 +106,7 @@
   }
   const captureBaseline = () => { if (!baseline) baseline = displayedHud(); return baseline; };
 
-  // Commander progression is server-owned Journey data, not the crew XP reducer.
+  // Master progression is server-owned Journey data, not the crew XP reducer.
   // Verify exact projection including unavailable/last-good provenance. An honest
   // dash while loading is not a fabricated level; a missing node still fails.
   function hud() {

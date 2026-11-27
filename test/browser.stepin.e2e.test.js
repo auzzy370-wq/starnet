@@ -2,7 +2,7 @@
 
    The unit test (browser.need-human.test.js) pins the tool/frozen/host contract with an injected driver. This one
    proves the driver half is real: the agent's own headless Chrome reaches a real login wall, the auth probe sees
-   the password field, browser.need_human parks the run, the stream (a capture loop on the same page session) yields real JPEG frames, the Commander's
+   the password field, browser.need_human parks the run, the stream (a capture loop on the same page session) yields real JPEG frames, the Master's
    pointer + keys (CDP Input.*, never the OS) sign in, HAND BACK resumes the agent, and the agent reads the
    signed-in page — while every agent read during the handoff was refused.
 
@@ -59,7 +59,7 @@ async function until(fn, ms) { const end = Date.now() + (ms || 8000); while (Dat
     A.ok(f1.ok && f1.frame && /^\/9j\//.test(f1.frame.data), 'a real JPEG frame of the agent\'s page arrives');
     A.ok(f1.frame && f1.frame.width >= 800 && f1.frame.height >= 500, 'the frame carries the page size for pointer mapping (' + (f1.frame && f1.frame.width) + 'x' + (f1.frame && f1.frame.height) + ')');
 
-    // The Commander's eyes: where are the fields on the frame? (the test reads geometry off the driver directly —
+    // The Master's eyes: where are the fields on the frame? (the test reads geometry off the driver directly —
     // the agent's tool path is frozen, which is the point).
     const rect = async sel => driver.testEval('(() => { const r = document.querySelector(' + JSON.stringify(sel) + ').getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()');
     const click = async p => {
@@ -78,7 +78,7 @@ async function until(fn, ms) { const end = Date.now() + (ms || 8000); while (Dat
     await click(await rect('#pass'));
     await typeKeys('hunter2');
     const typed = await driver.testEval('({ user: document.querySelector("#user").value, passLen: document.querySelector("#pass").value.length })');
-    A.eq(typed, { user: 'andrew', passLen: 7 }, 'the Commander\'s paste and keystrokes landed in the real fields');
+    A.eq(typed, { user: 'andrew', passLen: 7 }, 'the Master\'s paste and keystrokes landed in the real fields');
     const seqBefore = f1.frame.seq;
     await host.input(h.id, { type: 'key', action: 'down', key: 'Enter', code: 'Enter', keyCode: 13, text: '\r' });
     await host.input(h.id, { type: 'key', action: 'up', key: 'Enter', code: 'Enter', keyCode: 13 });
@@ -90,7 +90,7 @@ async function until(fn, ms) { const end = Date.now() + (ms || 8000); while (Dat
     const out = await pending;
     A.eq(out.summary, 'handed back', 'HAND BACK resumes the agent');
     A.ok(out.content.indexOf(base + '/account') >= 0, 'the agent is told it is now on /account');
-    A.ok(!/hunter2|andrew/.test(out.content.replace(/Signed in as/g, '')), 'nothing the Commander typed is in the agent\'s result');
+    A.ok(!/hunter2|andrew/.test(out.content.replace(/Signed in as/g, '')), 'nothing the Master typed is in the agent\'s result');
     const who = await tool('browser.test_state').run({ selector: '#who' }, {});
     A.ok(/Signed in as andrew/.test(who.content), 'the agent reads the signed-in page after the handoff: ' + who.content.slice(0, 160));
   } finally {

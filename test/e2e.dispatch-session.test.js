@@ -5,9 +5,9 @@
    station.deliver with an ack, exactly as stationcommands.js does in the page. Nothing is stubbed inside the
    sidecar — the bridge, the routes, the run host and the stores are all the shipped ones.
 
-   THE BUG THIS PROVES CLOSED. team.dispatch was agent-addressed only, so a run the Commander asked to happen
+   THE BUG THIS PROVES CLOSED. team.dispatch was agent-addressed only, so a run the Master asked to happen
    in "research" was filed under whatever session the LEAD was in: the work happened, the lead reported success,
-   and the Commander could not find it. Unit tests can show the tool passes a streamId; only this shows the run
+   and the Master could not find it. Unit tests can show the tool passes a streamId; only this shows the run
    host actually FILES it there. So the load-bearing assertions are the two that read the sidecar's own durable
    state afterwards — /api/runs and /api/transcript — not the tool's own account of itself.
 
@@ -218,7 +218,7 @@ await run('targeted',
     // 3) the finished answer was delivered to the page, into the RESOLVED session
     const delivered = station.filter(c => c.verb === 'station.deliver');
     A.eq(delivered.length, 1, label + ': the answer was delivered to the page exactly once');
-    A.eq(delivered[0].args.streamId, 'ws_r1', label + ': delivered into the session the Commander named');
+    A.eq(delivered[0].args.streamId, 'ws_r1', label + ': delivered into the session the Master named');
     A.eq(delivered[0].args.sessionTitle, 'research', label + ': delivery carries the stable title that heals page-local id drift');
     A.eq(delivered[0].args.agentId, 'researcher', label + ': attributed to the worker that did it');
     A.ok(delivered[0].args.text.indexOf('Phobos') >= 0, label + ": the delivered text is the worker's real output");
@@ -261,7 +261,7 @@ await run('targeted',
 
 /* ---- ⛔ THE REFUSAL, WHICH MATTERS MORE. A name that matches nothing must leave the worker UNRUN. The
    original bug was not "the wrong session got picked at random" — it was that picking anything at all lets the
-   lead truthfully report a success the Commander cannot find. ---- */
+   lead truthfully report a success the Master cannot find. ---- */
 await run('unknown-session',
   { workers: [{ agentId: 'researcher', prompt: 'summarise the moons of Mars', session: 'marketing' }] },
   [{ id: 'ws_r1', title: 'research', agentId: 'researcher' }, { id: 'ws_gen', title: 'General', agentId: 'agent' }],

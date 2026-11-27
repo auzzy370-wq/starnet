@@ -3,7 +3,7 @@
    A model call that shows nothing yet — a slow first byte, a silent reasoning stream, a backoff between ladder
    rungs — used to be indistinguishable from a dead run. loop.js now emits agent.waiting on every tick of an
    INJECTED ticker (o.waitTicker(beat) -> disarm) with sinceMs read from the INJECTED clock, and stops the moment
-   the Commander sees output. Locked here:
+   the Master sees output. Locked here:
 
      · first_byte: nothing received yet -> one beat per tick, sinceMs counting from when the call went out
      · the first visible token silences it; later ticks emit nothing until tool arguments start streaming,
@@ -231,7 +231,7 @@ const waits = seq => seq.filter(e => e.name === 'agent.waiting').map(e => e.payl
     const done = runAgentLoop(o);
     await flush();
     h.tick(15000);
-    A.eq(waits(h.seq).length, 0, 'visible text: no beat while the Commander is watching output');
+    A.eq(waits(h.seq).length, 0, 'visible text: no beat while the Master is watching output');
     g1.open(); await flush();
     h.tick(15000);
     h.tick(15000);

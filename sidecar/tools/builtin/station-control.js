@@ -1,4 +1,4 @@
-/* sidecar/tools/builtin/station-control.js — the lead changes the STATION for the Commander, from chat.
+/* sidecar/tools/builtin/station-control.js — the lead changes the STATION for the Master, from chat.
 
    WHY (Andrew 2026-10-02: "agents need to now be able to do anything themselves if the user asks … safely"): an audit of
    every UI control against the lead's tools found ~40 things only a click could do — an agent's model, approval, reach,
@@ -18,7 +18,7 @@
        SEPARATE consent class, so an "always" given to a theme change can never pre-approve an escalation, and it is
        refused on any run nobody is watching (a routine, the night shift, a webhook) — an unattended run can never
        widen its own leash.
-     • Never, from any tool: entering or reading a credential (keys and sign-ins stay the Commander's: connectors.list
+     • Never, from any tool: entering or reading a credential (keys and sign-ins stay the Master's: connectors.list
        raises the CONNECT chip), answering a permission prompt, or lifting the E-STOP. The two routes that would lift a
        halt as a side effect are guarded here: the autonomy dial is written with resumeHalt:false, and the scheduler is
        never switched while the station is halted.
@@ -120,14 +120,14 @@
       const cur = await env.route('GET', '/api/autonomy/posture');
       const s = (cur.json && cur.json.summary) || {};
       const posture = { initiative: a.initiative || s.initiative, reach: a.reach || s.reach, leashPerDay: a.leashPerDay != null ? Number(a.leashPerDay) : s.leashPerDay };
-      // ⛔ resumeHalt:false — this route lifts the E-STOP when asked to; only the Commander lifts it
+      // ⛔ resumeHalt:false — this route lifts the E-STOP when asked to; only the Master lifts it
       return env.route('POST', '/api/autonomy/posture', { posture, resumeHalt: false });
     } });
   def('scheduler.set', { takes: '{on}', power: a => onOff(a.on), card: a => (onOff(a.on) ? 'turn routines ON: scheduled jobs start running unattended.' : 'turn routines OFF.'),
     run: async (a, env) => {
       // ⛔ /api/cron/arm also lifts the routines E-STOP in either direction: never touch it while the station is halted
       const h = await env.route('GET', '/api/halt');
-      if (h.json && h.json.halted) return refusal('the station (or part of it) is halted (an E-STOP or a paused overseer). Only the Commander resumes it (RESUME AUTOMATION in the top bar); the scheduler was not changed');
+      if (h.json && h.json.halted) return refusal('the station (or part of it) is halted (an E-STOP or a paused overseer). Only the Master resumes it (RESUME AUTOMATION in the top bar); the scheduler was not changed');
       return env.route('POST', '/api/cron/arm', { enabled: onOff(a.on) });
     } });
   def('nightshift.focus', { takes: '{ref (an absolute trusted-project path, a thread id, or "goal"), kind?: project|thread|goal} — or {clear:true}',
@@ -250,7 +250,7 @@
       const ch = String(a.channel || '').trim().toLowerCase();
       if (['telegram', 'discord', 'slack', 'matrix', 'signal'].indexOf(ch) < 0) return refusal('channel is telegram, discord, slack, matrix or signal');
       // the discord route ignores the body (it never forgets): say so rather than report a forget that did not happen
-      if (ch === 'discord' && onOff(a.forget)) return refusal('Discord can only be disconnected from here, not forgotten — the Commander uses FORGET in CONNECT › CHANNELS');
+      if (ch === 'discord' && onOff(a.forget)) return refusal('Discord can only be disconnected from here, not forgotten — the Master uses FORGET in CONNECT › CHANNELS');
       return env.route('POST', '/api/channels/' + ch + '/disconnect', { purge: onOff(a.forget) });
     } });
   def('browser.mode', { takes: '{mode: builtin|window|chrome}', card: a => 'run the station browser ' + ({ builtin: 'inside Vultron', window: 'as its own Chrome window', chrome: 'in your own Chrome' }[String(a.mode || '').toLowerCase()] || clip(a.mode, 20)) + '.',
@@ -268,7 +268,7 @@
     return Array.from(new Set(list.map(x => String(x == null ? '' : x).trim()).filter(Boolean))).slice(0, 10);
   };
   /* THE CARD (rc walk 10-14: it was a 7-line paragraph naming raw agent ids, with a "from General" clause on a one-on-one
-     chat). One short line: WHO joins, by the names the Commander knows (opts.nameOf, the host's roster), and WHICH chat —
+     chat). One short line: WHO joins, by the names the Master knows (opts.nameOf, the host's roster), and WHICH chat —
      its kind (opts.chat, read from the page's own save: 'direct' | 'group' | 'general') picks the one clause that is true
      there. Unknown kind (a channel, a test): the plain line. Two lines at most on the COMMS card (measured live: the
      version that also said "they see its history and files" wrapped to three). */
@@ -308,15 +308,15 @@
   def('notifications.read', { page: true, takes: '{}', card: () => 'mark every notification read (anything still waiting on you stays).' });
   def('notifications.clear', { page: true, takes: '{}', card: () => 'clear the notifications list (anything still waiting on you stays).' });
 
-  // ---- E-STOP: pressing it is the SAFE direction; lifting it stays the Commander's (never here) ----
+  // ---- E-STOP: pressing it is the SAFE direction; lifting it stays the Master's (never here) ----
   def('estop.engage', { takes: '{}', card: () => 'press the E-STOP: EVERY run stops (this one too), and routines, goal loops and the night shift stand down until you press RESUME AUTOMATION.',
     run: async (a, env) => {
       const h = await env.route('GET', '/api/halt');
-      if (h && h.json && h.json.halted) return { status: 200, json: { alreadyHalted: true, note: 'the station is already halted — only the Commander resumes it (RESUME AUTOMATION)' } };
+      if (h && h.json && h.json.halted) return { status: 200, json: { alreadyHalted: true, note: 'the station is already halted — only the Master resumes it (RESUME AUTOMATION)' } };
       // the halt aborts every run, THIS one included, so it fires just after this result is handed back — the report
-      // says "engaging", never "halted": the top bar's RESUME AUTOMATION is the proof the Commander sees
+      // says "engaging", never "halted": the top bar's RESUME AUTOMATION is the proof the Master sees
       env.later(() => { Promise.resolve(env.route('POST', '/api/halt')).catch(swallow('station-control.estop.engage')); }, 1500);
-      return { status: 200, json: { engaging: true, note: 'the E-STOP engages in a moment and stops this run too; say so in one line now — RESUME AUTOMATION in the top bar is how the Commander resumes' } };
+      return { status: 200, json: { engaging: true, note: 'the E-STOP engages in a moment and stops this run too; say so in one line now — RESUME AUTOMATION in the top bar is how the Master resumes' } };
     } });
 
   // ---- escalations: revoking or deleting a plugin or hook can LOOSEN the station (one may be a pre-tool veto guard),
@@ -352,7 +352,7 @@
   }
   /* ONE reading of the CALL (real-model run 2026-10-08: Claude Haiku 4.5, asked for "a daily spending limit of $5", sent
      station.control {setting: "budget.set", limit: "5", period: "daily"} — no `action`, no `args` — was refused as invalid
-     arguments, and fell back to opening the window for the Commander). The action may arrive as action | setting | name
+     arguments, and fell back to opening the window for the Master). The action may arrive as action | setting | name
      (a KNOWN action name only), and its args flat beside it instead of under `args`. The approval card, the tier check and
      the run all read the call HERE, so the card always names the change that will run. */
   const CALL_KEYS = ['action', 'setting', 'name'];
@@ -401,7 +401,7 @@
   /* READS for station.settings: one section at a time, so a 32k model is not handed every store at once */
   const SECTIONS = {
     crew: { page: true },   // crew, sessions, look + the options for each (the page's own state)
-    // unsettled: interrupted runs whose spend is unknown — the Commander settles them in SPENDING LIMITS, never an agent
+    // unsettled: interrupted runs whose spend is unknown — the Master settles them in SPENDING LIMITS, never an agent
     spending: [['GET', '/api/budget/status', j => ({ caps: j.caps, envDefaults: j.envDefaults, spentToday: j.spentToday, lifetime: j.lifetime, unsettled: j.unsettled })], ['GET', '/api/fallback/chain']],
     permissions: [['GET', '/api/permissions'], ['GET', '/api/halt', j => ({ halted: j.halted })]],
     autonomy: [['GET', '/api/autonomy/posture', j => ({ summary: j.summary })], ['GET', '/api/cron', j => ({ routinesOn: j.enabled, halted: j.halted, jobs: (j.jobs || []).length })], ['GET', '/api/nightshift/focus'], ['GET', '/api/halt', j => ({ halted: j.halted })]],
@@ -450,7 +450,7 @@
     const rows = Object.values(A).filter(x => pre.some(p => p.endsWith('.') ? x.name.startsWith(p) : x.name === p))
       .map(x => (x.power({}) ? 'station.power' : 'station.control') + ' {"action": "' + x.name + '", "args": ' + x.takes + '}'
         + (!x.power({}) && x.power({ mode: 'full', on: true, reach: 'this-computer' }) ? '  (station.power when it widens access)' : ''));
-    if (sec === 'spending') rows.push('an interrupted run listed in unsettled is settled by the Commander alone');
+    if (sec === 'spending') rows.push('an interrupted run listed in unsettled is settled by the Master alone');
     return rows;
   }
 
@@ -479,7 +479,7 @@
 
     const settingsTool = {
       name: 'station.settings', capability: 'orchestrator', impact: 'none', scope: 'read', requiresConsent: false, timeoutMs: 20000,
-      description: 'READ the Commander\'s station settings before changing them with station.control / station.power. section: crew (each agent\'s model, approval, reach, personality, skin; every session; the look; the allowed values for each) | spending | permissions | autonomy | memory {agent} | connections | skills | apps | projects | checkpoints {agent} | deliverables {agent} (away-work results to decide) | library (finished work) | away {agent} (its queue) | quests | groups | channels | limits | extensions | actions (every change you can make and what it takes).',
+      description: 'READ the Master\'s station settings before changing them with station.control / station.power. section: crew (each agent\'s model, approval, reach, personality, skin; every session; the look; the allowed values for each) | spending | permissions | autonomy | memory {agent} | connections | skills | apps | projects | checkpoints {agent} | deliverables {agent} (away-work results to decide) | library (finished work) | away {agent} (its queue) | quests | groups | channels | limits | extensions | actions (every change you can make and what it takes).',
       schema: { type: 'object', properties: { section: { type: 'string', enum: SECTION_NAMES }, agent: { type: 'string' } } },
       run: async (args) => {
         const asked = String((args && args.section) || 'crew').trim().toLowerCase(), sec = SECTION_ALIAS[asked] || asked, spec = SECTIONS[sec];
@@ -488,7 +488,7 @@
           // [station.power] = always an escalation; [station.power when …] = only the value that widens access or spending
           const rows = Object.values(A).map(x => x.name + ' ' + x.takes + (x.power({}) ? '  [station.power]' : x.power({ mode: 'full', on: true, reach: 'this-computer' }) ? '  [station.power when it widens access]' : ''));
           return { content: 'station.control {action, args} — or station.power for the [station.power] ones:\n' + rows.join('\n')
-            + '\nNever possible (the Commander does these): entering or reading a key/password/sign-in (connectors.list gives them a CONNECT chip), answering a permission prompt, lifting an E-STOP.', summary: Object.keys(A).length + ' actions' };
+            + '\nNever possible (the Master does these): entering or reading a key/password/sign-in (connectors.list gives them a CONNECT chip), answering a permission prompt, lifting an E-STOP.', summary: Object.keys(A).length + ' actions' };
         }
         if (spec.page) {
           const r = await page('station.settings', {});
@@ -517,8 +517,8 @@
         // run that read outside content asks before it widens the leash (permissions.js, taint.js)
         freshConsent: isPower,
         description: isPower
-          ? 'ESCALATE a station setting for the Commander — only what widens access or spending: agent.approval full, agent.reach trusted-project/this-computer, agent.away_work on, fullpower.set on, budget.set, budget.resume, autonomy.set, scheduler.set on, permission.grant, key.unattended on, key.set on, ability.set on, skill.install, deliverable.decide keep, project.trust, plugin.approve|revoke|delete, hook.approve|revoke|delete, limits.set. Only when the Commander asked for it in this conversation; refused on runs nobody is watching. Same {action, args} as station.control.'
-          : 'CHANGE a station setting for the Commander when they ask, or bring crew into this conversation (group.add) — the same change their button makes, proven saved. {action, args}: agent.model|personality|rename|skin|approval|reach|away_work|delete, session.rename|pin|archive|delete, look.set, fallback.set, permission.revoke, fullpower.set off, nightshift.focus|avoid, memory.forget|pin|edit|reset|settings, learning.set|wipe, connector.remove|refresh, ability.set, skill.set|install|uninstall, key.set|remove, spotify.disconnect, channels.notify, app.delete|rename, project.untrust|forget, checkpoint.restore, deliverable.decide, deliverables.cleanup|restore, away.queue|remove, quest.dismiss|later, channel.disconnect, browser.mode, group.add (bring crew into this chat: the agents named join it; a one-on-one chat becomes a group chat, when your reply there ends), group.configure (an existing group chat; members = its WHOLE list), notifications.read|clear, estop.engage (the Commander alone resumes). station.settings section "actions" lists what each takes; read the current value first. Make the call BEFORE you say anything changed, and say only what its result says. Widening access or spending goes through station.power instead.',
+          ? 'ESCALATE a station setting for the Master — only what widens access or spending: agent.approval full, agent.reach trusted-project/this-computer, agent.away_work on, fullpower.set on, budget.set, budget.resume, autonomy.set, scheduler.set on, permission.grant, key.unattended on, key.set on, ability.set on, skill.install, deliverable.decide keep, project.trust, plugin.approve|revoke|delete, hook.approve|revoke|delete, limits.set. Only when the Master asked for it in this conversation; refused on runs nobody is watching. Same {action, args} as station.control.'
+          : 'CHANGE a station setting for the Master when they ask, or bring crew into this conversation (group.add) — the same change their button makes, proven saved. {action, args}: agent.model|personality|rename|skin|approval|reach|away_work|delete, session.rename|pin|archive|delete, look.set, fallback.set, permission.revoke, fullpower.set off, nightshift.focus|avoid, memory.forget|pin|edit|reset|settings, learning.set|wipe, connector.remove|refresh, ability.set, skill.set|install|uninstall, key.set|remove, spotify.disconnect, channels.notify, app.delete|rename, project.untrust|forget, checkpoint.restore, deliverable.decide, deliverables.cleanup|restore, away.queue|remove, quest.dismiss|later, channel.disconnect, browser.mode, group.add (bring crew into this chat: the agents named join it; a one-on-one chat becomes a group chat, when your reply there ends), group.configure (an existing group chat; members = its WHOLE list), notifications.read|clear, estop.engage (the Master alone resumes). station.settings section "actions" lists what each takes; read the current value first. Make the call BEFORE you say anything changed, and say only what its result says. Widening access or spending goes through station.power instead.',
         schema: { type: 'object', properties: { action: { type: 'string', enum: Object.keys(A) }, args: { type: ['object', 'string'] } } },
         run: async (input, ctx) => {
           const call = readCall(input);
@@ -536,17 +536,17 @@
             a.session = String(ctx.streamId);
           }
           const escalates = !!spec.power(a);
-          if (escalates && !isPower) return refuse(spec.name + ' with these values widens what agents may do or spend: call station.power with the same {action, args} (the Commander approves it separately)');
+          if (escalates && !isPower) return refuse(spec.name + ' with these values widens what agents may do or spend: call station.power with the same {action, args} (the Master approves it separately)');
           if (isPower && !escalates) return refuse(spec.name + ' with these values does not widen access: use station.control');
-          if (isPower && !watched) return refuse('this run is unattended (a routine, the night shift or a trigger): widening access or spending needs the Commander in a watched session — tell them what you would change');
+          if (isPower && !watched) return refuse('this run is unattended (a routine, the night shift or a trigger): widening access or spending needs the Master in a watched session — tell them what you would change');
           if (spec.name === 'agent.model' && a.model && a.provider && providerReady && !providerReady(String(a.provider))) {
-            return refuse('the provider "' + clip(a.provider, 30) + '" is not connected on this station (no key or sign-in): the Commander connects it in Settings › AI & MODELS first');
+            return refuse('the provider "' + clip(a.provider, 30) + '" is not connected on this station (no key or sign-in): the Master connects it in Settings › AI & MODELS first');
           }
           // the run that asked, host-stamped LAST (a model cannot name another run): the page lets a chat take a change
           // that must wait for THIS run's reply to end only when the run asking is the one running there
-          // …with what the Commander already answered in this run's Task Brief (host-composed, their own words): the crew's
+          // …with what the Master already answered in this run's Task Brief (host-composed, their own words): the crew's
           // kickoff turn starts from it instead of asking again (review 10-14: from General the new group re-asked "What
-          // are we launching?" right after the Commander had answered it)
+          // are we launching?" right after the Master had answered it)
           const caller = spec.caller && ctx && ctx.streamId && ctx.runId ? { caller: Object.assign({ streamId: String(ctx.streamId), runId: String(ctx.runId) },
             typeof ctx.briefAnswers === 'string' && ctx.briefAnswers.trim() ? { brief: clip(ctx.briefAnswers.trim(), 600) } : {}) } : {};
           const r = spec.page ? await page('station.control', Object.assign({}, a, { action: spec.name }, caller)) : await spec.run(a, env);

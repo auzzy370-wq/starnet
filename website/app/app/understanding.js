@@ -1,9 +1,9 @@
-/* VULTRON — understanding.js : the PURE "how well the station understands its Commander" engine.
+/* VULTRON — understanding.js : the PURE "how well the station understands its Master" engine.
 
-   The unifying CONFIDENCE layer over the Commander Dossier (dossier.js). Where dossier.summary()
+   The unifying CONFIDENCE layer over the Master Dossier (dossier.js). Where dossier.summary()
    reports BREADTH (fraction of dimensions with any belief — dossier.js:166) and profile.summary()
    reports work-observation DEPTH (samples/24 — profile.js:114), this engine reports how well-GROUNDED
-   the station's belief in each dimension is — folding belief count, provenance (Commander-authored /
+   the station's belief in each dimension is — folding belief count, provenance (Master-authored /
    pinned vs study-observed), recency (stale beliefs decay, so drift lowers confidence on its own), and
    corroboration from real work. It rolls those into one honest `overall` understanding ∈ [0,1],
    weighted toward the north-star-critical dims (goals / ambition / pain), and names the single
@@ -31,7 +31,7 @@
   // the dossier's dimensions, in a DETERMINISTIC weight-desc order (ties broken by this order) so `weakest`
   // and `overall` are byte-stable for identical state. north-star-critical dims (what the star points AT)
   // weigh more, because "understanding" is defined relative to the goal — a crisp `stack` with a blank
-  // `goals` is NOT a well-understood Commander.
+  // `goals` is NOT a well-understood Master.
   const DIMS = [
     { key: 'goals',           weight: 3 },
     { key: 'ambition',        weight: 3 },
@@ -49,7 +49,7 @@
   const HALF_LIFE_MS = 60 * 24 * 60 * 60 * 1000;  // a belief's freshness halves every ~60 days of silence. Longer
                                                   // than profile.js's 14d: goals/ambition drift slower than work-mix,
                                                   // but they DO drift — this is the structural staleness signal (P4).
-  // provenance weight: a Commander-authored (or onboarding-seeded) belief is asserted truth; a study-OBSERVED
+  // provenance weight: a Master-authored (or onboarding-seeded) belief is asserted truth; a study-OBSERVED
   // belief is an inference that counts less until real work corroborates it. Matches the consent-gated learning model.
   const SOURCE_WEIGHT = { commander: 1, onboarding: 1, study: 0.6 };
   // Evidence weight is the newer, more precise authority. In particular a mechanical onboarding seed may inform
@@ -73,7 +73,7 @@
   }
 
   // a belief's freshness ∈ [0,1], exponentially decayed by the silence since it was last touched. A PINNED belief
-  // is Commander-asserted-durable and never decays (freshness 1). A belief with no usable timestamp is treated as
+  // is Master-asserted-durable and never decays (freshness 1). A belief with no usable timestamp is treated as
   // fresh (unknown age is not evidence of staleness — never penalize a hydrated legacy belief we can't date).
   function freshness(belief, now) {
     if (!belief || belief.pinned) return 1;
@@ -97,7 +97,7 @@
     return Math.max(0, ev);
   }
 
-  // evidence → confidence ∈ [0,1): saturating, so more (or fresher, or Commander-confirmed) evidence always helps
+  // evidence → confidence ∈ [0,1): saturating, so more (or fresher, or Master-confirmed) evidence always helps
   // but never asserts a hard 1 (the station is never "certain" — truthful telemetry).
   function confFromEvidence(ev) { return 1 - Math.exp(-Math.max(0, ev) / DEPTH_SAT); }
 
@@ -153,12 +153,12 @@
 
   /* ---------- READINESS — the one shared recommendation gate (ONBOARDING V3 §6) ----------
      The station may only RECOMMEND (pitch / suggest / scout-mint / quest-refresh / starter-chip) once it
-     honestly knows enough about its Commander. This predicate is that single source of truth — every
+     honestly knows enough about its Master. This predicate is that single source of truth — every
      proactive surface asks it, none carries a private variant. Below it, surfaces are structurally OFF
      (hunt mode owns the gap); it never fabricates readiness a blitzed onboarding didn't earn.
 
      GROUNDED evidence = a belief whose weight is stated/synth/observed (dossier.js weightOf) — the
-     Commander's words, a synthesis of them, or observed real work. 'seed' (doc-copied, incl. the fallback
+     Master's words, a synthesis of them, or observed real work. 'seed' (doc-copied, incl. the fallback
      purpose picker's canned line) informs prompts but can never open this gate.
 
      ready = grounded(goals OR ambition)      — a real direction to aim recommendations at

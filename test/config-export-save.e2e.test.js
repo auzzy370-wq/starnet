@@ -27,7 +27,7 @@ const { SidecarFixture } = require('./helpers/sidecar-fixture.js');
     const first = await fixture.json('POST', '/api/config/export/save', { sections: { settings: { theme: 'blue' } } });
     A.eq(first.status, 200, 'POST /api/config/export/save -> 200');
     A.eq(first.body.ok, true, 'the save reports ok');
-    A.eq(path.dirname(first.body.path), downloads, 'the file lands in the Commander\'s Downloads folder');
+    A.eq(path.dirname(first.body.path), downloads, 'the file lands in the Master\'s Downloads folder');
     A.ok(/^vultron-station-\d{4}-\d{2}-\d{2}\.json$/.test(first.body.file), 'the file carries the dated backup name: ' + first.body.file);
     A.eq(path.join(downloads, first.body.file), first.body.path, 'the returned path is the file\'s real absolute path');
     const env = JSON.parse(fs.readFileSync(first.body.path, 'utf8'));

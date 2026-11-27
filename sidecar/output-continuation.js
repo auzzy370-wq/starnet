@@ -35,7 +35,7 @@
   }
 
   // Return only the novel suffix of `next`. Models commonly restart the last sentence after a max-token stop;
-  // the Commander has already seen that suffix in the live stream, so replaying it would corrupt the answer.
+  // the Master has already seen that suffix in the live stream, so replaying it would corrupt the answer.
   function novelText(previous, next) {
     const before = String(previous == null ? '' : previous);
     const after = String(next == null ? '' : next);

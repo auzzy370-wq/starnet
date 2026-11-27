@@ -63,7 +63,7 @@ const deepEq = (a, b, msg) => { try { assert.deepStrictEqual(a, b); A.ok(true); 
   const agent = { id: 'agent', name: 'NOVA' };
   const rows = [
     { streamId: 's1', rowId: 101, role: 'user', content: 'hello', turnId: 'turn-aaaaaaaa' },
-    { streamId: 's1', rowId: 102, role: 'assistant', content: 'hi, Commander', sourceRunId: 'run-1' },
+    { streamId: 's1', rowId: 102, role: 'assistant', content: 'hi, Master', sourceRunId: 'run-1' },
     { streamId: 's1', rowId: 103, role: 'user', content: 'and again' }
   ];
   const variants = { 'bare agent': { agent }, 'all-inline history': { agent, workstreams: [{ id: 's1', history: rows.map(r => Object.assign({}, r)) }] } };

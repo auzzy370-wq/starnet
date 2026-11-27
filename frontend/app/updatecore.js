@@ -65,7 +65,7 @@
       return { action: 'noop', reason: 'waiting-retry', nextAt: settings.nextCheckAt };
     }
     // A known newer version that this launch hasn't re-armed yet: check now, not after the interval. Not for the
-    // version already running (the update landed) or one the Commander chose to skip.
+    // version already running (the update landed) or one the Master chose to skip.
     if (!runtime.hasUpdate && settings.availableVersion &&
         settings.availableVersion !== String(runtime.currentVersion || '') &&
         settings.availableVersion !== settings.ignoredVersion) {

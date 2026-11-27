@@ -1,7 +1,7 @@
 /* VULTRON — leftrail.js : the CREW rail's own layout. Four things, in this order:
    (1) the ROSTER WINDOW — how many crew rows the rail shows whole before it scrolls;
    (2) the ROSTER SEAM — the horizontal handle between the WORKING/IDLE strip and SESSIONS, which
-       lets the Commander choose that row count by dragging (up = a shorter roster, a taller
+       lets the Master choose that row count by dragging (up = a shorter roster, a taller
        SESSIONS; down = the reverse);
    (3) hide/show — ◂ in the rail header hides the whole left column (the stage absorbs the space
        via the body.crew-rail-off grid overrides in app.css); a slim ▸ CREW drawer tab on the
@@ -29,7 +29,7 @@
        · and it never takes so much that SESSIONS drops below WS_FLOOR.
      Whatever that budget works out to, the cap is then rounded DOWN to a whole row.
 
-     …unless the Commander has dragged the ROSTER SEAM (below), in which case their row count
+     …unless the Master has dragged the ROSTER SEAM (below), in which case their row count
      replaces the automatic budget outright — the WS_FLOOR clamp and the whole-row rounding still
      apply, because those are what keep the result honest rather than what keeps it automatic.
 
@@ -44,7 +44,7 @@
      already monotonically increasing and already carries the list's own padding). Returns the
      largest of those that the budget allows — never a value BETWEEN two cuts, which is the whole
      point — and never fewer than one row, however tight the column gets.
-     `o.rows` is the Commander's dragged row count: it names the budget instead of the automatic
+     `o.rows` is the Master's dragged row count: it names the budget instead of the automatic
      ROWS_MIN/SHARE pair, and everything after it (the SESSIONS floor, the whole-row rounding, the
      one-row floor) still applies unchanged. ZERO is one of its legal values — the roster dragged
      shut, SESSIONS owning the column — and is NOT the same as null, which means "measure it". */
@@ -221,7 +221,7 @@
   /* ================= ROSTER SEAM (2026-08-10) =================
      Andrew: "users should have the option to raise the sessions way higher if they want more space
      to see their sessions." The roster window above is a good default and NOT a decision — a
-     Commander running four agents and forty sessions wants the split the other way round, and
+     Master running four agents and forty sessions wants the split the other way round, and
      until now the only lever was hiding the rail entirely.
 
      So the split gets a handle, in the same vocabulary as the two column seams (pointer capture,
@@ -317,7 +317,7 @@
   /* ---------- the CREW seam: drag the rail wider / narrower ----------
      Mirrors chatresize.js exactly (visual px, rAF-coalesced writes, per-machine persistence,
      double-click to reset) with one difference: COMMS is allowed to swallow the stage whole,
-     the rail is NOT. The rail is a fixed-content column — a Commander widens it to read long
+     the rail is NOT. The rail is a fixed-content column — a Master widens it to read long
      session titles, not to hide the station — so it stops at WMAX, and never at a width that
      would leave the stage thinner than STAGE_MIN. */
   const WKEY = 'vultron.crewrail.w';

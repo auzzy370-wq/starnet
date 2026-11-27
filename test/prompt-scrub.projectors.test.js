@@ -162,13 +162,13 @@ const SEED = {
   A.ok(pack.contextActivityLines.some(l => /^RIG-P1 openrouter \[redacted-key\] check my credits please/.test(l)), 'P3: the contextual run title survives with a placeholder');
   A.ok(pack.contextActivityLines.some(l => /^RIG-P8 instantly \[redacted-secret\] pull my campaigns/.test(l)), 'P3: a held value in a run title becomes [redacted-secret]');
   A.ok(!pack.contextActivityLines.some(l => /Plan the week/.test(l)), 'P3: station self-talk is excluded by its actual run identity');
-  A.ok(pack.contextActivityLines.some(l => /what is on my plate/.test(l)), 'P3: the Commander\'s own chat still flows');
+  A.ok(pack.contextActivityLines.some(l => /what is on my plate/.test(l)), 'P3: the Master\'s own chat still flows');
   const extra = contextpack.assemble({ runs: [{ title: 'deploy the PINEAPPLE build ' + K.OPENAI.value, ts, streamId: 'a' }], redact: s => String(s).replace(/PINEAPPLE/g, '[x]') }, { now });
   A.ok(extra.contextActivityLines[0] === 'deploy the [x] build [redacted-key] (today)', 'P3: an injected redact applies on top of the default (never instead): ' + JSON.stringify(extra.contextActivityLines[0]));
   const clean = contextpack.assemble({ runs: [{ title: 'Build the task-management-dashboard', ts, streamId: 'a' }] }, { now });
   A.eq(clean.contextActivityLines, ['Build the task-management-dashboard (today)'], 'P3: a clean contextual title is unchanged (the hyphenated slug survives)');
   // the transcript redacts MORE than the prompt resolver (every connector header/env string, e.g. 'production'): the
-  // self-talk join compares through matchRedact, so station self-talk never resurfaces as the Commander's activity
+  // self-talk join compares through matchRedact, so station self-talk never resurfaces as the Master's activity
   const fullRedact = s => String(s).split('production').join('[redacted-secret]');
   const selfTalk = { runs: [{ runId: 'self-talk-rollout', title: 'Plan the production rollout for the outreach push', ts, streamId: 'f', internal: true }],
     chats: [{ role: 'user', sourceRunId: 'self-talk-rollout', content: 'Plan the [redacted-secret] rollout for the outreach push', ts, streamId: 'f' }] };
@@ -350,7 +350,7 @@ const SEED = {
       openQuests: [{ title: 'Rotate ' + K.OPENROUTER.value }], completedQuests: [{ title: 'Moved ' + K.GOOGLE.value }], deniedTitles: ['Never ' + K.GITHUB.value]
     });
     const dir = QuestRefresh.buildDirective(ctx);
-    A.ok(/GOAL PROGRESS AND COMMANDER FEEDBACK/.test(dir) && /QUESTS ALREADY OPEN/.test(dir), 'P9: the quest-refresh directive carries its evidence sections');
+    A.ok(/GOAL PROGRESS AND MASTER FEEDBACK/.test(dir) && /QUESTS ALREADY OPEN/.test(dir), 'P9: the quest-refresh directive carries its evidence sections');
     A.eq(leaks(dir), '', 'P9: the quest-refresh directive (progress JSON, quest titles, denied titles, north star) holds no key');
   }
 
@@ -376,7 +376,7 @@ const SEED = {
     makeLoopTools({ listState: () => ({ loops: [seededLoop] }) }).register(reg);
     // the team.subagents shape: an orchestrator read that returns persisted records (lead-authored prompt, handoff context)
     reg.register({ impact: 'none', name: 'team.subagents', capability: 'orchestrator', scope: 'read', requiresConsent: false, schema: { type: 'object', properties: {} },
-      run: async () => ({ content: JSON.stringify([{ id: 'sa_rig', prompt: 'Call the billing API with key ' + K.OPENAI.value, context: 'The Commander said: the Anthropic key is ' + K.ANTHROPIC.value, result: 'ok' }]), summary: '1' }) });
+      run: async () => ({ content: JSON.stringify([{ id: 'sa_rig', prompt: 'Call the billing API with key ' + K.OPENAI.value, context: 'The Master said: the Anthropic key is ' + K.ANTHROPIC.value, result: 'ok' }]), summary: '1' }) });
     reg.register({ impact: 'none', name: 'loop.boom', capability: 'orchestrator', scope: 'read', requiresConsent: false, schema: { type: 'object', properties: {} },
       run: async () => { throw new Error('stored objective ' + K.OPENROUTER.value + ' is invalid'); } });
     const raw = 'OPENAI_API_KEY=' + K.OPENAI.value + '\n';

@@ -1,17 +1,17 @@
 /* sidecar/workshop-store.js — durable per-agent AWAY-WORKSHOP state (grant + backlog + discard denylist).
 
    The Away Workshop lets an agent BUILD a reviewable deliverable inside its own jailed workspace while the
-   Commander is away (see docs/AWAY_WORKSHOP_PLAN.md). Three pieces of per-agent state must survive a sidecar
+   Master is away (see docs/AWAY_WORKSHOP_PLAN.md). Three pieces of per-agent state must survive a sidecar
    restart, so they live in one durable single-file store per agent — `<agentId>.workshop.json` under WORKSPACES:
 
-     grant     — boolean: the Commander's recorded "Build things while I'm away" consent for THIS agent. A
+     grant     — boolean: the Master's recorded "Build things while I'm away" consent for THIS agent. A
                  recorded yes (never self-granted); flipping it OFF revokes the write refinement AND disarms the
                  shift routine (index.js owns the cron side). NOT an XP unlock — a plain consent toggle.
      backlog   — the ordered queue of things to build: explicit user-queued items + accepted quests only
                  (goal-arc milestones opt-in later). Each item: { id, title, detail, source, ts, decidedRunId? }.
                  An item is POPPED (marked in-flight) when a shift builds it; a built item carries the runId that
                  produced its deliverable so the return-card can find the manifest.
-     denylist  — the permanent set of backlogIds the Commander DISCARDED (reuse of the memory-question
+     denylist  — the permanent set of backlogIds the Master DISCARDED (reuse of the memory-question
                  "discard = never again" pattern) so a discarded item is never silently re-queued/retried.
 
    Pure over an injected durable store (makeDurableJsonStore from durable-store.js) — crash-safe (fsync + .bak
@@ -44,7 +44,7 @@ function normalize(stored) {
   const s = (stored && typeof stored === 'object') ? stored : {};
   return {
     grant: s.grant === true,
-    // provenance of the grant decision. grantExplicit=true means the Commander decided via the per-agent
+    // provenance of the grant decision. grantExplicit=true means the Master decided via the per-agent
     // "Build things while I'm away" toggle (setGrant) — an explicit yes OR no. grantAuto=true means the grant
     // was recorded as part of raising the autonomy dial to build-capable (grantIfUndecided). An explicit
     // decision is never overridden by the dial path; legacy records (neither flag) count as undecided.
@@ -53,7 +53,7 @@ function normalize(stored) {
     backlog: Array.isArray(s.backlog) ? s.backlog.filter(it => it && typeof it === 'object' && it.id) : [],
     denylist: Array.isArray(s.denylist) ? s.denylist.filter(x => x != null).map(String).filter(Boolean) : [],
     // normalized titles of DISCARDED items — a discarded piece of work can't be re-queued under a fresh id either
-    // (doctrine: never re-create work the Commander already rejected). Distinct from `denylist` (by backlogId).
+    // (doctrine: never re-create work the Master already rejected). Distinct from `denylist` (by backlogId).
     deniedTitles: Array.isArray(s.deniedTitles) ? s.deniedTitles.filter(x => x != null).map(String).filter(Boolean) : [],
     // SHIFT HEALTH (2026-07-15 UX audit): the last workshop shift's honest outcome, so the away card can say
     // "built X" / "couldn't run — no key" / "nothing queued" instead of the old total silence. Additive; a
@@ -96,7 +96,7 @@ function makeWorkshopStore(deps) {
   function isDenied(agentId, backlogId) { return read(agentId).denylist.indexOf(String(backlogId)) >= 0; }
 
   // ---- writes (serialized per agent via the durable mutex) ----
-  // the Commander's EXPLICIT per-agent decision (the "Build things while I'm away" toggle). Marks the record
+  // the Master's EXPLICIT per-agent decision (the "Build things while I'm away" toggle). Marks the record
   // explicitly decided, so the dial's grantIfUndecided path below never overrides it (an explicit OFF stays off).
   function setGrant(agentId, on) {
     return durable.update(keyOf(agentId), (cur) => {
@@ -109,7 +109,7 @@ function makeWorkshopStore(deps) {
   }
 
   // the AUTONOMY-DIAL path: raising the dial to build-capable (initiative≥leash AND reach≥sandbox) IS the
-  // Commander's unattended-build consent, so record the grant — but ONLY when they never explicitly decided
+  // Master's unattended-build consent, so record the grant — but ONLY when they never explicitly decided
   // (grantExplicit wins, both ways). Idempotent. Resolves { granted, changed } so the caller can ledger an
   // auto-grant honestly (changed=true exactly when this call recorded a new grant).
   function grantIfUndecided(agentId) {
@@ -151,7 +151,7 @@ function makeWorkshopStore(deps) {
       const stored = { id: id, title: title, detail: String(it.detail || '').slice(0, 4000), source: String(it.source || 'queued').slice(0, 40), ts: Number(now) || 0 };
       // WHY-THIS provenance (2026-07-17): the grounding quote that justified this job (night-shift GROUNDS,
       // or any caller-supplied ask context). Stored so the delivery card can say WHY it built this in the
-      // Commander's own terms — real recorded data, never re-synthesized at render time. Additive; optional.
+      // Master's own terms — real recorded data, never re-synthesized at render time. Additive; optional.
       if (it.grounds != null && String(it.grounds).trim()) stored.grounds = String(it.grounds).slice(0, 500);
       // PRIOR-WORK provenance (2026-10-05): which night focus this build served, and which earlier build it continues,
       // so later nights can scope "already built" to the same focus and see the iteration chain. Additive; optional.
@@ -202,7 +202,7 @@ function makeWorkshopStore(deps) {
   /* claim ONE NAMED backlog item for a run. claimNext's "top of the queue" rule is right for a shift (which asks
      "what next?") and WRONG for a caller that already knows which item is its own: with a non-empty backlog it
      would stamp somebody ELSE's item with this runId, leaving that item wedged in-flight while the real one was
-     never claimed. The Commander-initiated implement build knows its item by id, so it claims by id.
+     never claimed. The Master-initiated implement build knows its item by id, so it claims by id.
      Returns the claimed item, or null when the id is unknown / already building / already built / parked. */
   function claimById(agentId, id, runId, isRunLive) {
     const want = String(id || '');
@@ -285,7 +285,7 @@ function makeWorkshopStore(deps) {
     });
   }
 
-  // COMPLETE (kept): the Commander kept the deliverable — the work is DONE, so the item leaves the backlog and
+  // COMPLETE (kept): the Master kept the deliverable — the work is DONE, so the item leaves the backlog and
   // its manifest stops being "pending" (the return-card must never resurrect a kept build on the next session).
   // Unlike discard, the title is NOT denylisted: kept work was good work and may legitimately be asked for again.
   function complete(agentId, backlogId) {
@@ -300,10 +300,10 @@ function makeWorkshopStore(deps) {
   }
 
   // UNDO A KEEP (EL-11 #8): a kept deliverable was copied OUT of the jail and its backlog item retired via
-  // complete(). If the Commander UNDOES that keep (the route removes the out-of-jail copy), the build returns to
+  // complete(). If the Master UNDOES that keep (the route removes the out-of-jail copy), the build returns to
   // PENDING so /pending re-lists it and they can decide again. Additive to the store, idempotent, and honest:
   //   • already pending (an item with this builtRunId is still/again present) → no change, { restored:false, 'exists' };
-  //   • an id/title the Commander DISCARDED before → refused, { restored:false, 'denied' } (dedup doctrine holds on
+  //   • an id/title the Master DISCARDED before → refused, { restored:false, 'denied' } (dedup doctrine holds on
   //     undo too — never silently re-list rejected work);
   //   • otherwise re-inserts the built item (builtRunId set) so handleWorkshopPending shows it again.
   // info: { backlogId?, title?, source? } — reconstructed by the caller from the disk manifest (the archive run
@@ -383,7 +383,7 @@ function makeWorkshopStore(deps) {
   // info: { at, reason, runId?, title?, parkedTitle? } — written by runWorkshopShift on EVERY exit path.
   /* forget(agentId, match) -> Promise<number>: the forget registry's purge of one agent's workshop. Every backlog item `match(item)` names,
      every retired-build provenance row and the last-shift summary that names a forgotten run goes. The grant, the denylists and the dedup
-     titles of what the Commander DISCARDED stay (a rejected piece of work must not come back). Written twice: the .bak holds the purged copy. */
+     titles of what the Master DISCARDED stay (a rejected piece of work must not come back). Written twice: the .bak holds the purged copy. */
   function forget(agentId, match) {
     let n = 0;
     const key = keyOf(agentId);

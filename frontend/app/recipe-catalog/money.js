@@ -10,9 +10,9 @@
    ══ THE MONEY LINE (this module's extra bar — do not cross it) ══
    These recipes do money ADMIN — sorting what was spent, assembling what an accountant needs, doing the
    arithmetic on a payoff order, finding a charge you stopped noticing. They never recommend a security to
-   buy or sell, never size a position, and never tell the Commander what to do with savings. Where a
+   buy or sell, never size a position, and never tell the Master what to do with savings. Where a
    directive touches investing at all it GATHERS AND EXPLAINS, and says plainly that the call is the
-   Commander's and a licensed advisor's — that is not a disclaimer bolted on, it is what the recipe does.
+   Master's and a licensed advisor's — that is not a disclaimer bolted on, it is what the recipe does.
    A recipe that would only be useful as advice does not ship here.
 
    Schema v2:

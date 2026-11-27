@@ -23,7 +23,7 @@
         · the line's answer replaces stage one's; a line that ran hops and stopped says so under its answer. `handed` is the text the
           line was seeded with (stage one's TERMINAL text, line-runner.js): a line that ran no hop and left that text as it was keeps
           the reply stage one streamed (its host note or steer echo were said to the person, never handed on);
-        · a line that never got going (no hops) and stopped for a reason other than the Commander's own STOP says so too;
+        · a line that never got going (no hops) and stopped for a reason other than the Master's own STOP says so too;
         · the line's spend is added to the entry run's; state.line carries the facts for the fire's durable record.
      hopError(hop, stoppedSaid)  -> string | null   the error a line HOP hands the chain (typed-outcomes): its own raised error, its
         STOP, or its OWN end read through RunOutcome — null only for a hop whose run SUCCEEDED. Every hop runner returns it (the
@@ -56,7 +56,7 @@ const STOP_WORDS = Object.freeze({
   stage_failed: f => named(f) + ' failed' + detail(f),
   stage_empty: f => named(f) + (f.handOn ? ' produced no output to hand on' : ' returned nothing'),
   loops_back: f => 'the line loops back to ' + String(f.target || named(f)),
-  // plain language, no ids, no belt vocabulary — the one thing the Commander can act on (2026-10-09 P0): the job belongs to another
+  // plain language, no ids, no belt vocabulary — the one thing the Master can act on (2026-10-09 P0): the job belongs to another
   // line, and work crosses to another line only by SEND TO (2026-10-10)
   wrong_line: f => 'this job started on a different line, so it stopped at ' + named(f) + ' — a line hands its work to another line only by SEND TO (drag its OUTBOX onto that line’s INBOX)',
   no_outbox: f => (f.unarmed ? 'no work line is armed any more — the line ends at this bay' : 'the belt from ' + named(f) + ' does not reach the OUTBOX — the line ends at this bay'),

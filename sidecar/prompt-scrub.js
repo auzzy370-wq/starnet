@@ -1,6 +1,6 @@
 /* sidecar/prompt-scrub.js — the ONE resolver for secrets in text the station projects into a model prompt.
 
-   WHY THIS EXISTS (context-key-redact, 2026-10-28). The Commander pastes a key into a directive once. The station
+   WHY THIS EXISTS (context-key-redact, 2026-10-28). The Master pastes a key into a directive once. The station
    stores that text raw (run titles, task briefs, interest evidence, thread specs, the dossier, goals, quests) and later
    projects it into OTHER runs' prompts: <commander_evidence> RECENT ACTIVITY lines quoted earlier directives with their
    raw vendor keys, and with the value the station holds in its key vault, right next to the redacted transcript form of
@@ -25,7 +25,7 @@
    keys, channel/OAuth/connector tokens and passwords, and connector header/env entries that are credentials by name or
    by shape. It is deliberately NOT context.js's known-value list, which also sweeps every header/env string of a
    connector ('production', 'application/json', an email) for transcript redaction: matching those in prompts would
-   mangle the Commander's own words. A saved SERVICE KEY is replaced by its name ('[INSTANTLY_API_KEY saved in API
+   mangle the Master's own words. A saved SERVICE KEY is replaced by its name ('[INSTANTLY_API_KEY saved in API
    KEYS]', the form COMMS and keys.save use), so a routine or history that carried it still says which ${NAME} to use;
    any other credential becomes [redacted-secret].
 

@@ -63,7 +63,7 @@
      history with a supersession receipt, and the copies leave the active list. One active belief per subject, nothing
      lost: restoreSuperseded() gives a retired text back as its own record. `targets` are records of `list`.
      change.survivor (one of `targets`) names the record that survives instead of the newest — a reviewed replacement
-     (replaceId) revises the record the Commander approved, checked against change.previousBody like any correction. */
+     (replaceId) revises the record the Master approved, checked against change.previousBody like any correction. */
   function supersedeRecords(list, targets, change, now) {
     const ordered = targets.slice().sort((a, b) => (writtenAt(b) - writtenAt(a)) || (list.indexOf(b) - list.indexOf(a)));
     const forced = change.survivor && targets.indexOf(change.survivor) >= 0 ? change.survivor : null;
@@ -94,8 +94,8 @@
   }
 
   /* The active records a write of `body` retires: inside the write's project boundary (`boundary` = {scope,
-     projectRoot}), never the Commander's rating records (feedbackmemory owns those), and holding the same subject with
-     a different claim. opts.restatements adds the same claim in OTHER words — only for the Commander's own exact words,
+     projectRoot}), never the Master's rating records (feedbackmemory owns those), and holding the same subject with
+     a different claim. opts.restatements adds the same claim in OTHER words — only for the Master's own exact words,
      which outrank a paraphrase of them. An identical text is never a target (that is a restatement, not a change).
      opts.title: the write's title — a held note whose title names a DIFFERENT thing ("Editor theme" vs "Slides theme")
      is never retired by a body that reads as the same subject (MemTruth.titlesConflict). */
@@ -115,7 +115,7 @@
      opts.boundary {scope, projectRoot}: the WRITE's project boundary — only a text retired inside it comes back, into it
      (a run in project B never resurrects project A's belief, and the tool never says "this project" of another one).
      opts.taintedBy: the run read outside content, so the record comes back stamped with that taint, unpinned, and
-     without the Commander's authority (a tainted run's note is never pinned or theirs — 2026-10-10). */
+     without the Master's authority (a tainted run's note is never pinned or theirs — 2026-10-10). */
   function restoreSuperseded(list, body, now, newId, runId, opts) {
     const same = s => String(s == null ? '' : s).replace(/\s+/g, ' ').trim().toLowerCase();
     const o = opts || {};
@@ -148,8 +148,8 @@
 
   /* PROVENANCE PROVEN, NOT CLAIMED (memory-truth lane, 2026-10-11). A user's correction saved by the agent used to
      render "[inferred, unconfirmed]" while the older rule it replaced read "[user-confirmed reference]" — so the
-     model trusted the stale one. A note can now carry the Commander's authority, but only when the HOST can show it:
-     ctx.commanderWords is the text the Commander typed in this run's conversation (set by the host on the owner's
+     model trusted the stale one. A note can now carry the Master's authority, but only when the HOST can show it:
+     ctx.commanderWords is the text the Master typed in this run's conversation (set by the host on the owner's
      own surfaces only — never a channel guest, a routine, a hand-off or a delegated worker), and the note must be
      THEIR words: a complete ordered sentence matches after a few explicit framing equivalences, carries
      the same polarity (a "hate tabs" sentence never proves "prefers tabs"), and is shaped like a statement about
@@ -162,7 +162,7 @@
     'over than also just only really very all any every when what which whenever don doesn didn won isn aren shouldn can cannot t s ll ve re d m').split(/\s+/));
   const PROOF_NEG = /\b(?:not|no|never|nor|none|don'?t|doesn'?t|didn'?t|won'?t|can'?t|cannot|isn'?t|aren'?t|shouldn'?t|avoid|without|stop|hate|hates|dislike|dislikes|against)\b/i;
   const PROOF_SHAPE = /\b(?:i|i'm|i've|i'd|we|my|me|our|prefer|always|never|from now on|going forward|by default|every ?time|whenever|remember|don'?t|do not|stop|avoid|make sure|please)\b/i;
-  // a STANDING instruction in the Commander's own words: it is about every future conversation, not this one
+  // a STANDING instruction in the Master's own words: it is about every future conversation, not this one
   const STANDING = /\b(?:always|never|from now on|going forward|in (?:the )?future|every ?time|whenever|by default|(?:i|we)(?:'d| would)? (?:always |really |much )?prefer|don'?t ever|do not ever|for (?:all|every) (?:future )?(?:chats?|conversations?|projects?|tasks?))\b/i;
   const norm = s => String(s == null ? '' : s).replace(/[‘’]/g, "'");
   function stem(t) {
@@ -190,7 +190,7 @@
     if (weaken) t = t.replace(/^always (?=prefer )/, '');
     return t.replace(/\binstead of\b/g, 'over').replace(/\s+/g, ' ');
   }
-  // -> the Commander's sentence that proves body, or '' when there is no such sentence.
+  // -> the Master's sentence that proves body, or '' when there is no such sentence.
   function statedSentence(body, words) {
     const want = proofForm(body);
     if (!want || new Set(proofTokens(body)).size < 2 || /["“”`]/.test(norm(words))) return '';
@@ -231,7 +231,7 @@
     const RATING_STEP = 0.15;   // = memcore.TRUST_STEP (the delta→trust scale nextTrust applies) — kept in sync
     // NEAR-DUPE CHALLENGE at the write boundary. Reflection has deduped its PROPOSALS by Jaccard since M-mem.6, but
     // a direct notebook.write never was — so the same belief accumulated in a dozen phrasings over months, diluting
-    // recall (the top-K ranker spends slots on restatements) and giving the Commander a panel full of noise to
+    // recall (the top-K ranker spends slots on restatements) and giving the Master a panel full of noise to
     // prune by hand. The reference harness forces this issue with a hard char cap that ERRORS when full; we have no
     // cap by design (the user owns their memory, and top-K already bounds the prompt), so the equivalent is to
     // stop the redundant WRITE rather than to cap the store.
@@ -329,17 +329,17 @@
         let taintedBy = '';
         try { const a = ctx && ctx.connectorAuthority; taintedBy = a && typeof a.taintedBy === 'function' ? String(a.taintedBy() || '') : ''; } catch (_) { taintedBy = 'taint check failed'; }
         if (taintedBy && args.pinned === true) {
-          return { content: 'Not saved — this run has read outside content (' + taintedBy + '), so it cannot pin a memory into every future prompt. Save it unpinned, or ask the Commander to pin it.', summary: 'pin refused (tainted run)' };
+          return { content: 'Not saved — this run has read outside content (' + taintedBy + '), so it cannot pin a memory into every future prompt. Save it unpinned, or ask the Master to pin it.', summary: 'pin refused (tainted run)' };
         }
         const now = clock.now();
-        // PROVENANCE (see statedSentence): the Commander's own sentence behind this note, proven by the host's words —
+        // PROVENANCE (see statedSentence): the Master's own sentence behind this note, proven by the host's words —
         // never on a tainted run (the words may sit beside outside content the note actually came from).
         const words = (!taintedBy && ctx && typeof ctx.commanderWords === 'string') ? ctx.commanderWords : '';
         const quote = words ? statedSentence(String(args.body), words) : '';
         const statedBy = quote ? { runId: runId, quote: redact(quote).slice(0, 200) } : null;
         /* STANDING INSTRUCTIONS GO STATION-WIDE (memory-truth lane). A note defaults to its chat thread (scope stream),
            where it gets no boost and its pin does not apply anywhere else — so "from now on, always X", saved in one
-           chat, was invisible as a standing order in every other one. When the Commander's own sentence behind the
+           chat, was invisible as a standing order in every other one. When the Master's own sentence behind the
            note is standing-shaped ("always", "never", "from now on", "I prefer", …) the default is global instead.
            An explicit scope always wins, and a project session keeps its project tier (it already spans every chat
            in that project). Task-local facts stay in their thread, as before. */
@@ -358,7 +358,7 @@
             if (prior && !retrieval.memoryAllowedInProject(prior, projectRoot)) {
               throw new Error('no such memory in this project — read your notebook before correcting it');
             }
-            // a correction in the Commander's proven words keeps (or earns) their authority; otherwise it is the
+            // a correction in the Master's proven words keeps (or earns) their authority; otherwise it is the
             // agent's inference and renders "[corrected, unconfirmed]" — superseding, never laundered
             const confirmation = statedBy ? ((prior && prior.confirmation === 'user-confirmed') ? 'user-confirmed' : 'user-stated') : 'inferred';
             note = reviseRecord(prior, {
@@ -394,12 +394,12 @@
              is already known; a different claim on the same subject SUPERSEDES the old belief (it moves into this
              record's history, reversibly); a confidently different subject is a separate fact and skips the near-dupe
              challenge it used to trip. Only an 'unknown' pair falls through to the similarity paths below. Never on a
-             tainted run (outside content must not retire the Commander's memory — it gets the challenge path), and
+             tainted run (outside content must not retire the Master's memory — it gets the challenge path), and
              never on distinct:true (the model judged it a separate fact). */
           const body = String(args.body);
           const relations = candidates.map(n => ({ n, r: MemTruth.relate(bodyOf(n), body) }));
           const known = relations.find(x => x.r === 'dupe');
-          // the host's writer uses the same rule. An UNPROVEN write never retires the Commander's own words on its own (a
+          // the host's writer uses the same rule. An UNPROVEN write never retires the Master's own words on its own (a
           // user-stated or user-confirmed record): a model's inversion of what they said must not become the active belief
           // behind their back (ecd03ee7 class). That pair keeps the challenge path; an explicit replaceId still corrects it.
           const ownWords = n => n.confirmation === 'user-stated' || n.confirmation === 'user-confirmed';
@@ -426,7 +426,7 @@
             note = out.record; superseded = out.retired; retiredRows = same;
             if (args.scope || widen) { note.scope = scope; note.streamId = scope === 'stream' ? streamId : null; note.projectRoot = scope === 'stream' ? projectRoot : null; }
             if (typeof args.pinned === 'boolean') note.pinned = args.pinned;
-            // the new text came from THIS run's surface: a routine retiring the Commander's note is a routine's belief now
+            // the new text came from THIS run's surface: a routine retiring the Master's note is a routine's belief now
             // (the retired text keeps its own origin in its snapshot) — the host's writer does the same
             note.origin = (ctx && ctx.origin) ? String(ctx.origin) : 'commander';
             delete note.taintedBy;
@@ -452,7 +452,7 @@
             scope: scope, streamId: scope === 'stream' ? streamId : null, sourceRunId: runId,
             projectRoot: scope === 'stream' ? projectRoot : null,
             // which SURFACE formed this belief (memcore.originOf, injected on the run's tool ctx). Unattended runs
-            // can write memory now, so the Commander must be able to tell a channel-learned fact from their own.
+            // can write memory now, so the Master must be able to tell a channel-learned fact from their own.
             origin: (ctx && ctx.origin) ? String(ctx.origin) : 'commander',
             createdAt: now, ts: now, lastUsedAt: null, useCount: 0, trust: 0, pinned: args.pinned === true
           };
@@ -493,7 +493,7 @@
           // streamId is included only when present (the optional field is typed string — never emit a null).
           if (runId) { const w = { agentId: aid, runId, id: note.id, kind: 'note', scope: note.scope }; if (streamId) w.streamId = streamId; ctx.emit('memory.write', w); }
           /* HOOKS — on_memory_write. Observe-only by construction (hooks.js refuses to let it block): memory is
-             the Commander's own, and a script that could veto their notes would be a foot-gun with no upside.
+             the Master's own, and a script that could veto their notes would be a foot-gun with no upside.
              Fire-and-forget — the note is already saved, so a slow hook delays nothing. */
           if (ctx.hooks && typeof ctx.hooks.invoke === 'function') {
             try { ctx.hooks.invoke('on_memory_write', { session_id: runId || '', extra: { agent_id: aid, id: note.id, kind: 'note', scope: scope, title: note.title, source: 'notebook.write' } }); } catch (_) {}
@@ -503,15 +503,15 @@
           ctx.emit('deliverable', d);
         }
         // the result says what was really recorded: where the note applies, and — when the host proved it — that it
-        // carries the Commander's own words (a model may only claim that because the tool says so)
+        // carries the Master's own words (a model may only claim that because the tool says so)
         // a supersession always says where the surviving belief applies and whether it is pinned: it keeps the retired
         // record's scope and pin unless this write set them, which may be wider than this conversation (review 10-27)
         const where = (!(args.replaceId || superseded) || args.scope || widen || superseded)
           ? ' Scope: ' + (note.scope === 'global' ? 'every conversation' : note.projectRoot ? 'this project' : 'this conversation only') +
-            (widen && !args.scope && note.scope === 'global' ? ' (a standing instruction in the Commander\'s own words)' : '') + '.' +
+            (widen && !args.scope && note.scope === 'global' ? ' (a standing instruction in the Master\'s own words)' : '') + '.' +
             (superseded && note.pinned ? ' Pinned: it stays in context within that scope.' : '')
           : '';
-        const proof = note.confirmation === 'user-stated' || (statedBy && note.confirmation === 'user-confirmed') ? ' Recorded as the Commander\'s own words.' : '';
+        const proof = note.confirmation === 'user-stated' || (statedBy && note.confirmation === 'user-confirmed') ? ' Recorded as the Master\'s own words.' : '';
         let tail = '';
         if (folded) tail = ' Folded ' + folded.id + ' (saved earlier this run with the same text) into it.';
         // the SUPERSESSION receipt: what was retired, where it lives now, and how to undo it if it was a separate fact

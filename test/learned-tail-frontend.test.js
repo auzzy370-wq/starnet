@@ -62,7 +62,7 @@ function station() {
   s.dossierUp();
   const a = s.add('agent', 'Ada');
   const parts = split(a.systemPrompt);
-  A.eq(parts.stable, 'You are Ada.\n\nYou have not yet been given a purpose — you are eager for your Commander to assign one.', 'the stable half holds no learned state');
+  A.eq(parts.stable, 'You are Ada.\n\nYou have not yet been given a purpose — you are eager for your Master to assign one.', 'the stable half holds no learned state');
   A.ok(parts.learned.includes('prefers terse replies') && parts.learned.includes('MID-TASK PREFERENCE FORK'), 'the dossier and the fork block are both in the learned half');
   s.setConf(0.9);
   A.eq(split(s.X.composeSystemPrompt(a)).stable, parts.stable, 'a fork flip does not move the stable half');

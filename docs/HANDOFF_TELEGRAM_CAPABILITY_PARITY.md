@@ -59,7 +59,7 @@ That is the whole reason Telegram has no shell.
 
 ## 3. Proposed design (UNBUILT — my proposal, judge it yourself)
 
-Add ONE explicit concept: **`ownerTrusted`** — "this run was initiated by the Commander in person,
+Add ONE explicit concept: **`ownerTrusted`** — "this run was initiated by the Master in person,
 in a chat only they can reach, so it carries the same authority as sitting at the desktop."
 
 Set by exactly one caller (`channels/hub.js`), so the blast radius is auditable and cron / night

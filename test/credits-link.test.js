@@ -373,7 +373,7 @@ function fakeCloud(opts) {
       const fresh = makeCreditsLink({ cloudUrl: 'https://cloud.example', fetch: mkWhoamiFetch(), fsp, fs, pathMod: path, dir: tDir, now: () => 9400, envToken: 'snd_injected' });
       const r = await fresh.healFromEnv();
       A.eq(r.healed, false, 'a fresh process after an unlink does NOT resurrect the link from the keychain');
-      A.eq(r.reason, 'unlink_tombstone', 'the Commander\'s unlink outranks the surviving keychain token');
+      A.eq(r.reason, 'unlink_tombstone', 'the Master\'s unlink outranks the surviving keychain token');
       // a REAL relink clears the tombstone, so healing works again after future reinstalls
       const cloud2 = fakeCloud({ code: 'STAR-HE01', deviceToken: 'snd_new', accountId: 'acct_new' });
       const relink = makeCreditsLink({ cloudUrl: 'https://cloud.example', fetch: cloud2.fetch, fsp, fs, pathMod: path, dir: tDir, now: () => 9500 });

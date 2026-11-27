@@ -7,11 +7,11 @@
 
    This drives build.js's REAL host seam — wfHost() sliced out of frontend/app/build.js with toggleKit, viewInsets, lineOfProp and the
    camera framers — through the REAL panel close() (sliced from frontend/app/workflowpanel.js), over a stub DOM whose rects are the
-   live run's (1440×900, library 14..448, collapsed library 64..387 tall, panel 807..1425). It asserts what the Commander sees:
+   live run's (1440×900, library 14..448, collapsed library 64..387 tall, panel 807..1425). It asserts what the Master sees:
      · after DONE no machine of the line it was editing sits under the RESTORED library's rect, and the camera only panned (zoom never
        grows); a lone BAY (on no line yet) gets the same courtesy; the narrow-screen bottom sheet too
-     · a line already clear of the library is never moved; a line the Commander panned OFF the glass themselves stays where they put
-       it; a library the Commander reopened themselves (OPEN KIT) mid-panel is not "restored" by DONE, so nothing moves; closing BUILD
+     · a line already clear of the library is never moved; a line the Master panned OFF the glass themselves stays where they put
+       it; a library the Master reopened themselves (OPEN KIT) mid-panel is not "restored" by DONE, so nothing moves; closing BUILD
        MODE itself moves nothing
      · the move is a CAMERA move only: no StationBake call, no geometry projection, no plan compile, no rebake / fitCamera, no bake
        flag raised (StationBake.bake is ~2.5 s on a big station — a pan must never pay it). */
@@ -120,7 +120,7 @@ function noBake(r, what) {
   A.ok(!hit.length, what + ': a camera move only — no bake / geometry / plan / refit call (' + (hit.map(k => k + '×' + r.n[k]).join(', ') || 'none') + ')');
   A.ok(r.ctx.bakeDirty === false && r.ctx.planDirty === false, what + ': no bake or plan flag raised for the frame loop');
 }
-// a line the Commander can reach: every machine clear of the RESTORED library, and on the glass under the top bar
+// a line the Master can reach: every machine clear of the RESTORED library, and on the glass under the top bar
 function reachable(r, G, ids, what) {
   A.ok(!r.dock.classList.contains('is-collapsed'), what + ': the library is back open');
   const glass = rect(0, G.top.bottom, G.W, G.H);
@@ -146,7 +146,7 @@ function reachable(r, G, ids, what) {
   noBake(r, 'DONE');
 }
 
-/* ---------- 2. the Commander panned while the panel was open, leaving only the OUTBOX's edge on the glass ---------- */
+/* ---------- 2. the Master panned while the panel was open, leaving only the OUTBOX's edge on the glass ---------- */
 {
   const r = rig(DESK, { zoom: 1.07, panX: 693, panY: 168 });
   r.open('p32');
@@ -171,7 +171,7 @@ function reachable(r, G, ids, what) {
 {
   const r = rig(NARROW, { zoom: 1.07, panX: -57, panY: 397 });
   r.open('p31');
-  r.ctx.panY = 340;   // the Commander dragged the floor down while the panel was open: the line at ≈ 437..486
+  r.ctx.panY = 340;   // the Master dragged the floor down while the panel was open: the line at ≈ 437..486
   r.close();
   reachable(r, NARROW, LINE.props, 'narrow DONE');
   noBake(r, 'narrow DONE');
@@ -189,22 +189,22 @@ function reachable(r, G, ids, what) {
   reachable(r, DESK, LINE.props, 'already clear');
   noBake(r, 'already clear');
 
-  // the Commander panned the whole line off the glass while the panel was open: DONE leaves the camera where they put it
+  // the Master panned the whole line off the glass while the panel was open: DONE leaves the camera where they put it
   r = rig(DESK, { zoom: 1.07, panX: 693, panY: 168 });
   r.open('p32');
   r.ctx.panX = -600; cam = r.camNow();
   r.close();
-  A.eq(r.camNow(), cam, 'a line panned off the glass by the Commander stays where they put it');
+  A.eq(r.camNow(), cam, 'a line panned off the glass by the Master stays where they put it');
   noBake(r, 'panned away');
 
-  // the Commander reopened the library themselves (OPEN KIT) while the panel was open: DONE restores nothing, so moves nothing
+  // the Master reopened the library themselves (OPEN KIT) while the panel was open: DONE restores nothing, so moves nothing
   r = rig(DESK, { zoom: 1.07, panX: 693, panY: 168 });
   r.open('p32');
   r.api.toggleKit();
   A.ok(!r.dock.classList.contains('is-collapsed'), 'setup: OPEN KIT reopened the library mid-panel');
   cam = r.camNow();
   r.close();
-  A.eq(r.camNow(), cam, 'a library the Commander reopened is not DONE\'s doing: the camera stays');
+  A.eq(r.camNow(), cam, 'a library the Master reopened is not DONE\'s doing: the camera stays');
   noBake(r, 'OPEN KIT mid-panel');
 
   // BUILD MODE itself closing (close() sets running=false before it closes the panel): nothing to keep in view

@@ -3,7 +3,7 @@
    The night shift, environment discovery and the quest refresh stand down on a workspace with no station: the live station
    record says none and no save or roster is on disk (sidecar/station-record.js, P1; test/stationless-boot-census.http.test.js
    proves a station-less session writes no station state). A test that drives one of their ticks on a fresh workspace seeds
-   the station a Commander would have founded first:
+   the station a Master would have founded first:
    - the station record exactly as the contract fixture's active case writes it (test/fixtures/station-record-cases.json),
      re-rooted to this workspace's canonical root, so the sidecar's boot reads it as it is (no copied-record re-mint);
    - the station file whose first accepted write founded it, in the save store's on-disk wrapper, with the floor a founded station has

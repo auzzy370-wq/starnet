@@ -79,7 +79,7 @@ const { note: failopenNote } = require('./failopen.js');
 const SCHEMA = 'vultron.station';
 const VERSION = 1;
 const RECORD_FILE = '.station.json';
-// START FRESH / ERASE marker: the Commander chose a clean generation over prior evidence. Written by the native door
+// START FRESH / ERASE marker: the Master chose a clean generation over prior evidence. Written by the native door
 // (fresh_start.rs) and, as a legacy mirror for downgrades, by every JS reset writer. Never itself "prior state".
 const FRESH_MARKER = '.fresh-start.json';
 const MIGRATION_RECEIPT = '.migration-receipt.json';   // the shell's first-run migration lists what it copied, with hashes
@@ -110,7 +110,7 @@ const MAX_DERIVED_FROM = 8;
 // clean quit, which durably writes loops.halt.json + nightshift.state.json (+ cron.halt.json when armed)
 // even on a station that was never created — so a fresh install that was merely opened and closed once
 // carried "prior station evidence" and stranded on the recovery gate forever (2026-08-25). A file the
-// sidecar can write WITHOUT a Commander having created a station must never count as a prior station.
+// sidecar can write WITHOUT a Master having created a station must never count as a prior station.
 const INFRA = /^(?:\.vultron-workspace-owner\.json|\.schema-version\.json(?:\.bak)?|\.migrated|\.migration-receipt\.json|cron\.lock|proc-ledger\.json|liveprices\.cache\.json|(?:cron\.halt|loops\.halt|nightshift\.state)\.json(?:\.bak)?)$/i;
 // Quest-refresh bookkeeping is never evidence either (#123, 2026-10-17): the QUEST REFRESH boot look stamped its
 // cadence + a 'skipped' note into _station.questrefresh.json (+ .bak) ~3 s after every boot, station or not, and the
@@ -120,7 +120,7 @@ const INFRA = /^(?:\.vultron-workspace-owner\.json|\.schema-version\.json(?:\.ba
 const STATION_BOOKKEEPING = /^_station\.questrefresh\.json(?:\.bak)?$/i;
 // Positive evidence only. The former "anything not on the infrastructure denylist" rule made every newly
 // introduced cache/receipt a fake prior station. This covers the harness-owned durable authorities without
-// treating an arbitrary future `*.cache.json` as proof that a Commander already created a station.
+// treating an arbitrary future `*.cache.json` as proof that a Master already created a station.
 const STATE_EVIDENCE = new RegExp(String.raw`^(?:agent\.save\.json(?:\.bak|${persist.names.QUARANTINE_N_SOURCE})?|agent\.roster\.json(?:\.bak)?|(?:transcript|ledger|runs|growth-ratings|skills|skillprefs|autonomy\.ledger|deliverables\.library)\.jsonl|(?:budget|fallback|station\.widgets|memory\.config|study\.state|projects|personalization|recommendations|task-briefs|threads|execution-settings|terminal-sessions|subagents|routing\.plan|toolsets|usercommands)\.json(?:\.bak)?|(?:skills-allowed|skill-registries|skill-exchange-metrics|permissions\.(?:allow|bypass)|hooks(?:-allowed)?|plugins-allowed|cron\.(?:jobs|armed)|loops|nightshift\.(?:drafts|learn|acts)|nightfocus\.state|scout\.(?:interests|state))\.json(?:\.bak)?|_(?:station|commander)\.[a-z0-9._-]+\.json(?:\.bak)?|[a-z0-9_-]+\.(?:notebook|todo|declined|minted|pending|workshop|deliverables)\.json(?:\.bak)?|.*\.vultron-(?:backup|recovery)\.json)$`, 'i');
 
 function meaningfulEntries(fs, path, root) {
@@ -619,7 +619,7 @@ function freshRecord(deps, prior, opts) {
 }
 // an explicit recovery's generation: the recovered station is active and predates any reset here, so the reset is cleared;
 // the erase authority stays and the source root is acknowledged — with every other root the recovery chose among
-// (opts.acknowledgedRoots), so a root the Commander did not pick never becomes the one automatic candidate later
+// (opts.acknowledgedRoots), so a root the Master did not pick never becomes the one automatic candidate later
 function recoveryRecord(deps, prior, opts) {
   const o = opts || {}, p = deps.path, platform = String(deps.platform || process.platform);
   const at = Math.floor(Number(o.at !== undefined ? o.at : deps.now()));

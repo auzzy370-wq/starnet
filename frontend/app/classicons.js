@@ -1,7 +1,7 @@
 /* VULTRON — classicons.js : the CLASS SEAL system for the Recruitment Bay.
 
    A class is identified by an engraved emblem (a "challenge-coin" seal), NEVER by a character
-   skin — the skin is the Commander's own choice at summon. This module is the single source for:
+   skin — the skin is the Master's own choice at summon. This module is the single source for:
      • the pixel equipment emblem per built-in specialty (currentColor SVG, themes to the accent),
      • the 3-letter class code stamped on the coin,
      • the focus LANE a spec reads as (code / research / ops) from its ranking tags,

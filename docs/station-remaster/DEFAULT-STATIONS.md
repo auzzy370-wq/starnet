@@ -43,7 +43,7 @@ remaster at `2133aeb0a`. This is an isolated source preview, not an installed re
 
 Software Studio replaced Engineering Station. All five essentials stay in the central room. A preset never hires
 agents: every Bay stamps unbound, carrying its shelf role, and the setup guide (it opens right after a work preset
-is applied) is where the Commander picks agents or recruits a specialist per step. One agent may work every step.
+is applied) is where the Master picks agents or recruits a specialist per step. One agent may work every step.
 The guide's readiness is `WorkflowLine.readiness`, the Workflow panel's own blocking list.
 
 **Onboarding pick (2026-09-28).** The lead's awakening ends with one added question, asked while the room is

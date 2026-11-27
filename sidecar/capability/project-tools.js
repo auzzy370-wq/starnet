@@ -25,7 +25,7 @@
    agent  : { id }
    origin : host-minted facts about where this run came from — { surface, floorless, ownerTrusted, trigger, cronJobId,
             isTask, station, extraObjects, unattendedGrants, enabledToolsets, groupTools }
-   role   : { lead, delegatedBy } — the lead of a Commander-started run, or a worker another agent delegated to
+   role   : { lead, delegatedBy } — the lead of a Master-started run, or a worker another agent delegated to
    facts  : { registry, authority, connectorIds, disabledCaps, unrestrictedHost, realDesktopAuthority, executionProfile,
             dynamicTools: { connector: [def], plugin: [def] }, widgetScope, internalBriefTools, deferralOff,
             keySaveOffered, directDomain, leanCrew, crewCount, connectorDefer: { bytes, tools },
@@ -125,7 +125,7 @@ function projectTools(agent, origin, role, facts) {
   const ddw = (name) => directDomainWithheld(facts.directDomain, name);
   const { station, sources } = projectStation(agent, origin, role, facts);
 
-  // TOOLSET kill-switch: a family the Commander switched OFF in the TOOLSETS console never reaches this run.
+  // TOOLSET kill-switch: a family the Master switched OFF in the TOOLSETS console never reaches this run.
   let resolved = enforceSyntheticOnly(resolveTools(agentId, station, undefined, { disabledCaps: unrestricted ? new Set() : facts.disabledCaps }), realDesktopAuthority);
   const injected = {};
   if (Array.isArray(origin.groupTools)) {
@@ -201,7 +201,7 @@ function projectTools(agent, origin, role, facts) {
   // TOOL FOOTPRINT (w2): ADVERTISING decisions only. A deferred tool stays granted, dispatchable and findable through
   // tool.search. KILL SWITCH: SKYNET_TOOL_SEARCH=0 (facts.deferralOff) advertises everything.
   const deferralOff = facts.deferralOff === true;
-  // keys.save rides ONLY a task run whose Commander's own recent turns hold a key-shaped string (facts.keySaveOffered).
+  // keys.save rides ONLY a task run whose Master's own recent turns hold a key-shaped string (facts.keySaveOffered).
   let keySaveOffered = false;
   if (resolved.tools.indexOf('keys.save') >= 0) {
     resolved.deferred = (resolved.deferred || []).filter(n => n !== 'keys.save');

@@ -300,7 +300,7 @@ function scriptPrompt(decision) {
   }
 
   /* ---- 4b. "full" is AT LEAST as strong as "always": it records the standing root and never re-prompts ----
-     Regression for the live-caught 2026-07-27 loop: "full" fell through to the "once" branch, so a Commander
+     Regression for the live-caught 2026-07-27 loop: "full" fell through to the "once" branch, so a Master
      clicking the card's STRONGEST button ("Full access") bought nothing and was asked again on the very next
      file touch in the same folder. Five reads = five identical cards. The grades must never invert. */
   {
@@ -430,7 +430,7 @@ function scriptPrompt(decision) {
 
   /* ---- "always" must actually stick when the root is reached through a symlinked ancestor ----
      The grant was stored as P.resolve(...) while lookup compares the realpath, so ~/code -> /mnt/data/code
-     never matched again and the Commander was re-prompted on every call — consent fatigue on the one prompt
+     never matched again and the Master was re-prompted on every call — consent fatigue on the one prompt
      that widens filesystem reach. ---- */
   {
     const PP = require('node:path').posix;

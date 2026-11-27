@@ -1,10 +1,10 @@
 /* VULTRON — understandingstore.js : the live wiring around the pure understanding engine (understanding.js).
 
-   The browser half of the "how well the station understands its Commander" read-model, modelled on
+   The browser half of the "how well the station understands its Master" read-model, modelled on
    goalstore.js / dossierstore.js: a READ-ONLY citizen of the event spine (subscribes to agent.run.end,
    NEVER emits — the frozen shared/events.js contract is owned elsewhere). It holds NO state of its own —
    it composes the pure Understanding.understanding() read from state that already persists:
-     • the Commander dossier beliefs (DossierStore.beliefs per dimension) — the confidence substrate,
+     • the Master dossier beliefs (DossierStore.beliefs per dimension) — the confidence substrate,
      • the work-observation count (ProfileStore.summary().samples) — the honest "learned from N runs",
      • the active goal + real milestone progress (GoalStore.activeGoal → Goals.progress) — what the star
        points AT (the PROGRESS axis, distinct from understanding's CLARITY axis).

@@ -701,7 +701,7 @@ const historyOf = doc => doc.workstreams.find(w => w.id === SID).history;
       const other = H.pack(clone(oracle).map(t => Object.assign(t, { streamId: 's9' })), { streamId: 's9', seal: k => Object.assign(clone(oracle.find(t => t.rowId === Number(k.split(':')[1]))), { streamId: 's9' }) });
       A.eq(w1.inflate('s9', other), null, 'wiring: rows the transcript cannot return leave the session unplaced (null), not empty');
       io1.close();
-      // the Commander undoes a turn: it leaves the history, as it does on a reload
+      // the Master undoes a turn: it leaves the history, as it does on a reload
       const undone = ids[100], writer = open();
       put(writer, { role: 'system', kind: 'retract', targets: [undone], reason: 'undo', content: '' });
       writer.close();

@@ -10,7 +10,7 @@ rejected once — never merge its tabs into one grid; every UI claim must be pro
 in `station.power`; credentials, consent answers and E-STOP *resume* stay human-only.
 
 ## Lane 1 — the agent drives the UI  ✅ BUILT (`agent/self-driving`)
-`station.show {place, agent?}` opens any of 50 places (frontend/app/places.js) on the Commander's screen, raised, on the
+`station.show {place, agent?}` opens any of 50 places (frontend/app/places.js) on the Master's screen, raised, on the
 right tab — only from the run they are watching. Manual NAVIGATION tells agents to open instead of describe. Fixed the
 manual's stale "APPROVALS hotspot / Alt+A" (approvals live in COMMS). Unit 273 + e2e ALL PASS.
 
@@ -25,12 +25,12 @@ MENU › TAB path the manual names is real. Payload 24650/24700 · 24871/24900 �
 station.control: away.queue|remove, deliverables.cleanup|restore (records only), quest.dismiss|later, project.forget,
 channel.disconnect (Discord forget refused — its route ignores it), browser.mode, group.configure (by id or title, at the
 current revision), notifications.read|clear (page; a NEEDS YOU entry is never touched), **estop.engage** (fires just
-after its result, reported as "engaging"; only the Commander resumes). station.power: plugin/hook revoke+delete (one may be
+after its result, reported as "engaging"; only the Master resumes). station.power: plugin/hook revoke+delete (one may be
 a veto guard), limits.set (0 = UNLIMITED). New read sections: away, library, quests, groups, channels, limits.
 Left out on purpose: away-work shift/implement (streaming routes that spend — the agent can do the work itself), update
 prepare (aborts every run), prop scale/delete (canvas would show stale art until reload), recipe launch (refuses while any
 COMMS run is busy — routine.create/team.dispatch cover it), quest confirm/report (an agent never approves its own claim),
-cron degraded-clear (accepts data loss — the Commander's call), credentials, consent answers, lifting an E-STOP.
+cron degraded-clear (accepts data loss — the Master's call), credentials, consent answers, lifting an E-STOP.
 Real-model run: ✅ 2026-10-08 — see "Real-model proof" below.
 
 ## Lane 4 — Ctrl+K: one search for everything  ⛔ REMOVED 2026-10-13
@@ -61,9 +61,9 @@ Order: 2 → 3 → 4 → 5 (2 makes every later lane's agent smarter; 4 reuses L
 
 ## Lane 6 — the trunk since 10-04, taught (2026-10-08)
 A read-only audit of 207 trunk commits found 12 user-facing features the agent did not know. CONCEPTS now covers desk
-seats (station.build op agent; WHO SITS HERE), SETTLE (Commander only, and station.settings spending shows `unsettled`),
-held Vultron credits, routine keys + toolsets, station.status, connector SIGN IN (Commander only), browser.reset, HINTS
-(look.set), START FRESH / ERASE EVERYTHING (Commander only — no agent route exists, on purpose), updates stop live runs,
+seats (station.build op agent; WHO SITS HERE), SETTLE (Master only, and station.settings spending shows `unsettled`),
+held Vultron credits, routine keys + toolsets, station.status, connector SIGN IN (Master only), browser.reset, HINTS
+(look.set), START FRESH / ERASE EVERYTHING (Master only — no agent route exists, on purpose), updates stop live runs,
 and "a conveyor is a line". FIND/station.show place descriptions carry credits, settle, hints, reset browser and erase.
 
 ## Real-model proof (2026-10-08, scratch station from this worktree, dev OpenRouter key)
@@ -102,7 +102,7 @@ Repeatable: `node dev/self-driving-proof.mjs [port] [--estop]` against a running
 **ASK mode** (SEED_FULL_ACCESS=0, Claude Haiku 4.5; the proof clicked each real approval card): $8 daily cap ✅ (1 card),
 pin this conversation ✅ (1), clear notifications ✅, open deliverables ✅ (0 cards — a read), a DENIED rename reported
 honestly ✅. Found + fixed: look.set sent flat/stringified ({hints:false}) showed "change the station's look: nothing named"
-and the page saved an empty look as ✓ — the Commander approved that 4× (11 calls); now folded under {look} (card: "hints
+and the page saved an empty look as ✓ — the Master approved that 4× (11 calls); now folded under {look} (card: "hints
 false", 1 card, 4 calls) and an empty look is refused on both sides. An APPROVED "rename NOVA to VEGA" rewrote the persona
 text through team.configure and claimed "renamed" while the crew still read NOVA; team.configure now refuses a pure name
 swap toward station.control agent.rename → crew reads VEGA (2 cards). Rough edge left: that card says rename "agent" (the id).

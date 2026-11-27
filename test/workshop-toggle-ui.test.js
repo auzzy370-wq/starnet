@@ -1,6 +1,6 @@
 /* node test/workshop-toggle-ui.test.js — the machine assertion the away-workshop toggle (ui/crew/ag-workshop-on,
    finding 3b7b52c8) was missing. The per-agent "Build things while I'm away" checkbox promises: flipping it
-   records the Commander's grant server-side so the away loop dispatches workshop runs ONLY for granted agents.
+   records the Master's grant server-side so the away loop dispatches workshop runs ONLY for granted agents.
 
    Three seams, tested at the honest level for each:
 

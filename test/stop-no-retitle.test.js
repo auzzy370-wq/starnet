@@ -7,7 +7,7 @@
    Harness.chat then keeps the run's end and returns normally (the later AbortError is swallowed), so send() took its
    COMPLETED branch: the partial reply ("working") made the turn eligible for a title, and the teardown's TITLE UPGRADE
    ran maybeRetitle on the stopped first turn. That call is internal, has no streamId and no AbortSignal, so the
-   conversation's Stop cannot reach it, and the session was renamed after the Commander stopped it ("working released").
+   conversation's Stop cannot reach it, and the session was renamed after the Master stopped it ("working released").
    When the abort won the race, send() threw, took the stopped catch path, and made no title call.
 
    This drives the REAL send(), maybeRetitle(), cleanTitle() and stopActive() from chat.js, with the REAL Workstreams and
@@ -148,7 +148,7 @@ const titleCalls = r => r.chats.filter(c => c.internal);
     A.eq(r.stoppedTurns, ['working'], 'the partial reply is kept, marked stopped');
     A.eq(r.chats.length, 1, 'Harness.chat ran once: no title call follows a stopped turn (got ' + JSON.stringify(r.chats) + ')');
     A.eq(titleCalls(r).length, 0, 'no internal:true call was started');
-    A.eq(r.retitled, [], 'the session is not renamed after the Commander stopped it');
+    A.eq(r.retitled, [], 'the session is not renamed after the Master stopped it');
     A.eq(Workstreams.get(r.ws.id).title, 'Draft the landing page for my bakery', 'it keeps its first-message placeholder');
     r.confirmCancel({ ok: true });   // the station's confirmation lands after the turn ended
     await settle();
@@ -171,7 +171,7 @@ const titleCalls = r => r.chats.filter(c => c.internal);
     A.eq(r.faults, [], 'no fault path ran: ' + JSON.stringify(r.faults));
   }
 
-  // ── 1c. the teardown's own guard: a turn the Commander stopped makes no title call even when its run reports 'done'
+  // ── 1c. the teardown's own guard: a turn the Master stopped makes no title call even when its run reports 'done'
   //        (the run finished as the Stop landed, before the station's confirmation) ──
   {
     const r = rig();
@@ -180,7 +180,7 @@ const titleCalls = r => r.chats.filter(c => c.internal);
     r.lead().resolve(endOf('done', 'working on it, done', 'run-1'));
     await done; await settle();
     A.eq(r.recaps, ['run-1'], 'send() took its completed branch');
-    A.eq(r.chats.length, 1, 'no title call on a turn the Commander stopped (got ' + JSON.stringify(r.chats) + ')');
+    A.eq(r.chats.length, 1, 'no title call on a turn the Master stopped (got ' + JSON.stringify(r.chats) + ')');
     A.eq(r.retitled, [], 'and no rename');
     A.eq(Workstreams.needsModelTitle(r.ws.id), true, 'it stays eligible for the next completed turn');
   }
@@ -212,7 +212,7 @@ const titleCalls = r => r.chats.filter(c => c.internal);
     A.eq(r.faults, [], 'no fault path ran: ' + JSON.stringify(r.faults));
   }
 
-  // ── 4. a cancel the Commander's Stop did not make (E-STOP or HALT ALL: the run ends 'cancelled', the session is not
+  // ── 4. a cancel the Master's Stop did not make (E-STOP or HALT ALL: the run ends 'cancelled', the session is not
   //       marked interrupted) is still a stopped turn: no title call ──
   {
     const r = rig();

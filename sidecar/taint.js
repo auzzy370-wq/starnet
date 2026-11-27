@@ -5,7 +5,7 @@
    cannot make the model obey. A sufficiently well-written injection still wins the argument. And on an
    unattended granted routine there is no human in the loop to catch it.
 
-   THE ANSWER: stop trying to detect the payload, and remove its payoff. Once content the Commander did not
+   THE ANSWER: stop trying to detect the payload, and remove its payoff. Once content the Master did not
    author has entered a run's context, the host revokes — for the rest of that run — the powers that content
    would need in order to hurt anyone. It does not matter what the injected text says; the tools it would have
    to reach are gone. This is why it is not another pattern-matcher: there is nothing to evade.
@@ -15,7 +15,7 @@
                                    (snapshot / get_text / console / vision all carry capId 'web')
               capability 'mcp:*' -> every connector result (a third-party server authored it)
      REVOKED  workspace-process  -> shell.exec / verify.run (arbitrary code execution)
-              external-credentialed -> web_request (acts as the Commander on a third-party account)
+              external-credentialed -> web_request (acts as the Master on a third-party account)
               connector WRITE/EXECUTE -> an outward action on the user's own accounts
      KEPT     plain web reads, ordinary jailed files, memory, images. Reading more untrusted data cannot be
               turned into an outward action; acting on it can. Connector calls are NOT split by the server's
@@ -27,7 +27,7 @@
        core granted use case, and the content is the agent's own, not a third party's.
      - local fs reads and the agent's notebook/memory: same reasoning, plus the fs jail already bounds them.
    Both are real residual paths (a routine could `cat` a downloaded file). Documented, not hidden.
-   The one carve-out is the Commander's own attachments folder (.attachments/): a read of it by fs.read, fs.search or
+   The one carve-out is the Master's own attachments folder (.attachments/): a read of it by fs.read, fs.search or
    image_analyze, and a command or script that names it, is a source (isUntrustedSource), because an attachment is the one
    place outside bytes are parked in the jail on purpose and then re-sent to the model only for two turns.
 
@@ -43,7 +43,7 @@
 
   const impactOfTool = inputpolicy.impactOfTool;
   const CONNECTOR_CAP = /^mcp:/;
-  /* THE ATTACHMENT SOURCE (attachment decay, 2026-11-04). The exact string a run is tainted with while a Commander's
+  /* THE ATTACHMENT SOURCE (attachment decay, 2026-11-04). The exact string a run is tainted with while a Master's
      attachment BYTES are in its context (index.js runOnceCore: attachments.resentOf reports bytes:true). It is also the
      stamp the rows that run writes carry, and it is the ONLY stamp that decays: transcriptStore.taintOf and
      EarlierConversation.taintOf ignore a row stamped with exactly this, because the bytes it stood for are accounted for
@@ -52,7 +52,7 @@
   const ATTACHMENT_TAINT = 'user attachment';
   /* The one row shape whose attachment stamp does NOT decay: a user row that STORES the expansion of its attachments. Replaying
      or rendering that very row puts the file text in front of the model, so the stamp still means "bytes are here". Two shapes
-     are on disk. (1) Since 11-02 a row keeps the attachment references and the words the Commander typed (typed) beside a
+     are on disk. (1) Since 11-02 a row keeps the attachment references and the words the Master typed (typed) beside a
      content that is not those words. (2) In 0.14.2 and every release before it a row had neither field: the expansion IS the
      content, and the "[Attached file: " header attachments.js has written since 0.14.0 says so. A row of the clean shape
      (content = the typed words, whatever references it keeps) is neither, and decays. Pure. */
@@ -72,7 +72,7 @@
   }
   const namesAttachments = (call) => argStrings(call && call.args, [], 0).some(s => NAMES_ATTACHMENTS.test(s));
 
-  // Does this tool's RESULT bring content the Commander did not author into the context?
+  // Does this tool's RESULT bring content the Master did not author into the context?
   function isUntrustedSource(tool, call) {
     const cap = String((tool && tool.capability) || '');
     if (cap === 'web' || CONNECTOR_CAP.test(cap)) return true;
@@ -173,11 +173,11 @@
   function postTaintBoundary(tool, opts) {
     opts = opts || {};
     if (!opts.taintedBy || allowedWhenTainted(tool, opts.call)) return { allow: true, needsConfirmation: false, oneShot: false };
-    // FULL ACCESS is the Commander's explicit zero-prompt posture. Taint still remains latched and fenced, but it
+    // FULL ACCESS is the Master's explicit zero-prompt posture. Taint still remains latched and fenced, but it
     // cannot silently downgrade Full Access into ASK mode. Hardline floors live outside this policy and still win.
     // EXCEPT when the run's ENTRY was untrusted third-party content (sec-taint2 09-25, owner decision): a webhook /
     // watched-folder trigger payload, a forwarded message or a chat attachment — and every hop and delegated worker
-    // downstream of such an entry (host-minted, sidecar/run-origin.js entryUntrusted). There the Commander never
+    // downstream of such an entry (host-minted, sidecar/run-origin.js entryUntrusted). There the Master never
     // typed the job at all, so "zero prompts" would hand the payload's author the terminal. Owner-typed runs keep
     // the override exactly as before, including one that later read a web page.
     // ...and never for a fresh-consent tool (station.power): a run that read a page asks before it widens the leash

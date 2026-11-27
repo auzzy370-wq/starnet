@@ -250,7 +250,7 @@ function build(over) {
     await work.catch(() => {});
   }
 
-  /* ---- Commander-defined commands reach a channel too ---- */
+  /* ---- Master-defined commands reach a channel too ---- */
   {
     // A user command is not in this hub's table, so without the fallback it would be answered by the MODEL —
     // spending a turn just to say it does not understand.
@@ -270,7 +270,7 @@ function build(over) {
   }
 
   {
-    // A Commander-defined exec reaches the desktop-equivalent slash path only when the composition root admits
+    // A Master-defined exec reaches the desktop-equivalent slash path only when the composition root admits
     // this exact direct message as the Telegram owner. The hub does not infer it from the text or chat id.
     const calls = [];
     const { hub } = build({
@@ -279,7 +279,7 @@ function build(over) {
       runSlash: async (input, ctx) => { calls.push({ input, ctx }); return { ok: true, text: 'ran' }; }
     });
     await hub.onInbound(dm('/shellproof'));
-    A.eq(calls[0].ctx.ownerTrusted, true, 'the admitted owner flag reaches Commander-defined commands too');
+    A.eq(calls[0].ctx.ownerTrusted, true, 'the admitted owner flag reaches Master-defined commands too');
   }
 
   {

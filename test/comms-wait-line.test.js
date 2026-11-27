@@ -25,7 +25,7 @@ const lib = new Function(grab('function fmtElapsed(') + '\n' + grab('function fo
 const { foldWaitNote, waitNoteText } = lib;
 const run = evs => evs.reduce((note, [name, p]) => foldWaitNote(note, name, p), null);
 
-/* ---------- 1. the lines the Commander reads ---------- */
+/* ---------- 1. the lines the Master reads ---------- */
 {
   const retry = { agentId: 'a', runId: 'r', attempt: 3, maxAttempts: 6, reason: 'overloaded', delayMs: 30000, model: 'anthropic/claude-sonnet-4.5' };
   let n = foldWaitNote(null, 'provider.retry', retry);

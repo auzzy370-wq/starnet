@@ -303,7 +303,7 @@ const { note: failNote } = require('../../failopen');
       return result;
     }
 
-    /* STALE-WRITE GUARD (2026-07-27). A delegated worker, a second agent, or the Commander's own editor can
+    /* STALE-WRITE GUARD (2026-07-27). A delegated worker, a second agent, or the Master's own editor can
        change a file between the moment this agent READ it and the moment it writes back. Nothing here noticed,
        so the write silently reverted the other change — the classic lost update, and the harder kind to spot
        because both sides believe they succeeded.
@@ -383,14 +383,14 @@ const { note: failNote } = require('../../failopen');
     function staleWriteError(rel, drift) {
       const error = new Error(drift
         ? 'stale write refused: ' + unseenChanges(rel, drift) + '. This write would erase them, so nothing was written. fs.read it again and re-apply your change on top of the current content.'
-        : 'stale write refused: ' + rel + ' changed on disk after you read it — someone else (another agent, or the Commander) edited it. Read it again and re-apply your change on top of the current content, or use fs.edit/fs.patch so your change merges instead of replacing the file.');
+        : 'stale write refused: ' + rel + ' changed on disk after you read it — someone else (another agent, or the Master) edited it. Read it again and re-apply your change on top of the current content, or use fs.edit/fs.patch so your change merges instead of replacing the file.');
       error.precondition = { code: 'fresh_read_required', requiredTool: 'fs.read', requiredState: 'current_file_observed' };
       return error;
     }
     // fs.edit / fs.append / fs.patch over a file whose bytes moved since this agent last read or wrote it (`st` = its stamp)
     function changedSinceReadError(what, rel, st) {
       const error = new Error(what + ' refused: ' + (st && st.drift ? unseenChanges(rel, st.drift)
-        : rel + ' changed on disk since you last read or wrote it (something else changed it: another agent, the Commander, or a process such as a shell command)')
+        : rel + ' changed on disk since you last read or wrote it (something else changed it: another agent, the Master, or a process such as a shell command)')
         + ' — nothing was written. fs.read it again and redo your change against the current content.');
       error.precondition = { code: 'fresh_read_required', requiredTool: 'fs.read', requiredState: 'current_file_observed' };
       return error;
@@ -620,7 +620,7 @@ const { note: failNote } = require('../../failopen');
         stampSeen(aid, abs, raw, null, true);   // what this agent believes the file says, as of now (see the stale-write guard)
 
         /* DOCUMENTS. Decoding a .docx as UTF-8 produced binary noise: the agent could see the file existed and
-           had no way to read it, on exactly the formats a Commander keeps real work in. A malformed or
+           had no way to read it, on exactly the formats a Master keeps real work in. A malformed or
            mislabelled document falls THROUGH to the plain text path rather than failing the read — a file
            someone named .docx that is really text must still be readable. */
         const kind = docExtract ? docExtract.sniff(args.path, raw) : null;
@@ -1380,7 +1380,7 @@ const { note: failNote } = require('../../failopen');
     /* ONE DEADLINE PER SEARCH: a TIMER plus the run's abort signal, never a clock read (the determinism law; see
        the content-scan note below). The abort listener is live from the top of the call; the TIMER starts at
        clock.start(), right before the first walk or rg spawn, so a consent card for a new folder (resolveInside
-       waits on the Commander) or the one-time rg probe never spends the search budget. It covers the walk and
+       waits on the Master) or the one-time rg probe never spends the search budget. It covers the walk and
        the content scan. disarm() runs in the caller's finally. */
     function searchClock(signal, budgetMs) {
       const clock = { expired: false, aborted: false, budgetMs };
@@ -1502,7 +1502,7 @@ const { note: failNote } = require('../../failopen');
         const rgCommon = ['--no-require-git', '--no-messages', '--max-filesize', String(maxBytes), '-g', '!node_modules', '--sort', 'path'];
         if (!stats.gitignore) rgCommon.push('--no-ignore');
         const rgRel = (p) => { const n = String(p).replace(/\\/g, '/').replace(/^\.\//, ''); return startPrefix ? startPrefix + '/' + n : n; };
-        // the budget starts HERE, after the path is resolved (a consent card may have waited on the Commander) and
+        // the budget starts HERE, after the path is resolved (a consent card may have waited on the Master) and
         // rg is known; a search cancelled during that wait stops before it walks or spawns anything
         if (clock.aborted) throw searchAbortError();
         clock.start();

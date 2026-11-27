@@ -85,7 +85,7 @@ function toolWith(over) {
   A.ok(availableBlock.indexOf('Stripe') < 0, 'an installed-but-erroring connector is still installed — not re-offered');
   A.ok(availableBlock.indexOf('Printify') < 0, 'a CONNECTED key platform is never offered again');
   // ONE FLAT LIST (UX night 2026-10-26): the catalog is APPS, the first item of CONNECT › ABILITIES' one list
-  A.ok(/CONNECT . ABILITIES . APPS/.test(text) && !/DISCOVER|CATALOG:/.test(text), 'the readout names where the Commander actually adds one (the section the window draws)');
+  A.ok(/CONNECT . ABILITIES . APPS/.test(text) && !/DISCOVER|CATALOG:/.test(text), 'the readout names where the Master actually adds one (the section the window draws)');
   A.ok(/cannot add these yourself/.test(text), 'the agent is told to offer, not to assume it can install');
 
   /* ---- the floor summary counts ENTRIES, not rendered lines ---- */

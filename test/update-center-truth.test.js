@@ -136,7 +136,7 @@ function launch(store, opts) {
     A.ok(/NOT CHECKED THIS LAUNCH/.test(db.innerHTML) && !/NOT CHECKED YET/.test(db.innerHTML), 'the label never says "not checked yet" over a dated last check');
     A.ok(/Not checked since /.test(db.innerHTML) && !/since never/.test(db.innerHTML), 'the body names when the last check ran');
 
-    // the last check found the version the Commander skipped: the idle window says it is skipped
+    // the last check found the version the Master skipped: the idle window says it is skipped
     const skip = new Map([['vultron.updates.v1', JSON.stringify({ autoCheck: false, availableVersion: '0.13.3', ignoredVersion: '0.13.3', lastCheckAt: 5 })]]);
     const sk = launch(skip);
     await sk.init(); await tick();
@@ -190,7 +190,7 @@ function launch(store, opts) {
     A.eq(s.updates.phase(), 'available', 'the startup check finds 0.13.3');
     A.eq(s.badge.style.display, 'inline-block', 'the NEW chip is lit');
 
-    clock.t += 20 * 60 * 1000;                       // twenty minutes later the Commander opens Update Center
+    clock.t += 20 * 60 * 1000;                       // twenty minutes later the Master opens Update Center
     const body = s.open(); await tick();
     A.eq(s.checks.length, 1, 'an armed update is not re-checked on open');
     A.ok(/id="up-ignore"/.test(body.innerHTML), 'the card offers SKIP VERSION');

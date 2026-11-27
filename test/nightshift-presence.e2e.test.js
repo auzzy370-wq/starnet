@@ -2,9 +2,9 @@
    2026-07-17).
 
    THE BUG: /api/run stamped the away clock ONCE at run start. A long "watch the model work" session (the
-   Commander commissioning real work and watching it stream) had no pointer/keyboard input in the Vultron window,
+   Master commissioning real work and watching it stream) had no pointer/keyboard input in the Vultron window,
    so 15 minutes into their OWN run the sidecar flipped away:true and night-shift beats started firing WHILE the
-   Commander sat there working — "vultron constantly thinks I'm idle when clearly I'm working".
+   Master sat there working — "vultron constantly thinks I'm idle when clearly I'm working".
 
    THE FIX (this test pins it over HTTP against the real sidecar + a mocked provider):
      · while an interactive /api/run is streaming, GET /api/nightshift/status reports away:false no matter how
@@ -106,7 +106,7 @@ function kill(child) { return new Promise(r => { try { child.on('exit', () => r(
     }).then(async r => { const rd = r.body.getReader(); while (!(await rd.read()).done) { /* drain */ } });
     await sleep(AWAY_MS + 600);   // well past the away threshold, measured from the run's START stamp
     s = await status();
-    A.eq(s.away, false, 'mid-run: an in-flight interactive run reads as PRESENT (the Commander is watching their own work)');
+    A.eq(s.away, false, 'mid-run: an in-flight interactive run reads as PRESENT (the Master is watching their own work)');
     A.eq(s.binding, 'present', 'mid-run: the binding gate is "present" — no beat may fire while the user\'s run streams');
     /* The same guarantee the old assertion made, under the name that actually says it: `awayAt` is the FUTURE
        instant away flips true, so mid-run it is still ahead of now (telemetry agrees with the driver).

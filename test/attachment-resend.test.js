@@ -248,7 +248,7 @@ async function section(name, fn) {
     A.eq(out[RESENT].map(e => [e.path === older.path, e.bytes, e.size, e.sha256 === sha(blob(8 * MB))]), [[true, false, 8 * MB, true], [false, true, 8 * MB, true]],
       'the over-budget file WAS read (its size and sha256 are known) but is not bytes on the wire');
 
-    // exempt: a newest attachment larger than the whole budget is still sent (nothing may drop what the Commander just attached)
+    // exempt: a newest attachment larger than the whole budget is still sent (nothing may drop what the Master just attached)
     const huge = lib.image(13 * MB), small = lib.image(1024);
     const big = [user('huge', [small, huge])];
     const out2 = await rig(lib).att.expandUserAttachments(big, 'p', { place });

@@ -93,7 +93,7 @@ function wsRecord(ws) { try { return JSON.parse(fs.readFileSync(path.join(ws, 'a
     A.eq(st.workshopGranted, true, 'the auto-grant survives a restart');
     A.eq(st.buildMode, 'build', 'build mode survives a restart');
 
-    // ===== 4. an EXPLICIT revoke stands — the dial NEVER overrides the Commander's per-agent decision. =====
+    // ===== 4. an EXPLICIT revoke stands — the dial NEVER overrides the Master's per-agent decision. =====
     await fetch(B + '/api/workshop/grant', { method: 'POST', headers, body: JSON.stringify({ agentId: 'agent', on: false }) });
     j = await setPosture(B, headers, 'free', 'sandbox');
     A.ok(j.workshopGranted === false, 'after an explicit OFF, a dial write does NOT re-grant');

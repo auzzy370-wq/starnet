@@ -1,6 +1,6 @@
 'use strict';
 /* A BROWSER FOR COMPUTERS THAT HAVE NONE (Andrew 2026-09-30: "EVERY user should be able to use vultron's built in
-   browser"). The station browser runs on the Commander's installed Chrome / Edge / Chromium. A machine with none of
+   browser"). The station browser runs on the Master's installed Chrome / Edge / Chromium. A machine with none of
    them — a fresh Mac, a minimal Linux — would otherwise get "Chromium not found". Hermes answers this with
    `agent-browser install` (it downloads Chromium); Vultron does the same, by itself, the first time a browser is
    needed: Google's official Chrome for Testing build, from Google's own download host, into

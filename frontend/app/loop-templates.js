@@ -172,7 +172,7 @@
       : 'Ends on the agent\'s own report: three passes in a row finding nothing new. That is a convention, not a proof — read what it produced before trusting it.';
   }
 
-  /* buildSpec — the POST /api/loops body for this template + the Commander's answers. Everything the loop
+  /* buildSpec — the POST /api/loops body for this template + the Master's answers. Everything the loop
      needs is decided HERE, once, at creation: the objective text, the check command, the exit condition and
      the guard rails. Nothing about the loop's shape is left for the model to choose later. */
   function buildSpec(id, values, extra) {

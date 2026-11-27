@@ -27,7 +27,7 @@
    durable marker (never impersonate silently). Defaults false; old rows lack it and parse fine.
 
    Deliverable organization (ADDITIVE): `projectRoot` — the blessed project folder this run was scoped to, so the
-   work a run PRODUCES can be filed under the thing the Commander was working ON. Same additive-provenance shape as
+   work a run PRODUCES can be filed under the thing the Master was working ON. Same additive-provenance shape as
    `recipeId`: old rows lack it and default ''. The caller records it ONLY when the root is still a standing path
    grant — an unblessed/revoked root files nothing, because the station must never assert a project relationship the
    grant layer can't prove.
@@ -421,7 +421,7 @@
         // a test is not a job the line shipped or failed. Present only when true.
         ...(e.stepTest ? { stepTest: true } : {}),
         // OWNER DIRECTIVE (additive, 2026-10-12): TRUE only when the host proved this run's directive is the
-        // Commander's own (their typed COMMS turn, or the bound owner's direct chat). A channel group guest's run looks
+        // Master's own (their typed COMMS turn, or the bound owner's direct chat). A channel group guest's run looks
         // exactly like the owner's by surface and streamId, so ambient activity and repeat-work proof need this stamp;
         // old rows lack it and prove nothing. Present only when true, so every other row stays byte-identical.
         ...(e.ownerDirective === true ? { ownerDirective: true } : {}),
@@ -491,7 +491,7 @@
         identities.delete(entry.runId);
         for (const k of Object.keys(identity)) if (!Object.prototype.hasOwnProperty.call(entry, k)) entry[k] = identity[k];
       }
-      // SETTLED SPEND (additive, 2026-10-08): the Commander settled this interrupted run's unknown spend in SETTINGS ›
+      // SETTLED SPEND (additive, 2026-10-08): the Master settled this interrupted run's unknown spend in SETTINGS ›
       // SPENDING LIMITS, so `usd` is the booked figure and `spendSettled` says how ('entered' | 'limit' | 'recorded' |
       // 'assumed' — mirrors the ledger's attestedAs). A settlement is a fact about money; a later recovery-status update for the same run is
       // not, so it inherits the settlement instead of re-opening the spend as unknown.
@@ -590,7 +590,7 @@
       return latest(runId);
     }
 
-    /* settleSpend(runId, usd, how) — the Commander settled an interrupted run's unknown spend (POST /api/budget/settle,
+    /* settleSpend(runId, usd, how) — the Master settled an interrupted run's unknown spend (POST /api/budget/settle,
        after the ledger booked it). Appends ONE superseding row for the run's interrupted chain carrying the booked
        figure, so INSIGHTS and the run row stop calling it spend-unknown; every other field is the run's served row.
        Only a served interrupted row whose spend is still unknown qualifies (null otherwise): a settled run is never

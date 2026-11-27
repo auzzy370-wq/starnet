@@ -2,7 +2,7 @@
 /* routing.line-jobs.e2e — WORKFLOWS on a real sidecar (2026-09-30, "the easiest conveyor system … clear as day"). A job sent down a line
    (POST /api/routing/sample with its line) is kept as ONE record from the moment it goes out: GET /api/line-jobs lists it newest
    first, GET /api/line-jobs/<id> holds the whole thing (what was asked, the route's own verdict, each step's run at its bay, what came
-   out, what it cost), …/note keeps what the Commander changed because of it, a re-run names the job it re-ran, and the records
+   out, what it cost), …/note keeps what the Master changed because of it, a re-run names the job it re-ran, and the records
    survive a restart. SET IT UP FOR ME (POST /api/routing/line-draft) drafts a line from a description on the station default model:
    only an offered starter, bad input refused before any spend, and nothing is placed. */
 const test = require('node:test');
@@ -72,14 +72,14 @@ test('a line job is one durable record; SET IT UP FOR ME drafts only an offered 
     assert.ok(Math.abs(whole.body.job.usd - sent.body.totalUsd) < 1e-9, 'what it cost is the route\'s own total');
     assert.equal((await fixture.json('GET', '/api/line-jobs?stream=' + encodeURIComponent(sent.body.streamId))).body.jobs[0].id, sent.body.jobId);
 
-    // what the Commander changed because of it is kept on the record; anything else is refused
+    // what the Master changed because of it is kept on the record; anything else is refused
     const noted = await fixture.json('POST', '/api/line-jobs/' + sent.body.jobId + '/note', { kind: 'fix', dockId: 'w', role: 'WRITER', field: 'does', text: 'Answer in one sentence.', was: 'Write two short facts.', why: 'Shorter.' });
     assert.equal(noted.status, 200, JSON.stringify(noted.body));
     assert.deepEqual(noted.body.job.notes.map(n => [n.kind, n.dockId, n.text, n.was]), [['fix', 'w', 'Answer in one sentence.', 'Write two short facts.']]);
     assert.equal((await fixture.json('POST', '/api/line-jobs/' + sent.body.jobId + '/note', { kind: 'delete-everything' })).status, 400);
     assert.equal((await fixture.json('GET', '/api/line-jobs/job-000000000000')).status, 404);
 
-    // NEEDS CHANGES is the Commander's dislike of the result: it persists as taste and reaches the next run's prompt, whatever the
+    // NEEDS CHANGES is the Master's dislike of the result: it persists as taste and reaches the next run's prompt, whatever the
     // suggestion call answers (this mock answers no fixes) — it lived only in the window's memory
     const fixAsk = await fixture.json('POST', '/api/routing/fix-suggest', { jobId: sent.body.jobId, complaint: 'Far too long, and cite no sources ever.', job: 'Two facts about the moon.', result: 'x', steps: [{ dockId: 'w', role: 'WRITER', does: 'Write two short facts.', output: 'x' }] });
     assert.ok(fixAsk.body.feedbackMemory && fixAsk.body.feedbackMemory.stored === true, 'the complaint is kept as taste: ' + JSON.stringify(fixAsk.body));
@@ -87,7 +87,7 @@ test('a line job is one durable record; SET IT UP FOR ME drafts only an offered 
     // the same job again, after the change: the new record names the one it re-ran, newest first
     const again = await fixture.json('POST', '/api/routing/sample', { line, text: 'Two facts about the moon.', name: 'Moon facts', retryOf: sent.body.jobId });
     assert.equal(again.status, 200, JSON.stringify(again.body));
-    assert.ok(calls.slice(beforeAgain).some(c => !c.draft && c.raw.indexOf('Far too long, and cite no sources ever.') >= 0), 'the next run is told what the Commander disliked');
+    assert.ok(calls.slice(beforeAgain).some(c => !c.draft && c.raw.indexOf('Far too long, and cite no sources ever.') >= 0), 'the next run is told what the Master disliked');
     const both = (await fixture.json('GET', '/api/line-jobs?line=' + encodeURIComponent(line))).body.jobs;
     assert.deepEqual(both.map(j => j.id), [again.body.jobId, sent.body.jobId], 'newest first');
     assert.equal(both[0].retryOf, sent.body.jobId);

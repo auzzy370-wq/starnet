@@ -1,7 +1,7 @@
 /* sidecar/concurrency.js — the admission gate that bounds how many DISTINCT agents may have paid
    runs in flight at once. Multi-agent's one genuinely new runaway-cost hole: N summoned agents each
    burning tokens concurrently. The cross-run budget pools (budget.js) already cap aggregate $ — this
-   caps the FAN-OUT, so a Commander who summons a crew can't accidentally light up ten parallel loops.
+   caps the FAN-OUT, so a Master who summons a crew can't accidentally light up ten parallel loops.
 
    Gate semantics (load-bearing): the cap is on the number of distinct agentIds with ≥1 in-flight run,
    NOT on total runs. A second run of an ALREADY-admitted agent is always allowed (it consumes no new

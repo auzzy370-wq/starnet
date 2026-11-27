@@ -12,7 +12,7 @@ const path = require('path');
 const src = fs.readFileSync(path.join(__dirname, '../frontend/app/chat.js'), 'utf8');
 
 // The deliberate-stop branch owns the recovery offer. Network errors use their classified action;
-// a Commander stop is not an error and must use the plain existing Try again action.
+// a Master stop is not an error and must use the plain existing Try again action.
 const stoppedBranch = /if\s*\(stopped\)\s*\{([\s\S]*?)\n\s*\}\s*else\s*\{/.exec(src);
 A.ok(stoppedBranch, 'chat.js has a distinct deliberate-stop branch');
 A.ok(/offerTryAgain\s*\(\s*\)/.test(stoppedBranch[1]), 'RUN STOPPED renders a reachable Try again action');

@@ -46,7 +46,7 @@ const results = [];
 const ok = (name, cond, detail) => { results.push({ name, ok: !!cond, detail }); console.log((cond ? 'PASS ' : 'FAIL ') + name + (detail ? ' — ' + String(detail).slice(0, 300) : '')); };
 async function until(fn, ms, step = 300) { const t0 = Date.now(); let v; while (Date.now() - t0 < ms) { v = await fn().catch(() => null); if (v) return v; await sleep(step); } return v; }
 
-// ---- a tiny site for the Commander's own browsing (loopback) ----
+// ---- a tiny site for the Master's own browsing (loopback) ----
 const site = await new Promise(resolve => {
   const s = createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
@@ -64,7 +64,7 @@ const site = await new Promise(resolve => {
 const PAGE = '<!doctype html><html><head><title>pending</title><link rel="stylesheet" href="css/app.css"></head><body><h1 id="h">Launch page</h1><script>document.title = "script-ran";</script></body></html>';
 const SCRIPTS = {
   'go to github so i can sign in': [
-    { re: /^brief.?proceed$/, args: { objective: 'Open GitHub sign-in so the Commander can sign in' } },
+    { re: /^brief.?proceed$/, args: { objective: 'Open GitHub sign-in so the Master can sign in' } },
     { re: /^browser.?login$/, args: { url: 'https://github.com/login' }, q: 'open a visible browser login window so the user can sign in' }
   ]
 };

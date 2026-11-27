@@ -2,9 +2,9 @@
 
    The kit-out tour glows the path into REFIT while it's teaching the first floor. This is the SAME idea, but
    standing on its own AFTER the tour: while a STATION quest is open (an agent reached for a tool its room can't
-   grant — a real capability gap the Commander can close by placing a prop), gently glow the BUILD dock so the
+   grant — a real capability gap the Master can close by placing a prop), gently glow the BUILD dock so the
    fix is one obvious click away. The glow is a soft HINT, not the tutorial's imperative ring — it never scrims,
-   never blocks, and vanishes the instant the last station gap closes or once the Commander has looked (SEEN, below).
+   never blocks, and vanishes the instant the last station gap closes or once the Master has looked (SEEN, below).
 
    Reuses the kit-out's resolver DISCIPLINE, honoring its two locked traps:
      • TRAP 1 — dock targets are HIDDEN until the dock is open. So we glow the ALWAYS-VISIBLE BUILD dock toggle
@@ -15,7 +15,7 @@
 
    Coordination — TUTORIAL WINS: while the tutorial is actively coaching (Tutorial.isCoaching()), this stands
    fully down (removes its glow), so the two can never point at different controls at once. Also stands down on
-   the title screen (only glows once the Commander is in-game) and while REFIT is already open (they're already
+   the title screen (only glows once the Master is in-game) and while REFIT is already open (they're already
    there). Pure DOM + a cheap poll; no bus subscription, no persistence, never emits. */
 'use strict';
 const DockGlow = (() => {
@@ -32,7 +32,7 @@ const DockGlow = (() => {
   }
 
   /* SEEN (Andrew 10-23: "i think its weird that build is always highlighted"). A gap can stay open for weeks (nobody
-     places the prop), so "glow while any gap is open" lit BUILD for good. The glow now announces a gap the Commander has
+     places the prop), so "glow while any gap is open" lit BUILD for good. The glow now announces a gap the Master has
      not looked at yet: opening the BUILD dock (and closing it again) or entering BUILD MODE marks every open gap seen, and
      only a NEW gap lights it again. Gaps first seen before this rule existed count as seen (SINCE, stamped on first run),
      so an update never opens on a lit BUILD. Seen ids keep their own key (the newest 200). */
@@ -84,12 +84,12 @@ const DockGlow = (() => {
 
   function tick() {
     // stand-down conditions (any true → no glow): not in-game, the tutorial is coaching, REFIT already open (it marks the
-    // open gaps seen: the Commander is where the fix is made), or no UNSEEN gap. Otherwise glow the resolved dock entry.
+    // open gaps seen: the Master is where the fix is made), or no UNSEEN gap. Otherwise glow the resolved dock entry.
     if (!inGame() || tutorialCoaching()) { clear(); return; }
     sinceMs();   // stamped on the first in-game tick, gaps or not: a gap minted later must date after it
     const gaps = openGaps();
     if (refitOpen()) { markSeen(gaps); dockWasOpen = false; clear(); return; }
-    // the BUILD dock opened and closed again: the Commander looked (the glow moved to BUILD MODE while it was open)
+    // the BUILD dock opened and closed again: the Master looked (the glow moved to BUILD MODE while it was open)
     const open = dockOpen();
     if (dockWasOpen && !open) markSeen(gaps);
     dockWasOpen = open;

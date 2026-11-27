@@ -46,7 +46,7 @@ A.eq(QLS.quests().length, 0, '…and clears the cache to empty');
 
 /* ---------- new-quest detection: first fetch seeds SILENTLY, a later new open quest fires the COMMS
    broadcast ONLY — notification diet (2026-08-18): a new quest never reaches StationUI.notify (the quest
-   log is the quest surface; the bell is reserved for things that need the Commander). ---------- */
+   log is the quest surface; the bell is reserved for things that need the Master). ---------- */
 {
   // capture StationUI.notify + Chat.broadcast via the globals the store guards on (typeof StationUI/Chat).
   const toasts = [];

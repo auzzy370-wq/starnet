@@ -1,7 +1,7 @@
 /* VULTRON — intentoffer.js : the INTENT OFFER matcher.
 
    The Recruitment Bay and the recipe library hold 38 preconfigured classes and 50 ready-made jobs, and
-   both live two clicks deep inside a bottom-bar popover. A Commander who never opens those doors never
+   both live two clicks deep inside a bottom-bar popover. A Master who never opens those doors never
    learns they exist. This module closes that gap from the other side: when what they just TYPED is
    plainly the job of a class or a recipe, the station says so, once, in COMMS — where they already are.
 
@@ -78,7 +78,7 @@
   // NOTE this counts RAW words, not content terms. Counting content terms looked equivalent and was not:
   // "rewrite this so it sounds like me" carries exactly two content terms and is obviously an intent, while
   // "what do you think" carries four raw words and zero content terms. Raw length only has to prove the
-  // Commander typed a sentence rather than an acknowledgement; the score gates below do the real work.
+  // Master typed a sentence rather than an acknowledgement; the score gates below do the real work.
   const MIN_QUERY_WORDS = 3;   // "hi" / "thanks!" / "ok cool" can never carry an intent
   const MIN_SCORE = 3.2;       // total idf weight the winner must carry
   const MIN_TOP_IDF = 1.9;     // at least ONE genuinely distinctive term (~<15% of the catalog uses it)
@@ -86,13 +86,13 @@
   // CORROBORATION. A single rare word is not an intent: "explain what you just did" hits the tutor's blurb on
   // "explain" and nothing else, and one high-idf term alone clears MIN_SCORE on its own. So an offer needs two
   // matched terms — UNLESS the lone term landed in the candidate's own NAME or TAGLINE and is very distinctive
-  // ("I need a paralegal"), which is the Commander naming the thing outright.
+  // ("I need a paralegal"), which is the Master naming the thing outright.
   const MIN_HITS = 2;
   const SOLO_HEADLINE_IDF = MIN_TOP_IDF * 2;
 
   // candidates: [{ kind:'class'|'recipe', id, name, label, text }]. `text` is the matchable surface
   // (name + tagline + blurb + starters / task) — never the purpose/manual, whose shared vocabulary
-  // ("the Commander", "output:", "notebook.write") would blur every class into every other.
+  // ("the Master", "output:", "notebook.write") would blur every class into every other.
   function index(candidates) {
     const list = [];
     const df = Object.create(null);
@@ -144,7 +144,7 @@
     const top = scored[0], second = scored[1];
     if (top.score < MIN_SCORE) return null;                                  // too thin to speak
     if (top.best < MIN_TOP_IDF) return null;                                 // no genuinely distinctive term
-    // Corroboration: one rare word alone is not an intent unless the Commander named the WHOLE class/recipe.
+    // Corroboration: one rare word alone is not an intent unless the Master named the WHOLE class/recipe.
     // Merely sharing one word with a multi-word headline is not naming it: “explain what you just did” must not
     // count as an explicit request for “Explain This Data”. Single-word names (Ghostwriter, Zebrafish) still work.
     const fullyNamed = ['name', 'label'].some(key => {

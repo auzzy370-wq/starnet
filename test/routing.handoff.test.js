@@ -429,7 +429,7 @@ function station(n) {
     A.ok(rec && rec.runs && rec.runs[0] && rec.runs[0].outcome === 'cut_short', '…and its record keeps the step\'s outcome, so the WORKFLOWS window never reads it finished — ' + JSON.stringify(rec && rec.runs));
   }
 
-  /* E-STOP KILLS A RUNNING HAND-OFF: its record says STOPPED (the Commander stopped it), never "a step did not finish cleanly" */
+  /* E-STOP KILLS A RUNNING HAND-OFF: its record says STOPPED (the Master stopped it), never "a step did not finish cleanly" */
   {
     let release = null;
     const R6 = makeHandoffRunner({ makeHub: (hooks) => ({ onInbound() {
@@ -448,7 +448,7 @@ function station(n) {
   }
 
   /* THE STATION'S OWN FAULT (wave 2 review, conveyor-backend-08): a process-fault containment quiesced the station while LINE B ran a
-     handed-on job — its record says the station's fault stopped it, never an E-STOP the Commander did not press; and a hand-off refused
+     handed-on job — its record says the station's fault stopped it, never an E-STOP the Master did not press; and a hand-off refused
      while the station is quiesced says the same */
   {
     let release = null, stop = false;

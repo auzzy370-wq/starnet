@@ -43,9 +43,9 @@ function createTaskHandoffSuite(skillName) {
         checks: [{ id: 'do-not-transfer-old-success', kind: 'json_equal', expected: { objective: 'export inactive accounts', destination: 'reports/archive.json', verified: false, nextAction: 'write requested file' } }] }
     ] };
 }
-/* EVALUATION LIMITS, SIZED TO THE SUITE AND THE COMMANDER'S RUN CAP. A fixed 120 s clock and $0.08 per run stopped
+/* EVALUATION LIMITS, SIZED TO THE SUITE AND THE MASTER'S RUN CAP. A fixed 120 s clock and $0.08 per run stopped
    every evaluation on a slow reasoning model (16 calls at ~15 s each) or a premium-priced one, and the stop left an
-   unsettled receipt. Every case runs twice (without and with the proposal). Each run gets the Commander's per-run
+   unsettled receipt. Every case runs twice (without and with the proposal). Each run gets the Master's per-run
    cap (runCapUsd; $0.08 when the host gives none), the whole evaluation is bounded by runs x that cap, and the wall
    clock allows ~90 s per run, never under 2 minutes or over 20. The host sizes its timer, the page's wait, the
    runner's limits.maxCostUsd and the accounting's runCapUsd/maxUsd from this one result. */

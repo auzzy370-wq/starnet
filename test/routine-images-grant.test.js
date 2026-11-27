@@ -2,7 +2,7 @@
 
    Issue (2026-10-18): "every morning at 8, make me a sunrise picture and send it on Telegram" fired, but in the
    default ASK posture image_generate (studio:write, requiresConsent) was refused by the consent broker — nobody is
-   there to say yes — and the run then told the Commander to "pre-authorize image generation on this routine", a
+   there to say yes — and the run then told the Master to "pre-authorize image generation on this routine", a
    setting that did not exist. Andrew approved (10-18) a grant shaped like the terminal / connected-tools ones: a tick
    in the create form AND an ALLOW IMAGES key on an existing routine's row (a routine the agent made from a chat has
    no grant and no other place to get one).

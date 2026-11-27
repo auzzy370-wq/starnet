@@ -10,7 +10,7 @@
 
    OUTCOMES — the one vocabulary:
      succeeded      the run finished ('done') and the provider did not cut its reply
-     asked          it ended by asking the Commander a question ('clarifying'): neither finished work nor a failure
+     asked          it ended by asking the Master a question ('clarifying'): neither finished work nor a failure
      cut_short      'done', but the provider cut the reply (finishReason 'length' | 'content_filter')
      failed         it ended on an error (never said in the stop's word); failureCode says which
      refused        the model or its provider declined the request ('refusal', or a provider safety block)

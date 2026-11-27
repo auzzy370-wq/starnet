@@ -6,7 +6,7 @@
    stationui internals it touches are the enumerated StationUI.h helper surface.
 
    ROUTINES answer WHEN. LOOPS answer UNTIL. A loop keeps working at one standing objective and stops for the
-   Commander's verdict — the verdict is what starts the next pass, not a clock. This panel is a thin polling
+   Master's verdict — the verdict is what starts the next pass, not a clock. This panel is a thin polling
    client over /api/loops (the sidecar owns the record, the ledger and the gate), exactly as windows/routines.js
    is over /api/cron.
 
@@ -79,14 +79,14 @@
 
     /* ---------- the live stepper: which stage of its cycle a loop is in RIGHT NOW ----------
        Derived only from server state. `running` means an iteration is genuinely in flight; a pending candidate
-       means it is on the Commander; anything else is the honest resting state named by `binding`. */
+       means it is on the Master; anything else is the honest resting state named by `binding`. */
     function stepper(l) {
       const t = T() && T().get((l.meta && l.meta.templateId) || '');
       const shape = (t && t.shape) || ['WORK', 'CHECK', 'REVIEW'];
       /* ONLY LIGHT WHAT THE SERVER PROVES. An earlier version inferred the middle stage from "a check exists
          and we are not waiting", which lit RUN YOUR CHECK on a loop that was idle between passes — inference
          dressed as state, in the one panel built to be honest. Two provable stages: an iteration is genuinely
-         in flight (stage 0), or work is queued on the Commander (the last stage). Anything else lights
+         in flight (stage 0), or work is queued on the Master (the last stage). Anything else lights
          nothing and the binding line carries the truth. */
       let at = -1;
       if (l.state === 'running') at = 0;
@@ -239,7 +239,7 @@
           (m ? '<span class="lp-hist-v" style="color:' + m[1] + '">' + m[0] + '</span>' : '<span class="lp-hist-v dim">·</span>') +
           '<span class="lp-hist-t">' + esc(what) + '</span>' +
           '</div>' +
-          // the Commander's own words are the most valuable line in the archive — never drop them.
+          // the Master's own words are the most valuable line in the archive — never drop them.
           (r.verdictNote && r.verdict === 'rejected'
             ? '<div class="lp-hist-why">“' + esc(String(r.verdictNote).slice(0, 180)) + '”</div>' : '');
       };
@@ -253,7 +253,7 @@
       // "Research Loop ◈ Research Loop". Show the shape only when it adds something.
       const shapeName = !t ? 'custom' : (t.name === (l.name || '') ? t.emoji : (t.emoji + ' ' + t.name));
       const pending = l.pending || [];
-      // spend against its cap — a number with no ceiling beside it tells the Commander nothing about risk.
+      // spend against its cap — a number with no ceiling beside it tells the Master nothing about risk.
       const bg = l.budget || {};
       const spent = bg.spentTodayUsd
         ? ' · $' + bg.spentTodayUsd.toFixed(2) + (bg.perDayUsd ? ' of $' + Number(bg.perDayUsd).toFixed(2) : '') + ' today'
@@ -387,7 +387,7 @@
 
         // REJECT opens the reason panel inline and STATES ITS COST there — a stacked queue means rejecting
         // this one also discards everything built on top of it, and the UI must never destroy work the
-        // Commander can still see without saying so first.
+        // Master can still see without saying so first.
         if (act === 'reject') {
           const stacked = parseInt(vb.dataset.stacked, 10) || 0;
           const why = card.querySelector('.lp-why');
@@ -686,7 +686,7 @@
          only speaks up when something is actually wrong.
 
          NOT A WALL. A second click proceeds anyway (someone may genuinely intend a check that cannot run yet,
-         e.g. deps this loop will install). It makes the mistake visible; it does not overrule the Commander. */
+         e.g. deps this loop will install). It makes the mistake visible; it does not overrule the Master. */
       const cmdNow = (values.check || '').trim();
       if (cmdNow && extra.workdir && !preflightOk) {
         try {
@@ -745,7 +745,7 @@
   AutomationWindow.registerLane(loopsLane);
 
   /* ================= THE WATCHER — a loop that needs you must SAY so =====================================
-     A loop's whole cadence depends on the Commander noticing that it stopped. Without this it parks on a full
+     A loop's whole cadence depends on the Master noticing that it stopped. Without this it parks on a full
      queue and waits in silence forever, which turns "it stops for your verdict" into "it stops" — the loop
      looks broken and the feature quietly fails. This runs whenever the app is up (not only while the window
      is open) and does two things:
@@ -757,7 +757,7 @@
 
      Deliberately NOT a COMMS beat: the beat slot is governed by locked rules (one post-run beat at a time,
      decided cards vanish) and a loop finishing is not a conversational turn. A badge plus a toast is the
-     honest, low-risk surface; a channel ping for a Commander who is genuinely away is a later, separate call
+     honest, low-risk surface; a channel ping for a Master who is genuinely away is a later, separate call
      that belongs server-side next to cron's autoNotify. */
   const SEEN_KEY = 'vultron.loops.seen.v1';
   const loadSeen = () => { try { return new Set(JSON.parse(localStorage.getItem(SEEN_KEY) || '[]')); } catch (_) { return new Set(); } };

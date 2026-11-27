@@ -41,7 +41,7 @@ function dodgeRect(box, brief, vw, vh) {
 
 /* ================= LANE 2 — CONNECT YOUR WORLD (the tour's last beat) =================
    Pure (top-level, outside the IIFE like dodgeRect, so the gate can require() it). Topic → connector map. Matching rides TopicMatch.coverage (the ONE matcher every shelf uses) over the
-   Commander's GOALS beliefs; each topic is a handful of single-token labels so "run my newsletter" finds
+   Master's GOALS beliefs; each topic is a handful of single-token labels so "run my newsletter" finds
    email and "grow the site" finds website. Order is priority order; the list is capped at 3. With no
    matching goal the generic top-3 (gmail · google-calendar · google-docs) is offered instead. */
 const CONNECT_TOPICS = [
@@ -85,7 +85,7 @@ const Tutorial = (() => {
   let resumeFirstTask = false;
   const demoPrompts = new Set();
   let stallTimer = null;   // failsafe: if the real run never reaches the bus (sidecar down / bad key), narrate honestly instead of freezing
-  // THE KIT-OUT (the floor is REAL): the first lesson is the moat — the Commander PLACES the capability gear
+  // THE KIT-OUT (the floor is REAL): the first lesson is the moat — the Master PLACES the capability gear
   // (cabinet→FILES · dish→WEB · workbench→TERMINAL · server→MEMORY) and each placement hands the agent a genuine
   // power (heroCaps → the run's real tools), so the first real job runs against tools that actually exist.
   let kitMode = false, kitNeeded = null, kitComplete = false, kitWasOpen = false, kitPollTimer = null;
@@ -168,7 +168,7 @@ const Tutorial = (() => {
   // (COMPUTE isn't here — always-on freebie + a synthetic desk; a SEATED workstation is editable so it doesn't
   // fire onPropPlaced, but the WORKBENCH does, which is why TERMINAL can ride the placement loop. Note the
   // workbench lives under WORKSTATIONS, the other three under CAPABILITY — resolveKit carries that, so the loop
-  // guides the category switch instead of stranding the Commander.)
+  // guides the category switch instead of stranding the Master.)
   const KIT_SPEC = [
     { grant: 'FILES',    prop: 'war_intelcab',    label: 'INTEL CAB',   power: 'FILES',      got: 'files equipment placed. it supports reading and writing files within your allowed folders.' },
     { grant: 'WEB',      prop: 'comms_dish',      label: 'DISH',        power: 'the WEB',    got: 'web equipment placed. it supports search and browsing; service setup and access settings still apply.' },
@@ -196,7 +196,7 @@ const Tutorial = (() => {
     wireBus();
     // The handoff from the awakening: the DIALOGUE panel is already open (onboarding's closeOut left it up).
     // Offer the tour EXPLICITLY — a clear "SHOW ME AROUND" vs "dive in myself" choice, not a buried chip. This
-    // kills the old rhetorical "where do we begin?" self-answer the Commander found confusing.
+    // kills the old rhetorical "where do we begin?" self-answer the Master found confusing.
     if (!hasDialogue()) { finishOrientation(); return; }
     if (replayMode) { beatShowAround(); return; }
     if (typeof PitchStore !== 'undefined' && PitchStore.offerHandoff) { presentHandoff(true); return; }
@@ -212,7 +212,7 @@ const Tutorial = (() => {
       ]
     }).then(res => {
       if (!active) return;
-      if (res.preempted) return tourSteppedAside();   // the Commander put another conversation on screen (Dialogue.preempt)
+      if (res.preempted) return tourSteppedAside();   // the Master put another conversation on screen (Dialogue.preempt)
       if (res.value === 'platforms') {
         finishOrientation(true);
         showPlatformConnections();
@@ -233,7 +233,7 @@ const Tutorial = (() => {
     const result = await PitchStore.offerHandoff({ tour });
     if (!result) { if (active) finishUp(true, true); return; }
     if (result.action === 'tour') { resumeFirstTask = true; beatShowAround(); return; }
-    // the hand-off stepped aside (gh#158): the Commander picked a conversation or sent a turn. Its panel is already gone and the
+    // the hand-off stepped aside (gh#158): the Master picked a conversation or sent a turn. Its panel is already gone and the
     // first task stays pending (offered again at the next boot); nothing is said over the conversation they chose.
     if (result.action === 'aside') { if (active) finishUp(true, true); return; }
     if (active) finishUp(true, true);
@@ -292,13 +292,13 @@ const Tutorial = (() => {
       ]
     }).then(res => {
       if (!active) return;
-      if (res.preempted) return tourSteppedAside();   // the Commander put another conversation on screen (Dialogue.preempt)
+      if (res.preempted) return tourSteppedAside();   // the Master put another conversation on screen (Dialogue.preempt)
       if (res.value === 'demo') return beatCommand();
       finishOrientation(res.value === 'value');
       if (res.value === 'value' && FirstValue.open() === false && hasChat()) Chat.localLine('type your first task in COMMS whenever you’re ready.');
     });
   }
-  /* THE TOUR YIELDS TO THE COMMANDER (comms-owner arbiter). Another conversation went on screen while a tour beat stood over
+  /* THE TOUR YIELDS TO THE MASTER (comms-owner arbiter). Another conversation went on screen while a tour beat stood over
      COMMS: Dialogue.preempt answered the beat's own way out and marked it `preempted`. The tour ends quietly: no first-task
      re-offer and no line over the conversation they chose. A pending first task is offered again at the next boot, and the
      tour stays in SYSTEM › FIELD MANUAL. */
@@ -405,7 +405,7 @@ const Tutorial = (() => {
   // "requisition the rest" — the agent places its own remaining gear through the REAL placement path
   // (Build.requisition → station.addProp at a validated tile). Each landing fires the normal placement hook
   // (build.js → onPropPlaced → kitOnPropPlaced), so the loop scores/flashes/completes exactly as if the
-  // Commander dropped it by hand. Staggered so each ✓ + chime reads; a floor with no clear tile for a piece
+  // Master dropped it by hand. Staggered so each ✓ + chime reads; a floor with no clear tile for a piece
   // degrades honestly back to hand placement (the tick re-lights that tile).
   function runRequisition() {
     if (!active || !kitMode || !kitNeeded) return;
@@ -446,7 +446,7 @@ const Tutorial = (() => {
   }
   // BUILD MODE closed during the kit-out. The tutorial's COMPLETION CONDITION is "every capability prop placed" —
   // when that's met we celebrate + offer an optional real-job demo, then END. If they closed early we never
-  // dead-end (Theme 3): name what's wired vs still dark and offer to keep going or stop here. The Commander's
+  // dead-end (Theme 3): name what's wired vs still dark and offer to keep going or stop here. The Master's
   // floor, always.
   function kitClosedDuringPlace() {
     if (!active) return;
@@ -471,7 +471,7 @@ const Tutorial = (() => {
       ]
     }).then(res => {
       if (!active) return;
-      if (res.preempted) return tourSteppedAside();   // the Commander put another conversation on screen (Dialogue.preempt)
+      if (res.preempted) return tourSteppedAside();   // the Master put another conversation on screen (Dialogue.preempt)
       if (res.skip) return placed.length ? beatEquippedPartial() : finishUp(true);
       if (hasDialogue()) Dialogue.close();
       kitMode = true; kitWasOpen = false; kitHold = false; kitFocusKey = null;   // re-arm; the tick re-lights the path back in
@@ -480,11 +480,11 @@ const Tutorial = (() => {
   }
 
   /* THE BAIL — the kit-out is opt-IN, so it must be opt-OUT-able at any moment (sandbox law: never a mode the
-     Commander can't leave). Before this, the only exits were "place all four" or "open BUILD MODE then close it":
-     a Commander who accepted the tour and changed their mind at the very first step — the BUILD-dock glow,
+     Master can't leave). Before this, the only exits were "place all four" or "open BUILD MODE then close it":
+     a Master who accepted the tour and changed their mind at the very first step — the BUILD-dock glow,
      OUTSIDE BUILD MODE — had no dismiss button and no Esc, just a permanent half-dimmed station.
      Inside BUILD MODE we simply close it and let the tick take the normal exit (BUILD MODE owns Esc there); outside, we
-     run the same accounting directly. Either way the Commander lands on kitClosedDuringPlace's honest
+     run the same accounting directly. Either way the Master lands on kitClosedDuringPlace's honest
      "here's what's wired, here's what's still dark — keep going or stop here" choice, never a dead end. */
   function kitBail() {
     if (!active || !kitMode) return;
@@ -495,7 +495,7 @@ const Tutorial = (() => {
   }
 
   // FULLY EQUIPPED — the completion beat. Every capability prop is placed; the agent is whole. Offer the
-  // optional "watch me actually use it" demo, then hand the Commander the free station. This is where the
+  // optional "watch me actually use it" demo, then hand the Master the free station. This is where the
   // tutorial ENDS (the user's bar: end the tour when full capability is placed).
   function beatFullyEquipped() {
     if (!active) return;
@@ -595,7 +595,7 @@ const Tutorial = (() => {
       bubble.appendChild(act);
     }
     // THE VISIBLE WAY OUT (see kitBail). Every kit-out step carries it, because the coach is the only UI the
-    // Commander can reach over the scrim — without it, accepting the tour was a one-way door.
+    // Master can reach over the scrim — without it, accepting the tour was a one-way door.
     const bail = document.createElement('button'); bail.className = 'tut-coach-bail'; bail.type = 'button'; bail.textContent = '✕ not now';
     bail.onclick = kitBail;
     bubble.appendChild(bail);
@@ -605,7 +605,7 @@ const Tutorial = (() => {
     // Esc bails too — but only when nothing else claims the key, matching briefKey's guard below. Inside
     // BUILD MODE, build.js's own Esc closes the builder and kitTick reads that close as the very same exit
     // (double-handling would fire kitClosedDuringPlace twice and stack two dialogue nodes); over an open
-    // station panel, Esc belongs to the panel — the bottom bar stays live under the scrim, so a Commander
+    // station panel, Esc belongs to the panel — the bottom bar stays live under the scrim, so a Master
     // really can open one mid-kit-out, and one keypress must not both close it and end the tour.
     const onKey = e => {
       if (e.key !== 'Escape') return;
@@ -653,7 +653,7 @@ const Tutorial = (() => {
     });
     U.bus.on('permission.response', p => {
       if (p && ['once', 'always', 'full'].includes(p.decision)) tickBrief('approve');
-      // a STOPPED run's ask settles as deny + stopped:true — the run ended, the Commander never said no
+      // a STOPPED run's ask settles as deny + stopped:true — the run ended, the Master never said no
       if (active && demoActive && p && demoPrompts.has(p.promptId) && p.decision === 'deny' && !p.stopped) sawDeny = true;
     });
     // FIRST-STEPS "give a command" tracks any CLEAN run (tutorial or not) — outside the active guard so it keeps
@@ -667,7 +667,7 @@ const Tutorial = (() => {
   function clearStall() { if (stallTimer) { clearTimeout(stallTimer); stallTimer = null; } }
   // armed right after Chat.send(TASK): if neither run.start nor run.end has fired, the run never reached the
   // sidecar (it isn't running, or the key's bad) — so the agent NEVER walked. Own that honestly and finish the
-  // lesson in words instead of leaving the Commander staring at a frozen "i'm heading to my station".
+  // lesson in words instead of leaving the Master staring at a frozen "i'm heading to my station".
   function armStall() {
     clearStall();
     stallTimer = setTimeout(() => {
@@ -737,7 +737,7 @@ const Tutorial = (() => {
     say([seg('that’s the shape of it: ask, i work, i prove it, you stay in control.', 44, 420)], () => {
       if (!active) return;
       // THE GRADUATION HANDOFF. The demo was a real completed task, so if the station also knows enough about
-      // its Commander, the agent ends the tour by POINTING — the First Pitch fires right here instead of the
+      // its Master, the agent ends the tour by POINTING — the First Pitch fires right here instead of the
       // dead-end "go on, i'm yours to point" (a beginner has no idea where to point; that's the whole reason
       // the pitch exists). The auto pitch path correctly stood down while the tour's panel was up
       // (dialogue-open guard); this is the tour handing it the stage deliberately at its close. Falls back to
@@ -844,7 +844,7 @@ const Tutorial = (() => {
   function markSeen(key) { state.seen[key] = true; save(); }
 
   /* ================= P2 — JUST-IN-TIME COACHMARKS =================
-     One short, agent-voiced hint the first time the Commander touches a surface. Unlike the First
+     One short, agent-voiced hint the first time the Master touches a surface. Unlike the First
      Command's focused scrim, these DON'T block — a small panel glued to the surface + a soft ring, so
      you keep building while you read. Fired by DIRECT calls (build.js / app.js / xpstore.js), never a
      bus emit, so the owned shared/events.js contract + the lint-emits gate stay untouched. Each fires
@@ -996,7 +996,7 @@ const Tutorial = (() => {
   function onLevelUp() {
     tickBrief('level');
     showCoach('levelup', '#tb-station',
-      'my crew level grew from your feedback. your COMMANDER level here tracks recorded progress toward your goals. open QUEST LOG for your journey, or my dossier → GROWTH for my track record.',
+      'my crew level grew from your feedback. your MASTER level here tracks recorded progress toward your goals. open QUEST LOG for your journey, or my dossier → GROWTH for my track record.',
       { overTerms: true });   // a level transition fires exactly once — show it even over an open panel rather than drop it
   }
 
@@ -1210,7 +1210,7 @@ const Tutorial = (() => {
       const keyRows = rows => rows.map(([key, label]) => '<div><dt>' + key.split(' / ').map(k => '<kbd>' + k + '</kbd>').join(' ') + '</dt><dd>' + label + '</dd></div>').join('');
       return '<p class="fm-lead">Your control deck: chat to give orders, the bottom menus to manage the station, BUILD MODE to build.</p>'
         + fmEntry('CHAT', 'Send a command', '<kbd>Enter</kbd> sends. <kbd>Shift + Enter</kbd> adds a line. Type <kbd>/</kbd> to browse slash commands. Use the agent picker in COMMS to choose who receives your message.')
-        + '<div class="fm-map fm-dock"><div><b>CREW</b><span>Agents, recruitment, your Commander dossier.</span></div><div><b>WORK</b><span>Tasks, deliverables, recipes, automation, quests.</span></div><div><b>BUILD</b><span>Refit the station, manage abilities, connect channels.</span></div><div><b>APPS</b><span>The apps your crew built for you. The APPS button shows up with your first one; until then NEW APP is under BUILD.</span></div><div><b>SYSTEM</b><span>This manual, settings, updates, notifications.</span></div></div>'
+        + '<div class="fm-map fm-dock"><div><b>CREW</b><span>Agents, recruitment, your Master dossier.</span></div><div><b>WORK</b><span>Tasks, deliverables, recipes, automation, quests.</span></div><div><b>BUILD</b><span>Refit the station, manage abilities, connect channels.</span></div><div><b>APPS</b><span>The apps your crew built for you. The APPS button shows up with your first one; until then NEW APP is under BUILD.</span></div><div><b>SYSTEM</b><span>This manual, settings, updates, notifications.</span></div></div>'
         + '<h3 class="fm-subhead">ANYWHERE</h3><p class="fm-note">The first four keys work from any screen. <kbd>Esc</kbd> and <kbd>Shift + F10</kbd> act on what has focus, so read their rows before you press them in COMMS.</p>'
         + '<dl class="fm-keys">' + keyRows(anywhere) + '</dl><dl class="fm-keys fm-keys-wide">' + keyRows(onFocus) + '</dl>'
         + '<h3 class="fm-subhead">BUILD › BUILD MODE</h3><p class="fm-note">These keys work while BUILD MODE is open and you are not typing in a field. In the <b>Conveyors</b> tab, <kbd>1</kbd>–<kbd>8</kbd> pick a conveyor piece from its hotbar instead (BAY, INBOX, OUTBOX, SPLITTER, MERGER, JOINER, FILTER, LOOP); <kbd>0</kbd> and <kbd>9</kbd> work in every tab.</p>'
@@ -1268,9 +1268,9 @@ const Tutorial = (() => {
     }
     if (tab === 'PROGRESS') {
       return '<p class="fm-lead">The campaign is your real life. Set a goal, take useful steps, and record what changed.</p>'
-        + fmEntry('YOU', 'Commander progress', 'Open <b>WORK › QUESTS</b> to reach the QUEST LOG. Define a life goal and what success means. Record completed actions and metrics as you go. Confirm the outcome when it actually happens: finishing the plan alone does not complete the goal.')
+        + fmEntry('YOU', 'Master progress', 'Open <b>WORK › QUESTS</b> to reach the QUEST LOG. Define a life goal and what success means. Record completed actions and metrics as you go. Confirm the outcome when it actually happens: finishing the plan alone does not complete the goal.')
         + fmMission('Name a finish line you can recognize', '<b>Goal:</b> play a song for a friend. <b>Success:</b> play the whole song without stopping. <b>First step:</b> practise the chorus. Record the practice now; confirm the goal after the performance.')
-        + fmEntry('CREW', 'Agent experience', 'Positive feedback on agent work grows that agent’s XP. Your Commander journey and the crew’s track record are separate. Neither level locks capabilities behind a grind.')
+        + fmEntry('CREW', 'Agent experience', 'Positive feedback on agent work grows that agent’s XP. Your Master journey and the crew’s track record are separate. Neither level locks capabilities behind a grind.')
         + fmEntry('NEXT STEP', 'Keep the plan useful', 'Use the QUEST LOG to report progress, extend a plan, or defer a suggestion that does not fit. The station can suggest a next action; you decide whether it belongs in your life.')
         + fmAction('quests', 'OPEN QUEST LOG');
     }
@@ -1348,9 +1348,9 @@ const Tutorial = (() => {
     if (typeof Dialogue !== 'undefined' && Dialogue.isOpen && Dialogue.isOpen()) Dialogue.close();
   }
 
-  // A NEW Commander is a new onboarding owner, not a returning user. Clear this module's one-shot key and every
+  // A NEW Master is a new onboarding owner, not a returning user. Clear this module's one-shot key and every
   // in-memory latch after tearing down overlays/listeners, so the fresh hero genuinely receives the tour and
-  // first-steps map instead of inheriting the previous Commander's completed tutorial.
+  // first-steps map instead of inheriting the previous Master's completed tutorial.
   function reset() {
     teardown();
     try { localStorage.removeItem(KEY); } catch (_) {}

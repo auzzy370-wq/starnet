@@ -14,7 +14,7 @@
      budget.resume can continue an exhausted paid path.
 
    Caps are SOFT: hitting one ends the current run with reason 'budget' (the loop's existing terminal
-   reason) and emits a threshold; the Commander clicks "resume", which bumps that scope's override for
+   reason) and emits a threshold; the Master clicks "resume", which bumps that scope's override for
    the session so work continues. Any cap may be null/Infinity = ungoverned. */
 'use strict';
 (function (root, factory) {
@@ -82,7 +82,7 @@
     const resumeGuard = (typeof opts.resumeGuard === 'function') ? opts.resumeGuard : null;
     /* STRICT vs SOFT scopes (authorized 2026-09-23 default). Any chosen cap refuses while spend history is
        uncertain, including an item with an estimate or a recorded per-run cap: neither proves what was charged.
-       Bounds remain recovery information until the Commander explicitly settles them. A shipped-soft-only rail
+       Bounds remain recovery information until the Master explicitly settles them. A shipped-soft-only rail
        proceeds with unknown history, and no governed cap introduces no history refusal. */
     const strictScope = (typeof opts.strictScope === 'function') ? opts.strictScope : () => true;
 

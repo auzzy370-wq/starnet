@@ -9,7 +9,7 @@
      A REAL FLOOR    — belts only on clear deck, never under a machine, never on a belt already there; machines never
                        overlap; every belt tile points at the next.
      DETERMINISTIC   — the same graph and floor give the same layout, byte for byte.
-     PINS NEVER MOVE — a machine the Commander placed stays exactly where it is; the rest of the line forms round it.
+     PINS NEVER MOVE — a machine the Master placed stays exactly where it is; the rest of the line forms round it.
      IT FITS         — every blueprint lays out in a fresh station's starter room, or says how big a room it needs, and a
                        room that size grown beside the station takes it. */
 'use strict';
@@ -174,7 +174,7 @@ for (const bp of WM.BLUEPRINTS) {
     const floor = clutter(k), fl = LL._internals.floorOf(floor);
     for (const bp of WM.BLUEPRINTS) {
       const { geo, graph } = graphOf(bp), want = JSON.stringify(routing({ props: crew(geo.props), belts: geo.belts }));
-      // one machine pinned where the Commander might have put it: the clear spot nearest the middle of the deck
+      // one machine pinned where the Master might have put it: the clear spot nearest the middle of the deck
       const i = k % graph.nodes.length, n = graph.nodes[i], w = n.w || (JUNC[n.t] ? 1 : 2), h = n.h || w;
       let pin = null;
       for (let r = 0; r < 20 && !pin; r++) for (let dy = -r; dy <= r && !pin; dy++) for (let dx = -r; dx <= r && !pin; dx++) {

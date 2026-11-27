@@ -261,7 +261,7 @@ body.glass-demo:not(.hud-mode) #bottombar .ctx-gauge .ctx-cells > * { display: n
 /* ============================================================
    WINDOWS (10-02 touch-up): the dock windows wear the same balance as the panels. Their material token
    (menu-glass.css --menu-glass: a 125deg ph-bright .14 wash) was the haziest surface left — retuned to the
-   panels' glass card, so Settings, the dossier, Channels, Commander and the catalogs follow at once. The
+   panels' glass card, so Settings, the dossier, Channels, Master and the catalogs follow at once. The
    kanban lanes leave their pitch-black wells for the same card, and the decorative window nameplate (a
    footer repeating the title beside a static dot) steps aside — the window's own header already names it.
    ============================================================ */
@@ -387,7 +387,7 @@ body.glass-demo:not(.hud-mode) #screen-game :is(#crew-sum, #topbar .tb-lbl, #top
    possible"). Measured on a real streamed reply: headings were body-size bright text (no structure), bold was a
    barely-brighter cream in prose (VT323 has one weight) but underlined in list leads, code blocks scrolled under
    their copy key, inline code split its box across lines. The conversation layout (agent left on a phosphor rail,
-   Commander right on gold, inverted name chips — comms.css) is untouched; only the reply's typography changes.
+   Master right on gold, inverted name chips — comms.css) is untouched; only the reply's typography changes.
    ============================================================ */
 body.glass-demo:not(.hud-mode) :is(#chat-log, #gc-log) .cmsg .body .md-b { color: var(--ph); text-shadow: 0 0 4px rgba(var(--ph-rgb), .38); }
 body.glass-demo:not(.hud-mode) :is(#chat-log, #gc-log) .cmsg .body .md-list li > .md-b:first-child { text-decoration: none; }
@@ -449,7 +449,7 @@ body.glass-demo:not(.hud-mode) #chat-panel .workshop-return .ws-pane { border-ra
 
 /* ============================================================
    TOP-RIGHT INSTRUMENTS v2 — BARE READOUTS (Andrew 10-02 picked B of three: "B looks cleanest"). No housing at
-   all: glowing terminal readouts straight on the bar — [shield] COMMANDER over LV 1 · segmented XP │ UPLINK ● state.
+   all: glowing terminal readouts straight on the bar — [shield] MASTER over LV 1 · segmented XP │ UPLINK ● state.
    Every value comes from the same writers (topbar.js level/XP, app.js + stationui.js pill state class).
    ============================================================ */
 body.glass-demo:not(.hud-mode) #topbar :is(#tb-station, .tb-connection) {
@@ -771,7 +771,7 @@ body.glass-demo:not(.hud-mode) .term .nf { border-radius: 6px; }
    · the intent groups (INSTALLED / DISCOVER / CREATE) = ONE segmented glass capsule, not three loose rows
    · a hairline, then the sections as compact one-line rows: fixed icon column, ellipsis, tight rhythm
    · selection = the lit row the CREW / SESSIONS rails use, not a separate card with a bar
-   Applies to every window rail built by StationUI (ABILITIES, SETTINGS, COMMANDER, CHANNELS, AUTOMATE …).
+   Applies to every window rail built by StationUI (ABILITIES, SETTINGS, MASTER, CHANNELS, AUTOMATE …).
    ============================================================ */
 body.glass-demo:not(.hud-mode) .term.sn-menu .con-intents {
   display: flex; flex-direction: column; gap: 0; margin: 0 0 12px; padding: 3px;
@@ -1873,7 +1873,7 @@ body.glass-demo:not(.hud-mode) #terms [data-sn-caps="key"] { letter-spacing: .9p
    WINDOW RHYTHM (Andrew 10-19: "measure and even out the windows' line and section gaps"). Measured in all 41 window
    views: sections already sat 16px apart and a console section's heading 7px over its text; the rest drifted. An item's
    title sat 3, 4, 5 or 6px over its own subtitle depending on the component, a heading 0 (two lines touching in
-   COMMANDER › SOURCES) to 20px over its text, and wrapped text ran at eight line heights from 1.22 to 1.6. One rhythm
+   MASTER › SOURCES) to 20px over its text, and wrapped text ran at eight line heights from 1.22 to 1.6. One rhythm
    (screen px at his TEXT SIZE 90; the rules below are in CSS px):
      · an item's title to its subtitle, and a kicker to its title, 4px
      · a heading to its first text 7px (the console sections' own)

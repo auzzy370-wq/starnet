@@ -1,6 +1,6 @@
 /* VULTRON — build.js : the diegetic full-screen BUILD MODE (build) mode.
 
-   Toggled from the dock. Dims the live sim and drops the Commander into an in-fiction
+   Toggled from the dock. Dims the live sim and drops the Master into an in-fiction
    station-editor over the SAME procedural art: pan/zoom camera, phosphor build grid,
    a ghost preview that snaps to tiles and tints green/red via the model's validators,
    and an in-fiction toolbar — PLACE ROOM · HALLWAY · SURFACE · DELETE · UNDO (SELECT moves: drag a selected piece).
@@ -186,7 +186,7 @@ const Build = (() => {
   let propSection = 'decoration', propAbility = '', equipmentAgentId = '';
   let buildGroup = 'props';
   /* WHERE BUILD MODE OPENS (2026-09-27 audit F1/B5): WORK › AUTOMATE › WORKFLOWS opens it straight on the Conveyors tab (openWorkflows), and a
-     Commander who was building a line last time comes back to the Conveyors tab instead of the furniture catalog. Only that
+     Master who was building a line last time comes back to the Conveyors tab instead of the furniture catalog. Only that
      tab is remembered: every other session still starts on Props, where the tutorial expects it. */
   let pendingGroup = null;
   const LAST_GROUP_KEY = 'vultron.refit.lastGroup';
@@ -203,7 +203,7 @@ const Build = (() => {
   // SURFACE targets one surface at a time — the deck or the walls — so the palette stays two rows
   // instead of four. 'follow' wall colour = inherit the room's floor hue (the default).
   let paintTarget = 'floor', wallMat = 'plating', wallStyle = 'follow';
-  // a deck MATERIAL the Commander picked from the palette (not PLATE by default): only a picked one rides a brush drag (paintLaysDeck)
+  // a deck MATERIAL the Master picked from the palette (not PLATE by default): only a picked one rides a brush drag (paintLaysDeck)
   let matPicked = false;
   // the SHELL axis — a room's exterior, the surface you see from outside the station (WorldModel's
   // HULL_MATERIALS). 'follow' here means "the tone this material was drawn for", not "match the deck":
@@ -312,7 +312,7 @@ const Build = (() => {
        asserting degradation forever, a state the harness could no longer prove. The rest are staleness:
        propCardKey made re-hovering the same prop after a reopen paint an EMPTY card (the key matched, so
        the body was never rebuilt), ordersSeenDone chimed completion for steps finished while BUILD MODE was
-       shut, and propQuery reopened the palette silently filtered by a search the Commander can't see. */
+       shut, and propQuery reopened the palette silently filtered by a search the Master can't see. */
     for (const k in layerFailed) delete layerFailed[k];
     propCardKey = null; ordersSeenDone = null; propQuery = ''; lastTier = '';
     propShelfScroll.clear();
@@ -623,7 +623,7 @@ const Build = (() => {
 
   // what the gallery is showing right now: matches across the WHOLE catalog, or the chosen tab
   // Props the STATION places for you (a plugin's terminal appears when an approved plugin brings tools) are never
-  // offered in the picker: a Commander placing one by hand would get a terminal bound to nothing.
+  // offered in the picker: a Master placing one by hand would get a terminal bound to nothing.
   const STATION_PLACED = new Set(['plugin_terminal']);
   const pickable = (list) => list.filter(c => !STATION_PLACED.has(c.id));
   function propsForGrid() {
@@ -681,7 +681,7 @@ const Build = (() => {
     if (!el) return;
     const st = makeStatusText();
     el.textContent = st.text; el.className = 'refit-makeprop-status' + (st.tone ? ' ' + st.tone : '');
-    // the compact row opens when there is something the Commander must see (a running or resumed job, a preview, a
+    // the compact row opens when there is something the Master must see (a running or resumed job, a preview, a
     // message, a draft): the mount decided before these could arrive
     const panel = el.closest('.refit-makeprop');
     if (panel && panel.classList.contains('is-compact') && (makeBusy || makeMsg || makePreview || (makeDraft && makeDraft.trim()) || (makeJob && makeJob.status !== 'done' && makeJob.status !== 'failed'))) {
@@ -994,7 +994,7 @@ const Build = (() => {
     };
     inp.onkeydown = (ev) => {
       if (ev.key !== 'Escape') return;
-      ev.stopPropagation();   // a clear must never bubble out and close BUILD MODE behind the Commander
+      ev.stopPropagation();   // a clear must never bubble out and close BUILD MODE behind the Master
       if (inp.value) { clearSearch(); sfx('click'); }
       else inp.blur();        // an already-empty field hands Escape back to the editor
     };
@@ -1208,7 +1208,7 @@ const Build = (() => {
      whole panel (a heading, two lines of copy, the credits card, the field, the cost line) plus the category menu and the hint box
      left the Props tab showing ZERO props. The panel now rests as one row — MAKE A PROP and, where linking is possible, the panel's
      own credits key (conversion stays in view) — and opens in place on a click. It is held OPEN whenever a paid job is running, a
-     preview or a message is waiting, or the field has the focus (the props lane's rule: a job the Commander paid for is never hidden
+     preview or a message is waiting, or the field has the focus (the props lane's rule: a job the Master paid for is never hidden
      behind a key). The panel itself is makePropPanel(), untouched — every id and class it renders. */
   let makeOpen = false;
   function makePropMount() {
@@ -1398,7 +1398,7 @@ const Build = (() => {
       if (tool === 'select') pal.addEventListener('click', armPaintFromBrowse, true);   // the same function twice is one listener
       /* SURFACE — TWO AXES, TWO SECTIONS: the MATERIAL (what the surface is made of) and the HUE
          (what colour it is). They compose — every material renders in whatever colour is selected
-         — so the Commander picks a room's finish the way you'd pick flooring: the stuff, then the
+         — so the Master picks a room's finish the way you'd pick flooring: the stuff, then the
          shade. Both sections speak the SAME card language as the prop gallery (a dark inset chip
          with a phosphor rim). They used to be bare <button>s with only a border declared, which
          let the UA paint its own grey buttonface + Arial behind every material name — raw HTML
@@ -1467,7 +1467,7 @@ const Build = (() => {
         // alone teaches the difference between CLAPBOARD and SHINGLE
         b.title = shell ? (def.label + ' — ' + (def.blurb || 'shell')) : def.label + (walls ? ' walls' : ' deck');
         // picking a material also moves the hue to the one it was drawn for (wood wants a wood
-        // tone) — visibly, in the row below, so the Commander can still override it right after.
+        // tone) — visibly, in the row below, so the Master can still override it right after.
         b.onclick = () => {
           // SHELL keeps AUTO rather than pinning the suggested hue: on this axis AUTO already MEANS
           // "the tone this material was drawn for", so pinning it would only make the next material
@@ -1557,7 +1557,7 @@ const Build = (() => {
       pal.appendChild(secs);
       if (convSection === 'machines') pal.appendChild(machinePalette());
       else {
-        /* BUILD YOUR OWN (conveyor-links phase D) — the Commander places the line, the station never does (Andrew 2026-10-13: "it
+        /* BUILD YOUR OWN (conveyor-links phase D) — the Master places the line, the station never does (Andrew 2026-10-13: "it
            should open the menu and automatically choose for the user to place an inbox, where they can click wherever they want to
            place it. Not automatically place it for the user"). The key puts an INBOX IN HAND (startNewLine — the hotbar's own hand,
            its ghost on the pointer); the click places it where they choose, and the line grows the hand's way from there. */
@@ -1569,7 +1569,7 @@ const Build = (() => {
         pal.appendChild(own);
         const grid = document.createElement('div'); grid.className = 'refit-linegrid';
         grid.setAttribute('aria-label', 'Line library');
-        /* START FROM INTENT (2026-09-28): the ready-made line with the SHAPE of the Commander's own goal leads the shelf; its tip
+        /* START FROM INTENT (2026-09-28): the ready-made line with the SHAPE of the Master's own goal leads the shelf; its tip
            quotes their words so it is clear why — one click arms it (MAKE ROOM FOR IT when the deck is too small) */
         const goal = goalLine();
         if (goal) {
@@ -1826,7 +1826,7 @@ const Build = (() => {
   }
   const toggleHand = t => setHand(hand && hand.t === t && !hand.agentId && !hand.cfg ? null : { t });
   /* NEW LINE = AN INBOX IN HAND (Andrew 2026-10-13). BUILD YOUR OWN LINE used to lay INBOX → BAY → OUTBOX itself, near the middle of
-     the view; now nothing lands until the Commander clicks: the INBOX rides the pointer as the hand's ghost, a click on clear floor
+     the view; now nothing lands until the Master clicks: the INBOX rides the pointer as the hand's ghost, a click on clear floor
      places it THERE (commitPropStamp), and Esc / right-click puts it down with nothing placed. `newLine` marks it one-shot: once it
      lands the hand empties, so the next drag FROM the INBOX lays its belt and letting go on clear floor offers the next piece (PICK
      WHAT GOES HERE) — the hand's own way to grow a line, nothing laid for them. */
@@ -2424,7 +2424,7 @@ const Build = (() => {
     return { rects, v: station.canPlaceBlueprint(bp.id, o.x, o.y), kind: 'line', label: LINE_PLAIN[bp.id] || bp.label, snapped: s.snapped, links, laid: !!(laid && laid.ok) };
   }
   /* the test job the Workflow panel saved for the line this prop is on (localStorage, per station — the panel's own store),
-     plus the line key; read by the live INBOX's COMMS card so ONE REAL JOB runs the Commander's own input (2026-09-27 X1) */
+     plus the line key; read by the live INBOX's COMMS card so ONE REAL JOB runs the Master's own input (2026-09-27 X1) */
   function testJobForProp(propId) {
     try {
       const st = station || (opts && typeof opts.getStation === 'function' ? opts.getStation() : null);
@@ -2436,7 +2436,7 @@ const Build = (() => {
       return { line: c.key, text };
     } catch (e) { return null; }
   }
-  /* the line for the Commander's GOAL: their own dossier words (goals, then ambitions, then pain points — what onboarding
+  /* the line for the Master's GOAL: their own dossier words (goals, then ambitions, then pain points — what onboarding
      asked), read by WorkflowLine.suggestLineFor for the shape of the work. The first belief that names a shape wins; none
      does → no card (never a guess). */
   function goalLine() {
@@ -2452,10 +2452,10 @@ const Build = (() => {
   }
   /* THE CONVEYORS TAB OPENS CALM (org P18, FINDINGS #32 — "the builder opens on a wall"): LINES shows FOR YOUR GOAL and ANY JOB;
      every other shelf is its name and count, folded, one click from open. A shelf opened or folded stays so for the session; until
-     the Commander folds it, the shelf holding the ARMED line opens (its card and SET UP row show). Nothing is removed: every line
+     the Master folds it, the shelf holding the ARMED line opens (its card and SET UP row show). Nothing is removed: every line
      is one click away. */
   const LINE_SHELF_OPEN = 'any';
-  const lineShelfOpen = new Map();   // shelf id -> true (opened) / false (folded), by the Commander's own click
+  const lineShelfOpen = new Map();   // shelf id -> true (opened) / false (folded), by the Master's own click
   const lineShelfShown = (id, bps) => id === LINE_SHELF_OPEN || (lineShelfOpen.has(id) ? lineShelfOpen.get(id) : (tool === 'line' && bps.some(bp => bp.id === lineType)));
   function lineShelfToggle(g, n, open) {
     const b = document.createElement('button'); b.type = 'button';
@@ -2484,7 +2484,7 @@ const Build = (() => {
   }
   /* one ready-made line's tile (the shelf AND the FOR YOUR GOAL tile) — the line's miniature, its plain name, one small line (its
      steps and size, or what its fit is: setLineTileFit). What the line is for, the catalog name it ships under and (for the goal
-     tile) the Commander's own words are its hover tip and its accessible description. */
+     tile) the Master's own words are its hover tip and its accessible description. */
   function makeLineTile(bp, why) {
     const b = document.createElement('button');
     b.type = 'button';
@@ -2585,7 +2585,7 @@ const Build = (() => {
     }
     if (res && res.ok) {
       lastStampIds = res.ids || null;   // the finish-the-line card adopts this line on the next recompile
-      // LINE NAMING: a stamp leaves the intake's `label` UNSET (the save carries only what the Commander
+      // LINE NAMING: a stamp leaves the intake's `label` UNSET (the save carries only what the Master
       // typed) — but this session remembers which blueprint stamped it, so the intake card's name field
       // can offer the blueprint's name as its placeholder (session-scoped, like lastStampIds).
       try { for (const id of (res.ids || [])) { const sp = station.propById(id); if (sp && sp.t === 'intake') stampNameOf[id] = LINE_PLAIN[bp.id] || bp.label; } } catch (_) {}
@@ -2811,7 +2811,7 @@ const Build = (() => {
       /* the belt a DRAG lays — THROUGH the bay from beat 2, never machine-to-machine direct.
          The old art wired two anonymous machines straight together: exactly the bay-less line that
          compiles fine and moves NOTHING (crates only ride a lane that reaches a crewed dock). The
-         first picture a Commander ever sees of the belt tool must not teach the one dead layout, so
+         first picture a Master ever sees of the belt tool must not teach the one dead layout, so
          the middle machine wears beat 2's gold display — the bay they just crewed, now on the line. */
       R(2, 26, 22, 22, 'rgba(52,58,64,.95)'); R(2, 26, 22, 2, PH);                 // INBOX
       R(53, 26, 22, 22, 'rgba(52,58,64,.95)'); R(53, 26, 22, 2, GOLD); R(53, 46, 22, 2, GOLD);   // the BAY
@@ -3014,7 +3014,7 @@ const Build = (() => {
   /* SHARED BUILDS (community builds phase 1, 2026-10-07). EXPORT writes this floor's LAYOUT to a file — BuildShare strips
      the crew's desks, step instructions, Inbox folders and limits, connections and made props. IMPORT reads a file back
      through the SAME cleaner and shows it as a card, so it lands through the presets' own confirm, backup and one-step
-     undo. Nothing is fetched or sent anywhere: a build travels however the Commander chooses to pass the file on. */
+     undo. Nothing is fetched or sent anywhere: a build travels however the Master chooses to pass the file on. */
   /* THE FLOOR PLAN of a station doc (the preset cards' sketch): rooms, belts, props, fitted into w×h with a margin.
      Also the community picture whenever the stage's own still would not match the build (communitymaps.js). */
   function drawPlan(ctx, doc, w, h) {
@@ -3037,7 +3037,7 @@ const Build = (() => {
      credit, an optional line and the CC BY agreement. SEND FOR REVIEW hands the cleaned build to the linked account.
      What it says next follows what is actually known: the cloud took it, the cloud refused it (nothing was stored),
      or no answer came back (it may have arrived: check before sending again). A result that lands after the sheet was
-     closed still reaches the Commander, as a station notice. */
+     closed still reaches the Master, as a station notice. */
   const MAP_CREDIT_KEY = 'vultron.communityMapCredit';
   function shareOutcomeText(res, what) {
     if (res.ok) return '';
@@ -3281,7 +3281,7 @@ const Build = (() => {
      ⚇ PROP button the tour's ring is pulsing on, while teaching a different lesson (rooms/BAYs/belts) than the
      coach bubble floating above it (gear placement). Deferring costs nothing — markSeen() only fires on
      dismiss, so hasSeen() stays false and the card shows on the next BUILD MODE open, once the tour is out of the
-     way and the Commander is actually building. #refit-help re-opens it on demand either way. */
+     way and the Master is actually building. #refit-help re-opens it on demand either way. */
   function tutorialCoaching() { try { return !!(typeof Tutorial !== 'undefined' && Tutorial.isCoaching && Tutorial.isCoaching()); } catch (e) { return false; } }
   /* THE NAMES THE GUIDE USES ARE READ FROM THE UI ITSELF (2026-09-23 playtest: the guide named a PROPS →
      WORKSTATIONS & WORKFLOWS tab and a "LAYOUTS (9)" button that no longer existed). Tab, tool and button
@@ -3301,7 +3301,7 @@ const Build = (() => {
     g.className = 'refit-guide refit-firstrun';   // refit-firstrun marks THIS card (not the pickers/editors that share .refit-guide) so tutorial.js can avoid painting a coachmark over it
     // Three beats, not a wall — place a room, place+assign a BAY, wire it with a BELT. The full reference (every prop
     // & mechanic) lives in the FIELD MANUAL, so we point there instead of front-loading it all here.
-    /* SHOWN, not told (2026-08-07). This card was four prose bullets — the first thing a Commander
+    /* SHOWN, not told (2026-08-07). This card was four prose bullets — the first thing a Master
        ever sees of build mode, and it read like documentation. The three beats are the same three
        beats; each now leads with a PICTURE of the gesture (drawn in the station's own pixel language
        by guideStepArt) and carries one line of words under it. */
@@ -3353,7 +3353,7 @@ const Build = (() => {
      crew.summon.request walk through (single source of agents; never a parallel mint). The spec rides
      the role's real Specialties class (loadout: model tier pin, effort, skill package), with the
      purpose LED by the dock's own duty line (the roleDesc) so the agent knows which station line it
-     crews. Model: summonAgent inherits the hero's/station-default model unless the Commander pinned
+     crews. Model: summonAgent inherits the hero's/station-default model unless the Master pinned
      the class tier in SETTINGS — exactly the summon default everywhere else. */
   function summonForRole(role, ri) {
     if (typeof App === 'undefined' || !App.summonAgent) return null;
@@ -3545,7 +3545,7 @@ const Build = (() => {
       layoutChanged: () => { bumpUi(); insMemo = null; },
       /* TWO PANELS SQUEEZE THE FLOOR (Andrew, 2026-09-22): opening the docked Workflow panel MINIMIZES the Build
          Library through its own MINIMIZE state (toggleKit), and closing the panel restores it — only if the
-         panel was the one that minimized it, and only if the Commander has not reopened it since (toggleKit
+         panel was the one that minimized it, and only if the Master has not reopened it since (toggleKit
          clears wfKitAuto on any reopen, so a deliberate OPEN KIT is never overridden). The library it gives back must not land
          on the line the panel was showing: the glass is measured while the library is still minimized, and keepClearOfKit moves
          the camera only when the returning library covers what was on it (0.13.5 live, s1-hand r05b). */
@@ -3675,12 +3675,12 @@ const Build = (() => {
     panY = Tp + vh / 2 - (y1 + y2) / 2 * zoom;
   }
   /* DONE KEEPS THE LINE IN VIEW (0.13.5 live, s1-hand r05/r05b). The panel framed its line against the MINIMIZED library, so
-     closing it (✓ DONE, ✕, Escape) brought the library back open on top of the INBOX + BAY just edited, and the Commander had to
+     closing it (✓ DONE, ✕, Escape) brought the library back open on top of the INBOX + BAY just edited, and the Master had to
      FIT or pan to reach them. When the library returns, the floor follows only what the library itself hides:
        · some of the line was on the glass a moment ago (library still minimized: `seen`) and the returning library now covers part
          of that → frame the line in the glass beside it (frameLineOnFloor: pan to its centre, zoom out only if it must, never in);
        · a line already clear of the library is never moved;
-       · a line the Commander panned off the glass while the panel was open stays where they put it (the library hid none of it).
+       · a line the Master panned off the glass while the panel was open stays where they put it (the library hid none of it).
      A part on no line yet (a lone BAY) gets the same rule on its own footprint. A CAMERA MOVE ONLY — panX/panY/zoom: no bake, no
      geometry, no plan; the frame loop fills any newly visible chunks exactly as it does for a hand pan. */
   function keepClearOfKit(partId, seen) {
@@ -3694,7 +3694,7 @@ const Build = (() => {
     // the part of it that was on the glass with the library minimized (canvas px)
     const x1 = Math.max(b.x1 * zoom + panX, seen.l), x2 = Math.min(b.x2 * zoom + panX, W - (seen.r || 0));
     const y1 = Math.max(b.y1 * zoom + panY, seen.t), y2 = Math.min(b.y2 * zoom + panY, H - seen.b);
-    if (x1 >= x2 || y1 >= y2) return;   // none of it: the Commander had moved the floor away — leave it there
+    if (x1 >= x2 || y1 >= y2) return;   // none of it: the Master had moved the floor away — leave it there
     if (x1 >= ins.l && x2 <= W - (ins.r || 0) && y1 >= ins.t && y2 <= H - ins.b) return;   // the library lands on none of it
     if (c && c.bbox && cacheGeo) frameLineOnFloor(c.key); else focusPropOnFloor(p.id);
   }
@@ -3769,7 +3769,7 @@ const Build = (() => {
   }
   /* PLACE ITS DESK (the deskless-agent door in COMMS → App.openDeskPlacement). It used to drive the palette by clicking
      DOM tabs that the 10-01 library rebuild renamed, so it often armed nothing, and the desk it did place belonged to
-     NOBODY — the agent still had nowhere to sit until the Commander found CONFIGURE. Now it arms a workstation for that
+     NOBODY — the agent still had nowhere to sit until the Master found CONFIGURE. Now it arms a workstation for that
      agent: the very next floor click drops the desk AND seats them there. */
   function placeDeskFor(agentId) {
     if (!running) open();
@@ -3815,7 +3815,7 @@ const Build = (() => {
      footprint + 1-tile ring, in the compiler's exact scan order (y then x, from (x-1,y-1)). Before this
      the editor computed lanes at the prop's own tile only, so a ring-attached filter (e.g. nudged one
      tile off its lane by MOVE) still COMPILED and routed, while its editor showed "lay belts OUT of this
-     filter first" with zero lane buttons — an error the Commander could not fix. Returns {x,y} or null. */
+     filter first" with zero lane buttons — an error the Master could not fix. Returns {x,y} or null. */
   function junctionBeltTile(p) {
     if (station.beltAt(p.x, p.y)) return { x: p.x, y: p.y };
     const w = p.w || 1, h = p.h || 1;
@@ -3909,7 +3909,7 @@ const Build = (() => {
     const reply = clean.length > 80 ? clean.slice(0, 80) + '…' : clean;
     const ok = !!r.ok && !!r.delivered;
     const reason = ok ? null : (r.error ? String(r.error) : ('sample refused (HTTP ' + (status == null ? '?' : status) + ')'));
-    // stopped: the SERVER's word that the Commander stopped this job (POST /api/routing/sample/stop) — never the click's
+    // stopped: the SERVER's word that the Master stopped this job (POST /api/routing/sample/stop) — never the click's
     return { ok: ok, stages: stages, usd: usd, reply: reply, reason: reason, stopped: !ok && r.stopped === true };
   }
   /* REFIT-JUNCTION-PURE-END */
@@ -3942,7 +3942,7 @@ const Build = (() => {
     // the connections riding this tile: { from, to, ids } per from ▸ to pair — two or more get one REMOVE key each (build-17). Two
     // that read the same (two uncrewed BAYs, two BAYs one agent crews) say which side of the shared run each is on (FROM ▴ NORTH —
     // connSide), else BELT 1 / BELT 2; and pointing at a key lights the tiles only its belt rides, the floor showing through the card
-    // (wave 2 repair: two identical keys left the Commander guessing which connection goes)
+    // (wave 2 repair: two identical keys left the Master guessing which connection goes)
     const conns = (linkedFloor() && !loose) ? connsAt(tx, ty) : [];
     const words = conns.map(c => String(machineName(c.from)).toUpperCase() + ' ▸ ' + String(machineName(c.to)).toUpperCase());
     const alike = i => conns.filter((o, j) => j !== i && words[j] === words[i]);
@@ -4550,7 +4550,7 @@ const Build = (() => {
     const autoStart = hasIntake && feed.known && lineStartsHere(c);
     const feedDone = hasIntake && (autoStart || !!fedLines[c.key]);
     // a routine IS saved for this line but scheduling is off (2026-09-28 retest): ② says so, and still opens the INBOX section,
-    // where the TURN SCHEDULING ON switch is — never "choose what starts this line" over a start the Commander already chose
+    // where the TURN SCHEDULING ON switch is — never "choose what starts this line" over a start the Master already chose
     let schedOff = false;
     try { schedOff = hasIntake && feed.known && !autoStart && !!(opts && opts.world && opts.world.schedOffFor && opts.world.schedOffFor(c.intakes[0], valPlan)); } catch (_) { schedOff = false; }
     return { unbound, crewLeft: unbound.length, hasIntake, feed, autoStart, feedDone, schedOff,
@@ -4612,7 +4612,7 @@ const Build = (() => {
      retires on its own at 5/5 WITHOUT burning the dismiss key, so reclaiming your only dish
      brings it back; ✕ still dismisses it forever for Commanders who know the drill. */
   // PER STATION, like every other one-shot here (stationKeyOf) — this shipped with no suffix at all, so
-  // dismissing the card on one station silently dismissed it on every station the Commander ever builds.
+  // dismissing the card on one station silently dismissed it on every station the Master ever builds.
   const ORDERS_KEY = () => 'vultron.refit.orders.dis.' + stationKeyOf(station);
   const ordersDismissed = () => { try { return !!localStorage.getItem(ORDERS_KEY()); } catch (e) { return false; } };
   let ordersSeenDone = null;   // which steps were already done last render (so a NEW completion can chime)
@@ -4778,7 +4778,7 @@ const Build = (() => {
   let finSampleRes = null;   // { key, stamp, pending } | { key, stamp, view }
   function finSampleHTML(v) {
     if (!v) return '';
-    // a STOPPED job is the Commander's own act, not a refusal: it says so, with what already ran and what it cost
+    // a STOPPED job is the Master's own act, not a refusal: it says so, with what already ran and what it cost
     if (v.stopped) return '<div class="fl-result stopped"><div><span class="fl-result-k">STOPPED</span> ' + esc(String(v.reason || '').replace(/^stopped\s*[—-]\s*/i, '') || 'you stopped this job') + '</div>'
       + (v.stages.length ? '<div><span class="fl-result-k">RAN</span> ' + esc(v.stages.join(' ▸ ')) + '</div>' : '')
       + (v.usd != null ? '<div><span class="fl-result-k">COST</span> $' + esc(v.usd.toFixed(4)) + '</div>' : '') + '</div>';
@@ -5608,7 +5608,7 @@ const Build = (() => {
     // opens the bind editor (it only selected it, and members reported "no bind option": only unbind/cancel showed)
     if((p.t==='connector_portal'&&!p.connectorId)||(p.t==='plugin_terminal'&&!p.pluginId))return configureProp(p,ev);
     // THE CARD AND THE FLOOR ARE ONE LINE: a click on a line machine opens the docked Workflow panel on it
-    // (or re-selects it there), without panning — the floor is where the Commander is looking
+    // (or re-selects it there), without panning — the floor is where the Master is looking
     if(WF_PART[p.t]){const id=p.id;inspectTimer=setTimeout(()=>{if(running&&selectedPropId===id&&!pinchLock){finFocusLine(id);openWorkflowPanel(id,true);}},400);}
     setHint('Selected '+propLabel(p.t)+' · '+dragWords(p)+' · choose an action in the build kit');
   }
@@ -6696,7 +6696,7 @@ const Build = (() => {
       feedback(station.paintTiles(d.roomId, tiles, style), ev, 'painted');
     } else {
       // a plain click LAYS THE WHOLE DECK — material and hue together, in one undo slot, so
-      // "undo" reverses the deck the Commander just saw laid rather than half of it.
+      // "undo" reverses the deck the Master just saw laid rather than half of it.
       feedback(station.setDeck(d.roomId, { style, mat }), ev, 'deck laid');
     }
   }
@@ -6704,7 +6704,7 @@ const Build = (() => {
      default floor but change the hue only"). A deck material is a whole-room surface — the model has no per-tile material — and a
      drag only ever painted the hue, so a material went missing two ways: a click that drifted across a tile seam (this press had
      no CLICK_SLOP, unlike every other) became a brush stroke, and a deliberate stroke after picking TURF painted MEADOW tiles on
-     the old floor. Now a press under CLICK_SLOP is a click, and a stroke carrying a material the Commander picked that this room
+     the old floor. Now a press under CLICK_SLOP is a click, and a stroke carrying a material the Master picked that this room
      does not have lays that deck as a click does. A stroke paints only the colour while the material is the room's own or none
      was picked (the palette starts on PLATE, which never re-floors a room behind a colour stroke). */
   const paintDragged = d => !!(d && d.moved && d.slipped);
@@ -7067,7 +7067,7 @@ const Build = (() => {
   }
   /* which side a connection is on, for two that read the same on a shared tile (wave 2 repair, build-17): where its own belt JOINS the
      run the look-alikes share ('FROM ▴ NORTH'), else where it LEAVES it ('TO ▸ EAST') — read off its path, a place on the floor the
-     Commander can see; null when its belt never meets theirs side by side */
+     Master can see; null when its belt never meets theirs side by side */
   const SIDE_WORD = { '0,-1': '▴ NORTH', '0,1': '▾ SOUTH', '-1,0': '◂ WEST', '1,0': '▸ EAST' };
   function connSide(c, alike) {
     const all = linksMemoed(), theirs = new Set();
@@ -7150,7 +7150,7 @@ const Build = (() => {
   }
 
   /* ---------- the zoom control (2026-08-07) ----------
-     Zoom was wheel-only and said so nowhere but a hint line: a Commander on a trackpad, or one who
+     Zoom was wheel-only and said so nowhere but a hint line: a Master on a trackpad, or one who
      simply never scrolled over the canvas, had no way to find it. – / % / + in the action deck makes
      it a control you can SEE, and the readout doubles as a "you are here" for the camera. Both keep
      the VIEW CENTRE fixed (the wheel anchors on the pointer; a button has no pointer to anchor on,
@@ -8647,7 +8647,7 @@ const Build = (() => {
       }
     }
     // B5 cost-safety: a BOUND bay whose room has no dedicated PC can't run routed work — the compute gate
-    // stays shut. Surface it (amber) so the Commander equips the bay while still IN build mode.
+    // stays shut. Surface it (amber) so the Master equips the bay while still IN build mode.
     if (typeof station.bayObjects === 'function') {
       for (const p of (cacheGeo.props || [])) {
         if (p.t !== 'bay' || !p.agentId) continue;
@@ -8657,7 +8657,7 @@ const Build = (() => {
         mark({ x1: p.x, y1: p.y, x2: p.x + (p.w || 1) - 1, y2: p.y + (p.h || 1) - 1 }, '#ffbe3c', 'NO COMPUTE — ADD A PC IN THIS ROOM');
       }
     }
-    // a CONNECTOR PORTAL with no bound server grants nothing — surface it (amber) so the Commander binds one.
+    // a CONNECTOR PORTAL with no bound server grants nothing — surface it (amber) so the Master binds one.
     for (const p of (cacheGeo.props || [])) {
       if (p.t !== 'connector_portal') continue;
       const live = station.propById(p.id);
@@ -9510,7 +9510,7 @@ const Build = (() => {
     else if (g.stamp) lines.push(g.insert ? (propType === 'bay' ? 'INSERT A STEP — THE LINE MAKES ROOM' : 'CLICK TO PUT IT ON THIS BELT') : g.kind === 'prop' ? (rowable(propType) ? 'CLICK TO PLACE · DRAG FOR A ROW' : 'CLICK TO PLACE') : 'CLICK TO PLACE · DRAG TO SIZE');
     /* SPACING (2026-09-27 audit B4): a dock hooks every belt in the 1-tile ring around it, so two docks with one empty tile
        between them share that tile — a belt there hooks BOTH, and the job goes nowhere. Said while the ghost is in hand,
-       never refused (sandbox law): the Commander may still want them tight. */
+       never refused (sandbox law): the Master may still want them tight. */
     if (ok && g.kind === 'prop' && placingProp() && RING_DOCK_T[propType] && !linkedFloor()) {
       const near = station.props().find(p => RING_DOCK_T[p.t] && p.x - 1 <= r0.x2 + 1 && r0.x1 - 1 <= p.x + (p.w || 1) && p.y - 1 <= r0.y2 + 1 && r0.y1 - 1 <= p.y + (p.h || 1));
       if (near) lines.push('CLOSE TO THE ' + String(propLabel(near.t)).toUpperCase() + ' — LEAVE 2 TILES OR THEIR BELTS TOUCH');

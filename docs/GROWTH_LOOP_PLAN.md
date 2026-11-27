@@ -20,7 +20,7 @@ Nothing turns work → understanding, understanding → direction, or track reco
 
 ## Design laws (locked, from Andrew's prior decisions)
 
-1. **Consent, not silent escalation.** Autonomy is EARNED as an OFFER the Commander accepts
+1. **Consent, not silent escalation.** Autonomy is EARNED as an OFFER the Master accepts
    with one tap (matches memory-overhaul decision "always-confirm-but-rarer" + Stage B
    grant model). Never silently raise the dial.
 2. **Ask budget is driven by work, not clock.** All new proactive asks ride the existing
@@ -80,7 +80,7 @@ Give level and confidence mechanical teeth via consent-gated offers.
   (with a notice) — trust is bidirectional, matching trust-decay philosophy.
 - Level's first real consumer: offers can only fire at level thresholds (e.g. L3 first
   initiative offer, L5 grant offers). XP keeps its "describe" purity — the OFFER is gated,
-  the capability still needs Commander consent.
+  the capability still needs Master consent.
 
 ### Tier 4 — BALANCE PASS (the "perfect balance" ask)
 - Beat arbitration extended to the 6-way priority above; global anti-nag audit (one ask per

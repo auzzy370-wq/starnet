@@ -2,16 +2,16 @@
 
    Routes (all behind the central /api auth gate; nothing here is reachable without the station token):
      GET  /api/browser/handoffs              live + recent handoffs and the remembered-sign-ins view
-     POST /api/browser/handoff/take   {id}   the Commander takes the wheel (stream starts)
+     POST /api/browser/handoff/take   {id}   the Master takes the wheel (stream starts)
      POST /api/browser/handoff/back   {id}   HAND BACK — the agent resumes
      POST /api/browser/handoff/cancel {id}   CAN'T DO IT — the agent is told to take another route
      GET  /api/browser/handoff/frame?id=&after=   long-poll for the next JPEG frame (only while taken)
-     POST /api/browser/handoff/input  {id, events:[…]}   the Commander's pointer / keys / paste (only while taken)
+     POST /api/browser/handoff/input  {id, events:[…]}   the Master's pointer / keys / paste (only while taken)
      GET  /api/browser/signins                remembered sign-ins
      POST /api/browser/signins/forget         wipe the station browser profile (every saved sign-in)
 
    SECRECY. Input events are forwarded and forgotten: never logged, never stored, never echoed. Frames are served
-   only to the authenticated station page. The remembered-sign-ins list records WHERE the Commander signed in (host,
+   only to the authenticated station page. The remembered-sign-ins list records WHERE the Master signed in (host,
    agent, when) and nothing else — no usernames, no cookies.
 
    REMEMBERED SIGN-INS, grounded against trunk (2026-09-29): the station already keeps ONE durable browser profile

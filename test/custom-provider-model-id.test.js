@@ -6,8 +6,8 @@
    pick (or none on a fresh install), so the sidecar tested the key on whatever model the endpoint LISTS FIRST. That
    model 400'd, and the adapter then called it "a routed-catalog model id … switch to VULTRON or OPENROUTER" — advice
    that is wrong for an endpoint whose own ids are vendor/model. Separately the Model button humanized the typed id
-   ("deepseek ai/deepseek v4.1 flash"), so the Commander read it as Vultron stripping the dashes. Locks:
-     1. WAKE checks the key on the model the Commander TYPED (fresh install AND a stale stored custom pick), through the
+   ("deepseek ai/deepseek v4.1 flash"), so the Master read it as Vultron stripping the dashes. Locks:
+     1. WAKE checks the key on the model the Master TYPED (fresh install AND a stale stored custom pick), through the
         real onWakeAttempt / validateAndSetKey / handleProviderValidate / CUSTOM adapter.
      2. A CUSTOM endpoint refusing a vendor/model id never gets the routed-catalog hint; the error names the id sent.
         A direct vendor endpoint keeps the hint (it is right there).
@@ -30,7 +30,7 @@ const TYPED = 'deepseek-ai/deepseek-v4.1-flash';
 const FIRST_LISTED = 'catalog-org/first-listed-model';
 const BASE = 'https://hive.test/v3';
 
-// A Hive-shaped endpoint: /models lists a model this key cannot chat with FIRST; the id the Commander typed works.
+// A Hive-shaped endpoint: /models lists a model this key cannot chat with FIRST; the id the Master typed works.
 function fakeEndpoint(chatModels) {
   return async (url, init) => {
     if (String(url).endsWith('/models')) return new Response(JSON.stringify({ data: [{ id: FIRST_LISTED }, { id: TYPED }] }), { status: 200, headers: { 'Content-Type': 'application/json' } });

@@ -1,6 +1,6 @@
 /* node test/first-task-recall.test.js — THE FIRST TASK IS NEVER LOST TO A FAILED RUN (bug 159d44fc).
 
-   YOUR FIRST TASK → "Start this task" sends the Commander's task for them (PitchStore.startHandoff → launchDirective →
+   YOUR FIRST TASK → "Start this task" sends the Master's task for them (PitchStore.startHandoff → launchDirective →
    Chat.send). The composer's ArrowUp recall (chat.js sentHistory) was filled only by the composer's own Enter paths, so
    when that first run failed at the provider the composer was empty and ArrowUp brought back nothing: a beginner had to
    retype their very first task. This proves:

@@ -1,5 +1,5 @@
 /* VULTRON — permissionsstore.js : the thin live wiring around the pure Permissions Panel engine (permissions.js).
-   Autonomy Stage B / B1 — the OS-style trust panel where the Commander dials the station never→fully-autonomous
+   Autonomy Stage B / B1 — the OS-style trust panel where the Master dials the station never→fully-autonomous
    and sees / revokes every standing capability grant.
 
    It is the EDGE the pure engine isn't: it owns the api round-trips (the standing grants live SERVER-side in the

@@ -66,11 +66,11 @@ function normalize(raw) {
   return { briefs: Array.isArray(x.briefs) ? x.briefs.map(normalizeBrief).filter(b => b.id && b.key).slice(-CAP) : [] };
 }
 
-// The literal deferral the UI sends when the Commander taps "use your judgment" (fork.js taskAnswerMessage),
+// The literal deferral the UI sends when the Master taps "use your judgment" (fork.js taskAnswerMessage),
 // and what a channel user types when they take the same escape hatch ('Reply with a choice, or say "use your
 // judgment."'). It must match ONLY a pure deferral: "Use your judgment, but keep it under 3 pages" hands over
 // the choice yet still states a real constraint, so counting it as a skip would suppress a dimension the
-// Commander is actively steering. Anchored at both ends, with the canned tail optional.
+// Master is actively steering. Anchored at both ends, with the canned tail optional.
 const SKIP_ANSWER = /^\s*use your judgment\b[\s.!,;:—-]*(?:choose the most sensible reversible default and continue the original task\.?)?\s*$/i;
 
 function fingerprintQuestion(text) {
@@ -127,7 +127,7 @@ function makeTaskBriefStore(deps) {
           rec.briefs.push(out); while (rec.briefs.length > CAP) rec.briefs.shift();
           out = Object.assign({}, out, { inputAction: 'replace' }); return rec;
         }
-        // FIRST unanswered, not last: a batched ask can leave several open questions when the Commander
+        // FIRST unanswered, not last: a batched ask can leave several open questions when the Master
         // walks away mid-batch; the durable fallback re-asks them in order, so the reply belongs to the
         // earliest open one. For legacy single-question briefs the two are the same question.
         const q = prior.questions.find(x => !x.answer);
@@ -222,7 +222,7 @@ function makeTaskBriefStore(deps) {
   }
 
   /* reopenAnswer(id, answered, now) — undo ONE prepare() answer that no model run ever read. The run that
-     carried the Commander's answer was refused before the model (a dead sign-in, a tool-less model, a journal
+     carried the Master's answer was refused before the model (a dead sign-in, a tool-less model, a journal
      failure) or the provider failed on turn 0, so nothing acted on the answer; leaving the brief 'ready' made
      the re-sent answer mint a NEW brief whose ORIGINAL REQUEST was the one-word answer (and a "yes"/"no" ran
      as tool-less chat). Restores exactly the pre-answer state. Refuses (null, record untouched) whenever
@@ -276,7 +276,7 @@ function makeTaskBriefStore(deps) {
     }).then(()=>out);
   }
 
-  /* SCRUB A SAVED KEY (keys.save, 2026-10-25): the brief captured the Commander's message — a pasted key included —
+  /* SCRUB A SAVED KEY (keys.save, 2026-10-25): the brief captured the Master's message — a pasted key included —
      before the agent could store that key in KEYS. fn(text) -> text names it; every brief's directive, input and
      answers pass through it. The store snapshots the PRIOR value to .bak on each write, so a changed store is written
      twice: once scrubbed, once more so the .bak holds the scrubbed copy too. Resolves true iff anything changed. */
@@ -336,7 +336,7 @@ function makeTaskBriefStore(deps) {
     return Object.values(bins).filter(x => x.count >= 2).sort((a, b) => b.updatedAt - a.updatedAt).slice(0, Number.isFinite(limit) ? limit : 5);
   }
 
-  // GROUNDED RECOMMENDATION (2026-07-24). patterns() already knows which answer the Commander keeps choosing
+  // GROUNDED RECOMMENDATION (2026-07-24). patterns() already knows which answer the Master keeps choosing
   // for a given question — that is the one suggestion on this surface that is PROVABLE rather than a model
   // guess, and until now it was only whispered into the prompt as weak prose while the UI threw it away.
   // Same question (fingerprint) + an answer that resolves to one of THIS question's options + chosen >= 2
@@ -357,9 +357,9 @@ function makeTaskBriefStore(deps) {
     for (const p of (Array.isArray(pool) ? pool : patterns(50))) {
       if (fingerprintQuestion(p.question) !== fpText) continue;
       // A DEFERRAL is not a choice. "Use your judgment…" is a stored answer like any other, and letting it
-      // through produced "you chose this N times before" about an option the Commander declined to pick.
+      // through produced "you chose this N times before" about an option the Master declined to pick.
       if (SKIP_ANSWER.test(p.answer)) continue;
-      // EQUALITY ONLY — never the rescue matcher. This resolves the COMMANDER'S OWN free text, where a loose
+      // EQUALITY ONLY — never the rescue matcher. This resolves the MASTER'S OWN free text, where a loose
       // match does not merely mis-suggest, it misquotes them: substring matching turned "not operators" into
       // a gold "you chose operators" claim. If their words are not one of these options, there is nothing
       // provable to say.
@@ -388,18 +388,18 @@ function makeTaskBriefStore(deps) {
       const options = q.options.filter(o => strong.indexOf(o) >= 0);
       return options.length ? { option: top.option, options, count: top.count, multi: true } : null;
     }
-    // A DEAD HEAT IS NOT A PREFERENCE. 2x "operators" against 2x "executives" is the Commander having no
+    // A DEAD HEAT IS NOT A PREFERENCE. 2x "operators" against 2x "executives" is the Master having no
     // settled habit; presenting either as "you chose this 2 times before" would dress a coin flip as proof.
     if (ranked[1] && ranked[1].count === top.count) return null;
     return { option: top.option, options: [top.option], count: top.count, lastAt: top.lastAt };
   }
 
   // ASK-WORTHINESS (2026-07-24). Every "use your judgment" tap is ALREADY persisted as a real answer string
-  // (fork.js taskAnswerMessage), so the Commander's own "stop asking me this" signal has been sitting on disk
+  // (fork.js taskAnswerMessage), so the Master's own "stop asking me this" signal has been sitting on disk
   // all along, uninterpreted. A dimension they habitually defer is one the agent should decide itself — and
   // then state as a correctable assumption in the read card — rather than burn one of its two questions on.
   // Deliberately CONSERVATIVE: suppressing a question is more consequential than merely suggesting a default,
-  // because a false suppression silently guesses at something the Commander cared about. So it needs real
+  // because a false suppression silently guesses at something the Master cared about. So it needs real
   // repetition (>=3) AND deferrals to be at least half of what they did with that dimension. Marker-path
   // questions carry no dimension and are attributed to none.
   function dimensionDeferrals() {
@@ -428,7 +428,7 @@ function makeTaskBriefStore(deps) {
       // RECOVERY, and it is not optional. Suppression blocks brief_ask, which is the only path that records a
       // dimension at all (marker questions carry none) — so without a way out the latch is permanent BY
       // CONSTRUCTION: no question -> no new answer -> the ratio can never change, and there is no reset route,
-      // setting, or UI. A Commander who deferred during two busy tasks would be locked out forever. Two ways
+      // setting, or UI. A Master who deferred during two busy tasks would be locked out forever. Two ways
       // back, so recovery never depends on out-waiting a 200-brief history window:
       //   1. a probe: after PROBE_GAP completed tasks with no question here, let one through;
       //   2. the LATEST signal wins: the moment they actually answer one, stop suppressing. Ratio alone would

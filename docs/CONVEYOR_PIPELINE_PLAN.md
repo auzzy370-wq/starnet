@@ -55,7 +55,7 @@ The belt graph you draw becomes the routing topology the backend obeys. Junction
   **`capGate.attenuate`'d bay** makes an untrusted-work lane *physically unable* to reach dangerous tools — a
   security sandbox you can see on the floor.
 - **Belt tiers / priority lanes:** mk1→mk3 belts change `SPEED` (= how fast that lane is polled/served). A gold
-  express lane for the Commander's direct orders; bot chatter trundles on rusty mk1.
+  express lane for the Master's direct orders; bot chatter trundles on rusty mk1.
 - **Backpressure as queue depth:** make boxes *occupy* their tile so a jam's physical **length IS the live
   queue depth** for that agent. No dashboard — you just *see* the overwhelmed agent and clear it by laying a
   bypass belt or adding a parallel bay.

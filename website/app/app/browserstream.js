@@ -1,6 +1,6 @@
 /* VULTRON — browserstream.js : one live picture of a real browser, and (optionally) your hands on it.
 
-   The BROWSER window shows two streamed browsers — an agent's (view only) and the Commander's own (driven) — and
+   The BROWSER window shows two streamed browsers — an agent's (view only) and the Master's own (driven) — and
    both are the same thing on the wire: a long-polled JPEG of the page plus, when allowed, mouse/keyboard events
    sent back in the page's CSS pixel space. This module is that one thing. The picture/pointer maths is the same
    as STEP-IN's (frontend/app/stepin.js), measured there against real Chromium: the frame is letterboxed by ITS OWN

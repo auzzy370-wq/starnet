@@ -3,7 +3,7 @@
    External instructions are untrusted bytes. The exchange therefore has one narrow lifecycle:
      inspect URL -> freeze exact bytes in a bounded, expiring stage -> install/update those bytes.
 
-   The install operation never fetches again, so the Commander approves the same document that is
+   The install operation never fetches again, so the Master approves the same document that is
    persisted. Provenance rides on the ordinary per-agent skill record; the existing guard/gate then
    decides whether the model may read it. Pure apart from injected fetch/store/clock/hash seams. */
 'use strict';
@@ -231,7 +231,7 @@ function makeSkillExchange(deps) {
     const current = skillStore && skillStore.view(agentId, str(input && input.id), { includeArchived: true, bump: false });
     if (!current) throw new Error('no such skill');
     const sealed = !!(current.packageDigest && Array.isArray(current.packageFiles) && current.packageFiles.length && !current.packageDiverged);
-    // An untouched install exports its exact source bytes. Anything written or changed here (by the Commander or an
+    // An untouched install exports its exact source bytes. Anything written or changed here (by the Master or an
     // agent) exports as a fresh standard package built from what the skill holds now.
     if (!sealed) return exportAuthored(current);
     // The package's files are its source's own sealed bytes (digest-bound, published by their author); the metadata
@@ -251,7 +251,7 @@ function makeSkillExchange(deps) {
     }, o || {});
   }
   /* EXPORT WHAT WE WROTE (2026-09-29). Export used to refuse every skill without a sealed install package, i.e.
-     everything the Commander or their agents authored: the one kind of skill most worth sharing. This builds a
+     everything the Master or their agents authored: the one kind of skill most worth sharing. This builds a
      standard Agent Skills folder from the skill as it is now: SKILL.md with a spec name (lowercase letters, digits,
      hyphens, max 64), the description, license when known, and the display title under metadata.title so Vultron
      can show the same name after import; setup notes and body below; support files at their own paths. A skill the

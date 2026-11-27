@@ -133,7 +133,7 @@ function cycle(loops, res, at) {
     'a discarded row says WHY it died, so the UI never shows unexplained vanished work');
   A.eq(LJ.pendingReviews(one(loops)).length, 1, 'only #1 remains reviewable');
 
-  // approval must NEVER cascade — it is not a claim about work the Commander has not seen
+  // approval must NEVER cascade — it is not a claim about work the Master has not seen
   let ok2 = mk({ queueCap: 5 });
   for (let i = 1; i <= 3; i++) ok2 = cycle(ok2, { runId: 'q' + i, status: 'ok', text: 'w' + i, title: 'w' + i }, T0 + i * HOUR);
   ok2 = S.recordVerdict(ok2, 'l1', 1, 'approved', { now: T0 + 9 * HOUR });
@@ -166,7 +166,7 @@ function cycle(loops, res, at) {
   A.eq(one(mixed).dryStreak, 0, 'a real candidate resets the dry streak');
   A.eq(one(mixed).state, 'idle', 'and the loop stays live');
 
-  // resuming a dormant loop clears the streak (the Commander looked and said keep going)
+  // resuming a dormant loop clears the streak (the Master looked and said keep going)
   const woke = one(S.resumeLoop(cycle(cycle(mk({ dryStopAfter: 2 }), { runId: 'z1', status: 'ok', text: 'NOTHING-TO-DO' }, T0),
     { runId: 'z2', status: 'ok', text: 'NOTHING-TO-DO' }, T0 + HOUR), 'l1', { now: T0 + DAY }));
   A.eq(woke.state, 'idle', 'resume lifts DORMANT');

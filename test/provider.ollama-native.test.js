@@ -334,8 +334,8 @@ module.exports = (async () => {
     A.ok(est > 1000 && est < 2000, 'an image counts as a flat allowance, not as its base64 length (got ' + est + ')');
   }
 
-  // The host's own background calls (no tools, not a Commander turn) do not think on a thinking model: Ollama serves
-  // one request at a time, and two such calls held the Commander's next greeting for 26s (measured, qwen3:8b).
+  // The host's own background calls (no tools, not a Master turn) do not think on a thinking model: Ollama serves
+  // one request at a time, and two such calls held the Master's next greeting for 26s (measured, qwen3:8b).
   {
     const seen = [];
     const mkFetch = (caps) => async (url, init) => {
@@ -348,7 +348,7 @@ module.exports = (async () => {
     await collect(thinker(), { model: 'q', messages: msg });
     A.eq(seen.pop().think, false, 'a background call (no tools, isTask unset) tells a thinking model not to think');
     await collect(thinker(), { model: 'q', messages: msg, isTask: false });
-    A.eq(seen.pop().think, undefined, 'a Commander greeting keeps the model default');
+    A.eq(seen.pop().think, undefined, 'a Master greeting keeps the model default');
     await collect(thinker(), { model: 'q', messages: msg, tools: TOOLS, isTask: true });
     A.eq(seen.pop().think, undefined, 'a task keeps the model default');
     await collect(thinker(), { model: 'q', messages: msg, tools: TOOLS });
@@ -370,7 +370,7 @@ module.exports = (async () => {
     A.eq('think' in seen.pop(), false, 'a model that cannot think is never sent the field');
   }
 
-  // Reasoning OFF reaches a thinking model as think:false on Commander turns and tasks too (#116): 'none' put nothing on
+  // Reasoning OFF reaches a thinking model as think:false on Master turns and tasks too (#116): 'none' put nothing on
   // the wire, so qwen3 thought on every turn behind an OFF switch. (Ollama's registry default IS off; the host resolves
   // it to 'none' before the provider is built — a provider built with no effort at all keeps the model default above.)
   {
@@ -384,7 +384,7 @@ module.exports = (async () => {
     const ollama = (effort, caps) => factory.selectProvider(Object.assign({ provider: 'ollama', fetch: mkFetch(caps || ['completion', 'tools', 'thinking']) }, effort == null ? {} : { reasoningEffort: effort }));
     A.eq(factory.defaultReasoningEffortForProvider('ollama'), 'none', 'fixture: Ollama\'s default effort is OFF');
     await collect(ollama('none'),{ model: 'q', messages: msg, isTask: false });
-    A.eq(seen.pop().think, false, 'Reasoning OFF: a Commander greeting is sent think:false');
+    A.eq(seen.pop().think, false, 'Reasoning OFF: a Master greeting is sent think:false');
     await collect(ollama('none'), { model: 'q', messages: msg, tools: TOOLS, isTask: true });
     A.eq(seen.pop().think, false, 'Reasoning OFF: a task is sent think:false');
     await collect(ollama('none'), { model: 'q', messages: msg });
@@ -494,7 +494,7 @@ module.exports = (async () => {
       let err;
       try { await collect(lan, { model: 'qwen3:8b', messages: [{ role: 'user', content: 'hello' }] }); } catch (e) { err = e; }
       A.ok(err && /^The model server at ollama\.lan ran out of memory\./.test(err.message), 'a remote allocation failure names that server: ' + (err && err.message));
-      A.ok(err && !/Close other local models|this computer/.test(err.message), 'and never tells the Commander to close apps here');
+      A.ok(err && !/Close other local models|this computer/.test(err.message), 'and never tells the Master to close apps here');
       A.eq(errorClass.classifyApiError(err, { model: 'qwen3:8b' }).reason, 'local_memory', 'it is still the memory category');
     }
     // A generic hosted 500 with the same upstream detail stays retryable: this is an Ollama-specific decision.

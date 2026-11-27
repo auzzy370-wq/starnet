@@ -292,7 +292,7 @@ try {
     ok(card.winner && card.winner.reconfirm === true, 'the spine’s winner was the RE-CONFIRM, not an assertion');
     eq(String(card.label), 'STILL TRUE', 'labelled as a question, and unpunctuated like every sibling label');
     ok(/still where you’re heading/.test(String(card.proposal)), 'the proposal IS phrased as a question');
-    // THE CITATION MATCHES THE BELIEF'S OWN PROVENANCE: only Commander-authored evidence may be quoted as speech.
+    // THE CITATION MATCHES THE BELIEF'S OWN PROVENANCE: only Master-authored evidence may be quoted as speech.
     // NB: whyLine leaves a citation that carries its own preposition alone — "because from …" is not English.
     const spoken = seeded.weight === 'stated' || seeded.source === 'commander';
     ok(String(card.evidence).indexOf(spoken ? 'because you said' : 'from “') === 0,
@@ -390,7 +390,7 @@ try {
     const confirmed = await evalJS(cdp, `(() => {
       const el = document.querySelector('#chat-log .cmsg.turnin.rec.arc');
       const shown = (el.querySelector('.rec-evidence') || {}).textContent;
-      // THE COMMANDER EDITS THE BELIEF WHILE THE CARD IS STILL IN THE FEED (the COMMANDER panel's own write path)
+      // THE MASTER EDITS THE BELIEF WHILE THE CARD IS STILL IN THE FEED (the MASTER panel's own write path)
       DossierStore.upsert('goals', { id: ${JSON.stringify(confirmStage.id)}, text: 'ship the billing rewrite by Q3' });
       Array.from(el.querySelectorAll('.consent-btn')).find(b => /Still true/.test(b.textContent)).click();
       const b = DossierStore.beliefs('goals').find(x => x && x.id === ${JSON.stringify(confirmStage.id)});
@@ -403,7 +403,7 @@ try {
       'THE MID-CARD EDIT SURVIVED: the confirm wrote back the LIVE belief, not the render-time capture (' + confirmed.text + ')');
     ok(/ship the billing rewrite”/.test(String(confirmed.shown)) && confirmed.shown.indexOf('Q3') < 0,
       '…and the card really had rendered the pre-edit wording, so the capture WOULD have reverted it');
-    eq(confirmed.weight, 'stated', 'the confirmation is recorded as Commander-STATED evidence (what ends the re-ask loop)');
+    eq(confirmed.weight, 'stated', 'the confirmation is recorded as Master-STATED evidence (what ends the re-ask loop)');
     eq(confirmed.source, 'commander', 'with commander provenance');
     eq(confirmed.ref, 'confirmed',
       'AND an evidence marker saying it was AFFIRMED, not authored — so no later card replays a paraphrase as speech');

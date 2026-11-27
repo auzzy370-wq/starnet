@@ -129,7 +129,7 @@ async function rejects(p, label) {
   await hungFailure;
   A.ok(!Q.state('hung').pending && !Q.state('hung').error, 'obsolete timeout cannot poison recovered state');
 
-  /* IDLE CPU PIECE 3 (2026-10-20): while the Commander is away (PollGate) a polled resource reads at most once per 30 s,
+  /* IDLE CPU PIECE 3 (2026-10-20): while the Master is away (PollGate) a polled resource reads at most once per 30 s,
      never zero times, and the wake on return re-reads whatever is older than its own cadence. */
   const drain = async () => { for (let n = 0; n < 30; n++) await Promise.resolve(); };
   Q.define('away-poll', { path: '/away-poll', pollMs: 4000, ttlMs: 1 });
@@ -172,7 +172,7 @@ async function rejects(p, label) {
      REAL pollgate.js, queryspine.js, journeystore.js and topbar.js in one page (vm), on one fake monotonic + wall clock and
      timer queue, with an /api/journey that answers after 40 ms. Away, journey (12 s TTL, 4 s poll) is read only once its
      value is 30 s old, so for part of the stretch the value is past its TTL. The snapshot says so by trunk's own formula
-     (age >= TTL), and the topbar's COMMANDER label reads "Lv N · saved" whenever the value it shows is that old: in its own
+     (age >= TTL), and the topbar's MASTER label reads "Lv N · saved" whenever the value it shows is that old: in its own
      repaint while away, and from the catch-up read's pending snapshot on return, until that answer lands ("Lv N"). No
      formula stretches the TTL across the away stretch: the station may have levelled up while the page did not ask. */
   async function topbarAcrossAway({ awayMs, frozenMs = 0, failAway = false }) {
@@ -214,7 +214,7 @@ async function rejects(p, label) {
     JourneyStore.init();
     await advance(8000);
     const before = label.textContent;
-    // the Commander leaves: hidden, unfocused, no input (no rAF in this page: the frame proof is skipped)
+    // the Master leaves: hidden, unfocused, no input (no rAF in this page: the frame proof is skipped)
     doc.hidden = true; doc.visibilityState = 'hidden';
     for (const fn of listeners.visibilitychange || []) fn();
     failing = failAway;
@@ -244,7 +244,7 @@ async function rejects(p, label) {
   const across = {};
   for (const awayMs of [20000, 60000, 240000]) {
     const r = across[awayMs] = await topbarAcrossAway({ awayMs });
-    A.eq(r.before, 'Lv 3', 'fixture: on screen, the COMMANDER label reads the live level');
+    A.eq(r.before, 'Lv 3', 'fixture: on screen, the MASTER label reads the live level');
     A.ok(r.readsAway <= Math.ceil(awayMs / 30000) + 1, 'fixture: away, journey is read on the 30 s floor (' + r.readsAway + ' reads in ' + awayMs / 1000 + ' s)');
     A.ok(r.away.every(p => !p.error && p.label === truthOf(p.ageMs)), 'AWAY ' + awayMs / 1000 + ' s: each repaint reads "· saved" exactly when the value is past its 12 s TTL: ' + JSON.stringify(r.away));
     A.ok(r.atReturn.length >= 1 && r.atReturn.every(t => t === truthOf(r.ageAtReturn)), 'BACK after ' + awayMs / 1000 + ' s: the catch-up read\'s pending snapshot paints the value\'s real age (' + r.ageAtReturn + ' ms): ' + JSON.stringify(r.atReturn));

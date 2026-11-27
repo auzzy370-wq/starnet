@@ -81,7 +81,7 @@ function outcomeOf(facts) {
   const make = (code, extra) => Object.assign(lineStop(code, Object.assign({ agent: nameOf(agentId) }, extra)),
     agentId ? { agentId } : null, dockId ? { dockId } : null);
   // The entry can be stopped after its chain returned but before its reply settles. Its explicit fault/STOP wins over
-  // the chain's earlier stop snapshot; fault containment must never turn into a claim that the Commander stopped it.
+  // the chain's earlier stop snapshot; fault containment must never turn into a claim that the Master stopped it.
   if (f.stopCause === 'fault') stop = make('station_fault', { error: f.error });
   else if (f.stopped) stop = make('stopped');
   else if (RunOutcome.isLineStop(f.stopCode)) stop = make(f.stopCode, { error: f.error, why: f.refusedSaid });
@@ -609,7 +609,7 @@ function routineProfile(o, trigger) {
 }
 // schedule(o) — a hop of a scheduled routine fire (the cron driver's advanceChain seam)
 function schedule(o) { return routineProfile(o, 'schedule'); }
-// manual(o) — a hop of a routine the Commander pressed RUN NOW on (its events stream to the watching browser: o.emit)
+// manual(o) — a hop of a routine the Master pressed RUN NOW on (its events stream to the watching browser: o.emit)
 function manual(o) { return routineProfile(Object.assign({}, o, { beforeHop: null, tee: null }), 'manual'); }
 
 /* steptest(o) — a step of the STEP-THROUGH TEST (routing/steptest.js), its entry step included: the dock's sample run config

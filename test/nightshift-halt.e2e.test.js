@@ -2,7 +2,7 @@
 
    THE ESCAPE (found 2026-07-08): the composition root wired isHalted: () => false, so POST /api/halt only aborted
    the one in-flight beat — the leash unit + lastBeatAt were already spent at accept-time, so the ~45-min cooldown
-   was the ONLY thing pausing autonomy, and beats RESUMED on their own after the Commander hit the emergency stop.
+   was the ONLY thing pausing autonomy, and beats RESUMED on their own after the Master hit the emergency stop.
 
    This boots the ACTUAL sidecar (no mock provider needed — the halt seam never reaches a model) and proves, over
    HTTP, at the exact seam that was broken:

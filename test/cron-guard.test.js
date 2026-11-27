@@ -1,6 +1,6 @@
 /* node test/cron-guard.test.js — the routine prompt-injection tripwire (sidecar/cron-guard.js).
 
-   Why this matters now: a routine can be granted the terminal and the Commander's MCP connectors for
+   Why this matters now: a routine can be granted the terminal and the Master's MCP connectors for
    UNATTENDED use, and those tools auto-approve on a granted run. The text reaching the model is therefore a
    real attack surface. This suite locks BOTH directions — payloads blocked, and (just as important) ordinary
    prompts NOT blocked, because a false positive here silently kills a working routine forever. */

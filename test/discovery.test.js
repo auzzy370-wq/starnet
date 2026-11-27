@@ -1,6 +1,6 @@
 /* node test/discovery.test.js — THE ENVIRONMENT DISCOVERY ENGINE (sidecar/discovery.js, pure half).
 
-   The product gap this lane closes: every proactive surface studied only what the Commander TYPED; the station
+   The product gap this lane closes: every proactive surface studied only what the Master TYPED; the station
    never looked at the projects it was blessed into. This suite locks the engine's laws:
      - evidence or silence BY CONSTRUCTION: a finding exists only where the scan produced a real line, and that
        line is carried verbatim as the citation; an empty/failed scan yields nothing
@@ -122,7 +122,7 @@ A.ok(D.fingerprint(ROOT, 'todo one') !== D.fingerprint('D:\\other', 'todo one'),
   A.eq(D.decide(all, { now: T + 2 * D.CYCLE_MIN_GAP_MS + 10, roots }).binding, 'all-fresh',
     'every root freshly scanned → all-fresh, and the engine stays quiet');
   const forced = D.decide(all, { now: T + 2 * D.CYCLE_MIN_GAP_MS + 10, roots, force: true });
-  A.eq(forced.fire, true, 'force (the Commander\'s own SCAN NOW) overrides cooldown + freshness');
+  A.eq(forced.fire, true, 'force (the Master\'s own SCAN NOW) overrides cooldown + freshness');
 }
 
 /* ── 6. the night-focus join is bounded citations, never bare vibes ── */

@@ -25,7 +25,7 @@ const net = require('net');
 const fs = require('fs');
 const path = require('path');
 const { SidecarFixture } = require('./helpers/sidecar-fixture.js');
-// the run-context note is the leading text of the newest user message on a non-Claude chat wire: match the Commander's own words
+// the run-context note is the leading text of the newest user message on a non-Claude chat wire: match the Master's own words
 const { userWords } = require('./helpers/host-notes.js');
 const Phone = require('../relay/app/phone-client.js');
 

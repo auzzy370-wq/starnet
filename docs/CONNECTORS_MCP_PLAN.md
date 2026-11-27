@@ -43,7 +43,7 @@ Three facts make the bridge additive:
 - **Naming.** `mcp__<connectorId>__<tool>`, sanitized to `^[A-Za-z0-9_-]{1,64}$` (already wire-safe;
   no dotted-name translation needed). Namespacing prevents collisions with built-ins and across
   connectors.
-- **Consent posture.** The Commander placing + configuring a connector is itself consent to that
+- **Consent posture.** The Master placing + configuring a connector is itself consent to that
   integration. So: read-only tools (`annotations.readOnlyHint`) auto-allow like `web_search`;
   every other MCP tool is treated as mutating/execute and routed through the consent broker.
   `surface:'autonomous'` (e.g. a Telegram run) default-denies ungranted MCP mutations.

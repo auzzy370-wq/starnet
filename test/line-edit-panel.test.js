@@ -1,10 +1,10 @@
 /* test/line-edit-panel.test.js — THE WORKFLOW PANEL BUILDS THE LINE (conveyor-links plan, phase D, 2026-09-29).
 
    lineedit.js does the edits (test/line-edit.test.js); this locks that the panel and the floor editor OFFER them, the way
-   the Commander meets them, and that nothing in the panel asks for an edit it cannot make:
+   the Master meets them, and that nothing in the panel asks for an edit it cannot make:
      · the page loads the layout engine and the editor; the Build host runs every edit through ONE runner that lays a new
-       line where the Commander is looking, flashes what it placed and recompiles at once;
-     · the Conveyors tab has BUILD YOUR OWN LINE, which puts an INBOX in hand for the Commander to place (never lays a line
+       line where the Master is looking, flashes what it placed and recompiles at once;
+     · the Conveyors tab has BUILD YOUR OWN LINE, which puts an INBOX in hand for the Master to place (never lays a line
        itself — Andrew 2026-10-13; driven for real in test/build-new-line-hand.test.js);
      · a BAY's card: ROLE chips (the step's name) and SHAPE THE LINE — earlier / later / a review / a second opinion (COPY) /
        share the load (TURNS) / remove; a lone BAY: MAKE IT A LINE; a LOOP gate: REMOVE THE REVIEW;
@@ -37,7 +37,7 @@ A.ok(/pushFlash\(/.test(run) && /Tutorial\.onPropPlaced/.test(run) && /rebake\(\
 A.ok(/lineEdit: \(op, propId, args, how\) => lineEditRun\(op, propId, args, how\)/.test(build) && /canLineEdit: \(op, propId, args\) =>[^\n]*LineEdit\.check\(/.test(build), 'the panel host offers lineEdit and canLineEdit (the dry answer that greys a button out)');
 const own = at(build, '      /* BUILD YOUR OWN (conveyor-links phase D)', '      /* START FROM INTENT');
 A.ok(/BUILD YOUR OWN LINE/.test(own) && /own\.onclick = \(\) => startNewLine\(\);/.test(own), 'the Conveyors tab has BUILD YOUR OWN LINE: it puts an INBOX in hand');
-A.ok(!/lineEditRun\(|LineEdit\.|openWorkflowPanel\(/.test(own), '…and never lays a line (or opens a panel) itself — the Commander places the INBOX where they click');
+A.ok(!/lineEditRun\(|LineEdit\.|openWorkflowPanel\(/.test(own), '…and never lays a line (or opens a panel) itself — the Master places the INBOX where they click');
 
 // the panel's edits
 const shape = at(panel, '  function shapeHTML(p) {', '  /* ---------- the footer');

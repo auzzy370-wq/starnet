@@ -16,7 +16,7 @@
      • a provider refusal that names the supported values learns exactly that list and resends at the nearest rung;
      • what was learned outlives the provider instance (a run builds a fresh one), so the next call goes straight to an
        accepted rung, and reasoningEfforts() — what pickAuxEffort reads — stops offering the refused rung;
-     • a model that takes 'none' is untouched, and a Commander's own effort is untouched;
+     • a model that takes 'none' is untouched, and a Master's own effort is untouched;
      • an unrelated 400 is not retried (one request, the honest error);
      • the learned list is per endpoint (another base URL still guesses). */
 'use strict';
@@ -89,7 +89,7 @@ const fresh = (o) => makeOpenRouterProvider(Object.assign({ fetch: fakeFetch, ke
     A.eq(G.pickAuxEffort(fresh().reasoningEfforts('openai/o4-mini')), 'low', 'the aux pick becomes low');
   }
 
-  // ---- a model that takes none, and the Commander's own effort, are untouched ----
+  // ---- a model that takes none, and the Master's own effort, are untouched ----
   {
     calls.length = 0;
     const r = await run(fresh(), { model: 'anthropic/claude-haiku-4.5', reasoningEffort: 'none' });
@@ -98,7 +98,7 @@ const fresh = (o) => makeOpenRouterProvider(Object.assign({ fetch: fakeFetch, ke
     A.eq(G.pickAuxEffort(fresh().reasoningEfforts('anthropic/claude-haiku-4.5')), 'none', 'and keeps none as its aux pick');
     calls.length = 0;
     await run(fresh({ reasoningEffort: 'medium' }), { model: 'openai/gpt-5-mini' });
-    A.eq(calls.map(c => c.effort), ['medium'], 'a Commander run at medium is sent medium');
+    A.eq(calls.map(c => c.effort), ['medium'], 'a Master run at medium is sent medium');
   }
 
   // ---- an unrelated 400 is not retried ----

@@ -90,13 +90,13 @@ A.ok(faultHubAt > 0 && quiesce.indexOf("contain('run-table'") > faultHubAt, 'aft
 
 // ---- 5. a routine hop the FAULT stopped names the fault, never "stopped by you" (review of quick win 1) ----
 // The quiesce disarms cron but never aborts its leases, so the stop-handle kill above is what stops an in-flight routine
-// hop; its sink reads agent.run.end 'cancelled' and its record said "stopped by you" for a stop the Commander never made.
+// hop; its sink reads agent.run.end 'cancelled' and its record said "stopped by you" for a stop the Master never made.
 {
   const said = sidecarFunctionSource('hopStoppedSaid');
   A.ok(said.length > 40 && said.length < 800, 'one bounded hopStoppedSaid');
   const run = (processFaultQuiesced, cronHalted) => new Function('processFaultQuiesced', 'cronHalted', said + '\nreturn hopStoppedSaid();')(processFaultQuiesced, cronHalted);
   A.eq(run(true, false), 'the station hit an internal fault and stopped this run', 'a hop stopped by the fault quiesce says the station\'s fault');
-  A.eq(run(false, false), 'stopped by you', 'a hop the Commander stopped (STOP by id) still says so');
+  A.eq(run(false, false), 'stopped by you', 'a hop the Master stopped (STOP by id) still says so');
   A.eq(run(false, true), 'stopped by you', 'and an E-STOP is theirs');
   A.eq(run(true, true), 'stopped by you', 'a fault after their own E-STOP stays theirs (the trigger and hand-off runners\' faulted() reading)');
   // both routine-hop profiles read it (line-runner.js): the scheduled fire's advanceChain seam and RUN NOW's line (handleCronRun)

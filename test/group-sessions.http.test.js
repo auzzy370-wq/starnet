@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const http = require('node:http');
 const { SidecarFixture } = require('./helpers/sidecar-fixture.js');
 const requests = [];
-// keys.save in a group (release review F9): the group's one "user" turn is the shared transcript — the Commander's words
+// keys.save in a group (release review F9): the group's one "user" turn is the shared transcript — the Master's words
 // AND the peers' replies — so neither key below may ever be offered to keys.save on a participant's run
 const COMMANDER_KEY = '5b8e2d9f1c4a7e0b3d6f9a2c5e8b1d4f7a0c3e6b';
 const PEER_KEY = '8d1f4a7c0e3b6d9f2a5c8e1b4d7f0a3c6e9b2d5f';
@@ -75,7 +75,7 @@ const server = http.createServer((req, res) => {
     assert.ok(requests.some(r => (r.tools || []).some(t => t.function.name === 'group_handoff')));
     assert.ok(requests.every(r => !(r.tools || []).some(t => t.function.name === 'team_dispatch')));
     // F9: a group participant holds the dish (web_request is on its runs) yet is never offered keys.save — the shared
-    // transcript carries the peer's "sample key", and even the Commander's own line there has no provable author
+    // transcript carries the peer's "sample key", and even the Master's own line there has no provable author
     const toolsOf = r => (r.tools || []).map(t => t.function.name);
     assert.ok(requests.some(r => toolsOf(r).includes('web_request')), 'control: group participants really hold the dish (web_request offered)');
     assert.ok(requests.some(r => JSON.stringify(r.messages || []).includes(PEER_KEY)), 'control: a participant run really read the peer\'s key');
@@ -89,7 +89,7 @@ const server = http.createServer((req, res) => {
     assert.ok(leadReqs.every(r => r.tools.some(t => t.function.name === 'station_layout')), 'the group lead can read the assembly lines');
     assert.ok(leadReqs.every(r => /station_build/.test(sysOf(r)) && /you lead this group chat/.test(sysOf(r))), 'the group lead is told where the station builder is');
     // a build follows the approval setting (Full Access asks nothing): the lead is never promised a card on every build
-    assert.ok(leadReqs.every(r => !/approves each build/.test(sysOf(r)) && /follows the Commander's approval setting/.test(sysOf(r))), 'the group lead is told builds follow the approval setting');
+    assert.ok(leadReqs.every(r => !/approves each build/.test(sysOf(r)) && /follows the Master's approval setting/.test(sysOf(r))), 'the group lead is told builds follow the approval setting');
     assert.ok(qaReqs.every(r => !r.tools.some(t => /^station_(layout|build|plan|map)$/.test(t.function.name)) && !/station_build/.test(sysOf(r))), 'a non-lead participant gets no station kit');
     const download = await fixture.request('/api/groups?id=' + g.id + '&file=' + state.artifacts[0].id);
     assert.equal(await download.text(), 'EXACT_SHARED_VERSION_1');

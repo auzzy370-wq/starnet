@@ -71,7 +71,7 @@ function cannedFetch(url) {
 const fixture = {
   models: [{ id: 'replay/model', context_length: 8000, pricing: { prompt: '0.000001', completion: '0.000002' }, supportsTools: true }],
   turns: [
-    [ { type: 'text', delta: 'On it, Commander — searching.' },
+    [ { type: 'text', delta: 'On it, Master — searching.' },
       { type: 'tool_start', index: 0, id: 'c1', name: 'web_search' },
       { type: 'tool_args', index: 0, chunk: '{"query":"the answer"}' },
       { type: 'usage', usage: { prompt_tokens: 40, completion_tokens: 8, total_tokens: 48 } },
@@ -84,7 +84,7 @@ const fixture = {
       { type: 'tool_args', index: 0, chunk: '{"path":"report.md","content":"# Report\\nThe answer is 42."}' },
       { type: 'usage', usage: { prompt_tokens: 80, completion_tokens: 12, total_tokens: 92 } },
       { type: 'done', finishReason: 'tool_calls' } ],
-    [ { type: 'text', delta: 'Done, Commander. Saved report.md.' },
+    [ { type: 'text', delta: 'Done, Master. Saved report.md.' },
       { type: 'usage', usage: { prompt_tokens: 90, completion_tokens: 9, total_tokens: 99 } },
       { type: 'done', finishReason: 'stop' } ]
   ]
@@ -109,7 +109,7 @@ const fixture = {
   makeCodeTools({}).register(registry);
   makeStationInspectTool({ inspect: () => ({ schemaVersion: 1 }) }).register(registry);
   makeManualReadTool().register(registry);   // manual.read rides COMPUTER beside station.inspect
-  makeStationShowTool({}).register(registry);   // station.show too (deferred; opens a window on the watched Commander's screen) — mirrors index.js
+  makeStationShowTool({}).register(registry);   // station.show too (deferred; opens a window on the watched Master's screen) — mirrors index.js
   // plugin.* authoring is NOT registered for runs (no grant): the crew builds APPS — mirrors index.js
   // app.* rides COMPUTER too (deferred; an app page is a network-less sandbox) — registered like index.js does
   require('../sidecar/tools/builtin/apps.js').makeAppTools({ apps: {} }).register(registry);

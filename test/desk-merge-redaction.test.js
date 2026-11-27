@@ -21,7 +21,7 @@
      · a turn filed before its secret was held stays ONE row over repeated opens (directive, and the paste-and-echo flow);
      · a steered reply that already holds its parts as typed is never re-keyed (keyed redacted, it would lose them and
        the parts would show beside it), while another directive of the same open still merges once, redacted;
-     · the newest directive with no answer (the retry target) merges as one row but keeps the Commander's words, and a
+     · the newest directive with no answer (the retry target) merges as one row but keeps the Master's words, and a
        station directive the desk never held never takes another turn's typed words;
      · a long copy asks only for its unmatched rows, newest first and bounded, so the route never refuses the ask;
      · the redaction gets what is left of the read's own window, never a fresh one.
@@ -124,7 +124,7 @@ async function ownSendStaysAsTyped(root) {
   assert.equal(await h.api.loadServerHistory(w, 3), true);
   A.eq(w.history.length, 3, root + ': nothing doubled, nothing lost');
   A.eq(w.history[0].content, station[0].content, root + ': the turn the station holds took its redacted form');
-  A.ok(w.history[2] === mine && mine.content.indexOf(VENDOR_KEY) >= 0, root + ': a turn the station does not hold yet stays exactly as typed (same row) — the run that is about to read it gets what the Commander wrote');
+  A.ok(w.history[2] === mine && mine.content.indexOf(VENDOR_KEY) >= 0, root + ': a turn the station does not hold yet stays exactly as typed (same row) — the run that is about to read it gets what the Master wrote');
 }
 
 async function nothingRedactedCostsNothing(root) {
@@ -236,7 +236,7 @@ async function retryTargetStaysAsTyped(root) {
     assert.equal(await h.api.loadServerHistory(w, 3), true);
     const users = w.history.filter(m => m.role === 'user');
     A.eq(users.length, 1, root + ': open ' + open + ': a failed directive shows once');
-    A.eq(users[0] && users[0].content, typed, root + ': open ' + open + ': and keeps the Commander\'s words — retry re-sends what they typed, not [redacted-key]');
+    A.eq(users[0] && users[0].content, typed, root + ': open ' + open + ': and keeps the Master\'s words — retry re-sends what they typed, not [redacted-key]');
     A.ok(w.history.some(m => m.sys && m.error), root + ': the error row stays');
   }
   // an answer follows it: the next open redacts it

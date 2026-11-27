@@ -62,7 +62,7 @@ function startModel(requests) {
         requests.push(body);
         const messages = Array.isArray(body.messages) ? body.messages : [], tools = (body.tools || []).map(t => t && t.function && t.function.name);
         const lastUser = messages.map(m => m.role).lastIndexOf('user');
-        const words = String(userWords(messages[lastUser] || {}) || '');   // the Commander's own words: earlier runs' titles ride the run-context note
+        const words = String(userWords(messages[lastUser] || {}) || '');   // the Master's own words: earlier runs' titles ride the run-context note
         const plan = PLANS.find(p => words.includes(p.marker));
         const after = messages.slice(lastUser + 1);
         const used = after.filter(m => m.role === 'assistant').flatMap(m => m.tool_calls || []).map(t => t.function && t.function.name);

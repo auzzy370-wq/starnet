@@ -58,7 +58,7 @@ class TurnFixture {
     return this.dual.project(streamId, rows, { liveRunIds: this.live, isCollided: id => this.io.isCollided(id), forgottenAt: this.deleted.get(streamId) || 0,
       forgotten: rows && rows[Symbol.for('vultron.transcript.forgotten')] || undefined });
   }
-  // the Commander deletes a session: the ledger stamps it, and every reader (the store's rules, the projection) answers as if it were gone
+  // the Master deletes a session: the ledger stamps it, and every reader (the store's rules, the projection) answers as if it were gone
   deleteSession(streamId) { const at = this.now(); this.deleted.set(String(streamId), at); return at; }
   read(streamId, limit) { return this.project(streamId, this.display(streamId, { limit: limit || 200 })); }
   async upload(name, mime, bytes) { const out = await this.attachments.saveAttachment('agent', name, 'data:' + mime + ';base64,' + Buffer.from(bytes).toString('base64')); if (!out.ok) throw Error('fixture attachment upload failed'); return out; }

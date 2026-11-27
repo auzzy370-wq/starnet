@@ -66,7 +66,7 @@ const idx = readSidecarSource();
 A.ok(/maxPendingDeliveries: cronStore.MAX_PENDING_DELIVERIES/.test(idx), 'GET /api/cron exposes the backlog ceiling');
 /* The REAL deliveryLine, sliced and run (review 2026-10-23): the backlog collapse leaves ONE receipt that stands for
    many (`superseded`), and the driver defers on that undelivered total — so the row must say so; a routine the
-   Commander paused holds its results until resumed, so it never promises a retry. */
+   Master paused holds its results until resumed, so it never promises a retry. */
 {
   const vm = require('vm');
   const m = src.match(/\n {4}function deliveryLine\(j\) \{[\s\S]*?\n {4}\}\n/);
@@ -98,11 +98,11 @@ A.ok(/maxPendingDeliveries: cronStore.MAX_PENDING_DELIVERIES/.test(idx), 'GET /a
   A.ok(src.includes('id="rt-add">▸ SAVE SCHEDULE<'), 'the SCHEDULES save key wears the INBOX key\'s ▸');
   A.ok(src.includes("(j && j.armSet) ? 'Scheduling is off — you turned it off. Saving keeps it off"), 'an explicit OFF: saving keeps it off (armSet from GET /api/cron)');
   A.ok(!src.includes('it will not run automatically until you enable scheduling'), 'the old line that contradicted arm-on-save is gone');
-  // (org wire AUTO-P16-2) the lines send the Commander to a page that exists, by its key: AUTOMATE calls the routines page 'Scheduled jobs'
+  // (org wire AUTO-P16-2) the lines send the Master to a page that exists, by its key: AUTOMATE calls the routines page 'Scheduled jobs'
   const autoSrc = fs.readFileSync(path.join(__dirname, '../frontend/app/windows/automation.js'), 'utf8');
   const jobsPage = (autoSrc.match(/const labels = \{ routines: '([^']+)'/) || [])[1];
   A.eq(jobsPage, 'Scheduled jobs', 'fixture: AUTOMATE labels the routines page Scheduled jobs');
-  A.ok(!/Active Routines/.test(src), 'no line sends the Commander to an "Active Routines" no page is called');
+  A.ok(!/Active Routines/.test(src), 'no line sends the Master to an "Active Routines" no page is called');
   A.ok(src.includes('Saving keeps it stopped: it runs only after you press ▶ TURN SCHEDULING ON in ' + jobsPage + '.') && src.includes('Saving keeps it off: press ▶ TURN SCHEDULING ON in ' + jobsPage + ' when'), 'the E-STOP and OFF lines name the key and the page it is on');
   A.ok(src.includes('nothing fires until you press ▶ TURN SCHEDULING ON in AUTOMATE › SCHEDULES › ' + jobsPage + "'") && !/until you resume it in AUTOMATE/.test(src), 'the E-STOP save toast names the key, never a RESUME there is none of');
   // one switch name: ▶ TURN SCHEDULING ON / ⏸ TURN SCHEDULING OFF

@@ -277,11 +277,11 @@ function startMock() {
       const base = { reason: 'done', outcome: 'succeeded', reflect: true, task: true, internal: false };
       const clean = LE.passes(LE.runOutcome(Object.assign({ tainted: false }, base))), locked = LE.passes(LE.runOutcome(Object.assign({ tainted: true }, base)));
       A.ok(clean.reflection && clean.study && clean.threadmine && !locked.reflection && !locked.study && !locked.threadmine, 'an untainted finished task run is a candidate for reflection, study and thread mining again; a tainted one is not');
-      // the rows themselves (attachment rows, S3). The Commander's rows hold the Commander's words and are written clean, whatever the run
+      // the rows themselves (attachment rows, S3). The Master's rows hold the Master's words and are written clean, whatever the run
       // held; the stamp is on the MODEL's rows, written while the bytes were in front of it: stamped on turns 1-2, unstamped after
       const rows = await transcript(S);
       const stampsOf = (role) => rows.filter(r => r.role === role).map(r => r.taint || null);
-      A.eq(stampsOf('user'), [null, null, null, null, null, null, null], 'every directive row is clean: it holds the words the Commander typed (' + rows.length + ' rows)');
+      A.eq(stampsOf('user'), [null, null, null, null, null, null, null], 'every directive row is clean: it holds the words the Master typed (' + rows.length + ' rows)');
       A.eq(stampsOf('assistant'), [UA, UA, null, null, null, null, null], 'the answers say the same: stamped with the attachment on turns 1-2, unstamped from turn 3');
       // ...and the file's text is nobody's words: not in a row of the stream, not on disk. The turn-1 directive is the typed words with its references
       A.ok(!rows.some(r => JSON.stringify(r).indexOf('FILE_BODY_SENTINEL') >= 0) && !diskRows(S).some(r => JSON.stringify(r).indexOf('FILE_BODY_SENTINEL') >= 0), 'no stored row of the stream holds the file text');
@@ -376,7 +376,7 @@ function startMock() {
     }
 
     // =========================== FLOW D: file-text-never-commander-words (attachment rows, S3) ===========================
-    // The file's text is the file's, not the Commander's. Turn 1 attaches the text file and the picture; the page later sends only its
+    // The file's text is the file's, not the Master's. Turn 1 attaches the text file and the picture; the page later sends only its
     // newest slice, so the dropped turns come back as the earlier-conversation note, and the model searches the chat with
     // recall_conversation. Neither shows the file: the note and the recall read the typed words and '[attached: name]'.
     {
@@ -398,7 +398,7 @@ function startMock() {
       A.eq([t5.reason, t5.taintedBy, t5.images, t5.fileText], ['done', null, 0, false], 'the windowed turn is clean and carries no bytes');
       A.ok(t5.wire.indexOf('<conversation_summary>') >= 0 && t5.wire.indexOf('TURN2 and then?') >= 0, 'the dropped turns come back as the earlier-conversation note');
       A.ok(t5.wire.indexOf('TURN1 please look at these [attached: notes.txt] [attached: pixel.png]') >= 0, 'the note shows the typed words of the turn that carried the files, then one \'[attached: name]\' per file');
-      A.ok(t5.wire.indexOf('FILE_BODY_SENTINEL') < 0 && t5.wire.indexOf('evil.example') < 0, 'and none of the file: the note presents these as the Commander\'s own words');
+      A.ok(t5.wire.indexOf('FILE_BODY_SENTINEL') < 0 && t5.wire.indexOf('evil.example') < 0, 'and none of the file: the note presents these as the Master\'s own words');
       // recall_conversation: the model searches the chat for the typed words, then for the file
       const r1 = await send('TURN6 RECALL_CONV@d1 TURN1 please', null, 'TURN6');
       A.eq([r1.reason, r1.taintedBy], ['done', null], 'recalling the typed words of the turn taints nothing (its row is clean)');

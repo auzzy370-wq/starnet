@@ -2,7 +2,7 @@
 
    Issue 2026-10-18: "Telegram messages cannot be automated from vultron to include images." An unattended run
    cannot channel.send, and the routine delivery was words-only. These lock the pure half of the fix: which files
-   ride the delivery, that the ATTACH instruction never reaches the Commander as prose, that a failed file is a
+   ride the delivery, that the ATTACH instruction never reaches the Master as prose, that a failed file is a
    reported failure rather than a silent omission, and that the note is only written for a chat destination.
    The live half (real sidecar, fake Bot API) is test/cron.channel-media.e2e.test.js. */
 'use strict';

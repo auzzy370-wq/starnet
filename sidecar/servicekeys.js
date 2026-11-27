@@ -215,7 +215,7 @@
        { ok:false, reason:'unknown' }          — no such key (or it is disabled)
        { ok:false, reason:'unattended', name } — real key, but not granted for unattended runs
        { ok:false, reason:'reserved' }         — a model-provider key name (opts.reservedEnv): KEYS can never
-                                                 hold one, so no Commander action can make it resolve
+                                                 hold one, so no Master action can make it resolve
      `surface` is the RUN's surface, not the user's intent: an autonomous run can never talk itself
      into a grant, because the flag lives on the stored record and nothing in the run can write it. */
   function resolveForRequest(list, envVar, surface, opts) {
@@ -285,7 +285,7 @@
      model the variable was there (the model expanded empty and got a 401). This map is merged back into
      the child env per call; the VALUE still never enters the prompt. */
   /* ⛔ THE UNATTENDED GRANT APPLIES HERE TOO (bug-sweep P0). `opts.surface` is the RUN's surface, exactly as in
-     resolveForRequest: on any non-interactive surface a key is handed over ONLY if the Commander flipped its
+     resolveForRequest: on any non-interactive surface a key is handed over ONLY if the Master flipped its
      unattended grant (`autonomous === true`). Without this, the KEYS tab enforced that grant on web_request
      while a scheduled / night-shift / channel shell child silently received EVERY enabled key — the same
      secret, the same run, two different answers. An ABSENT surface means the caller never wired one; treat it
@@ -312,15 +312,15 @@
      quest block comments warn about. */
   function promptBlock(list, opts) {
     const rows = cleanList(list).filter(r => r.enabled !== false && r.envVar && r.key);
-    // 1Password rows the host could not read right now: named with the reason, so the model tells the Commander what to
+    // 1Password rows the host could not read right now: named with the reason, so the model tells the Master what to
     // fix instead of expanding an empty variable (and getting a 401) or denying the key exists.
     const unread = cleanList(list).filter(r => r.enabled !== false && r.envVar && r.ref && !r.key)
       .slice().sort((a, b) => String(a.name).localeCompare(String(b.name)))
       .map(r => '- ' + r.name + ': ' + r.envVar + ' — kept in 1Password, which could not be read for this run ('
-        + String(r.refError || 'not read yet') + '). Ask the Commander to unlock 1Password; do not ask for the key itself.');
+        + String(r.refError || 'not read yet') + '). Ask the Master to unlock 1Password; do not ask for the key itself.');
     if (!rows.length && !unread.length) return '';
     if (!rows.length) {
-      return '<service_keys>\nThe Commander keeps these API keys in 1Password. None could be read for this run, so none is in your environment:\n'
+      return '<service_keys>\nThe Master keeps these API keys in 1Password. None could be read for this run, so none is in your environment:\n'
         + unread.join('\n') + '\n</service_keys>';
     }
     // WHICH WAY can this run actually spend a key? The block must describe only the routes the run HAS,
@@ -356,9 +356,9 @@
         + rows[0].envVar + '% (inside powershell -Command use $env:' + rows[0].envVar + '); $' + rows[0].envVar + ' is NOT expanded there'
       : 'in your shell, where each name is an environment variable ($' + rows[0].envVar + ' in curl etc.)');
     return '<service_keys>\n'
-      + 'The Commander has connected API keys for these services. You can use them ' + how.join('; and ') + '.\n'
+      + 'The Master has connected API keys for these services. You can use them ' + how.join('; and ') + '.\n'
       + (canRequest && canShell ? 'Prefer web_request for API calls — it needs no shell quoting and works the same on every OS.\n' : '')
-      + 'You will never see a key\'s value and must never ask the Commander for one. NEVER print, echo, or '
+      + 'You will never see a key\'s value and must never ask the Master for one. NEVER print, echo, or '
       + 'write a value anywhere; reference it only by name.\n'
       + lines.join('\n')
       + (unread.length ? '\nNot available for this run:\n' + unread.join('\n') : '')

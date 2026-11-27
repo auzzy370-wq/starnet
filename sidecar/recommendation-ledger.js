@@ -249,7 +249,7 @@ function makeRecommendationLedger(deps) {
      the un-answered impression forever, quietly depressing acceptanceRate for an offer nobody could act on.
      The sweep DROPS a row only when ALL THREE hold: it declared an expiry, the expiry has passed, and it was
      never answered (still `shown`/`opened`). An expiry is NEVER a verdict — deferred/accepted/declined/completed
-     rows are the Commander's real answers and are kept regardless (the declinedindex law: TTL expiries never
+     rows are the Master's real answers and are kept regardless (the declinedindex law: TTL expiries never
      feed suppression, and a dropped row feeds nothing at all). Rows that declared no expiry are untouched. */
   function sweep(now) {
     const at = Number(now) || 0;
@@ -265,7 +265,7 @@ function makeRecommendationLedger(deps) {
   }
   function clear() { return durable.update(STORE_KEY, () => ({ v: 1, entries: [] })).then(() => true); }
   /* forget(match) -> Promise<number>: a deleted session's words leave the ledger (the forget registry; match(entry) reads the entry's own
-     quote stamp). An entry the Commander DECLINED keeps its decision - the reject list the host dedups against, and the preference model's
+     quote stamp). An entry the Master DECLINED keeps its decision - the reject list the host dedups against, and the preference model's
      sample - but loses the evidence quotes; any other entry goes whole. */
   function forget(match) {
     let changed = 0;

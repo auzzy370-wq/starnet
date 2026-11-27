@@ -22,12 +22,12 @@ A.eq(messageContentText(null), '', 'missing content is empty text');
 /* THE RUN'S OWN OPENING PROMPT ON EVERY ROUTE (2026-10-15, qa:journeys J4 red 3/3 on the 0.13.5 candidate). The journey
    mock builds a workshop deliverable only when the run's opening prompt STARTS with [WORKSHOP_SHIFT]. Since the lean-prompt
    review the per-run <run_context> note (and recall) ride the user side of the wire: on a generic chat wire they LEAD the
-   Commander's user message, on a Claude route (the journey's seeded model) they are their own user turns BEFORE it. The
+   Master's user message, on a Claude route (the journey's seeded model) they are their own user turns BEFORE it. The
    mock read "the first user message", got the run-context note, answered plain text, and the shift honestly reported
    no-manifest. Drive the REAL OpenRouter adapter for both route kinds, opening turn and mid-run (after a tool result), and
    require the matcher the mock uses to find the shift prompt and its workshop/<runId>/ path. */
 (async () => {
-  const PROMPT = '[WORKSHOP_SHIFT]\nYou are working in your private workshop while the Commander is away.\n'
+  const PROMPT = '[WORKSHOP_SHIFT]\nYou are working in your private workshop while the Master is away.\n'
     + 'Write every file under workshop/run-7f3a/ and finish with workshop/run-7f3a/deliverable.json.';
   const opening = [
     { role: 'system', content: 'SYSTEM_PROMPT: you are the resident agent.' },

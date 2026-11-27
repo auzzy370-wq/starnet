@@ -14,7 +14,7 @@
         every body's leash, planGathering returns null forever, and the feature becomes nothing at
         all — with no error and no failing test. That is the most dangerous regression here.
      2. WORK OUTRANKS THE ASSEMBLY. Same law as the social beat (G2/K3).
-     3. THE COMMANDER RETURNING IS AN EXIT, and it is the PRIMARY one — the trigger needs 30 minutes
+     3. THE MASTER RETURNING IS AN EXIT, and it is the PRIMARY one — the trigger needs 30 minutes
         of unattended quiet, so the likely end of any gathering is somebody walking back to the desk.
      4. THE OVERSEER BREAKS LAST. Deleting the delay breaks no behaviour a normal test would notice;
         it just quietly removes the Planet-of-the-Apes shot the whole beat exists for.
@@ -86,15 +86,15 @@ const fn = (name, endMarker) => {
     'the gather stepper runs at the same depth as the social one — below the b.working seize in stepCrew');
 }
 
-/* ---- 3. THE COMMANDER RETURNING IS THE PRIMARY EXIT ---- */
+/* ---- 3. THE MASTER RETURNING IS THE PRIMARY EXIT ---- */
 {
   const broken = fn('gatheringBroken', 'function endGathering');
-  A.ok(/cursorPresent\(now\)/.test(broken), 'the Commander moving the cursor scatters the assembly');
+  A.ok(/cursorPresent\(now\)/.test(broken), 'the Master moving the cursor scatters the assembly');
   A.ok(/pageVisible\(\)/.test(broken), 'the tab going away ends it too');
   const maybe = fn('maybeGather', 'function startGathering');
   A.ok(/pageVisible\(\)/.test(maybe),
     'it only STARTS while the page is visible — an idle-only trigger fires all night into an empty room and the one feature whose point is being seen goes unwitnessed');
-  A.ok(/cursorPresent\(now\)/.test(maybe), 'and never while the Commander is actually there');
+  A.ok(/cursorPresent\(now\)/.test(maybe), 'and never while the Master is actually there');
   A.ok(/GATHER_QUIET_MS/.test(maybe), 'the station must have been unattended for the quiet window');
   A.ok(/U\.chance\(GATHER_CHANCE\)/.test(maybe), 'even then it is a roll, not a schedule');
   A.ok(/gatherRollAt = now \+ GATHER_ROLL_EVERY_MS/.test(maybe), 'the roll is armed win OR lose, so it stays at most hourly');

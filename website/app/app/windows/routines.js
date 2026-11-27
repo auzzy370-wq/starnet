@@ -281,7 +281,7 @@
       const pending = (Array.isArray(j.deliveryBacklog) ? j.deliveryBacklog : []).concat(j.finalization ? [j.finalization] : []).filter(f => f && f.state === 'pending');
       let line = '';
       if (pending.length) {
-        // a routine the Commander PAUSED holds its results until resumed (cron-store deliveriesHeld): no retry is due — but a RUN NOW
+        // a routine the Master PAUSED holds its results until resumed (cron-store deliveriesHeld): no retry is due — but a RUN NOW
         // pressed on it while paused (its receipt's pausedAtStart, review 7.1) is not held, and retries as any result does
         const held = j.enabled === false && j.state === 'paused' && pending.every(f => f.pausedAtStart !== true);
         const retry = pending.map(f => Date.parse(f.nextAttemptAt)).filter(Number.isFinite).sort((a, b) => a - b)[0];
@@ -423,7 +423,7 @@
         maxPendingDeliveries = (j && Number(j.maxPendingDeliveries)) || 0;
         // DEGRADED STORE (routine hardening, 2026-08-21): GET /api/cron carries `degraded` when cron.jobs.json AND
         // its .bak were both unreadable at boot. The sidecar quarantined the file, froze the scheduler, and refuses
-        // to persist an empty list until the Commander accepts the loss. Say so loudly; the one action is explicit.
+        // to persist an empty list until the Master accepts the loss. Say so loudly; the one action is explicit.
         const degraded = j && j.degraded;
         const degradedBlock = degraded
           ? '<div class="brief-block" style="border-left-color:var(--bad);margin-bottom:8px">' +
@@ -512,7 +512,7 @@
       }
     }
 
-    // SELF-INITIATION: the agent reasons out a few standing-job proposals from the dossier, the Commander approves
+    // SELF-INITIATION: the agent reasons out a few standing-job proposals from the dossier, the Master approves
     // the ones they want (a Dialogue beat), and each approved one is created via POST /api/cron — then we refresh
     // the list so the new routines appear inline. An explicit ask, always allowed (it's the manual counterpart to
     // the one-time proactive offer). Falls back gracefully if the engine/store isn't present.
@@ -975,7 +975,7 @@
           const arm = (typeof AutoJobs !== 'undefined' && AutoJobs.armStateLine) ? AutoJobs.armStateLine(schedulerArmed) : null;
           const who = line ? 'the ' + String(line.name || 'workflow').toUpperCase() + ' workflow' : agentLabel(agentId || 'agent');
           if (r && r.scheduler && r.scheduler.halted) notify('routine "' + (name || 'unnamed') + '" saved — the scheduler is on E-STOP, so nothing fires until you press ▶ TURN SCHEDULING ON in AUTOMATE › SCHEDULES › Scheduled jobs', 'warn');
-          // ONE ARM RULE (org P16): said as it happened — this save turned scheduling on, or it kept the Commander's OFF and offers the switch
+          // ONE ARM RULE (org P16): said as it happened — this save turned scheduling on, or it kept the Master's OFF and offers the switch
           else if (r && r.scheduler && r.scheduler.armedNow) { msgEl.textContent = '✓ saved · scheduling is now on'; notify('routine "' + (name || 'unnamed') + '" scheduled for ' + who + ' — scheduling is now on', 'good'); }
           else if (r && r.scheduler && r.scheduler.offByChoice) {
             msgEl.innerHTML = '✓ saved · scheduling is off (you turned it off), so it will not run yet. <button class="bb xs" id="rt-msg-arm" type="button">▶ TURN SCHEDULING ON</button>';

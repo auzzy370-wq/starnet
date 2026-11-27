@@ -23,7 +23,7 @@
        finish; a long stream takes more than one request; an undone row leaves, a forgotten session's rows leave;
      · a row the station cannot return (and cannot prove undone or forgotten) stays packed — the existing 'history-unavailable'
        note, a held send, the reference still in the next persist; a silent station changes nothing;
-     · a read that was out when the Commander cleared the session (or deleted it, or cleared and undid) puts nothing back;
+     · a read that was out when the Master cleared the session (or deleted it, or cleared and undid) puts nothing back;
      · every clear path nulls the packed form; sourceIdsOf reads the rows first. */
 const fs = require('node:fs'), os = require('node:os'), path = require('node:path'), vm = require('node:vm'), crypto = require('node:crypto');
 const assert = require('node:assert/strict');
@@ -81,7 +81,7 @@ function station(dir) {
   const dual = Dual.make({ now: () => 1, hash: s => crypto.createHash('sha256').update(s).digest('hex') });
   const turnsOf = s => dual.project(s, store1.view('display', s, { limit: 5000 }), { isCollided: () => false }).turns;
   const sealed = new Map(Object.keys(counts).map(s => [s, turnsOf(s)]));
-  // after the page packed: another window undoes the second turn of 'undone', and the Commander deletes 'forgot' (its rows are forgotten from then on)
+  // after the page packed: another window undoes the second turn of 'undone', and the Master deletes 'forgot' (its rows are forgotten from then on)
   const undoneRow = sealed.get('undone')[1];
   put(io1, 'undone', 'system', '', { kind: 'retract', targets: [undoneRow.rowId], reason: 'undo' });
   const afterwards = ts + 1000;
@@ -495,7 +495,7 @@ async function scenarios(root) {
     });
 
     // ================================================================================================================
-    await run('a read that was out when the Commander cleared the session puts nothing back; cleared and undone, it is read again once, not doubled', async () => {
+    await run('a read that was out when the Master cleared the session puts nothing back; cleared and undone, it is read again once, not doubled', async () => {
       const p = page(env), W = p.W, ws = W.get('open');
       env.tp.gate = deferred();
       const reading = p.api.hydrateHistory(ws);
@@ -535,7 +535,7 @@ async function scenarios(root) {
     // ================================================================================================================
     await run('an undo that puts a packed history back while the open-time read is out discards that read (the merge never lands on a session that is packed again)', async () => {
       const p = page(env), W = p.W, ws = W.get('tail');
-      assert.ok(W.clearConversation('tail', { at: 5 }), 'the Commander clears a packed conversation: its packed form goes into the undo');
+      assert.ok(W.clearConversation('tail', { at: 5 }), 'the Master clears a packed conversation: its packed form goes into the undo');
       assert.equal(W.needsHydration(ws), false); assert.equal(ws.history.length, 0);
       env.tp.gateGet = deferred();
       const loading = p.load('tail');
@@ -551,7 +551,7 @@ async function scenarios(root) {
     });
 
     // ================================================================================================================
-    await run('the open-time reconcile discards a read the Commander cleared meanwhile (the existing stale guard), and a deleted session is not resurrected', async () => {
+    await run('the open-time reconcile discards a read the Master cleared meanwhile (the existing stale guard), and a deleted session is not resurrected', async () => {
       const p = page(env), W = p.W, ws = W.get('open');
       env.tp.gate = deferred();
       const loading = p.load('open');

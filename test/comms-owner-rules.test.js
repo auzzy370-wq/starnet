@@ -8,7 +8,7 @@
        offer (anything mid-game) — yields all three, unanswered.
    This executes every cell with the REAL dialogue.js on a small COMMS column, then proves the callers route through it:
    chat.js's one step-aside goes to Dialogue.preempt, app.js's pick paths ask it even when the pick lands on the conversation
-   already on screen, and every tour beat in tutorial.js opens as the tour and ends quietly when the Commander puts another
+   already on screen, and every tour beat in tutorial.js opens as the tour and ends quietly when the Master puts another
    conversation on screen. */
 'use strict';
 const A = require('./_assert.js');
@@ -52,7 +52,7 @@ const EXPECT = { ceremony: { session: 'hold', turn: 'hold', ask: 'hold' }, tour:
         else A.eq(picked, null, 'tour × ' + action + ': the beat is left unanswered');
       }
       if (kind === 'ceremony') {
-        A.eq(picked, null, 'ceremony × ' + action + ': the awakening is never answered for the Commander');
+        A.eq(picked, null, 'ceremony × ' + action + ': the awakening is never answered for the Master');
         A.ok(s.D.isOpen() && s.panel(), 'ceremony × ' + action + ': it keeps COMMS');
       }
       s.D.close();
@@ -69,9 +69,9 @@ const EXPECT = { ceremony: { session: 'hold', turn: 'hold', ask: 'hold' }, tour:
     let picked = null;
     s.D.node({ lines: 'continue the optional tour?', options: [{ label: '▸ CONTINUE THE TOUR', value: 'go' }, { label: 'Skip for now', value: 'skip', skip: true }] }).then(r => { picked = r; });
     await settle();
-    // the INBOX door (yieldTour with no reason) keeps its old scope: a kit-out beat is NOT answered for the Commander (review
+    // the INBOX door (yieldTour with no reason) keeps its old scope: a kit-out beat is NOT answered for the Master (review
     // 10-27: picking its skip ran beatEquippedPartial / finishUp → the hand-off reopened over the INBOX card just asked for)
-    A.eq(s.D.yieldTour(), false, 'an INBOX click never picks a kit-out beat’s skip key for the Commander');
+    A.eq(s.D.yieldTour(), false, 'an INBOX click never picks a kit-out beat’s skip key for the Master');
     await settle();
     A.eq(picked, null, 'the kit-out beat is left unanswered by the INBOX door');
     A.eq(s.D.preempt('session'), true, 'a kit-out beat yields a session pick like every tour beat');
@@ -89,7 +89,7 @@ const EXPECT = { ceremony: { session: 'hold', turn: 'hold', ask: 'hold' }, tour:
       await settle();
       A.eq(s.D.yieldTour(), false, 'yieldTour() leaves a ' + s.D.owner() + ' panel alone');
       await settle();
-      A.eq(picked, null, 'its question stays the Commander’s to answer');
+      A.eq(picked, null, 'its question stays the Master’s to answer');
       s.D.close();
     }
   }
@@ -132,7 +132,7 @@ const EXPECT = { ceremony: { session: 'hold', turn: 'hold', ask: 'hold' }, tour:
     const load = A.fnBody(chat, '  function load(ws) {');
     A.ok(ask.length > 0 && ask.length < 200 && send.length > 1000 && send.length < chat.length / 2 && load.length > 200 && load.length < 20000, 'noteAskLanding, send and load sliced');
     A.ok(/return stepOfferAside\('ask'\);/.test(ask), 'chat.js raises \'ask\' through it (noteAskLanding)');
-    A.ok(/\n    stepOfferAside\('turn'\);/.test(send), 'chat.js raises \'turn\' through it (send: the Commander\'s own turn)');
+    A.ok(/\n    stepOfferAside\('turn'\);/.test(send), 'chat.js raises \'turn\' through it (send: the Master\'s own turn)');
     A.ok(/stepOfferAside\('session'\);/.test(load), 'chat.js raises \'session\' through it (load: another conversation on screen)');
   }
 

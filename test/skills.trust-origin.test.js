@@ -3,7 +3,7 @@
    The hole: every edit overwrote createdBy with the editor, and the guard read the trust tier off createdBy.
    So an agent editing a WITHHELD community skill (any field, even just the summary) relabeled it 'agent', the
    re-scan ran at the agent tier, caution findings flipped ask -> allow, and the imported body reached the model
-   without the Commander's approval. A panel rollback relabeled it 'user' the same way. And skill.manage handed
+   without the Master's approval. A panel rollback relabeled it 'user' the same way. And skill.manage handed
    the model's arguments to the store wholesale, so a model could also write provenance (sourceUrl, packageFiles,
    createdBy) directly.
      A. an agent edit of a withheld community skill keeps it community and withheld
@@ -69,7 +69,7 @@ const view = (s, name) => s.list('a', { includeArchived: true }).find(x => x.nam
   const gate = makeSkillGate({ guard: skillGuard, approvals: approvalsMap() });
   installCommunity(s, 'Rolled', CAUTION);
   const r = s.manage({ agentId: 'a', action: 'edit', target: 'Rolled', body: CAUTION + '\n3. again', createdBy: 'user', force: true });
-  A.ok(r.ok, 'the Commander may edit an installed skill');
+  A.ok(r.ok, 'the Master may edit an installed skill');
   const after = view(s, 'Rolled');
   A.eq(after.createdBy, 'community', 'a panel edit/rollback keeps the community origin (was: relabeled user)');
   A.eq(after.guardAction, 'ask', 'so the changed community bytes still ask for approval');
@@ -110,9 +110,9 @@ const view = (s, name) => s.list('a', { includeArchived: true }).find(x => x.nam
   s.write({ agentId: 'a', name: 'Mine', summary: 'm', body: CAUTION });
   A.eq(view(s, 'Mine').guardAction, 'allow', 'agent-authored caution content is still allowed');
   s.manage({ agentId: 'a', action: 'edit', target: 'Mine', summary: 'm2', createdBy: 'user' });
-  A.eq(view(s, 'Mine').guardAction, 'allow', 'a Commander edit of it is still allowed');
+  A.eq(view(s, 'Mine').guardAction, 'allow', 'a Master edit of it is still allowed');
   s.write({ agentId: 'a', name: 'Typed', summary: 't', body: DANGER, createdBy: 'user' });
-  A.eq(view(s, 'Typed').guardAction, 'ask', 'the Commander\'s own dangerous content still asks (never a block they cannot clear)');
+  A.eq(view(s, 'Typed').guardAction, 'ask', 'the Master\'s own dangerous content still asks (never a block they cannot clear)');
 }
 
 // ---- F. skill.manage passes only its advertised schema to the store ----
@@ -127,7 +127,7 @@ const view = (s, name) => s.list('a', { includeArchived: true }).find(x => x.nam
   A.eq(after.summary, 'l2', 'the advertised field (summary) was applied');
   A.eq([after.sourceUrl, after.sourceDigest, after.packageDigest, after.packageFileCount], [before.sourceUrl, before.sourceDigest, before.packageDigest, before.packageFileCount],
     'provenance and package fields the model sent were DROPPED');
-  A.eq([after.createdBy, after.writtenBy], ['agent', 'agent'], 'a model cannot claim to be builtin or the Commander');
+  A.eq([after.createdBy, after.writtenBy], ['agent', 'agent'], 'a model cannot claim to be builtin or the Master');
 }
 
 // ---- G. approval still clears exactly the approved bytes ----
@@ -138,7 +138,7 @@ const view = (s, name) => s.list('a', { includeArchived: true }).find(x => x.nam
   const sk = installCommunity(s, 'Approved', CAUTION);
   const rec = view(s, 'Approved');
   approvals.set('a', sk.id, { digest: rec.contentDigest });
-  A.eq(gate.decide(rec).visible, true, 'the Commander\'s approval of these bytes makes it visible');
+  A.eq(gate.decide(rec).visible, true, 'the Master\'s approval of these bytes makes it visible');
   s.manage({ agentId: 'a', action: 'edit', target: 'Approved', body: CAUTION + '\n3. changed', createdBy: 'agent' });
   A.eq(gate.decide(view(s, 'Approved')).visible, false, 'an agent edit changes the bytes, so it is withheld again until re-approved');
 }

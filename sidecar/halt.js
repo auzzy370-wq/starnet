@@ -29,7 +29,7 @@
   function endOf(rec) { return (rec && rec.endReason) || null; }
   /* the first writer wins; true when this call is the one that wrote it. A record that carries onEnd(reason) (a channel
      hub's run: its message's receipts settle where the decision is made, so a crash before the run unwinds never replays a
-     message the Commander stopped, E-STOPped or replaced) is told, whoever wrote the reason; a throw there never stops
+     message the Master stopped, E-STOPped or replaced) is told, whoever wrote the reason; a throw there never stops
      the stop. */
   function markEnd(rec, reason) {
     if (!rec || typeof rec !== 'object' || rec.endReason) return false;
@@ -59,7 +59,7 @@
     return halted;
   }
 
-  /* markFaulted(...hubInflights) — the stop about to land is the station's OWN process-fault containment, never the Commander's
+  /* markFaulted(...hubInflights) — the stop about to land is the station's OWN process-fault containment, never the Master's
      E-STOP (wave 2 repair, conveyor-backend-08): call it on the same hub maps right BEFORE killAll. It stops nothing itself; it
      only writes endReason 'faulted' on each record, so whoever reads the ending (the hub's chat notice, the step test) names the
      fault instead of an E-STOP nobody pressed. Tolerant like killAll; returns the number of records marked (a run that already

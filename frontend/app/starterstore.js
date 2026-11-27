@@ -116,7 +116,7 @@ const StarterStore = (() => {
     load(); const run = p && state.runs[p.runId];
     if (!run || run.finished || !(typeof RunOutcome !== 'undefined' ? RunOutcome.ofEnd(p, null).ok : p.reason === 'done')) return;   // (typed-outcomes) a SUCCEEDED run: a provider-cut 'done' is not clean
     run.finished = true; save(); post({ id: run.id, state: 'completed', reason: 'completed' });
-    // Completion is execution evidence only; usefulness comes from the Commander's rating below.
+    // Completion is execution evidence only; usefulness comes from the Master's rating below.
   }
   function rated(runId, verdict) {
     load(); const run = state.runs[runId], quality = { great: 1, ok: 0.25, miss: -1 }[verdict];

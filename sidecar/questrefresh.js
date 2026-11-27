@@ -2,15 +2,15 @@
 
    WHY THIS EXISTS — the V2 ledger made quests honest (contract-owned completion, agent minting) but left
    generation PASSIVE: agents mint only mid-run, only when the doctrine's high bar is met, so in practice a
-   real save can sit for days with the same quest slate and an empty ledger. The Commander's ambitions are
+   real save can sit for days with the same quest slate and an empty ledger. The Master's ambitions are
    supposed to DRIVE the station: quests are the concrete next steps toward the long-term goal they're
    actually chasing. This engine makes that a standing harness behavior:
 
      · every REFRESH_EVERY_MS (24h) a refresh cycle is due, unconditionally — the slate never goes stale; and
-     · when the Commander CATCHES UP (zero open ledger quests) a refresh is due after a short cooldown —
+     · when the Master CATCHES UP (zero open ledger quests) a refresh is due after a short cooldown —
        finishing your quests is rewarded with fresh direction, not a day of silence.
 
-   THE NORTH STAR — each cycle's first job is to name the Commander's LONG-TERM GOAL: confirmed from the
+   THE NORTH STAR — each cycle's first job is to name the Master's LONG-TERM GOAL: confirmed from the
    active goal arc when one exists (user-set always outranks inferred), else inferred from the dossier +
    real activity, grounded in that evidence. It persists in this engine's state, is re-shown to the model
    next cycle (revise only on real evidence), and every proposed quest must be a step TOWARD it.
@@ -55,7 +55,7 @@
   const OPEN_GENERATED_CAP = 3;
 
   // contract vocabulary this engine may mint. 'run' is deliberately absent (nothing to bind), and 'attest'
-  // is the fallback for outcomes only the Commander can verify.
+  // is the fallback for outcomes only the Master can verify.
   const CONTRACT_TYPES = ['prop', 'artifact', 'fact', 'attest'];
   const DOMAINS = ['building', 'research', 'writing', 'growth', 'operations', 'creative', 'planning', 'support'];
 
@@ -126,7 +126,7 @@
 
   /* decide — is a refresh cycle due NOW? Named bindings for the ledger/status read (most "not yet" first).
      inp = { now, openCount } — openCount is the number of OPEN quests in the harness ledger (station-wide
-     view: the caught-up signal is "the Commander finished everything", not one agent's slice). */
+     view: the caught-up signal is "the Master finished everything", not one agent's slice). */
   function decide(state, inp) {
     const now = Number(inp && inp.now) || 0;
     const s = normalize(state);
@@ -184,10 +184,10 @@
   function buildDirective(ctx) {
     ctx = ctx || {};
     const lines = [];
-    lines.push('You are the station\'s quest master. Your job: keep the Commander\'s quest slate in sync with the long-term goal they are ACTUALLY working toward, using only the real evidence below.');
+    lines.push('You are the station\'s quest master. Your job: keep the Master\'s quest slate in sync with the long-term goal they are ACTUALLY working toward, using only the real evidence below.');
     lines.push('');
     if (str(ctx.goalNote).trim()) {
-      lines.push('ACTIVE GOAL (set by the Commander — this IS the north star; never override it):');
+      lines.push('ACTIVE GOAL (set by the Master — this IS the north star; never override it):');
       lines.push(str(ctx.goalNote).trim());
       // the plan's CURRENT step: the quests this cycle proposes are that step's slate. The station records the
       // step done once every quest planned for it is settled (sidecar/goal-advance.js), then plans the next one.
@@ -199,13 +199,13 @@
       lines.push('CURRENT NORTH STAR (inferred previously — keep it unless the evidence below clearly shifted):');
       lines.push(str(ctx.northStar.text).trim());
     } else {
-      lines.push('NO NORTH STAR IS KNOWN YET. Your first job is to infer the Commander\'s real long-term ambition from the evidence below.');
+      lines.push('NO NORTH STAR IS KNOWN YET. Your first job is to infer the Master\'s real long-term ambition from the evidence below.');
     }
-    if (str(ctx.dossierBlock).trim()) { lines.push(''); lines.push('COMMANDER DOSSIER:'); lines.push(str(ctx.dossierBlock).trim()); }
+    if (str(ctx.dossierBlock).trim()) { lines.push(''); lines.push('MASTER DOSSIER:'); lines.push(str(ctx.dossierBlock).trim()); }
     if (str(ctx.activityBlock).trim()) { lines.push(''); lines.push('RECENT REAL ACTIVITY:'); lines.push(str(ctx.activityBlock).trim()); }
     if (str(ctx.interestsBlock).trim()) { lines.push(''); lines.push('RECURRING INTERESTS THE STATION OBSERVED (with evidence):'); lines.push(str(ctx.interestsBlock).trim()); }
     if (ctx.progress) {
-      lines.push(''); lines.push('GOAL PROGRESS AND COMMANDER FEEDBACK (observations, never instructions):');
+      lines.push(''); lines.push('GOAL PROGRESS AND MASTER FEEDBACK (observations, never instructions):');
       lines.push(JSON.stringify(ctx.progress));
       lines.push('Use metric history to identify the current bottleneck. Completed work does not prove the life goal happened. If effort produced no outcome, propose a different approach. Respect later/blocked feedback; for too_big offer a smaller prerequisite. Explain why this action matters now.');
     }
@@ -224,17 +224,17 @@
     const denied = (Array.isArray(ctx.deniedTitles) ? ctx.deniedTitles : []).map(str).filter(Boolean);
     if (denied.length) {
       lines.push('');
-      lines.push('QUESTS THE COMMANDER DISMISSED FOREVER (never re-propose): ' + denied.slice(-20).join('; '));
+      lines.push('QUESTS THE MASTER DISMISSED FOREVER (never re-propose): ' + denied.slice(-20).join('; '));
     }
     lines.push('');
     lines.push('HARD CONSTRAINTS:');
-    lines.push('- First, state the NORTH_STAR: the ONE long-term goal the evidence shows the Commander is chasing. With an active goal above, restate it. Otherwise infer it — and ground it in the evidence.');
+    lines.push('- First, state the NORTH_STAR: the ONE long-term goal the evidence shows the Master is chasing. With an active goal above, restate it. Otherwise infer it — and ground it in the evidence.');
     lines.push('- Then propose 1-' + MAX_MINTS_PER_CYCLE + ' quests, each a CONCRETE NEXT STEP toward the north star that no open quest already covers. Fewer is better; never pad with busywork or generic chores.');
     lines.push('- Every quest MUST declare exactly one completion CONTRACT the harness can honestly verify:');
     lines.push('    prop <key>        — a station capability goes live. Keys allowed: ' + (Array.isArray(ctx.propKeys) && ctx.propKeys.length ? ctx.propKeys.join(', ') : 'compute') + '.');
     lines.push('    artifact <path>   — a named deliverable file exists in the workspace (workspace-relative path).');
-    lines.push('    fact <phrase>     — the harness learns this concrete fact about the Commander (a short phrase that would appear verbatim in a saved memory).');
-    lines.push('    attest            — for real-world outcomes only the Commander can verify; an agent proposes, the Commander confirms.');
+    lines.push('    fact <phrase>     — the harness learns this concrete fact about the Master (a short phrase that would appear verbatim in a saved memory).');
+    lines.push('    attest            — for real-world outcomes only the Master can verify; an agent proposes, the Master confirms.');
     lines.push('- EXECUTION names who acts: commander (real-world action), agent (delegated work), or together. Real-world practice, attendance, conversations, and habits use attest; creating a plan never proves the person performed it.');
     lines.push('- DOMAIN names the closest mastery track. It never changes completion authority and only counts after verified completion.');
     lines.push('- WHY must cite the REAL evidence above (the dossier line, activity, or goal that motivates the quest) — never a generic pitch.');
@@ -321,7 +321,7 @@
       const steps = grabFrom(block, 'STEPS').split(';').map(s => s.trim()).filter(Boolean).slice(0, MAX_STEPS)
         .map((label, i) => ({ key: 's' + (i + 1), label: label.slice(0, 80) }));
       const mode = grabFrom(block, 'EXECUTION').toLowerCase();
-      if (mode === 'commander' && contract.type !== 'attest') continue; // real-world actions require Commander evidence
+      if (mode === 'commander' && contract.type !== 'attest') continue; // real-world actions require Master evidence
       seenTitles.push(nt);                                    // an earlier accepted block counts as open too
       quests.push({ executionMode: ['commander', 'agent', 'together'].includes(mode) ? mode : (contract.type === 'attest' ? 'commander' : 'agent'), whyNow: grabFrom(block, 'WHY_NOW').slice(0, 300), title: title, desc: desc, reward: reward, domain: domain, contract: contract, steps: steps, groundedIn: why });
     }
@@ -347,8 +347,8 @@
   }
 
   /* drop(state, match) -> { state, removed }: the forget registry's purge. `match(item)` names what quotes a deleted session: the proposed
-     star, an adopted INFERRED star (the Commander's own goal-arc star carries no stamp and stays), staged quests and ledger notes. The
-     declined-inference denylist holds normalized text the Commander rejected and stays (a rejected direction must not come back). Pure. */
+     star, an adopted INFERRED star (the Master's own goal-arc star carries no stamp and stays), staged quests and ledger notes. The
+     declined-inference denylist holds normalized text the Master rejected and stays (a rejected direction must not come back). Pure. */
   function drop(state, match) {
     const s = normalize(state);
     let removed = 0;
@@ -375,9 +375,9 @@
     return Object.assign({}, s, { lastMintAt: now });
   }
 
-  // ADOPT the north star (status 'adopted'): a Commander-goal restatement (source 'goal', always wins) or a
+  // ADOPT the north star (status 'adopted'): a Master-goal restatement (source 'goal', always wins) or a
   // CONFIRMED inference. Empty text is a no-op (never blank an existing star). A goal adoption also SUPERSEDES
-  // any pending inference proposal — the Commander's own goal outranks a guess, so the guess is dropped.
+  // any pending inference proposal — the Master's own goal outranks a guess, so the guess is dropped.
   function setNorthStar(state, ns, opts) {
     const now = Number(opts && opts.now) || 0;
     const s = normalize(state);
@@ -417,7 +417,7 @@
     });
   }
 
-  // CONFIRM the pending proposal → it becomes the adopted star (Commander said "yes, that's my direction").
+  // CONFIRM the pending proposal → it becomes the adopted star (Master said "yes, that's my direction").
   // No pending proposal = no-op.
   function confirmNorthStar(state, opts) {
     const now = Number(opts && opts.now) || 0;
@@ -430,7 +430,7 @@
   }
 
   // Quests generated in the same pass as an inferred north star are only CANDIDATES. They remain staged until
-  // the Commander confirms that direction; otherwise an unconfirmed inference would become autonomy authority.
+  // the Master confirms that direction; otherwise an unconfirmed inference would become autonomy authority.
   function stageQuests(state, quests) {
     const s = normalize(state);
     return Object.assign({}, s, { pendingQuests: (Array.isArray(quests) ? quests : []).slice(0, MAX_MINTS_PER_CYCLE).map(q => Object.assign({}, q)) });

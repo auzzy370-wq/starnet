@@ -26,7 +26,7 @@ const { appendJsonlDurable, tailLines } = require('./logbound.js');
 const DEFAULT_COMPACT_BYTES = 4 * 1024 * 1024;
 const DEFAULT_READ_MAX_BYTES = 256 * 1024 * 1024;
 /* ROLLBACK SAFETY: v0.13.5 reads only the last 16 MiB (its LOG_MAX_BYTES) of skills.jsonl and then boot-compacts that
-   partial view, so a live file past 16 MiB loses the skills at its head for good if the Commander downgrades. The
+   partial view, so a live file past 16 MiB loses the skills at its head for good if the Master downgrades. The
    hysteresis (2x the last compacted size) alone let an 8 MiB library grow to 16 MiB and a 10 MiB one to 20 MiB, so
    the threshold is capped at DOWNGRADE_SAFE_BYTES. A library over the cap is compacted once per growth step: at least
    GROWTH_STEP_BYTES and four of its largest records (a step of 1 MiB under 1.1 MiB records was a full rewrite of the

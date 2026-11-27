@@ -3,7 +3,7 @@
    makeFsTools is built PER RUN, and team.dispatch runs its workers with Promise.all. Every fs mutation was
    read -> await the LSP baseline -> writeFile of a whole file composed from that read, so two runs editing one
    project file interleaved and the later writer erased the other's change. Both receipts still said
-   read-back-verified (each read back its OWN bytes), so the lead told the Commander the work was done. Reproduced
+   read-back-verified (each read back its OWN bytes), so the lead told the Master the work was done. Reproduced
    20/20 with a slow baseline, 5/5 without one; concurrent fs.append lost a line 9-10 runs out of 10.
 
    Real temp dirs, real fs, two real makeFsTools instances sharing one project (the shape index.js builds for a

@@ -1,7 +1,7 @@
 /* node test/taint-replay.attachment.test.js — attachment-rows-and-taint, step S2: the attachment's stamp DECAYS on replay,
    and nothing else does.
 
-   THE FAMILY. A Commander's attachment taints a run while its BYTES are in the run's context (index.js runOnceCore latches
+   THE FAMILY. A Master's attachment taints a run while its BYTES are in the run's context (index.js runOnceCore latches
    taint.js ATTACHMENT_TAINT exactly when attachments.resentOf reports bytes:true). The rows that run writes carry the
    same stamp, and they used to keep tainting every later replay until they left the window: a conversation that once held
    an attachment stayed locked for good, which is why a screenshot on turn 1 meant "no tools, no learning" on turn 40.
@@ -249,7 +249,7 @@ function startRun(ctx, runId, o) {
     r1.finish();
     A.eq([r1.execution.taintedBy(), r1.execution.rowTaint()], [UA, 'fs.read'], 'the production observe block latches fs.read even though the run already held the attachment');
     const rows1 = store.history('S');
-    // (S3) the directive row holds the Commander's typed words, so it is written clean; the bare attachment stamp is the model's rows
+    // (S3) the directive row holds the Master's typed words, so it is written clean; the bare attachment stamp is the model's rows
     A.eq(rows1.map(r => r.taint || null), [null, UA, 'fs.read', 'fs.read'], 'the directive is clean, rows written before the read carry the bare source, rows after it carry fs.read');
     A.eq(replayFrom()({ streamId: 'S', msgs: browser(1) }), 'replayed history (tainted by fs.read)', 'turn 3 replays the fs.read rows and starts tainted: the attachment did not launder the read');
     A.eq(journal.inspect('run1').taintedBy, 'fs.read', 'the journal reports the page over the bare attachment it began with');

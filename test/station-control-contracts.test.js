@@ -4,7 +4,7 @@
    happened: a route that refuses inside a 200 ({ok:false} — a KEEP whose patch could not apply, a reconnect that failed),
    a change to something that is not there (a connector, skill, standing approval or off-limits entry that does not exist;
    a trusted folder written with other case or slashes, which left the folder TRUSTED), Full Power "off" while the boot flag
-   keeps it on; settings reads that showed every market skill uninstalled and every plugin unapproved; and the Commander's
+   keeps it on; settings reads that showed every market skill uninstalled and every plugin unapproved; and the Master's
    next autonomy-dial click quietly writing back the axes the lead had just changed. */
 'use strict';
 const A = require('./_assert.js');
@@ -105,7 +105,7 @@ const changed = s => s.routes.filter(r => r.method !== 'GET');
   const { AutonomyStore } = require('../frontend/app/autonomystore.js');
   await AutonomyStore.init();
   server = Autonomy.normalize(Object.assign({}, server, { initiative: 'leash', reach: 'reach' }));   // the lead's station.power autonomy.set
-  await AutonomyStore.setLeash(5);                                                                     // the Commander's next click
+  await AutonomyStore.setLeash(5);                                                                     // the Master's next click
   A.eq(server.initiative + '/' + server.reach + '/' + server.leashPerDay, 'leash/reach/5', 'one dial click keeps the axes the lead changed');
 
   A.report('station-control-contracts.test');

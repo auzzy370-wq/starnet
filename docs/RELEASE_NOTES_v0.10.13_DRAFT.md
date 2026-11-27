@@ -144,7 +144,7 @@ This is the full release list for the 214 commits shipped since v0.10.12. It is 
 
 ## Interface and onboarding polish
 
-- Starting a new Commander clears the saved tutorial completion marker and re-arms the tour, coachmarks, and FIRST STEPS guidance.
+- Starting a new Master clears the saved tutorial completion marker and re-arms the tour, coachmarks, and FIRST STEPS guidance.
 - The unreachable-station screen distinguishes a stale-window save refusal (`SAVE-403`) from a lost save request (`SAVE-NET`).
 - Recovery diagnosis is copyable from the unreachable screen, making a screenshot useful for support.
 - The connect screen includes an in-app route to use a different Vultron account.

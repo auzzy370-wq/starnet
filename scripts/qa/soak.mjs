@@ -1011,7 +1011,7 @@ async function main() {
   if (opts.maxParallel > 0) { env.SKYNET_CRON_MAX_PARALLEL = String(opts.maxParallel); env.VULTRON_CRON_MAX_PARALLEL = String(opts.maxParallel); }
   if (!opts.aux) { env.SKYNET_AUX_BUDGET = '0'; env.VULTRON_AUX_BUDGET = '0'; }   // aux passes off by default: deterministic mock answers feed them garbage
   const fixture = SidecarFixture.create({ prefix: 'vultron-soak-', timeoutMs: 20000, env });
-  // A FOUNDED station, as a Commander's first save leaves it. A station-less sidecar holds a pushed roster in memory until that
+  // A FOUNDED station, as a Master's first save leaves it. A station-less sidecar holds a pushed roster in memory until that
   // save (sidecar/index.js, agentRosterHeld), so its first restart read as a lost crew and its tool runs as failures.
   require(path.join(repo, 'test', 'helpers', 'station.js')).seedActiveStation(fixture.workspace);
   const drivers = makeRealDrivers({ fixture, logFile, cronLib });

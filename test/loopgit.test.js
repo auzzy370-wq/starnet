@@ -2,12 +2,12 @@
 
    The hole this closes: approve/reject used to be pure bookkeeping. The driver's defaultHarvest returned
    commit:null, no harvest was injected, and the verdict route ran no git — so REJECT marked a row rejected
-   while the agent's code sat untouched in the Commander's project. loopgit.js decides what a pass may commit
+   while the agent's code sat untouched in the Master's project. loopgit.js decides what a pass may commit
    and what a rejection must undo; index.js runs the git.
 
    What is actually proven here:
      1. A LOOP NEVER COMMITS ONTO A PROTECTED REF — not on its first pass, and not from a hand-edited record.
-     2. AN ITERATION STAGES ONLY ITS OWN PATHS — no `add -A`, so the Commander's own uncommitted work is
+     2. AN ITERATION STAGES ONLY ITS OWN PATHS — no `add -A`, so the Master's own uncommitted work is
         never swept into a commit that a later rejection reverts.
      3. UNDO MIRRORS THE STACKING LAW AND RUNS NEWEST FIRST — rejecting #3 undoes #5, #4, #3 in that order,
         skips anything already approved, and never touches iterations below n.
@@ -43,7 +43,7 @@ function withCandidates(n, spec) {
   return L;
 }
 
-// ---- 1. protected refs: the loop's work never lands on the Commander's main ----
+// ---- 1. protected refs: the loop's work never lands on the Master's main ----
 {
   A.ok(G.isProtectedRef('main'), 'main is protected');
   A.ok(G.isProtectedRef('MASTER'), 'protection is case-insensitive');
@@ -96,7 +96,7 @@ function withCandidates(n, spec) {
   A.eq(G.harvestDelta(null, { gitProven: true, files: ['MY-NOTES.txt'] }).ok, false, 'missing pre-iteration proof fails closed instead of claiming every dirty file');
   A.eq(G.harvestDelta({ gitProven: false, files: [] }, { gitProven: true, files: ['MY-NOTES.txt'] }).ok, false, 'an unproven pre-iteration snapshot never aliases to a clean tree');
   A.eq(G.harvestDelta({ gitProven: true, files: ['MY-NOTES.txt'] }, { gitProven: true, files: ['MY-NOTES.txt', 'src/new.js'] }),
-    { ok: true, paths: ['src/new.js'] }, 'a proven delta excludes Commander-owned files that were already dirty');
+    { ok: true, paths: ['src/new.js'] }, 'a proven delta excludes Master-owned files that were already dirty');
 }
 
 // ---- 5. undoPlan: THE STACKING LAW, in git ----
@@ -152,7 +152,7 @@ function withCandidates(n, spec) {
   A.eq(np.commits, [], 'with nothing for the host to run');
 
   /* A loop with NO project folder at all worked only inside the agent's own jail, so a rejection costs the
-     Commander's disk nothing. This is the ordinary shape of a research loop and it must never be blocked —
+     Master's disk nothing. This is the ordinary shape of a research loop and it must never be blocked —
      blocking it would make REJECT unusable for every loop that does not touch a project. */
   let J = S.createLoop([], { id: 'l1', name: 'research', objective: 'read things' }, { now: T0 });
   J = cycle(J, { runId: 'j1', status: 'ok', text: 'read things', title: 'read', commit: null }, T0);
@@ -203,7 +203,7 @@ function withCandidates(n, spec) {
   A.eq(t2.branch, 'loop/20231115-fix-the-tests-l1', 'and it keeps committing to the same branch tomorrow');
 
   // a record naming a protected branch can only come from a hand-edited file — honouring it would commit
-  // the agent's work straight onto the Commander's main.
+  // the agent's work straight onto the Master's main.
   const L3 = one(S.updateLoop(mk(), 'l1', { branch: 'main' }, { now: T0 }));
   const t3 = G.harvestTarget(L3, { blessed: true, isRepo: true, dateStr: '20231115' });
   A.eq(t3.ok, false, 'a recorded protected branch is refused');

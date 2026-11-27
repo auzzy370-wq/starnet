@@ -1,8 +1,8 @@
-/* sidecar/hooks.js — THE HOOK SPINE. The one place the station lets a Commander put their own code in the
+/* sidecar/hooks.js — THE HOOK SPINE. The one place the station lets a Master put their own code in the
    agent's path.
 
    Vultron had no extension point of this kind at all. Skills add INSTRUCTIONS, MCP adds TOOLS, routines add a
-   SCHEDULE — none of them let the Commander say "whenever the agent edits a file, run prettier" or "never let
+   SCHEDULE — none of them let the Master say "whenever the agent edits a file, run prettier" or "never let
    it run this command" or "before every model call, tell it today's on-call rota". That is what a hook is, and
    its absence was the single largest hole in Vultron's extensibility.
 
@@ -19,10 +19,10 @@
 
    Aggregation:
      · BLOCK WINS. One blocking handler blocks, regardless of how many allowed. The first block's reason is
-       the one reported, so the message a Commander sees names the handler that actually stopped it.
+       the one reported, so the message a Master sees names the handler that actually stopped it.
      · CONTEXT CONCATENATES, in registration order, so composing two context-injecting hooks is predictable.
      · A handler that THROWS or TIMES OUT is skipped and logged, never fatal. A broken hook script must not be
-       able to take a run down — it is the Commander's code running in our loop, and it will be broken
+       able to take a run down — it is the Master's code running in our loop, and it will be broken
        sometimes. Note this is deliberately the OPPOSITE of fail-closed: a hook that dies does not block. A
        hook that wants to deny has to say so.
      · Handlers fire in REGISTRATION order and the caller controls that order (index.js registers plugins
@@ -40,7 +40,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  /* THE EVENT NAMES ARE THE REFERENCE HARNESS'S, VERBATIM. Not a style choice: it means a Commander arriving
+  /* THE EVENT NAMES ARE THE REFERENCE HARNESS'S, VERBATIM. Not a style choice: it means a Master arriving
      with hook scripts already written for that harness can drop them in and they fire on the same events with
      the same payload keys. An event we rename is an event their script silently never runs on. */
   const EVENTS = Object.freeze([
@@ -52,7 +52,7 @@
     'on_session_end',
     'subagent_stop',      // a delegated worker finished — the parent's chance to react to a child's result.
     'on_pre_compress',    // history is about to be folded away; last chance to save or inject something.
-    'on_memory_write'     // observe only. NOT blockable BY DESIGN: memory is the Commander's own, and a
+    'on_memory_write'     // observe only. NOT blockable BY DESIGN: memory is the Master's own, and a
                           // script that could veto their notes would be a foot-gun with no upside.
   ]);
   const BLOCKABLE = Object.freeze(new Set(['pre_tool_call', 'pre_llm_call']));
@@ -121,7 +121,7 @@
     }
 
     /* invoke(event, payload) -> { blocked, reason, context, ran }
-       SEQUENTIAL, not concurrent: hooks are the Commander's own code and they compose by order (hook B may
+       SEQUENTIAL, not concurrent: hooks are the Master's own code and they compose by order (hook B may
        legitimately depend on what hook A just did on disk). Determinism is worth more here than the few ms
        a parallel fan-out would save, and the handler count is small by construction. */
     async function invoke(event, payload) {
@@ -154,7 +154,7 @@
     const count = (event) => (registry.get(event) || []).length;
     const events = () => EVENTS.slice();
 
-    /* clear() — detach every handler, in place. This exists so a live reload (the Commander approves a hook,
+    /* clear() — detach every handler, in place. This exists so a live reload (the Master approves a hook,
        or edits hooks.json) can rebuild the set on the SAME spine object. That matters because the spine is
        captured by reference at boot — by the dispatch ctx and by every in-flight run — so swapping in a new
        object would leave those holding the old one and the reload would appear to do nothing. */

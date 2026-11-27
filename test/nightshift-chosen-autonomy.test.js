@@ -1,7 +1,7 @@
 /* node test/nightshift-chosen-autonomy.test.js — bug 41b2d015: CHOSEN AWAY AUTONOMY ACTS (no usage wall).
 
    THE BUG (sweep/onboarding, 2026-10-20): at the awakening's "while you're away, how much should i run on my own?" a
-   new Commander picks "Quietly do small jobs" (or "Run free"), and the station answered "I'll start once I've seen a
+   new Master picks "Quietly do small jobs" (or "Run free"), and the station answered "I'll start once I've seen a
    few of your runs or learned a little more about you." The posture they chose stayed OFF until the station had 4
    recent runs or 4 known dossier areas, with no setting to lift it — a usage wall on the onboarding path
    (DECISIONS: full power from minute one, no grind/unlock/usage walls).
@@ -9,7 +9,7 @@
    THE CHANGE: the act floor is GROUNDING, not a breadth count — one current GROUNDED aim or one recent user run. The
    trust line holds (AUTONOMY_DRIVER_PLAN §2: only confirmed beliefs cross the acting line; dossier.js WEIGHTS): a goals
    area held only by SEEDS — the quick-setup chip's canned purpose, a thin run, any doc copy — never makes the station
-   hot, so a Commander who gave the awakening nothing of their own still sees the hold (that hold is the open owner
+   hot, so a Master who gave the awakening nothing of their own still sees the hold (that hold is the open owner
    ruling on the bug). The per-job anti-slop guard (grounding veto, confidence gate, self-critique) is unchanged.
 
    Drives the REAL path end to end, no sidecar boot (sidecar/index.js is never required or run):
@@ -23,7 +23,7 @@
      · section 6 runs the REAL onboarding.js short conversation against a stubbed brain into that same DossierStore,
        so the weight each awakening write carries (a thin read's BELIEF lines, the dig after "Help me figure that
        out") is what the host gates on — never a hand-built snapshot.
-   The floor stays honest: with nothing of the Commander's to cite (no grounded aims, no runs) it still stands down
+   The floor stays honest: with nothing of the Master's to cite (no grounded aims, no runs) it still stands down
    pre-spend — the canned "Code & build" chip included, in step with the station's own shared V3 verdict
    (no-direction) — and the copy names the one thing that grounds a job, never a count of areas. */
 'use strict';
@@ -110,7 +110,7 @@ function driverFor(host) {
   const driver = makeNightshiftDriver({
     getState: () => state, setState: (s) => { state = s; },
     getPosture: () => host.commanderPosture.summary(),
-    lastActivity: () => NOW - 2 * 3600000,           // the Commander stepped away two hours ago
+    lastActivity: () => NOW - 2 * 3600000,           // the Master stepped away two hours ago
     isHalted: () => false, concurrencyFree: () => true,
     precheck: () => host.nightshiftPrecheck(),
     beat: () => { beats++; return new Promise(() => {}); },   // the pipeline itself is not under test: reaching it is
@@ -147,7 +147,7 @@ for (const preset of ['build', 'free']) {
   A.ok(/has no aim it can act on yet/.test(NR.readinessText(view)) && !/doesn’t know/.test(NR.readinessText(view)), preset + ' chip: SETTINGS › AUTONOMY says it has no aim it can act on (a canned line grounds nothing) — never that it does not know what they want');
 }
 
-/* ===== 2. THE ASK: the Commander's OWN words at the awakening, then "Quietly do small jobs" — it acts, no usage bar ===== */
+/* ===== 2. THE ASK: the Master's OWN words at the awakening, then "Quietly do small jobs" — it acts, no usage bar ===== */
 const MISSION = 'Ship the pricing page and keep the sprite loader fast.';
 for (const [label, weight] of [['confirmed synthesis', 'synth'], ['own words', 'stated']]) {
   for (const preset of ['build', 'free']) {
@@ -192,7 +192,7 @@ for (const [label, weight] of [['confirmed synthesis', 'synth'], ['own words', '
   A.eq(ran.nightshiftPrecheck(), { ok: true }, 'the same seeded station with one recent user run clears the gate (the run is the grounding)');
 }
 
-/* ===== 3. the floor stays honest: nothing of the Commander's to cite → stand down pre-spend, name the one thing needed ===== */
+/* ===== 3. the floor stays honest: nothing of the Master's to cite → stand down pre-spend, name the one thing needed ===== */
 {
   const host = makeHost(0);
   host.commanderPosture.set(Autonomy.applyPreset(Autonomy.fresh(), 'build'), { known: [], beliefs: {} });
@@ -237,7 +237,7 @@ for (const [label, weight] of [['confirmed synthesis', 'synth'], ['own words', '
   A.ok(/no current aim/.test(pm.why) && !/nothing of yours|doesn’t know/.test(pm.why), 'stale panel: the WHY line says no CURRENT aim (true beside "too old"), never "nothing of yours"');
 }
 
-/* ===== 6. THE AWAKENING ITSELF labels what it writes by what the Commander gave (review of 41b2d015) =====
+/* ===== 6. THE AWAKENING ITSELF labels what it writes by what the Master gave (review of 41b2d015) =====
    Sections 1-2 hand-build the beliefs the conversation writes. Here the REAL onboarding.js runs the short conversation
    in a vm against a stubbed brain and writes into the REAL DossierStore; app.js then syncs the committed purpose.md
    (syncDocs canonical) and the snapshot it POSTs is what the real host gates on. The brain's directive invites BELIEF
@@ -321,7 +321,7 @@ function gateFor(snap, preset) {
     const r = await awakeningRun({ help: true, label: 'Help me figure that out' }, null, helpBrain);
     A.ok(r.directives.some(d => /THE TUESDAY/.test(d) && /helpRequested/.test(d)), 'help only: the dig reply ran on the help request');
     A.ok(goalsWeights(r.snap).length >= 2, 'help only: the dig and the read wrote goals beliefs (' + goalsWeights(r.snap).length + ')');
-    A.eq(goalsWeights(r.snap).filter(w => w !== 'seed'), [], 'help only: every goals belief is a SEED (no words of the Commander’s yet)');
+    A.eq(goalsWeights(r.snap).filter(w => w !== 'seed'), [], 'help only: every goals belief is a SEED (no words of the Master’s yet)');
     const g = gateFor(r.snap, 'build');
     A.eq([g.pre, g.tick.fired, g.beats], [{ ok: false, reason: 'readiness' }, false, 0], 'help only: the chosen posture holds, nothing spent');
   }
@@ -344,7 +344,7 @@ function gateFor(snap, preset) {
     A.eq([g.pre, g.tick.fired, g.beats], [{ ok: true }, true, 1], 'own words: the chosen posture acts with zero runs');
   }
   /* 6e-6g. THE FALLBACK MISSION QUESTION (41b2d015 review): quick setup, the keyless wake and a talk whose synthesis could
-     not land all ask fallbackPurposeStep. A TYPED answer there is the Commander's own words: it must land as a stated
+     not land all ask fallbackPurposeStep. A TYPED answer there is the Master's own words: it must land as a stated
      goals belief (before the fix it only committed purpose.md, the doc seed held, and the station said it would start
      "once I know what you want help with" right after they typed it). A tapped chip's canned line still holds. */
   const OWN = 'I want to ship the level editor for my pixel-art game.';

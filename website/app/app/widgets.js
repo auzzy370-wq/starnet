@@ -949,7 +949,7 @@ const Widgets = (() => {
     // the title screen these are cheap early-returns; the first REAL fetch happens on the catch-up below the
     // moment entry is detected (≤4s), not after a full 30s interval.
     // through PollGate (idle CPU piece 3, 2026-10-20): the same cadences while the rail can be seen, a 30 s floor while the
-    // Commander is away, a catch-up on return; setInterval when PollGate is absent (node tests)
+    // Master is away, a catch-up on return; setInterval when PollGate is absent (node tests)
     const every = (fn, ms) => (typeof PollGate !== 'undefined' && PollGate.every) ? PollGate.every(fn, { ms, immediate: false }) : setInterval(fn, ms);
     pollInsights(); every(pollInsights, POLL_INSIGHTS_MS);
     startCron();

@@ -88,7 +88,7 @@ const ENV = { VULTRON_REMOTE_RELAY: 'off', SKYNET_REMOTE_RELAY: 'off',
       let seen = 0;
       const p = page(fixture, () => {
         if (seen++) return;
-        // the page applied it and its roster push lands (recomposed prompt; the Commander narrowed the reach meanwhile)
+        // the page applied it and its roster push lands (recomposed prompt; the Master narrowed the reach meanwhile)
         push([row('agent', 'HERO', 'station-gear'), row('rook', 'ROOK-V2-NEWER', 'safe-cell', { approvalMode: 'full' })]);
         // …and its proveCrewSaved takes longer than the bridge's 6 s: no ack
       });

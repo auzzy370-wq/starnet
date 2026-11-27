@@ -1,27 +1,27 @@
-/* sidecar/browser-view.js — THE STATION BROWSER: one built-in browser the Commander and the agents SHARE.
+/* sidecar/browser-view.js — THE STATION BROWSER: one built-in browser the Master and the agents SHARE.
 
    WHY THIS EXISTS (Andrew, 2026-09-30, after trying the first cut: "the agent is not using the built in browser or
    controlling it at all, and cant see anything"). The first cut gave every run its own private Chrome that died with
-   the run, and the Commander a second browser nobody else could see — so "open YouTube" happened in a browser that
+   the run, and the Master a second browser nobody else could see — so "open YouTube" happened in a browser that
    was gone by the time you looked, and "do you see Google?" was asked of a browser that never had it. The model
    people expect (Claude Code's browser pane, Codex's in-app browser) is ONE browser:
 
      · the agent DRIVES it — an interactive (COMMS) run's browser.* tools are bound to this session, not a private one;
-     · it is a REAL Chrome window on the Commander's screen (index.js: preferVisible) — they use it natively, and the
+     · it is a REAL Chrome window on the Master's screen (index.js: preferVisible) — they use it natively, and the
        BROWSER window in the station mirrors and controls it (a live picture, an address bar, bring-to-front);
-     · the Commander WATCHES the agent drive it, during the run and after it (it stays open);
-     · the Commander USES it between runs — a typed address, clicks and keys go to the same page the agent will see;
+     · the Master WATCHES the agent drive it, during the run and after it (it stays open);
+     · the Master USES it between runs — a typed address, clicks and keys go to the same page the agent will see;
      · it holds the ONE durable station profile, so a sign-in made here — by either of you — is there next time.
 
-   ONE DRIVER AT A TIME. While a run is driving, the Commander's input is refused (they watch); taking the wheel
-   mid-run is STEP-IN's handoff (browser-handoff.js) and nothing else. When nobody is driving, the Commander drives.
+   ONE DRIVER AT A TIME. While a run is driving, the Master's input is refused (they watch); taking the wheel
+   mid-run is STEP-IN's handoff (browser-handoff.js) and nothing else. When nobody is driving, the Master drives.
    A second interactive run that starts while another is driving gets a private per-run browser exactly as before
    (sessionForRun returns null), and so does every unattended run (cron, night shift, channels).
 
    THE PROFILE LEASE. The durable profile is a single-owner lease. The station browser holds it while open and NEVER
    gives it up to another run (Andrew: it "constantly closes" — a browser closing under you is the bug): a run that
    loses to it browses on a temporary profile instead (index.js browserProfileLeaseFor → fallback). A VISIBLE station
-   browser never idles out (the Commander may be using the window directly, which the station cannot see): it closes
+   browser never idles out (the Master may be using the window directly, which the station cannot see): it closes
    when they close it. Only a headless one (VULTRON_BROWSER_HEADLESS) closes after half an hour unused. If the window
    is closed or Chrome dies, the next use starts it again on the same profile (browser.js reviveIfDead).
 
@@ -29,7 +29,7 @@
      · Truthful telemetry: `open` means the session really has a browser; `driver` is the run bound right now;
        `remembered` is the session's own profile answer. The address shown is the one Chrome reports.
      · No agent receives anything from here: frames and input flow between the station page and Chrome only.
-     · Every ref dies when the browser changes hands (session.handTo): the page may be one the Commander opened.
+     · Every ref dies when the browser changes hands (session.handTo): the page may be one the Master opened.
      · Pure: clock and timers are injected; the composition root (index.js) supplies them. */
 'use strict';
 const { swallow, note: failNote } = require('./failopen.js');
@@ -43,7 +43,7 @@ const VIEWER_RECENT_MS = 15000;            // a picture was asked for this recen
 const PAGE_INFO_EVERY_MS = 300;
 const SEARCH_URL = 'https://duckduckgo.com/?q=';
 /* WHERE THE STATION BROWSER LIVES (Settings → Browser, Andrew 2026-09-30 — Claude Code has the same split):
-     window  — a real Chrome / Edge window on the desktop that the Commander and the agents share (DEFAULT — this is
+     window  — a real Chrome / Edge window on the desktop that the Master and the agents share (DEFAULT — this is
                what Hermes does: its agent drives a real browser window on its own profile, and people sign in, type
                and paste there natively). The BROWSER window follows it. Where no window can open (no screen, no
                Chromium-family browser installed, or a headless pin) the station browses built-in and says so;
@@ -53,7 +53,7 @@ const SEARCH_URL = 'https://duckduckgo.com/?q=';
 const BROWSER_MODES = ['builtin', 'window', 'chrome'];
 function normalizeMode(m) { return BROWSER_MODES.indexOf(String(m || '')) >= 0 ? String(m) : 'window'; }
 
-/* What the Commander typed → the address to open. A scheme is kept; a bare host gets https (http for loopback —
+/* What the Master typed → the address to open. A scheme is kept; a bare host gets https (http for loopback —
    a dev server rarely has a certificate); anything that is not address-shaped becomes a web search. Only http(s)
    ever comes out: file:, chrome:, javascript: and friends are refused. */
 function resolveAddress(raw) {
@@ -102,7 +102,7 @@ function makeBrowserViews(deps) {
     return m;
   }
   const downloadDirFor = typeof deps.downloadDirFor === 'function' ? deps.downloadDirFor : () => null;
-  // where the COMMANDER's own downloads go between runs (their Downloads folder) — never the last agent's jail
+  // where the MASTER's own downloads go between runs (their Downloads folder) — never the last agent's jail
   const commanderDownloadDir = typeof deps.commanderDownloadDir === 'function' ? deps.commanderDownloadDir : () => null;
   const attended = deps.attended || null;   // the session's attendedLogin holder: .prompt is set to the driving run's
   const streamIdleMs = deps.streamIdleMs > 0 ? deps.streamIdleMs : STREAM_IDLE_MS;
@@ -147,7 +147,7 @@ function makeBrowserViews(deps) {
       if (!station || station.driver) return;
       if (now() - station.lastPollAt < VIEWER_RECENT_MS) return touchStation();   // somebody is looking at it
       const sf = surfaceOf(station.session);
-      if (sf && sf.visible) return touchStation();   // a real window: the Commander may be using it directly
+      if (sf && sf.visible) return touchStation();   // a real window: the Master may be using it directly
       closeStation().catch(swallow('view.station-idle-close'));
     }, stationIdleMs);
     if (station.idleTimer && typeof station.idleTimer.unref === 'function') station.idleTimer.unref();
@@ -170,13 +170,13 @@ function makeBrowserViews(deps) {
   /* Session methods that do not DRIVE the page: asking them never makes a run the driver. */
   const PASSIVE = new Set(['handoffSurface', 'freeze', 'thaw', 'frozen', 'handTo', 'hasDriver', 'visible', 'headlessFallback', 'attachedPort', 'lastResponse', 'evalAllowed', 'close']);
   /* An interactive run asks for the station browser. It gets a VIEW of the shared session, and becomes the DRIVER
-     only when it actually uses it (its first driving call) — a run that never browses never locks the Commander
+     only when it actually uses it (its first driving call) — a run that never browses never locks the Master
      out, and "driving" is only ever said of a run that is. Returns null when the run must use a private browser
      (not interactive, or no station browser on this host). While another run is driving, a driving call throws. */
   /* A RUN THAT HAS ENDED NEVER TAKES THE WHEEL BACK (release review 2026-09-30, reproduced): the tool registry stops
      waiting for a tool ~3 s after STOP (or at its timeout) while the tool itself is still running. The run's finally
      released the browser — then that late tool's next driving call made the ended run the driver again, and nothing
-     ever released it: the Commander's input was refused as "driving" and every later run was told the browser was in
+     ever released it: the Master's input was refused as "driving" and every later run was told the browser was in
      use, until the sidecar restarted. Each run's view carries a released flag; releaseRun sets it, and take() refuses. */
   const runHandles = new Map();   // runId -> the run's identity, while its view is live
   function sessionForRun(info) {
@@ -197,7 +197,7 @@ function makeBrowserViews(deps) {
       if (st.driver) {
         if (typeof info.makePrivate !== 'function') throw new Error('the station browser is in use by another run right now — retry after it finishes');
         me.private = info.makePrivate();
-        registerRun({ agentId: me.agentId, runId: me.runId, session: me.private });   // the Commander may still watch it
+        registerRun({ agentId: me.agentId, runId: me.runId, session: me.private });   // the Master may still watch it
         return 'private';
       }
       st.driver = me;
@@ -243,7 +243,7 @@ function makeBrowserViews(deps) {
     if (attended) attended.prompt = undefined;
     if (station.switchPending) { closeStation().catch(swallow('view.mode-switch-close')); return true; }   // the setting changed mid-run
     /* PRIVACY (release review 2026-09-30): handTo pointed Chrome's downloads at the driving agent's workspace and
-       nothing pointed them back, so a file the Commander downloaded in the shared window afterwards (a bank statement)
+       nothing pointed them back, so a file the Master downloaded in the shared window afterwards (a bank statement)
        landed where that agent's later runs — unattended ones too — could read it. Downloads go back to theirs. */
     const home = commanderDownloadDir();
     if (home && typeof station.session.handTo === 'function') {
@@ -252,7 +252,7 @@ function makeBrowserViews(deps) {
     touchStation();
     return true;
   }
-  function registerRun(info) {   // a PRIVATE per-run browser: the Commander may still watch it
+  function registerRun(info) {   // a PRIVATE per-run browser: the Master may still watch it
     if (!info || !info.runId || !info.session) return false;
     runs.set(String(info.runId), { agentId: String(info.agentId || 'agent'), runId: String(info.runId), session: info.session });
     return true;
@@ -263,16 +263,16 @@ function makeBrowserViews(deps) {
     return runs.delete(id);
   }
 
-  // ---- the Commander's hands (only while no run is driving) ----
-  /* A SIGN-IN hands the wheel to the Commander. browser.login (station path) opens the page and then the run waits
+  // ---- the Master's hands (only while no run is driving) ----
+  /* A SIGN-IN hands the wheel to the Master. browser.login (station path) opens the page and then the run waits
      for their Done — the agent does nothing meanwhile — so their clicks and keys must reach the page (they are the
      one typing the password). Opened by the session's onLoginOpen, closed by onLoginClose or when the run lets go. */
   function signInOpen(info) { if (station && station.driver) station.signIn = { host: String((info && info.host) || ''), runId: station.driver.runId }; return !!(station && station.signIn); }
   function signInClose() { if (station) station.signIn = null; }
-  /* THE COMMANDER'S HANDS ARE NEVER REFUSED (Andrew 2026-10-02: "the whole point was for it to be interactive inside
+  /* THE MASTER'S HANDS ARE NEVER REFUSED (Andrew 2026-10-02: "the whole point was for it to be interactive inside
      of the window"). It used to refuse their clicks, keys, addresses and back/forward while an agent drove — the
      BROWSER window turned into a view-only mirror for the whole run. Like Claude Code's browser pane, the shared
-     browser now takes the Commander's input at any time; the agent keeps going (its element refs re-find themselves
+     browser now takes the Master's input at any time; the agent keeps going (its element refs re-find themselves
      after a page change — withRefRecovery). */
   function driving() { return null; }
   async function open(raw) {
@@ -326,11 +326,11 @@ function makeBrowserViews(deps) {
     try { clean = sanitizeInput(ev); } catch (e) { return { ok: false, error: e.message }; }
     touchStation();
     await s.input(clean);
-    const ch = chans.get('station'); if (ch) ch.pageAt = 0;   // the Commander acted: re-read where the page is
+    const ch = chans.get('station'); if (ch) ch.pageAt = 0;   // the Master acted: re-read where the page is
     return { ok: true };
   }
 
-  /* WARM: the Commander opened the BROWSER window — start Chromium now, in the background, so it is ready by the
+  /* WARM: the Master opened the BROWSER window — start Chromium now, in the background, so it is ready by the
      time they have typed an address (a real window can take many seconds to start on a busy machine). Nothing is
      navigated; a browser already open, or one a run is driving, is left alone. */
   function warm() {
@@ -342,7 +342,7 @@ function makeBrowserViews(deps) {
     if (!st.warming) st.warming = Promise.resolve().then(() => st.session.tabs()).catch(e => failNote('view.warm', e)).then(() => { st.warming = null; });
     return { ok: true, warming: true };
   }
-  /* The Commander changed the setting. The browser that is open keeps running in its old mode until it next starts;
+  /* The Master changed the setting. The browser that is open keeps running in its old mode until it next starts;
      an idle one is restarted now (closed — the next use starts it in the new mode, same profile, sign-ins kept).
      One an agent is driving is never pulled out from under it: it switches when that run lets go. */
   async function setMode(m) {

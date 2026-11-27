@@ -20,7 +20,7 @@
    tainted rows) — i.e. exactly when the untrusted text has actually left the context.
 
    ATTACHMENT DECAY (attachment-rows-and-taint, 2026-11-04). The one exception to "tainted rows keep tainting" is the
-   attachment's own stamp. A Commander's attachment taints a run for as long as its BYTES are in the run's context: the
+   attachment's own stamp. A Master's attachment taints a run for as long as its BYTES are in the run's context: the
    host latches taint.js ATTACHMENT_TAINT ('user attachment') exactly when attachments.expandForRun re-sent bytes
    (attachments.resentOf), which is the attaching turn and one follow-up, and never merely because a reference rode
    along in the browser's history. Rows that run writes carry the same stamp, but a row stamped with EXACTLY that string
@@ -40,7 +40,7 @@
    What decays is only the model's own replies, written while the bytes were in front of it, once the bytes are gone. That
    residual (hostile file text steering turns 1-2, carried into turn 3 by the model's own earlier replies) is the price
    of a conversation that is clean again from the third turn; docs/DECISIONS.md records it.
-   THE ROWS OF A TURN WITH FILES (S3, sidecar/turn-attachment.js). The Commander's directive row holds the typed words and is
+   THE ROWS OF A TURN WITH FILES (S3, sidecar/turn-attachment.js). The Master's directive row holds the typed words and is
    written clean, so the 11-02 shape above is no longer written, and each file is a role-system 'attachment' row beside it
    stamped with the bare source (a name, a path, a size and a hash: no bytes, nothing to replay, recallable by name). Readers
    show a row that kept files as its typed words plus '[attached: name]' (earlier-conversation, recall_conversation), so the

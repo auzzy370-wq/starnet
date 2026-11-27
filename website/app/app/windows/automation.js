@@ -124,7 +124,7 @@
         const el = body.querySelector(selector); if (el) el.value = String(draft[key] || '');
       }
       applyDraftAgent(body, draft.agentId);
-      // REPEAT SENSE: a takeover carries the rhythm read off when the Commander actually asked. It only
+      // REPEAT SENSE: a takeover carries the rhythm read off when the Master actually asked. It only
       // pre-selects the picker; nothing is scheduled until the existing ADD click.
       const sug = draft.suggest;
       if (sug && sug.schedule && body._rtPicker && typeof body._rtPicker.set === 'function') {

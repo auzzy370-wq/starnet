@@ -244,7 +244,7 @@
   }
 
   /* reconcileLinks(geo) -> { links, dropped: [id…], added: [id…] } — a floor's links after an edit (phase B: links are
-     what the Commander builds; the belts are drawn from them).
+     what the Master builds; the belts are drawn from them).
        KEEP every link the floor still stands behind — its belt is laid, tile for tile and arrow for arrow, and it meets
          its machines: a machine's end in that machine's ring, a junction's end beside the tile the junction works on.
        DROP the rest: a cut or turned belt, a moved or removed machine. Its belt stays on the floor, loose.
@@ -376,7 +376,7 @@
 
   // small deterministic FNV-1a hash of the plan topology (frontend<->sidecar agree they hold the same plan)
   function hashStr(s) { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = (h * 0x01000193) >>> 0; } return ('0000000' + h.toString(16)).slice(-8); }
-  /* LINE BUDGET (per-line limits, 2026-08-21). A line's INBOX prop may carry `limits` — the Commander's
+  /* LINE BUDGET (per-line limits, 2026-08-21). A line's INBOX prop may carry `limits` — the Master's
      ceilings for work that enters THROUGH that line: { maxHops, maxUsdPerMessage, maxUsdPerDay }. This is
      the ONE normalizer both surfaces use (REFIT writes through it, the compiler attaches it, the sidecar's
      chain executor reads it), so a floor can never carry a limit the executor reads differently.
@@ -384,7 +384,7 @@
                    NO daily cap (null = off) — a floor with no limits set runs exactly as before.
        ceilings  = hard: maxHops <= 24, $ per message <= 50, $ per day <= 500. Anything above is CLAMPED and
                    the clamp is RECORDED (`clamped: ['maxHops>24', …]`) so a surface can say why the number
-                   the Commander typed is not the number in force. The global budget pool is a SIDECAR fact
+                   the Master typed is not the number in force. The global budget pool is a SIDECAR fact
                    (router.lineLimits clamps to it at read time) — the compiler never knows it.
      Returns null for no/garbage input (absent = defaults everywhere, and nothing rides the plan). */
   const LINE_LIMIT_DEFAULTS = { maxHops: 6, maxUsdPerMessage: 2.00, maxUsdPerDay: null };
@@ -669,7 +669,7 @@
         if (kind === 'loop') {
           const mx = +p.maxIter;
           cfg.max = (isFinite(mx) && mx >= 1) ? Math.min(LOOP_MAX_CEILING, Math.floor(mx)) : LOOP_MAX_DEFAULT;
-          // the exits the Commander named: a linked floor's 'done' / 'esc' / 'back' ports, else the prop's compass config
+          // the exits the Master named: a linked floor's 'done' / 'esc' / 'back' ports, else the prop's compass config
           let cDone = lane('done') || p.done || null, cEsc = lane('esc') || p.esc || null;
           const cBack = lane('back');
           if (cBack && !lane('esc')) {   // a named BACK with no named escape: the escape is the one exit left (back is inferred as the first non-done lane)
@@ -782,7 +782,7 @@
       }
       // EVERY bound bay is a working dock (legibility list; NOT the dispatch `bays` — router semantics untouched).
       // A LONE assigned bay is a COMPLETE build: work addressed to its agent arrives at the dock, no belts needed.
-      // `brief` (step editor, 2026-08-05) rides THIS list only — the Commander's standing job brief for this
+      // `brief` (step editor, 2026-08-05) rides THIS list only — the Master's standing job brief for this
       // station, PROMPT TEXT ONLY: it never touches routing (resolveTarget/chainNext ignore it) or capability
       // (stationFor reads objects, never brief), and `dockBays` is outside the hash so it cannot move dispatch
       // either. Bounded here so no surface can post an unbounded blob.
@@ -989,7 +989,7 @@
     // on its own belts, never excused by its first.
     /* …and when that bay's belt starts INSIDE the ring of the machine feeding it (an INBOX mouth, or another
        dock's hookup), the two machines are TOO CLOSE (2026-09-27 audit B4): a job is never delivered on the tile
-       it was born on, and a tile two docks share belongs to one of them only — so the belt the Commander can SEE
+       it was born on, and a tile two docks share belongs to one of them only — so the belt the Master can SEE
        running into the bay carries nothing. Saying "NOT FED — belt into it" there sends them to redo what they
        already did; BAY_TOO_CLOSE names the real fix (move one a tile apart). Same warn standing as BAY_NOT_FED. */
     const sharedRing = {};
@@ -998,7 +998,7 @@
     for (const b of bays) for (const t of bayTilesOf(b)) { const k = key(t.x, t.y); (ringOwners[k] = ringOwners[k] || []).push(b.propId); }
     /* …but only when the SHARED tile is the bay's way IN — a belt aimed into the bay's footprint from a tile another ring
        also owns (2026-09-28 retest). Two docks a tile apart whose lane goes round the shared tile are wired fine; if the
-       first one has no INBOX it is simply NOT FED, and "move it a tile away" would have sent the Commander the wrong way. */
+       first one has no INBOX it is simply NOT FED, and "move it a tile away" would have sent the Master the wrong way. */
     const footOf = {}; for (const p of props) if (p && p.t === 'bay') footOf[p.id] = p;
     const aimsInto = (t, pid) => {
       const v = DIRV[map[key(t.x, t.y)]], f = footOf[pid]; if (!v || !f) return false;
@@ -1007,7 +1007,7 @@
     };
     const tooClose = b => bayTilesOf(b).some(t => { const k = key(t.x, t.y); return (sharedRing[k] === 'src' || (ringOwners[k] || []).length > 1) && aimsInto(t, b.propId); });
     // UNDER A BELT CYCLE reach is deliberately never computed (all false — a glowing lane must mean "a route runs
-    // here", and nothing routes while the loop stands), so "not fed" would be a GUESS: it sent the Commander to
+    // here", and nothing routes while the loop stands), so "not fed" would be a GUESS: it sent the Master to
     // belt bays that were already fed while the real fault — the CYCLE, a blocking error — went unread (station.layout
     // audit 2026-09-28). Only the CYCLE speaks until it is broken.
     if (!cyc) for (const b of bays) if (!reachDock[b.propId] && !chainFed[b.propId] && !flowsToOutbox(b.tile)) errors.push({ code: tooClose(b) ? 'BAY_TOO_CLOSE' : 'BAY_NOT_FED', propId: b.propId, agentId: b.agentId, warn: true });
@@ -1020,7 +1020,7 @@
     const cc = chainCycle(plan.dockChains);
     if (cc) {
       // carry a propId so the REFIT/world overlay can ANCHOR the finding on a dock the loop runs through —
-      // an error the Commander can't see on the floor is an error they can't fix. First agent, sorted: stable.
+      // an error the Master can't see on the floor is an error they can't fix. First agent, sorted: stable.
       const ccAgents = cc.map(d => agentOfDock[d]).filter((v, i, a) => v && a.indexOf(v) === i).sort();
       const onLoop = bays.find(b => b.agentId === ccAgents[0] && cc.indexOf(b.propId) >= 0);
       errors.push(onLoop ? { code: 'CHAIN_CYCLE', agents: ccAgents, propId: onLoop.propId } : { code: 'CHAIN_CYCLE', agents: ccAgents });
@@ -1196,7 +1196,7 @@
      stage a message merely named — was not triggered by anything, so its work is terminal and buys nothing
      downstream.
 
-     Deliberately NOT keyed on a chat's agent binding. That binding cannot distinguish the Commander's
+     Deliberately NOT keyed on a chat's agent binding. That binding cannot distinguish the Master's
      explicit /talk from the hub's own bookkeeping — hub.js auto-saves the floor's pick onto any previously
      unbound chat (as a notifier index), so every channel chat looks "bound" from its second message on.
      Denying the line on that silently stopped channels from driving their lines after one message, which
@@ -1491,7 +1491,7 @@
      OLD PLANS DEGRADE TO TERMINAL, ON PURPOSE. A plan compiled before line identity existed (one restored
      from disk at boot, say) has no lineOfAgent, so `own` is null and every dock is terminal until the app
      posts a fresh plan. That is the SAFER of the two defaults: the failure mode is "a line did not run",
-     which the Commander can see and re-trigger, versus "money was spent on stages the user never asked
+     which the Master can see and re-trigger, versus "money was spent on stages the user never asked
      for", which is silent and unrefundable. It is also self-healing — world.js re-posts the compiled plan
      on the first floor change after the app opens.
 
@@ -1960,7 +1960,7 @@
   }
 
   /* parseHandoff(text) -> { stage, original, from } | null — the INVERSE of handoffPrompt, for surfaces that show a work line's
-     result to the Commander (2026-09-27 audit R2: the OUTBOX titled a line's result "PIPELINE HANDOFF — you are stage 2 of a work
+     result to the Master (2026-09-27 audit R2: the OUTBOX titled a line's result "PIPELINE HANDOFF — you are stage 2 of a work
      line on this stati…" and showed the whole machine prompt under WHAT YOU ASKED FOR). Reads only the fixed frame handoffPrompt
      writes; anything else is null. Pure. */
   const HANDOFF_RE = /^PIPELINE HANDOFF — you are stage (\d+) of a work line on this station\.\n\nThe original request was:\n([\s\S]*?)\n\nThe upstream stage \(([^)]*)\) produced:\n/;
@@ -1970,8 +1970,8 @@
   }
   /* isHandoff(text) -> bool — is this turn a work line's HAND-OFF (the frame handoffPrompt writes), however it was cut? Only the
      frame's fixed opening is read, so a run row's shortened title answers too. A hand-off's words are the LINE's — the step's
-     standing instructions, the upstream stage's work — never the Commander's own: the run-end STUDY and THREAD passes skip such a
-     run (2026-09-30: NOVA quoted a WRITER step's brief back to the Commander as «because you said …»). Pure. */
+     standing instructions, the upstream stage's work — never the Master's own: the run-end STUDY and THREAD passes skip such a
+     run (2026-09-30: NOVA quoted a WRITER step's brief back to the Master as «because you said …»). Pure. */
   const HANDOFF_HEAD_RE = /^PIPELINE HANDOFF — you are stage \d+ of a work line on this station\./;
   function isHandoff(text) { return HANDOFF_HEAD_RE.test(String(text == null ? '' : text).replace(/^\s+/, '')); }
   /* Display strips the same control line the sidecar recognizes. Keep a verdict-only
@@ -2320,7 +2320,7 @@
     return out.sort(propIdCmp);
   }
   /* Per-line evidence that an INBOX is fed: a compiled hand-off into it from a line that can run — never a run count or a doc
-     pointer (2026-10-12, M7). A line's runs include the Commander's SEND IT A JOB and the lead's station.test_line — neither starts
+     pointer (2026-10-12, M7). A line's runs include the Master's SEND IT A JOB and the lead's station.test_line — neither starts
      the line by itself, so a run count cleared NO FEED for a line nothing is wired to start; a BAY → OUTBOX fragment with no INBOX
      compiles a hand-off no job can ever start (build-12). Channels, armed routines, folders and webhooks are the station-wide feed
      (world.js feedState), not this. A second argument (old callers passed line stats) is ignored. */
@@ -2404,7 +2404,7 @@
      line records { lineId, intakes, name } (the compiled plan's own lines, or worldmodel's components): a line is called by its
      first NAMED INBOX (lineWord of `name`), else LINE <the letter of its first INBOX> — and no two lines share a name: an unnamed
      line whose LINE <letter> a named line already shows (a line called 'F', then a new INBOX p6 = F) is LINE F 2, the next free
-     number, never a second LINE F that neither the Commander nor the lead can tell apart. A line with no INBOX has no name here.
+     number, never a second LINE F that neither the Master nor the lead can tell apart. A line with no INBOX has no name here.
      Pure — the floor (worldmodel.lineName) and the sidecar (the hand-off runner's words) name a line by this one rule. */
   function lineNames(lines) {
     const out = {}, taken = new Set(), unnamed = [];

@@ -10,7 +10,7 @@ const GroupChat = (() => {
   let mentionItems = [], mentionSel = 0, mentionCtx = null, mentionBusy = false;
   let basePlaceholder = null;
   const composerDrafts = new Map();
-  const inspectOpen = new Set();   // approval promptIds whose INSPECT panel the Commander opened (survives a re-render)
+  const inspectOpen = new Set();   // approval promptIds whose INSPECT panel the Master opened (survives a re-render)
   const sharedAttachments = new Map();
   const $ = id => document.getElementById(id);
   const uid = () => crypto.randomUUID();
@@ -29,7 +29,7 @@ const GroupChat = (() => {
   const openFolds = new Set(), openWholes = new Set();
   const questionCards = new Map(), stateRows = new Map();   // keyed, reused while unchanged (paint reconciles them)
   // the message box as items: at each item an option is matched WHOLE (longest first, so an option that itself contains
-  // ";" stays one pick and never lights a shorter one inside it); anything else the Commander typed is kept as written
+  // ";" stays one pick and never lights a shorter one inside it); anything else the Master typed is kept as written
   function pickItems(value, options) {
     const text = String(value || ''), sorted = options.slice().sort((a, b) => b.length - a.length), items = [];
     let i = 0;
@@ -81,7 +81,7 @@ const GroupChat = (() => {
     if (wholeObserver) wholeObserver.observe(text);
     const options = Array.isArray(q.options) ? q.options : [];
     const pickMany = q.multiSelect || q.mode === 'conversation';
-    // the SAME law as the one-on-one card: the Commander's own history (a real count) outranks the agent's guess
+    // the SAME law as the one-on-one card: the Master's own history (a real count) outranks the agent's guess
     const g = q.grounded && Array.isArray(q.grounded.options) ? q.grounded.options.filter(o => options.includes(o)) : [];
     const gCount = Number(q.grounded && q.grounded.count) || 0, useGrounded = g.length > 0 && gCount >= 2 && q.mode !== 'conversation';
     const starred = useGrounded ? g : (q.recommended && options.includes(q.recommended) && q.mode !== 'conversation' ? [q.recommended] : []);
@@ -155,7 +155,7 @@ const GroupChat = (() => {
   }
   function showError(e) {
     notice = e.message || String(e); if ($('gc-notice')) $('gc-notice').textContent = notice;
-    // a direct chat has no group notice line on screen: say it where the Commander is looking
+    // a direct chat has no group notice line on screen: say it where the Master is looking
     if (active?.conversationMode !== 'group' && typeof StationUI !== 'undefined' && StationUI.notify) StationUI.notify(notice, 'bad');
   }
   /* opts.deadlineMs: the read aborts after that long (idle CPU piece 3 fix round 2, 2026-10-20). The station-wide watch is
@@ -221,7 +221,7 @@ const GroupChat = (() => {
     const list = live.length ? live : roster;
     return list.filter(a => a && a.id).map(a => ({ id: a.id, name: String(a.name || a.id) }));
   }
-  function name(id) { return id === 'user' ? 'COMMANDER' : (roster.find(a => a.id === id)?.name || App.agents?.().find(a => a.id === id)?.name || id); }
+  function name(id) { return id === 'user' ? 'MASTER' : (roster.find(a => a.id === id)?.name || App.agents?.().find(a => a.id === id)?.name || id); }
   function colorOf(id) { const c = typeof App !== 'undefined' && App.agents ? App.agents().find(a => a.id === id)?.color : ''; return /^#[0-9a-f]{3,8}$/i.test(c || '') ? c : ''; }
   /* The group header: EVERY member by name in their roster colour (lead first), the count, and the + key (Andrew 10-04:
      "you cant even tell when the groupchat is there, it does not show all the agents"). No GROUP word in front of them —
@@ -270,7 +270,7 @@ const GroupChat = (() => {
        the pending questions (50%) and the turn-state rows (45%) used to stack under the transcript with caps adding up to
        135% — enough to squeeze the conversation to nothing, and the shelf (no overflow) spilled chips under the composer
        where they could not be clicked. Now everything below the transcript lives in ONE tray with ONE budget: the
-       transcript always keeps most of the panel. Inside it, what needs the Commander (questions, approvals, live turns)
+       transcript always keeps most of the panel. Inside it, what needs the Master (questions, approvals, live turns)
        scrolls first; the shared files fold to a single "▤ SHARED FILES · N" line that opens on click (remembered per group);
        an opened file shows in its own preview — no longer inside the shelf, so a message attachment previews even in a
        group with no shared files (that was the bug: the preview's parent was hidden whenever the shelf was empty). */
@@ -398,7 +398,7 @@ const GroupChat = (() => {
   function watch() {
     if (watching) return; watching = true;
     /* idle CPU piece 3 (2026-10-20): through PollGate the watch keeps its 4 s beat on screen and slows to a 30 s floor while
-       the Commander is away, instead of stopping on document.hidden (a webview that reports hidden while on screen got no
+       the Master is away, instead of stopping on document.hidden (a webview that reports hidden while on screen got no
        group list at all). Without PollGate (node tests) it is the old hidden-gated 4 s chain. */
     const gate = typeof PollGate !== 'undefined' && PollGate.every;
     const tick = async () => {
@@ -476,7 +476,7 @@ const GroupChat = (() => {
      an older sidecar sends no stamp at all and every read is full, as before.
      ON SCREEN THE READ CADENCE IS TRUNK'S 0.9 s, ALWAYS (fix round 3): an unchanged since-read costs next to nothing, so
      there is no reason to ask an idle group less often — and slowing it delayed the first sign of a turn another member
-     started by up to 3 s. Only while the Commander is away (PollGate) is a read due every 30 s, with one at once on return.
+     started by up to 3 s. Only while the Master is away (PollGate) is a read due every 30 s, with one at once on return.
      When a read is due is measured on the monotonic clock (performance.now when present): on Date.now a backward wall-clock
      step (a w32time correction after resume) skipped every read, a live turn's too, until the wall clock caught up.
      A READ THAT NEVER ANSWERS ENDS (fix round 4): each has OPEN_READ_MS, like the station-wide watch. Past it the read is
@@ -516,7 +516,7 @@ const GroupChat = (() => {
      one-on-one chat draws a run — said → did → said — with the same chips (Chat.toolRailOf). `clean` is the finished
      message's marker rule; a still-streaming draft (`live`) never shows a choice marker, complete or half-typed. */
   function renderFlow(body, text, steps, files, clean, live) {
-    // a streaming draft re-renders on every token or poll: a chip the Commander opened stays open (keyed by its call id)
+    // a streaming draft re-renders on every token or poll: a chip the Master opened stays open (keyed by its call id)
     const opened = new Set(Array.from(body.querySelectorAll('.tool-chip.open')).map(c => c.dataset && c.dataset.callId).filter(Boolean));
     // …and so does a folded rail they opened (keyed by its first call's id: Chat.toolRailOf folds a burst to one line)
     const firstCall = r => { const c = r.querySelector('.tool-chip'); return c && c.dataset ? c.dataset.callId : ''; };
@@ -595,7 +595,7 @@ const GroupChat = (() => {
        message goes to that agent (no button under every bubble). The agent's roster colour
        carries the rail and the name, so who-said-what reads at a glance across N speakers. */
     const speaker = (author, target) => {
-      if (author === 'user') return h('span', { class: 'who' }, 'COMMANDER');
+      if (author === 'user') return h('span', { class: 'who' }, 'MASTER');
       const who = h('button', { type: 'button', class: 'who gc-who', 'aria-label': 'Reply to ' + name(author), onclick: () => { replyTo = target || null; selected = [author]; recipientLabel(); $('chat-input').focus(); } }, name(author).toUpperCase());
       return who;
     };
@@ -645,7 +645,7 @@ const GroupChat = (() => {
         prevAt = at.getTime();
       }
       const askedQ = m.questionId ? firstOf(questionsById, m.questionId) : null;
-      // a reply the Commander STOPPED says so; any other unfinished one stays "partial" (failed, cut off)
+      // a reply the Master STOPPED says so; any other unfinished one stays "partial" (failed, cut off)
       const endedTurn = m.partial ? turnOf(m.turnId) : null;
       const unfinished = endedTurn && endedTurn.state === 'stopped' && /^stopped by you$/i.test(String(endedTurn.reason || '')) ? 'stopped by you · work did not complete' : 'partial · work did not complete';
       const rowKey = JSON.stringify([m, content, attachments, group.members, name(m.author), colorOf(m.author), clock, askedQ && askedQ.question, m.partial && unfinished]);
@@ -793,7 +793,7 @@ const GroupChat = (() => {
         if (ins) {
           const pid = t.approval.promptId;
           const detail = h('details', { class: 'gc-approval gc-inspect', ontoggle: () => { if (detail.open) inspectOpen.add(pid); else inspectOpen.delete(pid); } });
-          detail.open = inspectOpen.has(pid);   // a re-render keeps the panel the Commander opened
+          detail.open = inspectOpen.has(pid);   // a re-render keeps the panel the Master opened
           const idle = ins.copyLabel || 'COPY';
           const copy = h('button', { type: 'button', class: 'bb gc-copy' }, idle);
           copy.addEventListener('click', () => {
@@ -902,7 +902,7 @@ const GroupChat = (() => {
       }
     };
   }
-  // the shared shelf's fold, remembered per group (closed until the Commander opens it — the files are one click away)
+  // the shared shelf's fold, remembered per group (closed until the Master opens it — the files are one click away)
   const filesKey = id => 'vultron.gc.filesOpen.' + id;
   function filesOpen() { try { return !!(active && localStorage.getItem(filesKey(active.id)) === '1'); } catch (_) { return false; } }
   function paintFilesToggle(n) {
@@ -1036,13 +1036,13 @@ const GroupChat = (() => {
       }
       const cur = ws.pendingJoin && ws.pendingJoin.runId === runId ? ws.pendingJoin.ids : [];
       const all = [...new Set([...cur, ...add])].slice(0, 10);
-      // what the Commander already answered in that run's Task Brief (the sidecar's host stamp): the kickoff starts from it
+      // what the Master already answered in that run's Task Brief (the sidecar's host stamp): the kickoff starts from it
       const brief = typeof caller.brief === 'string' && caller.brief.trim() ? caller.brief.trim().slice(0, 600)
         : (ws.pendingJoin && ws.pendingJoin.runId === runId && ws.pendingJoin.brief) || '';
       ws.pendingJoin = { runId, ids: all, at: Date.now(), ...(brief ? { brief } : {}) }; save();
       return { joining: true, agents: all.map(name), note: agentNames(all) + (all.length > 1 ? ' join ' : ' joins ')
         + (isGeneral(ws) ? 'a new group chat that opens beside General' : 'this chat (it becomes a group chat, its history kept)')
-        + ' the moment this reply ends. If the reply is stopped or fails, nobody is added and the Commander is told in the chat.' };
+        + ' the moment this reply ends. If the reply is stopped or fails, nobody is added and the Master is told in the chat.' };
     }
     const g = await startGroup(ws, add);
     return { added: add, members: g.members, group: g.id, title: g.title };
@@ -1072,12 +1072,12 @@ const GroupChat = (() => {
     const ids = job.ids.filter(id => crew.some(a => a && a.id === id));
     if (!ids.length) return notAdded(ws, job.ids, 'they are no longer on the crew');
     try {
-      // the lead asked for them to work on the Commander's request: it gets the first turn in the group to hand them their parts
-      const kickoff = agentNames(ids) + (ids.length > 1 ? ' have' : ' has') + ' joined this chat at your request. Carry on with the Commander\'s request: give '
+      // the lead asked for them to work on the Master's request: it gets the first turn in the group to hand them their parts
+      const kickoff = agentNames(ids) + (ids.length > 1 ? ' have' : ' has') + ' joined this chat at your request. Carry on with the Master\'s request: give '
         + (ids.length > 1 ? 'each of them their part' : 'them their part') + ' (group.handoff) and do your own.'
-        // …starting from what the Commander already answered (review 10-14: from General the new group re-asked "What are
+        // …starting from what the Master already answered (review 10-14: from General the new group re-asked "What are
         // we launching?" seconds after they had answered it there)
-        + (job.brief ? ' The Commander already answered: ' + String(job.brief).replace(/[\s.;,]+$/, '') + '. Never ask those again.' : '');
+        + (job.brief ? ' The Master already answered: ' + String(job.brief).replace(/[\s.;,]+$/, '') + '. Never ask those again.' : '');
       const out = ws.conversationMode === 'group' ? await addAgents(ws, ids, null) : await startGroup(ws, ids, { kickoff });
       if (typeof StationUI !== 'undefined' && StationUI.notify) StationUI.notify(agentNames(ids) + (ids.length > 1 ? ' joined ' : ' joined ') + (out && out.title ? '"' + out.title + '"' : 'the chat'), 'good');
       return out;

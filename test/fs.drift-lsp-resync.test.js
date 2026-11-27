@@ -60,7 +60,7 @@ const DRIFT_NOTE = '\n\n[LSP unavailable: the file changed on disk while this ed
     const tools = makeFsTools({ fsp, pathMod: path, root, pathTrust: async (abs) => ({ base: proj, abs }), editDiagnostics });
     return { tools, reached, release };
   }
-  // the other writer has no language server of its own (a worker on a plain run, the Commander's editor)
+  // the other writer has no language server of its own (a worker on a plain run, the Master's editor)
   const otherTools = (proj) => makeFsTools({ fsp, pathMod: path, root, pathTrust: async (abs) => ({ base: proj, abs }) });
   async function rejection(p) { try { await p; return null; } catch (e) { return e; } }
   const uriOf = (abs) => pathToFileURL(abs).href;

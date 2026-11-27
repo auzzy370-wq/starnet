@@ -14,7 +14,7 @@ A.eq(B.kindOf(run({ streamId: 'workshop-abc' })), 'build', 'a workshop shift is 
 A.eq(B.kindOf(run({ streamId: 'nightshift-act-abc' })), 'build', 'a night-shift act is a build');
 A.eq(B.kindOf(run({ streamId: 'loop-L1' })), 'loop', 'a LOOP iteration is loop work');
 A.eq(B.kindOf(run({ streamId: 'nightshift-abc', internal: true })), null, 'reason-only night-shift planning is never briefed');
-A.eq(B.kindOf(run({ streamId: 'cron-abc', surface: 'interactive' })), null, 'the Commander continuing a routine session is attended work');
+A.eq(B.kindOf(run({ streamId: 'cron-abc', surface: 'interactive' })), null, 'the Master continuing a routine session is attended work');
 A.eq(B.kindOf(run({ streamId: 'cron-abc', parentRunId: 'p' })), null, 'delegated children are folded into their parent');
 A.eq(B.kindOf(run({ streamId: 'ws-123' })), null, 'an ordinary chat stream is not away work');
 
@@ -102,7 +102,7 @@ A.eq(B.excerptOf('| name | size |\n|---|---|\n| a | 1 |\n\nTwo files are ready.'
 {
   const H = 60000, AWAY = 30 * H, NOW = 1.8e12;   // a real epoch: the window maths must not clamp at zero
   let a = B.absence({ through: NOW - 5 * H, now: NOW, minAwayMs: AWAY, firstWindowMs: 24 * 60 * H });
-  A.ok(!a.brief && a.through === NOW, 'the Commander was here 5 minutes ago (a reload, a restart): no briefing, the stamp moves to now');
+  A.ok(!a.brief && a.through === NOW, 'the Master was here 5 minutes ago (a reload, a restart): no briefing, the stamp moves to now');
   a = B.absence({ through: NOW - 2 * 60 * H, now: NOW, minAwayMs: AWAY, firstWindowMs: 24 * 60 * H });
   A.ok(a.brief && a.since === NOW - 2 * 60 * H && a.through === NOW, 'two hours gone → brief exactly the absence');
   a = B.absence({ through: NOW - 5 * H, now: NOW, seen: true });
@@ -114,7 +114,7 @@ A.eq(B.excerptOf('| name | size |\n|---|---|\n| a | 1 |\n\nTwo files are ready.'
   a = B.absence({ through: NOW - 5 * H, now: NOW });
   A.ok(a.brief && a.since === NOW - 5 * H, 'no threshold named → the old contract (brief whatever ended since the stamp)');
   // THE FIRST SESSION (review 10-14): the awakening page has the briefing off but still stamps presence, so a brand-new
-  // station's first reload is a reload — never a 24-hour "While you were away" over the session the Commander just watched
+  // station's first reload is a reload — never a 24-hour "While you were away" over the session the Master just watched
   const seen = B.absence({ through: 0, now: NOW - 2 * 60000, seen: true });
   A.ok(!seen.brief && seen.through === NOW - 2 * 60000, 'a first-ever presence stamp sets the stamp and briefs nothing');
   a = B.absence({ through: seen.through, now: NOW, minAwayMs: AWAY, firstWindowMs: 24 * 60 * H });
@@ -134,7 +134,7 @@ A.eq(B.contextBlock({ items: [] }), '', 'no items → no context block');
     run({ streamId: 'k2', parentRunId: 'lead', delegatedBy: 'agent', endedAt: 1600000, ts: 1600000 }),
     run({ streamId: 'k3', parentRunId: 'lead', delegatedBy: 'agent', reason: 'error', failureCode: 'timeout', endedAt: 1700000, ts: 1700000 }),
     run({ streamId: 'home', parentRunId: 'k1run' }),                                        // the overseer's own review: not a worker
-    run({ streamId: 'k1', parentRunId: 'lead', delegatedBy: 'agent', surface: 'interactive' }), // the Commander in that thread
+    run({ streamId: 'k1', parentRunId: 'lead', delegatedBy: 'agent', surface: 'interactive' }), // the Master in that thread
     run({ streamId: 'orphan', parentRunId: 'lead', delegatedBy: 'agent' })                   // a thread this station doesn't know
   ] });
   const g = d.items.filter(i => i.kind === 'delegated');

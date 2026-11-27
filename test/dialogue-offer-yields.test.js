@@ -1,4 +1,4 @@
-/* node test/dialogue-offer-yields.test.js — a mid-game OFFER panel never stands over what needs the Commander (soak 2026-10-15).
+/* node test/dialogue-offer-yields.test.js — a mid-game OFFER panel never stands over what needs the Master (soak 2026-10-15).
 
    The overnight soak (night-1015, user station) caught the goal-path confirm — "i think i see the path to that goal… / 1. confirm
    the path / 2. not now" — opened over COMMS mid-conversation:
@@ -14,9 +14,9 @@
    B. Esc answers an offer the way its own "not now" key does — never from a station field, never an Esc the message box used
       (stop a run, close the / menu), never an Esc inside another surface; a panel with no offer keeps Esc off (the awakening);
    C. Dialogue.stepAside(why) hands the moment back to the offer's caller and is a no-op otherwise;
-   D. the goal-path panel: an approval/question landing steps it aside unanswered (asked-for or not), the Commander's own turn
+   D. the goal-path panel: an approval/question landing steps it aside unanswered (asked-for or not), the Master's own turn
       too, Esc is a real NOT NOW (a decline, like its key), and it is never offered while an ask waits;
-   E. chat.js calls the step-aside wherever an ask reaches the Commander and where the Commander's own turn begins. */
+   E. chat.js calls the step-aside wherever an ask reaches the Master and where the Master's own turn begins. */
 'use strict';
 const A = require('./_assert.js');
 const fs = require('node:fs');
@@ -281,7 +281,7 @@ const settle = async () => { for (let n = 0; n < 40; n++) await new Promise(r =>
     await settle();
     A.ok(t.s.D.isOpen() && t.s.panel(), 'the goal-path panel opens over COMMS at a quiet run end');
     A.ok(!t.s.covers(t.s.inputCentre()), 'and leaves the message box usable');
-    A.ok(typeof t.ctx.noteAskLanding === 'function', 'chat.js has noteAskLanding (an approval or question reaching the Commander)');
+    A.ok(typeof t.ctx.noteAskLanding === 'function', 'chat.js has noteAskLanding (an approval or question reaching the Master)');
     if (t.ctx.noteAskLanding) t.ctx.noteAskLanding();
     await Promise.race([p, settle()]);
     A.eq(t.s.D.isOpen(), false, 'an approval landing sends the open panel aside, so its keys are clickable');
@@ -289,13 +289,13 @@ const settle = async () => { for (let n = 0; n < 40; n++) await new Promise(r =>
     A.eq(t.log.finished, 1, 'the beat slot is released');
     A.eq(t.log.firing.at(-1), false, 'and the arc lane is released');
   }
-  // (2) the Commander asked for it (PLAN A PATH): a delivery does not yank it, but an approval does — its run is paused on them
+  // (2) the Master asked for it (PLAN A PATH): a delivery does not yank it, but an approval does — its run is paused on them
   {
     const t = arc();
     const p = t.ctx.offerArc('manual:1');
     await settle();
     t.ctx.noteDeliveryLanding(); await settle();
-    A.eq(t.s.D.isOpen(), true, 'a delivery leaves a panel the Commander opened themselves (unchanged)');
+    A.eq(t.s.D.isOpen(), true, 'a delivery leaves a panel the Master opened themselves (unchanged)');
     if (t.ctx.noteAskLanding) t.ctx.noteAskLanding();
     await Promise.race([p, settle()]);
     A.eq(t.s.D.isOpen(), false, 'an approval landing steps even an asked-for panel aside: a waiting ask is never covered');
@@ -318,7 +318,7 @@ const settle = async () => { for (let n = 0; n < 40; n++) await new Promise(r =>
     const t = arc();
     const p = t.ctx.offerArc('run-4');
     await settle();
-    t.s.key(' ');   // the read gate: the Commander reads on
+    t.s.key(' ');   // the read gate: the Master reads on
     await settle();
     const opts = all(t.s.host).filter(e => e._cls.has('fnv-opt')).map(e => e.textContent);
     A.ok(opts.some(x => /confirm the path/.test(x)) && opts.some(x => /not now/.test(x)), 'the milestones show their confirm / not now keys: ' + opts.join(' | '));
@@ -328,14 +328,14 @@ const settle = async () => { for (let n = 0; n < 40; n++) await new Promise(r =>
     A.eq(t.s.D.isOpen(), false, 'Esc closes the panel on the milestones as well');
     A.eq(t.log.decline, 1, 'as the same NOT NOW');
   }
-  // (5) the Commander's own turn steps it aside (a reply streaming under the panel would be hidden)
+  // (5) the Master's own turn steps it aside (a reply streaming under the panel would be hidden)
   {
     const t = arc();
     const p = t.ctx.offerArc('run-5');
     await settle();
-    A.eq(step(t.s.D, 'turn'), true, 'the Commander sending a turn hands the moment back');
+    A.eq(step(t.s.D, 'turn'), true, 'the Master sending a turn hands the moment back');
     await Promise.race([p, settle()]);
-    A.eq(t.s.D.isOpen(), false, 'the panel steps aside for the Commander’s own turn');
+    A.eq(t.s.D.isOpen(), false, 'the panel steps aside for the Master’s own turn');
     A.eq(t.log.decline, 0, 'unanswered, not declined');
   }
   // (6) never offered while an ask waits: a card on screen, a run's question, or any ask the station holds open
@@ -346,12 +346,12 @@ const settle = async () => { for (let n = 0; n < 40; n++) await new Promise(r =>
     A.eq(t.log.decline, 0, 'and that is not a decline (' + label + ')');
   }
 
-  /* ---------- E. chat.js hands the moment back wherever an ask reaches the Commander, and on their own turn ---------- */
+  /* ---------- E. chat.js hands the moment back wherever an ask reaches the Master, and on their own turn ---------- */
   A.ok(/U\.bus\.on\('permission\.prompt', noteAskLanding\)/.test(chat), 'every approval / question the station raises (permission.prompt, a worker’s and a group’s too) steps an offer aside');
   A.ok(/function revealCard\(el\) \{\s*\n\s*noteAskLanding\(\);/.test(chat), 'a live approval / question card shown in COMMS (incl. a session re-opened on one) steps an offer aside');
   A.ok(/function revealAsk\(promptId\) \{[\s\S]{0,900}?if \(!card\) return false;\s*\n\s*noteAskLanding\(\);/.test(chat), 'NEEDS YOU › Review / Answer steps an offer aside before it shows the card');
   A.ok(/function offerTaskQuestion\(tq\) \{[\s\S]{0,400}?noteAskLanding\(\);/.test(chat), 'a run that ends on a question steps an offer aside');
-  A.ok(/stepOfferAside\('turn'\);[^\n]*\n\s*stick = true;/.test(chat), 'the Commander’s own turn (send) steps an offer aside');
+  A.ok(/stepOfferAside\('turn'\);[^\n]*\n\s*stick = true;/.test(chat), 'the Master’s own turn (send) steps an offer aside');
   A.ok(/Dialogue\.open\(\{ name: \(name \|\| 'AGENT'\), offer: \{/.test(chat), 'the goal-path panel opens as an offer');
 
   A.report('dialogue-offer-yields.test');

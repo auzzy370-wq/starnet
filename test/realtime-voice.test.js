@@ -37,7 +37,7 @@ const {
   assert.equal(unavailable.status().available, false);
   const noKey = await unavailable.createCall('v=0\r\n');
   assert.equal(noKey.status, 409);
-  // ⛔ The refusal must never name an API KEY. Live voice rides the provider the Commander already
+  // ⛔ The refusal must never name an API KEY. Live voice rides the provider the Master already
   // connected; telling a ChatGPT-subscription user to go find an API key is the exact failure this fixes.
   assert.match(noKey.body, /connect an AI provider or subscription/);
   assert.equal(/API key/i.test(noKey.body), false, 'a subscription user must not be sent hunting for a key');

@@ -300,7 +300,7 @@ const tick = () => new Promise(resolve => setImmediate(resolve));
 }
 
 // ---- deliverable visibility (2026-07-07 ghost-file escape): a worker's saved image/file must reach the
-//      Commander — the deliverable event forwards to the lead bus (COMMS card / crate / notify all hang off
+//      Master — the deliverable event forwards to the lead bus (COMMS card / crate / notify all hang off
 //      it), and the dispatch result carries the worker's PROVEN artifacts stamped with the owning workspace ----
 {
   const ro = fakeRunOnce(async (o) => {
@@ -601,9 +601,9 @@ const tick = () => new Promise(resolve => setImmediate(resolve));
   A.ok(!/desk/i.test(out.summary), 'and the summary stays silent about furniture it cannot source');
   A.ok(/team\.dispatch/.test(out.summary), 'the summary nudges the lead to delegate to the new worker');
   /* CREW INTO THIS CHAT (rc walk 10-14): "bring two crew in to help me write a launch post" summoned two, then background-
-     dispatched them — the chat never got them. The result names both next steps by the Commander's words, and reveals the
+     dispatched them — the chat never got them. The result names both next steps by the Master's words, and reveals the
      deferred station.control so seating the hire here is one call away. */
-  A.ok(/to work IN this chat with the Commander: station\.control \{"action": "group\.add", "args": \{"agents": \["Researcher"\]\}\}; a job in its own thread: team\.dispatch/.test(parsed.next), 'the result names group.add for this chat and team.dispatch for a job: ' + parsed.next);
+  A.ok(/to work IN this chat with the Master: station\.control \{"action": "group\.add", "args": \{"agents": \["Researcher"\]\}\}; a job in its own thread: team\.dispatch/.test(parsed.next), 'the result names group.add for this chat and team.dispatch for a job: ' + parsed.next);
   A.eq(out.control && out.control.revealTools, ['team.dispatch', 'station.control'], 'and reveals both');
 }
 
@@ -611,14 +611,14 @@ const tick = () => new Promise(resolve => setImmediate(resolve));
 {
   const { dispatchTool, summonTool } = makeOrchestrationTools({ runOnce: fakeRunOnce(), roster: () => new Map(), key: 'k', model: 'm', newId: counter() });
   A.ok(/^Delegate subtasks to your specialist crew, each worker in its own thread \(never in this chat\)\./.test(dispatchTool.description), 'team.dispatch\'s first sentence (tool_search\'s gist) says a worker never sits in this chat');
-  A.ok(/To bring crew INTO this chat to work with the Commander, use station\.control group\.add instead \(tool_search "group add"\)/.test(dispatchTool.description), 'and names the call that does');
+  A.ok(/To bring crew INTO this chat to work with the Master, use station\.control group\.add instead \(tool_search "group add"\)/.test(dispatchTool.description), 'and names the call that does');
   A.ok(/Returns the new agentId: bring it INTO this chat with station\.control group\.add, or hand it work with team\.dispatch/.test(summonTool.description), 'team.summon names both next steps');
 }
-// the declined summon is said to the Commander, never about them
+// the declined summon is said to the Master, never about them
 {
   const { summonTool } = makeOrchestrationTools({ runOnce: fakeRunOnce(), roster: () => new Map(), key: 'k', model: 'm', newId: counter() });
   const out = await summonTool.run({ name: 'Ghost' }, { agentId: 'agent', summon: async () => null });
-  A.ok(!/the Commander declined/i.test(out.content.replace(/never "the Commander declined"/, '')) && /say it to the Commander as "you"/.test(out.content), 'a declined summon is said to the Commander as "you": ' + out.content);
+  A.ok(!/the Master declined/i.test(out.content.replace(/never "the Master declined"/, '')) && /say it to the Master as "you"/.test(out.content), 'a declined summon is said to the Master as "you": ' + out.content);
 }
 
 // ---- THE DESK RIDES ALONG: the station acks { agentId, desk } and the tool reports WHERE it landed ----
@@ -630,7 +630,7 @@ const tick = () => new Promise(resolve => setImmediate(resolve));
   A.eq(parsed.agentId, 'scout-2', 'the object ack still yields the new agentId');
   A.eq(parsed.workstation, 'BRIDGE', 'the seeded workstation room reaches the lead');
   A.ok(/workstation in BRIDGE/.test(out.summary), 'the summary states where the workstation is (true whether it was built or adopted)');
-  A.ok(summonTool.description.indexOf('workstation with it') > 0, 'the tool tells the lead never to ask the Commander to build the desk');
+  A.ok(summonTool.description.indexOf('workstation with it') > 0, 'the tool tells the lead never to ask the Master to build the desk');
 }
 
 // ---- an object ack with NO desk (placement failed / no room) must not claim one ----
@@ -876,7 +876,7 @@ const tick = () => new Promise(resolve => setImmediate(resolve));
 // ---- THE ESCAPE (2026-07-26 audit finding A): a SEQUENTIAL dispatch whose wall clock ran out used to lose
 //      EVERYTHING. One slow worker ate the shared budget, the registry's tool timeout rejected, and every
 //      already-completed worker's result was discarded — the lead received only "team.dispatch timed out", after
-//      the Commander had paid for all of them. Now: one worker's slice ends ALONE, its siblings' work survives,
+//      the Master had paid for all of them. Now: one worker's slice ends ALONE, its siblings' work survives,
 //      and the row says so. Driven through the REAL registry (which owns the outer timeout). ----
 {
   const finished = [], finalized = [];
@@ -1016,7 +1016,7 @@ const tick = () => new Promise(resolve => setImmediate(resolve));
   A.eq(rows.length, 2, 'both workers are reported even when the gate is saturated');
   A.ok(rows.every(r => r.reason === 'refused'), 'a saturated gate yields refused rows, not fabricated results');
   A.ok(rows.every(r => r.retried === true), 'each refusal was retried once before being reported');
-  A.ok(/MAX_CONCURRENT_AGENTS in SETTINGS/.test(rows[0].result), 'the refusal names the control the Commander can actually change');
+  A.ok(/MAX_CONCURRENT_AGENTS in SETTINGS/.test(rows[0].result), 'the refusal names the control the Master can actually change');
   A.ok(ro.calls.length === 4, 'two workers x (first attempt + one retry) = four admission attempts');
 }
 
@@ -1031,7 +1031,7 @@ const tick = () => new Promise(resolve => setImmediate(resolve));
 
 /* ---- SESSION TARGETING: delegation can say WHERE, and refuses rather than guessing ----------------------
    The bug: `session` did not exist, so a delegated run was filed under whatever session the LEAD was in. The
-   Commander named "research", the work landed elsewhere, and the lead reported success. These cover both the
+   Master named "research", the work landed elsewhere, and the lead reported success. These cover both the
    happy path and — the part that matters more — every way a name can fail to resolve. */
 function fakeStation(sessions, opts) {
   opts = opts || {};
@@ -1116,7 +1116,7 @@ for (const reason of ['done', 'budget', 'max_iters', 'aborted']) {
 
 /* ⛔ THE ONE THAT MATTERS. An unknown session must REFUSE — never fall back to the current one. Running the
    work "somewhere sensible" is what produced the original bug: the lead then truthfully reports a success the
-   Commander cannot find. A refusal is legible; a wrong-but-plausible destination is not. */
+   Master cannot find. A refusal is legible; a wrong-but-plausible destination is not. */
 {
   const ro = fakeRunOnce();
   const { dispatchTool } = sessionTools(fakeStation(SESSIONS), ro);
@@ -1165,7 +1165,7 @@ for (const reason of ['done', 'budget', 'max_iters', 'aborted']) {
 }
 
 /* A FAILED FOLD IS REPORTED, NOT SWALLOWED. The run really is filed under that stream (runOnce got the
-   streamId), so the work is not lost — but the lead must not tell the Commander to go look somewhere the
+   streamId), so the work is not lost — but the lead must not tell the Master to go look somewhere the
    answer was never shown. */
 {
   const ro = fakeRunOnce();
@@ -1174,7 +1174,7 @@ for (const reason of ['done', 'budget', 'max_iters', 'aborted']) {
   const row = JSON.parse(out.content)[0];
   A.eq(row.reason, 'done', 'the work itself still completed');
   A.eq(row.session, undefined, 'the row does NOT claim the session when the fold failed');
-  A.ok(/could not show it there/.test(row.sessionNote), 'it carries an honest note about what the Commander will actually see');
+  A.ok(/could not show it there/.test(row.sessionNote), 'it carries an honest note about what the Master will actually see');
 }
 
 // one dispatch, two workers, two different sessions — each lands in its own
@@ -1511,11 +1511,11 @@ for (const mode of ['invalid', 'error', 'refused']) {
   A.eq(String(roP.calls[1].messages[0].content), 'b', 'parallel workers run at once, so nothing is handed between them');
 }
 
-// ---- A WORKER'S CLOCK STOPS WHILE IT WAITS ON THE COMMANDER, and the user never reads the lead's [STOPPED …] note ----
+// ---- A WORKER'S CLOCK STOPS WHILE IT WAITS ON THE MASTER, and the user never reads the lead's [STOPPED …] note ----
 {
   let clock = 0;
   const delivered = [];
-  // the worker asks for approval at once; the Commander answers 300 ms later; then it works 50 ms. Its slice is 200 ms.
+  // the worker asks for approval at once; the Master answers 300 ms later; then it works 50 ms. Its slice is 200 ms.
   const runOnce = async (o) => {
     await o.consent({ name: 'fs.write' });
     await new Promise(res => setTimeout(res, 50));
@@ -1530,7 +1530,7 @@ for (const mode of ['invalid', 'error', 'refused']) {
   const rows = JSON.parse(r.content);
   A.eq(rows[0].reason, 'done', 'a 300 ms approval wait does not use up a 200 ms slice — the worker finishes its job');
 
-  // a worker that really does run out of time: the lead gets the note, the Commander's card gets only the partial work
+  // a worker that really does run out of time: the lead gets the note, the Master's card gets only the partial work
   const ro2 = async (o) => {
     await new Promise(res => { const t = setTimeout(res, 2000); o.signal.addEventListener('abort', () => { clearTimeout(t); res(); }, { once: true }); });
     return { reason: 'done', messages: [{ role: 'assistant', content: 'half a draft' }], usd: 0.1 };
@@ -1545,7 +1545,7 @@ for (const mode of ['invalid', 'error', 'refused']) {
   A.eq(row.reason, 'timeout', 'the slice really ran out');
   A.ok(/\[STOPPED/.test(row.result), 'the lead still gets the model-directed note');
   const shown = delivered.find(d => d.streamId === 'ws_child');
-  A.ok(shown && shown.text === 'half a draft' && !/\[STOPPED/.test(shown.dispatchDelivery.text), 'the Commander\'s thread shows the partial work only, never the lead\'s instruction');
+  A.ok(shown && shown.text === 'half a draft' && !/\[STOPPED/.test(shown.dispatchDelivery.text), 'the Master\'s thread shows the partial work only, never the lead\'s instruction');
 }
 
 // ---- the path guard's hand-off exception: an exact granted file, read-only ----

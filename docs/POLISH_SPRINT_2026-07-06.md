@@ -1,11 +1,11 @@
-# Polish sprint — 2026-07-06 (visual-truth audit + Commander UX asks)
+# Polish sprint — 2026-07-06 (visual-truth audit + Master UX asks)
 
 Source: five-lane truthful-telemetry audit (this session) + Andrew's direct asks.
 Orchestrator: Fable. Implementation agents: Opus, one worktree each, `agent/<lane>` branches.
 Gate: `npm run test:fast` green + live verification per `vultron-verify` before merge.
 
 ## Lane 1 — `ux-popup-escape` (Andrew ask)
-Every popup/beat that asks the Commander questions must be exitable without answering.
+Every popup/beat that asks the Master questions must be exitable without answering.
 Surfaces to inventory and fix: intake interview (frontend/app/intake.js — skippable per-question,
 but is there a visible "leave the whole interview" exit?), curiosity nudge (curiosity.js),
 onboarding/awakening question flow, pitch/suggestion cards, ArmConfirm/prospect confirm cards

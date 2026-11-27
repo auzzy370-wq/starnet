@@ -8,7 +8,7 @@
 const A = require('./_assert.js');
 const W = require('../frontend/app/wakemind.js');
 
-/* ---------- buildPainReply: deterministic, carries the Commander's words, encodes the question rule ---------- */
+/* ---------- buildPainReply: deterministic, carries the Master's words, encodes the question rule ---------- */
 const painCtx = { pain: 'editing youtube shorts   every single night', name: 'ULTRON' };
 const d1 = W.buildPainReply(painCtx);
 A.ok(typeof d1 === 'string' && d1.length > 0, 'buildPainReply returns a directive');

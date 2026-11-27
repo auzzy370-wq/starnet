@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// perf-window-open.mjs — what OPENING a station window costs the Commander: the main-thread freeze, the frames the
+// perf-window-open.mjs — what OPENING a station window costs the Master: the main-thread freeze, the frames the
 // rise animation drops, and which scripts paid for it.
 //
 // Boots a SKYNET_DEV sidecar from --repo over a COPY of a station (save/roster/dossier only — same rule as

@@ -3,9 +3,9 @@
    Recovery is deliberately two-phase. The authenticated UI writes one opaque candidate request, then the
    sidecar exits. The next sidecar boot applies that request BEFORE the workspace owner/store graph opens:
    source -> sibling stage -> hash read-back -> retain current as rollback -> atomic activation. The source
-   root is never mutated, and an ambiguous set is never selected without the Commander's explicit click.
+   root is never mutated, and an ambiguous set is never selected without the Master's explicit click.
 
-   START FRESH from the gate is the same two phases, and shares the activation. Its request pins what the Commander saw
+   START FRESH from the gate is the same two phases, and shares the activation. Its request pins what the Master saw
    (workspace-lineage.js requestFresh), and the next boot, in this same locked pre-claim phase, sets the WHOLE generation
    aside, one rename into workspace-quarantine, in place of a clean stage: SEAL, the station record, the legacy mirror and
    the carry rule's files, exactly what the desktop shell's fresh_start.rs leaves. Inside the running sidecar the old
@@ -202,7 +202,7 @@ function requestRecovery(opts) {
 }
 
 // The pending START FRESH: the facts it pinned (stationRecord.freshFacts), the build that took it, and the external roots
-// the Commander saw as evidence and chose past. A pending recovery wins, and the two never queue up.
+// the Master saw as evidence and chose past. A pending recovery wins, and the two never queue up.
 function writeFreshRequest(opts) {
   const o = opts || {}, fs = o.fs || fsNative, path = o.path || pathNative;
   const now = typeof o.now === 'function' ? o.now : function () { return 0; };
@@ -287,7 +287,7 @@ function readLastResult(workspaceRoot, deps) {
 /* scratchTargetReason — AUTO recovery must never heal INTO a scratch workspace (2026-08-19/20 incident).
    Automatic recovery scans the REAL per-user app-data roots for a stranded station, and a fresh temp
    workspace looks exactly like a lost one — so every ad-hoc test sidecar (mkdtemp under os.tmpdir())
-   silently copied the Commander's production station into its throwaway workspace the day v0.10.6 was
+   silently copied the Master's production station into its throwaway workspace the day v0.10.6 was
    installed locally. Rule: when the TARGET workspace root resolves under os.tmpdir() or under any
    env-declared scratch root (VULTRON_SCRATCH_ROOT / SKYNET_SCRATCH_ROOT, path-delimiter separated),
    the auto branch is skipped with a reason. Explicit operator-driven recovery (a written request file,
@@ -510,7 +510,7 @@ function strandedResult(fs, path, now, current, fields) {
      stage, workspace, no shelf the first rename never happened: as "not ready".
      stage, shelf, workspace    a workspace appeared after the first rename. The shell's first-run migration runs before any
                                 sidecar and into any workspace with no seal, so after a power loss this is a fresh import of
-                                the very root the Commander chose past, or an empty sealed folder. It is set aside too, and
+                                the very root the Master chose past, or an empty sealed folder. It is set aside too, and
                                 the stage lands. Only a station no receipt accounts for stays, and the request ends there.
      stage, no workspace        the window itself: the stage lands. */
 function resumeActivation(o) {
@@ -554,7 +554,7 @@ function resumeActivation(o) {
   return null;
 }
 
-// A request that did not run: kept beside the workspace as .failed-<stamp>, and the result is what the Commander reads.
+// A request that did not run: kept beside the workspace as .failed-<stamp>, and the result is what the Master reads.
 function failRequest(fs, path, now, current, requestPath, fields) {
   try { fs.renameSync(requestPath, requestPath + '.failed-' + cleanStamp(now)); } catch (_) {}
   const result = Object.assign({ version: 1, ok: false, applied: false, at: now() }, fields);
@@ -562,7 +562,7 @@ function failRequest(fs, path, now, current, requestPath, fields) {
   return result;
 }
 
-/* A request the workspace has moved on from never sets it aside. Each row is a state the Commander did not choose past, the
+/* A request the workspace has moved on from never sets it aside. Each row is a state the Master did not choose past, the
    most specific reason first: an older build's reset and a save that came back each move the record too. */
 function staleFreshRequest(request, facts, buildVersion) {
   const again = ' Nothing was moved. Press START FRESH again if you still want a new station.';
@@ -764,7 +764,7 @@ function applyPendingRecoveryLocked(opts) {
     fs.writeFileSync(path.join(stage, '.migrated'), '1');
     // the restored generation's own station record: active, its reset cleared (the recovered station predates any reset
     // here), the replaced generation's erase authority kept, and every root this recovery chose among acknowledged, so
-    // a root the Commander did not pick never becomes the one automatic candidate if this station's save is lost later
+    // a root the Master did not pick never becomes the one automatic candidate if this station's save is lost later
     const recordDeps = { fs, path, platform: String(o.platform || process.platform), now, workspaceRoot: current };
     const hadGeneration = fs.existsSync(current);
     stationRecord.writeRecord(recordDeps, stage, stationRecord.recoveryRecord(recordDeps, stationRecord.read(recordDeps).record, {

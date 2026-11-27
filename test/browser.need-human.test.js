@@ -1,6 +1,6 @@
 /* node test/browser.need-human.test.js — STEP-IN at the tool layer (sidecar/tools/builtin/browser.js).
 
-   browser.need_human hands the agent's OWN live browser to the Commander through the handoff host and waits.
+   browser.need_human hands the agent's OWN live browser to the Master through the handoff host and waits.
    Pinned here with an injected driver + the real host:
      · the FROZEN rule — while a handoff is live, every other browser tool (snapshot, get_text, screenshot, vision,
        console, click, test_*) is refused before it runs, so nothing is read off a page a human is typing into;
@@ -69,7 +69,7 @@ async function runErr(tool, args) { try { await tool.run(args || {}, {}); return
 
     const nav = await toolOf(B, 'browser.navigate').run({ url: 'https://example.com/login' }, {});
     A.ok(/browser\.need_human \{reason:"login"\}/.test(nav.content), 'a sign-in page names browser.need_human with the login reason');
-    A.ok(/never type the Commander's credentials/.test(nav.content), 'and tells the agent it never types credentials');
+    A.ok(/never type the Master's credentials/.test(nav.content), 'and tells the agent it never types credentials');
 
     const snap = await toolOf(B, 'browser.snapshot').run({}, {});
     const oldRef = (snap.content.match(/^(b\d+) \[/m) || [])[1];
@@ -79,7 +79,7 @@ async function runErr(tool, args) { try { await tool.run(args || {}, {}); return
     const pending = toolOf(B, 'browser.need_human').run({ reason: 'login', note: 'Sign in so I can read your dashboard' }, { signal: runSignal.signal });
     await until(() => host.list().live.length === 1);
     const live = host.list().live[0];
-    A.eq(live.state, 'waiting', 'the handoff is waiting for the Commander');
+    A.eq(live.state, 'waiting', 'the handoff is waiting for the Master');
     A.eq(live.where, 'example.com/login', 'it names where the agent is stuck');
     A.eq(live.note, 'Sign in so I can read your dashboard', 'it carries the agent\'s one-line ask');
     A.eq(live.remembered, true, 'on the durable profile the sign-in is marked remembered (truthful)');
@@ -88,7 +88,7 @@ async function runErr(tool, args) { try { await tool.run(args || {}, {}); return
     // THE FROZEN RULE — every other browser tool is refused before it runs.
     for (const name of ['browser.snapshot', 'browser.get_text', 'browser.screenshot', 'browser.vision', 'browser.console', 'browser.find', 'browser.network', 'browser.test_snapshot', 'browser.test_state']) {
       const e = await runErr(toolOf(B, name), name === 'browser.find' ? { text: 'x' } : {});
-      A.ok(/^FROZEN: the Commander holds this browser/.test(e || ''), name + ' is refused while the Commander holds the wheel: ' + e);
+      A.ok(/^FROZEN: the Master holds this browser/.test(e || ''), name + ' is refused while the Master holds the wheel: ' + e);
     }
     for (const [name, args] of [['browser.click', { ref: oldRef }], ['browser.type', { ref: oldRef, text: 'hunter2' }], ['browser.navigate', { url: 'https://example.com/' }], ['browser.press', { key: 'Enter' }]]) {
       const e = await runErr(toolOf(B, name), args);
@@ -98,7 +98,7 @@ async function runErr(tool, args) { try { await tool.run(args || {}, {}); return
     const second = await runErr(toolOf(B, 'browser.need_human'), { reason: 'login', note: 'again' });
     A.ok(/already waiting/.test(second || ''), 'a second need_human in the same run is refused (one handoff per run)');
 
-    // the Commander takes the wheel: the SAME driver streams and receives their input
+    // the Master takes the wheel: the SAME driver streams and receives their input
     const tk = await host.take(live.id);
     A.ok(tk.ok, 'take the wheel');
     A.eq(driver.streaming, 1, 'the agent\'s own browser starts streaming (no relaunch)');
@@ -106,16 +106,16 @@ async function runErr(tool, args) { try { await tool.run(args || {}, {}); return
     A.ok(f.ok && f.frame && f.frame.data === '/9j/FRAME', 'the station can read the live frame');
     await host.input(live.id, { type: 'text', text: 'andrew@example.com' });
     await host.input(live.id, { type: 'key', action: 'down', key: 'Enter', code: 'Enter', keyCode: 13, text: '\r' });
-    A.eq(driver.inputs.length, 2, 'the Commander\'s input reached the agent\'s browser');
+    A.eq(driver.inputs.length, 2, 'the Master\'s input reached the agent\'s browser');
     A.eq(driver.reads, readsBefore, 'and still nothing was read for the agent');
 
     host.handBack(live.id);
     const out = await pending;
-    A.eq(out.summary, 'handed back', 'the agent learns the Commander handed back');
-    A.ok(/https:\/\/example\.com\/dashboard/.test(out.content), 'it is told the page the Commander left it on');
+    A.eq(out.summary, 'handed back', 'the agent learns the Master handed back');
+    A.ok(/https:\/\/example\.com\/dashboard/.test(out.content), 'it is told the page the Master left it on');
     A.ok(/take a fresh browser\.snapshot/.test(out.content), 'and to take a fresh snapshot before acting');
     A.ok(/kept in the station browser profile/.test(out.content), 'the durable profile is named truthfully');
-    A.ok(!/andrew@example\.com/.test(out.content), 'what the Commander typed never appears in the agent\'s result');
+    A.ok(!/andrew@example\.com/.test(out.content), 'what the Master typed never appears in the agent\'s result');
     A.eq(B.session.frozen(), null, 'the session thaws');
     A.eq(driver.stopped, 1, 'streaming stopped');
     const stale = await runErr(toolOf(B, 'browser.click'), { ref: oldRef });

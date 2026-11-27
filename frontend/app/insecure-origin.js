@@ -5,7 +5,7 @@
    crypto.randomUUID, the async copy API, Web Locks, the media-capture API and crypto.subtle. bootguard.js already
    knows this (it does not read randomUUID's absence as an old engine), but nothing provided it, so the two callers that
    are not typeof-guarded threw: group-chat.js (its uid()) and widgets.js (a placed widget's id). Both are ordinary work
-   the Commander would expect to succeed.
+   the Master would expect to succeed.
 
    So this replaces exactly what can be replaced FAITHFULLY — crypto.randomUUID, on crypto.getRandomValues, which an
    insecure origin does have. Everything else is deliberately left alone:

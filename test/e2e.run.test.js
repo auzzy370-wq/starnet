@@ -189,7 +189,7 @@ function boot(port, env, attemptsLeft) {
     A.ok(firstSystem.indexOf('[RUNTIME]') >= 0, 'runtime identity block reaches the provider (run-context note)');
     A.ok(firstSystem.indexOf('Provider: openrouter') >= 0, 'runtime block names the selected provider');
     A.ok(firstSystem.indexOf('Requested model at run start: test/model') >= 0, 'runtime block names the requested model');
-    A.ok(firstSystem.indexOf('If the Commander asks what Vultron build, model, provider') >= 0, 'runtime block tells the agent to answer build/model/provider questions from host state');
+    A.ok(firstSystem.indexOf('If the Master asks what Vultron build, model, provider') >= 0, 'runtime block tells the agent to answer build/model/provider questions from host state');
 
     // CURRENT-RELEASE INCIDENT: an orphaned tool result used to pass straight through OpenRouter and make
     // every replay fail with the same provider 400. Drive the malformed history through the real HTTP route,
@@ -226,7 +226,7 @@ function boot(port, env, attemptsLeft) {
       const raw = await r.text();
       const evs = raw.split('\n').filter(Boolean).map(l => { try { return JSON.parse(l); } catch (_) { return null; } }).filter(Boolean);
       A.ok(evs.some(e => e.name === 'agent.run.end' && e.payload.reason === 'done'), 'compatible route recovers malformed tool history through the real sidecar');
-      // the run-context note leads the Commander's own message (provider.js noteCarrier), not the recovered-result turn;
+      // the run-context note leads the Master's own message (provider.js noteCarrier), not the recovered-result turn;
       // on a chat wire the recovered text then joins that turn (projectRoles 'chat': two user turns in a row are one)
       const wire = mock.requests.slice(before).find(q => (q.messages || []).some(m => m.role === 'user' && userWords(m).indexOf('PAIRRECOVERY compatible route') === 0));
       A.ok(wire && wire.messages.some(m => m.role === 'user' && String(m.content).includes('[recovered tool result') && String(m.content).includes('evidence survives')), 'compatible wire retains orphan evidence as labeled recovery text');
@@ -283,7 +283,7 @@ function boot(port, env, attemptsLeft) {
           }
         }
       }
-      A.ok(evs.some(e => e.name === 'permission.prompt' && ['code.run', 'code_run'].indexOf(e.payload.tool) >= 0),'code.run asked the Commander before running model code');
+      A.ok(evs.some(e => e.name === 'permission.prompt' && ['code.run', 'code_run'].indexOf(e.payload.tool) >= 0),'code.run asked the Master before running model code');
       const called = evs.filter(e => e.name === 'agent.tool_call').map(e => e.payload.name);
       A.ok(called.indexOf('code_run') >= 0, 'real sidecar executed model-facing code.run through its provider-safe wire name');
       A.ok(called.indexOf('tool.search') >= 0, 'the child nested read re-entered parent tool telemetry');

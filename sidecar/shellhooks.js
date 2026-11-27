@@ -1,11 +1,11 @@
-/* sidecar/shellhooks.js — THE SHELL-HOOK BRIDGE: the Commander's own scripts, on the station's hook spine.
+/* sidecar/shellhooks.js — THE SHELL-HOOK BRIDGE: the Master's own scripts, on the station's hook spine.
 
    This is the ambient half of sidecar/hooks.js. It turns a line of config —
 
        { "event": "pre_tool_call", "command": "node ./guards/no-force-push.js" }
 
    — into a handler registered on the spine, and speaks the reference harness's wire protocol EXACTLY, so a
-   Commander who already has hook scripts written for that harness drops them in and they work:
+   Master who already has hook scripts written for that harness drops them in and they work:
 
      stdin  (JSON)  { hook_event_name, tool_name, tool_input, session_id, cwd, extra }
      stdout (JSON)  { "decision":"block", "reason":"…" }   ← Claude-Code shape
@@ -15,13 +15,13 @@
 
    THE PRIVILEGE BOUNDARY, stated loudly because it is the whole risk of this feature: a shell hook runs
    OUTSIDE the agent's workspace jail, at the STATION's privilege. It has to — its job is often to run the
-   Commander's own toolchain on the Commander's own files. That is safe only because a hook is CONFIGURED by
-   the Commander rather than authored by the agent, and it is why every (event, command) pair must be
+   Master's own toolchain on the Master's own files. That is safe only because a hook is CONFIGURED by
+   the Master rather than authored by the agent, and it is why every (event, command) pair must be
    explicitly allowed before it ever runs. A hooks file can arrive by repo checkout, by config sync, by a
-   restored backup — none of those are the Commander deciding, so none of them are consent.
+   restored backup — none of those are the Master deciding, so none of them are consent.
 
    NO SHELL. The command is split into argv here and spawned with shell:false, so a hooks file can never be a
-   shell-injection vector through a crafted command string. A Commander who genuinely wants a pipeline puts it
+   shell-injection vector through a crafted command string. A Master who genuinely wants a pipeline puts it
    in a script and points the hook at the script — the same trade the reference harness makes.
 
    makeShellHooks({ spawn, fsp, pathMod, hooksFile, allowFile, cwd, clock?, onError? })
@@ -48,7 +48,7 @@
      quotes, single quotes, and backslash escapes outside quotes. Deliberately does NOT understand pipes,
      redirects, globs, $VARS or backticks — those would need a shell, and running a shell is the thing this
      module exists to avoid. An unterminated quote is an ERROR, never a silent best-effort split: guessing at
-     what a half-quoted command meant is how you execute something the Commander did not write. */
+     what a half-quoted command meant is how you execute something the Master did not write. */
   function splitArgs(line) {
     const s = String(line == null ? '' : line);
     const out = [];
@@ -112,7 +112,7 @@
       return { hooks, errors };
     }
 
-    /* AUTHORING. A hook the Commander TYPES INTO THE STATION is already consented — they wrote it, here, on
+    /* AUTHORING. A hook the Master TYPES INTO THE STATION is already consented — they wrote it, here, on
        purpose. The allowlist exists for hooks that arrive by other means (a repo checkout, a config sync, a
        restored backup), which is a different act entirely. So create() approves what it writes; asking the
        author to then approve their own keystrokes would be theatre, and theatre is what teaches people to
@@ -153,7 +153,7 @@
 
     const allowedSet = async () => new Set(Object.keys((await readJson(allowFile, {})) || {}));
 
-    // Approve one (event, command) pair. Persisted, because re-asking every boot for a hook the Commander
+    // Approve one (event, command) pair. Persisted, because re-asking every boot for a hook the Master
     // already approved is the kind of nagging that trains people to approve without reading.
     async function allow(event, command) {
       const cur = (await readJson(allowFile, {})) || {};
@@ -161,7 +161,7 @@
       try { await fsp.writeFile(allowFile, JSON.stringify(cur, null, 2), 'utf8'); return true; }
       catch (e) { onError({ hook: 'allowlist', error: (e && e.message) || String(e) }); return false; }
     }
-    /* UN-APPROVE. A consent gate with no way back is not a gate, it is a one-way door — and the Commander
+    /* UN-APPROVE. A consent gate with no way back is not a gate, it is a one-way door — and the Master
        who approved a hook in a hurry needs the same one click to take it back. Removing the entry is enough:
        install() only registers pairs present in the allowlist, so a revoke plus a re-install is a full stop. */
     async function revoke(event, command) {
@@ -212,7 +212,7 @@
         child.on('error', (e) => { onError({ hook: hook.name, error: (e && e.message) || String(e) }); finish(null); });
         child.on('close', () => {
           // A non-JSON or empty stdout is a SILENT NO-OP, not an error: plenty of useful hooks (a formatter, a
-          // logger) print nothing at all, and treating their silence as a failure would spam the Commander.
+          // logger) print nothing at all, and treating their silence as a failure would spam the Master.
           const t = out.trim();
           if (!t) return finish(null);
           try { finish(JSON.parse(t)); } catch (_) { finish(null); }
@@ -223,7 +223,7 @@
     }
 
     /* install(hooks, { accept }) — register every ALLOWED hook on the spine.
-       Returns what happened, so the host can tell the Commander which hooks are live and which are waiting on
+       Returns what happened, so the host can tell the Master which hooks are live and which are waiting on
        them, instead of failing silently in either direction. `accept: true` is the non-interactive escape
        hatch (a headless/CI station); it approves and persists, and it is the caller's decision to make. */
     async function install(hookSpine, opts) {

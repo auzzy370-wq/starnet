@@ -94,7 +94,7 @@ const World = (() => {
   let wakeDark = 0, wakeDarkTarget = 0, awakeFrozen = false;   // the AWAKENING: a darkness veil that lifts to first light, + a freeze so the newborn holds still during its first meeting
   let camAnim = null;                                          // {fromS,toS,fromX,toX,fromY,toY,t,dur,ease,onEnd} — a scripted awakening camera move
   /* FOLLOW-LOCK + IDLE CINECAM (the GTA-style idle camera). camLock is a CONTINUOUS follow of one body —
-     source 'session' = the Commander selected that agent's session (explicit intent, engages immediately);
+     source 'session' = the Master selected that agent's session (explicit intent, engages immediately);
      source 'cine'    = the idle auto-director cast the shot itself after a hands-off spell.
      Either way ANY user camera input (wheel zoom / drag pan / canvas click) releases the lock instantly and
      re-stamps camUserAt; the director may only take the camera back after cineIdleMs of true hands-off. */
@@ -222,7 +222,7 @@ const World = (() => {
     forgetAt = now + FORGET_MS;
     for (const [k, v] of seenCount) { if (v <= 1) seenCount.delete(k); else seenCount.set(k, v - 1); }
   }
-  /* THE COMMANDER'S PRESENCE — the agent's sense of "where you are." lastCursor is the cursor's world
+  /* THE MASTER'S PRESENCE — the agent's sense of "where you are." lastCursor is the cursor's world
      position (cached on mousemove); userReturnUntil is a brief window after you return to the tab; deepLocks
      budgets the rare long "deep lock" to ~1 per session. These feed THE LOOK-UP + the cursor gaze-drift:
      the agent occasionally, silently, turns and looks up at you (eerie-sentient, never chatty). */
@@ -236,9 +236,9 @@ const World = (() => {
      1-pixel jitter) — this stamps on real displacement so a parked-but-twitching cursor doesn't read as
      "moving". A user INPUT signal (allowed by G6 — never Math.random/Date.now for behavior). */
   let cursorMoveT = -1e9;
-  /* TIER D · D1 ATTENTIVE AUDIENCE — which agent the Commander currently has COMMS focus on (chat.js
+  /* TIER D · D1 ATTENTIVE AUDIENCE — which agent the Master currently has COMMS focus on (chat.js
      announces it via setChatFocus on every load(ws) rebind; null = no conversation / awakening interview).
-     The focused body, while idle, drops its wander/quirk/social life and holds its attention on the Commander
+     The focused body, while idle, drops its wander/quirk/social life and holds its attention on the Master
      (see the chat-stare beat in decideIdle + the per-tick hold in tick/crewEngineStep). D0 plumbing only. */
   let chatFocusId = null;
   /* TIER D · D1 WARMTH (tune fix 2026-07-02) — COMMS is a PERSISTENT panel: it always has an active
@@ -296,13 +296,13 @@ const World = (() => {
   const CURIO_LOOK = ['hm.', 'all quiet', 'good station', '...', 'just taking it in'];
   const SELF_REST = ['need a breather', 'feet up for a bit', 'recharge', 'easy for a minute', 'resting the circuits'];
   const SELF_STIM = ['too quiet', 'something to do', 'restless', 'let me find something', 'need a spark'];
-  const SELF_TEND = ['anything for me?', 'standing by', 'awaiting orders', 'still here, Commander', 'ready when you are'];
+  const SELF_TEND = ['anything for me?', 'standing by', 'awaiting orders', 'still here, Master', 'ready when you are'];
   const SELF_ONDUTY = ['on it', 'parsing', 'let me think', 'working it', 'processing'];
   const SELF_NOCOMPUTE = ['no terminal in this room', 'nothing to run on here', 'i need a computer here', 'this room has no compute'];   // G0.7: sat down to work in a room that grants no COMPUTE — said once, then silence
   const SELF_QUIET = ['...', 'cycles to spare', 'so quiet', 'just me and the stars', 'standing by'];
   const SELF_CONTEMPLATE = ['quiet out there', 'so much void', 'just... processing', 'the stars again', 'endless out there'];
   const SELF_DISPATCH = ['sent', 'delivered', 'thats away', 'reply is out', 'done and gone'];
-  const SELF_GREET = ['yes, Commander?', 'still here', 'watching', 'at your service', 'go ahead'];
+  const SELF_GREET = ['yes, Master?', 'still here', 'watching', 'at your service', 'go ahead'];
   const SELF_ACK = ['hm?', 'yes?', 'still here', 'watching'];
   /* LEISURE FLAVOUR, keyed by the catalog `use.kind`. Every prop with a `use` descriptor is a real
      destination an idle body walks to, so a line here is a truthful report of where it IS — never a
@@ -410,14 +410,14 @@ const World = (() => {
   const REVISIT_LINE = ['back here again', 'my spot', 'here is good', '...', 'i like it here'];                       // drawn back to a favorite haunt
   // WAKE_FIRST removed — the first-light thought is no longer spoken (no canned one-liners, ever).
   /* AGENT ACTS ON THE STATION (safety-railed): it rarely places its OWN small decor on EMPTY floor, and
-     only ever moves/removes things from agentDecor (its own ids) — never the Commander's props. Capped +
+     only ever moves/removes things from agentDecor (its own ids) — never the Master's props. Capped +
      long-cooldown so it stays an Easter-egg "it rearranged its corner" moment, not clutter. NOTE: addProp
      hits the undo stack + persists (the wow: the corner changes between visits); a silent/agent-only
      mutation lane is a future refinement. */
   let placeCd = 0;
   const agentDecor = [];   // ids of decor THIS agent placed — the ONLY props it will ever move or remove
   const ownPlaced = new Set();   // every id it has EVER placed — so it never grieves its own artifacts (survives the agentDecor splice)
-  // 1x1, blocks:false (never obstructs the agent or the Commander), and FLOOR-placeable: an agent picks
+  // 1x1, blocks:false (never obstructs the agent or the Master), and FLOOR-placeable: an agent picks
   // its own tile, so anything needing a wall behind it or a table under it can never be on this list.
   /* what an agent may place for ITSELF, personalising the station over time. Every entry MUST be 1x1
      and placeable on bare deck — emptySpotNear only ever validates a 1x1 footprint, and a 2x1 in here
@@ -1208,7 +1208,7 @@ const World = (() => {
     resize();
     camUserAt = performance.now();   // boot / a new agent re-arms the cinecam idle clock — the director never fires into a fresh floor
     // resize() preserves the current view (centre-anchored) — never re-fit here, or every
-    // COMMS-seam drag tick / fullscreen toggle snaps the Commander's pan/zoom back to fit-all.
+    // COMMS-seam drag tick / fullscreen toggle snaps the Master's pan/zoom back to fit-all.
     try { if (ro) ro.disconnect(); ro = new ResizeObserver(() => { resize(); redrawNow(); }); ro.observe(cv.parentElement || cv); } catch (e) {}
     // bind the input/visibility handlers + SSE bridge ONCE — init() re-runs on every NEW AGENT (same canvas
     // element), so without this guard each new agent stacked another full set of listeners and SSE streams.
@@ -1321,7 +1321,7 @@ const World = (() => {
       if (Math.hypot(wp.x - lastCursor.wx, wp.y - lastCursor.wy) > T * 0.5) cursorMoveT = nowMs;
       lastCursor = { wx: wp.x, wy: wp.y, t: nowMs };   // remember where you are — the agent's sense of your presence (feeds gaze)
       const hit = agentHit(wp);
-      // rising edge: the HERO notices the Commander's cursor land on IT and turns to meet you.
+      // rising edge: the HERO notices the Master's cursor land on IT and turns to meet you.
       // (crew bodies just raise their nameplate on hover — only the hero self-acknowledges)
       if (agent && hit === agent && hoverAgent !== agent && activity === 'idle' && !agent.working) { setGlance('south', 900, performance.now()); curiositySay(SELF_ACK, 0.3, performance.now()); }
       if (hit !== hoverAgent) hoverAgent = hit;
@@ -1342,7 +1342,7 @@ const World = (() => {
       // reusing the Overseer's index. The greeting remains hero-only: crew clicks open a panel, not a hero line.
       const hit = agentHit(wp);
       if (hit) {
-        if (hit === agent && activity !== 'task') { agent.dir = 'south'; setGlance('south', 1000, performance.now()); curiositySay(SELF_GREET, 0.8, performance.now()); }   // eye contact for the Commander
+        if (hit === agent && activity !== 'task') { agent.dir = 'south'; setGlance('south', 1000, performance.now()); curiositySay(SELF_GREET, 0.8, performance.now()); }   // eye contact for the Master
         if (onClick) onClick(hit.agentId || hit.id);
         return;
       }
@@ -1491,7 +1491,7 @@ const World = (() => {
   function camCreep() { if (!cache || !agent || agent.unplaced || camAnim || !awakeFrozen) return; const [s, x, y] = camCenterOn(agent.px, agent.py - 4, scale * 1.035); camTweenTo(s, x, y, 600); }   // a hair closer with each truth — ceremony-only (the deferred interview must never steal the live camera)
   function camPunch() { if (!agent || agent.unplaced || camAnim) return; const b = scale; const [s1, x1, y1] = camCenterOn(agent.px, agent.py - 4, b * 1.06); const [s0, x0, y0] = camCenterOn(agent.px, agent.py - 4, b); camTweenTo(s1, x1, y1, 150, t => t, () => camTweenTo(s0, x0, y0, 240)); }   // eyes finding yours
   function camPullBack() { if (!cache) return; const W = cache.W, H = cache.H; const s = clampz(Math.min(cv.width / W, cv.height / H), MINZ, MAXZ); camTweenTo(s, (cv.width - W * s) / 2, (cv.height - H * s) / 2, 1700); }   // recompute fit at fire time -> no jump on release
-  // the Turn: the newborn finds the Commander — head leads, then the body pivots north -> side -> south and holds your gaze
+  // the Turn: the newborn finds the Master — head leads, then the body pivots north -> side -> south and holds your gaze
   function awakenTurn() {
     if (!agent) return;
     const side = (cache && agent.px > cache.W / 2) ? 'west' : 'east';
@@ -1545,8 +1545,8 @@ const World = (() => {
       Voice.mutter(t);
     }
   }
-  /* kind: 'task' (walk to the workstation + work) | 'talk' (face the Commander) | 'idle' (wander the station) */
-  /* TIER D · D1 — the Commander's COMMS focus. chat.js calls this with the active stream's agent id on every
+  /* kind: 'task' (walk to the workstation + work) | 'talk' (face the Master) | 'idle' (wander the station) */
+  /* TIER D · D1 — the Master's COMMS focus. chat.js calls this with the active stream's agent id on every
      conversation rebind (load(ws)), and null when there's no live conversation. Stores the id ONLY; all the
      stare behavior reads chatFocusId from the idle path. Airtight cleanup: when focus moves off a body (null
      or another id) its next idle decision restores normal wander (decideIdle clears stilling on entry), so no
@@ -1564,7 +1564,7 @@ const World = (() => {
      there's no live focus (so pinging a closed panel is inert). */
   function warmChatFocus() { chatWarmUntil = fnow + U.irnd(CHAT_WARM_MIN, CHAT_WARM_MAX); }
   function chatFocusPing() { if (chatFocusId) warmChatFocus(); }
-  // the body (hero or crew) the Commander is chatting with, or null. bodyForAgent maps 'agent'→hero + crew by id.
+  // the body (hero or crew) the Master is chatting with, or null. bodyForAgent maps 'agent'→hero + crew by id.
   function chatFocusBody() { return chatFocusId ? bodyForAgent(chatFocusId) : null; }
   /* chatHot — THE single predicate for "the chat-stare is actually engaged": a focus is set AND the conversation
      is still WARM. Every call site that means "this body is (or should be) held by the stare" keys on THIS
@@ -1643,7 +1643,7 @@ const World = (() => {
   }
   // FOLLOW-LOCK the camera on one agent's body — the SESSION-SELECT camera contract: picking a session with an
   // agent locks the feed onto that agent immediately (no idle wait) and TRAILS it as it moves, until the
-  // Commander grabs the camera (wheel/drag/click → the input handlers release the lock). One-shot focusBody
+  // Master grabs the camera (wheel/drag/click → the input handlers release the lock). One-shot focusBody
   // stays for programmatic reframes (boot restore, delete-fallback) — lockBody is only armed by a USER selection.
   function lockBody(id) {
     const b = bodyForAgent(id) || agent;
@@ -1907,10 +1907,10 @@ const World = (() => {
       // (sleep(), no seatKey/pendSeat) leaves it false and goes dormant standing, as it always did.
       takeSeat();
       self.lying = !!(self.seated && self.seatKey);
-      // A REAL SLEEP, 3-10 minutes (the Commander's number), not the ~1-minute doze a standing power-down
+      // A REAL SLEEP, 3-10 minutes (the Master's number), not the ~1-minute doze a standing power-down
       // takes. It is safe to be this long precisely because every summon path wakes it: activity flipping
       // to task/thinking seizes the body (setActivityFor / the hero's summon-seize in tick), and that runs
-      // whether the work came from the Commander typing, a schedule firing, or a channel message.
+      // whether the work came from the Master typing, a schedule firing, or a channel message.
       self.studyUntil = now + (self.lying ? U.irnd(180000, 600000) : U.irnd(26000, 62000));
       curiositySay(USE_LINE.bed, 0.4, now);
     }
@@ -2350,7 +2350,7 @@ const World = (() => {
      the crew body, and the hero's own run (self===agent) is byte-identical to before (J1). What is DELIBERATELY left
      out vs the hero tick (hero-identity, not idle life): the summon-seize block (crew route through b.working in
      stepCrew, J4), FIRST LIGHT / stepFirstWake (hero-only G2), maybeGlance + the belt-yield shouldYieldToCargo()
-     hold (Commander/camera-coupled; shouldYieldToCargo reads agent.target — hero-only). decideIdle's grief/novelty
+     hold (Master/camera-coupled; shouldYieldToCargo reads agent.target — hero-only). decideIdle's grief/novelty
      reflexes are already self===agent-gated, so a crew body here only consumes its OWN want-engine + quirks. Every
      target picker it can reach is caged to zoneFor(self)=zoneFor(b) (Tier A), so no body leaves its zone (J3). */
   function crewEngineStep(dt, now) {
@@ -2362,7 +2362,7 @@ const World = (() => {
     if (self.sitting && self.goal !== 'use' && self.goal !== 'lounge' && !(self.goal === 'sleep' && self.seatKey)) { self.sitting = false; self.state = 'idle'; self.idleUntil = Math.max(self.idleUntil || 0, now + U.irnd(200, 800)); }
     // self-heal a stuck walker (mirrors the hero tick): walk pose with nowhere to go → drop to idle so this tick re-decides
     if (self.state === 'walk' && !self.target && (!self.pathPts || self.pathIdx >= self.pathPts.length)) { self.state = 'idle'; self.idleUntil = 0; }
-    // TIER D · D1 ATTENTIVE AUDIENCE: if the Commander has COMMS focus on THIS crew body and it's idle, hold its
+    // TIER D · D1 ATTENTIVE AUDIENCE: if the Master has COMMS focus on THIS crew body and it's idle, hold its
     // attention on you (faces south; rare throttled cursor-follow beat) every tick — crew have no maybeGlance, so the hold drives
     // facing directly. Self-gates OFF while working/walking/mid-goal (b.working is set ABOVE in stepCrew, so a live
     // run never reaches here), so the work-seize always wins (G2). A held body skips the rest of the idle engine.
@@ -2644,7 +2644,7 @@ const World = (() => {
      renders the body ON TOP OF. Nothing else. The sit sprite is a chair pose; the old catalog let it fire
      on a beanbag and (worst) a BED, where the body read as parked bolt-upright on the mattress instead of
      lying in it. Those remain walk-to-and-STAND-at destinations. A claimed couch cushion is the narrow
-     exception requested by the Commander: planCouchSit supplies a real render anchor and the sofa art
+     exception requested by the Master: planCouchSit supplies a real render anchor and the sofa art
      occludes the legs, restoring the established sit-and-watch-TV behavior without reopening bed sitting. */
 
   /* v7 couch dwell: a couch is a blocking prop (you can't path onto it), so the agent walks to a tile
@@ -3051,7 +3051,7 @@ const World = (() => {
       if (!tileInZone(zone, b.x, b.y)) continue;            // a new belt outside the zone isn't an inspect target
       pushNovelty(b.x, b.y, 'belt', null); break;
     }
-    // REMOVALS -> grief: a prop the Commander deletes, if it stood on a spot this agent loved, is mourned
+    // REMOVALS -> grief: a prop the Master deletes, if it stood on a spot this agent loved, is mourned
     for (const id of seenProps) {
       if (propIds.has(id)) continue;               // still there
       if (ownPlaced.has(id)) continue;             // its OWN decor it tidied away — never mourn that
@@ -3258,7 +3258,7 @@ const World = (() => {
     me.ackScanAt = now + 350;
     if (me.working || me.sitting || me.state === 'walk' || me.social || me.goal === 'social') return false;
     if (me === agent && activity !== 'idle') return false;                 // hero on task — not now
-    if (chatHot(now) && me === chatFocusBody()) return false;              // the Commander owns this body's attention
+    if (chatHot(now) && me === chatFocusBody()) return false;              // the Master owns this body's attention
     const rPx = ACK_RADIUS * T;
     for (const other of allBodies()) {
       if (!other || other === me || other.unplaced) continue;
@@ -3397,7 +3397,7 @@ const World = (() => {
      The pull is real or it is nothing — every bond here is DERIVED by the sidecar from the durable
      run log (GET /api/agents/affinity: a shared run tree, or runs reached for in the same stretch
      of work) and never assigned here. So when the station reads as "those two are always together",
-     that is a true statement about how the Commander works, not decoration. An agent pair the log
+     that is a true statement about how the Master works, not decoration. An agent pair the log
      can't vouch for has strength 0 and gets exactly the old uniform treatment.
 
      THE BIAS MUST NOT BECOME A LOCK. Two things keep the station from collapsing into fixed duos:
@@ -3547,7 +3547,7 @@ const World = (() => {
   // the survivor releases (K3). READ-ONLY on the bodies. TWO-SIDED beats (huddle/border) give BOTH bodies a plan —
   // either losing its plan or being seized breaks it. ONE-SIDED beats (watch/follow) give only the OBSERVER (aId) a
   // plan; the passive subject (bId) just needs to still EXIST — a WATCH subject working / a FOLLOW subject walking is
-  // the whole point, not a break. Chat-focus on either body breaks it (the Commander now owns that body's attention).
+  // the whole point, not a break. Chat-focus on either body breaks it (the Master now owns that body's attention).
   function encounterBroken(now) {
     const s = socialBeat; if (!s) return true;
     const ids = participantIds(s);
@@ -4223,7 +4223,7 @@ const World = (() => {
 
      ⛔⛔ THE INTERRUPT IS THE PRIMARY EXIT, NOT THE EDGE CASE. The trigger requires ~30 minutes of
      quiet, which means it fires precisely when nobody is driving. So the overwhelmingly likely way
-     any gathering ends is the Commander coming back and moving the mouse. Scatter is therefore the
+     any gathering ends is the Master coming back and moving the mouse. Scatter is therefore the
      path that gets the care, not the timer.
 
      TRUTHFUL TELEMETRY. The station never acknowledges this: no COMMS beat, no toast, no event, no
@@ -4233,7 +4233,7 @@ const World = (() => {
   let gathering = null;                    // the single live assembly, or null. Station-wide, like socialBeat.
   let gatherRollAt = -1e9;                 // next instant the hourly roll is allowed
   let gatherGateUntil = -1e9;              // earliest a NEXT gathering may begin (long, after one ends)
-  let stationBusyAt = -1e9;                // last instant the station had work or a present Commander
+  let stationBusyAt = -1e9;                // last instant the station had work or a present Master
 
   const GATHER_QUIET_MS = 30 * 60 * 1000;  // the station must have been unattended this long ("if the station is quiet")
   const GATHER_ROLL_EVERY_MS = 15 * 60 * 1000;  // roll every 15 min while quiet — hourly made it near-unseeable (~3h expected wait)
@@ -4253,7 +4253,7 @@ const World = (() => {
   function gatherBodiesLive() { return gatherIds().map(bodyForAgent).filter(Boolean); }
 
   /* Is the station unattended RIGHT NOW? Work of any kind, a summoned hero, a live chat stare, or a
-     Commander who is actually moving the cursor all count as attended and re-stamp the clock. */
+     Master who is actually moving the cursor all count as attended and re-stamp the clock. */
   function stationAttended(now) {
     if (activity === 'task') return true;
     if (chatHot(now)) return true;
@@ -4342,7 +4342,7 @@ const World = (() => {
     if (!pageVisible()) return false;                                /* ⛔ "quiet" correlates with "nobody is
        watching": an hourly roll gated only on idleness fires all night into an empty room, and the one
        feature whose entire point is being SEEN would go weeks unwitnessed. Visible-only is what makes it land. */
-    if (cursorPresent(now)) return false;                            // the Commander is right there
+    if (cursorPresent(now)) return false;                            // the Master is right there
     if (now - stationBusyAt < GATHER_QUIET_MS) return false;         // not unattended long enough
     if (now < gatherRollAt) return false;
     gatherRollAt = now + GATHER_ROLL_EVERY_MS;                       // roll at most hourly, win or lose
@@ -4376,12 +4376,12 @@ const World = (() => {
   }
 
   /* gatheringBroken — the scatter trigger, and the beat's most important predicate. ANY of: work
-     arriving on any participant, the hero summoned, a live chat stare, or the Commander simply
+     arriving on any participant, the hero summoned, a live chat stare, or the Master simply
      MOVING THE CURSOR. That last one is the Planet of the Apes shot: the guard walks in and the room
      stops being what it was. */
   function gatheringBroken(now) {
     if (!gathering) return true;
-    if (cursorPresent(now)) return true;                             // ⛔ THE PRIMARY EXIT — the Commander came back
+    if (cursorPresent(now)) return true;                             // ⛔ THE PRIMARY EXIT — the Master came back
     if (!pageVisible()) return true;
     if (activity === 'task') return true;
     if (chatHot(now)) return true;
@@ -4530,7 +4530,7 @@ const World = (() => {
   }
 
   /* ================= TIER D · D4 — THE CURSOR IS A CREATURE (mimic + THE CHASE) =================
-     Both beats build on the EXISTING Commander-presence stack (lastCursor + cursorMoveT) — NO second cursor
+     Both beats build on the EXISTING Master-presence stack (lastCursor + cursorMoveT) — NO second cursor
      tracker. They ride the goal/hold machinery ('mimic'/'chase'), not a new state family, so summon-seize,
      chat-focus, and social exclusion all compose. Cursor freshness = lastCursor.t within 8s; cursor MOVING =
      cursorMoveT within 1.5s (real displacement, not mere presence). All U.* + cursor input only (G6). */
@@ -4682,7 +4682,7 @@ const World = (() => {
     if (!c || c.unplaced) chaseId = null;                                          // despawn: force-clear the lock even if the body is gone
   }
 
-  // CURSOR GAZE-DRIFT: a slice of the ambient idle glances drift toward the Commander's cursor — the quiet
+  // CURSOR GAZE-DRIFT: a slice of the ambient idle glances drift toward the Master's cursor — the quiet
   // Petz "it knows where you are". RETUNED 2026-07-02 (design call: "not constantly following the mouse, only so
   // often"): at the old shares (hero 0.32 / crew 0.15) an actively-moving cursor stayed fresh continuously, so
   // roughly a third of ALL ambient glances (which re-fire every ~4-11s) pointed at the mouse — it read as
@@ -4691,7 +4691,7 @@ const World = (() => {
   // it's an occasional flick of attention. The deliberate follow moments stay where they belong: the rare D4
   // cursor-mimic beat and the HOT chat-stare (both separately gated).
   function ambientGazeDir(now) {
-    // Crew keep a smaller share than the hero (the hero stays the most Commander-attuned). This is the ONLY
+    // Crew keep a smaller share than the hero (the hero stays the most Master-attuned). This is the ONLY
     // spot crew ambient facing is randomized (via lookAround/standStill), so it never fights a held goal, a
     // glance, a chat-stare, or work facing (those don't route through here). Ambient TEXTURE, not a noticeable
     // beat → NOT gated by the D2 station budget (G5). cursorGazeCd is undefined on fresh bodies → `|| 0` = ready.
@@ -4777,7 +4777,7 @@ const World = (() => {
   }
   /* the facing to adopt from a stand tile: weighted-random over the four scored cardinals.
      opts.exclude — a direction to leave out (e.g. don't just look back the way you came).
-     opts.away    — bias AWAY from the Commander (the 'ponder'/'turn your back' flavor) by halving
+     opts.away    — bias AWAY from the Master (the 'ponder'/'turn your back' flavor) by halving
                     the south score, WITHOUT ever letting the body pick a wall instead. */
   function lookDirFrom(tx, ty, opts) {
     opts = opts || {};
@@ -4898,10 +4898,10 @@ const World = (() => {
     self.glance = null; self.trackUntil = 0;   // drop any in-flight head-turn / box-track so nothing bleeds into the hold
     self.idleUntil = now + offbeat(now, U.irnd(4500, 9000));
   }
-  /* TIER D · D1 ATTENTIVE AUDIENCE — the chat-stare hold. While the Commander has COMMS focus on THIS body
+  /* TIER D · D1 ATTENTIVE AUDIENCE — the chat-stare hold. While the Master has COMMS focus on THIS body
      (self === chatFocusBody()) and the body is genuinely idle, it drops its wander/quirk/social life, stands
      genuinely still (reusing the CONTENT=STILL `stilling` machinery — same as standStill), and HOLDS its
-     attention on the Commander: facing south, drifting toward lastCursor while the cursor is fresh (<8s) so it
+     attention on the Master: facing south, drifting toward lastCursor while the cursor is fresh (<8s) so it
      tracks you around the screen. ONE tracker — reuses the existing dirToward(→lastCursor) pattern, no second
      cursor sampler. Called TWO ways: (a) as an early-out from decideIdle so the body never CHOOSES to wander
      while held, and (b) every tick as a HOLD from the hero tick / crewEngineStep idle branch so the facing keeps
@@ -4910,15 +4910,15 @@ const World = (() => {
      working / walking / mid-goal) — it sits BELOW the summon-seize, which the callers gate for us. */
   /* CHAT-STARE-TRACK-PURE-BEGIN — the chat-stare follow-beat throttle, extracted PURE (params + injected rnd
      only; no module state / RNG / DOM) so its cadence is unit-testable headlessly. WHY headless: the game tick is
-     rAF-driven and a backgrounded CDP/preview tab freezes rAF to 0fps, so "mostly faces the Commander, only rarely
+     rAF-driven and a backgrounded CDP/preview tab freezes rAF to 0fps, so "mostly faces the Master, only rarely
      follows the cursor" cannot be observed live — test/chat-stare-throttle.test.js extracts THIS marked block from
      source and executes it (same spirit as the D3-PURE-GEOMETRY block). Decides the chat-stare facing SOURCE —
-     'commander' (face south, at the Commander) vs 'cursor' (turn to the live cursor) — and advances the per-body
+     'commander' (face south, at the Master) vs 'cursor' (turn to the live cursor) — and advances the per-body
      follow schedule on `b`: b.chatTrackCd = earliest time the next follow beat may open; b.chatTrackUntil = end of
      the currently-open beat. `fresh` = cursor seen within the freshness window; `reduce` = reduceMotion. rnd(lo,hi)
      is injected (U.irnd in prod) so the block carries no RNG token and stays deterministic-lint clean. */
   function chatStareTrack(b, now, fresh, reduce, rnd) {
-    if (reduce) return 'commander';                                              // motion-sensitive: hold the gaze on the Commander, never chase the cursor
+    if (reduce) return 'commander';                                              // motion-sensitive: hold the gaze on the Master, never chase the cursor
     if (b.chatTrackCd == null) { b.chatTrackCd = now + rnd(8000, 20000); return 'commander'; }   // first beat is delayed too — don't pounce on the cursor the instant COMMS warms
     if (fresh && now < (b.chatTrackUntil || 0)) return 'cursor';                 // mid-beat: keep following the live cursor for this short window
     if (fresh && now >= b.chatTrackCd) {                                         // cooldown elapsed + a fresh cursor → open a brief follow beat...
@@ -4926,7 +4926,7 @@ const World = (() => {
       b.chatTrackCd = b.chatTrackUntil + rnd(16000, 34000);                      // ...then a long cooldown before it may follow the cursor again
       return 'cursor';
     }
-    return 'commander';                                                          // the steady state: attention on the Commander, not the mouse
+    return 'commander';                                                          // the steady state: attention on the Master, not the mouse
   }
   /* CHAT-STARE-TRACK-PURE-END */
   function chatStareHold(now) {
@@ -4935,11 +4935,11 @@ const World = (() => {
     if (self.working || self.unplaced) return false;                    // a live run owns the body (crew) — never stare mid-work
     if (self.state === 'walk' || self.target) return false;             // let an in-flight walk finish before holding
     if (self.goal != null && self.goal !== 'stare-chat') return false;  // don't yank it out of a deliberate goal (leisure/inspect/etc.) — it'll fall to the hold on its NEXT free decision
-    // hold: genuine stillness + attention on the Commander (reuse the stilling latch so maybeGlance's stilling
+    // hold: genuine stillness + attention on the Master (reuse the stilling latch so maybeGlance's stilling
     // branch and the cargo body-track stay suppressed for the hero; crew facing is driven directly below).
     self.goal = 'stare-chat'; self.stilling = true; self.usingProp = null; self.state = 'idle'; self.sitting = false;
     self.trackUntil = 0;                                                 // drop any in-flight box-track — attention is on YOU, not cargo
-    // ATTENTION, NOT TRACKING (2026-07-08): the warm hold is a STEADY gaze at the Commander (south = facing YOU),
+    // ATTENTION, NOT TRACKING (2026-07-08): the warm hold is a STEADY gaze at the Master (south = facing YOU),
     // punctuated by the RARE cursor-follow beat — never continuous mouse-tracking. Before, any fresh cursor pointed
     // the body at it on EVERY 400ms re-affirm (and the hero re-affirms EVERY tick), so an actively-moving mouse made
     // the focused body follow the cursor for the whole 30–90s warm window, re-warmed on every message — the "it
@@ -4950,7 +4950,7 @@ const World = (() => {
     const fresh = (now - lastCursor.t) < 8000;
     const face = chatStareTrack(self, now, fresh, reduceMotion(), U.irnd);   // 'commander' (south, at YOU) vs a rare 'cursor' follow beat; advances self.chatTrackCd / self.chatTrackUntil
     self.dir = face === 'cursor' ? dirToward(self.px, self.py, lastCursor.wx, lastCursor.wy) : 'south';
-    if (self.dir === 'north') self.dir = 'south';                       // never turn its back on the Commander — the face is the point (mirrors THE LOOK-UP)
+    if (self.dir === 'north') self.dir = 'south';                       // never turn its back on the Master — the face is the point (mirrors THE LOOK-UP)
     self.glance = null;                                                 // the whole body faces you; no lingering head-turn bleeding through
     self.idleUntil = now + 400;                                         // re-affirm the hold soon so the cursor beat stays live (cheap; no motion)
     return true;
@@ -4997,7 +4997,7 @@ const World = (() => {
     const dp = body && deskPropFor(body.id);
     return dp ? deskSeat(dp) : null;
   }
-  // is the agent loitering near its desk (its tether to the Commander)?
+  // is the agent loitering near its desk (its tether to the Master)?
   function nearDesk() {
     const s = seatFor(self);
     if (!s) return false;
@@ -5013,7 +5013,7 @@ const World = (() => {
     n.stim = U.clamp(n.stim + (observing ? 2.6 : self.working ? 0.6 : self.state === 'walk' ? 0.2 : -1.25) * s, 0, 100);
     n.social = U.clamp(n.social + (((self === agent) && (activity === 'task' || activity === 'talk')) ? 2.2 : (self.goal === 'tend' || nearDesk()) ? 1.6 : -0.45) * s, 0, 100);
   }
-  // lonely → drift to a tile by the desk and face south (its window to the Commander); refills social
+  // lonely → drift to a tile by the desk and face south (its window to the Master); refills social
   function planSeekDesk(now) {
     if (now < (self.deskVisitCd || 0)) return false;   // checking in is useful; bouncing back after every other activity is not
     const seat = seatFor(self);   // the CURRENT body's own desk (hero → synthetic `seat`; crew → its workstation chair) — never the hero's seat for a crew body (J2/J3)
@@ -5202,7 +5202,7 @@ const World = (() => {
     }
     return false;
   }
-  function quirkStare(now) {   // turns to the Commander and holds eye contact, mostly in silence
+  function quirkStare(now) {   // turns to the Master and holds eye contact, mostly in silence
     self.goal = 'stare'; self.quirkKind = 'stare'; self.usingProp = null; self.studyKey = null;
     self.sitting = false; self.working = false; self.state = 'idle'; self.studyUntil = now + U.irnd(14000, 34000); self.glanceCd = now + 1200;
     self.dir = 'south'; setGlance('south', 700, now); curiositySay(Q_STARE, 0.18, now);   // mostly silent — the stillness is the unsettling part
@@ -5221,7 +5221,7 @@ const World = (() => {
       if (belts.has(x + ',' + y)) continue;                       // not on a belt
       if (seat && x === seat.tx && y === seat.ty) continue;       // not the work seat
       const t = AGENT_DECOR[U.irnd(0, AGENT_DECOR.length - 1)];
-      if (!station.canPlaceProp(t, x, y, 1, 1).ok) continue;      // model: on a deck, no prop overlap (never the Commander's stuff)
+      if (!station.canPlaceProp(t, x, y, 1, 1).ok) continue;      // model: on a deck, no prop overlap (never the Master's stuff)
       for (const [ax, ay] of SEAT_NB) if (geo.walkable(x + ax, y + ay, blocked) && !belts.has((x + ax) + ',' + (y + ay))) return { x, y, t, ax: x + ax, ay: y + ay };
     }
     return null;
@@ -5242,7 +5242,7 @@ const World = (() => {
       return true;
     }
     // Floor-wide decor cap. Counts BY TYPE rather than by what this session placed, because that is the
-    // only form that survives a reload (ownPlaced does not) — the trade is that the Commander's own
+    // only form that survives a reload (ownPlaced does not) — the trade is that the Master's own
     // plants count too. Raised 5 -> 8 alongside the wider AGENT_DECOR list: with three types a cap of 5
     // meant "a couple of each", with nine it would have meant most of them never appear at all.
     if ((geo.props || []).filter(p => AGENT_DECOR.indexOf(p.t) >= 0).length >= 8) return false;
@@ -5262,7 +5262,7 @@ const World = (() => {
      releaseSeat() paths. Returns false when there is no reachable in-zone bed, which is what keeps the
      standing fallback intact.
 
-     SEAT LAW / THE BED EXCEPTION (2026-08-10, Commander's call): the body now goes IN the bed. This is
+     SEAT LAW / THE BED EXCEPTION (2026-08-10, Master's call): the body now goes IN the bed. This is
      NOT the sit pose the seat law bans — a bolt-upright chair pose parked on a mattress was the exact
      bug that law was written against. It is a third pose (`lying`): the body renders on the mattress
      clipped to the bed's top plane, and the QUILT is painted over it (PropSprites.drawOver), so all you
@@ -5458,7 +5458,7 @@ const World = (() => {
   // planners run, but now there is a legible reason behind every move so it stops reading as aimless.
   function decideIdle(now) {
     self.stilling = false;                            // every fresh decision starts clean (standStill re-sets it)
-    if (chatStareHold(now)) return;                   // TIER D · D1: the Commander has COMMS focus on this body → give it your attention, don't choose to wander (G2: chatStareHold self-gates OFF while activity==='task'/working, so a summon still wins)
+    if (chatStareHold(now)) return;                   // TIER D · D1: the Master has COMMS focus on this body → give it your attention, don't choose to wander (G2: chatStareHold self-gates OFF while activity==='task'/working, so a summon still wins)
     // The grief + novelty reflexes read the MODULE pendingMourn/novelty queues, which are the HERO's awareness
     // (scanNovelty/maybeMourn only run for the hero). A crew body must NOT consume the hero's queue (J2) — gate
     // both reflexes to self===agent so only the hero acts on them. Crew get their idle life from the want-engine below.
@@ -5470,7 +5470,7 @@ const World = (() => {
     if (maybeQuirk(now)) return;                       // rare unpredictable detour — the eerie inner life surfacing
     // AUTONOMOUS PROP PLACEMENT — REMOVED (Thronglet direction). The agent no longer drops
     // plant/coffee/cans/poster on random floor tiles (it read as nonsensical clutter). It still
-    // USES the Commander's placed props (couch/TV/arcade) via planProp below — that stays.
+    // USES the Master's placed props (couch/TV/arcade) via planProp below — that stays.
     const n = self.needs, p = self.pers, ph = phaseOf(now), idleAge = now - (self.lastTaskAt || now);
     /* THE NAP (2026-08-10). A placed BED was mostly furniture: the only route into it was the drift-mood
        power-down below, which is mood-gated AND rest-gated and so almost never fired. This lane is the
@@ -5541,7 +5541,7 @@ const World = (() => {
       // This is the branch idle downtime actually lands in, and until now it could not reach a
       // single leisure prop (see planPlay) — the whole reason a station full of arcade machines
       // read as scenery. Ahead of the caretaker lap on purpose: a lap is what you do when there is
-      // nothing better, and the Commander placing a pinball table is them saying there is.
+      // nothing better, and the Master placing a pinball table is them saying there is.
       if (U.chance(0.55) && planPlay(now)) return;                                      //   bored + something fun placed -> often play, never always
       const roundsBias = (self === agent && (missionPinCounts(now)[0] | 0) > 0) ? 0.4 : 0.12;
       if (U.chance(roundsBias) && maybeRounds(now)) return;                             //   do a deliberate caretaker lap (purpose, not aimless)
@@ -5562,7 +5562,7 @@ const World = (() => {
   function maybeGlance(now) {
     if (!agent || agent.unplaced) return;
     if (activity === 'talk') {
-      // a voice conversation: don't let the gaze wander, but if he's actively LISTENING to the Commander,
+      // a voice conversation: don't let the gaze wander, but if he's actively LISTENING to the Master,
       // give small acknowledging looks (mostly toward the camera) so he reads as engaged, not frozen.
       const lst = typeof Voice !== 'undefined' && Voice.isListening && Voice.isListening();
       if (lst && agent.state !== 'walk' && now >= (agent.glanceCd || 0) && !(agent.glance && agent.glance.until > now)) {
@@ -5616,7 +5616,7 @@ const World = (() => {
       else agent.glanceCd = now + U.irnd(1200, 2400);
       return;
     }
-    // THE LONG STARE: hold the gaze on the Commander, only the rare slow head-tilt — the stillness is the point
+    // THE LONG STARE: hold the gaze on the Master, only the rare slow head-tilt — the stillness is the point
     if (agent.goal === 'stare') {
       if (U.chance(0.15)) { setGlance(U.pick(['south', 'east', 'west']), U.irnd(500, 1100), now); agent.glanceCd = now + U.irnd(2200, 4500); }
       else { agent.dir = 'south'; agent.glanceCd = now + U.irnd(1600, 3200); }
@@ -5678,7 +5678,7 @@ const World = (() => {
   function curiositySay() { /* silenced by design — the stillness is the point */ }
 
   function tick(dt, now) {
-    if (!agent || agent.unplaced || !geo || awakeFrozen) return;   // frozen during the awakening: the newborn holds still, facing the Commander
+    if (!agent || agent.unplaced || !geo || awakeFrozen) return;   // frozen during the awakening: the newborn holds still, facing the Master
     for(const body of [agent,...crew]){body._gaitStart={x:body.px,y:body.py,odo:body.odo||0};body._travelStep=0;body._resolvedTravelHeading=null;}
     self = agent;                                                  // B1: the hero tick runs with self===agent (engine core reads the current body via self) — byte-identical hero path
     if (!agent.lastTaskAt) agent.lastTaskAt = now;                 // anchor downtime at the first live tick
@@ -5737,7 +5737,7 @@ const World = (() => {
     // walks to the workstation and STAYS seated working until activity flips off 'task' (the branch below then
     // stands it up). Never add a branch that moves the body while activity==='task'. NOTE: chat.js now ARMS
     // 'task' REACTIVELY — the moment a run makes its first real tool call (walkToDesk), not the instant the
-    // Commander sends a message — so a question answered from memory never triggers this. Once armed it holds
+    // Master sends a message — so a question answered from memory never triggers this. Once armed it holds
     // for the rest of the run. The talk/task mapping still lives in classify.js (stanceFor) + classify.test.js.
     // SUMMONED → don't teleport: pause where it stands (loading context) facing the desk, THEN walk over
     if (!awaitPrompt && activity === 'task' && agent.goal !== 'work') {
@@ -5761,7 +5761,7 @@ const World = (() => {
       if (planInspect(now)) agent.noticeCd = now + 1500;
     }
     maybeGlance(now);   // head-turns over the top of whatever else the agent is doing
-    chatStareHold(now); // TIER D · D1: if the Commander has COMMS focus on the hero + it's idle, hold its attention on you (faces south; rare throttled cursor-follow beat) — runs AFTER maybeGlance so the stare owns the final facing. Self-gates OFF while activity==='task'/mid-goal/walking, so the summon-seize above always wins (G2)
+    chatStareHold(now); // TIER D · D1: if the Master has COMMS focus on the hero + it's idle, hold its attention on you (faces south; rare throttled cursor-follow beat) — runs AFTER maybeGlance so the stare owns the final facing. Self-gates OFF while activity==='task'/mid-goal/walking, so the summon-seize above always wins (G2)
     // TIER D · D3: a live social encounter drives the body (walk-to-rendezvous → hold → break). The guard enforces
     // the whole-encounter hard timeout + the partner-broken check EVERY tick (G4/K3), then stepSocial (re)paths or
     // holds. It sits BELOW the summon-seize block above (which flips goal off 'social' via encounterBroken → the
@@ -6018,7 +6018,7 @@ const World = (() => {
       return;   // wrapper frame() already scheduled the next rAF — never double-schedule here
     }
     if (fitNeeded && !camAnim) { fitCamera(); fitNeeded = false; }   // the scripted awakening camera owns the transform while it runs
-    cinecamTick(now);   // the idle auto-director: may cast/re-cast a 'cine' follow-lock (never touches a 'session' lock; inert while the Commander is active)
+    cinecamTick(now);   // the idle auto-director: may cast/re-cast a 'cine' follow-lock (never touches a 'session' lock; inert while the Master is active)
     if (camLock && !camAnim) {   // FOLLOW-LOCK: continuously trail the locked body (session select or the idle cinecam)
       const lb = bodyForAgent(camLock.id);
       if (!lb || lb.unplaced) camLock = null;   // subject despawned / off-floor → release (the director re-casts next frame if it owns the camera)
@@ -7085,7 +7085,7 @@ const World = (() => {
         }
       }
       // a soft "I'm listening to you" pulse at the feet — an in-world cue the mic is open and he's hearing
-      // you (distinct from just standing facing the Commander). Only while the mic is actually live (hero).
+      // you (distinct from just standing facing the Master). Only while the mic is actually live (hero).
       if (listening) {
         const lp = 0.4 + 0.35 * Math.sin(now / 320);
         ctx.save(); ctx.globalAlpha = lp * 0.7; ctx.strokeStyle = who.color; ctx.lineWidth = 1;
@@ -7510,7 +7510,7 @@ const World = (() => {
   // A finding only exists when it's true: a lone assigned bay is a COMPLETE build and gets no callout;
   // a bay->OUTBOX ship-out lane is valid and GLOWS instead of nagging (the 2026-07-05 playtest bug class).
   /* PARITY IS A LAW, NOT A HABIT (2026-08-07 conveyor audit). buildRoutingNags does `if (!label) continue`,
-     so a compiler code missing from this table is a finding the live world SILENTLY DROPS — the Commander
+     so a compiler code missing from this table is a finding the live world SILENTLY DROPS — the Master
      sees a dead line and no reason anywhere on the floor. ORPHAN_JUNCTION was exactly that: REFIT's
      VAL_LABEL named it, the world said nothing. Every VAL_LABEL key must have an entry here (the wording
      may differ — REFIT can spell out a gesture the world has no room for); locked by
@@ -8446,7 +8446,7 @@ const World = (() => {
      really comes — but it was unconditional, and the handoff is decided by the SIDECAR, later, against a
      plan that may have been re-posted in between (a floor edit mid-run re-keys the line; the chain gate
      then refuses to advance). Outcome: no handoff crate ever placed, the dock's own crate suppressed, and
-     a run the Commander PAID for left no mark on the floor at all — the floor asserting "nothing happened"
+     a run the Master PAID for left no mark on the floor at all — the floor asserting "nothing happened"
      about work that did. So the suppression is now a WAIT, not a drop: hold the dock's crate for the grace
      window, cancel it the moment the upstream handoff is actually placed (intakeMessage cancels on the
      chain item's `from`), and ship it if the handoff never arrives. Exactly one crate either way. */
@@ -9752,7 +9752,7 @@ const World = (() => {
     dbg: () => agent && { goal: agent.goal, quirkKind: agent.quirkKind, sitting: agent.sitting, state: agent.state, stilling: !!agent.stilling, firstWakeDone, wakePhase: agent.wakePhase, moving: !!agent.target, paused: fnow < (agent.pauseUntil || 0), pauseLook: agent.pauseLook, dir: agent.dir, attn: (agent.attn && fnow < agent.attn.until) ? { x: agent.attn.x, y: agent.attn.y, inMs: Math.round(agent.attn.until - fnow) } : null, drive: (fnow < (agent.driveUntil || 0)) ? agent.drive : null, tile: tileOf(agent.px, agent.py), idleUntil: Math.round((agent.idleUntil || 0) - fnow), quirkCd: Math.round(Math.max(0, (agent.quirkCd || 0) - fnow)), offbeatCd: Math.round(Math.max(0, (agent.offbeatCd || 0) - fnow)), fond: [...agent.fond.entries()], pendingMourn: pendingMourn && { tx: pendingMourn.tx, ty: pendingMourn.ty, fond: pendingMourn.fond }, decor: agentDecor.length, crew: crew.length, spendUsd: floor ? (floor.snapshot().spendUsd || 0) : 0, boxes: convey ? convey.boxCount() : 0, queueDepth: queueDepthNow(), bridge: { paused: bridgePaused, es: !!chanES, poll: !!connPollTimer, readyState: (chanES ? chanES.readyState : -1), lastEventMsAgo: (lastSseEventAt ? Math.round((typeof performance !== 'undefined' ? performance.now() : fnow) - lastSseEventAt) : null), linkDown: linkDown((typeof performance !== 'undefined') ? performance.now() : fnow) }, ttl: { runClocks: runStartByAgent.size, glyphs: glyphByAgent.size, serverLit: serverLit.size, runTtlMs: RUN_TTL_MS, awaitTtlMs: AWAIT_TTL_MS }, await: awaitPrompt ? { promptId: awaitPrompt.promptId, arrived: awaitArrived, source: awaitAnchor ? awaitAnchor.source : null, anchor: awaitAnchor ? { tx: awaitAnchor.tx, ty: awaitAnchor.ty } : null } : null, proposalsPinned: pinnedCount, social: socialBeat && { kind: socialBeat.kind, aId: socialBeat.aId, bId: socialBeat.bId }, chase: chaseId != null && { id: chaseId, phase: (bodyForAgent(chaseId) && bodyForAgent(chaseId).chase && bodyForAgent(chaseId).chase.phase) || null }, chaseGateIn: Math.round(Math.max(0, chaseGateUntil - fnow)), cursorFresh: (fnow - lastCursor.t) < CURSOR_FRESH_MS, cursorMoving: (fnow - cursorMoveT) < CURSOR_MOVING_MS },
     // read-only camera truth for the DEV verify harness (+ the war-room HUD chip): who drives the camera
     // ('manual' | 'lock' = session follow | 'auto' = idle cinecam), which body is locked, and how long the
-    // Commander has been hands-off. Pure read, no side effects — the testapi idiom.
+    // Master has been hands-off. Pure read, no side effects — the testapi idiom.
     cameraDbg: () => ({ mode: cameraMode(), lockId: camLock ? camLock.id : null, source: camLock ? camLock.source : null, idleMs: Math.round(performance.now() - camUserAt), thresholdMs: cineIdleMs, scale: +scale.toFixed(3), panX: Math.round(panX), panY: Math.round(panY), gates: { anim: !!camAnim, frozen: awakeFrozen, cache: !!cache, reduceMotion: reduceMotion() } }),
     // TEST/DEBUG ONLY — the D3 border-meeting pure geometry (sharedEdge/borderTileFor), exposed read-only for the
     // DEV harness. No world state touched (both are pure; borderTileFor takes an injected walkable predicate).
@@ -9840,7 +9840,7 @@ const World = (() => {
       };
     },
     /* Drive the SCATTER through the real predicate rather than a staged teardown: stamping the cursor
-       is precisely what "the Commander came back" means to gatheringBroken, so this proves the shipped
+       is precisely what "the Master came back" means to gatheringBroken, so this proves the shipped
        exit path (and the overseer's late break) instead of a copy of it. */
     _dbgGatherReturn: () => {
       const now = (typeof performance !== 'undefined') ? performance.now() : fnow;

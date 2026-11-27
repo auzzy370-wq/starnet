@@ -1,13 +1,13 @@
 /* test/conveyor-results.test.js — testing a line and reading its result (2026-09-27 first-run audit, lane 4).
 
    X1 — four "test" controls meant four different things: the one that runs no agent now says FREE, every one that runs agents
-        says REAL, and the live INBOX's ONE REAL JOB runs the Commander's own test job (not "summarize this line").
+        says REAL, and the live INBOX's ONE REAL JOB runs the Master's own test job (not "summarize this line").
    X3 — a step whose tool the consent gate refused showed "✓ finished"; the refusal is recorded on the hop and said.
    R1 — the VERDICT line (the loop gate's control signal) no longer ships as part of the work (see loop-verdict.test.js).
    R2 — the OUTBOX titled a line's result with the machine hand-off prompt; it now reads the ORIGINAL request.
    R3 — the live INBOX says SCHEDULE OFF (with the switch) instead of NO FEED when a schedule is saved but scheduling is off;
         the hover glance replaces the resting plate instead of stacking on it; the plate counts tests; a quick tour
-        covering COMMS steps aside when the Commander clicks the INBOX. */
+        covering COMMS steps aside when the Master clicks the INBOX. */
 'use strict';
 const { readSidecarSource } = require('./helpers/source');
 const A = require('./_assert.js');
@@ -25,7 +25,7 @@ A.ok(/\['watch', 'WATCH IT · FREE'/.test(panel) && /\['step', 'STEP THROUGH · 
 A.ok(/'▶ SEND A REAL JOB'\) \+ '<\/button>'/.test(panel) && /'③ SEND A REAL JOB'/.test(build) && (chat.match(/'▸ SEND A REAL JOB'/g) || []).length === 2 && !/RUN ONE REAL JOB'/.test(panel + build + chat), 'every sample control says SEND A REAL JOB (org P17: one word set)');
 A.ok(!/RUN A SAMPLE JOB/.test(panel + build + chat), 'the old "sample job" label is gone');
 A.ok(/function testJobForProp\(propId\)/.test(build) && /testJobForProp, close,/.test(build), 'Build answers the test job saved for a prop’s line');
-A.ok(/Build\.testJobForProp\(opts\.propId\)/.test(chat) && /job\.text \? \{ text: job\.text \}/.test(chat) && /job\.line \? \{ line: job\.line \}/.test(chat), 'the live INBOX card sends the Commander’s own test job, scoped to its line');
+A.ok(/Build\.testJobForProp\(opts\.propId\)/.test(chat) && /job\.text \? \{ text: job\.text \}/.test(chat) && /job\.line \? \{ line: job\.line \}/.test(chat), 'the live INBOX card sends the Master’s own test job, scoped to its line');
 
 /* X3 */
 // (line-job-runner: the step test's runner is the ONE hop executor, sidecar/routing/line-runner.js, whose sink reads the hop's events as x)

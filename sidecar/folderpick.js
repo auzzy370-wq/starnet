@@ -7,7 +7,7 @@
    consent story is unchanged (the bless click stays the consent).
 
      • INTERACTIVE ONLY — same UNATTENDED RULE as projectbless: an autonomous caller may not pop
-       dialogs on the Commander's screen. surface must be 'interactive' or DENY.
+       dialogs on the Master's screen. surface must be 'interactive' or DENY.
      • SINGLE-FLIGHT — one dialog at a time; a second request while one is open is answered
        { ok:false, code:'busy' } instead of stacking dialogs.
      • HONEST DEGRADATION — a platform with no picker (headless linux without zenity, server) returns
@@ -46,7 +46,7 @@
     "if ($dlg.ShowDialog($owner) -eq [System.Windows.Forms.DialogResult]::OK) { [Console]::Out.Write($dlg.SelectedPath) }"
   ].join(' ');
 
-  // FILE mode (recipe launch forms: "point me at a file" should open the real chooser, not ask the Commander to
+  // FILE mode (recipe launch forms: "point me at a file" should open the real chooser, not ask the Master to
   // type a path from memory). Same contract as the folder script — the chosen path on stdout, nothing on cancel,
   // exit 0 either way — so interpret() reads both modes identically. Read-only: choosing GRANTS nothing, exactly
   // like the folder picker; the path lands in a form field the user still has to launch.
@@ -116,7 +116,7 @@
     const timeoutMs = (deps.timeoutMs | 0) > 0 ? (deps.timeoutMs | 0) : 5 * 60 * 1000;
     if (typeof spawn !== 'function') throw new Error('folderpick requires { spawn }');
 
-    let inFlight = false;   // single-flight: one dialog on the Commander's screen at a time
+    let inFlight = false;   // single-flight: one dialog on the Master's screen at a time
 
     async function pick(o) {
       o = o || {};

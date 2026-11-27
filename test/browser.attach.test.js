@@ -1,7 +1,7 @@
-/* node test/browser.attach.test.js — DRIVING THE COMMANDER'S OWN CHROME.
+/* node test/browser.attach.test.js — DRIVING THE MASTER'S OWN CHROME.
 
    browser.attach connects to an already-running Chrome over its DevTools port instead of launching a
-   station browser. That buys the thing a fresh headless profile can never have — the Commander's real
+   station browser. That buys the thing a fresh headless profile can never have — the Master's real
    signed-in sessions, in a real browser with a real fingerprint — and it is the honest answer to sites
    that refuse automated profiles, as opposed to a fingerprint-spoofing engine.
 
@@ -61,7 +61,7 @@ function fakeDriver() {
     const attach = B.tools.find(t => t.name === 'browser.attach');
     const detach = B.tools.find(t => t.name === 'browser.detach');
     A.ok(!!attach, 'browser.attach is registered');
-    A.eq(attach.requiresConsent, true, 'attaching to the Commander\'s own browser ALWAYS asks first');
+    A.eq(attach.requiresConsent, true, 'attaching to the Master\'s own browser ALWAYS asks first');
     A.eq(attach.scope, 'execute', 'and it is execute scope, not read');
     A.eq(attach.capability, 'web', 'it rides the web capability like the rest of the browser surface');
     A.eq(detach.requiresConsent, false, 'LETTING GO costs no prompt — a gated release is a release that does not happen');
@@ -69,7 +69,7 @@ function fakeDriver() {
 
   // ---- 1b. ATTACH STARTS ON CHROME'S ACTUALLY ACTIVE TAB -------------------------------------
   // Browser-level auto-attach does not promise page-event order. The first event below is a background
-  // inbox; the second is the visible Commander tab. Treating the first event as tab 0 makes the very first
+  // inbox; the second is the visible Master tab. Treating the first event as tab 0 makes the very first
   // snapshot/read/click land in the wrong signed-in page even though Chrome itself is showing CURRENT.
   {
     const sent = [];
@@ -117,7 +117,7 @@ function fakeDriver() {
     });
     const tabs = await driver.tabs();
     A.eq(tabs[0].title, 'CURRENT', 'tab 0 is the page Chrome is actually showing, not the first auto-attach event');
-    A.eq(tabs[0].active, true, 'the visible Commander tab is the initial action target');
+    A.eq(tabs[0].active, true, 'the visible Master tab is the initial action target');
     A.eq(tabs[1].title, 'BACKGROUND', 'other already-open tabs remain available without stealing focus');
     await driver.close();
   }
@@ -177,7 +177,7 @@ function fakeDriver() {
 
     await B.session.attach(9222);
     const after = B.session.evalAllowed();
-    A.eq(after.ok, false, 'and REFUSED the moment the session drives the Commander\'s own browser');
+    A.eq(after.ok, false, 'and REFUSED the moment the session drives the Master\'s own browser');
     A.ok(/your own Chrome/.test(after.reason), 'the reason names the real hazard');
     await rejects(B.session.evalPublic('document.cookie'), /refused/, 'the refusal is enforced, not merely advertised');
   }

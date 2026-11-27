@@ -2,7 +2,7 @@
 
    A WebView `<a download>` lands wherever the shell's download handler puts it (macOS: ~/Downloads, silently), and
    the page is never told — so "✓ exported" was a claim about a file nobody could find. On the desktop the sidecar
-   is on the same machine, so it writes the file itself into a folder it can NAME (the Commander's Downloads folder,
+   is on the same machine, so it writes the file itself into a folder it can NAME (the Master's Downloads folder,
    the same one sidecar/browser-view.js hands their browser downloads to; home when there is none), reads it back
    as proof, and returns the exact path for the line to show.
 
@@ -123,7 +123,7 @@ function makeExportSaveHandler(o) {
   };
 }
 
-// the desktop EXPORT STATION: today's name, in the Commander's Downloads (or home)
+// the desktop EXPORT STATION: today's name, in the Master's Downloads (or home)
 function saveStationExport(text, opts) {
   const o = opts || {};
   const dir = defaultExportDir(o.home, o.fs);

@@ -523,14 +523,14 @@ function brief(s) { s = String(s || ''); return s.length > 60 ? s.slice(0, 57) +
 **`World.setActivity('task')` already spans the whole turn** — it's set at `chat.js:85` and only cleared in `finally` at `chat.js:105`. Because the loop now runs multiple tool steps inside that single `await Harness.chat(...)`, the agent **stays seated and "working" for the entire multi-step run** with zero `world.js` change. The COMMS panel reads:
 
 ```
-COMMANDER  research the best budget mechanical keyboard and write it up
+MASTER  research the best budget mechanical keyboard and write it up
 AGENT      ▶ web_search {"query":"best budget mechanical keyboard 2026"}
 AGENT      ◀ web_search: 6 result(s) via duckduckgo-html (812ms)
 AGENT      ▶ web_fetch {"url":"https://…"}
 AGENT      ◀ web_fetch: 5212 chars via jina (1430ms)
 AGENT      ▶ fs.write {"path":"keyboards.md"}
 AGENT      ◀ fs.write: wrote keyboards.md (2.3 KB) (4ms)
-AGENT      Done, Commander. I compared four boards and saved keyboards.md …   ← streams live
+AGENT      Done, Master. I compared four boards and saved keyboards.md …   ← streams live
 ```
 
 ### 7c. `frontend/index.html` — copy + DISCONNECT wiring (no structural change)

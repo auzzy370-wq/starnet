@@ -60,7 +60,7 @@
   const CACHEABLE_BLOCK = { text: 1, image: 1, tool_use: 1, tool_result: 1, document: 1 };
 
   /* THINKING + EFFORT (2026-07-27). Claude's headline capability, previously unreachable through this adapter:
-     reasoningEfforts() returned ['none'] and buildBody emitted no thinking parameter at all, so a Commander on
+     reasoningEfforts() returned ['none'] and buildBody emitted no thinking parameter at all, so a Master on
      their own Anthropic key ran a NON-THINKING Claude while the SAME model reached through OpenRouter got
      `reasoning:{effort}`. Two wire contracts exist and the model decides which:
 
@@ -137,7 +137,7 @@
     return map[k] || 'medium';
   }
   // The levels this model actually accepts, ascending. Legacy models publish the BUDGET tiers under the same
-  // vocabulary so one Commander-facing control drives both contracts.
+  // vocabulary so one Master-facing control drives both contracts.
   function effortsFor(id) {
     if (!isClaude(id)) return ['none'];
     if (hasAny(id, LEGACY_CLAUDE)) return ['none', 'low', 'medium', 'high', 'xhigh', 'max'];
@@ -211,7 +211,7 @@
     return text ? [{ type: 'text', text }] : [];
   }
   // USER ATTACHMENTS (COMMS): a user turn may carry image parts alongside its text — the run path expands a
-  // Commander's attached photo into an {type:'image_url', image_url:{url}} block before this adapter sees it.
+  // Master's attached photo into an {type:'image_url', image_url:{url}} block before this adapter sees it.
   // Anthropic's native vision shape is {type:'image', source:{type:'base64'|'url', …}}, so map image_url → that.
   // Only USER messages get this (assistant/tool turns never carry images); an unrecognized part degrades to its
   // text or is dropped — never throws.

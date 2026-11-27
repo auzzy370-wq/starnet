@@ -66,7 +66,7 @@ tool that can read it** (`sidecar/tools/builtin/` has no connector tool on trunk
 keys *do* get a `<service_keys>` prompt block (`servicekeys.js:242`), but nothing tells the agent what
 *could* be connected or how.
 
-So the agent's entire model of "how does the Commander gain a capability" comes from
+So the agent's entire model of "how does the Master gain a capability" comes from
 `sidecar/manual.js`, whose NAVIGATION section lists COMMS, ROUTINES, TASKS, DOCK/BUILD, REFIT,
 Recruitment Bay, and APPROVALS — and **never mentions ABILITIES, CATALOG, KEYS, MCP CONNECTORS,
 EXTENSIONS, or CHANNELS.** Its TROUBLESHOOTING section has six entries; none is "how do I connect a
@@ -80,7 +80,7 @@ means no power (the floor never lies)."*
 
 That is false for connectors. `sidecar/capability/office.js:38` rides **every configured connector
 portal onto the office unconditionally** — the comment says it outright: *"account-level (not a placed
-floor prop), so it rides on both surfaces."* So the agent confidently sends the Commander into REFIT
+floor prop), so it rides on both surfaces."* So the agent confidently sends the Master into REFIT
 to place a connector portal, which is (a) unnecessary and (b) a dead end, because a portal needs a
 `connectorId` binding that only exists **after** the connector was already added in ABILITIES.
 

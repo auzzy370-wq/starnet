@@ -4,7 +4,7 @@
    rule (no 'run', no unplaceable prop, no unsweepable fact); parse() round-trips a well-formed multi-quest
    reply, dedups against the open slate + the dismissed-forever denylist + earlier blocks in the SAME reply,
    caps at MAX_MINTS_PER_CYCLE, and kills an ungrounded WHY; NONE is a sentinel; reducers are pure + capped;
-   the Commander's active goal always outranks an inferred north star at the setNorthStar seam (source flag).
+   the Master's active goal always outranks an inferred north star at the setNorthStar seam (source flag).
    Deterministic — injected now, no ambient clock. */
 'use strict';
 const A = require('./_assert.js');
@@ -36,7 +36,7 @@ A.eq(R.parseContract('artifact out/plan.md', PROPS), { type: 'artifact', key: 'o
 A.eq(R.parseContract('artifact', PROPS), null, 'artifact without a path is rejected');
 A.eq(R.parseContract('fact ships a video every week', PROPS), { type: 'fact', key: 'ships a video every week' }, 'fact keeps its phrase');
 A.eq(R.parseContract('fact ab', PROPS), null, 'a fact key shorter than the sweep minimum can never complete — rejected');
-A.eq(R.parseContract('attest', PROPS), { type: 'attest', key: '' }, 'attest carries the empty key (Commander-confirm completes it)');
+A.eq(R.parseContract('attest', PROPS), { type: 'attest', key: '' }, 'attest carries the empty key (Master-confirm completes it)');
 A.eq(R.parseContract('run r123', PROPS), null, 'run is not in the refresh vocabulary (nothing to bind)');
 A.eq(R.parseContract('', PROPS), null, 'empty contract rejected');
 
@@ -147,8 +147,8 @@ A.eq(st.northStar.text, 'Ship the product', 'setNorthStar lands');
 A.eq(st.northStar.source, 'model', 'inferred stars carry source model');
 st = R.setNorthStar(st, { text: '', source: 'goal' }, { now: T0 + 1 });
 A.eq(st.northStar.text, 'Ship the product', 'an empty star never blanks an existing one');
-st = R.setNorthStar(st, { text: 'The Commander goal', source: 'goal' }, { now: T0 + 2 });
-A.eq(st.northStar.source, 'goal', 'a Commander-goal star carries source goal');
+st = R.setNorthStar(st, { text: 'The Master goal', source: 'goal' }, { now: T0 + 2 });
+A.eq(st.northStar.source, 'goal', 'a Master-goal star carries source goal');
 /* ---------- north star PROPOSE-AND-CONFIRM (QUEST V3 slice 3): inferences are proposed, never silently adopted ---------- */
 let n = R.fresh();
 // a first inference is PROPOSED, not adopted — the effective star is it, labelled proposed; nothing adopted yet.
@@ -173,9 +173,9 @@ A.eq(nd.proposedNorthStar, null, 'decline drops the proposal');
 A.ok(nd.declinedNorthStars.indexOf('grow the channel to a living') >= 0, 'the declined inference is denylisted');
 A.eq(R.proposeNorthStar(nd, { text: 'Grow the channel to a living', source: 'model' }, { now: T0 + 40 }).proposedNorthStar, null, 'a declined inference is never re-proposed');
 A.eq(R.proposeNorthStar(nd, { text: 'Ship a SaaS product', source: 'model' }, { now: T0 + 50 }).proposedNorthStar.text, 'Ship a SaaS product', 'a different inference still proposes after a decline');
-// a Commander GOAL always outranks + SUPERSEDES a pending proposal (adopted silently, proposal dropped)
+// a Master GOAL always outranks + SUPERSEDES a pending proposal (adopted silently, proposal dropped)
 let ng = R.setNorthStar(R.proposeNorthStar(R.fresh(), { text: 'a guess', source: 'model' }, { now: T0 }), { text: 'Launch the app', source: 'goal' }, { now: T0 + 1 });
-A.eq(ng.proposedNorthStar, null, 'a Commander goal supersedes a pending inference proposal');
+A.eq(ng.proposedNorthStar, null, 'a Master goal supersedes a pending inference proposal');
 A.eq(ng.northStar.source, 'goal', 'the goal is the adopted star');
 A.eq(ng.northStar.status, 'adopted', 'a goal star is adopted, never proposed');
 // no-op verdicts when nothing pends
@@ -187,7 +187,7 @@ A.ok(ndRT.declinedNorthStars.indexOf('grow the channel to a living') >= 0, 'the 
 A.eq(R.effectiveNorthStar(R.fresh()), null, 'a cold state has no effective star');
 
 // Quests inferred alongside an unconfirmed north star remain staged. They cannot steer autonomy or appear as
-// adopted work until the Commander confirms the direction; decline clears both the proposal and its draft slate.
+// adopted work until the Master confirms the direction; decline clears both the proposal and its draft slate.
 const stagedQuest = { title: 'Publish episode 4', contract: { type: 'attest', key: '' }, groundedIn: 'channel goal' };
 let nsq = R.proposeNorthStar(R.fresh(), { text: 'Grow the channel', source: 'model' }, { now: T0 });
 nsq = R.stageQuests(nsq, [stagedQuest]);
@@ -199,7 +199,7 @@ A.eq(R.clearPendingQuests(nsq).pendingQuests, [], 'pending quests have an explic
 A.eq(R.normalize(null).ledger, [], 'normalize(null) is a fresh state');
 A.eq(R.normalize({ northStar: { text: '' }, ledger: 'junk', lastCycleAt: 'x' }).northStar, null, 'junk hydrates safely');
 const roundTrip = R.normalize(JSON.parse(JSON.stringify(st)));
-A.eq(roundTrip.northStar.text, 'The Commander goal', 'state survives a JSON round-trip');
+A.eq(roundTrip.northStar.text, 'The Master goal', 'state survives a JSON round-trip');
 
 const changedBase = R.stampCycle(R.fresh(), { now: T0, contextKey: 'before' });
 A.ok(!R.decide(changedBase, { now: T0 + R.MATERIAL_CHANGE_GAP_MS - 1, openCount: 2, contextKey: 'after' }).fire, 'progress changes coalesce under a cost debounce');

@@ -43,7 +43,7 @@
                                                  //   sessions under a deleted agent. Absent -> pre-guard behavior.
      deps.persona          -> string | ()=>string // the autonomous system prompt (carries the [SILENT] hint);
                                                  //   a getter is re-read each fire so it can fold in the live
-                                                 //   Commander dossier (Phase C). Both forms stay determinism-clean.
+                                                 //   Master dossier (Phase C). Both forms stay determinism-clean.
      deps.maxRunMs         -> int                // self-healing lease ceiling: a run older than this is reclaimed
      deps.stageBriefFor   -> (agentId) -> string|null
                                                  // OPTIONAL: the standing job brief of the dock this agent
@@ -141,7 +141,7 @@
     const identityForAgent = typeof d.identityForAgent === 'function' ? d.identityForAgent : function () { return null; };
     const agentExists = typeof d.agentExists === 'function' ? d.agentExists : null;
     // persona may be a STRING (the autonomous system prompt) or a GETTER that returns it fresh each fire
-    // (Phase C: index.js passes a getter so each run folds in the live Commander dossier). Both stay
+    // (Phase C: index.js passes a getter so each run folds in the live Master dossier). Both stay
     // determinism-clean — a getter is just an injected dep, exactly like getKey/getJobs.
     const personaOf = typeof d.persona === 'function' ? d.persona : function () { return d.persona || ''; };
     const placeWorkitem = typeof d.placeWorkitem === 'function' ? d.placeWorkitem : function () {};
@@ -199,7 +199,7 @@
       const n = parseInt(d.maxConsecutiveFailures, 10);
       return Number.isFinite(n) && n >= 0 ? n : cronStore.DEFAULT_MAX_CONSECUTIVE_FAILURES;
     })();
-    /* THE WORK LINE, for scheduled work. A routine fires at ONE dock; if the Commander drew stages past that
+    /* THE WORK LINE, for scheduled work. A routine fires at ONE dock; if the Master drew stages past that
        dock, those stages are the routine — "every morning research it, then write it up" is the shape people
        actually want from a floor. Optional: absent, a fire is a single run exactly as before. Called AFTER the
        job's own run settles but BEFORE finishFire, so the routine's recorded outcome and its session transcript
@@ -302,7 +302,7 @@
         }
         let out = deliveryReceipts.get(key);
         if (!out) {
-          // paused by the Commander: kept until resumed — but a RUN NOW pressed on the paused routine goes out (its receipt,
+          // paused by the Master: kept until resumed — but a RUN NOW pressed on the paused routine goes out (its receipt,
           // review 7.1), and so does one whose delivery already started (it finishes; its outcome is recorded); nothing
           // collapses while the routine is paused
           const held = cronStore.deliveriesHeld(current);
@@ -531,7 +531,7 @@
       }
       /* INJECTION TRIPWIRE at FIRE time. Runs BEFORE the capability/credential gate so a payload never reaches
          the model or spends a cent. A block is recorded as a real FAILED result (markRun + cron.result) rather
-         than a silent skip: the Commander must be able to see WHY a routine stopped producing, and the reason
+         than a silent skip: the Master must be able to see WHY a routine stopped producing, and the reason
          lands in job.lastError, which the ROUTINES row already renders. cron.result's `reason` is a free string
          in the owned event contract, so this needs no schema change. */
       let assembledPrompt = String(job.prompt || '');
@@ -731,7 +731,7 @@
           // a scheduled run does real work; what it learns is durable memory, not scratch. Bounded downstream by
           // the aux budget + per-agent reflection cooldown, and stamped origin:'schedule' (see index.js /api/run).
           reflect: true,
-          // UNATTENDED CAPABILITY GRANT (2026-07-25): the terminal/verify approval the Commander recorded on THIS
+          // UNATTENDED CAPABILITY GRANT (2026-07-25): the terminal/verify approval the Master recorded on THIS
           // routine, read straight off the durable job record. Empty on every routine that was not granted, so an
           // ungranted fire is byte-identical to the pre-grant behavior. Never sourced from the prompt.
           unattendedGrants: Array.isArray(job.unattendedGrants) ? job.unattendedGrants.slice() : [],
@@ -787,7 +787,7 @@
             preloadSkills: Array.isArray(job.skills) ? job.skills.slice() : [], requiredPreloads: true, workdir: job.workdir || null,
             enabledToolsets: Array.isArray(job.enabledToolsets) ? job.enabledToolsets.slice() : null,
             initialTaint: !!(job.contextFrom && job.contextFrom.length),
-            /* GRANTS NEVER FLOW DOWN A LINE (2026-08-04). The unattended terminal/verify grant the Commander
+            /* GRANTS NEVER FLOW DOWN A LINE (2026-08-04). The unattended terminal/verify grant the Master
                recorded is an approval of ONE agent — this routine's own dock, which already ran above with
                job.unattendedGrants. A belt drawn to another dock must not silently extend that approval to a
                different agent (capability may never silently widen; the fallback direction is NARROWER). A

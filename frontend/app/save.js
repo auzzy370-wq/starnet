@@ -18,7 +18,7 @@ const Save = (() => {
   function useKey(k) { if (JOURNAL_KEY_RE.test(String(k || ''))) KEY = String(k); return KEY; }
   const PRE_MIGRATE_BACKUP_KEY = 'vultron.save.pre-migrate.backup';
   /* THE PRE-MIGRATION COPY IS A COPY OF EVERY CONVERSATION. It is the raw save from before a migration, kept so a bad migration can be
-     recovered by hand, which makes it the one place a chat the Commander deleted outlives the delete — and, written once and never
+     recovered by hand, which makes it the one place a chat the Master deleted outlives the delete — and, written once and never
      touched again, outlives everything else. So it is bounded and it follows deletes: PRE_MIGRATE_BACKUP_AT_KEY stamps when it was made
      and expireBackup() removes it BACKUP_TTL_MS later; forgetFromBackup() cuts a forgotten conversation out of it (write() does that
      for every id in the save's forgetIds, in the persist that records the delete); clear() removes it with the save. It is cut, not
@@ -65,7 +65,7 @@ const Save = (() => {
       if (!doc.profile || typeof doc.profile !== 'object') doc.profile = { v: 1, tags: {}, seed: null, enabled: true, total: 0 };
       return doc;
     },
-    // v4 -> v5 (Commander Dossier): seed an empty, valid station-wide dossier slice. Cold-start-safe — an
+    // v4 -> v5 (Master Dossier): seed an empty, valid station-wide dossier slice. Cold-start-safe — an
     // older save (or one whose owner never finished the awakening) gets a learnable, all-empty dossier; it
     // then seeds from the agent's onboarding docs at DossierStore.init. The literal mirrors Dossier.fresh()
     // to keep save.js decoupled from dossier.js load order.

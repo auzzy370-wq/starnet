@@ -13,7 +13,7 @@
                 as its exact text, and through the host wiring (the field-first scrubSkills, then the registry's
                 scrubStored) production delivers that exact text through the stored-text scrub, which may rewrite a
                 line of code (the CODE fixture's 'raise' line is one); a binary file is named with its size; no base64 blob
-     I4 stamp   the digest of what the view shows is the stamp persist() wrote, so an approval of what the Commander
+     I4 stamp   the digest of what the view shows is the stamp persist() wrote, so an approval of what the Master
                 read is the approval the prompt index and skill.list honour: approve-then-list shows withheld:false
      I5 export  an exported envelope carries the exact bytes
    Plus two upgrade sections: a v0.14 save (base64 support files, a base64-text mirror left by bug a36d1b00, approvals
@@ -177,7 +177,7 @@ async function check(where, r, agentId, id, want, opts) {
       if (b64.length >= 12) A.ok(out.indexOf(b64) < 0 && delivered.indexOf(b64) < 0, where + ' I3: no base64 blob of ' + f.path + ' reaches the model');
     }
   }
-  // I4 stamp: what the Commander reads digests to the stamp, so approve-then-list agrees with the delivery seam
+  // I4 stamp: what the Master reads digests to the stamp, so approve-then-list agrees with the delivery seam
   A.eq(digestOf(v), v.contentDigest, where + ' I4: the digest of the view is the stamp the index and skill.list compare');
   if (opts.approve) {
     const entry = { digest: digestOf(v), stamp: v.contentDigest, action: 'allow' };   // handleAgentSkillAllow's entry
@@ -227,7 +227,7 @@ function checkExport(where, pkg, want) {
     r.ex.install({ agentId: 'b', inspectionId: ipv.inspectionId });
     await check(tag + 'import', r, 'b', id, files, { approve: true });
 
-    // ---- patch: the Commander edits the installed body, so the package diverges (bug a36d1b00) ----
+    // ---- patch: the Master edits the installed body, so the package diverges (bug a36d1b00) ----
     const pr = r.store.manage({ agentId: 'a', target: id, action: 'patch', find: 'Measure twice.', replace: 'Measure three times.', createdBy: 'user' });
     A.ok(pr.ok && pr.skill.packageDiverged, tag + 'patch: the package diverged');
     await check(tag + 'patch', r, 'a', id, files, { approve: true });
@@ -293,7 +293,7 @@ function checkExport(where, pkg, want) {
     checkExport('authored', exported(r, 'a', made.skill.id), [{ path: 'assets/data.bin', bytes: bin }, { path: 'scripts/check.py', bytes: code }]);
   }
 
-  // ---- the a36d1b00 repro, as filed: install a text reference, patch the body as the Commander, read the disk ----
+  // ---- the a36d1b00 repro, as filed: install a text reference, patch the body as the Master, read the disk ----
   {
     const r = rig();
     const url = 'https://example.invalid/skills/setup/SKILL.md';
@@ -335,7 +335,7 @@ function checkExport(where, pkg, want) {
     const moved = typeof gateMod.restampApprovals === 'function' ? (gateMod.restampApprovals(approvals, restamps) || approvals) : approvals;
     const g = makeSkillGate({ guard, approvals: { get: (aid, sid, d) => moved[aid + '\x00' + sid + '\x00' + d] || moved[aid + '\x00' + sid] || null } });
     const row = r.store.list('a').find(s => s.id === 'old-pkg');
-    A.eq(g.annotate([row])[0].withheld, false, 'v0.14: the Commander\'s approval still holds in the prompt index and skill.list');
+    A.eq(g.annotate([row])[0].withheld, false, 'v0.14: the Master\'s approval still holds in the prompt index and skill.list');
     const v = r.store.view('a', 'old-pkg', { bump: false });
     A.eq(g.annotate([v], { verify: true })[0].withheld, false, 'v0.14: ...and at the delivery seam (the mirror is not read as tampered)');
     const out = (await makeSkillTools({ store: r.store, gate: g }).viewTool.run({ name: 'Old Package' }, { agentId: 'a' })).content;

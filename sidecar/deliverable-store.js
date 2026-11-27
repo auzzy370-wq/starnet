@@ -12,13 +12,13 @@ const persist = require('./persist/index.js');   // the journal's tagged read an
 
 // Sets, not object literals: `({a:1})['constructor']` is truthy, so an object-literal allowlist
 // silently admits every Object.prototype key — and these keys come off persisted/model-supplied data.
-// 'implemented' = a PLAN the Commander pressed Implement on: it was acted on and produced a build, but nothing
+// 'implemented' = a PLAN the Master pressed Implement on: it was acted on and produced a build, but nothing
 // was copied out of the jail, so it is deliberately not 'kept' (which asserts files landed in a folder).
 // NOTE: an unrecognised status is coerced to 'failed' below — a new status MUST be added here or the library
 // will quietly report success as failure.
 const STATUS = new Set(['kept', 'implemented', 'discarded', 'failed']);
 const SOURCE_MAX = 40, TEXT_MAX = 260, UNDO_CAP = 20, FILE_CAP = 50;
-// CLEARED (2026-10-10, Andrew: "users can wipe them out if done"): ids the Commander cleared out of the library view.
+// CLEARED (2026-10-10, Andrew: "users can wipe them out if done"): ids the Master cleared out of the library view.
 // Library-only — the files on disk, the run log and any lifecycle row are untouched, so a clear is always undoable
 // and can never destroy work. The id set is uncapped for the same reason lifecycle rows are: dropping the oldest
 // would silently bring a cleared deliverable back.

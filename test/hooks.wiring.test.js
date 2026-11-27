@@ -52,7 +52,7 @@ async function run(o) {
     A.eq(ran, false, 'a blocked tool NEVER runs — the block is before execution, not a filter on the result');
     const toolMsg = messages.find(m => m.role === 'tool');
     A.ok(/blocked by your hook/.test(toolMsg.content), 'the model is told a hook blocked it, not that the tool broke');
-    A.ok(/`freeze`/.test(toolMsg.content), 'and the hook is NAMED, so the Commander knows which script to edit');
+    A.ok(/`freeze`/.test(toolMsg.content), 'and the hook is NAMED, so the Master knows which script to edit');
     A.ok(/src\/ is frozen today/.test(toolMsg.content), 'the reason reaches the model so it can adapt instead of retrying');
   }
 
@@ -71,13 +71,13 @@ async function run(o) {
     A.eq(ran, false, 'and the tool still did not run');
     A.ok(/capability denied/.test(messages.find(m => m.role === 'tool').content), 'the gate owns the refusal message');
 
-    // Same for consent: a hook cannot pre-approve something the Commander refused.
+    // Same for consent: a hook cannot pre-approve something the Master refused.
     const h2 = makeHooks();
     let seen2 = 0;
     h2.register('pre_tool_call', () => { seen2++; return { decision: 'allow' }; }, { name: 'permissive' });
     let ran2 = false;
     const r2 = reg(() => { ran2 = true; });
-    const { messages: m2 } = await run({ registry: r2, capCtx: openCtx({ hooks: h2, runId: 'r1', consent: async () => ({ allow: false, reason: 'the Commander said no' }) }), hooks: h2 });
+    const { messages: m2 } = await run({ registry: r2, capCtx: openCtx({ hooks: h2, runId: 'r1', consent: async () => ({ allow: false, reason: 'the Master said no' }) }), hooks: h2 });
     A.eq(seen2, 0, 'a consent-denied call never reaches the hook either');
     A.eq(ran2, false, 'and no hook return value can revive it');
     A.ok(/consent denied/.test(m2.find(m => m.role === 'tool').content), 'consent owns its own refusal message');
@@ -96,7 +96,7 @@ async function run(o) {
     A.ok(/wrote a\.js/.test(messages.find(m => m.role === 'tool').content), 'its block attempt changed nothing — the result stands');
   }
 
-  // ---- 4. pre_llm_call INJECTS the Commander's standing brief, once, not once per turn ----
+  // ---- 4. pre_llm_call INJECTS the Master's standing brief, once, not once per turn ----
   {
     const h = makeHooks();
     let calls = 0;

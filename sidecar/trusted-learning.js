@@ -100,7 +100,7 @@ function ownedBriefs(briefs, transcriptRows, runRecords) {
 }
 // Quoted material in any of these user turns. Callers pass the context a run REPLAYS (a server-seeded or re-seeded
 // transcript, a recovery checkpoint, the earlier-conversation rows): a pasted document there is data the learning
-// passes must not read as the Commander's words, whoever sent the history.
+// passes must not read as the Master's words, whoever sent the history.
 function quotedTurns(messages) {
   return (Array.isArray(messages) ? messages : []).some(m => m && m.role === 'user' && quotedMaterial(textOf(m)));
 }
@@ -124,7 +124,7 @@ function eligible(origin) {
 }
 /* A PICK IS NOT A STANDING PREFERENCE (2026-10-12). "I prefer X" is standing only when X names a KIND of thing
    ("tabs over spaces", "a dark theme", "it when replies are short", "that you use tabs"), not one of the items in
-   front of the Commander right now. Structure decides, not a word list of candidate nouns:
+   front of the Master right now. Structure decides, not a word list of candidate nouns:
      - any statement that points back at the current item (", ship it", ", go with that", "Never do that again.")
        cannot stand on its own later, whatever its anchor (POINTS_BACK, checked for every anchor below);
      - a "one"-headed item ("the blue one", "a shorter one") is a pick;
@@ -160,10 +160,10 @@ function preferences(input, projectRoot) {
     const content = raw.trim();
     if (content.length < 8 || content.length > 600 || /\?$/.test(content)) continue;
     // STANDING = an explicit standing marker. A bare "I prefer …" is not one: it is as often a pick between the drafts in
-    // front of the Commander ("I prefer the second option", "I prefer option two") as a lasting taste, and two review
+    // front of the Master ("I prefer the second option", "I prefer option two") as a lasting taste, and two review
     // rounds of pick/taste word lists opened new holes both ways (2026-10-12). Fail closed: without a marker nothing is
     // auto-saved here — the agent can still save a real preference with notebook.write, whose provenance is proven
-    // against the Commander's own words.
+    // against the Master's own words.
     if (!/^(?:(?:please\s+)?remember(?:\s+that)?[,:]?\s+)?(?:(?:from now on|going forward|by default|for (?:all|every) future (?:tasks?|chats?|conversations?))[,:]?\s|(?:always|never)\s)/i.test(content)) continue;
     // An anchor word alone is not a standing preference: an idiom ("Never mind"), a remark ("Never seen it this bad",
     // "Always worked before"), a one-off pick between drafts ("I prefer the second option") or a description of current
@@ -180,10 +180,10 @@ function preferences(input, projectRoot) {
       !/\b(?:should|must|shall|needs?\s+to|ha(?:s|ve)\s+to|ought\s+to|(?:is|are)\s+to|please)\b/i.test(lead)) continue;
     if (/\b(?:passwords?|secrets?|credentials?|api.?keys?|access.?tokens?|auth|permissions?|approvals?|safety|guards?|polic(?:y|ies)|system.?prompts?|instruction.?hierarchy|full.?access|bypass(?:ing)?|overrides?|forget|do not (?:remember|save)|don't (?:remember|save))\b/i.test(content)) continue;
     const global = !projectRoot || /\b(?:across all (?:projects|tasks)|for (?:all|every) future (?:tasks?|chats?|conversations?))\b/i.test(content);
-    // The Commander's exact words. The host never saves them unscrubbed (review memory-learning-03): captureTrustedLearning
+    // The Master's exact words. The host never saves them unscrubbed (review memory-learning-03): captureTrustedLearning
     // scrubs each one, and a statement the scrub changed (a key, a URL password, a secret the host holds) is never saved
     // silently; it waits, scrubbed, on the Keep/Edit/Discard deck. writeMemoryRecord's user-stated re-check compares these
-    // exact words with the written text, so only an unscrubbed statement is stamped as the Commander's own.
+    // exact words with the written text, so only an unscrubbed statement is stamped as the Master's own.
     out.push({ kind: 'profile', content, scope: global ? 'global' : 'project', projectRoot: global ? null : String(projectRoot), standing: true });
     if (out.length >= 5) break;
   }

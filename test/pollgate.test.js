@@ -1,8 +1,8 @@
 /* node test/pollgate.test.js — the pure contract of frontend/app/pollgate.js (idle CPU piece 3, 2026-10-20).
 
    PollGate is the one owner of "is anyone looking?" for the browser's background polls: a poll keeps its own cadence while
-   the page can be seen, slows to a 30 s floor while the Commander is away (hidden AND no input for 10 s), never stops, and
-   catches up the moment the Commander is back. Fake document, window, clock and timers; nothing real is scheduled. */
+   the page can be seen, slows to a 30 s floor while the Master is away (hidden AND no input for 10 s), never stops, and
+   catches up the moment the Master is back. Fake document, window, clock and timers; nothing real is scheduled. */
 'use strict';
 const A = require('./_assert.js');
 const G = require('../frontend/app/pollgate.js');
@@ -147,7 +147,7 @@ async function advance(ms) {
   await advance(10000);
   A.eq(beats - atLate, 10, 'the abandoned beat answering late starts no second chain (10 runs in 10 s, not 20)');
 
-  /* the Commander comes back while a beat started away is hung: the catch-up is not blocked by it */
+  /* the Master comes back while a beat started away is hung: the catch-up is not blocked by it */
   G._resetForTest();
   let k = 0;
   G.every(() => { k++; if (k === 2) return new Promise(() => {}); return undefined; }, { ms: 1000 });

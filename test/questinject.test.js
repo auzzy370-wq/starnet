@@ -55,7 +55,7 @@ A.eq(withQuests(SYS, questBlock([])), SYS + '\n\n' + questBlock([]), 'an empty l
   const q = { id: 'q:2', title: 'Draft the launch email', contract: { type: 'attest', key: '' },
     steps: [], declineNote: { at: 5, note: 'the draft was too generic' } };
   const b = questBlock([q]);
-  A.ok(b.indexOf('attest with concrete evidence and the Commander confirms') >= 0, 'attest contract phrased for attest+confirm');
+  A.ok(b.indexOf('attest with concrete evidence and the Master confirms') >= 0, 'attest contract phrased for attest+confirm');
   A.ok(b.indexOf('your last completion claim was declined: the draft was too generic') >= 0, 'declineNote surfaced verbatim');
   A.ok(b.indexOf('address it before re-attesting') >= 0, 'declineNote tells the agent to address it before re-attesting');
   A.ok(b.indexOf('next step') < 0, 'a quest with no steps shows no next-step line');
@@ -65,7 +65,7 @@ A.eq(withQuests(SYS, questBlock([])), SYS + '\n\n' + questBlock([]), 'an empty l
 A.ok(_internals.completesWhen({ type: 'prop' }).indexOf('capability goes live') >= 0, 'prop → capability goes live');
 A.ok(_internals.completesWhen({ type: 'fact' }).indexOf('harness learns') >= 0, 'fact → harness learns');
 A.ok(_internals.completesWhen({ type: 'artifact' }).indexOf('deliverable exists') >= 0, 'artifact → deliverable exists');
-A.ok(_internals.completesWhen({ type: 'attest' }).indexOf('Commander confirms') >= 0, 'attest → Commander confirms');
+A.ok(_internals.completesWhen({ type: 'attest' }).indexOf('Master confirms') >= 0, 'attest → Master confirms');
 A.ok(_internals.completesWhen({}).indexOf('harness proves it') >= 0, 'unknown type → safe default');
 
 /* ---------- nextStep helper: first not-done, or null ---------- */

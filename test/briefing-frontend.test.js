@@ -1,6 +1,6 @@
 /* node test/briefing-frontend.test.js — the ONE briefing session (frontend/app/briefing.js): adopting it is
    idempotent + pinned + unread, chips only point at sessions that really exist, the return beats see
-   ownsReturn(), and a delivered briefing opens the session unless the Commander is mid-something. */
+   ownsReturn(), and a delivered briefing opens the session unless the Master is mid-something. */
 'use strict';
 const A = require('./_assert.js');
 
@@ -82,11 +82,11 @@ const B = require('../frontend/app/briefing.js');
   // mid-something → no focus jump; the unread pinned row is the whole signal
   active = 'general'; opened = []; engaged = true;
   await B.deliver('engaged');
-  A.eq(opened.length, 0, 'engaged Commander → no focus jump');
+  A.eq(opened.length, 0, 'engaged Master → no focus jump');
 
   /* LIVE WALK 10-14: a reload made the briefing the active session and took the screen off the conversation whose
      worker approval was still waiting. A waiting ask outranks the report: the station's own count (a reloaded page may
-     not have refiled the ask yet) or one this page holds keeps the Commander where they are. */
+     not have refiled the ask yet) or one this page holds keeps the Master where they are. */
   engaged = false; active = 'ws-launch'; opened = [];
   reply.asksWaiting = 1;
   await B.deliver('boot');

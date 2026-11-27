@@ -49,7 +49,7 @@ function inp(now, over) {
 })();
 (function presentGate() {
   const d = ns.decide(ns.fresh(T0), inp(T0, { lastUserActivityAt: T0 - 60000 }));   // 1 min ago → present
-  A.eq(d.fire, false, 'Commander present → no fire');
+  A.eq(d.fire, false, 'Master present → no fire');
   A.eq(d.binding, 'present', 'names present');
 })();
 (function haltGate() {
@@ -86,7 +86,7 @@ function inp(now, over) {
 
 // ---- gate PRECEDENCE: posture beats everything, present beats halt, halt beats leash, leash beats cooldown ----
 (function precedence() {
-  // all gates fail at once → posture wins (the most "the Commander decided this" reason first).
+  // all gates fail at once → posture wins (the most "the Master decided this" reason first).
   let s = ns.recordBeat(ns.recordBeat(ns.recordBeat(ns.fresh(T0), T0), T0), T0);   // leash spent + cooldown hot
   const d = ns.decide(s, inp(T0, { actsUnattended: false, lastUserActivityAt: T0, halted: true, concurrencyFree: false }));
   A.eq(d.binding, 'posture', 'posture has top precedence');
@@ -141,7 +141,7 @@ function inp(now, over) {
 // the escape test for the resume-after-cooldown bug (isHalted was hardcoded false in the composition root).
 (function durableHalt() {
   let s = ns.recordBeat(ns.fresh(T0), T0);            // a beat just fired (leash 1/3 spent, cooldown hot)
-  s = ns.engageHalt(s, T0 + 60000);                   // Commander hits E-STOP a minute later
+  s = ns.engageHalt(s, T0 + 60000);                   // Master hits E-STOP a minute later
   A.ok(ns.isHalted(s), 'engageHalt stamps the flag');
   A.eq(s.beatsUsedToday, 1, 'engageHalt preserves the leash accounting');
   // the OLD failure mode: 45 min later the cooldown clears — without the durable flag this decision fired.

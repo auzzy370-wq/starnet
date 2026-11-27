@@ -1,12 +1,12 @@
 /* sidecar/turn-attachment.js — ONE DURABLE ROW PER ATTACHMENT, AND NONE OF THE FILE'S TEXT (attachment-rows-and-taint, S3).
 
-   THE PROBLEM. The directive row of a turn is the Commander's voice. It used to hold the turn's EXPANDED text instead: the
+   THE PROBLEM. The directive row of a turn is the Master's voice. It used to hold the turn's EXPANDED text instead: the
    typed words and the file's bytes in one string (index.js wrote latestUserText of the expanded messages). A third party's
-   document was then stored as the Commander's own words: the earlier-conversation note quoted it "verbatim, still holds",
-   recall returned it as a Commander message, and the stamp it carried re-tainted every later run that replayed the row.
+   document was then stored as the Master's own words: the earlier-conversation note quoted it "verbatim, still holds",
+   recall returned it as a Master message, and the stamp it carried re-tainted every later run that replayed the row.
 
    THE SHAPE NOW. The directive row holds the words (the typed text, else the label of what was attached, which is the files'
-   NAMES and carries the attachment stamp: it is not the Commander's words) and keeps the attachment REFERENCES it always kept,
+   NAMES and carries the attachment stamp: it is not the Master's words) and keeps the attachment REFERENCES it always kept,
    for the thumbnails and for the server's own re-expansion. Every name this module writes or shows goes through the one rule
    (attachment-name.js). The attachment itself is recorded beside it, one row per file, written by this module right after the
    directive:
@@ -151,7 +151,7 @@ function write(store, ctx) {
 
 /* THE LABEL OF A TURN SENT WITH NO WORDS. A turn that carries files and not a word is stored as '[file: name]' / '[image: name]' per
    file, joined ', ' (at most LABEL_MAX): the one string TurnDirective.capture gives such a turn as its wording, built from the names
-   (a third party's text) through the one rule. It is not the Commander's words, and a reader that shows the files (noteOf) must not
+   (a third party's text) through the one rule. It is not the Master's words, and a reader that shows the files (noteOf) must not
    show them a second time as if they had been said: wordsOf below knows the label by building it again from the row's own references. */
 const LABEL_MAX = 600;
 const labelWith = (refs, nameOf) => (Array.isArray(refs) ? refs : []).filter(a => a && typeof a === 'object')
@@ -160,7 +160,7 @@ const labelOf = refs => labelWith(refs, clean);
 // the label as builds before the one rule wrote it, the names raw: a row stored by one of them may still hold it as its words
 const rawLabelOf = refs => labelWith(refs, name => String(name || 'file'));
 
-/* THE READERS. A row that kept its attachment references stands for words plus files. wordsOf is the Commander's words of a
+/* THE READERS. A row that kept its attachment references stands for words plus files. wordsOf is the Master's words of a
    user row: the typed words of a row whose content holds something else (the 11-02 shape stored the file's text in the content
    and the words in `typed`), else the content; NONE for a row whose words are only the label of its files (a turn sent with no
    words has none to give). noteOf is one '[attached: name]' per reference of a user row, the form every reader shows a file in;

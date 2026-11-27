@@ -193,7 +193,7 @@ const LINK_BYTES = '{"url":"https://credits.example","accountId":"acct-7","linke
   const r = boot(t.ws, { candidateRoots: [legacy] });
   A.eq(r.code, 'FRESH_REQUEST_GENERATION_CHANGED', 'a station founded after the request refuses it');
 
-  // what a request survives: bookkeeping the old sidecar wrote on its way down is not a state the Commander chose past
+  // what a request survives: bookkeeping the old sidecar wrote on its way down is not a state the Master chose past
   const q = sandbox();
   plant(q.ws, ['agent.roster.json', 'ledger.jsonl']);
   bootRecord(q.ws);
@@ -272,7 +272,7 @@ for (const [what, bytes] of [['torn', '{"schema":"vultron.station","vers'], ['a 
     const profile = path.join(box.ws, '.browser-profile'), chrome = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
     const s = { profile, swept: [], ended: [], moves: 0, table: [
       { pid: 4100, ppid: 4000, cmd: chrome + ' --type=utility --utility-sub-type=network.mojom.NetworkService "--user-data-dir=' + profile + '"' },
-      // the Commander's own Chrome, and a look-alike profile beside the station's
+      // the Master's own Chrome, and a look-alike profile beside the station's
       { pid: 4200, ppid: 9, cmd: chrome + ' "--user-data-dir=' + path.join(box.root, 'Chrome', 'User Data') + '"' },
       { pid: 4300, ppid: 9, cmd: chrome + ' "--user-data-dir=' + profile + '-old"' }] };
     // Windows' rule at the fs edge: while a process runs on the profile, the generation's move aside is refused

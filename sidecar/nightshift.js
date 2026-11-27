@@ -3,8 +3,8 @@
    THE PROBLEM THIS CLOSES: the whole idle-autonomy loop used to live in the frontend webview
    (autopilotstore.js: a setInterval spending ONE beat per idle episode via an `armed` flag re-armed only on
    pointerdown/keydown, leash budget in localStorage). It died silently on sleep / tab-throttle / restart — so
-   the Commander could leave the dial at max overnight and get ONE autonomous act, then hours of silence. This
-   engine moves the SCHEDULING DECISION server-side: a restart-safe ticker that, while the Commander is away,
+   the Master could leave the dial at max overnight and get ONE autonomous act, then hours of silence. This
+   engine moves the SCHEDULING DECISION server-side: a restart-safe ticker that, while the Master is away,
    attempts one autonomous beat every ~45 min, leash-capped (leash now ENFORCED server-side), day-rolling, and
    E-STOP-aware. The ACT pipeline itself is still the pure autopilot.js reason-only flow — this file owns only
    the ENGINE decision: should a beat fire on THIS tick, or not, and if not, which gate is binding.
@@ -23,7 +23,7 @@
 
    THE GATES (each individually binding; decide() names WHICH one blocks a beat, for truthful telemetry):
      · posture     — initiative must be ≥ 'leash' (the dial permits acting unattended). Below that → binding:'posture'.
-     · away        — the Commander must be away (now - lastUserActivityAt ≥ awayThresholdMs). Present → binding:'present'.
+     · away        — the Master must be away (now - lastUserActivityAt ≥ awayThresholdMs). Present → binding:'present'.
      · leash       — beatsUsedToday < leashPerDay (server-enforced, persisted, day-rolled). Spent → binding:'leash'.
      · cooldown    — now - lastBeatAt ≥ beatIntervalMs (steady cadence, not a burst). Too soon → binding:'cooldown'.
      · halt        — the E-STOP must not be engaged. Halted → binding:'halt'.
@@ -38,11 +38,11 @@
   'use strict';
 
   const STATE_VERSION = 2;   // v2 (2026-10-05): `day` is the LOCAL calendar day (v1 = UTC bucket)
-  const DEFAULT_AWAY_MS = 30 * 60 * 1000;    // "the Commander stepped out" = no user-surface activity for 30 min
+  const DEFAULT_AWAY_MS = 30 * 60 * 1000;    // "the Master stepped out" = no user-surface activity for 30 min
   const DEFAULT_BEAT_MS = 45 * 60 * 1000;    // steady cadence: at most one autonomous beat every ~45 min
   const DAY_MS = 86400000;
 
-  // the LOCAL calendar day (the leash resets at the Commander's midnight, not UTC's). Deterministic: the offset is
+  // the LOCAL calendar day (the leash resets at the Master's midnight, not UTC's). Deterministic: the offset is
   // injected into localday.js by the host; `tz` optionally pins one for a single call (tests).
   const dayOf = (t, tz) => LocalDay.dayOf(t, tz);
 
@@ -86,7 +86,7 @@
     return Math.max(0, cap - (s.beatsUsedToday || 0));
   }
 
-  // is the Commander away? (now - lastUserActivityAt ≥ the away span). An unknown/never-stamped lastActivity (0
+  // is the Master away? (now - lastUserActivityAt ≥ the away span). An unknown/never-stamped lastActivity (0
   // or non-finite) reads as AWAY only if the app has been up at least awayThresholdMs — but the driver passes a
   // real lastUserActivityAt seeded at boot, so a fresh boot is treated as PRESENT until the threshold elapses.
   // Kept as a pure predicate here; the driver owns the boot seed.
@@ -99,7 +99,7 @@
   /* decide — THE per-tick decision. Pure: a deterministic function of (state, the live inputs, the knobs). Returns
        { fire:boolean, binding:string|null, beatsLeft, away, nextEligibleAt }
      binding names the FIRST gate that blocks a beat (posture → present → halt → leash → cooldown), or null when a
-     beat fires. Order is chosen for legibility: the most "the Commander decided this" reasons first (dial, presence,
+     beat fires. Order is chosen for legibility: the most "the Master decided this" reasons first (dial, presence,
      E-STOP), then the earned/rate limits (leash, cooldown). nextEligibleAt is the wall-clock the cooldown next
      clears (lastBeatAt + beatIntervalMs), so the status route can show "next beat eligible at …" honestly.
        inp: {
@@ -123,7 +123,7 @@
 
     const base = { fire: false, beatsLeft: left, away: away, nextEligibleAt: nextEligibleAt };
     if (!inp.actsUnattended) return Object.assign(base, { binding: 'posture' });   // dial hasn't reached 'leash'
-    if (!away) return Object.assign(base, { binding: 'present' });                 // the Commander is here
+    if (!away) return Object.assign(base, { binding: 'present' });                 // the Master is here
     if (inp.halted) return Object.assign(base, { binding: 'halt' });               // E-STOP engaged
     if (left <= 0) return Object.assign(base, { binding: 'leash' });               // today's leash is spent
     if (!cooldownClear) return Object.assign(base, { binding: 'cooldown' });       // too soon since the last beat
@@ -141,7 +141,7 @@
   // ---- NS E-STOP durable halt. engageHalt stamps the halt instant on the state; clearHalt lifts it. Both are
   // PURE (now injected), preserve the leash counters, and round-trip through toEnvelope — so an E-STOP SURVIVES a
   // restart (a reboot must never silently re-enable overnight spend). isHalted(state) is the gate predicate the
-  // driver injects; decide() then returns binding:'halt' every tick until the Commander re-writes the dial.
+  // driver injects; decide() then returns binding:'halt' every tick until the Master re-writes the dial.
   function engageHalt(state, now) { const s = normalize(state, now); s.haltedAt = Number.isFinite(now) ? Math.floor(now) : (s.haltedAt || 0); return s; }
   function clearHalt(state, now) { const s = normalize(state, now); s.haltedAt = 0; return s; }
   function isHalted(state) { const s = normalize(state, 0); return (s.haltedAt || 0) > 0; }

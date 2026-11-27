@@ -435,7 +435,7 @@ const WorldModel = (() => {
   const matOfRoom = rm => (rm && FLOOR_MATERIALS[rm.floorMat]) ? rm.floorMat
     : ((rm && ROOM_KINDS[rm.kind] && ROOM_KINDS[rm.kind].mat) || 'plate');
   // walls: material defaults to plating; hue defaults to FOLLOWING THE FLOOR, so every room's
-  // walls harmonize with its deck without the Commander having to pick twice.
+  // walls harmonize with its deck without the Master having to pick twice.
   /* THE AUTHORITY on a room's default wall material (stationbake's `wallMatOf` fallback is only for
      geometry arriving without one). 2026-07-25: moved off `plating` onto `bulkhead` — every room
      carries wallMat null, so this reaches stations already built, deliberately, for the same reason
@@ -547,9 +547,9 @@ const WorldModel = (() => {
   };
   /* THE SHELF (expanded 2026-08-29). Array order IS shelf order: the simplest working line first,
      then one line per MACHINE the floor owns — FILTER, SPLITTER, LOOP gate, JOINER, MERGER — so a
-     Commander meets a mechanic by stamping a line that already uses it correctly instead of wiring
+     Master meets a mechanic by stamping a line that already uses it correctly instead of wiring
      one from parts. Every entry is held to the same contract by test/blueprints.test.js: stamped
-     and crewed it compiles with ZERO errors, so no shelf line can introduce a warn the Commander
+     and crewed it compiles with ZERO errors, so no shelf line can introduce a warn the Master
      did not cause. Keep footprints tight — a blueprint is only useful if it FITS on a real deck. */
   const BLUEPRINTS = [
     { id: 'front_desk', grp: 'chain', label: 'FRONT DESK', w: 12, h: 2,
@@ -1075,7 +1075,7 @@ const WorldModel = (() => {
       if (linkCache.sig === sig && linkCache.links === doc.links) return doc.links;
       let links = null;
       if (Array.isArray(doc.links) && typeof P.reconcileLinks === 'function') {
-        // PHASE B: the floor's links are what the Commander built — keep every one the floor still stands behind, drop
+        // PHASE B: the floor's links are what the Master built — keep every one the floor still stands behind, drop
         // what an edit broke (its belt stays, loose), and link each loose run that joins two machines
         try { links = P.reconcileLinks({ props, belts, links: doc.links }).links; } catch (e) { links = doc.links; }
       } else try {
@@ -1575,7 +1575,7 @@ const WorldModel = (() => {
     }
 
     /* lay a whole deck — hue AND material — in ONE undo slot. This is what the REFIT SURFACE tool
-       commits on a room click, so "undo" reverses the deck the Commander saw laid, not half of it.
+       commits on a room click, so "undo" reverses the deck the Master saw laid, not half of it.
        Either field may be omitted to leave that axis alone. */
     function setDeck(id, opts) {
       const rm = doc.rooms[id];
@@ -2492,7 +2492,7 @@ const WorldModel = (() => {
     /* NO BELT OUT OF AN OUTBOX OR INTO AN INBOX (2026-10-09 P0) — LINES HAND WORK ON BY SEND TO (2026-10-10). Dispatch never
        routes THROUGH an OUTBOX (a line's finished work lands there) and an INBOX is where a line STARTS, so a belt out of an
        OUTBOX or into an INBOX carries no job. Live, one was accepted with "CONNECTED · N belts laid themselves" and fused two
-       lines into one jumbled line (one lineId, one budget), and a user lost three days to it. Every way the Commander lays a
+       lines into one jumbled line (one lineId, one budget), and a user lost three days to it. Every way the Master lays a
        belt — the BELT tool's two clicks, the lane it previews, a hand-drawn run — still refuses both: no chime, nothing laid.
        The words now say the one way two lines DO chain: the OUTBOX dropped on the next line's INBOX is a SEND TO (below) — a
        pointer on the OUTBOX, never a belt, so the two lines keep their own identities and budgets. */
@@ -2617,7 +2617,7 @@ const WorldModel = (() => {
 
     /* ---------- SEND TO (2026-10-10) — one line hands its finished work on to another ----------
        The OUTBOX carries `sendTo` = the target INBOX's prop id. A prop id, never a lineId: the line's saved identity
-       names accounting ownership, while this pointer names the precise door the Commander chose. Never a belt or a link: the
+       names accounting ownership, while this pointer names the precise door the Master chose. Never a belt or a link: the
        compiler joins whatever belts connect into ONE line (Pipeline.lineComponents), and two lines fused into one is the
        10-09 P0. The compiler turns the pointers into plan.sendTo (outside plan.hash), and the sidecar's handoff runner starts
        the target line's own job — its own crew, its own budget — when this line's job reaches the OUTBOX clean.
@@ -3103,7 +3103,7 @@ const WorldModel = (() => {
       const dirty = [];
       for (let i = 0; i < path.length; i++) { doc.belts[beltKey(path[i].x, path[i].y)] = dirs[i]; dirty.push({ x1: path[i].x, y1: path[i].y, x2: path[i].x, y2: path[i].y }); }
       /* a LOOP gate's DONE lane: connecting the gate to an OUTBOX names that lane `done` (unless the
-         Commander already chose one). The compiler otherwise defaults to the first exit in E,S,W,N order,
+         Master already chose one). The compiler otherwise defaults to the first exit in E,S,W,N order,
          which on a floor whose back lane happens to sit east would send every spent crate BACK round. */
       if (A.t === 'loop' && B.t === 'outbox' && !A.done && exitTile && !keep) {
         A.done = dirTo({ x: A.x, y: A.y }, exitTile);
@@ -3226,7 +3226,7 @@ const WorldModel = (() => {
         .map(p => ({ propId: p.id, t: p.t, agentId: p.agentId || null, label: p.label || null }));
     }
     // the lane a click A -> B would lay, without laying it — { ok, path:[{x,y,d}] } or { ok:false, msg } (REFIT draws it
-    // under the cursor mid-connect, so the Commander sees where the belt will run before the click)
+    // under the cursor mid-connect, so the Master sees where the belt will run before the click)
     function previewBelt(fromId, toId, o) {
       const A = doc.props.find(p => p.id === fromId), B = doc.props.find(p => p.id === toId);
       if (!A || !B || A.id === B.id || !CONNECTABLE[A.t] || !CONNECTABLE[B.t]) return { ok: false, msg: 'pick two different machines' };
@@ -3915,11 +3915,11 @@ const WorldModel = (() => {
        burn an undo slot per prop and leave half-lines on a mid-stamp failure). Editing a working
        thing teaches; assembling from parts gatekeeps — so bays stamp UNBOUND (the existing amber
        "NO AGENT — CLICK" nag is the built-in next step) and the FILTER stamps pre-configured
-       (routes + def) so a fresh stamp never introduces a warn the Commander didn't cause.
+       (routes + def) so a fresh stamp never introduces a warn the Master didn't cause.
        Placement is all-or-nothing and requires CLEAR DECK for every tile: each machine passes the
        same checkProp a hand placement runs, each belt tile passes beltPlaceable, and nothing may
        stamp over an existing belt (overwriting a laid lane, or burying one under a dock, would
-       corrupt a line the Commander already built — BELT_BURIED must never be stampable). */
+       corrupt a line the Master already built — BELT_BURIED must never be stampable). */
     function blueprintById(id) { for (const b of BLUEPRINTS) if (b.id === id) return b; return null; }
     function checkBlueprint(bp, tx, ty) {
       if (!bp) return fail('NOT_FOUND', 'no such blueprint');
@@ -4884,7 +4884,7 @@ const WorldModel = (() => {
           // per-instance, NOT deduped: each BOUND connector portal grants its OWN server's tools. The sidecar
           // reads { objectType, connectorId } (router.stationFor passes the object through; resolveTools yields
           // no static grant — the MCP tools are projected dynamically by the connector manager). An UNBOUND
-          // portal (no connectorId) grants nothing until the Commander binds it.
+          // portal (no connectorId) grants nothing until the Master binds it.
           if (p.connectorId) out.push({ objectType: 'connector', connectorId: p.connectorId });
           continue;
         }
@@ -4927,7 +4927,7 @@ const WorldModel = (() => {
     // seat-approachable spot when there is one, else the first merely-valid spot, else null. Rows are walked
     // from y1+1 — the hero's own desk row — so a bank of seeded crew desks lines up WITH the starter desk
     // instead of tucking under the north wall face the tall-walls bake raises along y1. y1 stays as a last
-    // resort (it is legal deck the Commander can build on) rather than being ruled out.
+    // resort (it is legal deck the Master can build on) rather than being ruled out.
     function deskSpotIn(r) {
       let any = null;
       const rows = [];
@@ -4947,11 +4947,11 @@ const WorldModel = (() => {
       const own = doc.props.find(p => SEAT_WORKSTATIONS[p.t] && p.agentId === aid);
       if (own) return { ok: true, existing: true, id: own.id, agentId: aid, x: own.x, y: own.y, roomId: roomAt(own.x, own.y) };
       // ADOPT BEFORE BUILDING. An UNBOUND workstation is dead furniture — no agent may walk to an unassigned
-      // capability prop (world.js mayTouchProp), so it grants nobody a seat. Two ways one appears: the Commander
+      // capability prop (world.js mayTouchProp), so it grants nobody a seat. Two ways one appears: the Master
       // built a desk and never bound it, and deleteAgent unbinds (never demolishes) the props of a removed
       // specialist. Without this, a summon → delete → summon cycle silently litters the spawn room with
       // abandoned desks and eventually pushes the seeder into other rooms. Deliberately SPAWN-ROOM ONLY: a
-      // free desk the Commander built in some far lab is theirs to assign, and adopting it would land a
+      // free desk the Master built in some far lab is theirs to assign, and adopting it would land a
       // newly-summoned specialist (and its whole zone/leash) somewhere they never asked for.
       const adopt = doc.props.find(p => SEAT_WORKSTATIONS[p.t] && !p.agentId && roomAt(p.x, p.y) === doc.meta.spawnRoomId);
       if (adopt) {
@@ -5170,7 +5170,7 @@ const WorldModel = (() => {
       room.hullStyle = 'bone';
       doc.props = [
         // The five essentials are real floor grants. Keep the desk unassigned so
-        // ensureWorkstation adopts it for the new Commander on the normal boot path.
+        // ensureWorkstation adopts it for the new Master on the normal boot path.
         // User-approved placement from the live station, 2026-09-15.
         // Preserve this composition and the original 18 x 11 room footprint.
         { id: 'p' + doc._nid++, t: 'desk', x: 8, y: 1, w: 2, h: 1, block: true },

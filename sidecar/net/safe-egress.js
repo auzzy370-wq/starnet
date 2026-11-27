@@ -4,7 +4,7 @@
    owned browser (navigate, the login window, desktop) and its loopback proxy, connector OAuth (probe, metadata, client
    registration, code exchange, refresh) and the Skill Exchange / Skill Market / community-map downloads. Each consumer
    names its row in POLICIES and calls this module; none keeps a range table or a connect-time lookup of its own.
-   (Destinations the Commander configured himself, such as a provider base URL or a LAN Ollama, are not guarded here:
+   (Destinations the Master configured himself, such as a provider base URL or a LAN Ollama, are not guarded here:
    some are local on purpose.)
 
    WHY ONE MODULE (safe-egress lane, 2026-11-03). Five files each held their own private-range table and three
@@ -271,7 +271,7 @@ const POLICIES = deepFreeze({
   // browser.navigate, the login window, desktop, the owned browser's proxy (tools/builtin/browser.js)
   browser: { name: 'browser', checks: CHECKS.slice(), protocols: ['http:', 'https:'], https: false, noCredentials: false,
     hostAuthored: true, verb: 'navigate to',
-    fileHint: 'To check a file you saved, fs_read it; the Commander opens it from its deliverable card.',
+    fileHint: 'To check a file you saved, fs_read it; the Master opens it from its deliverable card.',
     summary: 'private address refused', dnsPrefix: 'refusing to navigate: ', httpsMessage: null, credentialsMessage: null,
     voice: 'browser' },
   // every connector-OAuth leg (mcp/oauth-fetch.js; its URLs come from an untrusted MCP server)

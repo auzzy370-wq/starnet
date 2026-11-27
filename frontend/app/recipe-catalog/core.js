@@ -20,9 +20,9 @@
      4. LANDS SOMEWHERE — a file, a scheduled routine, a drafted message on a real channel, or a ranked
                          decision. Never "here is some text" in the transcript.
      5. EARNS ITS TAP  — the directive encodes METHOD and JUDGMENT (steps, quality criteria, output shape,
-                         the failure mode to avoid) the Commander would never bother typing.
+                         the failure mode to avoid) the Master would never bother typing.
      6. NON-OBVIOUS **or** UNIVERSAL — ⛔ THE CONTENT TEST, and the reason this catalog exists at all. A
-                         recipe ships only if it is EITHER something the Commander would never have thought
+                         recipe ships only if it is EITHER something the Master would never have thought
                          to ask an agent for and immediately wants once they see it ("scan my sent messages
                          for promises I made and never closed"), OR something of real value to essentially
                          every Vultron user ("tell me what changed in the terms of the services I pay for").
@@ -34,7 +34,7 @@
    running small operations — but reach for the use case that generalizes, not the one narrowed to one job.
 
    The scout's auto-mint directive (sidecar/scout.js buildRecipeDirective) enforces the same bar, so
-   personalized recipes the station drafts for its Commander never regress below the curated catalog.
+   personalized recipes the station drafts for its Master never regress below the curated catalog.
 
    Schema v2 (each record; recipes.js fills sensible defaults for anything omitted):
      id, name, emoji, tagline, blurb, accent   — identity + card language
@@ -138,7 +138,7 @@
         { key: 'tone', label: 'Tone', required: false, type: 'choice', default: 'warm and concise',
           options: ['warm and concise', 'friendly', 'formal', 'direct', 'apologetic'] }
       ],
-      // the station's edge over a chat box here is HISTORY: the thread, and how this Commander has written to
+      // the station's edge over a chat box here is HISTORY: the thread, and how this Master has written to
       // this person before. A reply drafted without either is a generic reply, which is what the chat box gives.
       task: 'Draft a reply to {message} in a {tone} tone. First get the context a cold draft cannot have: read back through the thread so the reply answers what was actually asked rather than the last line, and check your memory for how I have written to this person before — how formal, how long, whether we open with pleasantries — because a reply in the wrong register reads worse than a late one. Read what the sender actually needs, the question under the question, and answer that first. Never invent a fact or a commitment I did not give you; where the right answer depends on something only I know, leave a clearly marked gap rather than a plausible guess. Give me one clean ready-to-send draft, then a one-line note on anything in their message I might be missing, and flag it if this warrants a conversation rather than a reply. Record the register you used so the next draft matches. Do not send anything — the draft is mine to review.'
     },
@@ -154,7 +154,7 @@
         { key: 'archive', label: 'Your other writing', type: 'folder', placeholder: 'a folder of your writing, so I cut to YOUR voice', required: false, default: 'whatever of my writing you have already read' }
       ],
       // "tighten this" pasted into a chat box returns competent, ANONYMOUS prose. The station's edge is that it
-      // can read the Commander's OTHER writing first and cut toward that voice instead of a generic standard.
+      // can read the Master's OTHER writing first and cut toward that voice instead of a generic standard.
       task: 'Tighten {text} without flattening its voice. FIRST read {archive} and work out what my voice actually is — my normal sentence length and rhythm, the constructions I use deliberately, the words I favour — and state that briefly so I can judge whether you found it. That step is the whole point: an edit made to a generic standard returns competent anonymous prose, which is worse than my own rough draft. Then cut filler, hedges and throat-clearing; favour concrete verbs; keep every load-bearing idea. Leave alone anything merely unusual but working — that is voice, and editing it out is how writing becomes uniform. If a sentence must change meaning to get shorter, flag it rather than silently changing it. Return the tightened version first, then every change as before-and-after with a one-line reason, then the word count before and after. Finish with the two or three habits showing up repeatedly, since fixing a habit beats fixing thirty instances of it. Save what you learned about my voice so the next edit starts from there.'
     },
     {

@@ -4,7 +4,7 @@
    projection a PAST. It folds successive projections into a small durable record:
      • firstSeenAt / completedAt per quest id — when a quest entered the log and when it REALLY finished
        (the future TROPHY CASE reads completedAt, so it is recorded from day one).
-     • dismissal — the Commander waved a quest off. Dismissed = STOP FOREVER (the anti-nag law, same as
+     • dismissal — the Master waved a quest off. Dismissed = STOP FOREVER (the anti-nag law, same as
        curiosity questions): it never re-renders and never re-fires, even if the underlying thing later
        completes. Only suggestion-class quests are dismissible (dossier "get to know you" asks); milestones
        are achievements — an achievement can't nag, so it can't be dismissed.
@@ -14,7 +14,7 @@
        turns on ONE discriminator — was the whole state fresh (seen empty) before this fold?
          · FRESH state (first ever sync): backfill SILENTLY. Resuming a save / a first boot must not fire a
            celebration storm for old history (and a brand-new quest kind that ships already-earned lands here).
-         · EXISTING state: a quest that appears already-done is a completion the Commander earned WHILE AWAY
+         · EXISTING state: a quest that appears already-done is a completion the Master earned WHILE AWAY
            (an open→done edge we never got to observe live) — celebrate it exactly once. The persistent notify
            record is its receipt; an away completion must never vanish unseen.
 
@@ -98,7 +98,7 @@
       const rec = state.seen[q.id];
       if (!rec) {
         state.seen[q.id] = { firstSeenAt: now, completedAt: status === 'done' ? now : null, lastStatus: status };
-        // first-seen-already-done on an EXISTING state = a completion the Commander earned while away — the
+        // first-seen-already-done on an EXISTING state = a completion the Master earned while away — the
         // fold never saw the open→done edge, but it IS a completion (the notify record is the receipt).
         if (status === 'done' && !wasFresh) completions.push(q);
         continue;

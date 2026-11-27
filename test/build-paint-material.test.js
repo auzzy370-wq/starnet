@@ -8,7 +8,7 @@
 
    Locked here:
    1. the paint press records where it started and only becomes a stroke past CLICK_SLOP;
-   2. paintLaysDeck: a click lays the deck; a stroke lays it when it carries a material the Commander PICKED that the room
+   2. paintLaysDeck: a click lays the deck; a stroke lays it when it carries a material the Master PICKED that the room
       does not have; a stroke with no pick (the palette's PLATE default) or the room's own material paints only the colour;
    3. commitPaint and the paint ghost both read that one rule (the ghost says WHOLE ROOM when release lays the deck). */
 'use strict';

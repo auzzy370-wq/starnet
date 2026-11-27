@@ -36,7 +36,7 @@
   const TTL_MS = 10 * 60 * 1000;
   const FAIL_BACKOFF_MS = 60 * 1000;
   const LOAD_TIMEOUT_MS = 15 * 1000;   // a shared load that has not answered by then is a failure (see load)
-  const MAX_SCOPES = 64;          // list entries (keys x endpoints a Commander actually uses); the oldest go first
+  const MAX_SCOPES = 64;          // list entries (keys x endpoints a Master actually uses); the oldest go first
   const MAX_ENDPOINTS = 64;       // fact maps
   const MAX_IDS = 4096;           // models remembered per endpoint (OpenRouter publishes ~400)
   // How long a run's setup waits for a cold catalog before building its context on the 131072 assumption. Only a

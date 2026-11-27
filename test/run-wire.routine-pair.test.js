@@ -151,7 +151,7 @@ A.eq(api.routineWireRow(jobs[4]), null, 'a script-only routine shows no pair: it
   A.eq([s.wireMigration.was, s.wireMigration.now, s.wireMigration.reason], [{ provider: 'openrouter', model: 'anthropic/claude-sonnet-4.5' }, { provider: null, model: 'anthropic/claude-sonnet-4.5' }, 'un-stamped: a bare model is never stamped'],
     'the new note says what it held, what it holds now and why');
   A.eq(s.wireMigration.previous, [stampNote], '...and the stamp note rides on whole in previous');
-  A.eq([out.jobs[1], out.jobs[2]], [repinned, remodelled], 'a provider or a model set after the stamp is the Commander\'s own: left alone');
+  A.eq([out.jobs[1], out.jobs[2]], [repinned, remodelled], 'a provider or a model set after the stamp is the Master\'s own: left alone');
   const w = api.cronWireFor(s);
   A.eq([w.provider, w.model, w.providerSource], ['codex', 'anthropic/claude-sonnet-4.5', 'station'], 'the un-stamped routine runs its model on the station provider');
   const saved = roster.get('agent');

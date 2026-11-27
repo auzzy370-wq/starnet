@@ -91,7 +91,7 @@ async function waitFor(pred, label, ms) {
   A.ok(false, 'timed out waiting: ' + label);
   return false;
 }
-// word for word: what a Commander reads, each naming the key that has no endpoint and both ways out (decision 5)
+// word for word: what a Master reads, each naming the key that has no endpoint and both ways out (decision 5)
 const P3C_SENTENCE = 'CUSTOM_OPENAI_KEY is set in the environment that starts Vultron, but no CUSTOM base URL goes with it: the URL saved under SETTINGS → AI & MODELS was saved without a key, and an environment key is never sent to a URL saved in the page. Save the key next to that URL in Settings, or set CUSTOM_OPENAI_BASE_URL.';
 const STATE2_SENTENCE = 'CUSTOM_OPENAI_KEY is set in the environment that starts Vultron, but no CUSTOM base URL goes with it: set CUSTOM_OPENAI_BASE_URL, or save the key next to the URL under SETTINGS → AI & MODELS';
 

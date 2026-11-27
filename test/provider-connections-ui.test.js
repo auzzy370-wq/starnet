@@ -110,7 +110,7 @@ ok(/return !isOAuthProvider\(provider\) && provider !== 'ollama' && provider !==
 }
 ok(/body\.querySelectorAll\('\[data-act="to-prov-card"\]\[data-provider\]'\)\.forEach\(b => b\.addEventListener\('click', \(\) => \{ sfx\('click'\); focusProvider\(b\.dataset\.provider\); \}\)\);/.test(station), 'that door lands on the provider\'s card through focusProvider');
 // (org P03 wiring) a BACKGROUND repaint (a probe / status check landing) keeps the reader's place: the console rebuild made a
-// fresh .con-pane at scrollTop 0, throwing a Commander — or an error door's landed card — back to the top of AI & MODELS
+// fresh .con-pane at scrollTop 0, throwing a Master — or an error door's landed card — back to the top of AI & MODELS
 {
   const at = station.indexOf('  function scheduleSettingsRepaint() {');
   const src = station.slice(at, station.indexOf('\n  }\n', at) + 4);
@@ -132,7 +132,7 @@ ok(/body\.querySelectorAll\('\[data-act="to-prov-card"\]\[data-provider\]'\)\.fo
   ok(pane.scrollTop === 0, 'a repaint that changed the section never carries the old scroll across');
 }
 ok(/const until = Date\.now\(\) \+ 20000;/.test(station) && !/const until = Date\.now\(\) \+ 4000;/.test(station), 'the landing outlasts a first-open probe (15s credential check), not 4s');
-ok(/const TAKE_OVER = \['pointerdown', 'wheel', 'keydown'\];/.test(station) && /if \(touched\) return;/.test(station), 'the landing stops re-landing the moment the Commander takes over the window');
+ok(/const TAKE_OVER = \['pointerdown', 'wheel', 'keydown'\];/.test(station) && /if \(touched\) return;/.test(station), 'the landing stops re-landing the moment the Master takes over the window');
 // (wiring) one key box per provider card: the VULTRON credits notice sends "your own key" to the cards (add, then select),
 // never to API KEYS, which has no add box for another provider and no switch
 ok(!/switch to your own key under API KEYS above/.test(station) && (station.match(/You can always switch to your own key: add it on a provider card above, then select that card\./g) || []).length === 2, 'both credits notices point your own key at a provider card');
@@ -215,14 +215,14 @@ ok(/if \(card\.dataset\.configured === '0' && p !== activeProv\(\)\) \{[\s\S]{0,
     W.pane.scrollTop = 0; W.repaint(); W.advance(400);
     ok(W.landedOn('codex') && W.markedNow().join() === 'codex', 'a background repaint re-lands on the live (newest) landing only');
   }
-  // the Commander takes over: a wheel / click / key in Settings ends the landing, so a later repaint does not yank the pane
+  // the Master takes over: a wheel / click / key in Settings ends the landing, so a later repaint does not yank the pane
   ['wheel', 'pointerdown', 'keydown'].forEach(kind => {
     const W = mkWorld();
     W.ctx.focusProvider('anthropic');
     ok(W.landedOn('anthropic'), kind + ': the door lands on the card');
     W.fire(kind); W.pane.scrollTop = 42;
     W.repaint(); W.advance(2000);
-    ok(W.pane.scrollTop === 42, kind + ' in Settings ends the landing: a later repaint leaves the Commander\'s scroll alone (scrollTop ' + W.pane.scrollTop + ')');
+    ok(W.pane.scrollTop === 42, kind + ' in Settings ends the landing: a later repaint leaves the Master\'s scroll alone (scrollTop ' + W.pane.scrollTop + ')');
   });
   // ...even before the card has painted (a first open whose section paints a beat late)
   {

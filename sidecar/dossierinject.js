@@ -1,11 +1,11 @@
-/* sidecar/dossierinject.js — fold the station-wide Commander Dossier into a SERVER-COMPOSED autonomous
-   persona (Commander Dossier, Phase C).
+/* sidecar/dossierinject.js — fold the station-wide Master Dossier into a SERVER-COMPOSED autonomous
+   persona (Master Dossier, Phase C).
 
    Most runs already carry the dossier: the browser composes it into the system prompt (composeSystemPrompt),
    and that prompt rides verbatim into /api/run, into the pushed crew roster (so team.dispatch workers inherit
    it), and into a configured Telegram agent. The gap is the runs the SIDECAR composes its OWN persona for —
    chiefly CRON/scheduled runs (a hardcoded autonomous persona) — which otherwise never know who they work for.
-   This appends the dossier block to such a persona so an unattended run still serves the right Commander.
+   This appends the dossier block to such a persona so an unattended run still serves the right Master.
    Learned state in a persona stays out of the cached prefix: runOnce splits it off (learned-tail.js).
 
    PURE (a `withDossier` on the SK namespace in the browser UMD shape, module.exports under node) + node-testable:

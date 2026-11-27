@@ -90,7 +90,7 @@ for (const [text, why] of [
   ['Can you check example.com and fix the broken header?', '"and fix" in a question'],
   ['- review the vultron-demo.io deploy config\n- run the smoke tests', 'a bulleted run step'],
   ["Read example.com's pricing page and write a summary into notes.md", 'a summary written into a file'],
-  // F10 (review of 0.14.1): the file a summary goes into, in every form a Commander or a lead names it
+  // F10 (review of 0.14.1): the file a summary goes into, in every form a Master or a lead names it
   ['Read the API docs at docs.example.com and write a short summary into C:\\Users\\me\\proj\\notes.md', 'a Windows drive-letter path'],
   ['Read the API docs at docs.example.com and write a short summary into C:/Users/me/proj/notes.md', 'a drive-letter path with forward slashes'],
   ['Read the API docs at docs.example.com and write a short summary into C:\\Users\\me\\My Project\\notes.md', 'an unquoted path with a space'],
@@ -107,7 +107,7 @@ for (const [text, why] of [
   ['Read the API docs at docs.example.com and write a short summary into the notes folder', '"the notes folder"'],
   ['Read the docs at docs.example.com/v1/api and write a short summary', 'a URL path is not a file destination'],
   ['Read https://docs.example.com/guide/intro and write a short summary', 'an explicit URL is not a file destination'],
-  ['Read the API docs at docs.example.com and write a short summary to the Commander', 'a summary "to the Commander" is the answer'],
+  ['Read the API docs at docs.example.com and write a short summary to the Master', 'a summary "to the Master" is the answer'],
   ['Read the API docs at docs.example.com and write a short summary in plain English', 'a summary "in plain English" is the answer'],
   ["Read example.com's pricing page", 'a read'],
   ['read the pricing page on example.com', 'a read'],
@@ -306,7 +306,7 @@ const hostSrc = readSidecarSource();
 A.ok(/directDomainWithheld[\s\S]{0,220}team\\\./.test(hostSrc), 'the direct-domain predicate withholds delegation (under a lead\'s onlyHost)');
 {
   // THE SCOPE'S REFUSALS AND STOP, moved out of runOnceCore into DomainTask (domain-task-advisory): the base's summaries,
-  // now produced only under a lead's onlyHost, with texts that name that lead and the way out (never a bound or the Commander)
+  // now produced only under a lead's onlyHost, with texts that name that lead and the way out (never a bound or the Master)
   const scope = DomainTask.scopeOf('starnessos.com');
   A.eq(DomainTask.refusalOf({ name: 'team.dispatch', args: {} }, scope, ddw),
     { ok: false, isError: true, summary: 'direct-domain-local', content: 'Your lead scoped this run to the exact host starnessos.com with onlyHost. Do not delegate or run web searches/archives: read that host with web_fetch or the browser, or report what is left so your lead can re-dispatch it without onlyHost.' },

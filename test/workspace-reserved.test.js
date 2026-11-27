@@ -89,7 +89,7 @@ async function rejects(promise, msg, re) {
     A.eq((body.match(/move\(path\.join\(WORKSPACES, agentId\), agentId\)/g) || []).length, 1, 'there is exactly one workspace-dir archive move, and it is guarded');
     let msg = '';
     try { Reserved.assertWorkspaceId('Grok'); } catch (e) { msg = String(e.message); }
-    A.ok(/bad agentId/.test(msg) && /delete it and recruit it again/.test(msg) && /grok-2/.test(msg), 'the refusal tells the Commander how to recover the agent');
+    A.ok(/bad agentId/.test(msg) && /delete it and recruit it again/.test(msg) && /grok-2/.test(msg), 'the refusal tells the Master how to recover the agent');
   }
 
   fs.rmSync(ROOT, { recursive: true, force: true });

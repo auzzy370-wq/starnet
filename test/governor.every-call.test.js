@@ -13,7 +13,7 @@
        REFRESH QUESTS;
      - on the ChatGPT plan the same reached cap refuses none of them (they spend no dollars): the one-shot, REFRESH QUESTS, a run
        and its run-end passes all reach the fake. At the 24-hour background token ceiling the automatic passes stop while the
-       Commander's one-shot and REFRESH QUESTS still run;
+       Master's one-shot and REFRESH QUESTS still run;
      - every row these calls booked names its payer: metered on the key, subscription on the plan.
    A CHECK THAT THROWS (a sidecar booted with a budget whose side-effect-free check throws) refuses the one-shot with its exit
    named and stops the run-end passes, where both used to proceed; REFRESH QUESTS keeps its refusal.
@@ -98,7 +98,7 @@ function seed(workspace) {
   fs.writeFileSync(path.join(workspace, 'codex', 'tokens.json'), JSON.stringify({ access_token: jwt, refresh_token: 'fixture', token_type: 'Bearer' }));
   // quest evidence, and the dial at WAIT, so no automatic look fires on its own (a new station's PROPOSE looks at boot, before
   // the sign-in's endpoint is pushed): every refresh here is REFRESH QUESTS
-  fs.writeFileSync(path.join(workspace, '_commander.dossier.json'), JSON.stringify({ block: 'COMMANDER DOSSIER\n- Goals: plan the spring trip' }));
+  fs.writeFileSync(path.join(workspace, '_commander.dossier.json'), JSON.stringify({ block: 'MASTER DOSSIER\n- Goals: plan the spring trip' }));
   fs.writeFileSync(path.join(workspace, '_commander.autonomy.json'), JSON.stringify({ v: 1, posture: { v: 1, initiative: 'wait', reach: 'observe', leashPerDay: 3 }, beliefs: null }));
 }
 /* the boot entry: the real sidecar with every fetch to a host that is not loopback refused (nothing here may reach a real
@@ -217,13 +217,13 @@ async function capArm(fake, shim) {
     const from = t.rows().length, auxBefore = t.count('codex', 'aux');
     const at = fixture.output().length;
     const ceilingRun = await t.run('gov-cx', 'codex');
-    A.eq(ceilingRun.end.reason, 'done', 'plan, token ceiling: the Commander\'s run still runs');
+    A.eq(ceilingRun.end.reason, 'done', 'plan, token ceiling: the Master\'s run still runs');
     A.eq([t.passRows('codex', from).length, t.count('codex', 'aux') - auxBefore], [0, 0], 'plan, token ceiling: its run-end passes do not');
     A.ok(/\[aux-governor\][^\n]*token ceiling reached/.test(fixture.output().slice(at)), 'plan, token ceiling: the run-end says the ceiling stopped them');
     const ceilingDraft = await t.lineDraft();
     A.eq([ceilingDraft.status, t.count('codex', 'linedraft')], [200, 2], 'plan, token ceiling: the one-shot is a press, so the ceiling does not stop it: ' + ceilingDraft.text.slice(0, 200));
     const ceilingQuest = await t.refreshQuests();
-    A.eq([ceilingQuest && ceilingQuest.outcome, t.count('codex', 'quest')], ['none', 2], 'plan, token ceiling: REFRESH QUESTS is the Commander\'s, so it runs past it');
+    A.eq([ceilingQuest && ceilingQuest.outcome, t.count('codex', 'quest')], ['none', 2], 'plan, token ceiling: REFRESH QUESTS is the Master\'s, so it runs past it');
 
     // ===== every booked row names its payer: what its call was =====
     const rows = t.rows().filter(r => r.ts && r.runId !== 'seed');

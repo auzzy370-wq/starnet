@@ -6,7 +6,7 @@
    at _saveRevision 23. Boot resumed it from the browser copy and pushed it to "seed the server", but savestore's CAS read
    the missing station file as revision 0, so 23 !== 0 wrote a conflict snapshot and NEVER the station: every autosave was
    refused, and the banner said "Another window saved newer station changes" when no other window existed. Its "Reload
-   current station" then deleted the browser copy and dropped the Commander into first-run onboarding.
+   current station" then deleted the browser copy and dropped the Master into first-run onboarding.
 
    Drives the REAL path: frontend/app/cloudsave.js (vm) -> the REAL GET/POST /api/save handlers sliced out of
    sidecar/index.js -> the REAL savestore on a temp workspace, then the REAL save-light renderer from stationui.js:

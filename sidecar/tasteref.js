@@ -18,7 +18,7 @@
 
    Truthful telemetry: every field is read from a real record or a real file at capture time; nothing is inferred or
    invented. A run that read third-party content (taintedBy) keeps its structural facts (paths, colours, fonts, tools)
-   but never its free text (image prompts), so outside words never ride into every later prompt as the Commander's
+   but never its free text (image prompts), so outside words never ride into every later prompt as the Master's
    approved reference. Font names are charset-checked for the same reason.
 
    PURE: no I/O, no clock. index.js reads the run row, the transcript rows and the files, and hands them in. */

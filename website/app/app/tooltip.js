@@ -123,7 +123,7 @@
       card.hidden = false;
       card.classList.remove('show');
       const z = zoom();
-      /* (org pass 10-14, P28 polish) a tip on a thin part of a larger instrument — the topbar COMMANDER chip's 2px XP bar — places
+      /* (org pass 10-14, P28 polish) a tip on a thin part of a larger instrument — the topbar MASTER chip's 2px XP bar — places
          against the instrument (its [data-tip-host]), so the card never lands on that instrument's own 'Lv 1' */
       const host = el.closest ? el.closest('[data-tip-host]') : null;
       const a = (host || el).getBoundingClientRect(), t = card.getBoundingClientRect();

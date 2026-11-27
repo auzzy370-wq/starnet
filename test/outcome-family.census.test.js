@@ -573,7 +573,7 @@ const REPORTED = {
   'sidecar/tools/builtin/browser.js': [
     ["'Could not select: ' + ((r && r.reason)", NR('why a browser select failed')],
     ["'Could not inspect: ' + ((r && r.reason)", NR('why a browser inspect failed')],
-    ["host.request({ reason: a && a.reason, note: a && a.note", NR("a browser step-in's why (login / 2fa / captcha), the agent's own ask of the Commander")]
+    ["host.request({ reason: a && a.reason, note: a && a.note", NR("a browser step-in's why (login / 2fa / captcha), the agent's own ask of the Master")]
   ],
   'sidecar/tools/builtin/web.js': [["(r && r.reason === 'challenge' ?", NR("why a page fetch was held (a verification wall)")]],
   'sidecar/tools/builtin/resolve.js': [["': not probed (' + m.reason + ')", NR('why a media file was not probed')]],
@@ -2344,7 +2344,7 @@ const RAISED = { agentId: 'agent', runId: 'r-raised', reason: 'done', outcome: '
         'review r7: a build quest stalled by a stop says it was stopped, never "the run errored out" (got ' + JSON.stringify(card) + ')');
     }
 
-    // 12. A STOPPED RECOMMENDATION (frontend/app/suggeststore.js onRunEnd, sliced): the Commander accepted an idea and stopped its run to change
+    // 12. A STOPPED RECOMMENDATION (frontend/app/suggeststore.js onRunEnd, sliced): the Master accepted an idea and stopped its run to change
     //     the brief; the ledger recorded the idea declined for bad quality (quality -1), which down-ranked that kind of idea
     {
       const src = functionSourceIn(read('frontend/app/suggeststore.js'), 'onRunEnd');
@@ -2990,7 +2990,7 @@ const RAISED = { agentId: 'agent', runId: 'r-raised', reason: 'done', outcome: '
     }
 
     // r8.10 COMMS' PRESENCE CARD and STOP TOAST (frontend/app/chat.js resolvePresence's label, sliced): every end but 'done' read "■ RUN STOPPED" — a
-    //       refusal, a limit, an end-only failure and a question; the stop toast warned for the Commander's own stop
+    //       refusal, a limit, an end-only failure and a question; the stop toast warned for the Master's own stop
     {
       const chat = read8('frontend/app/chat.js');
       // (review 9: the card's decision is presenceLook now — presenceCard reads it, or the inline region before it)
@@ -3484,7 +3484,7 @@ const RAISED = { agentId: 'agent', runId: 'r-raised', reason: 'done', outcome: '
     }
 
     // r8.29 THE DELEGATED CARD OVER THE BOARD's WORD (frontend/app/delegated.js stateOf, the real module; review 8.2): a worker thread with no current
-    //       ledger record (a foreground worker, or the NEEDS YOU flow — the worker asked, the Commander answered in its thread, a newer run there)
+    //       ledger record (a foreground worker, or the NEEDS YOU flow — the worker asked, the Master answered in its thread, a newer run there)
     //       reads the board's lastRunReason, which keeps an OUTCOME word (chat.js files the run's outcome: 'asked', 'out_of_budget', 'step_limit',
     //       'blocked', 'refused'); stateOf read only end words, so each fell through to the red failed "ended · asked"; a thread whose last run
     //       SUCCEEDED (noteRunEnd files no word for it, so the run before it's stays) read that older word
@@ -3506,7 +3506,7 @@ const RAISED = { agentId: 'agent', runId: 'r-raised', reason: 'done', outcome: '
           const k = word === 'cancelled' ? 'stopped' : word === 'error' ? 'failed' : word;
           said[k] = { word: s.live, tone: toneOf(s) }; cls[k] = s.cls;
         }
-        // the NEEDS YOU flow: the worker's ledger record is an older run of its thread (it asked); the Commander answered there and it asked again
+        // the NEEDS YOU flow: the worker's ledger record is an older run of its thread (it asked); the Master answered there and it asked again
         const answeredWs = D.stateOf({ ws: ws({ id: 'k-thread', agentId: 'a', runIds: ['r1', 'r2'], lastRunReason: 'asked', lastRunOk: null }), worker: { id: 'w1', runId: 'r1', status: 'error', reason: 'clarifying', agentId: 'a', leadId: 'agent' } }, 'p', 'lead');
         // (review 9: a succeeded run files its own word with its true — 'succeeded' — so the run before it's no longer stays; FOLD r9.2)
         const after = st('succeeded', true), ledgerRefused = st('', null, { worker: { id: 'w2', runId: 'r', status: 'refused', reason: 'refused', agentId: 'a', leadId: 'agent' } });

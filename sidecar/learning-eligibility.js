@@ -1,7 +1,7 @@
 /* sidecar/learning-eligibility.js — ONE rule for which runs may teach the station (memory-truth-1027; rel#7, quick win 19).
 
    FIVE passes learn from a finished run: reflection, study and thread mining read a DONE run's transcript; the failure
-   review reads a FAILED run's transcript; trusted capture reads only the Commander's own directive, captured by the host
+   review reads a FAILED run's transcript; trusted capture reads only the Master's own directive, captured by the host
    before the loop ran. Each pass used to carry its own copy of the guards, and the copies drifted: a run whose approval
    was refused stopped reaching reflection (2026-10-17) but still reached study and thread mining; a line hand-off
    stopped reaching reflection, study and thread mining (2026-09-30) but still reached the failure review; tainted and
@@ -18,8 +18,8 @@
        failure review learns why it failed, as before this lane, and failreview.js refuses any lesson that routes around an
        approval (GATE_SKIP), so a refusal never becomes "skip the approval".
      · trusted-capture reads only the directive the host captured, so outside content or quoted material in the
-       transcript does not withhold it, and the Commander's explicit statement still counts when they refused an
-       approval or the run failed. A line hand-off is never the Commander speaking; a stopped run teaches nothing.
+       transcript does not withhold it, and the Master's explicit statement still counts when they refused an
+       approval or the run failed. A line hand-off is never the Master speaking; a stopped run teaches nothing.
    Every pass needs a real-work run: o.reflect, a task, not internal self-talk, not a recovery continuation.
    Pure: facts in, verdicts out — no clock, no IO. */
 'use strict';
@@ -55,7 +55,7 @@ function runOutcome(facts) {
   const reason = String(f.reason == null ? '' : f.reason);
   const outcome = outcomeOf(f, reason);
   let kind;
-  if (f.aborted || outcome === 'stopped') kind = 'cancelled';                        // the Commander stopped it
+  if (f.aborted || outcome === 'stopped') kind = 'cancelled';                        // the Master stopped it
   else if (outcome === 'succeeded' && !f.truncated && !f.clarifying) kind = 'done';
   else if (Failreview.reviewableOutcome(outcome)) kind = 'failed';                   // failed · refused · step_limit · out_of_budget
   else kind = 'unfinished';                                                          // cut short, a clarifying question, empty
@@ -74,7 +74,7 @@ function learningEligible(outcome, pass) {
   const p = PASSES[pass];
   if (!p) return { ok: false, reason: 'unknown_pass' };
   if (!o.base) return { ok: false, reason: o.why || 'not_a_learning_run' };
-  if (o.lineHop) return { ok: false, reason: 'line_hop' };   // the hand-off frame is never the Commander's words
+  if (o.lineHop) return { ok: false, reason: 'line_hop' };   // the hand-off frame is never the Master's words
   if (p.on.indexOf(o.kind) < 0) return { ok: false, reason: o.kind === 'cancelled' || o.kind === 'denied' || o.kind === 'unfinished' ? o.kind : 'not_' + p.on[0] };
   if (p.reads === 'transcript') {
     if (o.tainted) return { ok: false, reason: 'tainted' };

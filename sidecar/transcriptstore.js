@@ -308,9 +308,9 @@
     /* THE STATION'S SELF-TALK IS NOT DIALOGUE (bug 4dee26ba). A reason-only internal call with no workstream (the quiet
        title, the goal judge, pitch, autopilot, …) is filed in 'global'. Its rows are stamped dispatchState 'internal'
        (runOnce), and the readers that hand rows to a model as conversation (search, around) skip them, so recall never
-       quotes them as the Commander's words — and a deleted session's opening lines never live on there through the
+       quotes them as the Master's words — and a deleted session's opening lines never live on there through the
        title prompt. Rows a station wrote before the stamp existed are recognised by the fixed shapes of those prompts,
-       in 'global' only (the same words in a named session are the Commander's). Nothing is deleted. */
+       in 'global' only (the same words in a named session are the Master's). Nothing is deleted. */
     function legacyPrompt(r) {
       return TurnKinds.legacyPrompt(r);
     }
@@ -563,8 +563,8 @@
           entry.textLength = e.textLength; entry.textSha256 = e.textSha256;
         }
       }
-      // WHO wrote a user-role row that the Commander did not type: the agent that delegated this run (display only —
-      // the row stays a user turn for the model). Absent on every Commander turn.
+      // WHO wrote a user-role row that the Master did not type: the agent that delegated this run (display only —
+      // the row stays a user turn for the model). Absent on every Master turn.
       if (e.from != null) { const f = str(e.from).slice(0, 80); if (f) entry.from = f; }
       // UNTRUSTED-CONTENT TAINT (additive, sec-taint 09-25): the writing run's taint source at the moment this row
       // was written. A later run that REPLAYS this row replays untrusted content, so it must start tainted (taintOf).
@@ -673,7 +673,7 @@
       return m.role === 'user' && t.kind !== 'steer' ? null : t;
     }
     /* A STEER ROW HOLDS THE NOTE, NOT THE LOOP'S WRAPPER. The loop hands the model a folded note as '<steering_note>…</steering_note>'
-       (loop.js foldSteerNotes) and tags that message steer; its row is the Commander's words alone, so a replay says
+       (loop.js foldSteerNotes) and tags that message steer; its row is the Master's words alone, so a replay says
        '[steering] <words>' once and the page's echo of the note (the same words) binds to it. Any other content is kept as it is. */
     const STEER_WIRE = /^<steering_note>([\s\S]*)<\/steering_note>$/;
     function rowContent(m, sysTag) {

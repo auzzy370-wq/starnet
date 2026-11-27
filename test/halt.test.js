@@ -54,7 +54,7 @@ function fakeAc() { let aborted = false; return { abort() { aborted = true; }, g
   A.notThrows(() => killAll(new Map(), new Map([['c', null]])), 'a null hub rec is tolerated');
 }
 
-/* ---- THE STATION'S OWN FAULT is not the Commander's E-STOP (wave 2 repair, conveyor-backend-08): the process-fault containment
+/* ---- THE STATION'S OWN FAULT is not the Master's E-STOP (wave 2 repair, conveyor-backend-08): the process-fault containment
    ends the hub runs it is about to kill 'faulted', so the hub's notice and the step test name the fault. ---- */
 {
   const { markFaulted } = require('../sidecar/halt.js');

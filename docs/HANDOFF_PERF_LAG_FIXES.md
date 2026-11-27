@@ -31,7 +31,7 @@ is inside both the v0.10.10 and v0.10.11 tags, and both tags are pushed (the tra
   at most once per animation frame (`queueProse`/`flushProse`); synchronous flush at
   `closeSeg`/`error`/`cleanTaskIntent` and on hidden tabs, so nothing is ever lost or
   reordered. `LOG_DOM_CAP = 400`: `row()` prunes the oldest transcript rows past the cap,
-  only while `stick` (Commander at bottom), halting at the live `#comms-presence` card.
+  only while `stick` (Master at bottom), halting at the live `#comms-presence` card.
 - **New ratchets** (regression locks): `test/canvas-loss-recovery.test.js` forbids any
   world.js `getImageData` not on `sentinelCtx|pctx|_warpCtx`; `test/stage-context-loss.test.js`
   forbids any non-`cv` `addEventListener` inside `wireStageInput`.

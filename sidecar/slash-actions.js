@@ -96,11 +96,11 @@ function makeSlashActions(deps) {
   // healthy, and never fire. Every routine readout that could be misread as "this will run" carries this.
   function armedNote() {
     const s = scheduler();
-    if (s.halted) return " Routines are STOPPED by the Commander's E-STOP, so nothing will fire — /cron on to resume them.";
+    if (s.halted) return " Routines are STOPPED by the Master's E-STOP, so nothing will fire — /cron on to resume them.";
     if (s.degraded) return ' Scheduler storage needs recovery; no routine fire is promised until it is recovered.';
     if (typeof cron.armed !== 'function') return '';
     if (cron.armed()) return '';
-    // the Commander turned scheduling OFF (org wire AUTO-P16-1): a save keeps it off — said as their choice, never as a fault
+    // the Master turned scheduling OFF (org wire AUTO-P16-1): a save keeps it off — said as their choice, never as a fault
     if (typeof cron.offByChoice === 'function' && cron.offByChoice()) return ' Scheduling is off (you turned it off), so nothing will fire — /cron on to turn it on.';
     return ' Routines are NOT armed right now, so nothing will fire — /cron on to arm them.';
   }

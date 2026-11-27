@@ -61,11 +61,11 @@ function startMockProvider() {
         if (!parsed.tools || !parsed.tools.length) {
           // the post-run passes: failure review asks for LESSON lines, reflection for FACT/PREFERENCE lines
           if (/FAILED/.test(sys)) say('LESSON: Always confirm where the weekly report data lives before drafting the report.');
-          else if (/reflecting/.test(sys) && /REPORTFILE/.test(prompt)) say('PREFERENCE: The Commander never wants weekly reports longer than one page.');
+          else if (/reflecting/.test(sys) && /REPORTFILE/.test(prompt)) say('PREFERENCE: The Master never wants weekly reports longer than one page.');
           else say('NONE');
           res.write('data: [DONE]\n\n'); res.end(); return;
         }
-        // a slow model turn the Commander stops with ■ before it answers (the station drops this stream on the stop)
+        // a slow model turn the Master stops with ■ before it answers (the station drops this stream on the stop)
         if (/STOPME/.test(user) && used.indexOf('brief_proceed') >= 0) { setTimeout(() => { if (res.destroyed || res.writableEnded) return; say('late'); res.write('data: [DONE]\n\n'); res.end(); }, 4000); return; }
         if (toolNames.indexOf('brief_proceed') >= 0 && used.indexOf('brief_proceed') < 0) call('brief_proceed', { objective: 'Do the task', deliverable: 'the requested result' });
         else if (/^Refresh my saved widget/.test(user)) {
@@ -81,7 +81,7 @@ function startMockProvider() {
         } else if (/FAILME/.test(firstUserWords(messages))) {
           // announces forever -> the run fails (incomplete_work). Matched on the run's OPENING words: the loop's announce
           // nudge is a fenced host message that rides user-side on this chat wire (provider.js projectRoles), so after
-          // the first nudge the newest user turn is the host's, never the Commander's FAILME
+          // the first nudge the newest user turn is the host's, never the Master's FAILME
           say('Let me write the weekly report now.');
         } else say('ok');
         res.write('data: [DONE]\n\n');
@@ -178,7 +178,7 @@ async function runTo(B, H, body, onEvent) {
       const answer = decision => async (ev, runId) => {
         if (ev.name === 'permission.prompt' && ev.payload) await fetch(B + '/api/consent', { method: 'POST', headers: H, body: JSON.stringify({ runId, promptId: ev.payload.promptId, decision }) });
       };
-      // the Commander presses Deny: the agent carries on without the write and the run ends done (issue #9 reported "failed")
+      // the Master presses Deny: the agent carries on without the write and the run ends done (issue #9 reported "failed")
       const denied = await runTo(B, H, { streamId: 'ws_deny', placed: ['cabinet'], messages: [{ role: 'user', content: 'REPORTFILE: write report.md with this week\'s summary.' }] }, answer('deny'));
       const deniedWrite = denied.events.find(e => e.name === 'agent.tool_result' && e.payload && e.payload.summary === 'denied');
       A.ok(!!deniedWrite && deniedWrite.payload.isError === true, 'the Deny reaches the agent as the broker\'s "denied" result (nothing was written)');
@@ -199,7 +199,7 @@ async function runTo(B, H, body, onEvent) {
       A.ok(failedPending.length > 0 && failedPending.every(p => p.origin === 'failure-review'), 'a failed run\'s proposals are failure-review lessons, carrying the origin MEMORY marks "⚠ failed run": ' + JSON.stringify(failedPending.map(p => p.origin)));
       A.ok(/'failure-review': '⚠ failed run'/.test(require('fs').readFileSync(require('path').join(__dirname, '../frontend/app/stationui.js'), 'utf8')), 'and the Awaiting-your-decision card draws that origin as "⚠ failed run"');
 
-      // the Commander stops a run with ■ before the model answers: it proposes nothing
+      // the Master stops a run with ■ before the model answers: it proposes nothing
       const stopped = await runTo(B, H, { streamId: 'ws_stop', messages: [{ role: 'user', content: 'STOPME: write the weekly report.' }] }, async (ev, runId) => {
         // ■ while the model is still thinking (its turn takes 4 s; brief_proceed is hidden, so no tool result marks the moment)
         if (ev.name === 'agent.run.start' && runId) setTimeout(() => { fetch(B + '/api/cancel', { method: 'POST', headers: H, body: JSON.stringify({ runId }) }).catch(() => {}); }, 1500);

@@ -1,6 +1,6 @@
 /* Typed task postconditions.
  *
- * A model saying "done" is not completion evidence. This module evaluates only Commander/host supplied,
+ * A model saying "done" is not completion evidence. This module evaluates only Master/host supplied,
  * bounded predicates against facts the host can mechanically observe. It deliberately supports a small set:
  * workspace artifacts and an exact verification command. Browser and connector semantics remain judgment calls
  * until a future typed adapter can prove their domain-specific predicates.

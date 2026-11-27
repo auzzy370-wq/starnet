@@ -82,7 +82,7 @@ const StationCommands = (() => {
     try { if (App.refreshRail) App.refreshRail(); } catch (_) {}
   }
 
-  /* STATION CONTROL helpers (station.control). A crew member by id or by the name the Commander says; a session (chat,
+  /* STATION CONTROL helpers (station.control). A crew member by id or by the name the Master says; a session (chat,
      never a task card: task.manage owns those) by id or name, archived ones included so they can be restored. */
   function resolveCrew(ref) {
     if (typeof App === 'undefined' || !App.agents) throw new Error('the crew roster is not ready yet');
@@ -94,7 +94,7 @@ const StationCommands = (() => {
   }
   /* THE NAME A RESULT GIVES A SESSION = the name the rail shows it by (Workstreams.titleOf): only the General home is
      "General"; an untitled other session is a "New session". A result that said `session: 'General'` for a run filed in a
-     fresh untitled session had the lead tell the Commander the work landed in General while the rail read "New session".
+     fresh untitled session had the lead tell the Master the work landed in General while the rail read "New session".
      Lookup is unchanged — an untitled session is still addressed by its id — and the session LISTS keep `title: null` for
      untitled, so the model can tell an unnamed session from one literally called "New session". */
   function sessionName(w) {
@@ -323,7 +323,7 @@ const StationCommands = (() => {
     const prompt = String((a && a.prompt) || '').trim();
     const ts = Number(a && a.ts) > 0 ? Number(a.ts) : Date.now();
     if (!Array.isArray(ws.history)) ws.history = [];
-    /* The instruction goes in as a sys marker, not a user turn: the Commander did not type it here, and
+    /* The instruction goes in as a sys marker, not a user turn: the Master did not type it here, and
        chat.js excludes sys lines from historyWindow() so it is never replayed to the model as if they had. */
     // a worker's OWN thread (filed under its parent) already holds the brief as its first durable turn, named for the
     // agent that wrote it — the marker would say the same thing twice
@@ -476,7 +476,7 @@ const StationCommands = (() => {
     // SEND TO (2026-10-10): a line names another by its INBOX's label; the hand-offs are the COMPILED plan's (plan.sendTo)
     /* the floor's own name for a line (worldmodel.lineName: its first named INBOX, else LINE <its first INBOX's letter> — what the
        plates and the SEND TO chips say), with its lineId when unnamed so station.layout line= can still take it (final floor lane
-       M25 / R62: 'an unnamed line' named no line the Commander could see) */
+       M25 / R62: 'an unnamed line' named no line the Master could see) */
     const floorWord = id => (typeof st.lineName === 'function' ? st.lineName(id) : null);
     const lineName = id => { const cc = comps.find(x => x.key === id), l = cc ? (cc.intakes.map(i => propOf(i)).find(p => p && p.label) || {}).label : null; if (l) return P.lineWord ? P.lineWord(l) : 'LINE ' + String(l).replace(/^line\b[\s:·-]*/i, '').toUpperCase(); const w = floorWord(id); return (w || 'an unnamed line') + ' (lineId ' + id + ')'; };
     // the SEND TOs a step's own lane can ship into (a line with two OUTBOXes hands on only from the one that sends — 10-11 repair)
@@ -607,7 +607,7 @@ const StationCommands = (() => {
   const builtRead = st => { try { const v = JSON.parse(localStorage.getItem(builtKey(st)) || '[]'); return Array.isArray(v) ? v.slice(-10) : []; } catch (_) { return []; } };
   const builtWrite = (st, list) => { try { localStorage.setItem(builtKey(st), JSON.stringify(list.slice(-10))); } catch (_) {} };
   let planSeq = 0;
-  const NEXT_STEP = 'Tell the Commander the summary in plain words, then call station.build with this planId. Nothing has been built yet.';
+  const NEXT_STEP = 'Tell the Master the summary in plain words, then call station.build with this planId. Nothing has been built yet.';
   // a LINE plan with nobody on a step says how to staff it in the same plan (StationBuilder.planNext: its top-level steps), else the
   // usual word; a room or build plan staffs a line inside its zones and lines (staff), so its receipt names the staff form instead
   const planNextOf = pl => (StationBuilder.planNext && StationBuilder.planNext(pl, (App.agents ? App.agents() : []).map(x => x && x.name).filter(Boolean))) || NEXT_STEP;
@@ -676,7 +676,7 @@ const StationCommands = (() => {
     if (!st || !st.serialize || !st.transact || !st.roomSpots) throw new Error('the station is not ready yet');
     if (typeof StationBuilder === 'undefined' || typeof WorldModel === 'undefined' || typeof Pipeline === 'undefined' || typeof WorkflowLine === 'undefined')
       throw new Error('the station builder is not loaded on this page');
-    if (typeof Build !== 'undefined' && Build.isOpen && Build.isOpen()) throw new Error('Build mode is open, so the Commander is editing the floor. Ask them to close Build mode, then plan again.');
+    if (typeof Build !== 'undefined' && Build.isOpen && Build.isOpen()) throw new Error('Build mode is open, so the Master is editing the floor. Ask them to close Build mode, then plan again.');
     const crew = (App.agents ? App.agents() : []).map(x => ({ id: x.id, name: x.name }));
     return { st, env: { WorldModel, Pipeline, WorkflowLine, crew, heroId: App.heroId ? App.heroId() : null,
       StationTemplates: typeof StationTemplates !== 'undefined' ? StationTemplates : null, PropSprites: typeof PropSprites !== 'undefined' ? PropSprites : null,
@@ -730,7 +730,7 @@ const StationCommands = (() => {
      builderPublication); any doubt answers durable:false, and the build itself is never undone. */
   const DURABLE_WAIT_MS = 3000;
   async function builderDurability(st) {
-    const unproven = { durable: false, durability: 'The floor is built on screen, but the station file has not confirmed it yet, so it could revert after a restart. Do not tell the Commander it is saved.' };
+    const unproven = { durable: false, durability: 'The floor is built on screen, but the station file has not confirmed it yet, so it could revert after a restart. Do not tell the Master it is saved.' };
     if (typeof App === 'undefined' || !App.persist || typeof CloudSave === 'undefined' || !CloudSave.flush || !CloudSave.pull || typeof StationBuilder === 'undefined' || !StationBuilder.sigOf) return unproven;
     let timer = null;
     try {
@@ -782,7 +782,7 @@ const StationCommands = (() => {
     /* THE STATION BUILDER (2026-09-29, the Agent Station Builder plan): the lead ADDS a ready-made line and never places
        anything itself. plan_line builds the request on a copy (StationBuilder.plan — every check runs there) and parks the
        plan here for ten minutes; station.build applies exactly that plan in one undo step (StationBuilder.apply). They
-       refuse while Build mode is open: the Commander's own edits own the floor then. */
+       refuse while Build mode is open: the Master's own edits own the floor then. */
     'station.plan_line': (a) => {
       const { st, env } = builderReady(a);
       const p = park(StationBuilder.plan(st.serialize(), (a && a.request) || {}, env));
@@ -890,7 +890,7 @@ const StationCommands = (() => {
       // the camera shows what was built: the one room, or the whole station when a preset added several
       const ids = r.roomIds || [];
       setTimeout(() => { try { if (typeof World !== 'undefined' && World.frameReviewRoom) World.frameReviewRoom(ids.length === 1 ? ids[0] : ''); } catch (_) {} }, 700);
-      const undo = 'The Commander can take all of it back with one UNDO in Build mode'
+      const undo = 'The Master can take all of it back with one UNDO in Build mode'
         + (r.kind === 'swap' ? ', or bring the old station back with RESTORE PREVIOUS in Build → Presets' : '')
         + ((r.recruited || []).length ? '; the recruited agents stay on the crew (DELETE AGENT in a Dossier removes one)' : '') + '.';
       // the receipt's body is the builder's own (StationBuilder.receipt): every line it laid or touched, with the floor's readiness
@@ -1040,7 +1040,7 @@ const StationCommands = (() => {
        name would make every later name-addressed action (dispatch's `session`, switch below) AMBIGUOUS and
        therefore refused — a create that quietly poisons the namespace is worse than telling the agent to
        reuse what exists. `focus` is honored only when explicitly asked, so an agent opening sessions in the
-       background can never steal what the Commander is looking at. */
+       background can never steal what the Master is looking at. */
     'station.new_session': async (a) => {
       if (typeof Workstreams === 'undefined' || !Workstreams.create) throw new Error('sessions are not ready yet');
       const title = String((a && a.title) || '').trim().slice(0, 80);
@@ -1060,8 +1060,8 @@ const StationCommands = (() => {
       return { id: ws.id, title: ws.title, agentId: ws.agentId || 'agent', focused: !!(a && a.focus), durable: true };
     },
 
-    /* Focus an existing session by the name the Commander says (or exact id) — resolveSession's shared law,
-       because a switch that lands on a plausible-but-wrong session moves the Commander's eyes somewhere
+    /* Focus an existing session by the name the Master says (or exact id) — resolveSession's shared law,
+       because a switch that lands on a plausible-but-wrong session moves the Master's eyes somewhere
        they did not ask to be. */
     'station.switch_session': async (a) => {
       const hit = resolveSession(a && a.session);
@@ -1095,7 +1095,7 @@ const StationCommands = (() => {
           && (m.role === 'user' || m.role === 'assistant' || m.sys))
         .slice(-limit)
         .map(m => {
-          // a goal-loop step is the STATION's prompt, never the Commander's words (org P29-sys wiring): a lead reading it must
+          // a goal-loop step is the STATION's prompt, never the Master's words (org P29-sys wiring): a lead reading it must
           // not tell the user "you asked me to continue…"
           const step = (typeof GoalLoop !== 'undefined' && GoalLoop.stepOfTurn) ? GoalLoop.stepOfTurn(m) : null;
           if (step != null) return { speaker: 'station', sys: true, text: ('Goal step: ' + step).slice(0, 600) };
@@ -1117,12 +1117,12 @@ const StationCommands = (() => {
     },
 
     /* Fold a finished delegated run's answer into the session it was filed under. APPENDS — a session usually
-       already holds the Commander's own conversation, and replacing that history (the way the cron auto-session
+       already holds the Master's own conversation, and replacing that history (the way the cron auto-session
        path can, because it OWNS its stream) would delete their thread. Idempotent by runId so a retry, a
        duplicated command, or a re-delivered background worker can never double-post. */
     'station.deliver': (a) => foldDelivery(a),
 
-    /* A delegated worker runs in the target session while the Commander is free to remain in General. The
+    /* A delegated worker runs in the target session while the Master is free to remain in General. The
        bridge supplies the real runId, so this is proven activity rather than a hopeful local spinner. */
     'station.dispatch_start': (a) => {
       const hit = resolveDelivery(a);
@@ -1147,7 +1147,7 @@ const StationCommands = (() => {
       return { settled, session: sessionName(hit.w), resolvedBy: hit.resolvedBy };
     },
 
-    /* STATION CONTROL (2026-10-02, "the agent can do anything the Commander asks"): what the Dossier CONFIG card, the
+    /* STATION CONTROL (2026-10-02, "the agent can do anything the Master asks"): what the Dossier CONFIG card, the
        session rail's ⋯ menu and Settings › LOOK & SOUND show and change, for station.settings / station.control. Every
        change runs the button's own setter and is proven by reading the save back (the roster/save) or localStorage
        (the look), so a change that did not stick is a refusal, never a "done". */
@@ -1220,9 +1220,9 @@ const StationCommands = (() => {
       throw new Error('this page has no station control "' + act + '"; reload it');
     },
 
-    /* SHOW THE COMMANDER A PLACE (station.show, 2026-10-04): open one of the PLACES (app/places.js) through the same door
+    /* SHOW THE MASTER A PLACE (station.show, 2026-10-04): open one of the PLACES (app/places.js) through the same door
        its dock button / tab / menu entry uses, raise it to the front, and answer with what is really on screen. Only the
-       run the Commander is watching may move their eyes (requireWatching). */
+       run the Master is watching may move their eyes (requireWatching). */
     'station.show': async (a) => {
       await requireWatching(a && a.origin);
       const place = typeof Places !== 'undefined' && Places.get ? Places.get(a && a.place) : null;
@@ -1234,7 +1234,7 @@ const StationCommands = (() => {
       const out = await Places.open(place, { ui: StationUI, agentId: ag && ag.id,
         build: typeof Build !== 'undefined' ? Build : null, app: typeof App !== 'undefined' ? App : null, market: typeof Marketplace !== 'undefined' ? Marketplace : null });
       if (ag && out) out.agentName = ag.name || ag.id;
-      if (!out || !out.open) throw new Error(place.words + ' did not open on the Commander\'s screen' + (o.term === 'apps' ? ' (no app exists yet)' : '') + '; tell them where it is instead');
+      if (!out || !out.open) throw new Error(place.words + ' did not open on the Master\'s screen' + (o.term === 'apps' ? ' (no app exists yet)' : '') + '; tell them where it is instead');
       return Object.assign({ place: place.id, words: place.words }, out);
     },
 
@@ -1342,7 +1342,7 @@ const StationCommands = (() => {
   /* A RUN'S FIRST CALL CAN OVERTAKE ITS OWN START (2026-10-22). A station command reaches this page on the event stream;
      the run's agent.run.start reaches it on that run's own /api/run stream — two connections, no order between them. A
      watched run whose FIRST tool call was station.show landed here a few ms before the page learned its runId, so the
-     Commander's own run was refused as "not looking at this conversation" and the window never rose (station-show.e2e,
+     Master's own run was refused as "not looking at this conversation" and the window never rose (station-show.e2e,
      1 run in 10). The same race refused a first-call session switch. So when the origin names the focused session and
      that session has a send in flight the sidecar has not confirmed to this page yet, wait for the confirmation (its
      agent.run.start, bounded) before a guard reads it. The guards themselves are unchanged: a different run, an ended
@@ -1370,11 +1370,11 @@ const StationCommands = (() => {
   async function requireCurrentFocus(origin) {
     await runConfirmed(origin);
     if (typeof Chat === 'undefined' || !Chat.canFocusSession || !Chat.canFocusSession(origin)) {
-      throw new Error('session focus was left unchanged: the originating run is no longer current or the Commander has a draft; do not retry the switch automatically');
+      throw new Error('session focus was left unchanged: the originating run is no longer current or the Master has a draft; do not retry the switch automatically');
     }
   }
 
-  /* station.show moves the Commander's EYES, so only the run they are watching may call it: its session is the focused
+  /* station.show moves the Master's EYES, so only the run they are watching may call it: its session is the focused
      one and it is that session's live run. A background worker, a routine, a phone/Telegram turn, or a run that ended is
      refused. Unlike a session switch, a typed draft is no reason to refuse — opening a window leaves the composer alone. */
   async function requireWatching(origin) {
@@ -1383,7 +1383,7 @@ const StationCommands = (() => {
     const live = !!(origin && origin.streamId && origin.runId && active === origin.streamId
       && typeof Channels !== 'undefined' && Channels.isBusy && Channels.isBusy(origin.streamId)
       && Channels.runIdOf && Channels.runIdOf(origin.streamId) === origin.runId);
-    if (!live) throw new Error('the Commander is not looking at this conversation right now, so their screen was left alone — tell them where it is instead');
+    if (!live) throw new Error('the Master is not looking at this conversation right now, so their screen was left alone — tell them where it is instead');
   }
   // an agent by exact id or name (case-insensitive) — never a guess: unknown or ambiguous refuses with the real roster
   /* group.add (station-control.js): bring crew into a chat through the SAME path the chat's + Add agents key takes

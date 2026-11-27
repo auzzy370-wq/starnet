@@ -2,7 +2,7 @@
    Locks the product promises: cold start returns an EMPTY list (bay falls back honestly); a dish-heavy signal
    surfaces the research family with a why NAMING the dish (truthful telemetry — the reason is a real counter); a
    class already on the roster is NEVER recommended; ordering is deterministic; confidence tracks evidence volume;
-   and a class the Commander's work never touches (zero kit-affinity) never surfaces even on a dossier keyword hit. */
+   and a class the Master's work never touches (zero kit-affinity) never surfaces even on a dossier keyword hit. */
 'use strict';
 const A = require('./_assert.js');
 const R = require('../frontend/app/recruiter.js');
@@ -44,7 +44,7 @@ A.ok(top.confidence > 0 && top.confidence <= 1, 'confidence is an honest 0..1');
 
 /* every recommended class carries a why derivable from a counter (no empty/fabricated reasons) */
 A.ok(res.items.every(x => typeof x.why === 'string' && x.why.length > 0), 'every pick has a non-empty honest why');
-A.ok(res.items.every(x => x.evidence && x.evidence.kitAffinity > 0), 'every pick has real kit-affinity evidence (touches the Commander’s work)');
+A.ok(res.items.every(x => x.evidence && x.evidence.kitAffinity > 0), 'every pick has real kit-affinity evidence (touches the Master’s work)');
 
 /* ---------- a class already on the roster is NEVER recommended ---------- */
 const res2 = R.recommend({ worksignal: dishSig, roster: ['researcher', 'scout'], catalog: CATALOG, now: 0 });
@@ -83,6 +83,6 @@ A.ok(/terminal|files/.test(codeRes.items[0].why), 'the code pick’s why names t
 // appear just because the dossier text keyword-matches its blurb.
 const onlyDish = sigOf('dish', 'general', 10);
 const kwRes = R.recommend({ worksignal: onlyDish, roster: ['chief'], catalog: CATALOG, dossier: { goals: ['I need visuals and design assets and layout'], pain: [], ambition: [] }, now: 0 });
-A.ok(!kwRes.items.some(x => x.classId === 'designer'), 'a class whose kit the Commander never used is not curated on a dossier keyword hit alone');
+A.ok(!kwRes.items.some(x => x.classId === 'designer'), 'a class whose kit the Master never used is not curated on a dossier keyword hit alone');
 
 A.report('recruiter');

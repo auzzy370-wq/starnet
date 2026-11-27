@@ -2,7 +2,7 @@
    The window/lifetime logic lives in the pure seedreuse.js (tested separately); this verifies the wiring:
    recordAnnotatedRows tallies ONLY digest rows carrying a proven `.seed` (provenance-only); the fire-once
    window crest routes a GENTLE Chat.nudge callout (never an XP mint, never a separate panel); livingTools
-   exposes the shelf; and it persists to its own key + reset re-arms a fresh Commander. */
+   exposes the shelf; and it persists to its own key + reset re-arms a fresh Master. */
 'use strict';
 const A = require('./_assert.js');
 global.SeedReuse = require('../frontend/app/seedreuse.js');
@@ -47,9 +47,9 @@ A.eq(tools[0].runs, 6, 'lifetime run count is the honest total');
 /* ---------- persistence to its own key ---------- */
 A.ok(Object.prototype.hasOwnProperty.call(mem, 'vultron.seedreuse.v1'), 'it self-persists to its OWN key (no save.js change)');
 
-/* ---------- reset: a fresh Commander inherits no tally ---------- */
+/* ---------- reset: a fresh Master inherits no tally ---------- */
 SeedReuseStore.reset();
-A.eq(SeedReuseStore.livingTools().length, 0, 'reset wipes the shelf — a new Commander starts with no tool-usage history');
+A.eq(SeedReuseStore.livingTools().length, 0, 'reset wipes the shelf — a new Master starts with no tool-usage history');
 A.eq(mem['vultron.seedreuse.v1'], undefined, '…and clears its persisted key');
 
 A.report('seedreusestore.test');

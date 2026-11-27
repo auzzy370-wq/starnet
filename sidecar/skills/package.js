@@ -302,7 +302,7 @@ const { note: failNote } = require('../failopen.js');
       /* AN UNTOUCHED INSTALL IS ITS RECORD. writePackage wrote packageFiles' exact bytes, and the record's body and files
          were decoded from those same bytes at install, so the view is the record itself and digests to its stamp. It used
          to re-parse SKILL.md out of the manifest: a body the store held differently (the log redactor ran over it at
-         install) digested to something no approval of what the Commander read could match. */
+         install) digested to something no approval of what the Master read could match. */
       if (sealed(skill)) return Object.assign({}, skill, { packagePath: dir });
       let parsed = null;
       try { parsed = parseFrontmatter(fs.readFileSync(md, 'utf8')); } catch (e) { failNote('skills.package.hydrate', e); }

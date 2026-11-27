@@ -1,4 +1,4 @@
-/* node test/run-title-directive.e2e.test.js — a run is titled by what the Commander asked, never by a screen-capture label
+/* node test/run-title-directive.e2e.test.js — a run is titled by what the Master asked, never by a screen-capture label
    (bug e7dcb889 family, quick win 17).
 
    When a tool returns pixels (fs.read of a PNG, a browser screenshot), the loop appends them to the run's messages as a
@@ -92,7 +92,7 @@ function startMock() {
       if (!row) await new Promise(res => setTimeout(res, 100));
     }
     A.ok(row, 'the run has its history row');
-    A.eq(row && row.title, DIRECTIVE, 'the history row is titled by the Commander\'s directive');
+    A.eq(row && row.title, DIRECTIVE, 'the history row is titled by the Master\'s directive');
     A.ok(row && !/SCREEN CAPTURE/.test(row.title || ''), 'never by the screen-capture label: ' + JSON.stringify(row && row.title));
   } finally {
     await fixture.dispose();

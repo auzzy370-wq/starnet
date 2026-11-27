@@ -2,7 +2,7 @@
 /* node test/forget.dossier.http.test.js - THE DOSSIER BLOCK AND THE POSTURE BELIEFS FORGET A DELETED SESSION (turn identity commit 14,
    qa/bugs/3e926b6a), through a REAL hermetic sidecar (SidecarFixture) and the page's own routes.
 
-   The Commander dossier block and the beliefs snapshot are composed by the PAGE and pushed here for the unattended runs (cron, night shift,
+   The Master dossier block and the beliefs snapshot are composed by the PAGE and pushed here for the unattended runs (cron, night shift,
    scout, quest refresh). Some beliefs were learned from runs, so each push names the runs it was learned from (sourceRunIds) and whether it names
    them all (complete). The sidecar keeps that with the block, clears the block when a delete reaches one of its runs (or when it cannot say what
    it was learned from), and admits a push only by the same rule on every caller:
@@ -77,19 +77,19 @@ const until = async (fn, label, ms = 15000) => { const end = Date.now() + ms; fo
     A.eq(p0.status === 200 && p0.body.beliefsAdmitted, true, '(f) setup: a complete snapshot is admitted: ' + JSON.stringify(p0.body).slice(0, 200));
     A.eq((await posture()).beliefs.known.slice().sort(), ['goals', 'style'], '(f) setup: the server holds both dimensions');
 
-    // the adopted stamp (seeded above): nothing is purged for it, and it is not a delete the Commander made
+    // the adopted stamp (seeded above): nothing is purged for it, and it is not a delete the Master made
     A.eq((await push('WHAT YOU KNOW: ships the old tracker', { sourceRunIds: [RUN_OLD], complete: true })).admitted, true, '(d) a run of an ADOPTED stamp is not forgotten (I7 limit d): its push is admitted');
-    A.eq((await push('WHAT YOU KNOW: legacy block with no provenance')).admitted, true, '(c) an adopted stamp is not a delete the Commander made: a push with no provenance is still admitted');
+    A.eq((await push('WHAT YOU KNOW: legacy block with no provenance')).admitted, true, '(c) an adopted stamp is not a delete the Master made: a push with no provenance is still admitted');
     await push('WHAT YOU KNOW: ships the quokka tracker; ships the kept tracker', { sourceRunIds: [RUN_GONE, RUN_KEPT], complete: true });
 
-    // ---- the Commander deletes the quokka session (the save the page sends) ----
+    // ---- the Master deletes the quokka session (the save the page sends) ----
     await save({ deletedIds: [ADOPTED, DELETED], forgetIds: [ADOPTED, DELETED] });
     await until(() => file() && file().block === '', '(d) the delete clears the block sourced from the deleted session\'s run');
     A.eq(file().block, '', '(d) the block learned from the deleted session\'s run is gone');
     await until(async () => { const b = (await posture()).beliefs; return !b || !(b.known || []).includes('goals'); }, '(f) the sourced belief leaves the snapshot');
     const after = (await posture()).beliefs;
-    A.ok(after && after.known.includes('style') && !after.known.includes('goals'), '(f) the delete drops the belief learned from the deleted run and keeps the Commander\'s own: ' + JSON.stringify(after));
-    A.eq((await posture()).summary.initiative, 'propose', '(f) the dial is the Commander\'s setting: a delete never touches it');
+    A.ok(after && after.known.includes('style') && !after.known.includes('goals'), '(f) the delete drops the belief learned from the deleted run and keeps the Master\'s own: ' + JSON.stringify(after));
+    A.eq((await posture()).summary.initiative, 'propose', '(f) the dial is the Master\'s setting: a delete never touches it');
 
     // ---- (a) a late push naming the forgotten run ----
     const late = await push('WHAT YOU KNOW: ships the quokka tracker', { sourceRunIds: [RUN_GONE], complete: true });
@@ -134,7 +134,7 @@ const until = async (fn, label, ms = 15000) => { const end = Date.now() + ms; fo
     const p1 = await json('POST', '/api/autonomy/posture', { posture: { initiative: 'leash', reach: 'sandbox', leashPerDay: 4 }, beliefs: beliefs({ complete: true }, [RUN_GONE]) });
     A.eq(p1.status, 200, '(f) the posture route answers');
     A.eq([p1.body.ok, p1.body.beliefsAdmitted], [true, false], '(f) a snapshot naming a forgotten run is refused and answered (beliefsAdmitted:false): ' + JSON.stringify(p1.body).slice(0, 200));
-    A.eq((await posture()).summary.initiative, 'leash', '(f) ...while the dial the Commander set is written');
+    A.eq((await posture()).summary.initiative, 'leash', '(f) ...while the dial the Master set is written');
     A.ok(!((await posture()).beliefs || { known: [] }).known.includes('goals'), '(f) ...and the refused belief is not held');
     const p2 = await json('POST', '/api/autonomy/posture', { beliefs: beliefs({}, [RUN_KEPT]) });
     A.eq(p2.body.beliefsAdmitted, false, '(f) a snapshot that does not say it is complete is refused after a delete');

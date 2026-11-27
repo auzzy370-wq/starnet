@@ -217,7 +217,7 @@ const usage = (i, o, cached) => ({ type: 'usage', usage: { prompt_tokens: i, com
     }
     // a new kind cannot go uncapped by accident: every kind booked in the sidecar is capped work or a named exclusion
     const { CEILING_KINDS } = require('../sidecar/auxgovernor.js');
-    const NOT_CEILING_WORK = { embed: 'embeddings are not model turns on a sign-in', 'oneshot-': 'a station one-shot is a press by the Commander' };
+    const NOT_CEILING_WORK = { embed: 'embeddings are not model turns on a sign-in', 'oneshot-': 'a station one-shot is a press by the Master' };
     const spendCalls = [...src.matchAll(/\bauxSpend\(([^)]*)\)/g)].map(m => m[1]);
     A.ok(spendCalls.length >= 7, 'fixture: the auxSpend calls were found');
     A.ok(spendCalls.every(args => /^'[^']+'/.test(args)), 'every auxSpend names its kind as a literal, so this scan can read it: ' + spendCalls.join(' | '));

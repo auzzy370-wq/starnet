@@ -209,7 +209,7 @@ async function run() {
     A.ok(/▸ production/.test(edits[0].t), 'the edit stamps the chosen option');
     A.eq(edits[0].m, 'msg7', 'it edits the message the keyboard was actually attached to');
     A.eq(runs[1].messages[runs[1].messages.length - 1], { role: 'user', content: 'production' },
-      'the tap re-enters the run as the option\'s OWN text — identical to the Commander typing it');
+      'the tap re-enters the run as the option\'s OWN text — identical to the Master typing it');
     A.ok(store.hist.get('tg_555').some(m => m.role === 'user' && m.content === 'production'),
       'and it is persisted to the transcript like any other user turn');
 
@@ -438,7 +438,7 @@ async function run() {
   // The PERMANENT RECORD matters as much as the follow-up: the ack toast and the message stamp both assert the
   // decision took effect, and both used to be written BEFORE resolveConsent was asked. A late tap therefore
   // rewrote the permission message to end "▸ ✅ Allow once" on a request the harness had DENIED — the thing a
-  // Commander scrolls back to said the opposite of what happened. So this case records the edits and the acks;
+  // Master scrolls back to said the opposite of what happened. So this case records the edits and the acks;
   // stubbing editMessage without a recorder (and asserting only the follow-up) is what let it hide.
   {
     const sends = [], acks = [], edits = []; const store = fakeStore({ 555: { agentId: 'tg_555', approvals: true } });
@@ -589,7 +589,7 @@ async function run() {
   }
   {
     // (b2) the SAME expiry with the waiter built the way production builds it (timeoutDecision 'timeout' + onTimeout): the
-    // stamp names the timeout — never a bare "DENIED" a Commander would read as somebody saying no — strips the buttons, and
+    // stamp names the timeout — never a bare "DENIED" a Master would read as somebody saying no — strips the buttons, and
     // the chat is also told once (notifyConsentTimeout). Without the settle stamp the keyboard stayed live-looking here.
     const sends = [], edits = []; const store = fakeStore({ 555: { agentId: 'tg_555', approvals: true } });
     const host = makeHostConsent(20, true);
@@ -639,7 +639,7 @@ async function run() {
 
   // ---- 5G. an UNDELIVERABLE keyboard denies AT ONCE instead of stalling out the consent timeout ----
   // Asserted on TIMING, not on the decision: a regression here still ends in 'deny' (the fail-closed timer gets
-  // there eventually), so only the wait distinguishes correct from broken. The Commander was never asked, so
+  // there eventually), so only the wait distinguishes correct from broken. The Master was never asked, so
   // making them sit through CONSENT_TIMEOUT_MS for a foregone answer would be worse than the autonomous floor.
   {
     const store = fakeStore({ 555: { agentId: 'tg_555', approvals: true } });

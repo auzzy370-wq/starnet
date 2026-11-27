@@ -576,7 +576,7 @@ function canAgentUse(org:AgentOrg, agentId:AgentId, need:Capability):
 // task     {id, agentId, kind, title, status}        // a real run started
 // deliverable {id, agentId, room, kind, title, flavor} // real artifact produced -> triggers carry
 // intel    {agentId, dest}                            // A briefs B (existing planBriefing hook)
-// flagged  {agentId}                                  // real run needs Commander review
+// flagged  {agentId}                                  // real run needs Master review
 // parcel   {room}                                     // carry visual tick (existing)
 // chat     {from, txt}                                // real agent message
 // NEW (additive, frontend-optional): 

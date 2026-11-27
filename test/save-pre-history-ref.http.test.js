@@ -6,7 +6,7 @@
    (agent.save.pre-history-ref.json) as the way back after a downgrade. That copy holds every conversation, so it must not outlive a
    delete, and it must not outlive its purpose. Over POST /api/save on a hermetic sidecar (temp workspace, real index.js wiring):
      · v6 saves keep nothing; the first v7 save keeps the v6 file, stamped, and the sidecar log names it;
-     · the Commander deletes a conversation (the save's forgetIds): the sidecar's deleted-session pass cuts it, its ~restored copy
+     · the Master deletes a conversation (the save's forgetIds): the sidecar's deleted-session pass cuts it, its ~restored copy
        and its undo rows out of the kept file, and the conversations that were not deleted stay;
      · the copy goes 30 days after it was kept, once the v7 main has read back: a sidecar that boots with a copy older than that
        removes it, one with a younger copy leaves it. */
@@ -68,7 +68,7 @@ const envelope = (version, revision, workstreams, extra) => Object.assign({ sche
     assert.equal(after.body.ok, true);
     assert.equal(readKept().doc.workstreams.length, 4, 'a later v7 save leaves it alone');
 
-    // the Commander deletes a conversation: it is cut out of the kept copy, behind the reply
+    // the Master deletes a conversation: it is cut out of the kept copy, behind the reply
     const del = await fixture.json('POST', '/api/save', envelope(7, after.body.revision, all.slice(0, 2), { deletedIds: ['gone'], forgetIds: ['gone'] }));
     assert.equal(del.body.ok, true, 'the delete lands');
     await until(() => fs.existsSync(kept()) && !fs.readFileSync(kept(), 'utf8').includes(SECRET), 'the deleted conversation to leave the kept copy');

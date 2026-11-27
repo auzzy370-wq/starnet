@@ -630,7 +630,7 @@ function legacyMerge(local, turns) {
 
   /* A STEERED REPLY, SPLIT AT ITS NOTES (turn identity, commit 10; A2-REB-1). The trunk save shape of a reply a note steered is ONE
      assistant row whose text holds the run's '\n[steering] <note>\n' echoes between its paragraphs (the token stream carried them).
-     Replayed as it is, the model would read the Commander's words as its own: so in a window each such row becomes, in place, its
+     Replayed as it is, the model would read the Master's words as its own: so in a window each such row becomes, in place, its
      non-blank prose parts as assistant messages with every note a user '[steering] <note>' message between them, exactly as the
      station's own replay shapes a steer row. The split (chat.js renderHistory's regex) is the only thing done to the text: no part is
      trimmed or reworded. A derived message is not a durable row, so it carries no rowId and no idFrom; the note rows are kind

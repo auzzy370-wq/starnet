@@ -15,7 +15,7 @@ function clean(v, n) { return String(v == null ? '' : v).replace(/\s+/g, ' ').tr
 // option list constantly — a trailing period, a leading article, a smart quote, an "A." enumerator. Requiring
 // byte-equality made every one of those a HARD REJECT, and because brief_ask is a hidden tool the failure was
 // invisible in both the transcript and the logs; the retry advice then steers the model to the plain marker
-// path, which stores NO recommendation at all. So a formatting slip silently cost the Commander the ★ chip and
+// path, which stores NO recommendation at all. So a formatting slip silently cost the Master the ★ chip and
 // looked identical to "the agent had no opinion".
 // Matching is EQUALITY-ONLY, on the normalized form. It always returns the CANONICAL option text.
 //
@@ -86,7 +86,7 @@ function askCallsOf(brief) {
   return brief && Array.isArray(brief.questions) ? brief.questions.length : 0;
 }
 // The budget is now counted in ASK CALLS (interruptions), not questions: one call may bundle up to
-// three questions on distinct dimensions, so related unknowns cost the Commander ONE moment, not three.
+// three questions on distinct dimensions, so related unknowns cost the Master ONE moment, not three.
 function validateQuestions(candidate, brief) {
   const c = candidate && typeof candidate === 'object' ? candidate : {};
   const extra = Array.isArray(c.also) ? c.also : [];
@@ -98,7 +98,7 @@ function validateQuestions(candidate, brief) {
     if(raw.length !== 1) return {ok:false,error:'Ask one conversational question, then listen before choosing the next.'};
     if(prior.some(q=>!q.answer)) return {ok:false,error:'Wait for the pending answer before asking again.'};
     if(Context.delegate(brief && brief.originalDirective) || prior.some(q=>Context.delegate(q.answer)))
-      return {ok:false,error:'The Commander delegated the remaining choices. Update your understanding and proceed with reversible assumptions.'};
+      return {ok:false,error:'The Master delegated the remaining choices. Update your understanding and proceed with reversible assumptions.'};
     if(calls >= 6) return {ok:false,error:'Stop discovery now. Produce a useful draft or proceed with stated assumptions; do not keep interviewing.'};
     if(calls && !Context.current(brief)) return {ok:false,error:'Call brief.update to incorporate the entire latest answer before choosing a follow-up.'};
     if(prior.some(q=>clean(q.text,240).toLowerCase()===clean(c.question,240).toLowerCase()))
@@ -129,7 +129,7 @@ function validateQuestion(candidate, brief) {
    serial numbers) at the bottom. The directive now makes taste CONDITIONAL, but a prompt is a hope; this is
    the boundary. Two conservative rules, both fail-open — an assumption is never destroyed on a guess:
      1. a labelled taste line whose every word is generic filler is a restatement of our own defaults, not
-        a decision the Commander can overturn — drop it;
+        a decision the Master can overturn — drop it;
      2. taste is at most ONE line of a read, never its body — keep the first, drop the rest.
    An unlabelled assumption, or one carrying task-specific words, is left completely alone. */
 const TASTE_LABEL = /^(?:style|tone|aesthetic|voice|register|presentation|formatting)\s*[:—-]\s*(.+)$/i;
@@ -180,7 +180,7 @@ function canMutate(brief, tool, call) {
   // until the brief was settled (live walkthrough 2026-10-13). A tool opts in with briefExempt:true, or (args) => exempt.
   // …and seating crew in this chat (station.control group.add) is the same kind of setup: "bring two crew in to help me
   // write a launch post" picked group.add and was refused until a brief interview finished (rc walk 10-14, Haiku 4.5) —
-  // the Commander answered questions before the crew they asked for could join. An action-aware tool exempts by its args (exemptFor).
+  // the Master answered questions before the crew they asked for could join. An action-aware tool exempts by its args (exemptFor).
   if (exemptFor(tool, call)) return { ok: true };
   // Built-in reads are non-consequential, but MCP tools are deliberately `external-unknown` even when an
   // untrusted server advertises readOnlyHint. That annotation may shape grants; it cannot bypass the brief gate.

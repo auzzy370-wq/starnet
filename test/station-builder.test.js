@@ -162,7 +162,7 @@ for (const bp of M.BLUEPRINTS) {
   const st = fresh(), before = snap(st);
   const cases = [
     [{ line: 'teleporter' }, /There is no line called "teleporter"\. The lines are: front_desk \(One agent\)/],
-    [{}, /Choose a line, or give its purpose in the Commander's words\. The lines are:/],
+    [{}, /Choose a line, or give its purpose in the Master's words\. The lines are:/],
     [{ line: 'build_test', x: 3, y: 4, rotate: 90 }, /Vultron chooses every position, belt and piece of furniture itself, so these fields are not accepted: x, y, rotate/],
     [{ line: 'build_test', where: 'Mars' }, /There is no room called "Mars"\. Use "new room", or one of: HOME/],
     [{ line: 'build_test', steps: [{ step: 9 }] }, /This line has steps 1 to 2: 1 Engineer, 2 Tester/],
@@ -190,7 +190,7 @@ for (const bp of M.BLUEPRINTS) {
 /* ---- 7. apply: exactly the plan, or nothing ---- */
 {
   const st = fresh(), r = SB.plan(st.serialize(), { line: 'build_test' }, env);
-  A.ok(st.setBelt(4, 9, 'E').ok, 'fixture: the Commander edits the floor after the plan');
+  A.ok(st.setBelt(4, 9, 'E').ok, 'fixture: the Master edits the floor after the plan');
   const edited = snap(st);
   const a = SB.apply(st, r.plan, env);
   A.ok(!a.ok && /Your station changed since this plan was made, so nothing was built\. Plan it again/.test(a.error), 'a changed floor refuses the stale plan');
@@ -229,7 +229,7 @@ for (const bp of M.BLUEPRINTS) {
     if (rnd() < 0.3) req.dailyCap = pick([null, 0, 5, '$5', 'none', -3, 'lots', 20000, pick(junkText)]);
     if (rnd() < 0.3) req.tries = pick([1, 3, 5, 0, 6, 2.5, '3', pick(junkText)]);
     if (rnd() < 0.15) req[pick(['x', 'y', 'coords', 'belts', 'props', 'remove', 'move'])] = pick(junkText);
-    // phase 3: the Commander's words instead of (or beside) a line, and "new" recruits on half the pages
+    // phase 3: the Master's words instead of (or beside) a line, and "new" recruits on half the pages
     if (rnd() < 0.3) { req.purpose = pick(['write a newsletter and have it reviewed', 'fix bugs and test them', 'research the news and write it up', 'get a second opinion', 'help me', pick(junkText)]); if (rnd() < 0.5) delete req.line; }
     if (rnd() < 0.25 && Array.isArray(req.steps) && req.steps[0] && typeof req.steps[0] === 'object') req.steps[0].agent = pick(['new', 'recruit', 'someone new']);
     let n = 0;
@@ -413,7 +413,7 @@ for (const c of T.catalog) {
   A.ok(off.ok && off.plan.spec.kind === 'rooms', 'replace: false adds the rooms, as without it');
   A.eq(snap(st), before, 'no swap refusal changed anything');
   const r = SB.planRoom(st.serialize(), { preset: 'research', replace: true }, renv);
-  A.ok(st.renameRoom(st.rooms()[0].id, 'BASE').ok, 'fixture: the Commander renames a room after the plan');
+  A.ok(st.renameRoom(st.rooms()[0].id, 'BASE').ok, 'fixture: the Master renames a room after the plan');
   const late = SB.apply(st, r.plan, renv);
   A.ok(!late.ok && /changed since this plan/.test(late.error), 'a swap planned on an older floor is refused');
 }
@@ -445,7 +445,7 @@ for (const c of T.catalog) {
   A.ok(built > 15, 'the rooms gauntlet built some (' + built + ')');
 }
 
-/* ---- 11. UNDERSTANDING THE ASK (phase 3): the Commander's words pick the line; "new" recruits, one undo ---- */
+/* ---- 11. UNDERSTANDING THE ASK (phase 3): the Master's words pick the line; "new" recruits, one undo ---- */
 {
   const st = fresh(), before = snap(st);
   for (const [purpose, id] of [
@@ -459,7 +459,7 @@ for (const c of T.catalog) {
     A.ok(r.ok && r.plan.line.id === id, '"' + purpose + '" picks ' + id + ' (' + (r.error || (r.plan && r.plan.line.id)) + ')');
     if (!r.ok) continue;
     A.ok(r.plan.summary.indexOf('Picked for "' + purpose.slice(0, 80) + '": ' + W.suggestLineFor(purpose).why + '.') > 0, id + ': the card says why it was picked, in FOR YOUR GOAL\'s words');
-    A.ok(r.plan.steps.every(s => s.instructions.endsWith(' This line is for: "' + purpose + '".')), id + ': every step\'s standard instructions carry the Commander\'s words');
+    A.ok(r.plan.steps.every(s => s.instructions.endsWith(' This line is for: "' + purpose + '".')), id + ': every step\'s standard instructions carry the Master\'s words');
     A.ok(bp && r.plan.steps.length === bp.props.filter(p => p.t === 'bay').length, id + ': one step per step');
   }
   const vague = SB.plan(st.serialize(), { purpose: 'help me with stuff' }, env);
@@ -468,7 +468,7 @@ for (const c of T.catalog) {
   A.ok(both.ok && both.plan.line.id === 'research_line' && !/Picked for/.test(both.plan.summary), 'a named line wins over the purpose, and nothing claims it was picked');
   A.eq(both.plan.steps.map(s => s.instructions.endsWith('This line is for: "fix bugs and test them".')), [false, true], 'instructions the model wrote are kept exactly; standard ones carry the purpose');
   const bad = SB.plan(st.serialize(), { purpose: 42 }, env);
-  A.ok(!bad.ok && /purpose is the Commander's own words/.test(bad.error), 'a purpose that is not text is refused');
+  A.ok(!bad.ok && /purpose is the Master's own words/.test(bad.error), 'a purpose that is not text is refused');
   A.eq(snap(st), before, 'no purpose plan changed the station');
 }
 {
@@ -497,7 +497,7 @@ for (const c of T.catalog) {
   A.ok(!SB.apply(st, r.plan, gone).ok, 'a plan with recruits refuses on a page that cannot recruit');
 }
 
-/* a link-only edit is a floor change: the Commander re-linking a line after the plan makes the plan stale */
+/* a link-only edit is a floor change: the Master re-linking a line after the plan makes the plan stale */
 {
   const st = busy(), r = SB.plan(st.serialize(), { line: 'build_test' }, env);
   A.ok(r.ok, 'fixture: a plan on a station with linked lines');
@@ -509,7 +509,7 @@ for (const c of T.catalog) {
   A.ok(!late.ok && /changed since this plan/.test(late.error), 'a plan made before a link was removed is refused');
 }
 
-/* ---- 12. VIBE DESIGN: the Commander describes the room part by part; Vultron places every piece and machine ---- */
+/* ---- 12. VIBE DESIGN: the Master describes the room part by part; Vultron places every piece and machine ---- */
 {
   const RS = require('../frontend/app/roomstyles.js'), LL = require('../frontend/app/linelayout.js'), LE = require('../frontend/app/lineedit.js');
   // the page's catalog is the REMASTERED one (a desk is 3 tiles, not 2): every design runs under both
@@ -520,7 +520,7 @@ for (const c of T.catalog) {
   const inside = (p, r) => p.x >= r.x1 && p.y >= r.y1 && p.x + p.w - 1 <= r.x2 && p.y + p.h - 1 <= r.y2;
   A.ok(remasterCtx.module.exports.spec('desk').w !== Sprites.spec('desk').w, 'fixture: the two catalogs really differ (the desk)');
 
-  // areas, in the Commander's words
+  // areas, in the Master's words
   for (const [w, a] of [['left side', 'left'], ['the right half', 'right'], ['top', 'back'], ['bottom', 'front'], ['back wall', 'back'], ['top right corner', 'back right'], ['bottom-left', 'front left'],
     ['left back', 'back left'], ['whole room', 'whole'], ['everything', 'whole'], ['front right', 'front right']]) A.eq(SB.areaOf(w), a, '"' + w + '" is ' + a);
   A.eq([SB.areaOf('ceiling'), SB.areaOf(''), SB.areaOf(null), SB.areaOf('left right')], [null, null, null, null], 'an area that is not one is not guessed');
@@ -662,13 +662,13 @@ for (const c of T.catalog) {
     ]) { const r = SB.planRoom(st.serialize(), req, E); A.ok(!r.ok && re.test(r.error), 'design refused: ' + JSON.stringify(req).slice(0, 90) + ' -> ' + (r.error || 'NOT REFUSED').slice(0, 160)); }
     A.eq(snap(st), before, 'no refusal changed anything');
   }
-  // a line the Commander DESCRIBED, through station.plan_line: a room of its own sized by the engine, or an existing room
+  // a line the Master DESCRIBED, through station.plan_line: a room of its own sized by the engine, or an existing room
   {
     const st = fresh(), before = snap(st);
     const r = SB.plan(st.serialize(), { name: 'Weekly digest', shape: ['RESEARCHER', { together: ['WRITER', 'ANALYST'] }, 'REVIEWER'], purpose: 'a weekly digest of AI news', steps: [{ step: 1, agent: 'lead' }, { step: 2, agent: 'rex' }, { step: 3, agent: 'rex' }, { step: 4, agent: 'lead' }], dailyCap: 3 }, E);
     A.ok(r.ok && /^WEEKLY DIGEST, a new \d+ × \d+ room (north|south|east|west) of HOME, through a hallway: a custom line \("Weekly digest"\): Researcher \(NOVA\) → Writer \(REX\) \+ Analyst \(REX\) \(at once\) → Reviewer \(NOVA\) → Outbox · daily cap \$3\. It will be ready to run\./.test(r.plan.summary), 'a described line plans in a room of its own, staffed in run order: ' + (r.error || r.plan.summary.slice(0, 200)));
     A.ok(r.ok && r.plan.line.label === 'Weekly digest' && r.plan.ready === true && r.plan.blocking.length === 0, 'plan_line\'s own fields: the line, ready');
-    A.ok(r.plan.steps.every(s => s.instructions.endsWith(' This line is for: "a weekly digest of AI news".')), 'every step carries the Commander\'s purpose');
+    A.ok(r.plan.steps.every(s => s.instructions.endsWith(' This line is for: "a weekly digest of AI news".')), 'every step carries the Master\'s purpose');
     A.ok(SB.apply(st, r.plan, E).ok && st.props().filter(p => p.t === 'bay').length === 4, 'it builds: four steps');
     A.eq(routed(st).errs.length, 0, 'no routing error');
     A.ok(st.undo().ok); A.eq(snap(st), before, 'one undo');
@@ -722,7 +722,7 @@ for (const c of T.catalog) {
   }
 }
 
-/* ---- 13. THE SPATIAL BUILDER (2026-09-30): rooms where the Commander says — beside any room, on any side, by a hallway
+/* ---- 13. THE SPATIAL BUILDER (2026-09-30): rooms where the Master says — beside any room, on any side, by a hallway
         or open plan, any size, empty or filled — several in one plan, plus hallways between rooms, and the MAP the lead reads ---- */
 {
   const RS = require('../frontend/app/roomstyles.js'), LL = require('../frontend/app/linelayout.js'), LE = require('../frontend/app/lineedit.js');
@@ -894,7 +894,7 @@ for (const c of T.catalog) {
     const st = fresh(), before = snap(st), made = [];
     const R = Object.assign({}, E, { canRecruit: true, recruit: role => { const id = 'rq' + (made.length + 1); if (!st.ensureWorkstation(id).ok) return null; made.push(id); return { id, name: role }; } });
     const many = SB.planBuild(st.serialize(), { rooms: [{ name: 'Works', size: { w: 90, h: 50 }, lines: new Array(7).fill(0).map(() => ({ line: 'build_test', staff: [{ step: 1, agent: 'new' }, { step: 2, agent: 'new' }] })) }] }, R);
-    A.ok(!many.ok && /^That plan recruits 14 new agents\. Recruit only when the Commander asks for new crew, and at most 12 in one plan/.test(many.error), 'fourteen recruits are refused with what to do instead: ' + many.error);
+    A.ok(!many.ok && /^That plan recruits 14 new agents\. Recruit only when the Master asks for new crew, and at most 12 in one plan/.test(many.error), 'fourteen recruits are refused with what to do instead: ' + many.error);
     const three = SB.planBuild(st.serialize(), { rooms: [{ name: 'Works', size: 'giant', lines: [{ line: 'build_test', staff: [{ step: 1, agent: 'new' }, { step: 2, agent: 'new' }] }, { line: 'research_line', staff: [{ step: 1, agent: 'new' }, { step: 2, agent: 'lead' }] }] }] }, R);
     A.ok(three.ok && /It adds 3 crew members: ENGINEER, TESTER, RESEARCHER, with a desk in WORKS\./.test(three.plan.summary), 'three recruits, their desks in the hall of their lines: ' + (three.error || three.plan.summary.slice(-200)));
     if (three.ok) {
@@ -1482,13 +1482,13 @@ for (const c of T.catalog) {
     A.ok(u.ok && /^Undo the last build \(LOUNGE, a new 18 × 11 room .+\): the station goes back exactly as it was before it\./.test(u.plan.summary), 'the undo plan says what goes back: ' + (u.error || u.plan.summary.slice(0, 120)));
     if (u.ok) { const a = SB.apply(st, u.plan, E); A.ok(a.ok, 'it undoes (' + (a.error || '') + ')'); A.eq(snap(st), before, 'the station is exactly as it was before the build'); }
     A.ok(st.redo().ok, 'fixture: the lounge is back (redo)');
-    A.ok(st.addRoom({ kind: 'hab', name: 'MINE', rect: { x1: -40, y1: -40, x2: -30, y2: -33 } }).ok, 'fixture: the Commander builds something of their own');
+    A.ok(st.addRoom({ kind: 'hab', name: 'MINE', rect: { x1: -40, y1: -40, x2: -30, y2: -33 } }).ok, 'fixture: the Master builds something of their own');
     const no = SB.planUndo(st.serialize(), last);
     A.ok(!no.ok && /^The station has changed since the lead's last build, so Vultron will not undo it/.test(no.error), 'after someone else\'s edit, the lead will not undo');
     const none = SB.planUndo(st.serialize(), null);
     A.ok(!none.ok && /^There is nothing of the lead's to undo/.test(none.error), 'with no build of the lead\'s, there is nothing to undo');
   }
-  // REFIT (Andrew 09-30: "it should be able to ambitiously use the refit mode itself"): the Commander's own tools as edits on
+  // REFIT (Andrew 09-30: "it should be able to ambitiously use the refit mode itself"): the Master's own tools as edits on
   // exact tiles — rooms of any shape, hallways, resize, type, floors, paint, any piece turned and flipped, machines wired by
   // hand, briefs, a shelf line at a spot, the Workflow panel's own line edits — run in order on Refit mode's own checks
   {
@@ -1889,7 +1889,7 @@ for (const c of T.catalog) {
     A.ok(sw.ok && /becomes a merger \(the branches take turns\)/.test(sw.plan.summary) && SB.apply(st, sw.plan, E).ok && P(joinP.id).t === 'merger', 'swap turns the joiner into a merger: the branches take turns');
     // only what the station has
     for (const [q, re] of [
-      [[{ op: 'folder', prop: inP.id, project: 'C:/Windows' }], /^Edit 1 \(folder\): "C:\/Windows" is not one of the Commander's trusted projects \(vultron\)\. The Commander trusts a folder under PROJECTS first/],
+      [[{ op: 'folder', prop: inP.id, project: 'C:/Windows' }], /^Edit 1 \(folder\): "C:\/Windows" is not one of the Master's trusted projects \(vultron\)\. The Master trusts a folder under PROJECTS first/],
       [[{ op: 'bind', prop: portal.id, connector: 'slack' }], /^Edit 1 \(bind\): there is no connected service called "slack" \(GitHub\)/],
       [[{ op: 'bind', prop: portal.id, plugin: 'notes kit' }], /^Edit 1 \(bind\): a connector portal takes a connector/],
       [[{ op: 'loop', prop: loopP.id, until: 'whenever' }], /^Edit 1 \(loop\): until is approved, revise/],
@@ -1936,7 +1936,7 @@ for (const c of T.catalog) {
       A.ok(off.ok, 'usd: null still takes the cap off, said plainly');
     }
     const noSv =SB.planEdit(st.serialize(), { refit: [{ op: 'folder', prop: inP.id, project: 'vultron' }] }, E);
-    A.ok(!noSv.ok && /could not read the Commander's trusted projects/.test(noSv.error), 'a page that could not read the projects refuses, never guesses');
+    A.ok(!noSv.ok && /could not read the Master's trusted projects/.test(noSv.error), 'a page that could not read the projects refuses, never guesses');
     // sweep 2026-10-01: routes only on a FILTER (a bay took routes and "sorted" nothing)
     const rb = SB.planEdit(st.serialize(), { refit: [{ op: 'routes', prop: bayP.id, routes: { code: 'east' } }] }, SV);
     A.ok(!rb.ok && /routes is for a FILTER/.test(rb.error), 'routes on a bay is refused, not stored as a sorter that sorts nothing');
@@ -2094,7 +2094,7 @@ for (const c of T.catalog) {
     A.ok(/plan-e-1/.test(r.content) && r.summary === 'planned an edit', 'an edit of what stands plans through the page: ' + JSON.stringify(req));
     A.eq(calls[calls.length - 1], ['station.plan_edit', { request: req }], 'and reaches the edit planner as it was sent');
   }
-  // MAKE A PROP (Andrew 10-01): the lead makes a new piece with the Commander's Vultron credits through the station's own
+  // MAKE A PROP (Andrew 10-01): the lead makes a new piece with the Master's Vultron credits through the station's own
   // prop maker, asks first, waits for it to land, loads it on the page and says how to place it
   {
     const made = [], jobs = new Map();
@@ -2184,17 +2184,17 @@ for (const c of T.catalog) {
     const startLine = async spec => { starts.push(spec); return startAnswer; };
     const sl = makeStationTools({ station: tbridge, now: () => 1000, planMemo: new Map(), lineMenu: () => [], styleMenu: () => [], roomMenu: () => [], kitMenu: () => [], presetMenu: () => [], startLine }).startLineTool;
     A.ok(sl && sl.name === 'station.start_line' && sl.requiresConsent === true && sl.taintLocked === true, 'start_line asks first and refuses a tainted run');
-    // a refused permission is the Commander's to grant (a real model, 10-01, raised two agents to full access through a
+    // a refused permission is the Master's to grant (a real model, 10-01, raised two agents to full access through a
     // browser debug port to get a test job past a denied page fetch): both line tools say so
     A.ok(/never change an agent's approval or permissions yourself, and never reach around the station's controls \(a shell, a browser debug port, the page itself\)/.test(tt.description)
-      && /if a test showed a step refused one, the Commander grants it, never you/.test(sl.description), 'the line tools say a refused permission is the Commander\'s to grant');
+      && /if a test showed a step refused one, the Master grants it, never you/.test(sl.description), 'the line tools say a refused permission is the Master\'s to grant');
     startAnswer = { ok: true, kind: 'schedule', id: 'cron_abc', when: 'every weekday at 09:00', armed: true, halted: false };
     const sc = await sl.run({ line: 'ship it', schedule: 'every weekday at 9am', tz: 'Europe/London', job: 'Ship the day\'s fixes' }, {});
     A.eq(starts[starts.length - 1], { kind: 'schedule', lineId: 'p12', name: 'SHIP IT', job: 'Ship the day\'s fixes', schedule: 'every weekday at 9am', tz: 'Europe/London', folder: undefined, maxPerHour: undefined, id: undefined }, 'a schedule goes to the panel\'s core for that line');
     A.ok(/"said":"The line SHIP IT now runs every weekday at 09:00\. Its routine is cron_abc \(routine\.manage pauses or removes it\)\."/.test(sc.content) && sc.summary === 'SHIP IT starts every weekday at 09:00', 'and says when it runs: ' + sc.content.slice(0, 200));
     startAnswer = { ok: true, kind: 'webhook', id: 'trg_x1', path: null, enabled: true, secret: 'SHOULD-NEVER-SHOW' };
     const wh = await sl.run({ line: 'ship it', webhook: true, job: 'A deploy finished: check it' }, {});
-    A.ok(/press NEW KEY on this trigger for its address and key/.test(wh.content) && !/SHOULD-NEVER-SHOW/.test(wh.content), 'a webhook tells the Commander where its key is, and never carries a key');
+    A.ok(/press NEW KEY on this trigger for its address and key/.test(wh.content) && !/SHOULD-NEVER-SHOW/.test(wh.content), 'a webhook tells the Master where its key is, and never carries a key');
     startAnswer = { ok: false, error: 'that folder is outside the folders Vultron may watch' };
     A.ok(/^REFUSED: that folder is outside the folders Vultron may watch\./.test((await sl.run({ line: 'ship it', folder: 'C:/Windows', job: 'x' }, {})).content), 'the panel core\'s refusal travels back');
     A.ok(/^REFUSED: Say one start/.test((await sl.run({ line: 'ship it', schedule: 'daily', webhook: true, job: 'x' }, {})).content) && /^REFUSED: job is the work the line gets/.test((await sl.run({ line: 'ship it', schedule: 'daily' }, {})).content), 'one start a call, each with its job');
@@ -2256,7 +2256,7 @@ for (const c of T.catalog) {
   A.ok(/"built":true/.test(b.content) && !memo.has('plan-t-1'), 'a build uses the plan once and forgets it');
   const b2 = await buildT.run({ planId: 'plan-t-1' }, {});
   A.ok(/^REFUSED: There is no plan/.test(b2.content), 'the same plan cannot build again');
-  A.ok(/build exactly what station\.plan planned, by its planId, after the Commander approves/.test(buildT.description), 'one build tool builds any plan');
+  A.ok(/build exactly what station\.plan planned, by its planId, after the Master approves/.test(buildT.description), 'one build tool builds any plan');
   // the grants: all three deferred, so they cost the per-call payload nothing until the lead reaches for them
   const reg = fs.readFileSync(path.join(__dirname, '..', 'sidecar', 'capability', 'registry.js'), 'utf8');
   for (const [tool, scope, consent] of [['station.map', 'read', false], ['station.plan', 'read', false], ['station.build', 'write', true]])

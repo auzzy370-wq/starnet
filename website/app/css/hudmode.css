@@ -39,7 +39,7 @@ html body.hud-mode.sn-chrome .screen { top: 0; }
 html body.hud-mode #chat-panel { grid-area: chat; flex: 1 1 auto; min-height: 0; }
 html body.hud-mode :is(#comms-resizer, #comms-hud) { display: none !important; }
 html body.hud-mode #chat-panel > h3 { cursor: default; user-select: none; -webkit-user-select: none; }
-/* anything waiting on the Commander: the panel's hairline turns gold (an edge, not a glow) */
+/* anything waiting on the Master: the panel's hairline turns gold (an edge, not a glow) */
 html body.hud-mode.hud-asking #chat-panel { border-color: var(--gold, #e9c46a); }
 
 /* ---- ACTIVITY: the feed replaces the conversation ---- */
@@ -69,10 +69,10 @@ html body.hud-mode #hud-activity .ph-result:empty { display: none; }
 /* ---- WIDGET (where the HUD opens): the real station, small, and who is working ----
    The station's own view (#stage-wrap: the world canvas and its camera frame) comes back inside the
    HUD at widget size; the rows under it are crew-row glass: lamp (the station .dot), name, run clock,
-   step. The row being watched takes the selected glass state; waiting on the Commander, the gold edge. */
+   step. The row being watched takes the selected glass state; waiting on the Master, the gold edge. */
 #hud-widget, .hud-wview { display: none; }
 /* the picture takes every pixel the window gives it; the rows keep their own height under it. The window
-   opens at the widget's default size and, once the Commander drags it, stays the size they chose. */
+   opens at the widget's default size and, once the Master drags it, stays the size they chose. */
 html body.hud-mode.hud-view-widget #screen-game.active {
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: minmax(120px, 1fr) auto;

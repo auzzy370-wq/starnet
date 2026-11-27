@@ -71,7 +71,7 @@
       name: 'voice_generate', capability: 'studio', impact: 'none', scope: 'write', requiresConsent: true, timeoutMs: SYNTH_TIMEOUT_MS + 15000,
       description: 'Speak text as neural audio and SAVE it into your workspace as a playable clip (returns the saved '
         + 'path + a viewer URL; the clip appears in chat with a player). Use for any "record / narrate / read this '
-        + 'aloud / make a voiceover" request, or to hand the Commander an audio version of something you wrote. This '
+        + 'aloud / make a voiceover" request, or to hand the Master an audio version of something you wrote. This '
         + 'is NOT how you talk in conversation: the station already handles your spoken replies. Whether voice and '
         + 'style work depends on which voice credential the station holds. Long scripts: split them into takes and '
         + 'call once per take; text over ' + MAX_TEXT + ' characters is refused, never truncated.',

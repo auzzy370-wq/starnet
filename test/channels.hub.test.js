@@ -31,7 +31,7 @@ async function run() {
       lastRun = o;
       o.emit('agent.run.start', { agentId: o.agentId, runId: o.runId, trigger: 'event', model: o.model });
       o.emit('agent.token', { agentId: o.agentId, runId: o.runId, delta: 'Hello ' });
-      o.emit('agent.token', { agentId: o.agentId, runId: o.runId, delta: 'Commander' });
+      o.emit('agent.token', { agentId: o.agentId, runId: o.runId, delta: 'Master' });
       o.emit('agent.run.end', { agentId: o.agentId, runId: o.runId, reason: 'done', turns: 1, usd: 0 });
     };
     const hub = makeChannelHub({
@@ -40,8 +40,8 @@ async function run() {
       emit: (n, p) => events.push({ n, p }), newId: idGen()
     });
     await hub.onInbound(dm('hi'));
-    A.eq(sends, [{ chatId: '555', text: 'Hello Commander' }], 'reply assembled from token deltas, sent once');
-    A.eq(store.hist.get('tg_555'), [{ role: 'user', content: 'hi' }, { role: 'assistant', content: 'Hello Commander' }], 'user + assistant turns persisted');
+    A.eq(sends, [{ chatId: '555', text: 'Hello Master' }], 'reply assembled from token deltas, sent once');
+    A.eq(store.hist.get('tg_555'), [{ role: 'user', content: 'hi' }, { role: 'assistant', content: 'Hello Master' }], 'user + assistant turns persisted');
     A.eq(lastRun.agentId, 'tg_555', 'chatId -> tg_<chatId> agentId');
     A.eq(lastRun.surface, 'autonomous', 'headless chat runs autonomous (no live consent prompt)');
     A.eq(lastRun.messages, [{ role: 'user', content: 'hi' }], 'messages replayed (prior history + new user turn)');
@@ -100,10 +100,10 @@ async function run() {
   {
     const store = fakeStore(); let lastRun = null; const sends = [];
     const runOnce = async (o) => { lastRun = o; o.emit('agent.run.start', { agentId: o.agentId, runId: o.runId, trigger: 'event', model: o.model }); o.emit('agent.token', { agentId: o.agentId, runId: o.runId, delta: 'hi' }); o.emit('agent.run.end', { agentId: o.agentId, runId: o.runId, reason: 'done', turns: 1, usd: 0 }); };
-    const hub = makeChannelHub({ runOnce, store, send: (c, t) => { sends.push({ c, t }); return Promise.resolve({ ok: true }); }, secrets: () => ({ key: 'k', model: 'm', agentId: 'agent', system: 'You are ULTRON, the Commander\'s agent.' }), classify: () => false, newId: idGen() });
+    const hub = makeChannelHub({ runOnce, store, send: (c, t) => { sends.push({ c, t }); return Promise.resolve({ ok: true }); }, secrets: () => ({ key: 'k', model: 'm', agentId: 'agent', system: 'You are ULTRON, the Master\'s agent.' }), classify: () => false, newId: idGen() });
     await hub.onInbound(dm('hey'));
     A.eq(lastRun.agentId, 'agent', 'configured agentId used verbatim (same as the app -> shared notebook/memory/workspace)');
-    A.ok(lastRun.system.indexOf('You are ULTRON, the Commander\'s agent.') === 0, 'the REAL composed system prompt is used, not the default persona');
+    A.ok(lastRun.system.indexOf('You are ULTRON, the Master\'s agent.') === 0, 'the REAL composed system prompt is used, not the default persona');
     A.eq((store.hist.get('agent') || []).length, 2, 'history stored under the shared agentId');
     A.eq(store.hist.has('tg_555'), false, 'did NOT create a separate tg_<chatId> agent');
   }
@@ -119,7 +119,7 @@ async function run() {
     await mk('You are the TELEGRAM persona.').onInbound(dm('hello'));
     A.ok(runs[0].system.indexOf('You are the TELEGRAM persona.') === 0, 'a string persona opens the system prompt: ' + JSON.stringify(runs[0].system.slice(0, 40)));
     await mk(undefined).onInbound(dm('hello'));
-    A.ok(runs[1].system.indexOf('You are the Commander\'s AI agent') === 0, 'no persona -> the default persona: ' + JSON.stringify(runs[1].system.slice(0, 40)));
+    A.ok(runs[1].system.indexOf('You are the Master\'s AI agent') === 0, 'no persona -> the default persona: ' + JSON.stringify(runs[1].system.slice(0, 40)));
     A.ok(runs.every(r => !/=>/.test(r.system.slice(0, 20))), 'no run is handed function source as its persona');
   }
 

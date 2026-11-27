@@ -379,7 +379,7 @@ async function scenarioPropPlace(cdp, A) {
 
   // select prop tool → find the DISH through the REAL library search field (the 2026-09-15 Build library
   // is sectioned FURNITURE / EQUIPMENT / ABILITIES and opens on FURNITURE; search browses the whole catalog
-  // the way a Commander looking for "dish" does) → click its tile, all through the actual palette DOM.
+  // the way a Master looking for "dish" does) → click its tile, all through the actual palette DOM.
   const pt = await evalJS(cdp, "(() => { const t=document.querySelector('.refit-tool[data-tool=\"prop\"]'); if(!t) return 'NO_TOOL'; t.click(); return 'ok'; })()").catch((e) => 'ERR:' + e.message);
   await sleep(150);
   const searched = await evalJS(cdp, "(() => { const i=document.querySelector('#refit-propsearch-input'); if(!i) return 'NO_SEARCH'; i.focus(); i.value='dish'; i.dispatchEvent(new Event('input', { bubbles: true })); return 'ok'; })()").catch((e) => 'ERR:' + e.message);
@@ -414,7 +414,7 @@ async function scenarioPropPlace(cdp, A) {
 }
 
 // SCENARIO: HUD/XP TRUTH — verify event-derived floor stats separately from
-// Commander progression, whose authority is the sidecar's journey endpoint.
+// Master progression, whose authority is the sidecar's journey endpoint.
 async function scenarioHudXp(cdp, A) {
   await evalJS(cdp, closeOnly).catch(() => {});
   // the app's own displayed-vs-reduced checks (station level etc.) must all hold.
@@ -429,7 +429,7 @@ async function scenarioHudXp(cdp, A) {
   A.ok('hud-xp/floorstats-reduced', !!(floor && typeof floor.runs === 'number'), floor ? `runs=${floor.runs} slag=${floor.slag}` : 'reduceFloor() returned nothing');
   A.ok('hud-xp/floorstats-runs-match-log', !!floor && floor.runs === runEvents, floor ? `FloorStats.runs=${floor.runs} == agent.run.start count=${runEvents}` : 'no floor snapshot');
 
-  // Crew XP remains observable but cannot determine the Commander headline.
+  // Crew XP remains observable but cannot determine the Master headline.
   // Independently query the real endpoint so an unavailable journey cannot pass
   // this service-availability check merely by displaying an honest dash.
   const xp = await evalJS(cdp, 'window.__SKYNET_TEST__.reduceXp()').catch(() => null);
@@ -438,8 +438,8 @@ async function scenarioHudXp(cdp, A) {
   const chip = await evalJS(cdp, "(() => { const e=document.getElementById('gt-station'); return e?(e.textContent||'').trim():null; })()").catch(() => null);
   const chipLevel = chip == null ? null : (() => { const m = String(chip).match(/(\d+)/); return m ? parseInt(m[1], 10) : null; })();
   A.ok('hud-xp/xp-reduced', !!(xp && typeof xp.level === 'number'), xp ? `Xp.level=${xp.level} xp=${xp.xp}` : 'reduceXp() returned nothing');
-  A.ok('hud-xp/commander-source-available', Number.isFinite(commanderLevel), 'backend Commander level=' + commanderLevel);
-  A.ok('hud-xp/station-chip-matches-journey', chipLevel != null && Number.isFinite(commanderLevel) && chipLevel === commanderLevel, `displayed COMMANDER="${chip}" (lvl ${chipLevel}) vs backend level=${commanderLevel}`);
+  A.ok('hud-xp/commander-source-available', Number.isFinite(commanderLevel), 'backend Master level=' + commanderLevel);
+  A.ok('hud-xp/station-chip-matches-journey', chipLevel != null && Number.isFinite(commanderLevel) && chipLevel === commanderLevel, `displayed MASTER="${chip}" (lvl ${chipLevel}) vs backend level=${commanderLevel}`);
 }
 
 // SCENARIO: CONVEYOR — drive the REAL production transport module (Conveyor, a page global) end-to-end: a TEST

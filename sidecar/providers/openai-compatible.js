@@ -148,7 +148,7 @@
   }
   /* The native Ollama calls this PROCESS has open, per server (native root -> Set of { background }): open from the moment
      a stream starts until it ends. A local Ollama often serves one request at a time, and the host's own background calls
-     (quest refresh at boot, post-task reflection) run with no Commander watching; a Commander turn's wait note says how
+     (quest refresh at boot, post-task reflection) run with no Master watching; a Master turn's wait note says how
      many are open there (#99, live: the boot quest call was still open when the first "hello" went out). */
   const ollamaOpen = new Map();
   function openOllamaCall(endpoint, entry) {
@@ -869,7 +869,7 @@
         const modelMax = (facts && facts.contextLength) || 0;
         const need = ollamaNative.estimateTokens(body) + (Number(body.max_tokens) || 0);
         // First use of this model in this process: if Ollama already holds it loaded at a usable window (Vultron was
-        // restarted inside the keep-alive, or the Commander loaded it larger), keep that window rather than reload.
+        // restarted inside the keep-alive, or the Master loaded it larger), keep that window rather than reload.
         // A TASK (it carries tools: the long prompt that times out) keeps a window bigger than it needs only while the model
         // fits the GPU: one /api/ps shows spilling to the CPU is not adopted, and a held one steps back down to the
         // smallest rung that holds the prompt. A greeting or background call rides what is held (its prompt is short, so a
@@ -889,17 +889,17 @@
           }
         }
         /* BACKGROUND CALLS DO NOT THINK (measured on qwen3:8b, 2026-09-30). After a task the host fires its own
-           housekeeping calls (reflection, profile update): no tools, and not a Commander turn (isTask is unset; a
+           housekeeping calls (reflection, profile update): no tools, and not a Master turn (isTask is unset; a
            greeting is isTask:false, a task carries tools). Ollama serves one request at a time, and each of those
-           spent 12-24s producing 2-3k characters of thinking for a few characters of output, so the Commander's
+           spent 12-24s producing 2-3k characters of thinking for a few characters of output, so the Master's
            next "hello" waited 26s behind them. Only a model Ollama says can think is told not to, and only here:
-           Commander turns and tasks keep the model's own default. */
+           Master turns and tasks keep the model's own default. */
         const background = !(req.tools && req.tools.length) && typeof req.isTask !== 'boolean';
         // A background call that chose no effort of its own must not inherit the run's default (a CUSTOM endpoint on
         // Ollama carries CUSTOM's 'medium', which maps to think:true). An explicit aux effort still rides.
         if (background && !req.reasoningEffort && facts && facts.supportsReasoning === true) delete body.reasoning_effort;
         /* REASONING OFF IS SAID OUT LOUD (#116). wireEffort folds 'none' to "send nothing" (the /v1 wire's off), so with
-           Reasoning OFF — Ollama's own default — the native body carried no `think` and qwen3 thought on every Commander
+           Reasoning OFF — Ollama's own default — the native body carried no `think` and qwen3 thought on every Master
            turn and task (slow on a CPU). Native Ollama's off is think:false, told only to a model that can think. */
         const reasoningOff = canonicalEffort(requestedEffort) === 'none';
         const think =((background || reasoningOff) && facts && facts.supportsReasoning === true) ? false : undefined;
@@ -1257,7 +1257,7 @@
         // line the user sees only the vendor's bare "invalid model ID" and has no path back (2026-08-25
         // stranded-user incident) — name the mismatch and the fix. Slash-native catalogs (together, fireworks,
         // groq) are safe: their ids resolve on their own endpoints, so this only fires on a real mismatch.
-        // An endpoint the Commander runs or names (CUSTOM: Hive, LiteLLM, vLLM…; Ollama) serves vendor/model ids NATIVELY:
+        // An endpoint the Master runs or names (CUSTOM: Hive, LiteLLM, vLLM…; Ollama) serves vendor/model ids NATIVELY:
         // there that line was false and sent a Hive user to switch providers (#126). It names the id that was sent instead.
         if ((res.status === 400 || res.status === 404)
           && /invalid model|is not a valid model|model .*(does not exist|not found)/i.test(String(detail))) {

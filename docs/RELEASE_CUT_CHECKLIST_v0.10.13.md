@@ -59,7 +59,7 @@ process debt for the two sweep merges. On the repair head, `test:fast` is GREEN 
 `test:http` is GREEN (87/87 steps), and the claims authority is GREEN (37 claims / 212 files); the
 merged tree must repeat the binding gates.
 
-The two agreed next-cut requirements are now represented in code: creating a new Commander resets
+The two agreed next-cut requirements are now represented in code: creating a new Master resets
 `vultron.tutorial.v1` and re-arms the tour/coachmarks/FIRST STEPS, and the save-unreachable screen
 shows stable `SAVE-403` versus `SAVE-NET` diagnosis plus copyable recovery details. The existing
 genesis `USE A DIFFERENT ACCOUNT` action clears a wrong Vultron account link in-app. Physical macOS

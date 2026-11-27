@@ -3,7 +3,7 @@
 const assert = require('node:assert/strict');
 const http = require('node:http');
 const { SidecarFixture } = require('./helpers/sidecar-fixture.js');
-// the Commander's own words: on this non-Claude wire the run-context note leads the newest user message
+// the Master's own words: on this non-Claude wire the run-context note leads the newest user message
 const { userWords } = require('./helpers/host-notes.js');
 let fail = true;
 const requests = [];

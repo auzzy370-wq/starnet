@@ -229,7 +229,7 @@ async function run() {
     const missRes = await mk().run({ target: 'tg|555', text: 'see attached', files: ['missing.png'] }, { agentId: 'a1' });
     A.eq(JSON.parse(missRes.content).filesAttached.length, 0, 'a file that could not be read is not reported as attached');
     A.ok(/could not be read/.test(JSON.parse(missRes.content).filesFailed.join(' ')), 'and the reason is named');
-    // live-caught 2026-10-20 (sweep/channels): the in-chat note told the Commander a file that does not exist — or a
+    // live-caught 2026-10-20 (sweep/channels): the in-chat note told the Master a file that does not exist — or a
     // refused "../../channels/secrets.json" — "is saved in the workspace on the station". Only a file that was READ and
     // then failed to upload is on the station; an unreadable one must say it was not found.
     A.ok(/missing\.png/.test(sends[1] || '') && !/saved in the workspace/.test(sends[1] || ''), 'an unreadable file is never claimed to be saved on the station: ' + JSON.stringify(sends[1]));

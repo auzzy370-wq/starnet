@@ -177,7 +177,7 @@ bus.emit('channel.delivery', { agentId: 'agent', channel: 'telegram', chatId: '1
 A.ok(oldHero.stats.milestones.indexOf('night_shift') !== -1, 'a real channel delivery still earns LONG RANGE (id night_shift) live');
 A.eq(notices.length, noticesBefore, 'notification diet: a live milestone never toasts (sting + broadcast carry it)');
 A.ok(broadcasts.some(b => b.text === 'TROPHY EARNED · LONG RANGE'), 'the broadcast shouts the trophy-case label (never "night shift": user-visible text says autonomy)');
-A.ok(!broadcasts.some(b => /night_shift/.test(b.text)), 'no raw slug reaches the Commander');
+A.ok(!broadcasts.some(b => /night_shift/.test(b.text)), 'no raw slug reaches the Master');
 // the label comes from the xp.js catalogue, so a badge added there can never announce as an id.
 A.ok(Xp.MILESTONES.every(m => broadcasts.every(b => !b.text.includes('_'))), 'every announced name is a real label');
 

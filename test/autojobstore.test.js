@@ -49,7 +49,7 @@ global.Harness = hn;
 
 let scheduled = [];
 let boardHere = false;   // G4 feature 2: is a MISSION BOARD placed? toggled per-case below
-const SYSTEM = 'SYSTEM PROMPT\nWHAT YOU KNOW ABOUT YOUR COMMANDER: goals — ship Vultron.';
+const SYSTEM = 'SYSTEM PROMPT\nWHAT YOU KNOW ABOUT YOUR MASTER: goals — ship Vultron.';
 const deps = {
   getSystem: () => SYSTEM,
   getName: () => 'NOVA',
@@ -175,7 +175,7 @@ global.Onboarding = undefined;
     hn.next = { text: TWO };
     const rp = await AutoJobStore.propose({ proactive: true });
     A.eq(dlg.noded, 0, 'board mode does NOT run the inline Dialogue approval loop');
-    A.eq(scheduled.length, 0, 'board mode schedules nothing up front — the Commander decides at the board');
+    A.eq(scheduled.length, 0, 'board mode schedules nothing up front — the Master decides at the board');
     A.eq(rp.pinned, 2, 'both parsed proposals are pinned to the board');
     A.eq(AutoJobStore.pendingCount(), 2, 'the pending ledger holds the two pinned proposals');
     A.eq(AutoJobStore._state().proposed, true, 'a board-delivered proactive offer still spends the fire-once flag');
@@ -223,7 +223,7 @@ global.Onboarding = undefined;
     AutoJobStore.init(deps);
     const fr = await AutoJobStore.acceptPending(stickyId);
     A.eq(fr.ok, false, 'a failed POST reports failure');
-    A.ok(AutoJobStore.pendingCount() === 2, 'a failed approve leaves the card pinned so the Commander can retry');
+    A.ok(AutoJobStore.pendingCount() === 2, 'a failed approve leaves the card pinned so the Master can retry');
     deps.scheduleJob = realSched;
 
     /* no board → the Dialogue flow is untouched (the pin is a projection, never a gate) ---- */
@@ -236,7 +236,7 @@ global.Onboarding = undefined;
     A.eq(AutoJobStore.pendingCount(), 0, 'no board → nothing is parked on a (non-existent) board');
     A.eq(rn.scheduled, 1, 'no-board propose reports scheduled count as before');
 
-    /* ========== POPUP-ESCAPE (Andrew): the Commander can bail the WHOLE multi-proposal ask ========== */
+    /* ========== POPUP-ESCAPE (Andrew): the Master can bail the WHOLE multi-proposal ask ========== */
     /* each approval node is offered as dismissable, and a `dismissed` result stops asking the rest ---- */
     clearFakes(); AutoJobStore.reset(); boardHere = false;
     hn.next = { text: TWO };

@@ -629,7 +629,7 @@
           const code = (data && data.error_code) || (res && res.status) || 0;
           const retryAfter = data && data.parameters && data.parameters.retry_after;
           // auth: the TOKEN was refused (401 revoked / 404 bad token, as getUpdates' fatal rule) — every chat fails alike until
-          // the Commander re-pairs, so the hub keeps the reply queued for the re-paired bot (channels/hub.js deliver)
+          // the Master re-pairs, so the hub keeps the reply queued for the re-paired bot (channels/hub.js deliver)
           return { ok: false, error: redact((data && data.description) || ('http ' + code)), retryable: code === 429 || code >= 500, auth: code === 401 || code === 404, retryAfter: retryAfter };
         } catch (e) {
           if (e && (e.name === 'AbortError' || e.aborted)) return { ok: false, error: 'aborted', retryable: false };

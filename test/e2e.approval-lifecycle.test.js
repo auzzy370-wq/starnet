@@ -52,7 +52,7 @@ function startMockProvider() {
         const messages = parsed.messages || [];
         const toolNames = (parsed.tools || []).map(t => t && t.function && t.function.name);
         const lastUser = messages.map(m => m.role).lastIndexOf('user');
-        // route on the Commander's own words: on this non-Claude wire the run-context note (task brief, commander evidence
+        // route on the Master's own words: on this non-Claude wire the run-context note (task brief, commander evidence
         // that quotes earlier requests) leads the newest user message (provider.js noteCarrier)
         const user = String(userWords(messages[lastUser] || {}) || '');
         const used = messages.slice(lastUser + 1).filter(m => m.role === 'assistant').flatMap(m => m.tool_calls || []).map(t => t.function && t.function.name);
@@ -177,7 +177,7 @@ async function until(fn, ms, label) {
 
 (async () => {
   const mock = await startMockProvider();
-  // ASK mode: no full-access env, so every write asks the Commander
+  // ASK mode: no full-access env, so every write asks the Master
   const fixture = SidecarFixture.create({ prefix: 'sk-approval-life-', env: {
     SKYNET_OPENROUTER_BASE: mock.base, VULTRON_OPENROUTER_BASE: mock.base,
     SKYNET_OPENROUTER_KEY: 'sk-or-v1-local-proof', VULTRON_OPENROUTER_KEY: 'sk-or-v1-local-proof',
@@ -247,7 +247,7 @@ async function until(fn, ms, label) {
       }
     }
 
-    // the Commander approves the writer's ask from its row / NEEDS YOU (Chat.answerConsent -> POST /api/consent)
+    // the Master approves the writer's ask from its row / NEEDS YOU (Chat.answerConsent -> POST /api/consent)
     const ans = await (await fetch(B + '/api/consent', { method: 'POST', headers: H, body: JSON.stringify({ runId: leadRunId, promptId: writerAsk.promptId, decision: 'once' }) })).json();
     A.eq(ans.ok, true, 'POST /api/consent with the prompt\'s runId answers a background ask after the lead ended');
     A.ok(!ans.gone, 'an answer that landed is never reported gone');
@@ -301,7 +301,7 @@ async function until(fn, ms, label) {
     const brief = path.join(fixture.workspace, 'agent', 'opportunity-brief.md');
     A.ok(!fs.existsSync(brief), 'the write that was waiting never ran');
 
-    /* ---------------- 3. STOP mid-approval is the Commander's own act: no page-closed line ---------------- */
+    /* ---------------- 3. STOP mid-approval is the Master's own act: no page-closed line ---------------- */
     let stopRunId = '';
     const stop = startRun(B, H, { key: 'sk-or-v1-local-proof', model: 'test/model', agentId: 'agent', isTask: true, streamId: 'ws_stop', placed: ['cabinet'],   // NOVA's file cabinet: its own fs.write asks
       messages: [{ role: 'user', content: 'write the brief yourself' }] }, async (ev, ctrl) => {
@@ -335,7 +335,7 @@ async function until(fn, ms, label) {
     const ask2 = who => bus.events.find(e => e.name === 'permission.prompt' && e.payload && e.payload.workerAgentId === who && e.payload.runId === lead2RunId);
     await until(() => ask2('writer') && ask2('drafter'), 15000, 'both background workers of the second hand-off asking');
     const w2 = ask2('writer').payload, d2 = ask2('drafter').payload;
-    // the Commander stops the writer (its row's STOP: POST /api/subagents/interrupt) while its write waits on them
+    // the Master stops the writer (its row's STOP: POST /api/subagents/interrupt) while its write waits on them
     const recs = await (await fetch(B + '/api/subagents?leadId=agent', { headers: H })).json();
     const wrec = (recs.records || []).find(r => r.runId === w2.workerRunId);
     A.ok(!!wrec, 'the waiting writer has its durable background record');

@@ -104,7 +104,7 @@ try {
   await cdp.send('Page.navigate', { url: base + '/' });
   check('the real page reaches the live station', await waitDevReady(cdp, evalJS, { url: base + '/', tries: 60 }));
 
-  // two notifications the way the station raises them: a finished result, and one still WAITING on the Commander
+  // two notifications the way the station raises them: a finished result, and one still WAITING on the Master
   await evalJS(cdp, `(() => { StationUI.notify('E2E finished result', '', undefined, { kind: 'result' }); StationUI.notify('E2E agent waiting on you', '', undefined, { kind: 'needs', key: 'e2e-needs' }); return true; })()`);
   const seeded = await evalJS(cdp, NOTIFS);
   check('setup: a result and a NEEDS YOU notification are saved', Array.isArray(seeded) && seeded.some(n => n.kind === 'result') && seeded.some(n => n.kind === 'needs'), JSON.stringify((seeded || []).map(n => n.kind)));
@@ -160,7 +160,7 @@ try {
   check('server: the E-STOP engaged (after the result was handed back)', !!halted, JSON.stringify(halted));
   let resumeShown = false;
   for (let i = 0; i < 40 && !resumeShown; i++) { resumeShown = await evalJS(cdp, `(() => { const b = document.getElementById('automation-resume'); return !!b && !b.hidden && getComputedStyle(b).display !== 'none'; })()`); if (!resumeShown) await sleep(250); }
-  check('page: the top bar shows RESUME AUTOMATION (the Commander\'s door back)', resumeShown);
+  check('page: the top bar shows RESUME AUTOMATION (the Master\'s door back)', resumeShown);
   const errs = (diagnostics.exceptions || []).filter(e => !/favicon|ERR_ABORTED|net::ERR/i.test(String(e)));
   check('no uncaught page exceptions', errs.length === 0, errs.slice(0, 3).join(' | '));
 } catch (e) {

@@ -98,7 +98,7 @@ const brief = { id: 'current-brief', source: 'interactive', status: 'ready', age
   A.eq(c.ownerProofs, 1, 'one shared durable directive proof batch');
   A.eq(c.legacyProofs, 3, 'each legacy brief original run is proved once for the shared snapshot');
   A.ok(notice && notice.count === 4, 'the repeat-work notice is still found from the shared snapshot');
-  A.ok(/The Commander has now asked/.test(ctx), 'and it reaches the composed context');
+  A.ok(/The Master has now asked/.test(ctx), 'and it reaches the composed context');
   // the same turn with SEPARATE copies (no shared snapshot) yields the identical notice + context
   const sep = host();
   const n2 = sep.api.standingWorkNotice(brief, 'agent', { projectRoot: PROJECT });

@@ -1,7 +1,7 @@
 /* node test/prompt-scrub.test.js — the ONE resolver for secrets in stored text bound for a prompt (context-key-redact,
    2026-10-28).
 
-   A key the Commander pasted once rode every later run's RECENT ACTIVITY line to the model provider: the projectors
+   A key the Master pasted once rode every later run's RECENT ACTIVITY line to the model provider: the projectors
    clipped stored text and never redacted it, and a clipped key is a fragment no redact rule can match afterwards.
    sidecar/prompt-scrub.js is the one rule every projector now calls BEFORE it clips. This file proves the rule:
      1. scrubStored removes every vendor family whole, cut at a cut point (end of the text or of a LINE, an ellipsis,
@@ -16,7 +16,7 @@
         (review r3: glued to anything but a lowercase vowel it reads every body as base did; after a vowel, where a
         word's 'sk-' sits, a letters-only body, a masked head and a line-end cut are still caught)
      6. the held list is the station's CREDENTIALS (secret-values credentialUnder): a connector's NODE_ENV=production,
-        Content-Type: application/json, an email or a project id is never cut out of the Commander's words
+        Content-Type: application/json, an email or a project id is never cut out of the Master's words
      7. the head rule is linear: a 30 000-char '...' run with a held key scrubs in milliseconds (it was seconds)
      7b. (review r3) the vendor-cut pass is linear too ('ask-ask-…!', ' SG.SG.…!', eyJ_ chains: 2.2 s for 64 KB, an 11 s
         frozen event loop through the registry seam) and returns exactly what its plain global scan returns (fuzz)
@@ -371,7 +371,7 @@ context.setKnownSecretSource(null);
   A.ok(PS.scrubHeld(turn) === turn, 'the live turn naming those public values is byte-identical');
   PS.setHeldSource(() => cred);
   const words = 'email it to andrew.sims2@gmail.com, deploy my-project-123456 to us-east-1-prod-cluster in production as application/json';
-  A.ok(PS.scrubHeld(words) === words && PS.scrubStored(words) === words, 'the Commander\'s ordinary words survive both rules byte-identically');
+  A.ok(PS.scrubHeld(words) === words && PS.scrubStored(words) === words, 'the Master\'s ordinary words survive both rules byte-identically');
   A.ok(PS.scrubHeld('the db password is hunter2hunter2') === 'the db password is [redacted-secret]', 'a named connector credential is still scrubbed');
 }
 

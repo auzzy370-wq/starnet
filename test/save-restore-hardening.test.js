@@ -58,7 +58,7 @@ const touch = (root, name, sec) => fs.utimesSync(path.join(root, name), sec, sec
       A.eq(ref.host.saveStore.load('agent'), undefined, 'r1: the fresh workspace stays empty: the pre-reset station never writes itself back');
     }
     {
-      // an import whose first send got NO answer (an outage) is still the Commander's import when it is sent again
+      // an import whose first send got NO answer (an outage) is still the Master's import when it is sent again
       const root = workspace();
       receipt(root, Date.now());
       const host = sidecar(root);

@@ -161,7 +161,7 @@
     station_refused: { retryable: false, action: null,     msg: 'The station refused this request.' },
     wrong_address: { retryable: false, action: null,       msg: 'This page’s address doesn’t match the station — open Vultron at the exact address you forward to it.' },
     /* Vultron's OWN spend ledger can't say what was spent (sidecar/loop.js stopForSpend, failureCode
-       spend_history_unavailable): a limit the Commander chose can't be checked, so the run was stopped. NOT a provider
+       spend_history_unavailable): a limit the Master chose can't be checked, so the run was stopped. NOT a provider
        out of credit (never `billing`), and never the generic "Something went wrong — try again": a retry hits the same
        refusal until the cause is fixed. The copy is REBUILT per cause in friendlyError() (spendUnknownMessage); this is
        the fallback. The door is SETTINGS › SPENDING LIMITS, where the cause and its fix are listed. */
@@ -445,7 +445,7 @@
   /* The COMMS work-log line for a run that ENDED (agent.run.end reason) without a clean delivery and without an error
      row of its own. Raw reason words ("stopped (empty)") read as a silent stop; each now says what happened + the
      next step. opts.cancelSource: 'estop_by_run' (the run pressed E-STOP itself) — anything else that is not the
-     Commander's own Stop came from OUTSIDE this chat (a station/HUD/phone STOP or E-STOP). opts.toolsRan: this turn's
+     Master's own Stop came from OUTSIDE this chat (a station/HUD/phone STOP or E-STOP). opts.toolsRan: this turn's
      agent.tool_call count — an empty end AFTER tool steps is not "nothing was done" (a file may already be written), so
      it reads exactly like sidecar/stop-reason.js stopSentence (test/stop-reason.test.js locks the two). '' = nothing to add. */
   function stopLine(reason, opts) {
@@ -1167,7 +1167,7 @@
   }
   // prefill the ABILITIES console search with the connector name so the catalog card is the thing on screen.
   // The catalog loads async (ccRefresh), so the filter is re-asserted until a card exists (bounded ~3s); the
-  // search input itself is what the Commander sees, so an early fill is never wrong, only incomplete.
+  // search input itself is what the Master sees, so an early fill is never wrong, only incomplete.
   function routeConsoleSearch(doc, query, setTimeoutImpl) {
     const st = setTimeoutImpl || (typeof setTimeout === 'function' ? setTimeout : null);
     let tries = 0;

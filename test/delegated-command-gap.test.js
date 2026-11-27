@@ -121,11 +121,11 @@ const { makeTool } = require('../sidecar/tools/tool.js');
     A.ok(TaskBriefPolicy.canMutate({ status: 'ready' }, t, { name, args: {} }).ok === false && TaskBriefPolicy.canMutate({ status: 'ready' }, v0141, { name, args: {} }).ok === false
       && TaskBriefPolicy.canMutate({ status: 'executing' }, t, { name, args: {} }).ok === true, name + ': waits for brief_proceed before the brief settles, as in 0.14.1');
   }
-  // channel.send declares the lane it always fell into (review of quick win 8): outward messaging under the Commander's
+  // channel.send declares the lane it always fell into (review of quick win 8): outward messaging under the Master's
   // bot identity keeps an exact per-call confirmation that never becomes a standing grant, and is never offered to a
   // delegated worker or an unattended ASK run (whose exec lockout would refuse every call anyway)
   const commsRun = enforceRunAuthority({ tools: ['channel.targets', 'channel.send'] }, registry, authority);
-  A.ok(commsRun.tools.indexOf('channel.targets') < 0, 'channel.targets (the Commander\'s chat list) is NOT offered to a delegated / unattended ASK run');
+  A.ok(commsRun.tools.indexOf('channel.targets') < 0, 'channel.targets (the Master\'s chat list) is NOT offered to a delegated / unattended ASK run');
   A.ok(commsRun.tools.indexOf('channel.send') < 0, 'channel.send is NOT offered to a delegated / unattended ASK run');
   const fullComms = enforceRunAuthority({ tools: ['channel.send'] }, registry, makeRunAuthority({ surface: 'autonomous', isTask: true, fullAccess: true }));
   A.ok(fullComms.tools.indexOf('channel.send') >= 0, 'Full Access keeps it (unchanged)');

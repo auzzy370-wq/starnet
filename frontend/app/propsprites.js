@@ -3351,7 +3351,7 @@ const PropSprites = (() => {
     chamf(x, top, w, plY - top, '#1c1712', 2);
     chamf(x + 1, top + 1, w - 2, 3, '#2b231a', 2);                           // crown cap
     px(x + 2, top + 1, w - 4, 1, '#463a29'); keyEdge(x + 2, top + 1, 7, 1, 0.30);
-    // COMMANDER JOURNEY CROWN — a permanent physical transformation, not an unlock. Each stage means one
+    // MASTER JOURNEY CROWN — a permanent physical transformation, not an unlock. Each stage means one
     // distinct goal id whose final goal-arc milestone was verified. Four cells fill first; later goals deepen
     // the crown's halo in four-goal waves so long-lived stations keep changing instead of hitting a dead cap.
     const js = Math.max(0, (f && f.journeyStage) | 0), journeyShown = Math.min(4, js);

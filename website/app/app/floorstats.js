@@ -93,7 +93,7 @@
         if (p.box === 'line-output') return;   // routing authority; the ordinary delivery already owns throughput
         // A routing-line PROOF dispatch (POST /api/routing/sample) marks itself sample:true precisely so
         // consumers can tell a test from customer work — folding it into delivered/items-min told the
-        // Commander their five test presses were five real deliveries. The crate still rides the belt
+        // Master their five test presses were five real deliveries. The crate still rides the belt
         // (workitem.placed is unmarked visual truth); only the throughput telemetry skips it.
         if (p.sample) { if (p.workitemId) placedAt.delete(p.workitemId); return; }
         s.delivered++;

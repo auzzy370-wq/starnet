@@ -169,7 +169,7 @@ const hardline = (call) => (call && call.args && /(^|\/)(\.env|permissions\.allo
     A.ok(w(writeCall, WRITE).allow === true, 'a pre-blessed WRITE is unaffected — the lockout never touches non-exec classes');
 
     /* UNATTENDED TERMINAL GRANT (2026-07-25) — the ONE key that opens the exec lockout unattended: the
-       Commander's recorded per-ROUTINE approval, injected by the host from the durable cron job. It is
+       Master's recorded per-ROUTINE approval, injected by the host from the durable cron job. It is
        deliberately NOT reachable by a cached 'always' grant (proved above) or by prompt text. */
     const granted = makeConsentBroker({ surface: 'autonomous', terminalGrant: () => true });
     A.ok(granted(execCall, EXEC).allow === true, 'a granted routine may execute shell unattended');
@@ -190,7 +190,7 @@ const hardline = (call) => (call && call.args && /(^|\/)(\.env|permissions\.allo
     const interactiveDecision = grantedInteractive(execCall, EXEC);
     A.ok(interactiveDecision && typeof interactiveDecision.then === 'function', 'interactive still asks the human — the grant never pre-approves a watched run');
 
-    /* UNATTENDED CONNECTOR GRANT — same tier shape for the Commander's MCP servers. A non-read MCP tool is
+    /* UNATTENDED CONNECTOR GRANT — same tier shape for the Master's MCP servers. A non-read MCP tool is
        scope 'execute', so this too must sit above the exec lockout. Capability is matched by the 'mcp:' PREFIX
        so ONE grant covers every connected server while refusing everything else. */
     const MCP = { name: 'mcp__demo__lookup', capability: 'mcp:demo', scope: 'execute', requiresConsent: true, network: true };

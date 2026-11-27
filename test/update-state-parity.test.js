@@ -88,7 +88,7 @@ const SAVE_DOC = {
   worksignal: { v: 1, ewma: { web: 0.4, fs: 0.2 }, updatedAt: 1699500000000 },
   dossier: { v: 1, dims: { identity: ['builder'], stack: ['node'], goals: ['ship'], style: [], standing_orders: [], pain: [], ambition: [] }, seededFrom: { identity: 'onboarding' }, updatedAt: 1699000000000 },
   workstreams: [
-    { id: 'ws_general', title: null, lane: 'active', roomId: null, history: [{ role: 'user', content: 'hi' }, { role: 'assistant', content: 'hello Commander' }], cost: { tokens: 4200, usd: 0.0891, calls: 8 } },
+    { id: 'ws_general', title: null, lane: 'active', roomId: null, history: [{ role: 'user', content: 'hi' }, { role: 'assistant', content: 'hello Master' }], cost: { tokens: 4200, usd: 0.0891, calls: 8 } },
     { id: 'ws_abc', title: 'Research spike', lane: 'shipped', roomId: null, history: [{ role: 'user', content: 'research X' }], cost: { tokens: 0, usd: 0, calls: 0 } }
   ],
   activeId: 'ws_general', generalId: 'ws_general'
@@ -106,7 +106,7 @@ const CRON_JOBS = [
   cronStore.makeJob({ name: 'Morning research', prompt: 'summarize overnight news', schedule: { kind: 'daily', at: '08:00' }, agentId: 'scout', model: 'openai/gpt-4o', provider: 'openrouter', deliver: 'notebook' }, { id: 'job_research', now: 1700000000000 })
 ];
 
-const NOTEBOOK_NOVA = ['Commander prefers terse replies.', 'The station boots from a golden fixture.'];
+const NOTEBOOK_NOVA = ['Master prefers terse replies.', 'The station boots from a golden fixture.'];
 const NOTEBOOK_SCOUT = ['Researcher: cite sources, no speculation.'];
 
 // ---------------------------------------------------------------------------------------------------------
@@ -233,7 +233,7 @@ function loadSaveModule() {
   const V1 = {
     schema: 'vultron.save', version: 1,
     agent: { id: 'agent', name: 'ULTRON', model: 'anthropic/claude-sonnet-4.5', purpose: 'serve' },
-    history: [{ role: 'user', content: 'what is my purpose?' }, { role: 'assistant', content: 'to serve, Commander.' }],
+    history: [{ role: 'user', content: 'what is my purpose?' }, { role: 'assistant', content: 'to serve, Master.' }],
     usage: { tokens: 1200, cost: 0.0345, calls: 3 },
     updatedAt: 1700000000000
   };

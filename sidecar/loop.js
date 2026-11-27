@@ -31,7 +31,7 @@
   // ... and the <crew_call> note (review 2026-10-12): it left the run-context note to trail the newest user message
   const isCrewCallNote = (typeof require === 'function') ? require('./providers/provider.js').isCrewCallNote : null;
   // turn identity: the screen-capture turn this loop appends is tagged 'capture' (off-wire, a non-enumerable Symbol), so the
-  // transcript files it as the station's capture, never as the Commander's words
+  // transcript files it as the station's capture, never as the Master's words
   const TurnKinds = (typeof require === 'function') ? require('../frontend/app/turnkinds.js') : ((typeof globalThis !== 'undefined' && globalThis.TurnKinds) || null);
   const receiptApi = (typeof require === 'function') ? require('./providers/provider.js') : (globalThis.SK && globalThis.SK.providers && globalThis.SK.providers.provider);
 
@@ -46,7 +46,7 @@
   const transportCodeOf = (errorClass && errorClass._internals && errorClass._internals.transportCode)
     || (err => (err && (err.code || err.errno || (err.cause && err.cause.code))) || '');
   // bug 8873fd77: a refused or unresolvable endpoint (nothing listening — Ollama not started — or no network) retries in
-  // the 'timeout' class, but the retry line must not send the Commander looking at a slow provider: it says unreachable
+  // the 'timeout' class, but the retry line must not send the Master looking at a slow provider: it says unreachable
   const retryReasonOf = (reason, err) => (reason === 'timeout' && /ECONNREFUSED|ENOTFOUND|EAI_AGAIN/i.test(String(transportCodeOf(err) || '')))
     ? 'unreachable' : String(reason || 'transient');
   const continuation = outputContinuation || {
@@ -340,7 +340,7 @@
   // nothing between dispatches read the signal. Checked before EVERY dispatch in both branches; the skipped
   // call gets the same paired isError result the other skip paths use, so the transcript says it was skipped,
   // never that it succeeded.
-  const CANCELLED_SKIP = 'skipped: cancelled — the Commander stopped the run before this call ran';
+  const CANCELLED_SKIP = 'skipped: cancelled — the Master stopped the run before this call ran';
   function cancelledResult(callId) {
     return { callId, isError: true, ok: false, content: CANCELLED_SKIP, summary: 'skipped - cancelled', control: null, images: null, parkedPath: null };
   }
@@ -349,10 +349,10 @@
   // of a bare "✗ error" (run-paths-polish P2); the host scrubs host paths out of it before it is shown (index.js loopEmit)
   const refusalOf = r => (r && r.isError && typeof r.reason === 'string' && r.reason ? { reason: r.reason } : {});
 
-  /* A HIDDEN TOOL'S ERROR IS NOT NEWS FOR THE COMMANDER (rc walk 2026-10-14). The Task Brief tools draw no chip, so a model that
+  /* A HIDDEN TOOL'S ERROR IS NOT NEWS FOR THE MASTER (rc walk 2026-10-14). The Task Brief tools draw no chip, so a model that
      narrated fixing one ("Let me fix that—sources needs to be an array:", "Let me correct that:") put a sentence in COMMS about
      an action nobody could see. The model still reads the full error; it is told the step is invisible. */
-  const HIDDEN_ERROR_NOTE = ' (This tool is invisible to the Commander: never mention this error or its fix. Make the corrected call with no text before it — or, if you fall back to the TASK_QUESTION marker, reply with only that one marker line.)';
+  const HIDDEN_ERROR_NOTE = ' (This tool is invisible to the Master: never mention this error or its fix. Make the corrected call with no text before it — or, if you fall back to the TASK_QUESTION marker, reply with only that one marker line.)';
   function quietHiddenError(c, r, meta) {
     if (!r || !r.isError || !(meta && meta.hiddenTools && meta.hiddenTools.has(c.name)) || typeof r.content !== 'string') return r;
     return Object.assign({}, r, { content: r.content + HIDDEN_ERROR_NOTE, quietRepair: true });
@@ -401,12 +401,12 @@
 
     for (const c of calls) {
       if (finalControl) {
-        results.push({ callId: c.id, isError: true, ok: false, content: 'skipped: the Task Brief paused for the Commander', summary: 'skipped', control: null });
+        results.push({ callId: c.id, isError: true, ok: false, content: 'skipped: the Task Brief paused for the Master', summary: 'skipped', control: null });
         continue;
       }
       const hidden = meta.hiddenTools && meta.hiddenTools.has(c.name);
       if (!hidden) emit('agent.tool_call', { agentId: meta.agentId, runId: meta.runId, callId: c.id, name: c.name || 'unknown', argsSummary: summarize(c.argsRaw) });
-      // A host-proven terminal result (for example NXDOMAIN on the exact host the Commander asked to
+      // A host-proven terminal result (for example NXDOMAIN on the exact host the Master asked to
       // inspect) stops the REST of this already-issued sequential batch too. Every requested call still gets
       // its paired result and telemetry, but no second network request executes after the proof landed.
       if (stopToolsControl) {
@@ -452,7 +452,7 @@
      only knew investigation/debug verbs, so the commonest MAKING announcements — "I'll build the page", "I'm going to
      go ahead and create…", "I'll get started", "Working on it now", "On it!" — ended the run 'done' and COMMS showed a
      bare RUN COMPLETE. The list now covers making/shipping verbs, and the scan works SENTENCE BY SENTENCE so the
-     endings that legitimately wait on the Commander never fire: a reply that ENDS in a question ("Want me to build
+     endings that legitimately wait on the Master never fire: a reply that ENDS in a question ("Want me to build
      it?"), a sentence conditioned on them ("…once you confirm", "if you'd like", "when you're ready"), an offer ("I can
      build…"), a lesson/preference ("next time I'll…", "from now on…" — the memory guard owns those), and talking verbs
      ("let me explain/summarize"). Code blocks are stripped first (a "// let me check" comment is data). */
@@ -477,7 +477,7 @@
     new RegExp('^(?:(?:ok(?:ay)?|sure|alright|yes|yep|absolutely|got\\s+it|great|perfect)[,!.\\s—–-]+)?(?:on\\s+it|will\\s+do|working\\s+on\\s+(?:it|this|that)|consider\\s+it\\s+done)\\b', 'i'),   // "On it!" / "Will do." / "Working on it."
     new RegExp('\\b(?:stand\\s+by|hang\\s+tight|bear\\s+with\\s+me|one\\s+(?:moment|sec(?:ond)?|minute)|give\\s+me\\s+(?:a|one)\\s+(?:moment|minute|sec(?:ond)?|bit)|be\\s+right\\s+back)\\b', 'i')   // "Give me a moment to put it together"
   ];
-  // A sentence that WAITS on the Commander (a question, an offer, a condition on their answer) or states a lesson/
+  // A sentence that WAITS on the Master (a question, an offer, a condition on their answer) or states a lesson/
   // preference for later is not a premature stop — ending the run there is correct.
   const CG_WAITS = [
     /\?\s*[)"'”’*_]*\s*$/,                                                                                       // a question
@@ -824,7 +824,7 @@
       return CG_PATTERNS.some(re => re.test(c)) && !waiting;
     });
   }
-  /* A REPLY THAT ENDS ON A CHOICE MARKER IS WAITING ON THE COMMANDER (rc walk 2026-10-14). "Let me ask this the right way:
+  /* A REPLY THAT ENDS ON A CHOICE MARKER IS WAITING ON THE MASTER (rc walk 2026-10-14). "Let me ask this the right way:
      TASK_QUESTION: … || a | b" is a question — the marker IS the question card — but its intro read as an announce, so the
      continuation guard pushed "you called no tools" and the model answered the nudge in COMMS ("You're right — I ended with
      a question card but didn't call any tools.") and dropped the question. A brief_ask refusal tells the model to end on
@@ -840,7 +840,7 @@
   }
   /* THE FALLBACK QUESTION IS ITS MARKER ALONE (rc review 2026-10-14). A hidden brief_ask refusal tells the model to end on the
      TASK_QUESTION marker, and the model led in with "Got it — let me check what context I have first and ask directly:" or
-     "Let me ask this the right way:" over a step the Commander never saw. The question card carries the question, so that
+     "Let me ask this the right way:" over a step the Master never saw. The question card carries the question, so that
      repair turn keeps only its last line from the keyword on (decoration around the keyword stays: it still parses). */
   const MARKER_START = new RegExp('[*_`~]*' + MARKER_KEY + '[*_`~]*[ \\t]*:');
   function markerLineOnly(text) {
@@ -849,16 +849,16 @@
     const m = MARKER_START.exec(last);
     return m ? last.slice(m.index).trim() : String(text == null ? '' : text);
   }
-  /* HOST CHECKS ARE NOT THE COMMANDER SPEAKING (rc walk 2026-10-14). On a Claude route these notes ride the conversation as
-     user text (providers/provider.js preserveClaudeContinuations), so the model answered them in COMMS as if the Commander had
+  /* HOST CHECKS ARE NOT THE MASTER SPEAKING (rc walk 2026-10-14). On a Claude route these notes ride the conversation as
+     user text (providers/provider.js preserveClaudeContinuations), so the model answered them in COMMS as if the Master had
      scolded it: "You're right —", "Let me correct that:". Every nudge that pushes back on a reply the model meant to end on —
      continuation, empty reply, failure recovery, loop guard, tool markup, memory receipt, and the verify / acceptance checks —
-     says what it is and that it is never answered. (A steering note is the Commander's own words and never carries it.) */
-  const HOST_CHECK = ' (This note is an automatic host check; the Commander never sees it. Do not answer, acknowledge or apologize for it in your reply — just continue the work.)';
+     says what it is and that it is never answered. (A steering note is the Master's own words and never carries it.) */
+  const HOST_CHECK = ' (This note is an automatic host check; the Master never sees it. Do not answer, acknowledge or apologize for it in your reply — just continue the work.)';
   /* EVERY HOST MESSAGE THE LOOP ADDS IS FENCED (provider-conformance-suite, 2026-10-27). On every chat wire the loop's
      mid-run system messages now ride as user-side text (providers/provider.js projectRoles), as they already did on the
      Claude, Gemini and Codex wires; a fenced <tag>…</tag> body is what keeps them reading as the host's, never as the
-     Commander's words. The nudges below carry their own tags; text that arrives from outside the loop (the re-injected
+     Master's words. The nudges below carry their own tags; text that arrives from outside the loop (the re-injected
      task list, a tool's stop prompt) is fenced here when it is not already. */
   const HOST_FENCE_HEAD = /^\s*<([a-z][a-z0-9_-]*)>[\s\S]*<\/\1>\s*$/i;
   function hostFenced(text, tag) {
@@ -867,11 +867,11 @@
   }
   function announcesIntent(text, allowPeerWait = false) {
     const t = String(text == null ? '' : text).trim();
-    if (endsOnChoiceMarker(t)) return false;   // it asks the Commander: a wait, never an announce
+    if (endsOnChoiceMarker(t)) return false;   // it asks the Master: a wait, never an announce
     if (!t) return false;
     const sents = cgSentences(t);
     if (!sents.length) return false;
-    if (CG_WAITS[0].test(sents[sents.length - 1])) return false;   // the reply ENDS on a question: it waits on the Commander
+    if (CG_WAITS[0].test(sents[sents.length - 1])) return false;   // the reply ENDS on a question: it waits on the Master
     for (let i = 0; i < sents.length; i++) {
       if (sents[i] === CG_CODE) continue;
       const s = sents[i].replace(/^[^a-z0-9'"]+/i, '');
@@ -927,7 +927,7 @@
     const text = String((result && result.content) || '');
     const summary = String((result && result.summary) || '').trim();
     if (/^(?:capdenied|denied|declined|cancelled)$/i.test(summary)) return true;
-    return /Commander (?:explicitly )?(?:declined|denied|cancelled)|user-control denied|user denied|Do NOT retry|approval denied/i.test(text);
+    return /Master (?:explicitly )?(?:declined|denied|cancelled)|user-control denied|user denied|Do NOT retry|approval denied/i.test(text);
   }
 
   /* THE REBUILT PROMPT OPENS ON A USER TURN WHEN A LIGHT ONE IS AT HAND (context-budget-and-fold, 2026-11-04). The head pin
@@ -968,7 +968,7 @@
 
   async function runAgentLoop(o) {
     const messages = o.messages;
-    // THIS RUN'S REQUEST (consistency audit 2026-10-11): the latest Commander message at start. In a long chat the
+    // THIS RUN'S REQUEST (consistency audit 2026-10-11): the latest Master message at start. In a long chat the
     // first non-system message is an old turn, not this task (it used to be the one pinned, which is why a long agentic run
     // could fold the request itself into the verbatim section at a fair share like any chatter). A fold carries the request
     // as the current task: whole, first, never dropped (compaction-fidelity collectUserMessages `pinned`), and maybeCompact
@@ -997,7 +997,7 @@
       if (n) deferredDefs.set(wireKey(n), d);
     }
     const limits = o.limits || {};
-    // Missing/zero means the Commander did not opt into a turn ceiling. Operational
+    // Missing/zero means the Master did not opt into a turn ceiling. Operational
     // protections (tool timeout, repeat guard, cancellation) still apply independently.
     const maxIters = (typeof limits.maxIters === 'number' && isFinite(limits.maxIters) && limits.maxIters > 0)
       ? Math.floor(limits.maxIters)
@@ -1100,7 +1100,7 @@
     // returning the plan text (or null); absent = no-op (existing callers byte-identical).
     const todoNote = (typeof o.todoNote === 'function') ? o.todoNote : null;
     // OPTIONAL LIVE STEERING (additive): a function drained ONCE per iteration, at the top of the loop, that
-    // returns any Commander notes injected mid-run (via POST /api/run/steer). Each drained note becomes ONE
+    // returns any Master notes injected mid-run (via POST /api/run/steer). Each drained note becomes ONE
     // <steering_note> system message appended to the working set, so the NEXT model call sees it — exactly at
     // a message boundary (never mid-tool-pairing), so it can neither split a tool_call from its result nor
     // corrupt the assistant/tool interleave. Absent = never steered (existing callers byte-identical). Bounded
@@ -1108,7 +1108,7 @@
     const steer = (typeof o.steer === 'function') ? o.steer : null;
     /* STEER AT THE FINISH LINE (h1 audit 2026-09-22). The drain above runs only at the TOP of an iteration, so a note
        that arrived while the model streamed its FINAL (tool-free) answer was never read — while the UI had already
-       told the Commander "it will fold your note in on its next step". Two additive pieces make that true:
+       told the Master "it will fold your note in on its next step". Two additive pieces make that true:
          · STEER EXTENSION — when a tool-free turn would end the run and notes are pending, fold them exactly like the
            top-of-loop drain and give the model one more turn. Bounded (limits.steerExtend: false disables, a number
            overrides; default 2) so a stream of steers can never keep a run alive; never on a cancelled run or on
@@ -1121,7 +1121,7 @@
     const STEER_EXT_MAX = (_se === false) ? 0 : ((typeof _se === 'number' && _se >= 0) ? Math.floor(_se) : 2);
     let steerExtUsed = 0;
     // fold drained notes into the working set: ONE <steering_note> system message each + the '[steering]' token the
-    // Commander watches land. Shared by the top-of-loop drain and the finish-line extension so the two can't drift.
+    // Master watches land. Shared by the top-of-loop drain and the finish-line extension so the two can't drift.
     // a drained note is its text, or { text, noteId } when the host kept the page's id for it (index.js drainSteer)
     const steerNoteText = (note) => String(note && typeof note === 'object' ? (note.text == null ? '' : note.text) : (note == null ? '' : note));
     let steerReplyPending = false;
@@ -1147,7 +1147,7 @@
         const t = steerNoteText(note).trim();
         if (!t) continue;
         // surface the note in the live transcript as an agent.token delta (a registered event) so the
-        // Commander SEES their steer land, then inject it as a system message for the next model call.
+        // Master SEES their steer land, then inject it as a system message for the next model call.
         emit('agent.token', { agentId, runId, delta: '\n[steering] ' + t + '\n' });
         const folded = { role: 'system', content: '<steering_note>' + t + '</steering_note>' };
         // the folded note is a row of its own in the transcript (turn identity, commit 10): tagged off-wire (a non-enumerable Symbol, so
@@ -1173,7 +1173,7 @@
        guard above cannot see because no two calls are byte-identical: calls to tools that do not exist, one tool
        failing over and over with varying arguments, and a non-read call returning the identical result turn after
        turn. Warnings on every surface; hard stops only where nobody is watching:
-         · o.unattended === true is the HOST's declaration that no Commander is watching this run live (index.js
+         · o.unattended === true is the HOST's declaration that no Master is watching this run live (index.js
            derives it from the run surface). Absent/false = interactive = warn-only for (b)/(c), so a caller that
            does not pass it can never be hard-stopped by them.
          · unknown-tool strikes (3 turns whose every call named a tool that does not exist) stop on every surface.
@@ -1188,7 +1188,7 @@
     // CONTINUATION GUARD (default ON): some models (Kimi K3, live-caught 2026-07-17) end a turn by ANNOUNCING
     // the next action ("Reading the full main.js now — then fixing immediately.") with finish_reason 'stop' and
     // NO tool call. A no-tool turn normally means "final answer", so the run ends 'done' mid-task and the
-    // Commander has to prod the agent repeatedly. When the final text clearly announces imminent work AND tools
+    // Master has to prod the agent repeatedly. When the final text clearly announces imminent work AND tools
     // are wired, inject ONE system nudge (act now or say you're done) and give the model another turn instead
     // of ending. Bounded: at most `continueMax` nudges per run (limits.continueGuard === false disables;
     // { max } overrides), and never on a grace turn — a narrate-forever model still terminates.
@@ -1197,8 +1197,8 @@
     let cgUsed = 0;
     let memorySaveNudges = 0, memoryWrites = 0, configurationWrites = 0, peerHandoffs = 0;
     /* A QUEUED SEAT ENDS THE REPLY (review 10-14). station.control group.add on the lead's own running chat lands only when
-       this reply ends, and the lead's next turn is already scheduled — the kickoff in the group, with the Commander's
-       request. A plan in this reply is that turn's work, not an unkept promise: nudging it gave the Commander a second
+       this reply ends, and the lead's next turn is already scheduled — the kickoff in the group, with the Master's
+       request. A plan in this reply is that turn's work, not an unkept promise: nudging it gave the Master a second
        message answering an invisible nudge (real Haiku run), and an exhausted guard failed the reply, which DROPS the join
        they approved (group-chat.js drainAfterRun). Only the host's own receipt counts ('group.add (queued)'). */
     let seatQueued = false;
@@ -1221,14 +1221,14 @@
     // FAILURE RECOVERY GUARD: the first failed tool must not become an immediate "you do the setup"
     // final. A compact host-enforced ladder buys up to two materially-different attempts. The bound is
     // deliberate: persistence must crawl toward completion without turning a real outage into infinite spend.
-    // Explicit Commander denial is excluded by terminalHumanDecision() above.
+    // Explicit Master denial is excluded by terminalHumanDecision() above.
     const _fr = limits.failureRecovery;
     const FR_MAX = (_fr === false) ? 0 : (_fr && _fr.max != null ? Math.max(0, Math.floor(_fr.max)) : 2);
     let frUsed = 0;
     let failureRecoveryPending = null;
     // VERIFY-ON-STOP ledger: code paths this run has CHANGED but not since proven. Any successful verification
     // empties it. limits.verifyOnStop === false disables; { max } raises the nudge budget (default 1).
-    /* OPTIONAL HOOK SPINE (sidecar/hooks.js). The Commander's own code, on the model-call boundary. Absent =
+    /* OPTIONAL HOOK SPINE (sidecar/hooks.js). The Master's own code, on the model-call boundary. Absent =
        every existing caller and test byte-identical. The tool-call sites live in tools/registry.js, which is
        where the gates are; only the LLM-call and compaction sites belong here. */
     const hooks = (o.hooks && typeof o.hooks.invoke === 'function') ? o.hooks : null;
@@ -1333,7 +1333,7 @@
     let spokeSinceReset = false, turnBreakPending = false;
     /* A REPAIR TURN AFTER AN INVISIBLE STEP IS NOT CHAT (rc walk 2026-10-14). After the Task Brief gate held a call, or a hidden
        brief tool refused its arguments, the model's next turn narrated the fix — "Got it — let me settle the brief first:",
-       "Let me fix that—sources needs to be an array:" — over a step the Commander cannot see (the brief shows as its own
+       "Let me fix that—sources needs to be an array:" — over a step the Master cannot see (the brief shows as its own
        card). Wording the result was not enough for every model. So that one turn's text is held until the turn ends: a turn
        whose calls are ALL hidden drops it (never streamed, never kept); any other turn streams it whole. */
     let quietRepair = false, quietBuf = '';
@@ -1342,7 +1342,7 @@
        partial is already in `messages`, so stripping the overlap from acc.text is correct — the parts join back
        into one turn. A RECOVERY RETRY's failed partial was never pushed: the retried stream is a full
        replacement, so the durable text must stay WHOLE and only the live emit dedupes — stripping there would
-       corrupt the transcript by exactly the bytes the Commander already saw. */
+       corrupt the transcript by exactly the bytes the Master already saw. */
     let dedupeKeepFull = false;
     function emitContinuationText(acc, chunks) {
       if (dedupeAgainst == null) return;
@@ -1408,7 +1408,7 @@
     const sleepFn = (typeof o.sleep === 'function') ? o.sleep : null;
     /* A BACKOFF NEVER OUTLASTS A STOP (stall report 2026-10-13). A rung's sleep (up to 60 s, or a server-stated
        Retry-After) ignored the run signal: STOP was confirmed and the page let go, but the run kept its conversation's
-       turn (runOnce's per-stream queue) until the sleep ran out, so the Commander's next message sat on "connecting".
+       turn (runOnce's per-stream queue) until the sleep ran out, so the Master's next message sat on "connecting".
        The wait now ends the moment the signal aborts; the `signal.aborted` checks after each backoff end the run. */
     const sleep = sleepFn && (ms => new Promise(resolve => {
       if (signal.aborted) return resolve();
@@ -1430,7 +1430,7 @@
     /* WHAT A CANCEL INTERRUPTED (#99). A user who cancels a turn that never answered used to leave a run row saying only
        `cancelled` — the same row as a cancel of a run that was busy and fine. The wait in progress when the signal
        aborted (its phase, how long it had lasted on the injected clock, the adapter's note) is kept here and returned as
-       `cancelledWhile`, for the run record. A wait the Commander had already seen output in (paused) is not recorded. */
+       `cancelledWhile`, for the run record. A wait the Master had already seen output in (paused) is not recorded. */
     let abortedWait = null;
     /* A STOP THAT CUT A MODEL CALL OFF MID-STREAM (bug 80de2a75). The provider bills a call from its first streamed byte,
        but the call's full usage arrives only as the stream ends, so a cancel that cut an attempt off after it began
@@ -1494,7 +1494,7 @@
           if (st.note) beat();
         },
         // Visible output silences the heartbeat WITHOUT disarming it: the same stream can go quiet again (a sentence,
-        // then minutes of streaming tool arguments the Commander cannot see), and that new silence must keep beating.
+        // then minutes of streaming tool arguments the Master cannot see), and that new silence must keep beating.
         pause() { st.paused = true; },
         // any provider stream event at all (a wait note included): the stream is not quiet
         mark() { st.lastEventAt = waitClock(); },
@@ -1982,7 +1982,7 @@
          and a degraded run kept paying for a summarizer call every single turn. The provider's count is the
          honest one for DECIDING to compact (the usage anchor is built on it); for measuring what a fold SAVED,
          both ends must come from the same estimator. */
-      /* HOOKS — on_pre_compress. The last moment history still exists in full. This is the seam a Commander
+      /* HOOKS — on_pre_compress. The last moment history still exists in full. This is the seam a Master
          uses to keep something the summarizer would flatten (archive the transcript, extract decisions to a
          file). Observe-only by construction in hooks.js: a hook that could VETO compaction could pin a run
          against its context ceiling until it died, which is a worse failure than losing detail. */
@@ -2151,7 +2151,7 @@
         if (b && b.unknown) {
           // the cause, then the way out that works for it (budget.js unknownExit; the governor's for a check that threw): a
           // restart replays a failed save but never settles an uncertain charge. An estimate is informational until
-          // the Commander explicitly accepts it; every chosen cap stays strict while history is uncertain.
+          // the Master explicitly accepts it; every chosen cap stays strict while history is uncertain.
           const what = b.cause === 'unsettled' ? 'An earlier call has no settled charge'
             : b.cause === 'damaged' ? 'A line in the spend record is damaged'
             : b.cause === 'write' ? 'Spend history could not be saved to disk'
@@ -2199,7 +2199,7 @@
       return s;
     }
 
-    // Admission may have promoted a Commander-configured fallback because the selected primary is definitively
+    // Admission may have promoted a Master-configured fallback because the selected primary is definitively
     // tool-less. Emit it after run.start so the UI receives a truthful, ordered lifecycle receipt even though no
     // failed provider request was needed to discover the incompatibility.
     if (o.initialFallback && o.initialFallback.fromModel && o.initialFallback.toModel) {
@@ -2247,7 +2247,7 @@
         try { onPromptMeasured({ promptTokens: promptAnchor(), thresholdTokens: context.thresholdTokens(), trusted: !folded && (!!usageReading || !sawUsageReading || callsWithoutReading >= 3) }); }
         catch (e) { failNote('loop.onPromptMeasured', e); }
       }
-      // LIVE STEERING: fold any Commander notes queued mid-run into the prompt BEFORE the next paid call. This is
+      // LIVE STEERING: fold any Master notes queued mid-run into the prompt BEFORE the next paid call. This is
       // a message-boundary injection (the prior iteration's tool results are already appended + paired), so it is
       // structurally safe. Runs after compaction so a fresh note is never folded away in the same turn it lands.
       if (steer) {
@@ -2257,9 +2257,9 @@
       }
       /* HOOKS — pre_llm_call. Same message-boundary safety argument as steering above: the prior iteration's
          tool results are already appended and paired, so an injected note can neither split a tool_call from
-         its result nor corrupt the assistant/tool interleave. This is where a Commander's STANDING BRIEF
+         its result nor corrupt the assistant/tool interleave. This is where a Master's STANDING BRIEF
          lands — "deploy freeze until Friday", "the on-call is Alice" — the kind of fact that changes daily and
-         so belongs in neither a skill nor the dossier. Injected verbatim (the Commander wrote it, and fencing
+         so belongs in neither a skill nor the dossier. Injected verbatim (the Master wrote it, and fencing
          their own instruction would defeat it), bounded by hooks.js, and deduped: a brief that does not change
          between turns is pushed once, not once per turn. */
       if (hooks) {
@@ -2349,7 +2349,7 @@
             if (!sawStreamEvent) { sawStreamEvent = true; waiting.phase('streaming'); }
             if (ev.type === 'text') {
               const delta = String(ev.delta == null ? '' : ev.delta);
-              // the wait is over the moment the Commander SEES output. Reasoning, usage and streaming tool arguments
+              // the wait is over the moment the Master SEES output. Reasoning, usage and streaming tool arguments
               // show nothing (agent.tool_call fires only after the stream), and a retry's deduped re-stream is
               // buffered — the heartbeat keeps beating 'streaming' through all of those. PAUSED, not stopped: a tool
               // call streaming after the text re-arms it (below), or a worker writing a long file after one sentence
@@ -2567,7 +2567,7 @@
           // NOTE: no provider.fallback emit here — a same-provider retry is NOT a failover; emitting it would
           // inflate the floor's failover counter and lie about a model/credential switch that didn't happen
           // (truthful-telemetry law). The same-provider retry has its OWN event, provider.retry, emitted before
-          // the backoff so the Commander sees "retry 3/6 in 30s (overloaded)" instead of silence.
+          // the backoff so the Master sees "retry 3/6 in 30s (overloaded)" instead of silence.
           noteRecovery({ stage: 'provider_stream', action: 'retry', reason: decision.reason, attempt: retriesUsed, model, delayMs: decision.delayMs });
           // "retry n/6" must not promise rungs the patience budget will refuse: when THIS rung spent the last of it (the
           // policy shrank it to fit), it is the last local rung, so the total is n. (A server-stated Retry-After is
@@ -2585,7 +2585,7 @@
         }
         if (decision.reason === 'provider_stalled') {
           // Name the stall honestly — which model, how many idle expiries, what the watchdog saw — so the
-          // Commander reads "the model stopped responding", not a generic timeout after half an hour.
+          // Master reads "the model stopped responding", not a generic timeout after half an hour.
           fatal = Object.assign({}, cls, {
             reason: 'provider_stalled', retryable: true,
             message: 'model stalled: ' + idleStalls + ' consecutive attempts on ' + model + ' hit the response idle timeout ('
@@ -2598,7 +2598,7 @@
         // A2 reconcile-on-fatal: if usage arrived before the stream failed, RECORD it before ending 'error' so the
         // ledger/spend reflect tokens the provider will bill — a fatal path must not silently drop billed usage.
         bookUsage(usage, usageModel, usageCost);
-        /* STREAMED TEXT OUTLIVES A FATAL STREAM ERROR (H2, reference-harness parity). The Commander already read these
+        /* STREAMED TEXT OUTLIVES A FATAL STREAM ERROR (H2, reference-harness parity). The Master already read these
            words live (agent.token), but the turn was never appended, so the durable transcript, result.messages and a
            resumed run all acted as if the model had said nothing (E2E: a mid-stream 401 after streamed text left no
            assistant row). Only on this FINAL fatal end — a retry/compress/fallback re-runs the turn and never lands
@@ -2742,7 +2742,7 @@
 
       /* GRACE TURN NEVER DISPATCHES (2026-09-22 audit, reference-harness parity). The grace turn is contracted to be
          tool-free, but that contract lived only in the <iteration_limit> prose: tools stayed on the request, so a
-         model that kept going had its calls executed PAST the Commander's ceiling (cap 2 -> 3 dispatches, a file
+         model that kept going had its calls executed PAST the Master's ceiling (cap 2 -> 3 dispatches, a file
          written after the limit, returned text ""). The tool list is deliberately NOT dropped from the wire to
          enforce this — provider-compatibility law: a request whose history carries tool_use blocks but no tool
          definitions is rejected (Anthropic), and every adapter omits `tools` when the list is empty. So the host
@@ -2801,7 +2801,7 @@
             memorySaveNudges++;
             // a PROMISE ("I'll remember that") names what actually goes wrong: the next run starts without it
             const premise = memoryClaimKind === 'promise'
-              ? 'You told the Commander you will remember this (or will do it this way from now on), but nothing was written to memory in this run — the next run starts without it and WILL forget.'
+              ? 'You told the Master you will remember this (or will do it this way from now on), but nothing was written to memory in this run — the next run starts without it and WILL forget.'
               : 'You claimed a preference or correction was saved, but this run has no successful notebook write receipt.';
             messages.push({ role: 'system', content: '<memory_receipt>' + premise + ' Use notebook_read and notebook_write to save or update the actual requirement now. For corrections use replaceId and previousBody; for approved reusable requirements pin within the intended scope. If it was already saved, verify it with a read and say it was already present; otherwise explicitly say it has not been saved. Do not repeat an unsupported save claim.' + HOST_CHECK + '</memory_receipt>' });
             continue;
@@ -2838,12 +2838,12 @@
         }
         /* EMPTY REPLY RETRY (2026-10-11). An empty FIRST reply (no text, no tool call, nothing before it to process) is
            almost always a provider hiccup, but it ended the run 'empty' on the spot and COMMS/Telegram said only
-           "stopped (empty)". One bounded re-ask; the retry does not spend the Commander's step budget, and a second
+           "stopped (empty)". One bounded re-ask; the retry does not spend the Master's step budget, and a second
            empty reply still ends 'empty' (every surface now says what that means). */
         if (empty && !graceUsed && !emptyRetryUsed && CG_MAX > 0 && !continuationParts.length && limits.emptyRetry !== false) {
           emptyRetryUsed = true;
           turns = turnStart;
-          messages.push({ role: 'system', content: '<empty_reply>Your last reply was empty — no text and no tool call. Respond to the Commander\'s latest message now: make the tool call(s) the task needs, or give your answer.' + HOST_CHECK + '</empty_reply>' });
+          messages.push({ role: 'system', content: '<empty_reply>Your last reply was empty — no text and no tool call. Respond to the Master\'s latest message now: make the tool call(s) the task needs, or give your answer.' + HOST_CHECK + '</empty_reply>' });
           continue;
         }
         // CONTINUATION GUARD: an announce-without-acting final turn ("Reading main.js now…" + zero tool calls)
@@ -2873,7 +2873,7 @@
           const search = hasSearch
             ? ' Use tool_search when a deferred capability or alternate tool may exist; do not claim a tool is absent before searching.'
             : '';
-          messages.push({ role: 'system', content: '<failure_recovery>The previous path failed (' + failed + '), but one failed tool is not proof that the Commander\'s task is impossible. Do not end by handing avoidable setup work to the Commander. Inspect the exact error, then make an ACTUAL alternate call now using a different query, arguments, strategy, or tool.' + search + ' Retry only when the failure is plausibly transient; never repeat identical failing arguments blindly. Stay inside the current safety, consent, credential, and scope boundaries. Ask only for irreducible human input. If no authorized route remains after you have genuinely exhausted alternatives, report the exact blocker and the paths you tried.' + HOST_CHECK + '</failure_recovery>' });
+          messages.push({ role: 'system', content: '<failure_recovery>The previous path failed (' + failed + '), but one failed tool is not proof that the Master\'s task is impossible. Do not end by handing avoidable setup work to the Master. Inspect the exact error, then make an ACTUAL alternate call now using a different query, arguments, strategy, or tool.' + search + ' Retry only when the failure is plausibly transient; never repeat identical failing arguments blindly. Stay inside the current safety, consent, credential, and scope boundaries. Ask only for irreducible human input. If no authorized route remains after you have genuinely exhausted alternatives, report the exact blocker and the paths you tried.' + HOST_CHECK + '</failure_recovery>' });
           continue;
         }
         // VERIFY-ON-STOP: the run CHANGED code and is now trying to finish without having run anything against
@@ -2946,7 +2946,7 @@
           if (failing.length) {
             accUsed++;
             const lines = failing.slice(0, 20).map(c => '- ' + (c.id || c.type) + ' [' + c.type + (c.path ? ' ' + c.path : '') + (c.command ? ' `' + c.command + '`' : '') + (c.connector ? ' ' + c.connector + (c.tool ? '/' + c.tool : '') : '') + ']: ' + (c.code || 'not_proven'));
-            messages.push({ role: 'system', content: '<acceptance_before_done>You are ending this task but the host\'s acceptance checks for it do not all hold yet. These are mechanical postconditions the Commander attached to this procedure; the task is not done until every one passes:\n' + lines.join('\n') + '\nMake each failing check hold now (produce/fix the named artifact in this run, or run the exact named check command so it passes), then finish. If one genuinely cannot be satisfied, say so plainly and name which — never claim it holds.' + HOST_CHECK + '</acceptance_before_done>' });
+            messages.push({ role: 'system', content: '<acceptance_before_done>You are ending this task but the host\'s acceptance checks for it do not all hold yet. These are mechanical postconditions the Master attached to this procedure; the task is not done until every one passes:\n' + lines.join('\n') + '\nMake each failing check hold now (produce/fix the named artifact in this run, or run the exact named check command so it passes), then finish. If one genuinely cannot be satisfied, say so plainly and name which — never claim it holds.' + HOST_CHECK + '</acceptance_before_done>' });
             continue;
           }
         }
@@ -2962,7 +2962,7 @@
         // skill-review, the cron settle path never emits workitem.delivered, and the frontend renders "ended: empty"
         // instead of a delivered crate. A DUPLICATE turn is different: it re-emitted a REAL prior answer, so it stays
         // 'done' (the answer exists — only the genuinely empty final turn is degraded).
-        // STEER EXTENSION: a Commander note that landed while this final answer streamed is folded in and buys one more
+        // STEER EXTENSION: a Master note that landed while this final answer streamed is folded in and buys one more
         // turn (bounded; see STEER_EXT_MAX). Only when the next turn's own guards would let it run — a note folded into
         // a turn that then ends 'budget'/'max_iters' would be read by nobody; those stay pending and end() names them.
         if (steer && !signal.aborted && !graceUsed && steerExtUsed < STEER_EXT_MAX
@@ -3049,7 +3049,7 @@
          travel as one — browser.screenshot saved a PNG and handed back a path, and browser.vision handed back
          a DESCRIPTION written by a second model. Either way the model steering the browser was working from
          prose about the screen instead of the screen. The pixels ride here instead, as a following user turn
-         in the same `image_url` shape the Commander's own attachments already use, so every adapter that can
+         in the same `image_url` shape the Master's own attachments already use, so every adapter that can
          see an image already knows how to render this one and none needed a change.
 
          FENCED, because a screenshot is attacker-controlled content in the most literal way: a page can simply

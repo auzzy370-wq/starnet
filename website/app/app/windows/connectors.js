@@ -11,7 +11,7 @@
 
   // CATALOG DEEP-LINK (tutorial lane 2, 2026-08-22): StationUI.connectorJump(id) opens ABILITIES on the CATALOG
   // rail and scrolls/flashes that connector's card (the same cc-jump flash the ▸ VIA action uses) — the
-  // Commander still presses the card's OWN ▸ SIGN IN, so the existing OAuth path stays the only door. The id
+  // Master still presses the card's OWN ▸ SIGN IN, so the existing OAuth path stays the only door. The id
   // parks here until ccRefresh has rendered the cards (the window builds async).
   let ccJumpPending = null;
   function ccFlash(target) {
@@ -209,7 +209,7 @@
        SPLIT for the same reason the code already refuses to fake one: if the /api/connectors read fails
        we say so rather than assert a zero, and a single summed total could not stay honest through that.
        The curated platform directory now lives in CATALOG, where discovery belongs. Its cards route here
-       and prefill this form; KEYS stays the inventory/setup surface for credentials the Commander actually
+       and prefill this form; KEYS stays the inventory/setup surface for credentials the Master actually
        holds, plus the escape hatch for a custom platform the catalog does not list. */
     const secKeys =
       '<div class="sec" id="ab-keys"><span class="sec-l">API KEYS</span><span class="sec-r"></span><span class="sec-nd"></span></div>' +
@@ -240,7 +240,7 @@
         '<div class="mc-acts"><button class="bb sm" id="ky-add">+ SAVE KEY</button></div>' +
       '</div></details>' +
       '<div id="ky-msg" class="msg" role="status" aria-live="polite"></div>';
-    /* ---- EXTENSIONS: the Commander's OWN code, running inside the station ----
+    /* ---- EXTENSIONS: the Master's OWN code, running inside the station ----
        Sits in this console and not in SETTINGS because "MCP server", "hook" and "plugin" are one user intent —
        things I plug into my station — and splitting them by which subsystem implements them is how a settings
        screen becomes a junk drawer. The two lists stay SEPARATE inside the tab because they are not the same
@@ -445,7 +445,7 @@
         error: ['var(--bad)', '✕ error']
       })[state] || ['var(--ph-dim)', '○ Off'];
     }
-    // A findings block is DISCLOSURE at the approval moment — the guard is not a boundary, so the Commander
+    // A findings block is DISCLOSURE at the approval moment — the guard is not a boundary, so the Master
     // has to be able to see what they are about to say yes to.
     // The sidecar's guard returns a LIST of findings ({ severity, description, file, line }); the old {level, hits}
     // shape this used to read never existed, so every plugin's findings silently rendered as nothing.
@@ -666,7 +666,7 @@
             // so "approve" is the only step between writing a tool and the crew being able to use it.
             const pid = openAfter || (kind === 'plugin-allow' ? btn.dataset.id : '');
             const p = pid ? PluginHost.list().find(x => x.id === pid) : null;
-            // FIRST TIME ONLY: a terminal the Commander deliberately removed is not put back by a later re-approve
+            // FIRST TIME ONLY: a terminal the Master deliberately removed is not put back by a later re-approve
             // (that would quietly hand the tools back) — the row keeps offering PLACE TERMINAL instead
             let placedBefore = [];
             try { placedBefore = JSON.parse(localStorage.getItem('vultron.pluginTerminalsPlaced') || '[]'); } catch (_) { placedBefore = []; }
@@ -769,7 +769,7 @@
       // A DIAGNOSIS WITHOUT A CURE. This span named the exact missing prop and offered nothing to click,
       // so the one row that knows what is wrong was the one row you could not act on. The button hands
       // off to the same BUILD MODE deep-link the SKILLS library's PLACE uses (arms the palette on the prop),
-      // which is the honest path: the prop still lands where the Commander puts it.
+      // which is the honest path: the prop still lands where the Master puts it.
       const hint = inert
         ? '<span class="ts-inert">no ' + esc(t.object || 'prop') + ' in this agent’s workspace — choose one matching prop for this ability' +
             (t.object ? '<button class="bb xs ts-place" type="button" data-ts-place="' + esc(t.object) + '">PLACE ONE</button>' : '') +
@@ -1126,7 +1126,7 @@
        undefined, and the panel prints "no platform directory available" / "No keyed platform connected yet" —
        a CONFIRMED EMPTY over a read that never succeeded. A non-JSON error (the plain-text `forbidden token`
        a 403 returns) throws instead, and the catch printed "sidecar offline — start it", which is the opposite
-       of true: the station answered, it just refused. Both readings send a Commander to fix the wrong thing —
+       of true: the station answered, it just refused. Both readings send a Master to fix the wrong thing —
        or to re-add a key they already have.
 
        Returns {ok, json, status, offline} so a caller can say which of the three actually happened. */
@@ -1281,7 +1281,7 @@
     let ccAlternatives = new Map();
     // CATEGORY FOLDS (UX night 10-25): eighteen categories as one ~23,000px wall was the catalog a newcomer met. Popular
     // stays open; every other category is a one-line fold with its count, so the whole catalog reads as an index.
-    // A fold the Commander opens or closes stays that way while the window lives (refreshes re-render every card).
+    // A fold the Master opens or closes stays that way while the window lives (refreshes re-render every card).
     const ccFoldOpen = new Map();
     const ccDefaultOpen = cat => ccFoldOpen.has(cat) ? ccFoldOpen.get(cat) : cat === 'Popular';
     const ccEntry = id => ccCache.find(x => (x.catalogId || x.id) === id);
@@ -1365,7 +1365,7 @@
         ? '<div class="mc-hint">' + esc(e.signInMessage || 'Google sign-in is not available in this build. Vultron needs to finish enabling it. No account setup is required from you.') + '</div>' : '';
       const home = e.homepage ? ' <a class="cc-home dim" href="' + esc(e.homepage) + '" target="_blank" rel="noopener">site ↗</a>' : '';
       // data-search: the console search box (stationui.js doFilter) matches textContent + this attribute, so a
-      // Commander typing "google drive" reaches the Google Workspace card even though those words are only in
+      // Master typing "google drive" reaches the Google Workspace card even though those words are only in
       // its blurb by luck. Off-screen matching text only — never rendered.
       const alias = (Array.isArray(e.aliases) && e.aliases.length) ? ' data-search="' + esc(e.aliases.join(' ')) + '"' : '';
       const presets = (Array.isArray(e.presets) && e.presets.length)
@@ -1434,7 +1434,7 @@
             catalogId: 'platform:' + p.id
           }))
         }));
-        // Platform categories lead: a Commander asking for Printify should not have to scroll past the entire
+        // Platform categories lead: a Master asking for Printify should not have to scroll past the entire
         // MCP directory. Exact-name categories merge so Developer Tools does not render twice.
         const groups = [];
         ccAlternatives = new Map();
@@ -1522,7 +1522,7 @@
       const b = ev.target.closest('button[data-cc-filter]'); if (!b) return;
       ccSetFilter(b.dataset.ccFilter); sfx('tick');
     });
-    // remember the Commander's own fold choice (a click on the category line; Enter/Space on it clicks too). The click
+    // remember the Master's own fold choice (a click on the category line; Enter/Space on it clicks too). The click
     // lands before the fold toggles, so the choice is the opposite of its state now.
     if (ccListEl) ccListEl.addEventListener('click', ev => {
       const head = ev.target.closest('summary'); const g = head && head.parentElement;
@@ -1531,7 +1531,7 @@
     // SEARCH BEATS THE TIER FILTER. The console search (stationui doFilter) marks a matching card
     // `.con-hit`, but a card this filter set `hidden` stays display:none — so searching "stripe" with
     // "▸ no setup" active lit the CATALOG rail and showed NOTHING (probed live: hit:true, painted:false).
-    // The Commander who types a name has stated a stronger intent than a chip they clicked earlier, so
+    // The Master who types a name has stated a stronger intent than a chip they clicked earlier, so
     // entering search resets the filter to ALL rather than leaving two filters silently ANDed.
     const ccSearchIn = body.querySelector('.con-search-in');
     if (ccSearchIn) ccSearchIn.addEventListener('input', () => {
@@ -1999,7 +1999,7 @@
     });
     kyPlatformsRefresh();
     kyRefresh();
-    // panes mount once and tab clicks only toggle visibility — re-poll both lists when the Commander
+    // panes mount once and tab clicks only toggle visibility — re-poll both lists when the Master
     // lands on KEYS, so a connector keyed on the CATALOG tab moments ago shows up without a window reopen.
     const kyTab = body.querySelector('#con-tab-connectors-mcp');   // CONNECTED shows the API keys too
     if (kyTab) kyTab.addEventListener('click', () => { kyPlatformsRefresh(); kyRefresh(); });

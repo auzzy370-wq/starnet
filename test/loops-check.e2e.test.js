@@ -178,7 +178,7 @@ function makeRepo() {
     A.eq(chk.gitProven, true, 'a real git repo means the changed-file list is provable');
     A.eq(chk.tampered, false, 'and nothing was tampered with');
     A.eq(L(st).recent[0].outcome, 'red', 'a red check lands the iteration RED');
-    A.eq(L(st).pendingCount, 0, 'and it is NOT put in front of the Commander — you are never asked to approve broken work');
+    A.eq(L(st).pendingCount, 0, 'and it is NOT put in front of the Master — you are never asked to approve broken work');
     A.ok(L(st).redStreak >= 1, 'the red streak is tracking');
     A.ok(L(st).state !== 'done', 'and the objective is not met');
 

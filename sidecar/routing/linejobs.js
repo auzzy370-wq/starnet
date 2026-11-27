@@ -1,7 +1,7 @@
 /* sidecar/routing/linejobs.js — LINE JOBS (2026-09-30, Andrew: "the easiest conveyor system we can possibly put together … clear as
    day"). Every job sent down a work line — from the WORKFLOWS window, or the Workflow panel's RUN ONE REAL JOB (one route, POST
    /api/routing/sample) — is kept as ONE record: what was asked, the line it rode, each step's run, what came out, what it cost and
-   how it ended, plus what the Commander changed because of it (a suggested fix used or put back, a result kept as the example) and
+   how it ended, plus what the Master changed because of it (a suggested fix used or put back, a result kept as the example) and
    which earlier job it re-ran. The WORKFLOWS window and the OUTBOX open the same record, after a reload or a restart.
 
    TRUTH: a record says only what the route recorded. Its status is the route's own verdict (delivered = the route's `completed`:
@@ -343,7 +343,7 @@ function byStream(state, streamId) {
   for (let i = jobs.length - 1; i >= 0; i--) if (jobs[i].streamId === s) return jobs[i];
   return null;
 }
-// what the Commander changed because of this job (a fix used or put back, the result kept as the example)
+// what the Master changed because of this job (a fix used or put back, the result kept as the example)
 function note(state, id, n) {
   writable(state);
   const i = idx(state, id), nn = normNote(n);

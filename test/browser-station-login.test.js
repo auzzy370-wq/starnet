@@ -1,5 +1,5 @@
 /* node test/browser-station-login.test.js — browser.login on the STATION browser (sidecar/tools/builtin/browser.js
-   login(), deps.stationLogin): it opens the page IN the shared browser (no relaunch), shows it to the Commander, waits
+   login(), deps.stationLogin): it opens the page IN the shared browser (no relaunch), shows it to the Master, waits
    for their Done — and while they sign in, the agent's other browser tools are FROZEN (release review 2026-09-30: a
    snapshot / get_text / screenshot called in parallel in the same turn could read a page they are typing a password
    or a 2FA code into). After Done every tool works again and refs minted before are retired. */
@@ -26,7 +26,7 @@ const { makeBrowserTools } = require('../sidecar/tools/builtin/browser.js');
   // review app-shell-ui-03: a sign-in is approved once; a standing answer is echoed as once, never as a grant
   A.eq(fresh, [true, true], 'both sign-in asks are fresh consent (approve once only)');
   A.eq(drv.url, 'https://github.com/login', 'the page opened IN the shared browser (no relaunch)');
-  A.eq(opened, ['github.com'], 'and was shown to the Commander');
+  A.eq(opened, ['github.com'], 'and was shown to the Master');
   let err = ''; try { await tool('browser.get_text').run({}, {}); } catch (e) { err = e.message; }
   A.ok(/FROZEN/.test(err) && /sign-in at github\.com/.test(err), 'a parallel get_text during the sign-in is refused (FROZEN), nothing read');
   let err2 = ''; try { await tool('browser.snapshot').run({}, {}); } catch (e) { err2 = e.message; }

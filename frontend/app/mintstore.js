@@ -1,6 +1,6 @@
 /* VULTRON — mintstore.js : the browser wiring for the AUTO-MINT engine (mint.js).
 
-   The read/observe surface the app talks to. It folds each TASK DIRECTIVE the Commander sends into mint.js's
+   The read/observe surface the app talks to. It folds each TASK DIRECTIVE the Master sends into mint.js's
    recurrence map and surfaces the resulting proposals to the Recruitment Bay's RECIPES tab. Mirrors the
    xpstore.js / profilestore.js pattern: a thin browser global that supplies Date.now at the edge (mint.js stays
    clock-injected + deterministic) and NEVER emits on U.bus — the shared event contract is owned by the

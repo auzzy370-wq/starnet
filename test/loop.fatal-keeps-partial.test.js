@@ -1,4 +1,4 @@
-/* node test/loop.fatal-keeps-partial.test.js — H2: text already streamed to the Commander survives a FATAL stream error.
+/* node test/loop.fatal-keeps-partial.test.js — H2: text already streamed to the Master survives a FATAL stream error.
 
    E2E witness (2026-09-22 audit): a mid-stream 401 after streamed text left NO assistant row — the durable transcript,
    result.messages and a resumed run all behaved as if the model had said nothing, although COMMS had shown the words.
@@ -86,7 +86,7 @@ const MARK = /\n\n\[response interrupted — [^\]]+; this answer is incomplete\]
     A.ok(attempt > 1, 'the ladder really retried (' + attempt + ' attempts)');
     const kept = assistants(res.messages);
     A.eq(kept.length, 1, 'one kept partial');
-    A.ok(String(kept[0].content).indexOf('Partial draft shown live') === 0 && MARK.test(kept[0].content), 'it is the text the Commander actually saw, flagged incomplete');
+    A.ok(String(kept[0].content).indexOf('Partial draft shown live') === 0 && MARK.test(kept[0].content), 'it is the text the Master actually saw, flagged incomplete');
     A.ok(/provider error: timeout/.test(kept[0].content), 'with the final classified reason');
     A.eq(tokens(seq), 'Partial draft shown live', 'nothing new was streamed by the empty retries');
   }

@@ -11,7 +11,7 @@
 
 ### 1. Parameterized slash commands typed inline never execute — they fire a wasted (here, failed) LLM run
 - **Repro:** In COMMS type `/model gpt-4o` (or `/title Foo`, `/goal do X`, `/resume 2`) and press Enter.
-- **Observed:** the text is echoed as a `COMMANDER` chat message and a **live run fires** (in this seed → `■ RUN FAILED · 0s`). The model is *not* changed; the workstream is *not* renamed.
+- **Observed:** the text is echoed as a `MASTER` chat message and a **live run fires** (in this seed → `■ RUN FAILED · 0s`). The model is *not* changed; the workstream is *not* renamed.
 - **Cause:** typing the space+argument makes `matchCommands("model gpt-4o")` return zero matches, so `openSlash` calls `closeSlash()` ([chat.js:3345](frontend/app/chat.js:3345)). With the palette closed, Enter routes to `send()` ([chat.js:363](frontend/app/chat.js:363)) instead of `runSlash`. `send()` never re-parses slashes. There is **no way to pass an argument to a client slash command by typing** — the palette is only open when the box holds just the bare command name.
 - **Why it matters:** `/help` and the commands themselves advertise `<args>` (`/model <model-id>`, `/title <name>`, `/goal <what you want done>`). Following the documented syntax silently spends an LLM run and posts your "command" to the model as chat.
 - **Fix direction:** in the Enter handler, if the input starts with `/` and the first token matches a known command, dispatch it (with the trailing args) even when the palette is closed.

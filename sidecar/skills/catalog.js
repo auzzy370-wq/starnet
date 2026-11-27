@@ -272,7 +272,7 @@
     }
     if (!parts.length) return '';
     const head = '\n\n## INSTALLED SKILLS\n'
-      + 'Your Commander enabled these ready-made skill recipes and your workstation supports them. '
+      + 'Your Master enabled these ready-made skill recipes and your workstation supports them. '
       + 'When a task matches one, FOLLOW its recipe instead of improvising.\n\n';
     const tail = omitted ? ('\n\n(' + omitted + ' more enabled skill' + (omitted > 1 ? 's were' : ' was')
       + ' omitted here to keep the prompt lean.)') : '';
@@ -321,7 +321,7 @@
       lines.push(line); used += line.length;
     }
     const head = '\n\n## INSTALLED SKILLS\n'
-      + 'Your Commander enabled these ready-made skill recipes and your workstation supports them. '
+      + 'Your Master enabled these ready-made skill recipes and your workstation supports them. '
       + 'When a task matches one, FOLLOW its recipe instead of improvising.\n'
       + 'This is an INDEX, not the recipes. Before following one, load its full text with skill.view using the name in '
       + 'brackets (e.g. skill.view {"name": "' + viewName(offered[0]) + '"}); never work from the one-line summary alone.\n\n';
@@ -330,7 +330,7 @@
     return head + lines.join('\n') + tail;
   }
   // resolve a skill.view name against the recipes a run is OFFERED (pass live(...)). Accepts the index's
-  // "library:<slug>" name, a bare slug, or the display name (case-insensitive). A recipe the Commander disabled,
+  // "library:<slug>" name, a bare slug, or the display name (case-insensitive). A recipe the Master disabled,
   // or whose gear is not placed, is not in the list -- so it is not served, exactly as it was never injected.
   function find(offered, name) {
     let q = oneLine(name).toLowerCase();

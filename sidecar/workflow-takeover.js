@@ -111,8 +111,8 @@ function similar(a, b) {
   return inter >= Math.min(3, small) && inter / small >= 0.75 && inter / union >= 0.5;
 }
 
-/* CADENCE — a SUGGESTION only, read off when the Commander actually asked (sidecar local time is the
-   Commander's machine time: Vultron is local-first). The review form pre-selects it; the Commander still
+/* CADENCE — a SUGGESTION only, read off when the Master actually asked (sidecar local time is the
+   Master's machine time: Vultron is local-first). The review form pre-selects it; the Master still
    picks and confirms. Returns null when the occasions show no honest rhythm. */
 const DAYNAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 function hourLabel(h) { return (h % 12 || 12) + ' ' + (h < 12 ? 'AM' : 'PM'); }
@@ -260,7 +260,7 @@ function candidates(input) {
 }
 
 /* notice() — the AGENT-side half. Called while a NEW request is being prepared: if this request is the same work
-   the Commander already had completed on at least two separate earlier days (so this is the third+ occasion), the
+   the Master already had completed on at least two separate earlier days (so this is the third+ occasion), the
    lead is told so it can offer — in its own reply, once — to make it a standing routine. Same evidence bar and the
    same decisions/jobs suppression as the takeover card; nothing is ever created by a notice. */
 function notice(input) {

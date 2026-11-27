@@ -2,7 +2,7 @@
 /* node test/steer-rows.test.js — a steering note is a row of the station's own transcript, from the POST to the page (turn identity,
    commit 10; closes 253e5a8e-adjacent mem:send-now-steer-1014).
 
-   A note a Commander sends mid-run (SEND NOW, /steer, a channel follow-up) used to live in three places that never met: the buffer (the
+   A note a Master sends mid-run (SEND NOW, /steer, a channel follow-up) used to live in three places that never met: the buffer (the
    id died there), the loop (an untagged system message the transcript skipped) and the page (an echo inside the saved reply, replayed to
    the model INSIDE the agent's own message). Now, through the real buffer, loop, run writer, store, merge and windows:
      1. buffer   drainNotes keeps each note's id, settles the ledger exactly as drain does, and drain still answers texts;
@@ -98,7 +98,7 @@ leg('rows: buffer -> loop -> transcript is one steer row per note, after its too
   A.eq(roles, ['user:turn', 'assistant:turn', 'tool:turn', 'system:steer', 'system:steer', 'assistant:turn'], 'directive, tool call, its result, the two notes, the answer: in the order the run lived them');
   const steers = steerRows(rows);
   A.eq(steers.map(r => [r.content, r.noteId, r.sourceRunId, r.turnId]), [['make it blue', 'sn1', RUN, Kinds.runTurnId(RUN)], ['and short', undefined, RUN, Kinds.runTurnId(RUN)]],
-    'each row holds the Commander\'s words alone (not the loop\'s wrapper), its note id when it had one, the run and the run\'s turn');
+    'each row holds the Master\'s words alone (not the loop\'s wrapper), its note id when it had one, the run and the run\'s turn');
   const callAt = rows.findIndex(r => r.role === 'assistant' && r.toolCalls), toolAt = rows.findIndex(r => r.role === 'tool');
   A.ok(callAt >= 0 && toolAt === callAt + 1, 'the tool call and its result are still adjacent (the note never splits a pair)');
   A.ok(steers.every(r => r.rowId > rows[toolAt].rowId) && steers.every(r => r.rowId < rows[rows.length - 1].rowId), 'the notes sit after the result and before the answer they shaped');
@@ -195,8 +195,8 @@ leg('page: a canonical steer row is drawn as the mid-run line and no code moves 
   vm.runInContext(code + '\nthis.api = { renderHistory, placeSteerNotes };', c);
   c.api.renderHistory();
   A.eq(lines.filter(l => l[0] !== 'row'), [['user', 'go'], ['reply', 'On it.'], ['reply', 'Done.']], 'the station\'s steer row is not an agent reply');
-  A.eq([lines.filter(l => l[0] === 'row').map(l => l[1] + (l[2] ? ':' + l[2] : '')), classes, body.textContent], [['agent', 'user:COMMANDER · MID-RUN', 'agent'], ['steer-echo'], 'make it blue'],
-    'it is drawn as the Commander\'s mid-run line, in its place between the two replies, wire marker stripped');
+  A.eq([lines.filter(l => l[0] === 'row').map(l => l[1] + (l[2] ? ':' + l[2] : '')), classes, body.textContent], [['agent', 'user:MASTER · MID-RUN', 'agent'], ['steer-echo'], 'make it blue'],
+    'it is drawn as the Master\'s mid-run line, in its place between the two replies, wire marker stripped');
   // an echo with no station row yet is placed by time; the station row never is
   const echo = { role: 'system', sys: true, steerEcho: true, content: '[steering] later', sourceRunId: RUN, ts: 75 };
   const placed = c.api.placeSteerNotes([ws.history[0], ws.history[1], ws.history[2], ws.history[3], echo]);

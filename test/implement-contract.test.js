@@ -70,7 +70,7 @@ const selected = { title: 'Add a retry to the uploader', grounds: 'they said upl
   A.ok(!/FINISH IT, DO NOT PLAN IT/.test(unknown), 'an absent initiative does not silently impose the FREE refusal');
 })();
 
-/* THE SELECTOR IS WHERE THE VISION LEAKS. Away-work exists to GET THINGS DONE toward the Commander's goals, but
+/* THE SELECTOR IS WHERE THE VISION LEAKS. Away-work exists to GET THINGS DONE toward the Master's goals, but
    goals/quests/threads are often PHRASED as drafts — "Draft Automation Backlog" was a real quest that produced a
    real backlog instead of the tool it described. That choice happens at CANDIDATE time, before any card exists. */
 (function selectorAimsAtFinishableWork() {
@@ -89,7 +89,7 @@ const selected = { title: 'Add a retry to the uploader', grounds: 'they said upl
   const blurbs = AP.ARCHETYPES.map(a => a.blurb).join(' | ');
   A.ok(!/draft a tool/.test(blurbs), 'no archetype invites "draft a tool" instead of building one');
   A.ok(!/research \/ draft \/ stage/.test(blurbs), 'and none offers "draft" as a default deliverable shape');
-  // the ids are LEARN-STORE KEYS — renaming one silently orphans a Commander's learned preferences.
+  // the ids are LEARN-STORE KEYS — renaming one silently orphans a Master's learned preferences.
   ['advance-goal', 'kill-pain', 'prep-next', 'maintain-extend', 'scout'].forEach(id =>
     A.ok(AP.ARCHETYPES.some(a => a.id === id), 'archetype id "' + id + '" is preserved (learn-store key)'));
 })();

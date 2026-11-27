@@ -53,7 +53,7 @@ const quoted = W.exportConversation('s17', 'json', { exportedAt: 123 });
 A.ok(quoted.doc.messages.length > 0, 'without display rows the page history is exported');
 const md = W.exportConversation('s17', 'markdown', { exportedAt: 123 });
 A.ok(md && md.mime === 'text/markdown' && /^# Orchid launch notes/m.test(md.text), 'Markdown export has heading and MIME');
-A.ok(/## Commander[\s\S]*## Agent/.test(md.text), 'Markdown labels both visible speakers');
+A.ok(/## Master[\s\S]*## Agent/.test(md.text), 'Markdown labels both visible speakers');
 A.ok(!/HIDDEN-SYSTEM|LOCAL-MARKER/.test(md.text), 'Markdown excludes hidden/system rows too');
 
 /* bulk preview is exact; pinned and General are protected; only previewed ids move; undo survives restart */

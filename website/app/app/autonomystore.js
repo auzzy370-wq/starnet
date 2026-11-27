@@ -70,7 +70,7 @@ const AutonomyStore = (() => {
     const cleared = k => !!(halt && halt.subsystems[k] && halt.subsystems[k].halted === false);
     const schedules = j && j.cronArmed === true && cleared('cron');
     if (!halt) return 'E-STOP LIFT SAVED: the rest of the pause could not be checked — see RESUME AUTOMATION in the top bar';
-    // the same three subsystems the top bar's RESUME AUTOMATION watches (emergency-control.js) — a Commander's own
+    // the same three subsystems the top bar's RESUME AUTOMATION watches (emergency-control.js) — a Master's own
     // overseer review pause is not an E-STOP leftover
     const whole = ['cron', 'nightshift', 'loops'].every(cleared);
     if (whole && acts && schedules) return RESUMED;

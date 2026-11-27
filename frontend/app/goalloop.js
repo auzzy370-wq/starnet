@@ -1,10 +1,10 @@
 /* VULTRON — goalloop.js : the PURE GOAL-LOOP state machine (Vultron's "Ralph loop").
 
-   The autonomous engine behind /goal: the Commander sets a standing goal on a workstream; after each turn
+   The autonomous engine behind /goal: the Master sets a standing goal on a workstream; after each turn
    lands, an auxiliary JUDGE model is asked "is this goal satisfied by the agent's last response?" and returns
    a one-line JSON verdict {done, reason}. If not done, a CONTINUATION prompt (goal + subgoals + judge reason)
    is auto-queued as the next turn. The loop ends when the judge says done, the continuation budget is spent,
-   a real user message preempts it, or the Commander pauses/clears it. Mirrors the reference CLI's goal loop, minus
+   a real user message preempts it, or the Master pauses/clears it. Mirrors the reference CLI's goal loop, minus
    the wait-barrier (Vultron's /goal has no async-process registry to park on).
 
    PURE + node-testable (a `GoalLoop` global in the browser, module.exports under node), mirroring goals.js /
@@ -136,13 +136,13 @@
   // the head every goal step stored BEFORE the org pass carries (0.13.2 / 0.13.3 / the 0.13.5 candidate wrote "standing goal"):
   // a saved session replays those steps too, so the READER accepts both heads; only CONT_HEAD is ever written
   const CONT_HEAD_RE = /^\[Continuing toward your (?:session|standing) goal\]\nGoal: /;
-  const CONT_SUBS = '\n\nAdditional criteria the Commander added:\n';
+  const CONT_SUBS = '\n\nAdditional criteria the Master added:\n';
   const CONT_TAIL = '\n\nContinue working toward this goal. ';
   function continuationPrompt(s) {
     if (!isActive(s)) return null;
     let p = CONT_HEAD + s.goal + '\n\n';
     if (s.subgoals.length) {
-      p += 'Additional criteria the Commander added:\n'
+      p += 'Additional criteria the Master added:\n'
         + s.subgoals.map((t, i) => '- ' + (i + 1) + '. ' + t).join('\n') + '\n\n'
         + 'Continue working toward the goal AND every criterion. Take the next concrete step. '
         + 'If the goal and all criteria are complete, say so explicitly and stop. '
@@ -155,7 +155,7 @@
     return p;
   }
   /* WHICH GOAL a continuation turn works toward — or null when `text` is not one (org P29-sys, 2026-10-14). The prompt
-     above rides the wire as a user-role turn, but the Commander never typed it: COMMS shows a goal step as ONE station line
+     above rides the wire as a user-role turn, but the Master never typed it: COMMS shows a goal step as ONE station line
      naming the goal, live and when the history is replayed, so it reads the stored turn's own text (no flag on the turn,
      nothing new on the wire). */
   function continuationGoal(text) {
@@ -169,10 +169,10 @@
     return goal || null;
   }
   /* THE ONE TURN-LEVEL PREDICATE every history reader shares (org P29-sys wiring, 2026-10-14): the goal a stored history
-     turn works toward when it is a goal step, else null. Only a user-role turn the Commander's own page sent can be one —
+     turn works toward when it is a goal step, else null. Only a user-role turn the Master's own page sent can be one —
      a delegated brief (m.from) keeps its own speaker. COMMS, the rail excerpt, export, the HUD + desk screen task and
      station.read_session (the page's handler AND the overseer's, sidecar/overseer.js readSessionTurns, which the interactive
-     lead's session.peek reaches) all ask THIS, so a goal step never reads as the Commander's words on any surface. */
+     lead's session.peek reaches) all ask THIS, so a goal step never reads as the Master's words on any surface. */
   function stepOfTurn(m) {
     if (!m || m.role !== 'user' || m.from || typeof m.content !== 'string') return null;
     return continuationGoal(m.content);

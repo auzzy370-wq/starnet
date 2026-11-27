@@ -162,7 +162,7 @@ const WorkflowPanel = (() => {
     el.remove(); el = null;
     S.sel = null; S.lineKey = null; S.lone = null;
     H.highlight(null); H.pausedMarker(null);
-    H.panelShown(false);   // the Build Library comes back as it was — unless the Commander reopened it meanwhile
+    H.panelShown(false);   // the Build Library comes back as it was — unless the Master reopened it meanwhile
   }
   const isOpen = () => !!el;
   // the floor's click lands here while the panel is open: the same part, selected in the card
@@ -179,7 +179,7 @@ const WorkflowPanel = (() => {
      under it (CSS: .wf-strip-wrap.pin), so every part of the line is one click away however long its card is. Picking a
      part — or opening the + inserter — brings the view back so the map sits at the top with the card (or the inserter)
      right under it; a view still showing the header is left alone. Opening TEST always puts the map at the top
-     (`always`): its modes, the test job and its RUN key are what the Commander came for, and the header would push
+     (`always`): its modes, the test job and its RUN key are what the Master came for, and the header would push
      them under the fold. */
   function toCard(always) {
     const sc = $('#wf-scroll'), head = $('#wf-head'), body = $('#wf-body');
@@ -210,7 +210,7 @@ const WorkflowPanel = (() => {
 
   /* ---------- painting ---------- */
   const typing = () => { const a = document.activeElement; return !!(a && el && el.contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)); };
-  // a draft is only what the Commander TYPED: a field painted empty (e.g. before the INBOX had a test job) must
+  // a draft is only what the Master TYPED: a field painted empty (e.g. before the INBOX had a test job) must
   // never be remembered as an empty draft and later clobber the real default it now has
   function keepDrafts() { for (const n of $$('[data-keep]')) if (n.dataset.typed === '1') S.drafts[n.dataset.keep] = n.value; }
   /* A VIEW PARKED WITH THE MAP AT THE TOP STAYS PARKED when the header above it changes height — a TODAY row arriving a
@@ -229,7 +229,7 @@ const WorkflowPanel = (() => {
   }
   /* ⊕ MAKE IT AUTOMATIC (org P15, 2026-10-14): WORKFLOWS' door lands on this INBOX's 'Or start it automatically' — the one
      place a line's starts are made (no second trigger editor). It stays in view through the first repaints the open sets off
-     (server facts, TODAY) for a moment, then the Commander's own scrolling owns the view again.
+     (server facts, TODAY) for a moment, then the Master's own scrolling owns the view again.
      (live walk 10-14: the section landed at the scroll's top edge — UNDER the pinned line map, which is sticky at top:0, so
      'Or start it automatically' and its 'A schedule' row were hidden. The section now lands just below the map's bottom.) */
   const STARTS_GAP = 8;   // visual px between the pinned map's bottom edge and the section's heading
@@ -670,7 +670,7 @@ const WorkflowPanel = (() => {
     addArm: 'branch added', removeArm: 'branch removed', addRoute: 'route added', removeSorter: 'sorter removed' };
   /* NO ROOM WHERE THE LINE STANDS (the edit would fit with the line laid out afresh): the button ARMS in place — its label says
      what a second click does (TIDY the line round the change, one UNDO) and it rests again after a few seconds. Never a silent
-     re-layout of the whole line: every machine of it may move, so that takes the Commander's second click. */
+     re-layout of the whole line: every machine of it may move, so that takes the Master's second click. */
   const ARM_MS = 4000;
   const armKey = (op, id, args) => op + '|' + id + '|' + JSON.stringify(args || {});
   /* `anchor` = the control that was clicked: the answer is said under it, inside the panel (note) — the refusal ("not enough
@@ -1090,7 +1090,7 @@ const WorkflowPanel = (() => {
     const limField = (id, k, label, ph, step) => '<label class="refit-field lb-field" for="' + id + '">' + label
       + '<input id="' + id + '" class="refit-num lb-num" type="number" min="0" step="' + step + '" data-k="' + k + '" placeholder="' + esc(ph) + '" value="' + esc(limVal(k)) + '" /></label>';
     /* SEND IT A JOB (2026-09-30, issue #28: "I still haven't figured out how to add a new work item to an INBOX"): the INBOX card
-       opens on the one thing a Commander came to do — type the job, send it down the line. It is the same real job the TEST view's
+       opens on the one thing a Master came to do — type the job, send it down the line. It is the same real job the TEST view's
        RUN ONE REAL JOB sends (H.runSample → POST /api/routing/sample: real agents, real cost, delivered to the OUTBOX), its verdict
        read back from the server; the text is also this line's test job (TEST THIS STEP and the TEST view start from it). The
        automatic starts (schedule, channel, folder) follow it. */
@@ -1116,7 +1116,7 @@ const WorkflowPanel = (() => {
           : docks.length === 1 ? '<div class="wf-help">fires at ' + thumb(docks[0].agentId, 16, 20, 'wf-ithumb') + '<b>' + esc((firstName ? firstName + ' · ' : '') + nameOf(docks[0].agentId)) + '</b> — this line’s first step</div>'
           : '<div class="wf-warnline">Assign an agent to a connected BAY first. A schedule needs an agent to start the work.</div>')
         /* ONE ARM RULE (org P16, 2026-10-14 — the SCHEDULES form's rule, one server seam): the first save on a scheduling switch nobody
-           ever set turns it ON; after the Commander turned it OFF a save keeps it off and offers ▶ TURN SCHEDULING ON; an E-STOP is
+           ever set turns it ON; after the Master turned it OFF a save keeps it off and offers ▶ TURN SCHEDULING ON; an E-STOP is
            never lifted from here. One SAVE SCHEDULE key — the help line says which of the three this save will do (GET /api/cron armSet). */
         + ((S.cron && !S.cron.enabled && !S.cron.halted)
           ? '<div class="wf-help dim">' + (S.cron.armSet ? 'Scheduling is off — you turned it off. Saving keeps it off; press ▶ TURN SCHEDULING ON when you want it to run.'
@@ -1211,7 +1211,7 @@ const WorkflowPanel = (() => {
   /* ===== LINE TRIGGERS (2026-09-23): "when a file lands in a folder" · "when a webhook is called" =====
      Every row is the SERVER's record (GET /api/routing/triggers): enabled, blockedBy (the same preflight a fire
      runs), fires, lastFiredAt, lastOutcome, lastError. The webhook key is answered ONCE by create/regenerate and
-     lives only in S.ltReveal until the Commander dismisses it or leaves the line — it is never fetched again.
+     lives only in S.ltReveal until the Master dismisses it or leaves the line — it is never fetched again.
      Email is not offered: the server reports email.available:false (no mail connector exists). */
   const ago = iso => { const t = Date.parse(iso || ''); if (!isFinite(t)) return ''; const s = Math.max(0, Math.round((Date.now() - t) / 1000));
     return s < 60 ? s + 's ago' : s < 3600 ? Math.round(s / 60) + 'm ago' : s < 172800 ? Math.round(s / 3600) + 'h ago' : Math.round(s / 86400) + 'd ago'; };
@@ -1332,7 +1332,7 @@ const WorkflowPanel = (() => {
   }
   const ltSay = (t, bad) => { S.ltMsg = { t, bad: !!bad }; const m = $('#lt-msg'); if (m) { m.hidden = false; m.classList.toggle('bad', !!bad); m.textContent = t; } };
   const ltClearForm = () => { for (const k of ['path', 'task', 'name', 'rate']) delete S.drafts['lt:' + k]; S.ltForm = null; };
-  // a Commander action changed the triggers: re-read, then ONE deliberate repaint (the action's own result)
+  // a Master action changed the triggers: re-read, then ONE deliberate repaint (the action's own result)
   const ltAfter = (msg, bad) => { S.ltMsg = msg ? { t: msg, bad: !!bad } : null; return ltRefresh().then(() => H.pollFeed()).then(() => paint(true), () => paint(true)); };
   /* the per-row controls (COPY / PAUSE / EDIT / NEW KEY / DELETE / I SAVED IT) inside `scope` — the whole card on a
      paint, or just the rows ltPatch replaced (an untouched row keeps its handlers AND an armed confirm) */
@@ -1401,7 +1401,7 @@ const WorkflowPanel = (() => {
   }
 
   /* the schedule form: the SAME SchedPicker + /api/cron/preview + the SAME create body the AUTOMATION
-     window posts, plus runsLine:true — minted here, under FOR THIS LINE, it is the Commander asking for the
+     window posts, plus runsLine:true — minted here, under FOR THIS LINE, it is the Master asking for the
      line to run (cron-store `runsLine`). No unattendedGrants, no toolsets. Read-back confirms the saved id. */
   function wireScheduleForm(p, docks, dockHint) {
     const formEl = $('#trg-form'), newBtn = $('#trg-new'), promptEl = $('#trg-prompt'), schedEl = $('#trg-sched');
@@ -1433,7 +1433,7 @@ const WorkflowPanel = (() => {
     };
     schedEl.addEventListener('input', preview);
     /* THE PICKED SCHEDULE SURVIVES A REPAINT (2026-09-24): #trg-sched is a kept draft. The picker's mount seeds its
-       default (daily 9:00) into the input, so the Commander's pick is read BEFORE the mount and put back through
+       default (daily 9:00) into the input, so the Master's pick is read BEFORE the mount and put back through
        set() — which also rebuilds the picker's own mode/day/hour controls, not just the text. */
     const schedKey = 'trgsched:' + p.id, wantSched = S.drafts[schedKey];
     schedEl.dataset.keep = schedKey;
@@ -1857,7 +1857,7 @@ const WorkflowPanel = (() => {
   /* THE JOB, READ BACK (2026-09-30 — Andrew: "if the output is terrible and not consistent … how the user can properly correct
      it"): a job sent from the panel (SEND A JOB, or TEST's SEND A REAL JOB) comes back as the WHOLE result — never 80 characters
      — and HOW EACH STEP DID IT: every stage's own reply, read from its run's transcript (GET /api/transcript by runId: the OUTBOX
-     window's own read), in line order and named by its BAY, so a Commander can see which step made the result what it is. A
+     window's own read), in line order and named by its BAY, so a Master can see which step made the result what it is. A
      refused or stopped job keeps the server's verdict as before. A step whose reply cannot be read says so — nothing is guessed. */
   const stepOut = {};   // runId → 'loading' | { output } | { err }
   /* A REPLY READS AS COMMS READS IT (2026-09-30 — a real model's result showed its **bold** as asterisks): the result, each step's
@@ -1928,7 +1928,7 @@ const WorkflowPanel = (() => {
   }
   function startLive() { if (!liveTimer) liveTimer = setInterval(tickLive, 1000); }
   /* THE SEND BOX'S MOVING PARTS ARE LIVE (2026-09-30, found walking a fresh station): its keys, where the job is now, and the job
-     read back. The panel never rebuilds its body while a field has focus (paintLive), and a Commander who types the job and
+     read back. The panel never rebuilds its body while a field has focus (paintLive), and a Master who types the job and
      presses SEND can keep the cursor in the box (WebKit leaves focus in a textarea when a button is clicked) — the job ran, and
      the card never showed it riding or what came back. As a LIVE region this part follows the job whatever has focus, and is
      left alone only while the cursor is INSIDE it (the NEEDS CHANGES box), so nothing being typed there is rebuilt. */
@@ -1979,7 +1979,7 @@ const WorkflowPanel = (() => {
     const stepEnd = r => (r.reason !== 'done' ? runEnd(r.reason) : (typeof RunOutcome !== 'undefined' ? 'ended: ' + RunOutcome.line(RunOutcome.ofRow(r)) : 'did not finish'));
     const v = mine && mine.view; if (!v) return '';
     const runs = (mine.runs || []).slice().reverse();   // line order (the server lists the newest first)
-    // STOPPED by the Commander, or REFUSED before any step ran: the server's own verdict card, as before
+    // STOPPED by the Master, or REFUSED before any step ran: the server's own verdict card, as before
     if (v.stopped || (!v.ok && !runs.length)) return '<div class="wf-sample-res">' + H.sampleHTML(v) + '</div>';
     const P = typeof Pipeline !== 'undefined' ? Pipeline : null, out = String(mine.output || '');
     const ln = loopNotes(P && P.stripVerdictLine ? P.stripVerdictLine(out) : out), shown = ln.rest;   // a reviewer's VERDICT line and the loop's note steer the line; they are not the work
@@ -2042,7 +2042,7 @@ const WorkflowPanel = (() => {
       + notRightHTML(mine, f) + '</div>';
   }
   /* ✎ NEEDS CHANGES (was NOT RIGHT?; org P17 gave both editors one word set) (2026-09-30 — "if they run the belt and its not as intended … how the user can fix the conveyor system to their
-     liking"): under a delivered job, the Commander says in plain words what is wrong; the station's own model reads each step's
+     liking"): under a delivered job, the Master says in plain words what is wrong; the station's own model reads each step's
      instructions and what it actually produced (POST /api/routing/fix-suggest — one billed call, its cost shown) and suggests the
      exact changes: which step's DOES or HANDS OFF to rewrite, and why. Each is a card to USE (the ordinary brief edit: saved, one
      UNDO) or ignore; nothing changes on its own. ↻ SEND IT AGAIN is the proof: the new result comes back in this same card.
@@ -2101,7 +2101,7 @@ const WorkflowPanel = (() => {
     H.sfx('chime'); H.flashTip('step instructions changed · UNDO takes it back', true);
     paint(false);
   }
-  /* ★ KEEP THIS STYLE (was KEEP AS THE EXAMPLE) (2026-09-30 — "if the output is … not consistent"): a result the Commander likes becomes the model the
+  /* ★ KEEP THIS STYLE (was KEEP AS THE EXAMPLE) (2026-09-30 — "if the output is … not consistent"): a result the Master likes becomes the model the
      line's LAST step (the one whose reply ships — the delivered run, runs[0]) matches every time. It is written INTO that step's
      DOES as one marked block — visible and editable on the BAY card, one UNDO, replacing any earlier example — so it rides the
      step's standing brief like every other instruction (router.stageBrief): no hidden state. */
@@ -2129,7 +2129,7 @@ const WorkflowPanel = (() => {
     paint(false);
   }
   /* DESIGN ANCHOR (2026-10-11): the example in the step's DOES is text only that step reads. The same approval becomes the
-     Commander's station-wide taste with the delivered run's REAL reference (files, palette, fonts, image prompt — read by the
+     Master's station-wide taste with the delivered run's REAL reference (files, palette, fonts, image prompt — read by the
      sidecar from the run, POST /api/taste/keep-style), so every crew member's similar work matches it. The panel's UNDO
      takes the example out of the step; wireJob() sees that on the next paint and takes the crew's copy back too (after the
      keep itself has landed, so the two can never cross). A failure is said, never hidden. */

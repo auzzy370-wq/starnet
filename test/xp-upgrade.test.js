@@ -1,6 +1,6 @@
 /* node test/xp-upgrade.test.js — THE UPGRADE GUARD for the leveling lane.
 
-   The question this file exists to answer: when a Commander who has been playing on a SHIPPED build updates,
+   The question this file exists to answer: when a Master who has been playing on a SHIPPED build updates,
    does anything they earned move? Levels are monotonic and user-approval-only by law; XP, confidence and the
    operational counters are a record of real work they really did. The lane added meters (S2 RELIABILITY,
    S5 PRACTICE), a briefing credential (S3), five milestones and a boot-time trophy reconcile (S4) — every one
@@ -21,7 +21,7 @@ const Xp = require('../frontend/app/xp.js');
 // the nine badges the shipped v0.7.0 build knew about — a save can hold no others.
 const V070_MILESTONES = ['first_light', 'approved', 'pack_rat', 'archivist', 'workhorse', 'centurion', 'night_shift', 'trusted', 'veteran'];
 
-/* Four real shapes of Commander, in the v0.7.0 save shape. Counters carry only the keys that build wrote:
+/* Four real shapes of Master, in the v0.7.0 save shape. Counters carry only the keys that build wrote:
    runs / tasksDone / toolsOk / memWrites / memReused / delivered / positiveFeedback / negativeFeedback. */
 const SAVES = {
   'long-time hero': {
@@ -58,7 +58,7 @@ for (const [who, before] of Object.entries(SAVES)) {
   const snapshot = JSON.parse(JSON.stringify(before));
   const after = Xp.reconcile(before).stats;
 
-  // 1. NOTHING THE COMMANDER EARNED MOVES.
+  // 1. NOTHING THE MASTER EARNED MOVES.
   for (const k of FROZEN) A.eq(after[k], snapshot[k], who + ': ' + k + ' is untouched by the update');
   for (const k of Object.keys(snapshot.counters)) A.eq(after.counters[k], snapshot.counters[k], who + ': counter ' + k + ' is untouched');
   A.eq(Xp.compute(after).level, Xp.compute(snapshot).level, who + ': the rendered level is identical before and after');
@@ -134,7 +134,7 @@ for (const [what, save] of Object.entries(ODD)) {
   A.eq(Xp.milestones(r).filter(m => m.id === 'from_some_other_branch').length, 0, '…and simply does not render on a build that has no such badge');
 }
 
-/* 8. THE ROSTER CREDENTIAL (S3) IS EARNED-ONLY ON LEGACY SAVES TOO — an updating Commander's specialists must
+/* 8. THE ROSTER CREDENTIAL (S3) IS EARNED-ONLY ON LEGACY SAVES TOO — an updating Master's specialists must
       not suddenly be described to the lead by a rating nobody gave them. */
 A.eq(Xp.credential(SAVES['brand new']).text, '', 'a new agent publishes no credential to the dispatch briefing');
 A.eq(Xp.credential(SAVES['unlucky (a misconfigured station: every run 404d)']).text, '', 'an agent whose every run failed publishes nothing — never a rank');

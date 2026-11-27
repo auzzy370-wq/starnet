@@ -117,7 +117,7 @@ A.ok(/App\.selectAgent\(/.test(chat), 'selecting an agent hands off to App.selec
 // App.selectAgent: switch to (or MINT) a workstream BOUND to that agentId — matches the summon binding seam.
 A.ok(/function selectAgent\(agentId\)/.test(appjs), 'App implements selectAgent');
 A.ok(/selectAgent:\s*selectAgent/.test(appjs), 'selectAgent is exposed on the App public API');
-// FRESH-SESSION FREEDOM: a brand-new EMPTY session rebinds in place when an agent is picked (the Commander
+// FRESH-SESSION FREEDOM: a brand-new EMPTY session rebinds in place when an agent is picked (the Master
 // keeps the blank line they just opened); the no-rebind law protects only conversations WITH content, which
 // still switch/mint below. These locks read selectAgent's OWN body (sliced to its closing brace), never a char
 // window from its declaration: a window broke twice as lines landed at the top of the function (900→2000 /

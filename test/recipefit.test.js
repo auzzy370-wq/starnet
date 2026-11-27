@@ -3,7 +3,7 @@
    The point of RecipeFit is that a card on the READY shelf makes a CLAIM about this station ("2 projects
    granted, and nothing watches them"). Every claim is a promise the harness has to be able to back, so the
    assertions below are mostly about what the module must REFUSE to say — an over-eager recommender that
-   invents context is worse than no shelf at all, because it teaches the Commander not to trust the station.
+   invents context is worse than no shelf at all, because it teaches the Master not to trust the station.
 
    Pure module: no DOM, no fetch, no clock. */
 'use strict';
@@ -51,10 +51,10 @@ A.eq(F.basis(FULL), '2 projects · 1 connected channel · 1 learned topic · 1 r
 A.ok(!F.offers(recipes, FULL, { limit: 99 }).some(o => o.recipe.id === 'morning-brief'),
   'a recipe already running as a routine is NOT offered again');
 A.ok(!F.offers(recipes, FULL, { limit: 99 }).some(o => o.recipe.id === 'summarize'),
-  'a recipe the Commander rated a miss stays sunk');
+  'a recipe the Master rated a miss stays sunk');
 
 /* a connector recipe must not be offered to a station with no channel connected — that is an advert for a
-   feature the Commander does not have, dressed as a readiness claim. */
+   feature the Master does not have, dressed as a readiness claim. */
 const noChan = Object.assign({}, FULL, { channels: [] });
 for (const o of F.offers(recipes, noChan, { limit: 99 })) {
   A.eq(F.needsOf(o.recipe).channel, false, o.recipe.id + ' needs a channel but none is connected — must not be offered');

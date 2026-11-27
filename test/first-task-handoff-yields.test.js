@@ -1,15 +1,15 @@
-/* node test/first-task-handoff-yields.test.js — THE FIRST-TASK HAND-OFF YIELDS TO THE COMMANDER (gh#158, wave-1 quick win 7).
+/* node test/first-task-handoff-yields.test.js — THE FIRST-TASK HAND-OFF YIELDS TO THE MASTER (gh#158, wave-1 quick win 7).
 
    The report (v0.14.0, Windows): "Select an existing session … the camera moves to the worker, but the right panel stays on
    'Your first task' instead of opening the conversation. Press Enter with the session selected. The conversation still does not
    open. Create and select a new session. The same onboarding panel remains, with no message box."
    The mechanism: PitchStore.offerHandoff opened the Dialogue with NO offer, so it covered the whole of COMMS (message box
    included), nothing could step it aside, and tutorial.onEnterGame re-showed it on every boot while handoffPending stayed set —
-   and a task the Commander then sent from COMMS never cleared it.
+   and a task the Master then sent from COMMS never cleared it.
 
    Executed here with the REAL dialogue.js + pitch.js + pitchstore.js on a small COMMS column (test/helpers/comms-dom.js):
      1. the hand-off opens as an OFFER: it ends above the message box, which stays usable;
-     2. selecting another conversation (Dialogue.stepAside('session')) or the Commander's own turn steps it aside, unanswered:
+     2. selecting another conversation (Dialogue.stepAside('session')) or the Master's own turn steps it aside, unanswered:
         the panel is gone, handoffPending and the draft stay, the draft is in the message box's ↑ recall, nothing was sent;
      3. Esc steps it aside the same way (never the permanent "I'll explore on my own");
      4. it is offered again later (the next boot), with the draft in its box;
@@ -20,7 +20,7 @@
      8. tutorial.js presentHandoff ends quietly on a step-aside: no Start, no line over the chosen conversation;
    and the review fixes (10-27):
      10. a typed task completes the hand-off only where it can run (a model is configured), the bar Start sets, and clears the draft;
-     11. the Commander's own turn steps it aside WITHOUT pushing the old draft over what they just sent in the ↑ recall;
+     11. the Master's own turn steps it aside WITHOUT pushing the old draft over what they just sent in the ↑ recall;
      12. the composer paths that never reach send() — a group conversation, the busy type-ahead queue — step an offer aside and
          complete the hand-off for a typed task, executed through chat.js typedTaskCompletesHandoff. */
 'use strict';
@@ -47,7 +47,7 @@ function rig(opts) {
 }
 
 (async () => {
-  /* ---------- 1 + 2. an offer that steps aside for the conversation the Commander picks ---------- */
+  /* ---------- 1 + 2. an offer that steps aside for the conversation the Master picks ---------- */
   {
     const t = rig();
     t.PitchStore.armFirstMove('Sort my inbox into three piles');
@@ -63,7 +63,7 @@ function rig(opts) {
     A.eq(typeof t.s.D.stepAside === 'function' && t.s.D.stepAside('session'), true, 'selecting another conversation hands the moment back');
     const res = await Promise.race([pending, settle().then(() => 'still waiting')]);
     A.eq(res && res.action, 'aside', 'offerHandoff resolves as stepped aside, unanswered');
-    A.eq(t.s.D.isOpen(), false, 'the panel is gone: COMMS shows the conversation the Commander picked');
+    A.eq(t.s.D.isOpen(), false, 'the panel is gone: COMMS shows the conversation the Master picked');
     A.ok(!t.s.panel(), 'no panel is left over COMMS');
     A.eq(t.PitchStore.handoffPending(), true, 'stepping aside is not a decline: the first task stays pending');
     A.eq(t.sent.length, 0, 'nothing was sent for them');
@@ -85,13 +85,13 @@ function rig(opts) {
     A.eq(t.PitchStore.handoffPending(), true, 'and keeps the first task pending (Esc is not "explore on my own")');
     A.eq(t.s.D.isOpen(), false, 'the panel is gone');
 
-    /* the Commander's own turn steps it aside the same way */
+    /* the Master's own turn steps it aside the same way */
     const third = t.PitchStore.offerHandoff();
     await settle();
     const recalled = t.recall.length;
     t.s.D.stepAside('turn');
     const res3 = await Promise.race([third, settle().then(() => 'still waiting')]);
-    A.eq(res3 && res3.action, 'aside', 'the Commander sending a turn steps the hand-off aside');
+    A.eq(res3 && res3.action, 'aside', 'the Master sending a turn steps the hand-off aside');
     A.eq(res3 && res3.why, 'turn', 'and says why');
     /* 11. …without pushing the old draft into the ↑ recall after the line they just sent */
     A.eq(t.recall.length, recalled, 'their own turn pushes no stale draft into ↑ (↑ right after a send brings back what they sent)');
@@ -125,7 +125,7 @@ function rig(opts) {
       await settle();
       return { p };   // wrapped: an async function returning a promise would adopt it and wait for the hand-off to end
     };
-    // (a) the Commander picks another conversation while the suggestion is being thought up
+    // (a) the Master picks another conversation while the suggestion is being thought up
     {
       const model = slow();
       const t = rig({ harness: model });
@@ -147,7 +147,7 @@ function rig(opts) {
       const sig = model.calls[0] && model.calls[0].signal;
       await new Promise(r => setTimeout(r, 90)); await settle();
       A.ok(sig && sig.aborted, 'when the cap passes the call is aborted');
-      A.ok(t.s.D.isOpen(), 'and the hand-off is still there for the Commander to type their own task');
+      A.ok(t.s.D.isOpen(), 'and the hand-off is still there for the Master to type their own task');
       t.s.D.stepAside('session'); await Promise.race([p, settle()]);
     }
     // (c) a new hero (reset) ends a stale suggestion call
@@ -178,7 +178,7 @@ function rig(opts) {
 
   /* ---------- 7. chat.js: only a composer task completes the hand-off ---------- */
   const submit = A.fnBody(chat, '  async function submitComposer() {');
-  A.ok(/send\(t, \{ attachments: atts, composer: true \}\);/.test(submit), 'the message box marks its own send as the Commander’s (composer: true)');
+  A.ok(/send\(t, \{ attachments: atts, composer: true \}\);/.test(submit), 'the message box marks its own send as the Master’s (composer: true)');
   const send = A.fnBody(chat, '  async function send(text, opts) {');
   A.ok(send.length > 1000 && send.length < chat.length / 2, 'chat.js send() sliced');
   A.ok(/if \(opts && opts\.composer && isTask && !retry && !goalContinuation && typeof PitchStore !== 'undefined' && PitchStore\.noteCommsTask\)/.test(send),
@@ -231,7 +231,7 @@ function rig(opts) {
     };
     const off = await run(false);
     A.eq(off.log.started, 0, 'a stepped-aside hand-off starts nothing');
-    A.eq(off.log.lines, [], 'and says nothing over the conversation the Commander chose');
+    A.eq(off.log.lines, [], 'and says nothing over the conversation the Master chose');
     A.eq(off.log.finishUp, [], 'outside the tour nothing is finished');
     const on = await run(true);
     A.eq(on.log.finishUp, [[true, true]], 'inside the first-run flow it ends the tour quietly (the task stays pending for the next boot)');

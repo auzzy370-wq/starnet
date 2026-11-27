@@ -114,7 +114,7 @@ function fakeDriver() {
     const installed = T.CHROME_CANDIDATES.find(c => !c.headless && !/ms-playwright|VULTRON|SKYNET/.test(c.path) && T.CHROME_CANDIDATES.indexOf(c) > T.CHROME_CANDIDATES.indexOf(pwFull));
     if (pwFull && installed) {
       const both = p => p === pwFull.path || p === installed.path;
-      A.eq(T.resolveChrome(true, both).path, installed.path, 'a WINDOW the Commander uses is their installed Chrome/Edge, not a Playwright test build');
+      A.eq(T.resolveChrome(true, both).path, installed.path, 'a WINDOW the Master uses is their installed Chrome/Edge, not a Playwright test build');
       A.eq(T.resolveChrome(false, both).path, pwFull.path, 'headless work keeps the old order');
     }
   }
@@ -245,7 +245,7 @@ function fakeDriver() {
   }
 
   // ---- HEADLESS-BY-DEFAULT (2026-07-07 direction: research must never open a window on the user's
-  //      screen; a visible window exists ONLY while the Commander asked to watch) ----
+  //      screen; a visible window exists ONLY while the Master asked to watch) ----
   {
     const made = [];   // capture every driver launch + its mode via the makeDriver seam
     const mkSession = (env, extra) => T.makeBrowserSession(Object.assign({
@@ -261,7 +261,7 @@ function fakeDriver() {
     await s.navigate('https://example.com/2');                       // still no visibility request
     A.eq(made.length, 1, 'mode unchanged -> no relaunch');
 
-    await s.navigate('https://example.com/3', { visible: true });    // the Commander asked to watch
+    await s.navigate('https://example.com/3', { visible: true });    // the Master asked to watch
     A.eq(made.length, 2, 'visible:true relaunches the driver');
     A.eq(made[1].headed, true, 'visible:true opens the HEADED window');
     A.eq(made[0].closed, true, 'the headless driver was closed on the mode switch');
@@ -836,7 +836,7 @@ function fakeDriver() {
   }
 
   // ---- TAB 0 GOES AWAY (customer, 0.13.1 macOS) ------------------------------------------------
-  // Under browser-level attach even the original tab is a session. When ITS target went away (the Commander closed
+  // Under browser-level attach even the original tab is a session. When ITS target went away (the Master closed
   // the tab or the window; macOS keeps Chrome running with no window), openerSession kept the dead id: every call
   // failed "Session with given id not found" while alive() still said true, so nothing ever started a fresh page.
   {
@@ -958,7 +958,7 @@ function fakeDriver() {
       await R.d.close();
     }
 
-    // (e) the Commander's OWN Chrome is never re-pointed at another of their tabs: the loss is reported instead
+    // (e) the Master's OWN Chrome is never re-pointed at another of their tabs: the loss is reported instead
     {
       const R = openerRig(9366, { attachPort: 9366, headed: true });
       await R.d.tabs();
@@ -1828,7 +1828,7 @@ function fakeDriver() {
       A.eq(seam.made.length, 0, 'env-pinned headless never launches a headed browser');
     }
 
-    // 3. URL guard applies BEFORE any prompt: private hosts never reach the Commander.
+    // 3. URL guard applies BEFORE any prompt: private hosts never reach the Master.
     {
       let prompts = 0;
       const seam = mkSeam();
@@ -1838,7 +1838,7 @@ function fakeDriver() {
       A.eq(prompts, 0, 'a refused URL never generates a consent ask');
     }
 
-    // 4. COMMANDER DECLINES: no window, honest content back to the model.
+    // 4. MASTER DECLINES: no window, honest content back to the model.
     {
       const seam = mkSeam();
       const asked = [];

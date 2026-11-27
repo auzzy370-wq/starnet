@@ -174,7 +174,7 @@ const T0 = 1_800_000_000_000;
   A.eq([v.recent[0].text, v.recent[0].tone], ['FAULT', 'bad'], 'a fault reads as one');
   H.onRunEnd(f, { agentId: 'researcher', runId: 'q1', reason: 'clarifying', turns: 1, usd: 0 }, T0 + 40);
   v = H.view(f, who, T0 + 50);
-  A.eq([v.recent[0].name, v.recent[0].text, v.recent[0].tone], ['ORION', 'ASKED YOU', 'ask'], 'an agent that ended by asking a question is flagged for the Commander');
+  A.eq([v.recent[0].name, v.recent[0].text, v.recent[0].tone], ['ORION', 'ASKED YOU', 'ask'], 'an agent that ended by asking a question is flagged for the Master');
   H.onRunStart(f, { agentId: 'ghost-agent-9', runId: 'g1', trigger: 'directive', model: 'm' }, T0);
   A.eq(H.view(f, who, T0).live[0].name, 'GHOST-AGEN', 'an agent missing from the roster shows its id, not a made-up name');
   for (let i = 0; i < 9; i++) H.onRunStart(f, { agentId: 'agent', runId: 'm' + i, trigger: 'directive', model: 'm' }, T0 + i);
@@ -222,7 +222,7 @@ const T0 = 1_800_000_000_000;
   const [cron, ask, live, worker, stopped, old] = items;
   A.eq([cron.state, cron.status, cron.task, cron.name, cron.time], ['ask', 'Needs your OK', 'Scheduled routine', 'ORION', '1m 30s'], 'a routine waiting on a permission prompt');
   A.eq([live.state, live.status, live.task, live.streamId, live.canSteer, live.canStop], ['live', 'Using WEB.SEARCH', 'Summarise today\'s inbox', 'ws1', true, true],
-    'a live run names its tool and the Commander\'s own words from the conversation that owns it; it can be steered and stopped');
+    'a live run names its tool and the Master\'s own words from the conversation that owns it; it can be steered and stopped');
   A.eq([worker.kind, worker.status, worker.task, worker.canSteer, worker.generation, worker.directions], ['worker', 'Working', 'Fix the flaky test', true, 2, ['Direction applied: use the fixture']],
     'a delegated worker is its ledger record, with its steer history');
   A.eq([old.state, old.status, old.time, old.result, old.tools], ['done', 'Completed', '2m ago', 'Found them.\n\nLinks below.', ['WEB.SEARCH', 'GITHUB::GET.ISSUE']],
@@ -267,7 +267,7 @@ A.eq([H.fmtAgo(10_000), H.fmtAgo(5 * 60_000), H.fmtAgo(2 * 3_600_000)], ['just n
   const store = { getItem: k => (mem.has(k) ? mem.get(k) : null), setItem: (k, v) => mem.set(k, String(v)) };
   A.eq(H.readPrefs(store), { pinned: true, rect: null, widget: null }, 'defaults: pinned, no remembered rect or widget size');
   H.writePrefs(store, { pinned: false, rect: { x: 10, y: 20, w: 400, h: 640 }, widget: { w: 520, h: 410 } });
-  A.eq(H.readPrefs(store), { pinned: false, rect: { x: 10, y: 20, w: 400, h: 640 }, widget: { w: 520, h: 410 } }, 'prefs round-trip, the widget size the Commander chose included');
+  A.eq(H.readPrefs(store), { pinned: false, rect: { x: 10, y: 20, w: 400, h: 640 }, widget: { w: 520, h: 410 } }, 'prefs round-trip, the widget size the Master chose included');
   mem.set('vultron.hud', '{not json');
   A.eq(H.readPrefs(store), { pinned: true, rect: null, widget: null }, 'corrupt prefs read as defaults');
   A.eq(H.readPrefs({ getItem() { throw new Error('blocked'); } }), { pinned: true, rect: null, widget: null }, 'blocked storage reads as defaults');
@@ -305,8 +305,8 @@ A.eq([H.fmtAgo(10_000), H.fmtAgo(5 * 60_000), H.fmtAgo(2 * 3_600_000)], ['just n
   A.ok(css.includes('body:not(.hud-mode) #chat-panel .hud-ctl { display: none !important; }'), 'back in the full station the COMMS header shows none of the HUD controls');
   A.ok(css.includes('grid-template-rows: minmax(120px, 1fr) auto;') && !/#stage-wrap \{[^}]*width: 300px/.test(css), 'the widget picture fills its window (no fixed 300x190 box)');
   A.ok(js.includes("root.addEventListener('resize', onWindowResize);") && js.includes('S.widgetUser = { w, h }') && js.includes('S.widgetUser = prefs.widget || null;') && js.includes('|| S.widgetUser) return;'),
-    'a size the Commander drags the widget to is kept (no auto-fit fights it) and remembered');
-  A.ok(js.includes('if (e && e.isTrusted === false) return;'), 'the HUD\'s own synthetic resize (after a view change) is never mistaken for the Commander sizing the widget');
+    'a size the Master drags the widget to is kept (no auto-fit fights it) and remembered');
+  A.ok(js.includes('if (e && e.isTrusted === false) return;'), 'the HUD\'s own synthetic resize (after a view change) is never mistaken for the Master sizing the widget');
   A.ok(js.includes('World.setOverlays(!capped)'), 'the widget turns the in-world readouts off, and the station gets them back');
   A.ok(js.includes('World.lockBody(id, fr.zoom, { seatAt: fr.seatAt })') && js.includes('function widgetFraming()') && js.includes('World.restoreCamera(S.stationCam)') && js.includes('keepStationCamera();'), 'the widget frames its agent closer (a seated one with its desk in view) and gives the station its zoom back');
   A.ok(js.includes('return { zoom: WIDGET_ZOOM, seatAt:') && !js.includes('Math.min(1.33'), 'a bigger agent cam shows more station, never a bigger agent (Andrew: "WAY TOO BIG")');
@@ -339,7 +339,7 @@ A.eq([H.fmtAgo(10_000), H.fmtAgo(5 * 60_000), H.fmtAgo(2 * 3_600_000)], ['just n
   }
   const side = readSidecarSource();
   A.ok(has(side, "source: 'interactive', streamId: streamId || '', internal: internal, blocksGroup: true }", 'if (r.internal) row.internal = true;') && has(js, 'r.internal || workerRuns.has'),
-    'live self-talk is marked by the sidecar and never shown as the Commander\'s work');
+    'live self-talk is marked by the sidecar and never shown as the Master\'s work');
 }
 
 // ---- desktop wiring ----

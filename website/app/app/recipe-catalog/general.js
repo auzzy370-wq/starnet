@@ -6,18 +6,18 @@
 
    ══ WHAT BELONGS HERE ══
    Every record clears THE RECIPE BAR in core.js — and this module is where bar 6 (NON-OBVIOUS or
-   UNIVERSAL) is load-bearing. These are the recipes whose whole reason to exist is that the Commander
+   UNIVERSAL) is load-bearing. These are the recipes whose whole reason to exist is that the Master
    would never have thought to ask for them: a station that remembers what it saw last week can notice
    things a person cannot, because the noticing depends on a record nobody was keeping.
 
    The shape they share: each one holds STATE ACROSS RUNS and reports only the DELTA. That is why they
    cannot be a chat prompt — not because the wording is clever, but because run one is worth little and
    run six is worth a lot. When editing, protect the delta. A "watch" rewritten to re-describe the
-   current state every run is dead: the Commander stops opening it, and then it is worth nothing at all.
+   current state every run is dead: the Master stops opening it, and then it is worth nothing at all.
 
    ⛔ AND PROTECT THE SILENCE. Every one of these is told to say "nothing moved" in one line and stop.
    A watch that always finds something to report is a watch that has learned to pad, and padding is how
-   the Commander learns to skim. Quiet is the correct output most weeks.
+   the Master learns to skim. Quiet is the correct output most weeks.
 
    Schema v2:
    { id, name, emoji, tagline, blurb, accent, tags, params, task, category, gear, skills, cadence, source, forkedFrom } */

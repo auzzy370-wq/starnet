@@ -97,7 +97,7 @@ const tick = () => new Promise(r => setTimeout(r, 15));
   for (let i = 0; i < 8; i++) await tick();
   A.ok(!fetches.some(x => /\/api\/routing\/sample$/.test(x.url)) && S.msg && /nag:CYCLE/.test(S.msg.text), 'a floor with a blocking problem is not sent — the floor\'s own words say why');
 
-  /* ---------- SEND TO (10-11 repair): a job another line HANDED ON is not the Commander's sample ---------- */
+  /* ---------- SEND TO (10-11 repair): a job another line HANDED ON is not the Master's sample ---------- */
   {
     ctx.World.syncPlan = () => Promise.resolve({ errors: [] });
     const handed = { id: 'job-0123456789cd', line: 'p999', name: 'B', text: 'the first job', status: 'running', from: { line: 'p998', jobId: null, name: 'A' }, startedAt: 3, usd: 0, steps: 0 };
@@ -136,7 +136,7 @@ const tick = () => new Promise(r => setTimeout(r, 15));
 
   /* ---------- every reason the card shows opens as a sentence (wave 2 repair): the stored reasons are bare clauses ("the station hit an
      internal fault and stopped this job", "the hand-off could not start (hub down)"); the card opened its paragraph in lowercase under
-     ■ STOPPED / ✕ IT DIDN'T RUN. A fault-stopped sample job read "You stopped this job." — a stop the Commander never made. ---------- */
+     ■ STOPPED / ✕ IT DIDN'T RUN. A fault-stopped sample job read "You stopped this job." — a stop the Master never made. ---------- */
   {
     const plainOf = j => WW._resultHTML(line, j).replace(/<[^>]+>/g, ' ').replace(/&[a-z#0-9]+;/gi, ' ').replace(/\s+/g, ' ');
     const base = { id: 'job-0123456789cc', line: line.key, name: 'B', text: 'the first job', runs: [], usd: 0, startedAt: 5, endedAt: 9, notes: [], output: '' };
@@ -145,7 +145,7 @@ const tick = () => new Promise(r => setTimeout(r, 15));
     const sampleFault = plainOf(Object.assign({}, base, { status: 'stopped', error: 'the station hit an internal fault and stopped this job' }));
     A.ok(sampleFault.includes('The station hit an internal fault and stopped this job. What already ran is counted.') && !/You stopped this job/.test(sampleFault), 'a fault-stopped job of the line\'s own never says "You stopped this job" — ' + sampleFault.slice(0, 260));
     const mine = plainOf(Object.assign({}, base, { status: 'stopped', error: 'you stopped this job' }));
-    A.ok(mine.includes('You stopped this job. What already ran is counted.'), 'the Commander\'s own stop keeps its words');
+    A.ok(mine.includes('You stopped this job. What already ran is counted.'), 'the Master\'s own stop keeps its words');
     const bare = plainOf(Object.assign({}, base, { status: 'stopped' }));
     A.ok(bare.includes('You stopped this job. What already ran is counted.'), 'an older stopped record with no reason reads as before');
     const threw = plainOf(Object.assign({}, base, { status: 'failed', error: 'the hand-off could not start (hub down)', from: { line: 'p998', jobId: null, name: 'A' } }));
@@ -183,7 +183,7 @@ const tick = () => new Promise(r => setTimeout(r, 15));
     WW._putStyleBack(noNotes);
     A.ok((st.propById(dockId).brief || '') === plain && !WW._styleKept(noNotes), 'PUT IT BACK takes the panel-kept example out (it silently did nothing): ' + JSON.stringify((st.propById(dockId).brief || '').slice(-80)));
     for (let i = 0; i < 4; i++) await tick();
-    // DESIGN ANCHOR (2026-10-11): KEEP THIS STYLE also makes the approval the Commander's station-wide taste (the sidecar reads the
+    // DESIGN ANCHOR (2026-10-11): KEEP THIS STYLE also makes the approval the Master's station-wide taste (the sidecar reads the
     // delivered run's real files / palette / fonts / image args), and PUT IT BACK takes that back too
     const keepPosts = () => fetches.filter(x => /\/api\/taste\/keep-style$/.test(x.url)).map(x => JSON.parse(x.init.body));
     fetches.length = 0;
@@ -223,7 +223,7 @@ const tick = () => new Promise(r => setTimeout(r, 15));
     A.ok(posts().some(p => p.runId === 'other-run' && p.undo), 'a pending write on one run never blocks another run');
     release(); for (let i = 0; i < 4; i++) await tick();
     A.eq(writes.filter((_, i) => i > 0), ['keep', 'undo'], 'the same run commits keep before undo even after changing views');
-    A.ok(!memory.some(r => r.sourceRunId === 'r2' && r.feedbackKept), 'the crew no longer remembers a style the Commander put back');
+    A.ok(!memory.some(r => r.sourceRunId === 'r2' && r.feedbackKept), 'the crew no longer remembers a style the Master put back');
 
     // KEEP / PUT BACK / KEEP while the first capture is pending: the LAST click wins, not merely the first pair.
     memory = []; writes = []; fetches.length = 0;
@@ -390,7 +390,7 @@ const tick = () => new Promise(r => setTimeout(r, 15));
     A.ok(!/Choose a workflow/.test(rd('frontend/app/windows/loops.js')) && /Choose a kind of loop/.test(rd('frontend/app/windows/loops.js')), 'GOAL LOOPS asks for a kind of loop, never "a workflow"');
   }
 
-  /* ---------- org P18 (2026-10-14): NEW WORKFLOW leads with the Commander's FOR YOUR GOAL line when it is not one of the four ---------- */
+  /* ---------- org P18 (2026-10-14): NEW WORKFLOW leads with the Master's FOR YOUR GOAL line when it is not one of the four ---------- */
   {
     const S0 = { pick: S.pick, drafting: S.drafting };
     S.pick = null; S.drafting = null;
@@ -405,7 +405,7 @@ const tick = () => new Promise(r => setTimeout(r, 15));
     A.ok(!/<span class="wfw-tstat">[^<]{40,}/.test(led), 'every tile keeps one short stat line');
     A.ok(/<div class="wfw-tgroup wfw-goalhd"[^>]*>FOR YOUR GOAL <span class="wfw-goalq">“ship my app every week”<\/span><\/div><button type="button" class="wfw-tile wfw-goal"/.test(led) && /wfw-goal"[\s\S]*?<\/button><div class="wfw-tgroup">COMMON WORKFLOWS<\/div>/.test(led), 'the goal tile sits under the shelf\'s gold FOR YOUR GOAL heading, the four under COMMON WORKFLOWS (org D2 polish)');
     // (org g7 D2, final round) the shelf claims a goal only by NAMING it — never a match for the empty 'What should it make?' box
-    A.ok(/FOR YOUR GOAL <span class="wfw-goalq">“ship my app every week”<\/span>/.test(led) && /<textarea id="wfw-describe"[^>]*><\/textarea>/.test(led), 'with the box still empty, the heading names the goal it matched: the Commander\'s own words');
+    A.ok(/FOR YOUR GOAL <span class="wfw-goalq">“ship my app every week”<\/span>/.test(led) && /<textarea id="wfw-describe"[^>]*><\/textarea>/.test(led), 'with the box still empty, the heading names the goal it matched: the Master\'s own words');
     ctx.Build.goalLine = () => ({ id: 'mission_control', why: 'w', quote: '  ' });
     A.ok(!/FOR YOUR GOAL/.test(WW._newHTML(WW._floor())) && tilesOf(WW._newHTML(WW._floor())).length === 4, 'a goal with no words to name shows no goal shelf at all');
     A.ok(/' · side by side'/.test(src), 'a SPLITTER line says its steps work side by side');

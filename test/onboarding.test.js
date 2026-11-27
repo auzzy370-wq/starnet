@@ -53,7 +53,7 @@ A.ok(/specialty\s*\?[\s\S]{0,200}!s\.posturePreset/.test(src),
 
 /* ---------- Interview 2.0 — the live-mind beats stay honest + the ceremony can never lose the mission ---------- */
 // the generated beats reason with NO tools reachable and NO run.start/end on the bus (the awakening thinking
-// about the Commander is not a shipped task — XP/telemetry stay honest, mirroring pitchstore's internal call).
+// about the Master is not a shipped task — XP/telemetry stay honest, mirroring pitchstore's internal call).
 A.ok(/isTask:\s*false,\s*placed:\s*\[\],\s*internal:\s*true/.test(src),
   'the awakening\'s live-mind call is reason-only (placed:[]) and internal (no bus run events)');
 // purpose.md ALWAYS lands: when the synthesized read can't (no brain / timeout / unparseable / nothing shared),
@@ -63,7 +63,7 @@ A.ok(/function fallbackPurposeStep\(opening = false\)[\s\S]{0,400}field:\s*'purp
 A.ok(/if\s*\(!purposeDone\)\s*\{[\s\S]{0,120}askStep\(fallbackPurposeStep\(\)\)/.test(src),
   'runLeadMeeting falls back to the required mission question when the live read did not land');
 // the follow-up answer becomes context.md (the doc identity seeds from) — the broad context question is gone
-// from the lead path, but the doc it authored still gets written when the Commander answers the follow-up.
+// from the lead path, but the doc it authored still gets written when the Master answers the follow-up.
 A.ok(/commit\(\{ context: conversation\.map/.test(src), 'exact conversation is committed as context');
 // the synthesis' one direct dossier write targets a REAL dimension (same silent-drop guard as the beats above).
 const directDims = [...src.matchAll(/DossierStore\.upsert\('([^']+)'/g)].map(m => m[1]);
@@ -128,7 +128,7 @@ A.ok(/World\.heroCaps\('agent'\)/.test(src) && /capabilities:\s*liveCaps/.test(s
     'the mirror unwraps World.heroCaps {objectType} records before resolving their power labels');
 }
 A.ok(/const mirrorCtx = \{ tuesday: tuesdayT, dig: digT/.test(src), 'the mirror sees motivation and follow-up answers');
-A.ok(/PitchStore\.armFirstMove\(firstTask \|\| grabbedMove\)/.test(src),   // a grabbed offer arrives phrased as the Commander accepting it (test/onboarding-answer-hygiene.test.js)
+A.ok(/PitchStore\.armFirstMove\(firstTask \|\| grabbedMove\)/.test(src),   // a grabbed offer arrives phrased as the Master accepting it (test/onboarding-answer-hygiene.test.js)
   'a grabbed offer arms the post-tour first move (the one below-gate starter allowed)');
 // B8 thin honesty: a loose/empty run synthesizes with thin:true and its purpose lands as a SEED belief.
 A.ok(/thin:\s*!gaveAnything/.test(src), 'a thin run tells the synthesis to own the thinness');
@@ -161,7 +161,7 @@ A.ok(!/Chat\.beginInterview\(\(\) => \{\}\)/.test(src),
   'the no-op interview handler (the answer-swallow bug) is gone');
 
 /* ---------- PLAIN-QUESTION LAW (Andrew, 2026-07-20) — regression lock ---------- */
-// Every question shown to the Commander is an extraction instrument: literal, single-reading, zero
+// Every question shown to the Master is an extraction instrument: literal, single-reading, zero
 // metaphors. A misunderstood question produces a sideways answer that gets SAVED as grounded context.
 // These shapes shipped once ("paint me the shop's tuesday — what do YOU end up doing with your own
 // hands?") and must never return, in the awakening OR the curiosity drip.
@@ -182,7 +182,7 @@ A.ok(!/Chat\.beginInterview\(\(\) => \{\}\)/.test(src),
 
 /* ---------- THE RE-WAKE (2026-07-20) — a replayed awakening never re-runs the birth monologue ---------- */
 // wake:false is the resume-mid-awakening replay (app.js resumeInto: onboarded never flipped, so the ceremony
-// re-enters). The agent has already been born in front of this Commander once — the replay must route to the
+// re-enters). The agent has already been born in front of this Master once — the replay must route to the
 // short re-greeting (reignite), then straight back to the questions. Re-running the full birth speech reads
 // as amnesia (Andrew, 2026-07-20).
 A.ok(/else if \(!opts\.wake\)[\s\S]{0,700}reignite\(\)/.test(src),

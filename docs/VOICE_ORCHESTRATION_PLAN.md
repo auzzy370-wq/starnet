@@ -85,7 +85,7 @@ tools already create sessions and crew; that part works. The defect is narrower 
 all** (grep: two incidental comment mentions of the word "session", zero plumbing). Delegation is
 **agent-addressed, not session-addressed** — the caller can say WHO, never WHERE. The run therefore
 lands in whatever workstream the delegating agent is currently in, which is why a session the
-Commander explicitly named was ignored.
+Master explicitly named was ignored.
 
 ### What this changes about the plan
 
@@ -94,7 +94,7 @@ Commander explicitly named was ignored.
 1. **Give the orchestration tool a session target.** Add an optional workstream/stream id to the
    delegate/subagent params and thread it through to where the run is bound. Without this the bridge
    verb would have the same hole one layer up.
-2. **Resolve a session by NAME.** The Commander speaks titles ("the research session"), not ids, so the
+2. **Resolve a session by NAME.** The Master speaks titles ("the research session"), not ids, so the
    verb needs title → id resolution against the live list, and must REFUSE on an ambiguous or unknown
    title rather than silently defaulting to the active one. ⛔ Defaulting is precisely the behaviour
    that produced this bug; a wrong-but-plausible destination is worse than a refusal.

@@ -245,7 +245,7 @@
     const packageStore = opts.packageStore || opts.packages || null;
     const guard = opts.guard || null;
     // skills/gate.js digestOf, injected. The stamp is what lets the metadata-only list() answer
-    // "is this exact content still the content the Commander approved?" without loading bodies.
+    // "is this exact content still the content the Master approved?" without loading bodies.
     const digest = typeof opts.digest === 'function' ? opts.digest : null;
     const maxFiles = opts.maxFiles > 0 ? opts.maxFiles : DEFAULT_MAX_FILES;
     const maxPackageBytes = opts.maxPackageBytes > 0 ? opts.maxPackageBytes : DEFAULT_MAX_PACKAGE_BYTES;
@@ -388,7 +388,7 @@
     function scanInto(entry, projected) {
       try {
         if (guard && typeof guard.scanSkillRecord === 'function') {
-          // 'user' (the Commander's own typing) is its own trust tier — see the TRUST table in
+          // 'user' (the Master's own typing) is its own trust tier — see the TRUST table in
           // skills/guard.js for why it asks rather than blocks now that verdicts are enforced.
           const scanInput = clone(projected);
           if (Array.isArray(entry.packageFiles) && entry.packageFiles.length && !entry.packageDiverged) {
@@ -409,7 +409,7 @@
           }
           /* PROVENANCE ASK (consistency loop, slice 3, 2026-08-22): a version written by the BACKGROUND REVIEW
              (the quiet aux loop that patches/creates skills after a run or a verdict) is withheld from every
-             prompt until the Commander approves THESE bytes — the same digest-keyed gate a scanner `ask` uses
+             prompt until the Master approves THESE bytes — the same digest-keyed gate a scanner `ask` uses
              and the same keep/discard the memory turn-in card has always had. Memory proposals were reviewed;
              skill writes landed straight into the next run's system prompt. A `block` stays a block. */
           if (reviewWritten(entry) && entry.guardAction !== 'block') entry.guardAction = 'ask';
@@ -493,7 +493,7 @@
       /* A PACKAGE IS STORED AS ITS BYTES (canonical bytes, 2026-10-28). An install, an import, an update or a rollback
          hands over text decoded from a package whose exact bytes are sealed beside it (packageFiles, packageDigest): the
          store keeps that text verbatim. The log redactor used to run over it, so the record (and the stamp an approval
-         binds) no longer described the package the Commander inspected and the mirror holds; a credential in a skill is
+         binds) no longer described the package the Master inspected and the mirror holds; a credential in a skill is
          scrubbed where its text leaves for a model or the station (the tool registry's result scrub, the run prompt's
          skill blocks, the review, curator and evaluation prompts, an export, a market share). Anything else written here
          (a model or a panel edit) is still redacted on the way in; `how.verbatim` is a caller that already holds the
@@ -556,8 +556,8 @@
     /* PINNED IS A LOCK, NOT A LABEL. It used to be neither: the only thing protecting a pinned
        skill was a bullet in the curator's PROMPT ("Never modify pinned skills"), so any model
        that ignored it — or any ordinary agent run that never saw that prompt — could rewrite or
-       archive the Commander's pinned procedure. A rule enforced only in a prompt is a suggestion.
-       The one exemption is an explicit, forced call from the human surface: the Commander may
+       archive the Master's pinned procedure. A rule enforced only in a prompt is a suggestion.
+       The one exemption is an explicit, forced call from the human surface: the Master may
        overwrite their own pin deliberately (the panel sends force), never a model. */
     const CONTENT_ACTIONS = ['edit', 'patch', 'archive', 'delete', 'write_file', 'remove_file'];
     function pinnedGuard(existing, e, action) {
@@ -657,7 +657,7 @@
            into one umbrella, and its prompt already forbids archiving before the content is
            preserved — but nothing checked. An archive with no surviving target is indistinguishable
            from losing the skill, and "delete" is aliased to archive precisely so nothing is ever
-           lost: keep that promise auditable. Only the curator is held to this; a Commander or an
+           lost: keep that promise auditable. Only the curator is held to this; a Master or an
            ordinary run may archive a skill for any reason. The heir must be LIVE (an archived heir
            is a chain into the dark) and must not be the skill itself. */
         const byCurator = str(e.createdBy) === 'curator';
@@ -672,7 +672,7 @@
           heir = find(agentId, str(e.absorbedInto).trim(), { includeArchived: false });
         }
         // Archive and restore change no content, so they keep the writer of these bytes: relabeling a withheld
-        // review-written version as the Commander's would approve bytes nobody read. (A staged archive is still
+        // review-written version as the Master's would approve bytes nobody read. (A staged archive is still
         // stamped with its proposer in stageMutation.)
         entry = clone(existing); entry.state = 'archived'; entry.updatedAt = now();
         if (heir) entry.absorbedInto = heir.name;
@@ -686,11 +686,11 @@
       }
       if (action === 'pin' || action === 'unpin') {
         const pinNext = action === 'pin' ? true : (e.pinned != null ? !!e.pinned : false);
-        /* ONLY THE COMMANDER TAKES A PIN OFF (bug 97743dff). The pin is the lock pinnedGuard holds against every model
+        /* ONLY THE MASTER TAKES A PIN OFF (bug 97743dff). The pin is the lock pinnedGuard holds against every model
            write; while a run could unpin (pin/unpin are never staged), the lock lasted one tool call and the next patch
            went through. Pinning stays open to any writer: it only adds the lock. */
         if (existing.pinned && !pinNext && str(e.createdBy) !== 'user') {
-          return { ok: false, error: '"' + existing.name + '" is pinned by the Commander - only the Commander can unpin it, in ABILITIES > SKILLS' };
+          return { ok: false, error: '"' + existing.name + '" is pinned by the Master - only the Master can unpin it, in ABILITIES > SKILLS' };
         }
         entry = clone(existing); entry.pinned = pinNext; entry.updatedAt = now();
         entry = persist(entry);
@@ -774,7 +774,7 @@
         const i = seeds.findIndex(s => keyOf(s.agentId, s.name) === keyOf(row.agentId, row.name));
         if (i >= 0) seeds[i] = clone(row.skill); else seeds.push(clone(row.skill));
       }
-      const awaiting = name => ({ ok: false, error: '"' + name + '" already has a proposal awaiting evaluation in ABILITIES > SKILLS - the Commander must approve or reject it before this skill can be changed again' });
+      const awaiting = name => ({ ok: false, error: '"' + name + '" already has a proposal awaiting evaluation in ABILITIES > SKILLS - the Master must approve or reject it before this skill can be changed again' });
       const draft = makeSkillStore(Object.assign({}, opts, { stageReviews: false, packageStore: null, packages: null, _settled: true,
         io: { readAll: () => seeds, append() {} } }));
       const r = legacyWrite ? draft.write(e) : draft.manage(e);
@@ -815,7 +815,7 @@
       return out;
     }
     // A pending proposal whose base is no longer the active skill can only be rejected: say so (baseCurrent:false)
-    // instead of listing it as something the Commander can still evaluate. baseCurrent compares the STORED record,
+    // instead of listing it as something the Master can still evaluate. baseCurrent compares the STORED record,
     // as approveCandidate does. The evaluate/approve routes must read their baseline the same way (hydrate:false,
     // skills-eval-03): until they do, a hydrated body or support file can differ, so baseCurrent:true alone does not
     // promise that Evaluate will be accepted.
@@ -842,7 +842,7 @@
     // A heir's CONTENT: lifecycle and pin are not content (a stale or pinned umbrella still carries the merged steps).
     function heirDigestOf(entry) { return entry ? revisionDigest(Object.assign(clone(entry), { state: 'active', pinned: false })) : ''; }
     /* AN ARCHIVE IS BOUND TO ITS HEIR (CONSOLIDATION MUST NAME ITS HEIR). A curator consolidation is two proposals,
-       widen the umbrella and archive the narrow sibling into it, and the Commander can click them in any order.
+       widen the umbrella and archive the narrow sibling into it, and the Master can click them in any order.
        The archive row records the heir version it was built on (heirDigest), and it is approvable only while that
        exact content is the live heir. Otherwise the archived steps would be in no active skill: the merge was
        rejected, is outdated, or the heir changed since. Returns the refusal text, or null. */
@@ -893,7 +893,7 @@
     }
     function approveCandidate(e) {
       e = e || {};
-      if (e.approvedBy !== 'user') return { ok: false, error: 'only the Commander may promote a candidate' };
+      if (e.approvedBy !== 'user') return { ok: false, error: 'only the Master may promote a candidate' };
       const found = candidateDecision(e);
       if (found.error) return { ok: false, error: found.error };
       const { row, active } = found;
@@ -901,7 +901,7 @@
       if (blocked) return { ok: false, error: blocked };
       if (!validatePromotionReceipt) return { ok: false, error: 'candidate needs a host-verified behavior evaluation before promotion' };
       let checked;
-      // acknowledgedNoImprovement is the Commander's explicit "accept a complete tie"; the verifier decides if it qualifies.
+      // acknowledgedNoImprovement is the Master's explicit "accept a complete tie"; the verifier decides if it qualifies.
       try { checked = validatePromotionReceipt(e.evaluation, { candidateDigest: row.candidateDigest, baselineDigest: row.baseDigest,
         candidate: projectSkill(row.skill, true), baseline: active ? projectSkill(active, true) : null, agentId: row.agentId,
         acknowledgedNoImprovement: e.acknowledgedNoImprovement === true }); }
@@ -939,7 +939,7 @@
     /* VETO = UNDO A SILENT SAVE (COMMS). The reflection auto-saves a learned skill through write(), which makes it
        a proposal, so the veto rejects that proposal. A plain archive was a new staged write that could not see the
        reflection's draft: refused for a revision, 'no such skill' for a new skill, and the proposal stayed
-       approvable. Only an active skill is archived, as the Commander, so the archive is not staged again (a pending
+       approvable. Only an active skill is archived, as the Master, so the archive is not staged again (a pending
        retirement proposal is rejected first, then the skill is archived). Matched by skill id or name; 'no such
        skill' when neither exists, which the route treats as already undone. */
     function veto(e) {
@@ -988,7 +988,7 @@
         const own = matches.filter(s => s.agentId === str(agentId));
         /* An agent's own pending-only PROPOSAL is not an active skill, so it never hides an active skill of the same
            name the agent can read (customer report f702f2f6: a worker whose background review had drafted a same-name
-           proposal was told the Commander-approved station skill awaited approval). Its own ACTIVE skill still wins. */
+           proposal was told the Master-approved station skill awaited approval). Its own ACTIVE skill still wins. */
         const ownActive = own.filter(s => !s.pendingCandidate);
         const others = matches.filter(s => s.agentId !== str(agentId) && !s.pendingCandidate);
         matches = ownActive.length ? ownActive : (others.length ? others : own);
@@ -998,7 +998,7 @@
     }
     function share(e) {
       e = e || {};
-      if (e.actor !== 'user') return { ok: false, error: 'only the Commander may change skill sharing' };
+      if (e.actor !== 'user') return { ok: false, error: 'only the Master may change skill sharing' };
       const existing = find(e.agentId, e.target, { includeArchived: true });
       if (!existing) return { ok: false, error: 'no such owned skill' };
       if (!['agent', 'project', 'station'].includes(e.scope)) return { ok: false, error: 'choose agent, project, or station scope' };
@@ -1010,11 +1010,11 @@
       return { ok: true, skill: projectSkill(entry, true) };
     }
     /* A RE-APPROVED TAMPER IS ADOPTED (gate census, 2026-10-28). When the package on disk changed after review, the
-       Commander's Approve releases THOSE bytes at the delivery seam (it re-digests the disk), but the record still held
+       Master's Approve releases THOSE bytes at the delivery seam (it re-digests the disk), but the record still held
        the old ones: the prompt index and skill.list (metadata only, stamp-keyed) went on listing the skill as withheld,
        and the first use after a restart re-wrote the mirror from the record, so the approved bytes were gone. Adopting
        them makes the record what was approved: its stamp is the approval's digest, so every surface agrees. Only the
-       Commander, only while the disk still holds exactly the approved bytes (`digest`), verbatim (they were read and
+       Master, only while the disk still holds exactly the approved bytes (`digest`), verbatim (they were read and
        scanned as they are), never for a sealed install or a promoted revision (their view is the record, not the disk),
        and never past the limits a write is held to: a file over the per-file limit, too many files or a package over
        its total is refused whole (it used to be stored cut to the limit, and the mirror re-written cut).
@@ -1023,7 +1023,7 @@
        the record kept the old bytes, and the skill went withheld again after a restart). */
     function adoptView(e) {
       e = e || {};
-      if (e.actor !== 'user') return { ok: false, error: 'only the Commander may adopt a package\'s bytes' };
+      if (e.actor !== 'user') return { ok: false, error: 'only the Master may adopt a package\'s bytes' };
       if (!canWrite()) return { ok: false, error: cannotWrite().message };
       const s = find(str(e.agentId) || 'agent', e.target, { includeArchived: true });
       if (!s) return { ok: false, error: 'no such skill' };
@@ -1083,7 +1083,7 @@
         // hydrated copy. `out.body` may be the whole RENDERED SKILL.md (setup + body + support-file
         // pointers); writing that into `latest` makes the next persist — markUsed() runs on EVERY run —
         // re-render '## Setup' in front of a body that already has one, and persist() does not clamp, so
-        // it grows without bound and re-stamps contentDigest (invalidating any Commander approval) every
+        // it grows without bound and re-stamps contentDigest (invalidating any Master approval) every
         // single cycle.
         bumpView(Object.assign(clone(s), bumped));
         out = Object.assign(clone(out), bumped);
@@ -1114,7 +1114,7 @@
         if (entry.state === 'stale') entry.state = 'active';
         if (guard && typeof guard.scanSkillRecord === 'function') {
           // the WHOLE scan, not only the verdict: a rule that adds a finding under the same verdict changes the
-          // categories the gate shows the Commander (the scan is deterministic for the same bytes and rules)
+          // categories the gate shows the Master (the scan is deterministic for the same bytes and rules)
           const probe = scanInto(clone(entry), projectSkill(entry, true));
           const scanOf = (x) => JSON.stringify((x && x.scan) || null);
           if (str(probe.guardAction) !== str(entry.guardAction) || scanOf(probe) !== scanOf(entry) || (digest && !entry.contentDigest)) {
@@ -1167,7 +1167,7 @@
         const base = s.lastUsedAt || s.updatedAt || s.createdAt || t;
         const age = Math.max(0, t - base);
         const entry = clone(s);
-        // Only a MODEL-authored skill (the agent, a review, the curator) retires itself. A skill the Commander wrote
+        // Only a MODEL-authored skill (the agent, a review, the curator) retires itself. A skill the Master wrote
         // or chose to install can go stale, never auto-archive: it is theirs to retire (Hermes parity: its curator
         // only ages curator-managed skills). This matters since 2026-09-28, when lastUsedAt stopped being refreshed
         // for every skill merely listed in the index, so the aging clock now measures real loads.

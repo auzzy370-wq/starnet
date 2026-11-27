@@ -1,6 +1,6 @@
 /* node test/fs.stale-write.test.js — THE STALE-WRITE GUARD.
 
-   A delegated worker, a second agent, or the Commander's own editor can change a file between the moment this
+   A delegated worker, a second agent, or the Master's own editor can change a file between the moment this
    agent read it and the moment it writes back. Nothing noticed, so the write silently reverted the other
    change — the classic lost update, and the harder kind to spot because both sides believe they succeeded.
 
@@ -21,7 +21,7 @@ const { writeTool, readTool, editTool, appendTool } = makeFsTools({ fsp, pathMod
 const CTX = { agentId: 'ag', emit: () => {} };
 const absOf = (rel) => path.join(ROOT, 'ag', rel);
 
-// Simulate an EXTERNAL writer (another agent / the Commander's editor): change the bytes AND push mtime
+// Simulate an EXTERNAL writer (another agent / the Master's editor): change the bytes AND push mtime
 // forward explicitly, so the test never races the filesystem's timestamp granularity.
 async function externalChange(rel, text) {
   const abs = absOf(rel);

@@ -9,7 +9,7 @@
 
    The shape, top to bottom of one exchange:
      ─── Today · 3:42 PM ───              time break (chat.js timeBreak): first turn, new day, or 30 min of quiet
-                    3:42 PM  COMMANDER     the Commander's turn: stamp ALWAYS visible, text in a gold bubble, right
+                    3:42 PM  MASTER     the Master's turn: stamp ALWAYS visible, text in a gold bubble, right
                     ╭───────────────────╮
                     │ can you look at … │
                     ╰───────────────────╯
@@ -63,7 +63,7 @@ body #chat-panel :is(#chat-log, #gc-log) .cmsg:is(.agent, .user) > .cmsg-head > 
 /* ---- THE DITHER FIELD — both speakers' text sits on its rail over a faint 1px ordered-dither field: pipglass's own
    lit-row material (a checker of phosphor cells, crisp, no gradient), kept LIGHT so it reads as a lit terminal region,
    not a box (Andrew 10-04: shown flat / rail-only / bracket / dither side by side → "make variant 4 a bit lighter on
-   the text boxes"). --dot is the cell colour: phosphor for the agent, gold for the Commander. A split reply's rows
+   the text boxes"). --dot is the cell colour: phosphor for the agent, gold for the Master. A split reply's rows
    touch (the continuation margin below), so the field and rail run unbroken. ---- */
 body #chat-panel :is(#chat-log, #gc-log) :is(.cmsg.user, .cmsg.agent:not(.tool):not(.consent):not(.turnin):not(.nudge):not(.deliverable)) > .body {
   --dot: rgba(var(--ph-rgb), .042);
@@ -71,7 +71,7 @@ body #chat-panel :is(#chat-log, #gc-log) :is(.cmsg.user, .cmsg.agent:not(.tool):
 }
 body #chat-panel :is(#chat-log, #gc-log) .cmsg.user > .body { --dot: rgba(var(--gold-rgb), .05); }
 
-/* ---- THE COMMANDER — right side, gold: a terminal INPUT line — a `>` prompt, gold-tinted type, the gold rail ---- */
+/* ---- THE MASTER — right side, gold: a terminal INPUT line — a `>` prompt, gold-tinted type, the gold rail ---- */
 body #chat-panel :is(#chat-log, #gc-log) .cmsg.user {
   align-self: flex-end; width: fit-content; max-width: 86%; min-width: 0;
   padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none;
@@ -87,13 +87,13 @@ body #chat-panel :is(#chat-log, #gc-log) .cmsg.user > .body {
   color: color-mix(in srgb, var(--gold) 45%, var(--text));
 }
 body #chat-panel :is(#chat-log, #gc-log) .cmsg.user > .body::before { content: '> '; color: var(--gold); opacity: .75; }
-/* no hover glow on the Commander's message either (Andrew 10-04): the gold rail holds its level */
+/* no hover glow on the Master's message either (Andrew 10-04): the gold rail holds its level */
 body #chat-panel :is(#chat-log, #gc-log) .cmsg.user .chat-attach-view { justify-content: flex-end; }
 /* the ⧉ rides the header line on the stamp's side (the reserved lane in comms.css / glass-comms.css) */
 body #chat-panel :is(#chat-log, #gc-log) .cmsg.user > .cmsg-copy { top: -2px; }
 /* a worker thread's brief (chat.js addUser brief): written by the agent that delegated it, so it sits on the AGENT
-   side in that agent's phosphor — never on the Commander's right-hand gold input line with its `>` prompt (2026-10-10
-   blind test: on the right it read as the Commander's own words) */
+   side in that agent's phosphor — never on the Master's right-hand gold input line with its `>` prompt (2026-10-10
+   blind test: on the right it read as the Master's own words) */
 body #chat-panel #chat-log .cmsg.user.brief { align-self: flex-start; }
 body #chat-panel #chat-log .cmsg.user.brief > .cmsg-head { flex-direction: row; padding-left: 0; padding-right: 28px; }
 body #chat-panel #chat-log .cmsg.user.brief > .cmsg-copy { left: auto; right: 5px; }
@@ -103,7 +103,7 @@ body #chat-panel #chat-log .cmsg.user.brief > .body {
 body #chat-panel #chat-log .cmsg.user.brief > .body::before { content: none; }
 body #chat-panel #chat-log .cmsg.user.brief .who { color: var(--ph-bright); text-align: left; margin-right: 0; }
 
-/* ---- THE AGENT — the Commander's line, mirrored: callsign + stamp above, the text on the phosphor rail. No face, no box
+/* ---- THE AGENT — the Master's line, mirrored: callsign + stamp above, the text on the phosphor rail. No face, no box
    (Andrew 10-03: "keep the name as is without the pfp"). ---- */
 body #chat-panel :is(#chat-log, #gc-log) .cmsg.agent:not(.tool):not(.consent):not(.turnin):not(.nudge):not(.deliverable) {
   padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none;

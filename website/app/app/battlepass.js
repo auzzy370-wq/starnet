@@ -1,11 +1,11 @@
 /* VULTRON — battlepass.js : the PURE battle-pass projection behind the QUEST LOG's PASS view.
 
    Andrew, 2026-10-19: "it should feel like a Fortnite battle pass, except the goals are based off the user's
-   actual goals and desires." This engine dresses the Commander's EXISTING, sidecar-owned progression as a pass —
+   actual goals and desires." This engine dresses the Master's EXISTING, sidecar-owned progression as a pass —
    tiers, rank titles, a daily streak, a season, and weekly challenges — without minting anything:
 
-     • TIER      = the Commander level (sidecar/journey-store.js progressionFor: floor(points / 100) + 1).
-     • PASS PTS  = the Commander achievement points. They are only ever awarded by the sidecar for verified,
+     • TIER      = the Master level (sidecar/journey-store.js progressionFor: floor(points / 100) + 1).
+     • PASS PTS  = the Master achievement points. They are only ever awarded by the sidecar for verified,
                    goal-linked outcomes (+10 per quest / planned step / metric checkpoint, +100 per confirmed goal).
      • STREAK    = consecutive LOCAL days on which at least one of those achievements landed (progression.activity).
      • SEASON    = the calendar month; season pts = points whose achievement landed this month.
@@ -124,7 +124,7 @@
     return { current, best: Math.max(best, current), today: days.has(today), atRisk: current > 0 && !days.has(today), week };
   }
 
-  /* this week's challenges, aimed at the Commander's REAL goal. Every count reads point-earning achievements that
+  /* this week's challenges, aimed at the Master's REAL goal. Every count reads point-earning achievements that
      landed since Monday 00:00 local; `pts` names what the sidecar already pays for the counted thing. */
   function challengesOf(evts, input, now) {
     const since = startOfWeek(now);
@@ -147,7 +147,7 @@
     if (open > 0 || steps > 0) out.push(mk('steps', 'Finish ' + Math.max(1, Math.min(2, open + steps)) + ' planned step' + (Math.min(2, open + steps) > 1 ? 's' : '') + ' on “' + clip(goal.text, 48) + '”',
       steps, Math.max(1, Math.min(2, open + steps)), '+10 PTS EACH', { view: 'goals' }));
     const quests = wk.filter(e => e.kind === 'quest' && !e.step).length;
-    // only a goal-linked quest the Commander CONFIRMS earns points (journey-store recordQuest: commander-confirmed +
+    // only a goal-linked quest the Master CONFIRMS earns points (journey-store recordQuest: commander-confirmed +
     // an active registered goal) — station / dossier / build / fix-it quests never do, so the challenge names exactly that.
     out.push(mk('quests', 'Confirm 3 quests for your goals', quests, 3, '+10 PTS EACH', { view: 'available', category: 'missions' }));
     const activeDays = new Set(wk.map(e => ordinal(e.at))).size;

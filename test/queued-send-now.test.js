@@ -240,7 +240,7 @@ const ok200 = { status: 200, json: () => Promise.resolve({ ok: true }) };
   }
   {
     /* THE STRIP, RUN FOR REAL (Andrew 10-26): a queued line is a NEXT row with a SEND NOW key; once the run holds it, a SENT
-       row with no key; once the run's echo shows it read, no row (the transcript shows it as the Commander's MID-RUN line). */
+       row with no key; once the run's echo shows it read, no row (the transcript shows it as the Master's MID-RUN line). */
     const rq = A.fnBody(src, 'function renderQueued');
     A.ok(rq.length > 200 && rq.length < 6000, 'renderQueued located');
     const mk = tag => ({ tag, className: '', children: [], attrs: {}, text: '', appendChild(n) { this.children.push(n); return n; },
@@ -590,7 +590,7 @@ const ok200 = { status: 200, json: () => Promise.resolve({ ok: true }) };
     A.ok(/goes after the message ahead of it/.test(lines[0] || ''), 'and says when it goes');
   }
 })().then(() => {
-  // with the speaker on, the voice never reads the Commander's own steering note as the agent's words
+  // with the speaker on, the voice never reads the Master's own steering note as the agent's words
   const ss = A.fnBody(src, 'const speakSafe = (s) =>');
   A.ok(ss.length > 50 && ss.length < 2000, 'speakSafe located');
   const m = /const SPEAK_MARKER = [^\n]*\n/.exec(src), st = /const SPEAK_STEER = [^\n]*\n/.exec(src);

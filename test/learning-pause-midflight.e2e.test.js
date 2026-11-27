@@ -1,9 +1,9 @@
-/* node test/learning-pause-midflight.e2e.test.js — a learning pass must not write after the Commander paused (or
+/* node test/learning-pause-midflight.e2e.test.js — a learning pass must not write after the Master paused (or
    forgot) learning while its model call was in flight.
 
    runReflection, runFailureReview and the hybrid-recall embedder (hybridVectors) checked the personalization PAUSE
    once, at entry, then awaited a provider for seconds and persisted whatever came back. A pause or a DELETE (forget)
-   that landed during that await was ignored: a memory or lesson about the Commander was saved ("◈ remembered") after
+   that landed during that await was ignored: a memory or lesson about the Master was saved ("◈ remembered") after
    they turned learning off, and it steers later prompts. The fix copies scanDocumentSource's rule: re-check enabled +
    revision after the await (setEnabled and markForgotten both bump it). runScoutCycle's arm lives in scout.e2e BOOT 4.
 
@@ -64,7 +64,7 @@ function startMock() {
       };
       if (raw.indexOf('reflecting right after finishing a task') >= 0) {
         await holdIf('reflect');
-        return send({ content: 'PREFERENCE: The Commander wants ' + SENTINEL + '.' }, REFLECT_USAGE);
+        return send({ content: 'PREFERENCE: The Master wants ' + SENTINEL + '.' }, REFLECT_USAGE);
       }
       if (raw.indexOf('reviewing a task run of yours that FAILED') >= 0) {
         await holdIf('fail');
@@ -131,7 +131,7 @@ const setLearning = async (fixture, enabled) => (await fixture.json('POST', '/ap
     mock.state.release();
     A.ok(await until(() => ledgerRows(ws).some(r => r.runId === p.runId && r.tokens === 1777 && r.usd > 0), 5000), 'reflection paused: the call\'s spend is still booked to the ledger (truthful cost)');
     await sleep(300);
-    A.ok((await notebook(fixture, 'paused')).indexOf(SENTINEL) < 0, 'reflection paused: NO memory is written after the Commander paused learning');
+    A.ok((await notebook(fixture, 'paused')).indexOf(SENTINEL) < 0, 'reflection paused: NO memory is written after the Master paused learning');
 
     // forgot mid-call (learning stays ON) -> nothing is written
     A.eq((await setLearning(fixture, true)).enabled, true, 'reflection forgot: learning is back on before the run');
@@ -158,7 +158,7 @@ const setLearning = async (fixture, enabled) => (await fixture.json('POST', '/ap
     A.eq((await setLearning(fixture, false)).enabled, false, 'failure-review paused: learning paused while the call is in flight');
     mock.state.release();
     await sleep(800);
-    A.eq((await lessons(fixture, 'fpaused')).length, 0, 'failure-review paused: NO lesson is written after the Commander paused learning');
+    A.eq((await lessons(fixture, 'fpaused')).length, 0, 'failure-review paused: NO lesson is written after the Master paused learning');
     A.eq((await setLearning(fixture, true)).enabled, true, 'learning back on for the recall arm');
 
     // ================= HYBRID RECALL (embeddings) =================
@@ -179,7 +179,7 @@ const setLearning = async (fixture, enabled) => (await fixture.json('POST', '/ap
     const pr = await pending;
     A.eq(pr.status, 200, 'recall paused: the run still completes (recall falls back to lexical)');
     await sleep(300);
-    A.ok(!fs.existsSync(path.join(ws, 'ctl.embed.json')), 'recall paused: NO memory vectors are persisted after the Commander paused learning');
+    A.ok(!fs.existsSync(path.join(ws, 'ctl.embed.json')), 'recall paused: NO memory vectors are persisted after the Master paused learning');
   } finally {
     try { mock.state.hold = null; if (mock.state.release) mock.state.release(); } catch (_) {}
     await fixture.dispose();

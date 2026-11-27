@@ -112,7 +112,7 @@ const CloudSave = (() => {
      newest push is in one of the two: otherwise the reload would drop it. */
   let landedSeq = 0, preservedSeq = 0;
   /* RESTORE BACKUP (backup.js importFile) asked to put a station back: the saves from that import on carry _saveRestore, so a
-     reset generation's empty station file takes the Commander's chosen backup (savestore: explicitRestore). Only until the
+     reset generation's empty station file takes the Master's chosen backup (savestore: explicitRestore). Only until the
      station ANSWERS one of them (review 10-23 r2 #1): landed, refused as a conflict (the file was not empty, so there was
      nothing to put back), or refused for any other reason. A page armed for its whole life could otherwise write a pre-reset
      station over a fresh one long after a later START FRESH. A send that got no answer (an outage) keeps it armed. */

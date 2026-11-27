@@ -1,7 +1,7 @@
 /* sidecar/verdictreview.js — VERDICT-TRIGGERED SKILL REVIEW (consistency loop, slice 1, 2026-08-22).
 
    The background skill review (skillreview.js) fires on run SIZE — ≥4 tool calls, ≥8 turns, ≥5000 chars. The
-   Commander's own verdict on the work was never an input: a small run rated `miss` taught the skillbase nothing,
+   Master's own verdict on the work was never an input: a small run rated `miss` taught the skillbase nothing,
    which is exactly the consistency complaint ("it did it wrong, and next week it does it wrong again").
 
    This module is the pure half of the fix. At run end, a run that did NOT earn a size-review gets a compact
@@ -10,7 +10,7 @@
    same quiet review loop with the verdict in the prompt. `great` never triggers — praise is not a lesson.
 
    Bounded by construction: a capped LRU (oldest evicted), a TTL so a stale packet never reviews a run the
-   Commander rated long after against a skillbase that has since moved, and take() deletes. Durable since
+   Master rated long after against a skillbase that has since moved, and take() deletes. Durable since
    2026-10-01: onChange/restore round-trip a compacted, provider-free packet across restarts, and a run that
    ended in failure (max_iters/budget/refusal) is parked too: a `miss` on failed work is a lesson as well. Pure + clock-injected
    (node-testable); index.js owns the provider objects and the loop. */
@@ -225,9 +225,9 @@ function makeVerdictReview(opts) {
   function has(runId) { sweep(); return packets.has(String(runId || '').trim()); }
 
   /* ---- CORRECTION GRACE (slice 2, 2026-08-22) ----
-     A verdict alone says "this fell short"; the Commander's NEXT words say HOW. Firing the review the instant the
+     A verdict alone says "this fell short"; the Master's NEXT words say HOW. Firing the review the instant the
      verdict lands threw those words away. arm() takes the packet and holds it for `graceMs`; correct() attaches
-     the Commander's correction — a chip tap (final:false) keeps waiting for the typed message, a typed message
+     the Master's correction — a chip tap (final:false) keeps waiting for the typed message, a typed message
      (final:true) fires the review NOW with their words; the timer fires with whatever arrived. One review per
      run either way (held map is keyed by runId; fire is single-shot). Timers are INJECTED (determinism law). */
   const setT = typeof opts.setTimeout === 'function' ? opts.setTimeout : (fn, ms) => setTimeout(fn, ms);

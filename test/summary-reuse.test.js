@@ -438,7 +438,7 @@ const R = rowsOf(10);
         A.eq(res.end, want, tag + ' cut@' + cutPos + ': the claim stops at the opening user row of the exchange the cut falls in');
         A.eq(res.progress, wantOpen > prefix, tag + ' cut@' + cutPos + ': progress only when it adds to the previous coverage');
         if (res.end > want) claimsBeyond++;
-        if (res.progress) { A.eq(sc.rows[res.end].role, 'user', tag + ' cut@' + cutPos + ': the boundary is a Commander row'); if (cutPos < sc.win.length && sc.win[cutPos].role === 'assistant') snapped++; else exact++; }
+        if (res.progress) { A.eq(sc.rows[res.end].role, 'user', tag + ' cut@' + cutPos + ': the boundary is a Master row'); if (cutPos < sc.win.length && sc.win[cutPos].role === 'assistant') snapped++; else exact++; }
         else noProgress++;
       }
     }
@@ -485,7 +485,7 @@ const R = rowsOf(10);
     sc = base(); A.eq(claim(sc, Object.assign(cutAt(sc, 5), { kept: [sc.directive] })).reason, 'kept-untagged', 'a pinned turn nothing places is no claim');
     sc = base(); A.eq(claim(sc, Object.assign(cutAt(sc, 5), { prevNote: { role: 'system', content: note('a note this host never tagged') } })).reason, 'prev-note-untagged', 'a previous note with no coverage is no claim');
     sc = base(); { const moved = sc.rows.filter((_, i) => i !== sc.alignment.cut - 1); A.eq(claim(sc, Object.assign(cutAt(sc, 5), { rows: moved })).reason, 'prev-coverage-moved', 'rows that moved under the previous coverage are no claim'); }
-    sc = base(); A.eq(claim(sc, Object.assign(cutAt(sc, 5), { older: sc.win.slice(0, 2).concat(sc.win.slice(4, 6)), tailHead: sc.win[6] })).reason, 'gap', 'a skipped exchange (a Commander row the slice never held) is a gap, no claim');
+    sc = base(); A.eq(claim(sc, Object.assign(cutAt(sc, 5), { older: sc.win.slice(0, 2).concat(sc.win.slice(4, 6)), tailHead: sc.win[6] })).reason, 'gap', 'a skipped exchange (a Master row the slice never held) is a gap, no claim');
     sc = base(); { const gone = sc.rows.filter(r => r.rowId !== sc.rows[userIndex(sc.rows, 3)].rowId); A.eq(claim(sc, Object.assign(cutAt(sc, 5), { rows: gone })).reason, 'row-gone', 'a covered row that left the view (forgotten, retracted) is "row-gone", never guessed around'); }
     sc = base(); A.eq(claim(sc, Object.assign(cutAt(sc, 5), { older: [sc.win[2], sc.win[0], sc.win[1], sc.win[3], sc.win[4]] })).reason, 'order', 'a slice out of canonical order is no claim');
     sc = base(); A.eq(claim(sc, { older: [{ role: 'system', content: 'only a note' }], tailHead: sc.win[0] }).reason, undefined, 'a slice of notes alone changes nothing (it is not an error)');

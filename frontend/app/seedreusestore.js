@@ -6,7 +6,7 @@
    read surface the TROPHY CASE's living-tools shelf renders from.
 
    The provenance is ALREADY proved upstream: returnstore's digest annotates each while-away run row with
-   `.seed` = the Commander-saved seed it genuinely reused (SeedCredit.matchSeed). We only tally what the matcher
+   `.seed` = the Master-saved seed it genuinely reused (SeedCredit.matchSeed). We only tally what the matcher
    proved — a run with no `.seed` contributes nothing (honest counts, never guessed). A digested run is listed
    ONCE (returns.js never re-lists), so each reuse is counted exactly once.
 
@@ -58,7 +58,7 @@ const SeedReuseStore = (() => {
   function livingTools() { return ready() ? SeedReuse.livingTools(state, Date.now()) : []; }
   function windowCount(name) { return ready() ? SeedReuse.windowCount(state, name, Date.now()) : 0; }
 
-  // S2/new-hero: a fresh Commander inherits no prior tool-usage history (own key, like the other stores).
+  // S2/new-hero: a fresh Master inherits no prior tool-usage history (own key, like the other stores).
   function reset() { state = (typeof SeedReuse !== 'undefined') ? SeedReuse.hydrate(null) : null; try { localStorage.removeItem(KEY); } catch (_) {} }
 
   return { init, recordSeed, recordAnnotatedRows, livingTools, windowCount, reset };

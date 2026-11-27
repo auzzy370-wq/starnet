@@ -1,5 +1,5 @@
 /* node test/group-poll-idle.test.js — the open group chat's poll asks only "since": every 0.9 s on screen (trunk's
-   cadence, always), every 30 s while the Commander is away (idle CPU piece 3, 2026-10-20).
+   cadence, always), every 30 s while the Master is away (idle CPU piece 3, 2026-10-20).
 
    THE COST. The open group re-downloaded its whole group every 0.9 s forever — minimized or not — JSON.stringified it to
    decide whether to paint, and every change (each streamed draft too) remapped every message into the workstream; every
@@ -185,7 +185,7 @@ function harness({ stamps = true, realU = false, realGate = false, listMs = 0 } 
   /* (g) fix round 4 (2026-10-20): THE OPEN GROUP'S READ HAS A DEADLINE TOO. Only the station-wide watch had one: an open
      group's read the sidecar accepted and never answered (every groupSessions read awaits the durable store's `ready`)
      left the chain waiting on it for good — it never rescheduled, the wake catch-up returned early on the read "in
-     flight", and the transcript froze with nothing on screen saying so until the Commander switched chats. */
+     flight", and the transcript froze with nothing on screen saying so until the Master switched chats. */
   {
     const h = harness({ realU: true });
     h.ctx.GroupChat.bind(h.ws); await h.settle();

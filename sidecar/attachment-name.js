@@ -1,7 +1,7 @@
 /* sidecar/attachment-name.js — THE ONE RULE FOR A SENDER-CHOSEN FILE NAME (AND MEDIA TYPE) THAT ANYTHING ECHOES
    (attachment-rows-and-taint, repair 2026-11-04).
 
-   THE PROBLEM. A file name is text somebody else chose: whoever made or renamed the file, not the Commander. Since a run holds
+   THE PROBLEM. A file name is text somebody else chose: whoever made or renamed the file, not the Master. Since a run holds
    an attachment's taint only while its BYTES are re-sent, a file that sends none (a PDF, an archive, an old Office file) or a
    turn after the bytes have left is a clean run, and the name is then the one stretch of third-party text in front of the
    model: in the binary note, the header and the marker of the file, in the label of a turn sent with no words, in the

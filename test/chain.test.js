@@ -1,7 +1,7 @@
 /* test/chain.test.js — the agentic-graph executor (sidecar/routing/chain.js).
    Pure orchestration: a fake nextAgent (the drawn floor) + a fake runAgent (the harness), injected clock.
    No provider, no DOM, no wall-clock. The last block wires the REAL compiler + REAL router so "the line the
-   Commander drew" and "the runs the sidecar buys" are proven to be one decision. */
+   Master drew" and "the runs the sidecar buys" are proven to be one decision. */
 'use strict';
 const A = require('./_assert.js');
 const { makeChainRunner } = require('../sidecar/routing/chain.js');

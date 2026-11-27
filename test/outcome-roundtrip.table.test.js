@@ -542,7 +542,7 @@ async function viaRunNow(run, line) {
   return { status: settled && settled.lastStatus, cronOutcome: result && result.outcome, cronReason: result && result.reason, job: settled, crate: crates.length ? crates[0] : '(never settled)' };
 }
 
-// ---- review r7: a routine the Commander PAUSES while its fire runs — the real driver and the real store, the pause landing mid-run
+// ---- review r7: a routine the Master PAUSES while its fire runs — the real driver and the real store, the pause landing mid-run
 //      exactly as handleCronUpdate / remote setRoutine write it (pauseJob first, then the lease's abort), and the driver's own delivery
 //      captured. priorFailures seeds the routine's streak (four in a row: the next counted failure auto-pauses it) ----
 async function viaPausedMidRun(run, priorFailures) {
@@ -566,9 +566,9 @@ async function viaPausedMidRun(run, priorFailures) {
   const settled = cronStore.getJob(store, 'j1');
   return { job: settled, held: cronStore.deliveriesHeld(settled), delivered, result: events.filter(e => e.name === 'cron.result').map(e => e.payload).pop() || null };
 }
-// ---- review 7.1: RUN NOW on a routine the Commander had ALREADY paused (the ROUTINES button stays live on a paused routine) — handleCronRun's
+// ---- review 7.1: RUN NOW on a routine the Master had ALREADY paused (the ROUTINES button stays live on a paused routine) — handleCronRun's
 //      own manual lease (sliced: what the press records about the routine it started on), its tee sink and its catch + finally through the
-//      real driver's settleRun, and the driver's own delivery captured. pausedBefore false: a press on a live routine that the Commander
+//      real driver's settleRun, and the driver's own delivery captured. pausedBefore false: a press on a live routine that the Master
 //      pauses while it runs (pauseJob lands first, as the panel writes it) — that one's result waits for the resume ----
 const RUN_NOW_LEASE = (/\n  cronDriver\.leases\.set\(job\.id, \{ runId: runId,[^\n]*\);/.exec(RUN_NOW_SRC) || [''])[0];
 A.ok(/cronDriver\.leases\.set\(job\.id, \{ runId: runId,/.test(RUN_NOW_LEASE), 'fixture: Run Now\'s manual lease is sliced from handleCronRun');
@@ -1041,32 +1041,32 @@ function check(surface, kind, ok, why) {
     }
     // 3. PAUSED WHILE IT RAN: pauseJob lands first, then the fire's abort. The settlement rewrote 'paused' to 'error', re-armed it, and its
     //    result went out at once as "✦ digest failed" (deliveriesHeld read false) instead of waiting for the resume; with four failures behind
-    //    it, the Commander's own pause was relabelled 'consecutive-failures'.
+    //    it, the Master's own pause was relabelled 'consecutive-failures'.
     for (const prior of [0, 4]) {
       const pm = await viaPausedMidRun(await stationRun('stopped'), prior);
       const kind = 'paused mid-run' + (prior ? ' after four failures' : '');
       check('routines', kind, pm.job.enabled === false && pm.job.state === 'paused' && pm.job.disabledReason === 'paused' && pm.held === true && pm.delivered.length === 0,
-        'the Commander\'s pause stands and the stopped fire\'s result is held until the resume (got ' + JSON.stringify({ enabled: pm.job.enabled, state: pm.job.state, why: pm.job.disabledReason, held: pm.held, delivered: pm.delivered.length }) + ')');
+        'the Master\'s pause stands and the stopped fire\'s result is held until the resume (got ' + JSON.stringify({ enabled: pm.job.enabled, state: pm.job.state, why: pm.job.disabledReason, held: pm.held, delivered: pm.delivered.length }) + ')');
       check('routines', kind, pm.job.lastStatus === 'stopped' && (Number(pm.job.consecutiveFailures) || 0) === prior && pm.result && pm.result.outcome === 'stopped' && !/paused: consecutive/.test(String(pm.result.reason)),
         'the fire is recorded and announced stopped, the streak unchanged (got ' + JSON.stringify({ status: pm.job.lastStatus, n: pm.job.consecutiveFailures, result: pm.result }) + ')');
     }
     // 3b. RUN NOW ON A ROUTINE ALREADY PAUSED (review 7.1): the button stays live on a paused routine, and r7's hold caught that press too — the
-    //     result the Commander asked for (a clean reply, or the failure notice) waited for a resume that might never come, and a later result
+    //     result the Master asked for (a clean reply, or the failure notice) waited for a resume that might never come, and a later result
     //     could collapse it ("N earlier results … will not be resent"); a transient failure (a 429, an unreachable provider) backed off to a
     //     retry a paused routine never fires, so it settled nothing at all. The pause stands and the result goes out at once; a press the
-    //     Commander pauses WHILE it runs is still held.
+    //     Master pauses WHILE it runs is still held.
     for (const kind of ['done', 'template', 'codex429', 'unreachable', 'cut', 'budget']) {
       const rn = await viaPausedRunNow(await stationRun(kind), true);
       const want = ORACLE[kind][0];
       check('Run Now', 'pressed while paused (' + kind + ')', rn.job.enabled === false && rn.job.state === 'paused' && rn.job.disabledReason === 'paused' && rn.job.lastOutcome === want,
-        'the Commander\'s pause stands and the press is recorded ' + want + ' (got ' + JSON.stringify({ enabled: rn.job.enabled, state: rn.job.state, why: rn.job.disabledReason, outcome: rn.job.lastOutcome, threw: rn.threw }) + ')');
+        'the Master\'s pause stands and the press is recorded ' + want + ' (got ' + JSON.stringify({ enabled: rn.job.enabled, state: rn.job.state, why: rn.job.disabledReason, outcome: rn.job.lastOutcome, threw: rn.threw }) + ')');
       check('Run Now', 'pressed while paused (' + kind + ')', rn.delivered.length === 1 && rn.job.finalization && rn.job.finalization.state === 'delivered' && !cronStore.deliveriesHeld(rn.job, rn.job.finalization),
-        'the result the Commander asked for goes out at once, never held for a resume (got ' + JSON.stringify({ delivered: rn.delivered.length, finalization: rn.job.finalization && rn.job.finalization.state }) + ')');
+        'the result the Master asked for goes out at once, never held for a resume (got ' + JSON.stringify({ delivered: rn.delivered.length, finalization: rn.job.finalization && rn.job.finalization.state }) + ')');
     }
     {
       const rn = await viaPausedRunNow(await stationRun('stopped'), false);
       check('Run Now', 'paused while pressed', rn.job.enabled === false && rn.job.state === 'paused' && rn.delivered.length === 0 && rn.job.finalization && rn.job.finalization.state === 'pending' && cronStore.deliveriesHeld(rn.job, rn.job.finalization) === true,
-        'a press the Commander pauses while it runs keeps its result until the resume (got ' + JSON.stringify({ enabled: rn.job.enabled, state: rn.job.state, delivered: rn.delivered.length, finalization: rn.job.finalization && rn.job.finalization.state }) + ')');
+        'a press the Master pauses while it runs keeps its result until the resume (got ' + JSON.stringify({ enabled: rn.job.enabled, state: rn.job.state, delivered: rn.delivered.length, finalization: rn.job.finalization && rn.job.finalization.state }) + ')');
     }
     // 4. A STOP, THEN A CLEAN FIRE — the briefing's "(K failed)" count (review 6.2) counted the stop: "“digest” ran 2× (1 failed)" and
     //    counts.failed 1, while the page and the HUD settle the same fire as no verdict

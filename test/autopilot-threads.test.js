@@ -30,7 +30,7 @@ const beliefs = { goals: ['ship Vultron v1'] };
 // ---- 2. a candidate citing a thread TAG survives the veto AND resolves the threadId ----
 {
   const reply =
-    'JOB: Build the GPU price watcher\nKIND: advance-goal\nGROUNDS: [t1] the Commander wanted a GPU price watcher\nCONFIDENCE: high\nSPEC: a runnable price-watch script';
+    'JOB: Build the GPU price watcher\nKIND: advance-goal\nGROUNDS: [t1] the Master wanted a GPU price watcher\nCONFIDENCE: high\nSPEC: a runnable price-watch script';
   const cands = AP.parseCandidates(reply, { eligible: AP.ARCHETYPES, beliefs, threads });
   A.eq(cands.length, 1, 'a thread-tag-cited candidate survives the grounding veto');
   A.eq(cands[0].threadId, 'th_aaa', 'the cited tag [t1] resolves to the real thread id');

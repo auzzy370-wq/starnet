@@ -97,7 +97,7 @@ async function waitFor(fn, label) {
 
   const env = { VULTRON_IPC_TOKEN: IPC, VULTRON_FULL_ACCESS: '1', VULTRON_DEFAULT_MODEL: '', SKYNET_DEFAULT_MODEL: '' };
   // a CLOUD provider the keychain holds a key for (seeded into the sidecar's env at spawn, as the shell does), whose endpoint
-  // the Commander pointed at their own gateway. The operator-level URL can never answer (.invalid): a run that lost the
+  // the Master pointed at their own gateway. The operator-level URL can never answer (.invalid): a run that lost the
   // override fails here, on this machine, and never reaches the provider's real default.
   env.GROQ_API_KEY = 'gsk-keychain-seeded-for-this-test';
   env.GROQ_BASE_URL = 'https://groq-default-stand-in.invalid/openai/v1';

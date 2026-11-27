@@ -4,12 +4,12 @@
    into its place. Two renames cannot be one, and a process can die between them (power, a hard kill, a crash). Nothing knew an
    activation had been under way, so the next boot compared the request's pins against a workspace that was gone, refused it
    with "Nothing was moved" although everything had been, and made an empty workspace: no seal, no record, no marker. The erase
-   authority survived only on the shelf, where nothing reads it, so the boot after that imported the very station the Commander
+   authority survived only on the shelf, where nothing reads it, so the boot after that imported the very station the Master
    had erased or set aside (the gh#101 resurrection), and a power loss let the shell's own legacy migration do the same first.
    The request file now carries a journal, and every boot settles it first (sidecar/workspace-recovery.js resumeActivation).
 
    THE INVARIANT, for BOTH activations and at EVERY step: kill a real child process just before its next rename, unlink or
-   remove in applyPendingRecovery, then boot as index.js boots. Whichever step it was, the next boot leaves what the Commander
+   remove in applyPendingRecovery, then boot as index.js boots. Whichever step it was, the next boot leaves what the Master
    asked for and no boot ever says otherwise:
      - the workspace is sealed and holds exactly the generation that was asked for, its station record and its facts;
      - the erase authority and the acknowledged roots are kept, so automatic recovery stays blocked, against a root nothing ever

@@ -20,7 +20,7 @@
       That readout composed the office itself and counted neither. Run against this lane before the fix, the
       registry-owner and dev-route FULL POWER rows fail.
    2. THE HUB HANDS THE VERDICT. A real makeChannelHub passes runSlash the same channelSender / channelSenderOwner pair it
-      stamps on that chat's runs, on all three slash paths (/tools, a Commander's command, a desktop command).
+      stamps on that chat's runs, on all three slash paths (/tools, a Master's command, a desktop command).
    3. THE INSTRUMENT BITES. Dropping FULL POWER and the profile from the readout's projectStation call, or reading Full
       Power as !ownerTrusted again, is a non-empty diff.
    Readout only: no run, grant or authority matrix cell changes (test/authority-census.test.js still holds the snapshot).

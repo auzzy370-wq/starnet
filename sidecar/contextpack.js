@@ -2,10 +2,10 @@
 
    WHY THIS EXISTS — the whole soul of the night shift. Until NS-2, an unattended beat grounded its candidate ideas
    in SIX STATIC dossier strings (goals/pain/ambition/stack/standing_orders/style) synced read-only from the frontend.
-   That is a personality sketch, not a work log: it never changes as the Commander actually works, so overnight the
+   That is a personality sketch, not a work log: it never changes as the Master actually works, so overnight the
    agent proposed generic dossier-shaped ideas and once titled its own output "Busywork". The product promise is that
    the night shift feels like MAGIC — "it should almost know what to do before the user even says it." Magic needs
-   grounding in what the Commander ACTUALLY did recently: the runs he kicked off, what he asked in chat, the goal arc
+   grounding in what the Master ACTUALLY did recently: the runs he kicked off, what he asked in chat, the goal arc
    he's on, the deliverables that landed. This module assembles that real activity into a bounded, dated digest the
    propose directive can aim at ("continue / unblock / extend what they're actually doing").
 
@@ -16,16 +16,16 @@
    already-fetched arrays. `now` is injected so recency windows are deterministic.
 
    THE SECTIONS (each newest-first, each independently capped; the pack composes only the ones with substance):
-     · WORKED RECENTLY — user-initiated run TITLES from the last ~7 days (literally "what the Commander is working
+     · WORKED RECENTLY — user-initiated run TITLES from the last ~7 days (literally "what the Master is working
        on"). Internal runs (night-shift / cron / workshop) are EXCLUDED by streamId prefix — they are the station's
-       own noise, not the Commander's work. This is the highest-signal grounding evidence.
+       own noise, not the Master's work. This is the highest-signal grounding evidence.
      · ASKED RECENTLY  — recent user chat messages (first-line only, bounded), the topics on his mind. Internal
        streams excluded. Content is redacted again on the way in (defense in depth; the transcript store already
        redacts on write) so no secret can reach the model prompt.
      · GOAL ARC        — the single active goal-arc summary the cron persona also uses (text + progress + next step).
-     · LANDED / DIDN'T — recent night-shift deliverables the Commander KEPT vs DISCARDED (what kind of work lands).
+     · LANDED / DIDN'T — recent night-shift deliverables the Master KEPT vs DISCARDED (what kind of work lands).
      · KNOWN ABOUT THEM — the stable dossier belief base layer (unchanged; still the floor when activity is thin).
-     · LEARNED PREFS   — a one-line summary of which archetypes the Commander up/down-voted (the compounding bias).
+     · LEARNED PREFS   — a one-line summary of which archetypes the Master up/down-voted (the compounding bias).
 
    THE EVIDENCE POOL — the load-bearing output. `activityLines` is the flat array of dated, human-readable activity
    lines (runs + chats + goal + landed work). It is fed to the GROUNDING VETO alongside the dossier beliefs, so a
@@ -58,7 +58,7 @@
   const LINE_MAX = 140;                   // per activity line (a title/first-line is a label, not a document)
   const ACTIVITY_POOL_MAX = 24;           // the veto evidence pool is bounded too (matches beliefs' order of size)
 
-  // the internal streamId prefixes whose runs/chats are the STATION's own noise, never the Commander's work.
+  // the internal streamId prefixes whose runs/chats are the STATION's own noise, never the Master's work.
   // A run/chat on one of these streams is excluded from "what they worked on / asked". Kept as a prefix list so a
   // new internal surface (a future 'foo-'+runId) is one entry away from being excluded, not a scattered edit.
   const INTERNAL_STREAM_PREFIXES = ['nightshift-', 'nightshift-act-', 'cron-', 'workshop-'];
@@ -132,9 +132,9 @@
       return typeof defaultScrub === 'function' ? defaultScrub(str(t)) : str(t);
     };
     const withinWindow = (ts) => { const t = num(ts); return !now || !t || (now - t) <= windowMs; };
-    /* THE STATION'S OWN SELF-TALK IS NOT THE COMMANDER'S ACTIVITY (USER-STUDY LOOP, 2026-09-28). A reason-only
+    /* THE STATION'S OWN SELF-TALK IS NOT THE MASTER'S ACTIVITY (USER-STUDY LOOP, 2026-09-28). A reason-only
        internal call (goal decomposition, the first-meeting prompts, session recommendations…) is recorded as a run
-       flagged `internal`, AND its directive lands in the transcript as a 'user' row on the Commander's own stream —
+       flagged `internal`, AND its directive lands in the transcript as a 'user' row on the Master's own stream —
        so it read as "what they asked recently" and the planners studied the station instead of the person. The run
        flag is the authority: its directive head identifies the matching transcript row. */
     // both sides scrubbed: a title holding a key still matches the (redacted-on-write) transcript row it came from.
@@ -174,7 +174,7 @@
     counts.runs = runLines.length;
     if (runLines.length) { sections.push({ label: 'What they worked on recently', lines: runLines.slice() }); for (const l of runLines) addActivity(l, null); }
 
-    // Completed task briefs preserve the Commander's full request, collapsed to one bounded line. Unlike run
+    // Completed task briefs preserve the Master's full request, collapsed to one bounded line. Unlike run
     // titles and chat openings, this can retain evidence that appeared after a newline in a multi-part directive.
     const briefLines = [], briefSources = [];
     {
@@ -261,7 +261,7 @@
     counts.beliefs = beliefLines.length;
     if (beliefLines.length) sections.push({ label: 'What they told you about themselves', lines: beliefLines.slice() });
 
-    // ── LEARNED PREFS — one line: the archetypes the Commander leans toward / away from (from up/down verdicts).
+    // ── LEARNED PREFS — one line: the archetypes the Master leans toward / away from (from up/down verdicts).
     {
       const L = (inputs.learn && typeof inputs.learn === 'object') ? inputs.learn : {};
       const up = [], down = [];
@@ -279,7 +279,7 @@
     //    with the shapes that finish and treat the ones that keep failing as evidence AGAINST proposing more of
     //    the same. Lines arrive pre-composed (every number in them is a countable run) — this section only
     //    bounds and labels them. NOT added to the activity pool: a statistic is context, never grounding a
-    //    candidate may cite as the Commander's own activity.
+    //    candidate may cite as the Master's own activity.
     {
       const track = (Array.isArray(inputs.trackRecord) ? inputs.trackRecord : []).map(l => oneLine(redact(l), LINE_MAX)).filter(Boolean).slice(0, 4);
       if (track.length) sections.push({ label: 'What keeps working vs failing here', lines: track });

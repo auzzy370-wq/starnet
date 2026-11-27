@@ -11,7 +11,7 @@
 
    PRIORITY is LOCKED to the product's beat order (highest first):
      reflection > failure-review > study > threadmine > scout > skill-review > skill-curator
-   so when the budget is scarce the station keeps the turn-in beat + belief updates the Commander actually sees,
+   so when the budget is scarce the station keeps the turn-in beat + belief updates the Master actually sees,
    and yields the quieter background passes to the NEXT qualifying run. (failure-review fires only on FAILED
    run-ends, where reflection never qualifies — the two are mutually exclusive per run, never rivals.)
 
@@ -55,7 +55,7 @@
   const MAX_TOKEN_CEILING = 100000000;
   const TOKEN_WINDOW_MS = 24 * 60 * 60 * 1000;
   // The automatic background passes the ceiling counts. Left out, by being absent: a recall embedding (part of the user's run) and
-  // the station one-shots (one thing the Commander pressed). A verdict review and a manual quest refresh are Commander-triggered:
+  // the station one-shots (one thing the Master pressed). A verdict review and a manual quest refresh are Master-triggered:
   // they share these kinds, so they run past the ceiling and still count.
   const CEILING_KINDS = Object.freeze(['reflection', 'failure-review', 'study', 'threadmine', 'scout', 'quest-refresh', 'skill-review', 'skill-curator']);
   // parseTokenCeiling(value) -> integer in 0..MAX, or null for anything else: a bad value never reads as "off". Only a number or
@@ -136,7 +136,7 @@
   // pickAuxEffort(allowed) -> 'none' | 'minimal' | 'low' | null. The reasoning effort for REASON-ONLY aux work (the
   // post-run passes and internal self-talk runs) when the operator configured no aux tier: the LOWEST effort the
   // provider verifiably offers for that model. Aux work is a strict-format extraction (a title, a PREFERENCE line, a
-  // JSON plan); thinking is billed as output and the Commander never sees it — measured live on haiku-4.5, a title
+  // JSON plan); thinking is billed as output and the Master never sees it — measured live on haiku-4.5, a title
   // spent 483 reasoning tokens at the chat's 'medium' and 0 at 'none' for the same title. `allowed` is the provider's
   // own reasoningEfforts(model) list; no list, or no low tier on it, -> null = no override (the provider default).
   const AUX_EFFORT_LADDER = ['none', 'minimal', 'low'];

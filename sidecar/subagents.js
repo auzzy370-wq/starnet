@@ -417,7 +417,7 @@
        before returning closes the restart gap; draining marks it applied before the loop receives the text, so a
        later generation can never inherit an old follow-up. `leadId` is optional exactly like interrupt's: a
        lead-tool caller passes its own id (ownership enforced), the authenticated local HTTP route passes none
-       (the Commander outranks ownership). `origin` keeps the history truthful about WHO steered — 'commander'
+       (the Master outranks ownership). `origin` keeps the history truthful about WHO steered — 'commander'
        rows are also prefixed at drain time so the worker knows the instruction's source. */
     function steer(id, leadId, generation, text, origin) {
       id = safeId(id, 'subagent id');
@@ -449,8 +449,8 @@
       for (let n = 0; n < history.length; n++) {
         const row = history[n];
         if (!row || row.generation !== generation || row.status !== 'pending') continue;
-        // A Commander-origin note names its source so the worker weighs it as the Commander's word, not the lead's.
-        notes.push((row.origin === 'commander' ? '[from the Commander] ' : '') + String(row.text || ''));
+        // A Master-origin note names its source so the worker weighs it as the Master's word, not the lead's.
+        notes.push((row.origin === 'commander' ? '[from the Master] ' : '') + String(row.text || ''));
         history[n] = Object.assign({}, row, { status: 'applied', appliedAt: at });
         changed = true;
       }
@@ -507,10 +507,10 @@
        D3: lead cancelled, worker still `running`). The host (index.js cascadeCancelToWorkers) calls this when a run's signal
        aborts WHILE the run is live; a run that ends normally detaches first and never cascades.
        There is no "detach" option on team.dispatch/team.spawn, and none is invented here: a worker follows the
-       run that started its current generation (parentRunId). A Commander-driven resume has no parent run and so
+       run that started its current generation (parentRunId). A Master-driven resume has no parent run and so
        is never cascaded; interrupt/E-STOP still reach every worker as before.
        Honest state: `interrupted` + cancelledBy 'parent' + a reason naming the parent run, canResume true (the
-       Commander can restart it), and the descendants of each cancelled worker are cancelled the same way. */
+       Master can restart it), and the descendants of each cancelled worker are cancelled the same way. */
     function cancelChildren(parentRunId, why, depth) {
       const pid = String(parentRunId || '');
       const d = Math.max(0, Math.floor(Number(depth) || 0));

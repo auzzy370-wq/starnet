@@ -21,7 +21,7 @@ recommendations immediately after. Two distinct failures, both verified in code:
    context it did not have.
 
 **The law this plan installs (Andrew, 2026-07-18):** the harness must model what it knows about
-the Commander, KNOW when that isn't enough, refuse to recommend until it is, and actively close
+the Master, KNOW when that isn't enough, refuse to recommend until it is, and actively close
 the gap. Onboarding is the first and densest context-pursuit episode; the pursuit never stops.
 
 ## 1. The five locked pillars

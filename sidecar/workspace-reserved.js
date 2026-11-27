@@ -25,7 +25,7 @@ const STATION_DIRS = [
   'plugins',                // installed plugins (each one's code runs in its own process once approved)
   'plugin-data',            // plugin-data/<id>.json — every plugin's private store (its windows + its code)
   'plugin-drafts',          // plugin-drafts/<id> — plugins the crew is writing, never run until approved
-  'apps',                   // apps/<id> — the Commander's apps (page files + app.json)
+  'apps',                   // apps/<id> — the Master's apps (page files + app.json)
   'app-data',               // app-data/<id>.json — each app's published data
   'skill-packages',         // installed skill package generations
   'skill-market',           // skill-market/ — market installs + installed.json (an agent named "Skill Market" owned it, sweep 10-02)

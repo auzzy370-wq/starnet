@@ -11,7 +11,7 @@
    B. the export and the evaluation runner (M2) took the host's scrub as an option and, without one (or with one that
       returned a non-string), sent the exact text: an export left the station raw, a system prompt carried the key.
       Both now default to prompt-scrub's scrubStored, as interests.js and outcomes.js do, and never fall back to raw.
-   C. a promotion is the Commander's next decision on a skill (M3): a restamped copy of an older approval
+   C. a promotion is the Master's next decision on a skill (M3): a restamped copy of an older approval
       (gate.restampApprovals) ends with it, as it does in the allow route (gate.dropRestamped, shared with
       supersedeApproval), and only once the promotion has landed.
    D. a write_file over the per-file limit names the file it refused (m-msg).

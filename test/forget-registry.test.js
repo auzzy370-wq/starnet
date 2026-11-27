@@ -62,7 +62,7 @@ const deepFreeze = x => { if (x && typeof x === 'object' && !Object.isFrozen(x))
     A.throws(() => reg.register({ name: 'alpha', sourceOf() {}, forget() {} }), 'a name is registered once');
     A.throws(() => reg.exempt('alpha', 'registered above, so it cannot also be exempt'), 'a registered store cannot also be exempt');
     A.throws(() => reg.exempt('beta', 'short'), 'an exemption needs a real reason');
-    reg.exempt('beta', 'the Commander created it and keeps it (Q4)');
+    reg.exempt('beta', 'the Master created it and keeps it (Q4)');
     A.eq(reg.names(), ['alpha'], 'names() lists the registered stores');
     A.eq(Object.keys(reg.exemptions()), ['beta'], 'exemptions() lists the exempt ones with their reasons');
     A.eq(reg.ready(), false, 'a registry is not ready before it is sealed');
@@ -123,7 +123,7 @@ const deepFreeze = x => { if (x && typeof x === 'object' && !Object.isFrozen(x))
     const stats = reg.stats();
     A.ok(stats.admitted >= 5 && stats.refused.stream >= 2 && stats.refused.unprovable >= 1 && stats.refused.quotes >= 3 && stats.refused.run === 1, 'admitted and refused writes are counted by reason: ' + JSON.stringify(stats));
     // the read-time belt: adopted stamps never count (I7 limit d)
-    A.ok(reg.forgotten({ streamId: 'S', at: 40 }), 'the belt forgets a record of a session the Commander deleted');
+    A.ok(reg.forgotten({ streamId: 'S', at: 40 }), 'the belt forgets a record of a session the Master deleted');
     A.ok(!reg.forgotten({ streamId: 'S', at: 60 }), '...and hears a re-open');
     A.ok(!reg.forgotten({ streamId: 'A', at: 1 }), 'the belt never drops a record of a session deleted before the first read (adopted: its memory is kept)');
     A.ok(!reg.forgotten({ streamId: 'T', quotes: ['A'], quotesAt: [0] }), '...nor a quote of one');
@@ -180,7 +180,7 @@ const deepFreeze = x => { if (x && typeof x === 'object' && !Object.isFrozen(x))
       A.eq([t.freshAt('first'), t.deletedAt('first')], [0, 1000], 'an adopted stamp answers deletedAt but not freshAt');
       clock = 2000; t.observe(['first', 'second']);                // a real delete
       clock = 3000; t.observe(['first', 'second', 'third']);
-      A.eq([t.freshAt('second'), t.freshAt('third'), t.freshAt('never')], [2000, 3000, 0], 'a Commander delete answers freshAt');
+      A.eq([t.freshAt('second'), t.freshAt('third'), t.freshAt('never')], [2000, 3000, 0], 'a Master delete answers freshAt');
       t.markPurged(t.unpurged());
       A.eq(t.unpurged(), [], 'both deletes are purged');
       A.eq(t.purgedV(), 0, 'a ledger written before the registry has no purgedV');

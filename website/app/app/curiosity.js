@@ -1,12 +1,12 @@
-/* VULTRON — curiosity.js : the PURE engine for JUST-IN-TIME CURIOSITY (Commander Dossier, Phase B slice 2).
+/* VULTRON — curiosity.js : the PURE engine for JUST-IN-TIME CURIOSITY (Master Dossier, Phase B slice 2).
 
    The gentle counterpart to the full intake interview: when the station notices it still doesn't know
-   something about its Commander that shapes how it works, it asks about ONE thing — once, never naggy. This
+   something about its Master that shapes how it works, it asks about ONE thing — once, never naggy. This
    engine is the pure decision: given the dossier's still-blank dimensions, what the user has dismissed, and
    how many times we've already asked this session, pick the single dimension to ask about next (or nothing).
 
    Anti-nag by construction: a hard per-session cap, dimensions are asked in canonical order, and a dimension
-   is never raised again once the Commander DISMISSES it OR once it has been asked-and-ignored enough times
+   is never raised again once the Master DISMISSES it OR once it has been asked-and-ignored enough times
    (stop-forever after ASK_LIMIT unanswered asks — silence reads as "leave it" so we don't loop the same
    question across sessions). PURE + node-testable (a `Curiosity` global in the browser, module.exports under
    node); the session count, the persisted dismissals, and the persisted per-dimension ask counts live in
@@ -23,15 +23,15 @@
   const ASK_LIMIT = 2;  // after this many asked-and-ignored sessions, stop raising a dimension FOR GOOD (anti-loop)
   const MIN_WORK = 3;   // WORK-EARNED gate (beat-fat trim, 2026-07-03): the station must complete this many REAL
                         // task-runs in a session before it has earned the right to ask a get-to-know-you question.
-                        // An unearned ask is exactly the "fake and unprompted" texture the Commander flagged.
+                        // An unearned ask is exactly the "fake and unprompted" texture the Master flagged.
   // HUNT MODE (ONBOARDING V3 §7): while the station is BELOW the readiness gate it may not recommend — so its
   // standing job is closing the context gap. The hunt profile makes curiosity hungrier: the work-earned floor
   // is waived (the gap IS the reason to ask — there may be no work yet to earn with) and the session budget
-  // doubles. Every anti-nag protection that involves the Commander's own signal stays fully in force:
+  // doubles. Every anti-nag protection that involves the Master's own signal stays fully in force:
   // dismissed = never again, asked-and-ignored stops at ASK_LIMIT, and asks still ride natural moments only.
   const HUNT_CAP = 2;
 
-  // the persisted shape: which dimensions the Commander has waved off (dismissed → never again), and how many
+  // the persisted shape: which dimensions the Master has waved off (dismissed → never again), and how many
   // times each blank dimension has been ASKED-and-ignored (asked → stop after ASK_LIMIT, so silence ends the loop).
   function fresh() { return { v: 1, dismissed: {}, asked: {} }; }
 
@@ -54,7 +54,7 @@
   //   minWork   — the earned-ask floor (defaults to MIN_WORK)
   //   order     — OPTIONAL preferred ask order (dimension keys, best-first): the value-of-information ranking
   //               from the understanding engine, so the ONE earned question targets the dimension whose answer
-  //               most sharpens the station's model of the Commander. Only re-orders — every gate (cap, earned
+  //               most sharpens the station's model of the Master. Only re-orders — every gate (cap, earned
   //               floor, dismissed, stop-forever) applies unchanged, and a dim NOT in `order` still falls back
   //               to its canonical position after the ordered ones (never silently unaskable).
   function pick(opts) {

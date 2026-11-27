@@ -194,7 +194,7 @@ const WorkflowsWindow = (() => {
     if (j && j.jobId) {
       sfx(j.ok ? 'chime' : 'bad');
       loadJobs();
-      // the result opens where the job was sent from; a Commander who moved on finds it in that line's LAST JOBS (and the list row)
+      // the result opens where the job was sent from; a Master who moved on finds it in that line's LAST JOBS (and the list row)
       if (S.view === 'line' && S.line === line.key && !S.job) showJob(j.jobId); else schedule();
       return;
     }
@@ -334,7 +334,7 @@ const WorkflowsWindow = (() => {
     schedule();
   }
   /* DESIGN ANCHOR (2026-10-11): the step's example is text only that step reads. The same approval also becomes the
-     Commander's station-wide taste with the delivered run's REAL reference (its files, palette, fonts, image prompt — the
+     Master's station-wide taste with the delivered run's REAL reference (its files, palette, fonts, image prompt — the
      sidecar reads them from the run, POST /api/taste/keep-style), so every crew member's next similar work matches it.
      PUT IT BACK takes that approval back too. A failure says so: the key still truthfully reports the step's example. */
   // The keep route captures the reference before writing memory. Wait for the previous operation on this
@@ -403,7 +403,7 @@ const WorkflowsWindow = (() => {
 
   /* ---------- a new workflow ---------- */
   /* THE STARTERS: four lines that cover most work, each a real shelf line (worldmodel BLUEPRINTS), named the way the Build Library
-     names it. Every other line is one key away (MORE LINES opens the Build Library's Conveyors tab). (org P18) The Commander's
+     names it. Every other line is one key away (MORE LINES opens the Build Library's Conveyors tab). (org P18) The Master's
      FOR YOUR GOAL line (Build.goalLine — the shelf's own pick from their dossier words) leads when it is not one of the four, and
      SET IT UP FOR ME chooses from the WHOLE shelf, not just the tiles shown. */
   const STARTERS = ['research_line', 'revision_loop', 'front_desk', 'build_test'];
@@ -412,7 +412,7 @@ const WorkflowsWindow = (() => {
   function goalStarter() {
     let g = null;
     try { g = B() && B().goalLine ? B().goalLine() : null; } catch (e) { g = null; }   // no dossier read yet: no goal tile (never a guess)
-    // a goal the shelf can NAME (the Commander's own words), or no goal shelf at all (org g7 D2)
+    // a goal the shelf can NAME (the Master's own words), or no goal shelf at all (org g7 D2)
     return g && g.id && String(g.quote || '').trim() && bpOf(g.id) && STARTERS.indexOf(g.id) < 0 ? g : null;
   }
   const starterOf = id => { const bp = bpOf(id); return bp ? { id, name: plainName(id), purpose: (words().purpose || {})[id] || '', roles: bayRoles(bp) } : null; };
@@ -566,7 +566,7 @@ const WorkflowsWindow = (() => {
   function newHTML(f) {
     const first = !f.lines.length, pk = S.pick, dr = S.drafting;
     // the Build Library's tile: the line's miniature, its name, one small line; what it is for is its tip (the goal tile's tip quotes
-    // the Commander's own words first — the shelf's FOR YOUR GOAL tip). (org D2/D3) the goal tile leads on a row of its own above the
+    // the Master's own words first — the shelf's FOR YOUR GOAL tip). (org D2/D3) the goal tile leads on a row of its own above the
     // four, and its small line is the step count like every tile and like CONVEYORS › LINES — the goal it fits is its tip, never a
     // stat that reads as if it matched the still-empty field above
     const goal = goalStarter();
@@ -577,7 +577,7 @@ const WorkflowsWindow = (() => {
       // (org D2 polish) the stat names the line's shape, not only its count: a SPLITTER's two steps work side by side, so the goal
       // tile no longer reads '2 steps' like Research + write while its picture draws two parallel bays
       const shape = bp.props.some(p => p.t === 'loop') ? ' · reviewed' : bp.props.some(p => p.t === 'splitter') ? ' · side by side' : '';
-      // (org g7 D2, final round) the shelf claims a goal only by NAMING it: the Commander's own words (their dossier goal) ride the
+      // (org g7 D2, final round) the shelf claims a goal only by NAMING it: the Master's own words (their dossier goal) ride the
       // heading, so FOR YOUR GOAL never reads as a match for the still-empty 'What should it make?' box above it
       return (isGoal ? '<div class="wfw-tgroup wfw-goalhd" data-tip="Your own words: the goal you told the station. This ready-made workflow has its shape.">FOR YOUR GOAL <span class="wfw-goalq">“' + esc(goal.quote) + '”</span></div>' : '')
         + '<button type="button" class="wfw-tile' + (on ? ' on' : '') + (isGoal ? ' wfw-goal' : '') + '" data-starter="' + esc(id) + '" aria-pressed="' + !!on + '" data-tip="' + esc(tip) + '">'
@@ -814,7 +814,7 @@ const WorkflowsWindow = (() => {
       // (GitHub #122) delivered, but its review loop used all its passes without an approval — the record's own mark, in the loop note's
       // line, when the result itself carries no loop note (a step after the loop wrote it)
       + (ok && job.unapproved && !work.notes.length ? '<p class="wfw-why">⚠ ' + esc(sentence(job.unapproved, '')) + '</p>' : '')
-      // a handed-on job: the job as it first arrived (what the Commander asked), and what the sending line handed in beside it
+      // a handed-on job: the job as it first arrived (what the Master asked), and what the sending line handed in beside it
       + (hin ? '<div class="wfw-you"><span class="wfw-k">The job</span><div class="wfw-quote">' + esc(hin.original || job.text) + '</div></div>'
           + '<details class="wf-more wfw-handedin"><summary>What ' + esc(lineWord(job.from)) + ' handed in</summary><div class="wf-io" data-md data-md-src="' + esc(hin.output || '(nothing)') + '">' + esc(hin.output || '(nothing)') + '</div></details>'
         : '<div class="wfw-you"><span class="wfw-k">You asked</span><div class="wfw-quote">' + esc(job.text) + '</div></div>')
@@ -1145,7 +1145,7 @@ const WorkflowsWindow = (() => {
   function closed() { body = null; stopTimers(); }
   if (UI() && UI().registerWindow) UI().registerWindow('workflows', 'WORKFLOWS', build, { className: 'wfw-win', onClose: closed });
   /* SEND TO (2026-10-10): a job another line handed on runs in the background — no window posted it, so nothing folded its
-     delivered run into DELIVERABLES › TO REVIEW, and the receiving line's result never reached the Commander's review pile. The
+     delivered run into DELIVERABLES › TO REVIEW, and the receiving line's result never reached the Master's review pile. The
      floor's own events say when one lands in its OUTBOX (workitem.placed kind:'handoff', then workitem.delivered to 'outbox' for
      the same crate); the delivered run is read back from that line's job record (the route's own verdict) — never guessed. */
   // workitemId -> the receiving job's own record id (the crate names it — 10-11: reading "the line's newest" missed a delivered job
