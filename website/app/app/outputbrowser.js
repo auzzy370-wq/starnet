@@ -128,6 +128,10 @@
       + '<div class="ob-strip"><div class="ob-recent"></div>'
       + '<button type="button" class="bb sm ob-front" hidden>SHOW WINDOW</button>'
       + '<button type="button" class="bb sm ob-follow" aria-pressed="false"></button>'
+      // PHONE ONLY (css/phone.css hides it on a big screen): a 1440-wide page drawn at 390px is unreadable, and
+      // zooming the WHOLE app to read it was what broke the window. This zooms the picture alone; the stage then
+      // scrolls, and taps still map through the picture's own rect, so nothing about input changes.
+      + '<button type="button" class="bb sm ob-zoom" aria-pressed="false">ZOOM 2×</button>'
       + '<button type="button" class="bb sm ob-out">OPEN OUTSIDE</button></div>'
       + '<div class="ob-stage">'
       + '<iframe class="ob-frame" title="Agent-made page" sandbox="allow-scripts allow-forms allow-modals allow-pointer-lock" referrerpolicy="no-referrer" hidden></iframe>'
@@ -142,7 +146,8 @@
     const q = s => body.querySelector(s);
     const ui = state.ui = { body, root: q('.ob'), bar: q('.ob-bar'), back: q('.ob-back'), fwd: q('.ob-fwd'), reload: q('.ob-reload'),
       who: q('.ob-who'), url: q('.ob-url'), front: q('.ob-front'), follow: q('.ob-follow'), out: q('.ob-out'), recent: q('.ob-recent'),
-      frame: q('.ob-frame'), vp: q('.ob-vp'), img: q('.ob-live'), kb: q('.ob-kb'), empty: q('.ob-empty'), note: q('.ob-note'), watchStream: null, liveStream: null };
+      frame: q('.ob-frame'), vp: q('.ob-vp'), img: q('.ob-live'), kb: q('.ob-kb'), empty: q('.ob-empty'), note: q('.ob-note'),
+      zoom: q('.ob-zoom'), stage: q('.ob-stage'), watchStream: null, liveStream: null };
     if (typeof BrowserStream !== 'undefined') {
       const ended = mode => b => { if (state.mode === mode) streamEnded(b || {}); };
       const onPage = p => { state.page = p; paintBar(); };
@@ -168,6 +173,11 @@
     ui.fwd.onclick = () => liveNav('forward');
     ui.follow.onclick = () => setFollow(!state.follow);
     ui.out.onclick = openOutside;
+    ui.zoom.onclick = () => {
+      state.zoom = !state.zoom;
+      paintBar();
+      try { if (ui.stage) { ui.stage.scrollTop = 0; ui.stage.scrollLeft = 0; } } catch (_) { /* scrolling is best-effort */ }
+    };
     ui.front.onclick = () => { postJson('/api/browser/view/front', {}).then(r => { if (r.status !== 200) setNote('Could not raise the browser window: ' + ((r.body && r.body.error) || 'the station did not answer') + '.'); }).catch(() => setNote('Could not raise the browser window.')); };
     ui.recent.addEventListener('click', ev => {
       const b = ev.target && ev.target.closest ? ev.target.closest('button[data-k]') : null;
@@ -215,8 +225,16 @@
     // A browser that lost the saved profile to another one runs on a temporary one — signing in there would look
     // normal and be gone the moment it closes, so the line never claims "saved" unless the station says so.
     const saved = station().remembered ? ' Sign-ins are saved.' : ' This session is not keeping sign-ins.';
-    if (d && d.signIn) return 'Sign in here: click the page and type. The agent is waiting and never sees what you type. Click Done in COMMS when you have finished.' + saved;
-    if (d) return agentLabel(d.agentId) + ' is using the browser. You can click and type in it too.' + win + saved;
+    // ON A PHONE the window is the whole screen (css/phone.css), so the caption is three short lines at most:
+    // it was five lines of desktop prose under a picture the user came here to read.
+    const phone = typeof innerWidth === 'number' && innerWidth <= 600;
+    if (d && d.signIn) return phone
+      ? 'Sign in here — tap the page and type. Your agent never sees it, and never needs your password.' + saved
+      : 'Sign in here: click the page and type. The agent is waiting and never sees what you type. Click Done in COMMS when you have finished.' + saved;
+    if (d) return phone
+      ? agentLabel(d.agentId) + ' is using the browser. Tap it to type too.' + saved
+      : agentLabel(d.agentId) + ' is using the browser. You can click and type in it too.' + win + saved;
+    if (phone) return 'Tap the page to type.' + saved;
     return 'The station browser, shared by you and your agents.' + (station().visible ? ' Use it in its own window, or click this live view to type in it.' : ' Click the page to type in it.') + saved;
   }
   function setDriver(d) {
@@ -233,6 +251,9 @@
     const ui = state.ui, m = state.mode, t = state.target, d = state.driver;
     ui.root.dataset.mode = m;
     ui.root.classList.toggle('driven', m === 'live' && !!d);
+    ui.root.dataset.zoom = state.zoom ? '2' : '';
+    ui.zoom.textContent = state.zoom ? 'FIT WIDTH' : 'ZOOM 2×';
+    ui.zoom.setAttribute('aria-pressed', String(!!state.zoom));
     const who = m === 'page' && t ? agentLabel(t.agentId) : m === 'watch' && state.watch ? agentLabel(state.watch.agentId) : m === 'live' ? (d && !d.signIn ? agentLabel(d.agentId) : 'YOU') : '';
     ui.who.textContent = who ? who.toUpperCase() : '';
     ui.who.hidden = !who;

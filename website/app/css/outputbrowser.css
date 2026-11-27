@@ -83,6 +83,8 @@
 .ob-empty .bb { margin-top: 6px; }
 
 .ob-note { flex: none; margin: 0; font-size: 13px; color: var(--ph-dim); min-height: 1em; }
+/* ZOOM 2× is a phone control (css/phone.css shows it at ≤600px): on a desktop screen the picture is already big. */
+.ob .ob-zoom { display: none; }
 
 /* THE COMMS DOOR — the twin of the + (add agents) button (glass-comms.css #gc-add-agents): two icon doors in the
    header's top right, + then the globe, whichever script mounts first. The lamp is drawn geometry on the corner,
