@@ -85,6 +85,9 @@
 .ob-note { flex: none; margin: 0; font-size: 13px; color: var(--ph-dim); min-height: 1em; }
 /* ZOOM 2× is a phone control (css/phone.css shows it at ≤600px): on a desktop screen the picture is already big. */
 .ob .ob-zoom { display: none; }
+/* the doors a sign-in handoff puts in the empty stage, and HAND BACK (shown only while you hold an agent's browser) */
+.ob-empty .ob-ask-doors { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 6px; }
+.ob .ob-handback[hidden] { display: none; }
 
 /* THE COMMS DOOR — the twin of the + (add agents) button (glass-comms.css #gc-add-agents): two icon doors in the
    header's top right, + then the globe, whichever script mounts first. The lamp is drawn geometry on the corner,

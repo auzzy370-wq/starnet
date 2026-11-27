@@ -132,6 +132,9 @@
       // zooming the WHOLE app to read it was what broke the window. This zooms the picture alone; the stage then
       // scrolls, and taps still map through the picture's own rect, so nothing about input changes.
       + '<button type="button" class="bb sm ob-zoom" aria-pressed="false">ZOOM 2×</button>'
+      // shown only while YOU hold an agent's browser (a sign-in handoff): the way back is one press, never a hunt
+      // through other windows for it (a run stays frozen until it is handed back).
+      + '<button type="button" class="bb sm ob-handback" hidden>HAND BACK</button>'
       + '<button type="button" class="bb sm ob-out">OPEN OUTSIDE</button></div>'
       + '<div class="ob-stage">'
       + '<iframe class="ob-frame" title="Agent-made page" sandbox="allow-scripts allow-forms allow-modals allow-pointer-lock" referrerpolicy="no-referrer" hidden></iframe>'
@@ -147,7 +150,7 @@
     const ui = state.ui = { body, root: q('.ob'), bar: q('.ob-bar'), back: q('.ob-back'), fwd: q('.ob-fwd'), reload: q('.ob-reload'),
       who: q('.ob-who'), url: q('.ob-url'), front: q('.ob-front'), follow: q('.ob-follow'), out: q('.ob-out'), recent: q('.ob-recent'),
       frame: q('.ob-frame'), vp: q('.ob-vp'), img: q('.ob-live'), kb: q('.ob-kb'), empty: q('.ob-empty'), note: q('.ob-note'),
-      zoom: q('.ob-zoom'), stage: q('.ob-stage'), watchStream: null, liveStream: null };
+      zoom: q('.ob-zoom'), handback: q('.ob-handback'), stage: q('.ob-stage'), watchStream: null, liveStream: null, handoffStream: null };
     if (typeof BrowserStream !== 'undefined') {
       const ended = mode => b => { if (state.mode === mode) streamEnded(b || {}); };
       const onPage = p => { state.page = p; paintBar(); };
@@ -175,6 +178,7 @@
     ui.fwd.onclick = () => liveNav('forward');
     ui.follow.onclick = () => setFollow(!state.follow);
     ui.out.onclick = openOutside;
+    ui.handback.onclick = () => handBackHandoff();
     ui.zoom.onclick = () => {
       state.zoom = !state.zoom;
       paintBar();
@@ -192,6 +196,7 @@
       const b = ev.target && ev.target.closest ? ev.target.closest('button[data-act]') : null;
       if (!b) return;
       if (b.dataset.act === 'stepin' && typeof StepIn !== 'undefined' && StepIn.open) StepIn.open(b.dataset.id || '');
+      else if (b.dataset.act === 'take') takeHandoff(b.dataset.id || '');
     });
     ui.frame.addEventListener('load', () => {
       if (!state.ui || state.mode !== 'page' || ui.frame.hidden || !ui.frame.getAttribute('src')) return;
@@ -217,7 +222,7 @@
     const why = (r && r.body && r.body.error) || (r && r.status === 0 ? 'the station did not answer' : 'the station refused it');
     setNote('That click or key did not reach the page: ' + why + '.');
   }
-  function stopStreams() { const ui = state.ui; if (!ui) return; if (ui.watchStream) ui.watchStream.stop(); if (ui.liveStream) ui.liveStream.stop(); }
+  function stopStreams() { const ui = state.ui; if (!ui) return; if (ui.watchStream) ui.watchStream.stop(); if (ui.liveStream) ui.liveStream.stop(); if (ui.handoffStream) ui.handoffStream.stop(); }
   function stage(which) {   // 'frame' | 'live' | 'empty'
     const ui = state.ui;
     ui.frame.hidden = which !== 'frame'; if (which !== 'frame') ui.frame.removeAttribute('src');
@@ -277,6 +282,7 @@
     ui.url.title = m === 'page' && t ? t.path + (t.source === 'workshop' ? ' (workshop)' : '') : (state.page && state.page.title) || '';
     const yours = m === 'live';   // the shared browser always takes your hands, agent or not
     ui.front.hidden = !(m === 'live' && station().visible);
+    ui.handback.hidden = !(m === 'live' && state.handoff && state.handoff.state === 'taken');
     ui.back.disabled = ui.fwd.disabled = !yours || state.busy;
     ui.reload.disabled = !(m === 'page' || yours) || state.busy;
     ui.out.disabled = !((m === 'page' && t) || ((m === 'watch' || m === 'live') && state.page && /^https?:/i.test(state.page.url || '')));
@@ -367,7 +373,7 @@
   function startLive() {
     const ui = state.ui, st = station();
     if (ui.watchStream) ui.watchStream.stop();
-    if (st.handoff && st.driver) return showHandoff(st.driver.agentId);
+    if (st.handoff && st.driver) return startHandoff();
     state.driver = st.driver || state.driver;
     stage('live');
     ui.root.dataset.state = 'live';
@@ -403,6 +409,99 @@
     setNote('');
     paintBar(true);
   }
+  /* ---------- A SIGN-IN HANDOFF (2026-11-27: "it's not loading the page now") ----------
+     When an agent hits a sign-in it hands YOU its browser and waits. That handoff owns the browser's one picture, and the
+     station refuses the shared view while it is live (sidecar/browser-view.js: `handoff`) — so this window used to show a
+     card with nothing behind it and a button into a different window. Reported as the page not loading, at the exact
+     moment the page mattered most. The window now reads the handoff, offers the wheel in one press, and drives it here
+     through the handoff's own picture and input routes (the same ones STEP-IN uses). The run stays frozen until it is
+     handed back — which is why HAND BACK is in this strip, not only in STEP-IN. */
+  function handoffOf(list, driver) {
+    const d = driver || station().driver;
+    return (list || []).find(h => h && d && h.runId === d.runId) || (list || [])[0] || null;
+  }
+  async function loadHandoff() {
+    const r = await getJson('/api/browser/handoffs');
+    const live = (r.status === 200 && r.body && Array.isArray(r.body.live)) ? r.body.live : [];
+    return handoffOf(live);
+  }
+  let handoffLoading = false;
+  async function startHandoff() {
+    if (handoffLoading) return;
+    const cur = state.handoff;
+    if (cur && cur.state === 'taken' && state.ui && state.ui.handoffStream && state.ui.handoffStream.active()) return;   // already yours and streaming
+    handoffLoading = true;
+    let h = null;
+    try { h = await loadHandoff(); } catch (_) { h = null; } finally { handoffLoading = false; }
+    if (!mounted() || state.mode !== 'live') return;
+    if (!h) return showHandoff(state.driver ? state.driver.agentId : 'agent');
+    if (state.handoff && state.handoff.id === h.id && state.handoff.state === 'waiting' && uiState() === 'ask') return;   // the card is already up: never rebuild it under the pointer
+    state.handoff = h;
+    if (h.state === 'taken') return openHandoff(h);
+    askHandoff(h);
+  }
+  /* The ask, with the door that actually works from here. */
+  function askHandoff(h) {
+    const ui = state.ui;
+    stopStreams(); stage('empty');
+    ui.root.dataset.state = 'ask';
+    const name = esc(agentLabel(h.agentId).toUpperCase());
+    const why = { login: 'sign in', '2fa': 'enter a sign-in code', captcha: 'get past a human check', payment: 'confirm a payment' }[h.reason] || 'finish something only you can do';
+    ui.empty.innerHTML = '<p>' + name + ' needs you to ' + esc(why) + (h.where ? ' at <b>' + esc(h.where) + '</b>' : '') + '.</p>'
+      + '<p class="ob-dim">Its browser is paused there, waiting. Take the wheel and it shows up right here — anything you type goes to the page and the agent never sees it.</p>'
+      + '<div class="ob-ask-doors"><button type="button" class="bb sm" data-act="take" data-id="' + esc(h.id) + '">TAKE THE WHEEL</button>'
+      + '<button type="button" class="bb sm" data-act="stepin" data-id="' + esc(h.id) + '">STEP IN</button></div>';
+    setNote(String(h.note || '').slice(0, 240));
+    paintBar(true);
+  }
+  function uiState() { return (state.ui && state.ui.root && state.ui.root.dataset.state) || ''; }
+  function openHandoff(h) {
+    const ui = state.ui;
+    if (ui.liveStream) ui.liveStream.stop();
+    if (ui.watchStream) ui.watchStream.stop();
+    stage('live');
+    ui.root.dataset.state = 'live';
+    setNote('You have the wheel in ' + agentLabel(h.agentId) + '\'s browser' + (h.where ? ' at ' + h.where : '') + '. It is paused until you press HAND BACK.');
+    paintBar(true);
+    if (!ui.handoffStream) {
+      ui.handoffStream = BrowserStream.create({ vp: ui.vp, img: ui.img, kbd: ui.kb, canType: () => true,
+        onPage: p => { state.page = p; paintBar(); },
+        onEnd: b => { state.handoff = null; if (state.mode === 'live') { refreshLive(); } },
+        poll: (seq, signal) => getJson('/api/browser/handoff/frame?id=' + encodeURIComponent((state.handoff && state.handoff.id) || '') + '&after=' + seq, signal),
+        send: events => postJson('/api/browser/handoff/input', { id: (state.handoff && state.handoff.id) || '', events })
+          .catch(() => ({ status: 0, body: {} }))
+          .then(r => { if (r.status !== 200) refuseInput(r); return r; }) });
+    }
+    ui.handoffStream.start();
+    try { ui.vp.focus(); } catch (_) { /* focus is best-effort */ }
+  }
+  async function takeHandoff(id) {
+    if (!id) return;
+    setNote('Taking the wheel…');
+    const r = await postJson('/api/browser/handoff/take', { id }).catch(() => ({ status: 0, body: {} }));
+    if (!mounted()) return;
+    if (r.status !== 200 || !(r.body && r.body.ok)) {
+      setNote('Could not take the wheel: ' + ((r.body && r.body.error) || 'the station did not answer') + '.');
+      refreshLive();
+      return;
+    }
+    state.handoff = Object.assign({}, state.handoff, r.body.view || {}, { state: 'taken', id });
+    state.mode = 'live';
+    openHandoff(state.handoff);
+    paintDoor();
+  }
+  async function handBackHandoff() {
+    const h = state.handoff;
+    if (!h || !h.id) return;
+    setNote('Handing back…');
+    const r = await postJson('/api/browser/handoff/back', { id: h.id }).catch(() => ({ status: 0, body: {} }));
+    if (!mounted()) return;
+    state.handoff = null;
+    if (r.status !== 200) setNote('Could not hand it back: ' + ((r.body && r.body.error) || 'the station did not answer') + '.');
+    else setNote('Handed back to ' + agentLabel(h.agentId) + '.');
+    refreshLive().then(() => { if (mounted() && state.mode === 'live') startLive(); });
+  }
+
   function streamEnded(b) {
     if (!mounted()) return;
     const ui = state.ui, code = b && b.code;
@@ -533,7 +632,7 @@
       if (mounted()) {
         const typing = root.document.activeElement === state.ui.url;
         if (state.mode === 'live') {
-          if (st.handoff && st.driver) { if (state.ui.root.dataset.state !== 'ask') showHandoff(st.driver.agentId); }
+          if (st.handoff && st.driver) { if (!(state.handoff && state.handoff.state === 'taken')) startHandoff(); }
           else if (st.open && (state.ui.root.dataset.state === 'ask' || !state.ui.liveStream || !state.ui.liveStream.active())) startLive();
           else setDriver(st.driver || null);
         } else if (started && !typing) {
