@@ -13,7 +13,10 @@
 
    WHAT IT IS NOT. A quick tunnel's hostname is minted per launch, so it CHANGES ON EVERY RESTART — it is a way to be
    secure today, not a permanent address. A named tunnel with a token from a Cloudflare account gives a stable hostname;
-   set VULTRON_TUNNEL_TOKEN to run that instead of the quick tunnel. `VULTRON_TUNNEL=0` turns this off entirely.
+   set VULTRON_TUNNEL_TOKEN to run that instead of the quick tunnel, and VULTRON_TUNNEL_HOST to the public hostname that
+   tunnel serves (e.g. station.example.com) so the address is still written down where the boot log and tunnel-url.txt
+   keep it. cloudflared never prints that hostname — it lives in the tunnel's own configuration, not its output.
+   `VULTRON_TUNNEL=0` turns this off entirely.
 
    The station's door is what the tunnel points at, so the door's own peer rules and the engine's Host pin see the same
    loopback request they see from a browser on the box: the tunnel adds a certificate, nothing else.
@@ -57,7 +60,16 @@ module.exports = function start({ log, port, env }) {
   try {
     if (String((env || process.env).VULTRON_TUNNEL || '') === '0') { say('disabled by VULTRON_TUNNEL=0'); return; }
     const token = String((env || process.env).VULTRON_TUNNEL_TOKEN || '').trim();
+    const host = String((env || process.env).VULTRON_TUNNEL_HOST || '').trim().replace(/^https?:\/\//i, '').replace(/\/+$/, '');
     const target = 'http://127.0.0.1:' + port;
+    // A NAMED tunnel's address is known before it starts (it is the hostname configured with it), and cloudflared never
+    // prints it — so record it up front. This is the whole point of the named tunnel: the same link survives every restart.
+    let fixed = '';
+    if (token && host) {
+      fixed = 'https://' + host;
+      try { fs.writeFileSync(URL_FILE, fixed + '\n'); } catch (_) {}
+      say(fixed + '   (named tunnel — this address is permanent)');
+    }
 
     const run = () => {
       // http2 keeps this to TCP 443: a container that blocks UDP must not lose the tunnel to QUIC.
@@ -68,7 +80,7 @@ module.exports = function start({ log, port, env }) {
       let found = '';
       const scan = buf => {
         const text = String(buf || '');
-        const m = /https:\/\/[a-z0-9][a-z0-9-]*\.(?:trycloudflare\.com|cfargotunnel\.com)/i.exec(text);
+        const m = fixed ? null : /https:\/\/[a-z0-9][a-z0-9-]*\.(?:trycloudflare\.com|cfargotunnel\.com)/i.exec(text);
         if (m && !found) {
           found = m[0];
           try { fs.writeFileSync(URL_FILE, found + '\n'); } catch (_) {}

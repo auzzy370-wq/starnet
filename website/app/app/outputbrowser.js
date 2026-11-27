@@ -211,9 +211,13 @@
     }
     if (su && su.state === 'failed' && !station().open) return 'Could not set up a browser on this computer: ' + su.error;
     const win = station().visible ? ' It is open in its own window too (SHOW WINDOW).' : '';
-    if (d && d.signIn) return 'Sign in here: click the page and type. The agent is waiting and never sees what you type. Click Done in COMMS when you have finished.';
-    if (d) return agentLabel(d.agentId) + ' is using the browser. You can click and type in it too.' + win;
-    return 'The station browser, shared by you and your agents.' + (station().visible ? ' Use it in its own window, or click this live view to type in it.' : ' Click the page to type in it.') + (station().remembered ? ' Sign-ins are saved.' : '');
+    // WHETHER THIS SESSION KEEPS SIGN-INS, said out loud (2026-11-27: "it should also stay logged in once logged").
+    // A browser that lost the saved profile to another one runs on a temporary one — signing in there would look
+    // normal and be gone the moment it closes, so the line never claims "saved" unless the station says so.
+    const saved = station().remembered ? ' Sign-ins are saved.' : ' This session is not keeping sign-ins.';
+    if (d && d.signIn) return 'Sign in here: click the page and type. The agent is waiting and never sees what you type. Click Done in COMMS when you have finished.' + saved;
+    if (d) return agentLabel(d.agentId) + ' is using the browser. You can click and type in it too.' + win + saved;
+    return 'The station browser, shared by you and your agents.' + (station().visible ? ' Use it in its own window, or click this live view to type in it.' : ' Click the page to type in it.') + saved;
   }
   function setDriver(d) {
     const was = state.driver ? state.driver.runId + (state.driver.signIn ? '+' : '') : '', is = d ? d.runId + (d.signIn ? '+' : '') : '';
