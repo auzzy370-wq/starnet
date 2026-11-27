@@ -32273,10 +32273,15 @@ async function serveStatic(req, res) {
         if (webp) {
           const wtag = 'W/"w' + webp.length.toString(16) + '-' + Math.round(st.mtimeMs).toString(16) + '"';
           if (!fresh && inm && (inm.trim() === '*' || inm.split(',').some(t => t.trim() === wtag))) {
-            res.writeHead(304, { 'ETag': wtag, 'Cache-Control': cacheControl, 'Vary': 'Accept, Accept-Encoding' });
+            res.writeHead(304, { 'ETag': wtag, 'Cache-Control': 'public, max-age=604800', 'Vary': 'Accept, Accept-Encoding' });
             return res.end();
           }
-          res.writeHead(200, { 'Content-Type': 'image/webp', 'Cache-Control': cacheControl, 'ETag': wtag,
+          /* A WEEK, NOT A REVALIDATION (2026-11-27): a texture URL carries no version, so `no-cache` meant a conditional
+             request for every one of the seventy textures on every load — seconds of round trips on a phone. A deploy
+             restarts the station and mints a new tunnel host, which is a new origin and so a new cache key; the ETag
+             still covers an edit inside one origin's life. */
+          const texCache = 'public, max-age=604800';
+          res.writeHead(200, { 'Content-Type': 'image/webp', 'Cache-Control': texCache, 'ETag': wtag,
             'Vary': 'Accept, Accept-Encoding', 'Content-Length': webp.length,
             'X-Frame-Options': 'SAMEORIGIN', 'Content-Security-Policy': csp, 'X-Content-Type-Options': 'nosniff' });
           return res.end(webp);
