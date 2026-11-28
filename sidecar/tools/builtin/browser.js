@@ -2914,11 +2914,50 @@
       catch (e) { failNote('browser.download-dir.browser', e); try { await cdp.send('Page.setDownloadBehavior', behavior); } catch (e2) { failNote('browser.download-dir.page', e2); } }
       return true;
     }
-    /* A PAGE THAT IS NOT FOCUSED DROPS THE MASTER'S INPUT (measured 2026-11-28 on TikTok's seller sign-in): the
-       station's headless page answered `hasFocus:false`, and every click and key the BROWSER window sent vanished
-       while the same page in a browser that emulated focus took them — the element under the point was the right
-       input, the tab was the right tab. Playwright sets this the moment it attaches, for the same reason. It is a
-       no-op on a page that already has focus, and the tab is raised so the picture and the caret agree. */
+    /* PAGES THAT SWALLOW THE COMPOSITOR'S INPUT (measured 2026-11-28 on TikTok's seller sign-in, with the station's
+       own probe): Chrome's hit test puts the point on the right element in the main frame, the document is focused,
+       and the document receives NOT ONE pointerdown/mousedown/click — the page cancels them above the DOM, which is
+       also why a click there never moves focus. The station cannot win that fight at the compositor, so it watches
+       for it and, only when nothing arrived, acts through the DOM the page's own handlers read: focus the element
+       under the pointer and click it. A page that takes the real click never takes this path. */
+    let lastPointer = null;   // the last point the Master clicked, for the DOM fallback's focus
+    async function armClickWatch(c) {
+      try {
+        await c.send('Runtime.evaluate', { expression: `(() => { if (!globalThis.__vultronClickCounter) { const s = { n: 0 }; globalThis.__vultronClickCounter = s;
+          const bump = () => { s.n++; }; ['pointerdown','mousedown','click'].forEach(t => globalThis.addEventListener(t, bump, true)); }
+          globalThis.__vultronWatchAt = globalThis.__vultronClickCounter.n; return 'armed'; })()`, returnByValue: true });
+      } catch (e) { failNote('browser.click-watch', e); }
+    }
+    async function editableState(c) {
+      try {
+        const r = await c.send('Runtime.evaluate', { expression: `(() => { const a = document.activeElement; const ok = !!a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.isContentEditable === true);
+          return JSON.stringify({ editable: ok, tag: a ? a.tagName : null, len: ok && typeof a.value === 'string' ? a.value.length : -1 }); })()`, returnByValue: true });
+        return JSON.parse((r && r.result && r.result.value) || 'null');
+      } catch (e) { return null; }
+    }
+    async function focusAtPointer(c) {
+      if (!lastPointer) return 'no-pointer';
+      try {
+        const r = await c.send('Runtime.evaluate', { expression: `(() => { const el = document.elementFromPoint(${lastPointer.x}, ${lastPointer.y}); if (!el || !el.focus) return 'none'; el.focus(); return 'focused'; })()`, returnByValue: true });
+        return (r && r.result && r.result.value) || 'none';
+      } catch (e) { return 'error'; }
+    }
+    /* After a click the page may have taken: report it, and only when the page saw NOTHING act through the DOM. */
+    async function clickFallback(c) {
+      if (!lastPointer) return null;
+      try {
+        const r = await c.send('Runtime.evaluate', { expression: `(() => { const s = globalThis.__vultronClickCounter; const n = s && typeof globalThis.__vultronWatchAt === 'number' ? s.n - globalThis.__vultronWatchAt : -1;
+          const el = document.elementFromPoint(${lastPointer.x}, ${lastPointer.y});
+          if (!el) return JSON.stringify({ seen: n, at: null, acted: false });
+          if (n === 0) { try { el.focus && el.focus(); } catch (e) {} try { el.click(); } catch (e) {} }
+          return JSON.stringify({ seen: n, at: el.tagName, acted: n === 0 }); })()`, returnByValue: true });
+        return (r && r.result && r.result.value) || null;
+      } catch (e) { failNote('browser.click-fallback', e); return null; }
+    }
+    /* A PAGE THAT IS NOT FOCUSED DROPS THE MASTER'S INPUT (same investigation): the station's headless page
+       answered `hasFocus:false`, and keys sent there vanished until focus was emulated. Playwright does this the
+       moment it attaches, for the same reason. It is a no-op on a page that already has focus, and the tab is
+       raised so the picture and the caret agree. */
     let focusedFor = null;   // the page whose focus this driver last emulated (reset on every navigation)
     async function ensurePageFocus(c) {
       const key = String(activeSession || openerSession || '') + ':' + (typeof tabEpoch === 'number' ? tabEpoch : 0);
@@ -2941,6 +2980,8 @@
         const button = ev.action === 'move' ? (ev.button || 'none') : (ev.button || 'left');
         const buttons = button === 'left' ? 1 : button === 'right' ? 2 : button === 'middle' ? 4 : 0;
         await c.send('Input.dispatchMouseEvent', { type, x: ev.x, y: ev.y, button, buttons: ev.action === 'up' ? 0 : buttons, clickCount: ev.clickCount || 0, modifiers: ev.modifiers || 0 });
+        if (ev.action === 'down') { lastPointer = { x: ev.x, y: ev.y }; await armClickWatch(c); }
+        else if (ev.action === 'up') { await clickFallback(c); }
         return true;
       }
       if (ev.type === 'wheel') {
@@ -2956,7 +2997,21 @@
         else await c.send('Input.dispatchKeyEvent', Object.assign({ type: 'rawKeyDown' }, base));
         return true;
       }
-      if (ev.type === 'text') { await c.send('Input.insertText', { text: String(ev.text || '') }); return true; }
+      if (ev.type === 'text') {
+        const text = String(ev.text || '');
+        let before = await editableState(c);
+        if (!before || !before.editable) { await focusAtPointer(c); before = await editableState(c); }
+        await c.send('Input.insertText', { text });
+        const after = await editableState(c);
+        // the page cancelled the insert (nothing grew): use the editing command its own input handler reads
+        if (before && after && before.editable && after.len !== before.len + text.length) {
+          try {
+            await c.send('Runtime.evaluate', { expression: `(() => { const a = document.activeElement; if (!a) return 'none';
+              try { document.execCommand('insertText', false, ${JSON.stringify(text)}); } catch (e) { return String(e && e.message || e); } return 'ok'; })()`, returnByValue: true });
+          } catch (e) { failNote('browser.text-fallback', e); }
+        }
+        return true;
+      }
       throw new Error('unsupported handoff input');
     }
     // Where the page is, for the handoff header and the agent's resume line — browser history, not page script.
