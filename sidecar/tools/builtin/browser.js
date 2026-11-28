@@ -3915,6 +3915,52 @@
         remembered
       };
     }
+    /* INPUT PROBE (diagnostics, 2026-11-28): a page can look live in the stream and ignore every click and key
+       the station sends — the seller login card did, on a station where tiktok.com's own form took the same input.
+       Nothing here dispatches an event: it reports the facts input routing depends on, so the answer is measured
+       rather than guessed — which tab and CDP session the driver would send to, the page's frame tree, the element
+       the page itself finds at that point, what has focus, and whether each adopted cross-origin iframe answers a
+       read at all (a paused out-of-process frame keeps painting and eats input). */
+    async function probeInput(x, y) {
+      const px = Math.max(0, Math.min(20000, Number(x) || 0));
+      const py = Math.max(0, Math.min(20000, Number(y) || 0));
+      const c = await page();
+      const root = c.__cdp || cdp;
+      const sid = activeSession || openerSession || undefined;
+      const out = { sid: sid || null, active: activeSession || null, opener: openerSession || null, headed: headed === true, attached: attachPort !== null, tabEpoch, mainFrameId: mainFrameId || null, targets: [], frames: [], top: null, children: [] };
+      try {
+        const t = await root.send('Target.getTargets');
+        out.targets = ((t && t.targetInfos) || []).map(i => ({ id: i.targetId, type: i.type, url: String(i.url || '').slice(0, 120), attached: !!i.attached }));
+      } catch (e) { out.targetsError = String((e && e.message) || e); }
+      try {
+        const tree = await root.send('Page.getFrameTree', {}, sid);
+        const flat = [];
+        (function walk(node, depth) {
+          if (!node || !node.frame) return;
+          flat.push({ id: node.frame.id, url: String(node.frame.url || '').slice(0, 120), depth: depth || 0 });
+          for (const k of (node.childFrames || [])) walk(k, (depth || 0) + 1);
+        })(tree && tree.frameTree, 0);
+        out.frames = flat;
+      } catch (e) { out.framesError = String((e && e.message) || e); }
+      const probe = `(() => { const el = document.elementFromPoint(${px}, ${py}); const a = document.activeElement;
+        const d = n => n ? (n.tagName + (n.id ? '#' + n.id : '') + (n.className && typeof n.className === 'string' && n.className.split(' ')[0] ? '.' + n.className.split(' ')[0] : '')) : null;
+        return JSON.stringify({ url: location.href.slice(0, 140), ready: document.readyState, focus: document.hasFocus(), vis: document.visibilityState,
+          at: d(el), active: d(a), inputs: document.querySelectorAll('input').length, frames: document.querySelectorAll('iframe').length, html: document.documentElement ? document.documentElement.innerHTML.length : 0 }); })()`;
+      try {
+        const r = await root.send('Runtime.evaluate', { expression: probe, returnByValue: true }, sid);
+        out.top = (r && r.result && r.result.value) || null;
+        if (r && r.exceptionDetails) out.topError = String((r.exceptionDetails.exception && r.exceptionDetails.exception.description) || r.exceptionDetails.text || 'exception');
+      } catch (e) { out.topError = String((e && e.message) || e); }
+      for (const [childSession, frameId] of frameSessions) {
+        const row = { sid: childSession, frameId: frameId || null };
+        try {
+          const r = await root.send('Runtime.evaluate', { expression: 'JSON.stringify({url:location.href.slice(0,140),inputs:document.querySelectorAll("input").length,w:innerWidth,h:innerHeight})', returnByValue: true }, childSession);
+          row.page = (r && r.result && r.result.value) || null;
+        } catch (e) { row.error = String((e && e.message) || e).slice(0, 140); }
+        out.children.push(row);
+      }
+      return out;
+    }
     function freeze(id) { frozenBy = String(id || 'handoff'); }
     function thaw() {
       if (frozenBy === null) return;
@@ -3963,7 +4009,7 @@
       const d = driver || null;
       return d && typeof d.attachedPort === 'function' ? d.attachedPort() : null;
     }
-    return { waitForProfile, reset, navigate, snapshot, click, type, press, hover, drag, select: selectOption, viewport, forward, upload, clearUpload, uploadDocAlive, clearStagedInputs, uploadStage, tabs, selectTab, closeTab, inspect, evalPublic, evalAllowed, wait, find, pdf, intercept, emulate, attach, detach, attachedToUser: () => attachedToUserBrowser, testInput, testEval, testState, testSnapshot, scroll, back, getText, challengeStatus, consoleLog, networkLog, dialog, vision, screenshot, login, importCookies, handoffSurface, freeze, thaw, frozen, handTo, hasDriver, close, visible, headlessFallback, profileNote, attachedPort, lastResponse, _internals: { refs, version: () => version, navEpoch: () => navEpoch, localMode: () => localMode, localOrigin: () => localOrigin, leaseHeld: () => leaseHeld } };
+    return { waitForProfile, reset, navigate, snapshot, click, type, press, hover, drag, select: selectOption, viewport, forward, upload, clearUpload, uploadDocAlive, clearStagedInputs, uploadStage, tabs, selectTab, closeTab, inspect, evalPublic, evalAllowed, wait, find, pdf, intercept, emulate, attach, detach, attachedToUser: () => attachedToUserBrowser, testInput, testEval, testState, testSnapshot, scroll, back, getText, challengeStatus, consoleLog, networkLog, dialog, vision, screenshot, login, importCookies, handoffSurface, probeInput, freeze, thaw, frozen, handTo, hasDriver, close, visible, headlessFallback, profileNote, attachedPort, lastResponse, _internals: { refs, version: () => version, navEpoch: () => navEpoch, localMode: () => localMode, localOrigin: () => localOrigin, leaseHeld: () => leaseHeld } };
   }
 
   function makeBrowserTools(deps) {

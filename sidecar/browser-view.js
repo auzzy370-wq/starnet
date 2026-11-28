@@ -583,6 +583,19 @@ function makeViewRoutes(deps) {
     if (!r.ok) return respondJson(res, 409, r);
     respondJson(res, 200, { ok: true, page: r.page || null, driver: r.driver || null, frame: r.frame ? { seq: r.frame.seq, mime: r.frame.mime, width: r.frame.width, height: r.frame.height, data: r.frame.data } : null });
   }
+  /* INPUT PROBE (diagnostics, 2026-11-28). A page can stream perfectly and ignore every click and key (the seller
+     login card did, while tiktok.com's own form took the same input). This answers WHY with measurements instead of
+     guesses: which tab and CDP session the driver would send to, the page's frame tree, the element the page itself
+     finds at that point, what has focus, and whether each adopted cross-origin iframe answers a read. It dispatches
+     nothing. Token-guarded like every other route here; no page content is returned. */
+  async function probe(req, res) {
+    const b = await body(req); if (!b) return respondJson(res, 400, { ok: false, error: 'bad json' });
+    const st = station;
+    if (!st) return respondJson(res, 409, { ok: false, error: 'the station browser is not open' });
+    if (typeof st.session.probeInput !== 'function') return respondJson(res, 409, { ok: false, error: 'this browser cannot probe its page' });
+    try { return respondJson(res, 200, Object.assign({ ok: true }, await st.session.probeInput(b.x, b.y))); }
+    catch (e) { return respondJson(res, 502, { ok: false, error: String((e && e.message) || e) }); }
+  }
   async function input(req, res) {
     const b = await body(req, 64 * 1024); if (!b) return respondJson(res, 400, { ok: false, error: 'bad json' });
     const events = Array.isArray(b.events) ? b.events.slice(0, MAX_EVENTS) : [];
@@ -610,6 +623,7 @@ function makeViewRoutes(deps) {
       { m: 'POST', exact: '/api/browser/settings', h: setSettings },
       { m: 'POST', exact: '/api/browser/session', h: importSessionRoute },   // SIGN IN FROM YOUR OWN BROWSER
       { m: 'GET', qsplit: '/api/browser/view/frame', h: frame },
+      { m: 'POST', exact: '/api/browser/view/probe', h: probe },
       { m: 'POST', exact: '/api/browser/view/input', h: input }
     ]
   };
