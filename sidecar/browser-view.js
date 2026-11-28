@@ -374,6 +374,14 @@ function makeBrowserViews(deps) {
     const ch = chans.get('station'); if (ch) ch.pageAt = 0;   // the Master acted: re-read where the page is
     return { ok: true };
   }
+  /* INPUT PROBE (diagnostics, 2026-11-28): the driver's account of where input would land, for a page that streams
+     but ignores the Master's clicks and keys. Needs a driver that can answer (browser.js probeInput). */
+  async function probe(x, y) {
+    const st = station;
+    if (!st) return { ok: false, error: 'the station browser is not open' };
+    if (typeof st.session.probeInput !== 'function') return { ok: false, error: 'this browser cannot probe its page' };
+    return await st.session.probeInput(x, y);
+  }
 
   /* WARM: the Master opened the BROWSER window — start Chromium now, in the background, so it is ready by the
      time they have typed an address (a real window can take many seconds to start on a busy machine). Nothing is
@@ -543,7 +551,7 @@ function makeBrowserViews(deps) {
     if (station) { station.driver = null; await closeStation(); }
   }
 
-  return { sessionForRun, releaseRun, registerRun, unregisterRun, open, importSession, nav, input, front, warm, frame, list, setMode, settings, signInOpen, signInClose, close: closeStation, closeAll, reset,
+  return { sessionForRun, releaseRun, registerRun, unregisterRun, open, importSession, nav, input, probe, front, warm, frame, list, setMode, settings, signInOpen, signInClose, close: closeStation, closeAll, reset,
     _internals: { runs, chans, station: () => station } };
 }
 
@@ -590,10 +598,7 @@ function makeViewRoutes(deps) {
      nothing. Token-guarded like every other route here; no page content is returned. */
   async function probe(req, res) {
     const b = await body(req); if (!b) return respondJson(res, 400, { ok: false, error: 'bad json' });
-    const st = station;
-    if (!st) return respondJson(res, 409, { ok: false, error: 'the station browser is not open' });
-    if (typeof st.session.probeInput !== 'function') return respondJson(res, 409, { ok: false, error: 'this browser cannot probe its page' });
-    try { return respondJson(res, 200, Object.assign({ ok: true }, await st.session.probeInput(b.x, b.y))); }
+    try { return respondJson(res, 200, Object.assign({ ok: true }, await views.probe(b.x, b.y))); }
     catch (e) { return respondJson(res, 502, { ok: false, error: String((e && e.message) || e) }); }
   }
   async function input(req, res) {
