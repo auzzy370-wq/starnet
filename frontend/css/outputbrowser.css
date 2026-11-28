@@ -92,6 +92,13 @@
 .ob[data-zoom="2"] .ob-stage { overflow: auto; -webkit-overflow-scrolling: touch; }
 .ob[data-zoom="2"] .ob-vp { display: block; }
 .ob[data-zoom="2"] .ob-live { width: 225%; height: auto; max-width: none; flex: none; }
+/* FIT (2026-11-28): a docked window is short and wide — 961x305 around a 1440x900 page — so `contain` left 476px of
+   black bars either side and a 34% page in the middle: half the window looked like page and swallowed clicks. Filling
+   the WIDTH uses the same mechanics as ZOOM 2x (the stage scrolls, the picture keeps its own rect), so the pointer
+   maths is untouched and every click still maps exactly. WHOLE PAGE (the chip) restores the letterbox. */
+.ob[data-zoom="fit"] .ob-stage { overflow: auto; -webkit-overflow-scrolling: touch; }
+.ob[data-zoom="fit"] .ob-vp { display: block; }
+.ob[data-zoom="fit"] .ob-live { width: 100%; height: auto; max-width: none; flex: none; }
 /* the doors a sign-in handoff puts in the empty stage, and HAND BACK (shown only while you hold an agent's browser) */
 .ob-empty .ob-ask-doors { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 6px; }
 .ob .ob-handback[hidden] { display: none; }

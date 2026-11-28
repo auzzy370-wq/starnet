@@ -48,6 +48,8 @@
     follow: false,
     ui: null,
     reloadTimer: null, liveTimer: null,
+    frameAspect: 0,      // the page's own width/height as the station reports it (1440x900 -> 1.6)
+    fitPin: '',          // '' = fit to the window when it is much wider than the page; 'page' = show the whole page
     loadSeq: 0, opSeq: 0, loadedAt: 0, lastCause: '', note: '', busy: false,
     doorPressedAt: 0     // when the COMMS globe was pressed (its window rises only after the station answers)
   };
@@ -159,7 +161,7 @@
       ui.liveStream = BrowserStream.create({ vp: ui.vp, img: ui.img, kbd: ui.kb, onPage, onEnd: ended('live'),
         // every picture says who is driving: that is what the address bar and the status line report
         poll: (seq, signal) => getJson('/api/browser/view/frame?target=station&after=' + seq, signal).then(r => {
-          if (r.status === 200 && r.body && r.body.ok) setDriver(r.body.driver || null);
+          if (r.status === 200 && r.body && r.body.ok) { setDriver(r.body.driver || null); noteFrame(r.body.frame); }
           return r;
         }),
         // the station refuses input while an agent drives (409): the picture is then simply view-only
@@ -180,10 +182,15 @@
     ui.out.onclick = openOutside;
     ui.handback.onclick = () => handBackHandoff();
     ui.zoom.onclick = () => {
-      state.zoom = !state.zoom;
+      // a window wider than the page offers two useful views (fill it / whole page); a narrow one offers ZOOM 2x
+      if (state.zoom) state.zoom = false;
+      else if (autoFit()) state.fitPin = state.fitPin === 'page' ? '' : 'page';
+      else state.zoom = true;
       paintBar();
       try { if (ui.stage) { ui.stage.scrollTop = 0; ui.stage.scrollLeft = 0; } } catch (_) { /* scrolling is best-effort */ }
     };
+    // the stage changes size with the window and with the dock's drag: re-decide the fit without waiting for a frame
+    root.addEventListener('resize', () => { paintBar(); });
     ui.front.onclick = () => { postJson('/api/browser/view/front', {}).then(r => { if (r.status !== 200) setNote('Could not raise the browser window: ' + ((r.body && r.body.error) || 'the station did not answer') + '.'); }).catch(() => setNote('Could not raise the browser window.')); };
     ui.recent.addEventListener('click', ev => {
       const b = ev.target && ev.target.closest ? ev.target.closest('button[data-k]') : null;
@@ -210,6 +217,28 @@
     refreshLive().then(() => { if (!station().open && station().available !== false) postJson('/api/browser/view/warm', {}).catch(() => { /* it starts on first use anyway */ }); });
   }
   function mounted() { return !!(state.ui && state.ui.body && state.ui.body.isConnected); }
+  /* FIT THE PICTURE TO THE WINDOW (measured 2026-11-28, the report behind "I still can't click on it or type"):
+     the docked BROWSER window is SHORT — a 961x305 stage holding a 1440x900 page. `contain` drew that page as a
+     485x303 strip and left 476px of black either side: half the window looked like page and was not, so a click
+     there did nothing, and the page itself was at 34% with 7px text. When the window is much wider than the page the
+     picture now fills the WIDTH and the stage scrolls — the same mechanics ZOOM 2x already used, so every pixel of
+     the window belongs to the page and browserstream.js's rect maths still maps clicks exactly (a scrolled picture
+     included). WHOLE PAGE puts the letterbox back for anyone who wants the entire page in one view. A window that is
+     NOT wider than the page (a phone) never takes this path: it keeps contain/2x untouched. */
+  function autoFit() {
+    const ui = state.ui;
+    if (!ui || !ui.stage || !state.frameAspect) return false;
+    const w = ui.stage.clientWidth || 0, h = ui.stage.clientHeight || 0;
+    if (!(w > 0 && h > 0)) return false;
+    return (w / h) > state.frameAspect * 1.15;
+  }
+  function noteFrame(f) {
+    if (!f || !f.width || !f.height) return;
+    const a = f.width / f.height;
+    if (Math.abs(a - state.frameAspect) < 0.001) return;
+    state.frameAspect = a;
+    paintBar();
+  }
   function setNote(text) { state.note = String(text || ''); if (mounted() && state.ui.note.textContent !== state.note) state.ui.note.textContent = state.note; }
   /* A HAND THE STATION DID NOT TAKE IS SAID OUT LOUD. Input used to fail into silence (a 409, a dropped request, a
      station that stopped answering), so the window looked alive while nothing you did arrived — the report on
@@ -249,11 +278,13 @@
     if (d && d.signIn) return phone
       ? 'Sign in here — tap the page and type. Your agent never sees it, and never needs your password.' + saved
       : 'Sign in here: click the page and type. The agent is waiting and never sees what you type. Click Done in COMMS when you have finished.' + saved;
+    // a fitted picture is scrolled, not letterboxed: say so once, where the controls are named
+    const fitHint = (!phone && state.fitPin !== 'page' && autoFit()) ? ' The picture fills the window — scroll it, or press WHOLE PAGE.' : '';
     if (d) return phone
       ? agentLabel(d.agentId) + ' is using the browser. Tap it to type too.' + saved
-      : agentLabel(d.agentId) + ' is using the browser. You can click and type in it too.' + win + saved;
+      : agentLabel(d.agentId) + ' is using the browser. You can click and type in it too.' + win + saved + fitHint;
     if (phone) return 'Tap the page to type.' + saved;
-    return 'The station browser, shared by you and your agents.' + (station().visible ? ' Use it in its own window, or click this live view to type in it.' : ' Click the page to type in it.') + saved;
+    return 'The station browser, shared by you and your agents.' + (station().visible ? ' Use it in its own window, or click this live view to type in it.' : ' Click the page to type in it.') + fitHint + saved;
   }
   function setDriver(d) {
     const was = state.driver ? state.driver.runId + (state.driver.signIn ? '+' : '') : '', is = d ? d.runId + (d.signIn ? '+' : '') : '';
@@ -269,9 +300,10 @@
     const ui = state.ui, m = state.mode, t = state.target, d = state.driver;
     ui.root.dataset.mode = m;
     ui.root.classList.toggle('driven', m === 'live' && !!d);
-    ui.root.dataset.zoom = state.zoom ? '2' : '';
-    ui.zoom.textContent = state.zoom ? 'FIT WIDTH' : 'ZOOM 2×';
-    ui.zoom.setAttribute('aria-pressed', String(!!state.zoom));
+    const fit = !state.zoom && state.fitPin !== 'page' && autoFit();
+    ui.root.dataset.zoom = state.zoom ? '2' : (fit ? 'fit' : '');
+    ui.zoom.textContent = state.zoom ? 'FIT WIDTH' : fit ? 'WHOLE PAGE' : autoFit() ? 'FIT WIDTH' : 'ZOOM 2×';
+    ui.zoom.setAttribute('aria-pressed', String(!!state.zoom || fit));
     const who = m === 'page' && t ? agentLabel(t.agentId) : m === 'watch' && state.watch ? agentLabel(state.watch.agentId) : m === 'live' ? (d && !d.signIn ? agentLabel(d.agentId) : 'YOU') : '';
     ui.who.textContent = who ? who.toUpperCase() : '';
     ui.who.hidden = !who;
@@ -467,7 +499,8 @@
       ui.handoffStream = BrowserStream.create({ vp: ui.vp, img: ui.img, kbd: ui.kb, canType: () => true,
         onPage: p => { state.page = p; paintBar(); },
         onEnd: b => { state.handoff = null; if (state.mode === 'live') { refreshLive(); } },
-        poll: (seq, signal) => getJson('/api/browser/handoff/frame?id=' + encodeURIComponent((state.handoff && state.handoff.id) || '') + '&after=' + seq, signal),
+        poll: (seq, signal) => getJson('/api/browser/handoff/frame?id=' + encodeURIComponent((state.handoff && state.handoff.id) || '') + '&after=' + seq, signal)
+          .then(r => { if (r.status === 200 && r.body && r.body.ok) noteFrame(r.body.frame); return r; }),
         send: events => postJson('/api/browser/handoff/input', { id: (state.handoff && state.handoff.id) || '', events })
           .catch(() => ({ status: 0, body: {} }))
           .then(r => { if (r.status !== 200) refuseInput(r); return r; }) });
