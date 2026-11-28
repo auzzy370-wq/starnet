@@ -375,12 +375,32 @@ function makeBrowserViews(deps) {
     return { ok: true };
   }
   /* INPUT PROBE (diagnostics, 2026-11-28): the driver's account of where input would land, for a page that streams
-     but ignores the Master's clicks and keys. Needs a driver that can answer (browser.js probeInput). */
+     but ignores the Master's clicks and keys. Needs a driver that can answer (browser.js probeInput).
+     THE ANSWER IS ALSO WRITTEN TO A FILE: asking a live station over the tunnel got a gateway error instead of an
+     answer, and a diagnostic that cannot be read is no diagnostic. `~/vultron-data/browser-probe.json` (the data
+     the station already keeps) holds the same object, so it is readable from the panel's File Manager either way. */
+  function probeTarget() {
+    try {
+      const P = require('node:path'), OS = require('node:os');
+      const dir = process.env.VULTRON_DATA || P.join(OS.homedir(), 'vultron-data');
+      return P.join(dir, 'browser-probe.json');
+    } catch (_) { return null; }
+  }
   async function probe(x, y) {
     const st = station;
-    if (!st) return { ok: false, error: 'the station browser is not open' };
-    if (typeof st.session.probeInput !== 'function') return { ok: false, error: 'this browser cannot probe its page' };
-    return await st.session.probeInput(x, y);
+    let out;
+    if (!st) out = { ok: false, error: 'the station browser is not open' };
+    else if (typeof st.session.probeInput !== 'function') out = { ok: false, error: 'this browser cannot probe its page' };
+    else {
+      try { out = Object.assign({ ok: true }, await st.session.probeInput(x, y)); }
+      catch (e) { out = { ok: false, error: String((e && e.message) || e) }; }
+    }
+    const file = probeTarget();
+    if (file) {
+      try { require('node:fs').writeFileSync(file, JSON.stringify({ at: new Date().toISOString(), x: x, y: y, result: out }, null, 1)); out = Object.assign({}, out, { file: file }); }
+      catch (e) { out = Object.assign({}, out, { fileError: String((e && e.message) || e) }); }
+    }
+    return out;
   }
 
   /* WARM: the Master opened the BROWSER window — start Chromium now, in the background, so it is ready by the
@@ -598,8 +618,8 @@ function makeViewRoutes(deps) {
      nothing. Token-guarded like every other route here; no page content is returned. */
   async function probe(req, res) {
     const b = await body(req); if (!b) return respondJson(res, 400, { ok: false, error: 'bad json' });
-    try { return respondJson(res, 200, Object.assign({ ok: true }, await views.probe(b.x, b.y))); }
-    catch (e) { return respondJson(res, 502, { ok: false, error: String((e && e.message) || e) }); }
+    const r = await views.probe(b.x, b.y);
+    return respondJson(res, 200, r);
   }
   async function input(req, res) {
     const b = await body(req, 64 * 1024); if (!b) return respondJson(res, 400, { ok: false, error: 'bad json' });
