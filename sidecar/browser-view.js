@@ -382,7 +382,9 @@ function makeBrowserViews(deps) {
   function probeTarget() {
     try {
       const P = require('node:path'), OS = require('node:os');
-      const dir = process.env.VULTRON_DATA || P.join(OS.homedir(), 'vultron-data');
+      const home = OS.homedir();
+      // the station's own data dir (deploy/enzonic/boot.js writes it as VULTRON_DATA_DIR); on this box HOME is already it
+      const dir = process.env.VULTRON_DATA_DIR || process.env.VULTRON_DATA || (/[\\/]vultron-data$/.test(home) ? home : P.join(home, 'vultron-data'));
       return P.join(dir, 'browser-probe.json');
     } catch (_) { return null; }
   }
