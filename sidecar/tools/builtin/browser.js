@@ -3066,7 +3066,7 @@
        the page finds at that point, what has focus, and whether each adopted cross-origin iframe answers a read (a
        paused out-of-process frame keeps painting and eats input). */
     const PROBE_READ = 'Runtime.evaluate';
-    async function probeInput(x, y) {
+    async function probeInput(x, y, opts) {
       const px = Math.max(0, Math.min(20000, Number(x) || 0));
       const py = Math.max(0, Math.min(20000, Number(y) || 0));
       const c = await page();
@@ -3090,6 +3090,12 @@
         })(tree && tree.frameTree, 0);
         out.frames = flat;
       } catch (e) { out.framesError = String((e && e.message) || e); }
+      /* THE BROWSER'S OWN HIT TEST: this is the tree input routing walks, so a point that resolves into a child frame
+         (or onto an overlay) is exactly where the Master's click would go — not where the page's JS says it is. */
+      try {
+        const n = await c.send('DOM.getNodeForLocation', { x: px, y: py, includeUserAgentShadowDOM: true });
+        out.hit = { nodeId: n && n.nodeId, backendNodeId: n && n.backendNodeId, frameId: (n && n.frameId) || null, inMainFrame: typeof mainFrameId === 'string' && n ? n.frameId === mainFrameId : null };
+      } catch (e) { out.hitError = String((e && e.message) || e); }
       const describe = `(() => { const el = document.elementFromPoint(${px}, ${py}); const a = document.activeElement;
         const d = n => n ? (n.tagName + (n.id ? '#' + n.id : '') + (n.className && typeof n.className === 'string' && n.className.split(' ')[0] ? '.' + n.className.split(' ')[0] : '')) : null;
         return JSON.stringify({ url: location.href.slice(0, 140), ready: document.readyState, focus: document.hasFocus(), vis: document.visibilityState,
@@ -3106,6 +3112,26 @@
           row.page = (r && r.result && r.result.value) || null;
         } catch (e) { row.error = String((e && e.message) || e).slice(0, 140); }
         out.children.push(row);
+      }
+      /* THE CLICK WITNESS (opt-in): dispatch the very events humanInput dispatches and report what the document
+         actually received. Nothing on the page stores anything: the recorder lives in one evaluate and is read back
+         by the next, so a probe never leaves state behind. */
+      if (opts && opts.click === true) {
+        const arm = `(() => { const seen = { pointerdown: [], mousedown: [], mouseup: [], click: [], focusin: [] };
+          globalThis.__vultronProbe = seen;
+          const rec = e => { const row = { x: e.clientX, y: e.clientY, trusted: e.isTrusted, target: e.target ? (e.target.tagName + (e.target.id ? '#' + e.target.id : '')) : null, prevented: e.defaultPrevented };
+            if (seen[e.type]) seen[e.type].push(row); };
+          ['pointerdown','mousedown','mouseup','click','focusin'].forEach(t => document.addEventListener(t, rec, true));
+          return 'armed'; })()`;
+        try {
+          await c.send(PROBE_READ, { expression: arm, returnByValue: true });
+          await c.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: px, y: py, button: 'none' });
+          await c.send('Input.dispatchMouseEvent', { type: 'mousePressed', x: px, y: py, button: 'left', buttons: 1, clickCount: 1 });
+          await c.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: px, y: py, button: 'left', buttons: 0, clickCount: 1 });
+          await new Promise(resolve => setTimeout(resolve, 150));
+          const r = await c.send(PROBE_READ, { expression: 'JSON.stringify({ seen: globalThis.__vultronProbe || null, active: document.activeElement ? document.activeElement.tagName + (document.activeElement.id ? "#" + document.activeElement.id : "") : null, focus: document.hasFocus() })', returnByValue: true });
+          out.witness = (r && r.result && r.result.value) || null;
+        } catch (e) { out.witnessError = String((e && e.message) || e); }
       }
       return out;
     }
@@ -3985,8 +4011,8 @@
        CDP session it sends to, the page's frame tree, the element the page itself finds at that point, what has
        focus, and whether each adopted cross-origin iframe answers a read at all. The CDP facts live here, in the
        driver that owns the connection; browser-view.js exposes it as POST /api/browser/view/probe. */
-    function probeInput(x, y) {
-      return ensureDriver().probeInput(x, y);
+    function probeInput(x, y, opts) {
+      return ensureDriver().probeInput(x, y, opts);
     }
     function freeze(id) { frozenBy = String(id || 'handoff'); }
     function thaw() {

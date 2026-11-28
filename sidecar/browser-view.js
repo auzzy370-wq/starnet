@@ -388,13 +388,13 @@ function makeBrowserViews(deps) {
       return P.join(dir, 'browser-probe.json');
     } catch (_) { return null; }
   }
-  async function probe(x, y) {
+  async function probe(x, y, opts) {
     const st = station;
     let out;
     if (!st) out = { ok: false, error: 'the station browser is not open' };
     else if (typeof st.session.probeInput !== 'function') out = { ok: false, error: 'this browser cannot probe its page' };
     else {
-      try { out = Object.assign({ ok: true }, await st.session.probeInput(x, y)); }
+      try { out = Object.assign({ ok: true }, await st.session.probeInput(x, y, opts)); }
       catch (e) { out = { ok: false, error: String((e && e.message) || e) }; }
     }
     const file = probeTarget();
@@ -620,7 +620,7 @@ function makeViewRoutes(deps) {
      nothing. Token-guarded like every other route here; no page content is returned. */
   async function probe(req, res) {
     const b = await body(req); if (!b) return respondJson(res, 400, { ok: false, error: 'bad json' });
-    const r = await views.probe(b.x, b.y);
+    const r = await views.probe(b.x, b.y, { click: b.click === true });
     return respondJson(res, 200, r);
   }
   async function input(req, res) {
