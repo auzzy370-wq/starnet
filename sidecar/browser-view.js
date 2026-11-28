@@ -77,6 +77,11 @@ function resolveAddress(raw) {
   return { ok: true, url: u.href, local: loopbackHost(u.hostname), search: false };
 }
 
+/* the page a pasted request address belongs to: a "Copy as cURL" line names an API endpoint, not a page */
+function originOf(u) {
+  try { const x = new URL(String(u || '')); return x.origin + '/'; } catch (_) { return ''; }
+}
+
 function makeBrowserViews(deps) {
   deps = deps || {};
   if (typeof deps.now !== 'function') throw new Error('browser-view requires deps.now (the composition root injects the clock)');
@@ -298,6 +303,44 @@ function makeBrowserViews(deps) {
     if (s && s.visible && typeof s.front === 'function') { try { await s.front(); } catch (e) { failNote('view.front', e); } }   // they typed it: show it
     return { ok: true, url: finalUrl || addr.url, search: !!addr.search, remembered: !!(s && s.remembered), visible: !!(s && s.visible), profileNote: (s && s.profileNote) || '' };
   }
+  /* SIGN IN FROM YOUR OWN BROWSER (2026-11-28). A station with no screen of its own cannot be signed in by hand:
+     the login card refuses synthetic input, and there is no real keyboard on the server. So the Master copies the
+     session they already have — a Cookie header, or the browser's "Copy as cURL" line, which carries the address
+     too — and this browser takes it. Nothing is typed into the page; the cookies land on the durable profile, so the
+     sign-in survives the run, a sidecar restart and the next boot. The receipt is what was set plus the page the
+     browser actually landed on, never a guess that the account is signed in. */
+  async function importSession(raw) {
+    if (!makeSession) return { ok: false, error: 'this station cannot open a browser of its own' };
+    const cookie = String((raw && raw.cookie) || '');
+    if (!cookie.trim()) return { ok: false, error: 'paste the Cookie header (or a Copy as cURL line) from your browser' };
+    if (cookie.length > 64 * 1024) return { ok: false, error: 'that is more text than one session needs' };
+    let target = '';
+    const typed = String((raw && raw.url) || '').trim();
+    if (typed) {
+      const addr = resolveAddress(typed);
+      if (!addr.ok) return addr;   // a bad address is refused before anything is set
+      target = addr.url;
+    }
+    const st = ensureStation();
+    touchStation();
+    if (typeof st.session.importCookies !== 'function') return { ok: false, error: 'this browser cannot take a session' };
+    let got;
+    try {
+      if (typeof st.session.waitForProfile === 'function') await st.session.waitForProfile();
+      got = await st.session.importCookies(target, cookie);
+    } catch (e) { return { ok: false, error: String((e && e.message) || e) }; }
+    if (!got || !got.set) return { ok: false, error: (got && got.refused && got.refused.length ? 'the site refused these cookies: ' + got.refused.join(', ') : 'none of those cookies could be set — copy the whole Cookie header') };
+    const dest = target || originOf(got.url);
+    if (!dest) return { ok: false, set: got.set, error: 'the pasted command carries no address — enter the site address' };
+    let at;
+    try { at = await st.session.navigate(dest) || dest; }
+    catch (e) { return { ok: false, set: got.set, error: String((e && e.message) || e) }; }
+    const ch = chans.get('station'); if (ch) ch.pageAt = 0;
+    let page = null;
+    try { const s = surfaceOf(st.session); if (s && typeof s.pageInfo === 'function') page = await s.pageInfo(); }
+    catch (e) { failNote('view.import-page', e); }
+    return { ok: true, set: got.set, failed: got.failed || 0, url: at, page: page ? { url: String(page.url || ''), title: String(page.title || '') } : null };
+  }
   async function nav(action) {
     const busy = driving(); if (busy) return busy;
     const st = station;
@@ -498,7 +541,7 @@ function makeBrowserViews(deps) {
     if (station) { station.driver = null; await closeStation(); }
   }
 
-  return { sessionForRun, releaseRun, registerRun, unregisterRun, open, nav, input, front, warm, frame, list, setMode, settings, signInOpen, signInClose, close: closeStation, closeAll, reset,
+  return { sessionForRun, releaseRun, registerRun, unregisterRun, open, importSession, nav, input, front, warm, frame, list, setMode, settings, signInOpen, signInClose, close: closeStation, closeAll, reset,
     _internals: { runs, chans, station: () => station } };
 }
 
@@ -511,6 +554,11 @@ function makeViewRoutes(deps) {
     const b = await body(req); if (!b) return respondJson(res, 400, { ok: false, error: 'bad json' });
     const r = await views.open(b.url);
     respondJson(res, r.ok ? 200 : 409, r);
+  }
+  async function importSessionRoute(req, res) {
+    const b = await body(req, 64 * 1024); if (!b) return respondJson(res, 400, { ok: false, error: 'bad json' });
+    const r = await views.importSession({ url: b.url, cookie: b.cookie });
+    respondJson(res, r.ok ? 200 : 400, r);
   }
   async function nav(req, res) {
     const b = await body(req); if (!b) return respondJson(res, 400, { ok: false, error: 'bad json' });
@@ -558,6 +606,7 @@ function makeViewRoutes(deps) {
       { m: 'POST', exact: '/api/browser/view/warm', h: warm },
       { m: 'GET', exact: '/api/browser/settings', h: getSettings },
       { m: 'POST', exact: '/api/browser/settings', h: setSettings },
+      { m: 'POST', exact: '/api/browser/session', h: importSessionRoute },   // SIGN IN FROM YOUR OWN BROWSER
       { m: 'GET', qsplit: '/api/browser/view/frame', h: frame },
       { m: 'POST', exact: '/api/browser/view/input', h: input }
     ]

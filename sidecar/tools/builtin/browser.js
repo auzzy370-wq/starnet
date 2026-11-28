@@ -847,6 +847,65 @@
     close() { try { this.ws.close(); } catch (_) {} }
   }
 
+  /* SESSION IMPORT — the Master's own signed-in cookies, for a station whose browser has no screen of its own.
+     The input is what a person can actually copy out of the browser where they ARE signed in:
+       • a "Copy as cURL" line (the address AND the cookie header are both in it),
+       • a `Cookie: a=b; c=d` header, or
+       • a bare `a=b; c=d` list, with the address typed in beside it.
+     The cookies go on the durable profile, so the site sees the account. Nothing is typed INTO the page: a sign-in
+     card that refuses synthetic input (TikTok's seller login does) is no obstacle to a session that already exists. */
+  const SECOND_LEVEL = new Set(['co.uk', 'org.uk', 'ac.uk', 'gov.uk', 'co.jp', 'ne.jp', 'or.jp', 'com.au', 'net.au', 'org.au', 'co.nz', 'co.kr', 'com.br', 'com.cn', 'com.mx', 'co.in', 'com.tr', 'com.sg', 'com.hk', 'com.tw', 'co.za', 'com.ar', 'com.co', 'com.pe', 'com.ve', 'co.il', 'com.my', 'com.ph', 'com.vn', 'com.sa', 'com.eg', 'com.ua', 'com.pl', 'co.id', 'com.pk', 'com.bd', 'co.th']);
+  // the domain a session's cookies belong to: the site's own domain, so its API host (seller.tiktok.com for
+  // seller-us.tiktok.com) gets them too — never a bare public suffix like .co.uk, which Chrome would refuse
+  function cookieDomainFor(host) {
+    const h = String(host || '').toLowerCase().replace(/^\.+|\.+$/g, '').replace(/:\d+$/, '');
+    if (!h || h.indexOf('.') < 0 || !/^[a-z0-9.-]+$/.test(h)) return h;
+    const parts = h.split('.').filter(Boolean);
+    if (parts.length <= 2) return h;
+    const last2 = parts.slice(-2).join('.');
+    return '.' + (SECOND_LEVEL.has(last2) ? parts.slice(-3).join('.') : last2);
+  }
+  function parseSessionCookies(raw, fallbackUrl) {
+    let text = String(raw == null ? '' : raw).trim();
+    if (!text) return { url: '', cookies: [], error: 'paste the Cookie header (or a Copy as cURL line) from your browser' };
+    if (text.length > 64 * 1024) return { url: '', cookies: [], error: 'that is more text than one session needs' };
+    let url = '';
+    if (/^(curl|wget)\b/i.test(text) || /-H\s+['"]/i.test(text)) {
+      const found = /https?:\/\/[^\s'"\\]+/.exec(text);
+      if (found) url = found[0];
+      const hdr = /-H\s+['"]cookie:\s*([^'"]+)['"]/i.exec(text) || /(?:-b|--cookie)\s+['"]([^'"]+)['"]/i.exec(text);
+      text = hdr ? String(hdr[1] || hdr[2] || '').trim() : '';
+      if (!text) return { url, cookies: [], error: 'that command carries no Cookie header — right-click a request you make while signed in, in the Network tab, and choose Copy → Copy as cURL' };
+    } else {
+      text = text.replace(/^cookie:\s*/i, '');
+    }
+    // the address may be typed bare ("seller-us.tiktok.com"), so it gets a scheme before it is read
+    const where = url || String(fallbackUrl || '');
+    let at = null;
+    try { at = new URL(/^[a-z][a-z0-9+.-]*:\/\//i.test(where) ? where : 'https://' + where); } catch (_) { at = null; }
+    const host = at ? at.hostname : '';
+    if (!host) return { url: where, cookies: [], error: 'enter the address of the site you are signed in to' };
+    const domain = cookieDomainFor(host);
+    const secure = at.protocol !== 'http:';
+    const cookies = [], seen = new Set();
+    for (const part of text.split(';')) {
+      const piece = part.trim();
+      const at = piece.indexOf('=');
+      if (at < 1) continue;
+      const name = piece.slice(0, at).trim();
+      const value = piece.slice(at + 1).trim();
+      if (!name || seen.has(name) || /[\s,;]/.test(name)) continue;
+      seen.add(name);
+      // __Host- cookies are REFUSED by Chrome when a Domain is present: they belong to this exact origin
+      cookies.push(/^__Host-/i.test(name)
+        ? { name: name.slice(0, 256), value: value.slice(0, 8192), url: (secure ? 'https' : 'http') + '://' + host + '/', path: '/', secure: true }
+        : { name: name.slice(0, 256), value: value.slice(0, 8192), domain, path: '/', secure });
+      if (cookies.length >= 200) break;
+    }
+    if (!cookies.length) return { url: where, cookies: [], error: 'no cookies in that text — copy the whole Cookie header' };
+    return { url: where, cookies };
+  }
+
   function makeCdpDriver(deps) {
     deps = deps || {};
     const fetchImpl = deps.fetchImpl || (typeof fetch !== 'undefined' ? fetch : null);
@@ -2964,11 +3023,27 @@
       // by its OWN variable, so the durable station profile can never be the one deleted
       if (heldFallbackDir) { try { FS.rmSync(heldFallbackDir, { recursive: true, force: true }); } catch (e) { failNote('browser.profile-held-fallback.rm', e); } }
     }
+    /* SESSION IMPORT (see parseSessionCookies): put the Master's own signed-in cookies on this browser's profile.
+       Returns what was actually set — the caller reloads and shows the page's own title, never a claim. */
+    async function importCookies(url, raw) {
+      const parsed = parseSessionCookies(raw, url);
+      if (!parsed.cookies.length) throw new Error(parsed.error || 'no cookies in that text');
+      const c = await pinTab();
+      const out = { set: 0, failed: 0, refused: [], url: parsed.url || String(url || '') };
+      for (const cookie of parsed.cookies) {
+        try {
+          const r = await c.send('Network.setCookie', cookie);
+          if (r && r.success === false) { out.failed++; if (out.refused.length < 3) out.refused.push(cookie.name); }
+          else out.set++;
+        } catch (e) { out.failed++; if (out.refused.length < 3) out.refused.push(cookie.name + ' (' + ((e && e.message) || e) + ')'); }
+      }
+      return out;
+    }
     // visible() is the TRUTH the model reports: true only if the controlled window is
     // actually on the user's screen. Headless mode, or a headless-only binary fallback in
     // a headed request, both read as not visible.
     function visible() { return headed; }
-    return { chooserEventCount: () => chooserEvents, navigate, snapshot, click, type, press, hover, drag, selectOption, viewport, forward, upload, clearUpload, uploadDocAlive, clearStagedInputs, tabs, waitForTabCount, selectTab, closeTab, inspect, evalPublic, waitFor, pdf, intercept, emulate, usingPersistentProfile: onPersistent, profileFallback: () => heldFallback, testInput, testEval, testState, scroll, back, getText, challengeStatus, handleDialog, screenshot, streamStart, streamStop, humanInput, pageInfo, setDownloadDir, alive, ownedPid, bringToFront, close, consoleLog: readConsoleLog, networkLog: () => netLog.map(r => Object.assign({}, r)), lastDialog: () => dialog, lastResponse: () => lastResponse, tabEpoch: () => tabEpoch, visible, headed, headlessFallback: wantHeaded && binIsHeadlessOnly, attachedPort: () => attachedPort, allowLocal, profileDir, lastOrphanSweep: () => lastOrphanSweep };
+    return { chooserEventCount: () => chooserEvents, navigate, snapshot, click, type, press, hover, drag, selectOption, viewport, forward, upload, clearUpload, uploadDocAlive, clearStagedInputs, tabs, waitForTabCount, selectTab, closeTab, inspect, evalPublic, waitFor, pdf, intercept, emulate, usingPersistentProfile: onPersistent, profileFallback: () => heldFallback, testInput, testEval, testState, scroll, back, getText, challengeStatus, handleDialog, screenshot, streamStart, streamStop, humanInput, importCookies, pageInfo, setDownloadDir, alive, ownedPid, bringToFront, close, consoleLog: readConsoleLog, networkLog: () => netLog.map(r => Object.assign({}, r)), lastDialog: () => dialog, lastResponse: () => lastResponse, tabEpoch: () => tabEpoch, visible, headed, headlessFallback: wantHeaded && binIsHeadlessOnly, attachedPort: () => attachedPort, allowLocal, profileDir, lastOrphanSweep: () => lastOrphanSweep };
   }
 
   function makeBrowserSession(deps) {
@@ -4638,5 +4713,5 @@
     return { tools, session, releaseUploads, register(reg) { tools.forEach(t => reg.register(t)); return reg; }, _internals: { assertSafeUrl, assertLoopbackUrl, assertResolvedSafe, isPrivateV4, isPrivateV6, makeBrowserSession, makeCdpDriver, makeDownloadLedger, downloadClickReceipt, findChrome, resolveChrome, headlessRequested, SYNTHETIC_INPUT_BOOTSTRAP, CHROME_CANDIDATES } };
   }
 
-  return { makeBrowserTools, _internals: { CdpClient, assertSafeUrl, assertLoopbackUrl, assertResolvedSafe, resolveVerified, proxyGuards, isPrivateV4, isPrivateV6, makeBrowserSession, makeCdpDriver, makeDownloadLedger, downloadClickReceipt, findChrome, resolveChrome, setExtraChrome, needsNoSandbox, profileOwnerPid, macEditingCommands, headlessRequested, SYNTHETIC_INPUT_BOOTSTRAP, SETTLE_BOOTSTRAP, SETTLE_PROBE, SETTLE_QUIET_POLLS, describeResponse, pickRefusal, explainRefusal, jsLiteral, normalizeBrowserLocale, detectBrowserVersion, makeLaunchIdentity, browserVersionFrom, cleanBrandRows, makeCdpIdentity, CHROME_CANDIDATES } };
+  return { makeBrowserTools, _internals: { parseSessionCookies, cookieDomainFor, CdpClient, assertSafeUrl, assertLoopbackUrl, assertResolvedSafe, resolveVerified, proxyGuards, isPrivateV4, isPrivateV6, makeBrowserSession, makeCdpDriver, makeDownloadLedger, downloadClickReceipt, findChrome, resolveChrome, setExtraChrome, needsNoSandbox, profileOwnerPid, macEditingCommands, headlessRequested, SYNTHETIC_INPUT_BOOTSTRAP, SETTLE_BOOTSTRAP, SETTLE_PROBE, SETTLE_QUIET_POLLS, describeResponse, pickRefusal, explainRefusal, jsLiteral, normalizeBrowserLocale, detectBrowserVersion, makeLaunchIdentity, browserVersionFrom, cleanBrandRows, makeCdpIdentity, CHROME_CANDIDATES } };
 });

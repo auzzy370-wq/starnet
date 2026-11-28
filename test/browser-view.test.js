@@ -22,7 +22,7 @@ function clock() {
   };
 }
 function fakeSession() {
-  const s = { open: false, url: '', stops: 0, starts: 0, inputs: [], navs: [], closed: 0, handler: null, remembered: true, hands: [] };
+  const s = { open: false, url: '', stops: 0, starts: 0, inputs: [], navs: [], closed: 0, handler: null, remembered: true, hands: [], imports: [] };
   s.api = {
     handoffSurface() {
       if (!s.open) throw new Error('no browser page is open');
@@ -33,6 +33,11 @@ function fakeSession() {
         pageInfo: () => Promise.resolve({ url: s.url, title: 'T:' + s.url }),
         remembered: s.remembered
       };
+    },
+    importCookies: async (url, raw) => {
+      s.imports.push({ url, raw });
+      if (!/(^|[;\s])x=1/.test(String(raw))) throw new Error('no cookies in that text');
+      return { set: 1, failed: 0, url: /curl/.test(String(raw)) ? 'https://seller-us.tiktok.com/api/v1/thing' : url };
     },
     handTo: async info => { s.hands.push(info); },
     waitForProfile: async () => {},
@@ -71,6 +76,24 @@ function rig(extra) {
   A.eq(R('chrome://settings').ok, false, 'chrome: is refused');
   A.eq(R('   ').ok, false, 'an empty address is refused');
   A.eq(R('x'.repeat(2100)).ok, false, 'an absurd address is refused');
+
+  // ---- a pasted signed-in session: what a person can actually copy out of their own browser ----
+  {
+    const P = require('../sidecar/tools/builtin/browser.js')._internals.parseSessionCookies;
+    const c1 = P("curl 'https://seller-us.tiktok.com/api/v1/x' -H 'cookie: sessionid=abc; sid_tt=def' ", '');
+    A.eq(c1.url, 'https://seller-us.tiktok.com/api/v1/x', 'the address comes out of Copy as cURL');
+    A.eq(c1.cookies.length, 2, 'and every cookie with it');
+    A.eq(c1.cookies[0].name, 'sessionid', 'the name is before the first =');
+    A.eq(c1.cookies[0].value, 'abc', 'the value after it');
+    A.eq(c1.cookies[0].domain, '.tiktok.com', "set on the site's own domain, so its API host gets them too");
+    const c2 = P('Cookie: a=1; b=2', 'seller-us.tiktok.com');
+    A.eq(c2.cookies.length, 2, 'a bare Cookie header works with the address typed in');
+    A.eq(c2.cookies[0].domain, '.tiktok.com', 'and the same domain rule applies');
+    A.eq(P("curl 'https://example.co.uk/x' -H 'cookie: z=9'", '').cookies[0].domain, '.example.co.uk', 'a two-part public suffix is not mistaken for the domain');
+    A.eq(P('', '').cookies.length, 0, 'nothing pasted, nothing set');
+    A.ok(/no Cookie header/.test(P("curl 'https://x.com/' -H 'accept: */*'", '').error), 'a command with no cookies says what to copy');
+    A.eq(P('__Host-token=1', 'example.com').cookies[0].domain, undefined, '__Host- cookies are set origin-only (Chrome refuses them with a Domain)');
+  }
 
   // ---- a capture that never painted is rebound, not left black for good (2026-11-28: the window said "open" and
   //      every poll answered frame:null until the browser was closed and reopened by hand) ----
@@ -404,6 +427,25 @@ function rig(extra) {
     const views2 = makeBrowserViews({ now: clk.now, setTimeout: clk.setTimeout, clearTimeout: clk.clearTimeout,
       readMode: () => 'chrome', windowAvailable: () => false, makeStationSession: () => fakeSession().api });
     A.eq(views2.settings().effective, 'builtin', 'YOUR CHROME with no extension and no window → built-in');
+  }
+
+  // ---- SIGN IN FROM YOUR OWN BROWSER: a station with no screen takes the Master's own signed-in session ----
+  {
+    const { made, views } = rig();
+    const none = await views.importSession({ cookie: '   ' });
+    A.ok(!none.ok, 'an empty paste is refused');
+    const bad = await views.importSession({ url: 'example.com', cookie: 'nothing here' });
+    A.ok(!bad.ok && /no cookies/.test(bad.error), 'a paste with no cookies is refused, in the session\'s own words: ' + bad.error);
+    const ok = await views.importSession({ url: 'seller-us.tiktok.com', cookie: 'x=1; y=2' });
+    A.ok(ok.ok && ok.set === 1 && ok.url === 'https://seller-us.tiktok.com/', 'a Cookie header signs the station browser in: ' + JSON.stringify(ok));
+    const s = made[0];
+    A.eq(s.imports.length, 2, 'the browser was asked for exactly the pastes that carried something');
+    A.eq(s.navs[s.navs.length - 1][0], 'https://seller-us.tiktok.com/', 'and it lands on the site');
+    const curl = await views.importSession({ cookie: "curl 'https://seller-us.tiktok.com/api/v1/thing' -H 'cookie: x=1' ", url: '' });
+    A.ok(curl.ok, 'a Copy as cURL line signs in with no address typed in');
+    A.eq(curl.url, 'https://seller-us.tiktok.com/', 'the address comes from the command, not the API path in it');
+    const offline = makeBrowserViews({ now: () => 1000, setTimeout: () => 0, clearTimeout: () => {} });
+    A.ok(!(await offline.importSession({ url: 'example.com', cookie: 'x=1' })).ok, 'a station with no browser of its own refuses honestly');
   }
 
   // ---- a station with no browser of its own ----

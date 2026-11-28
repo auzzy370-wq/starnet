@@ -850,7 +850,14 @@
       + '<button type="button" class="set-theme" data-mode="builtin" title="' + esc(MODE_TEXT.builtin) + '">BUILT-IN</button>'
       // YOUR CHROME (your own Chrome via the Vultron extension) is not offered until that extension exists (release review)
       + '</div>'
-      + '<p class="set-about dim" id="brw-state" role="status"></p>';
+      + '<p class="set-about dim" id="brw-state" role="status"></p>'
+      // SIGN IN FROM YOUR OWN BROWSER — the station's browser is its own, on this machine, so a station with no
+      // screen of its own cannot be signed in by hand. The Master's already-signed-in session is the way in.
+      + '<div class="set-sub"><span class="set-sub-k">SIGN IN FROM YOUR OWN BROWSER</span><span class="set-sub-d">for a station with no screen of its own</span></div>'
+      + '<p class="set-about">Signed in to the site on your own computer? In your browser open DevTools → Network, right-click a request to that site, then Copy → Copy as cURL (bash), and paste it here. This browser takes that session — nothing is typed into the page, and it stays signed in until the site itself signs you out.</p>'
+      + '<textarea id="brw-curl" rows="3" spellcheck="false" autocomplete="off" placeholder="curl \'https://…\' -H \'cookie: …\'   (or a bare  Cookie: a=b; c=d)"></textarea>'
+      + '<div class="set-row"><input type="text" id="brw-curl-url" placeholder="site address (only for a bare Cookie header)" autocomplete="off" spellcheck="false"><button type="button" class="bb sm" id="brw-curl-go">SIGN THIS BROWSER IN</button></div>'
+      + '<p class="set-about dim" id="brw-curl-state" role="status"></p>';
     if (typeof arrange === 'function') { try { arrange(el); } catch (_) { /* plain layout is fine */ } }
     const wrap = el.querySelector('#brw-mode'), desc = el.querySelector('#brw-desc'), stateLine = el.querySelector('#brw-state');
     let current = null;
@@ -875,6 +882,25 @@
         if (r.status === 200 && r.body && r.body.ok) { paint(r.body); refreshLive(); }
         else stateLine.textContent = 'Could not save: ' + ((r.body && r.body.error) || 'the station did not answer') + '.';
       }).catch(() => { stateLine.textContent = 'Could not save: the station did not answer.'; });
+    });
+    const curlEl = el.querySelector('#brw-curl'), curlUrl = el.querySelector('#brw-curl-url'), curlGo = el.querySelector('#brw-curl-go'), curlState = el.querySelector('#brw-curl-state');
+    if (curlGo) curlGo.addEventListener('click', () => {
+      const cookie = String(curlEl.value || '').trim();
+      if (!cookie) { curlState.textContent = 'Paste the Cookie header or the Copy as cURL line first.'; return; }
+      curlState.textContent = 'Signing this browser in…';
+      curlGo.disabled = true;
+      postJson('/api/browser/session', { cookie, url: String(curlUrl.value || '').trim() })
+        .then(r => {
+          const b = (r && r.body) || {};
+          if (r && r.status === 200 && b.ok) {
+            curlEl.value = ''; curlUrl.value = '';
+            curlState.textContent = 'Signed in — ' + b.set + ' cookie' + (b.set === 1 ? '' : 's') + ' set'
+              + (b.page && b.page.title ? ': ' + b.page.title : '') + '. The BROWSER window is on that page now.';
+            refreshLive();
+          } else curlState.textContent = 'Could not sign in: ' + (b.error || 'the station did not answer') + '.';
+        })
+        .catch(() => { curlState.textContent = 'Could not sign in: the station did not answer.'; })
+        .then(() => { curlGo.disabled = false; });
     });
   }
 
