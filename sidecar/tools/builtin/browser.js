@@ -1715,6 +1715,8 @@
             await cdp.send('Runtime.evaluate', { expression: settleBootstrap }, S);
             await cdp.send('Network.enable', {}, S);
             await cdp.send('DOM.enable', {}, S);
+            /* A headless page that reports no focus drops what the Master types into it (see ensurePageFocus). */
+            try { await cdp.send('Emulation.setFocusEmulationEnabled', { enabled: true }, S); } catch (e) { failNote('browser.focus-emulation', e); }
             // waitForDebuggerOnStart pauses EVERY page target, the original tab included. Its setup is
             // done, so let it run - a tab left paused wedges the whole session.
             if (openerSession && deps.syntheticInputOnly !== false) {
@@ -1941,6 +1943,7 @@
     async function navigate(url) {
       const c = await page();
       lastResponse = null;   // this navigation's status, never the previous page's
+      focusedFor = null;     // a new document starts unfocused: the next click or key re-emulates it
       netLog = []; netById.clear();   // the log describes THIS page, not whatever came before
       /* A stalled navigation used to poison the WHOLE session. Page.navigate blocks until commit, so a slow
          or challenge-walled origin blew the 15s command budget and threw "CDP timeout: Page.navigate" - and
@@ -2911,10 +2914,24 @@
       catch (e) { failNote('browser.download-dir.browser', e); try { await cdp.send('Page.setDownloadBehavior', behavior); } catch (e2) { failNote('browser.download-dir.page', e2); } }
       return true;
     }
+    /* A PAGE THAT IS NOT FOCUSED DROPS THE MASTER'S INPUT (measured 2026-11-28 on TikTok's seller sign-in): the
+       station's headless page answered `hasFocus:false`, and every click and key the BROWSER window sent vanished
+       while the same page in a browser that emulated focus took them — the element under the point was the right
+       input, the tab was the right tab. Playwright sets this the moment it attaches, for the same reason. It is a
+       no-op on a page that already has focus, and the tab is raised so the picture and the caret agree. */
+    let focusedFor = null;   // the page whose focus this driver last emulated (reset on every navigation)
+    async function ensurePageFocus(c) {
+      const key = String(activeSession || openerSession || '') + ':' + (typeof tabEpoch === 'number' ? tabEpoch : 0);
+      if (focusedFor === key) return;
+      try { await c.send('Emulation.setFocusEmulationEnabled', { enabled: true }); } catch (e) { failNote('browser.focus-emulation', e); }
+      try { await c.send('Page.bringToFront'); } catch (e) { failNote('browser.focus-front', e); }
+      focusedFor = key;
+    }
     // One sanitized event from the handoff host (browser-handoff.js sanitizeInput owns the vocabulary).
     async function humanInput(ev) {
       const c = await page();
       ev = ev || {};
+      if (!(ev.type === 'mouse' && ev.action === 'move')) await ensurePageFocus(c);   // nothing lands before this
       // the Master just acted: show the result at the fast cadence, starting now
       castSame = 0;
       if (castKick && !(ev.type === 'mouse' && ev.action === 'move')) { const k = castKick; castKick = null; setTimeout(k, 60); }
