@@ -855,7 +855,7 @@
       // screen of its own cannot be signed in by hand. The Master's already-signed-in session is the way in.
       + '<div class="set-sub"><span class="set-sub-k">SIGN IN FROM YOUR OWN BROWSER</span><span class="set-sub-d">for a station with no screen of its own</span></div>'
       + '<p class="set-about">Signed in to the site on your own computer? In your browser open DevTools → Network, right-click a request to that site, then Copy → Copy as cURL (bash), and paste it here. This browser takes that session — nothing is typed into the page, and it stays signed in until the site itself signs you out.</p>'
-      + '<textarea id="brw-curl" rows="3" spellcheck="false" autocomplete="off" placeholder="curl \'https://…\' -H \'cookie: …\'   (or a bare  Cookie: a=b; c=d)"></textarea>'
+      + '<textarea id="brw-curl" class="key-input" rows="3" spellcheck="false" autocomplete="off" placeholder="curl \'https://…\' -H \'cookie: …\'   (or a bare  Cookie: a=b; c=d)"></textarea>'
       + '<div class="set-row"><input type="text" id="brw-curl-url" placeholder="site address (only for a bare Cookie header)" autocomplete="off" spellcheck="false"><button type="button" class="bb sm" id="brw-curl-go">SIGN THIS BROWSER IN</button></div>'
       + '<p class="set-about dim" id="brw-curl-state" role="status"></p>';
     if (typeof arrange === 'function') { try { arrange(el); } catch (_) { /* plain layout is fine */ } }
