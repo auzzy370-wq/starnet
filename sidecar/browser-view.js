@@ -118,7 +118,7 @@ function makeBrowserViews(deps) {
   }
   function chan(key) {
     let c = chans.get(key);
-    if (!c) { c = { key, surface: null, streaming: false, frame: null, seq: 0, waiters: new Set(), idle: null, polls: 0, page: null, pageAt: 0 }; chans.set(key, c); }
+    if (!c) { c = { key, surface: null, streaming: false, startedAt: 0, frame: null, seq: 0, waiters: new Set(), idle: null, polls: 0, page: null, pageAt: 0 }; chans.set(key, c); }
     return c;
   }
   function wake(c) { for (const w of Array.from(c.waiters)) { try { w(); } catch (e) { failNote('view.wake', e); } } c.waiters.clear(); }
@@ -402,6 +402,13 @@ function makeBrowserViews(deps) {
     const cur = resolveTarget(target), run = (cur && !cur.error && cur.handoffRun) || r.handoffRun;
     if ((cur && cur.error === 'handoff') || (run && handoffLive(run))) dropChan(r.key, true); else stopStream(c);
   }
+  /* A CAPTURE THAT NEVER PAINTED IS NOT A PICTURE (found 2026-11-28 on a station that had just started: `/api/browser/view`
+     said the browser was open on example.com while every frame poll answered `frame: null` — the capture had attached to
+     a page that was replaced before it emitted a single frame, and a channel that is already `streaming` is never
+     restarted, so the BROWSER window stayed black until somebody closed and reopened the browser by hand. If nothing has
+     arrived shortly after the capture started, rebind to the page that is live NOW. A capture that HAS painted is never
+     touched, so a still page costs nothing. */
+  const STREAM_START_GRACE_MS = 4000;
   async function frame(target, after, budgetMs) {
     const r = resolveTarget(target);
     if (r.error) {
@@ -412,8 +419,9 @@ function makeBrowserViews(deps) {
     }
     const c = chan(r.key);
     if (r.key === 'station' && station) { station.lastPollAt = now(); touchStation(); }
+    if (c.streaming && !c.frame && now() - (c.startedAt || 0) > STREAM_START_GRACE_MS) stopStream(c);
     if (!c.streaming) {
-      c.surface = r.surface; c.streaming = true;
+      c.surface = r.surface; c.streaming = true; c.startedAt = now();
       try {
         await c.surface.startStream(f => {
           if (!c.streaming || !f || !f.data) return;

@@ -27,7 +27,7 @@ function fakeSession() {
     handoffSurface() {
       if (!s.open) throw new Error('no browser page is open');
       return {
-        startStream: fn => { s.starts++; s.handler = fn; fn({ data: 'frame-' + s.starts, mime: 'image/jpeg', width: 1440, height: 900 }); return Promise.resolve(true); },
+        startStream: fn => { s.starts++; s.handler = fn; if (!s.deadCapture) fn({ data: 'frame-' + s.starts, mime: 'image/jpeg', width: 1440, height: 900 }); return Promise.resolve(true); },
         stopStream: () => { s.stops++; s.handler = null; return Promise.resolve(true); },
         input: ev => { s.inputs.push(ev); return Promise.resolve(true); },
         pageInfo: () => Promise.resolve({ url: s.url, title: 'T:' + s.url }),
@@ -71,6 +71,26 @@ function rig(extra) {
   A.eq(R('chrome://settings').ok, false, 'chrome: is refused');
   A.eq(R('   ').ok, false, 'an empty address is refused');
   A.eq(R('x'.repeat(2100)).ok, false, 'an absurd address is refused');
+
+  // ---- a capture that never painted is rebound, not left black for good (2026-11-28: the window said "open" and
+  //      every poll answered frame:null until the browser was closed and reopened by hand) ----
+  {
+    const { clk, made, views } = rig();
+    await views.open('example.com');
+    const s = made[0];
+    s.deadCapture = true;                          // the capture attached to a page that was replaced before it painted
+    const p1 = views.frame('station', 0, 8000); await tick(); clk.advance(8000);
+    const r1 = await p1;
+    A.eq(r1.frame, null, 'a capture that never painted gives no picture');
+    A.eq(s.starts, 1, 'that capture was started once');
+    clk.advance(4000);                              // past the start grace
+    s.deadCapture = false;                          // the live page paints now
+    const p2 = views.frame('station', 0, 8000); await tick(); clk.advance(8000);
+    const r2 = await p2;
+    A.ok(!!r2.frame, 'a silent capture is rebound, so the picture arrives: ' + JSON.stringify(r2.frame && r2.frame.seq));
+    A.ok(s.starts >= 2, 'the dead capture was restarted (' + s.starts + ' starts)');
+    A.ok(s.stops >= 1, 'the dead capture was stopped first (' + s.stops + ' stops)');
+  }
 
   // ---- ONE browser: the Master opens a page, the agent sees THAT page, and it stays after the run ----
   {
