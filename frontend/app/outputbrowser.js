@@ -238,7 +238,11 @@
     if (Math.abs(a - state.frameAspect) < 0.001) return;
     state.frameAspect = a;
     paintBar();
+    // the first picture is what tells the window it can fill itself: the caption must then say so (it was written
+    // before any frame existed), without ever overwriting a refusal or an error the Master needs to read
+    if (state.mode === 'live' && uiState() === 'live' && state.note === state.liveNoteText) sayLiveNote();
   }
+  function sayLiveNote() { const t = liveNote(); state.liveNoteText = t; setNote(t); }
   function setNote(text) { state.note = String(text || ''); if (mounted() && state.ui.note.textContent !== state.note) state.ui.note.textContent = state.note; }
   /* A HAND THE STATION DID NOT TAKE IS SAID OUT LOUD. Input used to fail into silence (a 409, a dropped request, a
      station that stopped answering), so the window looked alive while nothing you did arrived — the report on
@@ -290,7 +294,7 @@
     const was = state.driver ? state.driver.runId + (state.driver.signIn ? '+' : '') : '', is = d ? d.runId + (d.signIn ? '+' : '') : '';
     state.driver = d;
     if (was === is) return;
-    if (state.mode === 'live' && mounted() && state.ui.root.dataset.state === 'live') setNote(liveNote());
+    if (state.mode === 'live' && mounted() && state.ui.root.dataset.state === 'live') sayLiveNote();
     paintBar();
     scheduleLive();   // the door lamp and the strip follow
   }
@@ -409,7 +413,7 @@
     state.driver = st.driver || state.driver;
     stage('live');
     ui.root.dataset.state = 'live';
-    setNote(liveNote());
+    sayLiveNote();
     paintBar(true);
     // always a FRESH stream: start() drops any poll still in flight from before (a stale "closed" from a browser that
     // has since been started again must never blank the picture)
@@ -679,7 +683,7 @@
         // first-use browser download: keep the progress line moving until it is ready
         const su = st.setup;
         if (su && (su.state === 'downloading' || su.state === 'unpacking')) {
-          if (state.mode === 'live') setNote(liveNote());
+          if (state.mode === 'live') sayLiveNote();
           if (state.setupTimer) clearTimeout(state.setupTimer);
           state.setupTimer = setTimeout(() => { state.setupTimer = null; refreshLive(); }, 1000);
         }

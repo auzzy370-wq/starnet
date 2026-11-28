@@ -97,7 +97,10 @@
    the WIDTH uses the same mechanics as ZOOM 2x (the stage scrolls, the picture keeps its own rect), so the pointer
    maths is untouched and every click still maps exactly. WHOLE PAGE (the chip) restores the letterbox. */
 .ob[data-zoom="fit"] .ob-stage { overflow: auto; -webkit-overflow-scrolling: touch; }
-.ob[data-zoom="fit"] .ob-vp { display: block; }
+/* the viewport box must TAKE the picture's height, not sit on `inset:0`: with the box pinned to the stage the scroll
+   range stopped short of the picture's bottom (measured: scrollHeight 516 against a 593px picture), so the last lines
+   of a page could never be scrolled into view. Relative + auto height makes the scroll range the whole picture. */
+.ob[data-zoom="fit"] .ob-vp { position: relative; inset: auto; display: block; height: auto; }
 .ob[data-zoom="fit"] .ob-live { width: 100%; height: auto; max-width: none; flex: none; }
 /* the doors a sign-in handoff puts in the empty stage, and HAND BACK (shown only while you hold an agent's browser) */
 .ob-empty .ob-ask-doors { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 6px; }
