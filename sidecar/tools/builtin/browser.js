@@ -3792,6 +3792,14 @@
     }
     async function dialog(action, promptText) { return ensureDriver().handleDialog(action || 'accept', promptText || ''); }
     async function screenshot() { return ensureDriver().screenshot(); }
+    /* SESSION IMPORT: a session the Master already has, set on THIS browser's durable profile (the driver's
+       parseSessionCookies does the reading). Nothing is typed into the page, so a sign-in card that refuses
+       synthetic input is not in the way; the profile keeps it across runs and restarts. */
+    async function importCookies(url, raw) {
+      const d = ensureDriver();
+      if (!d || typeof d.importCookies !== 'function') throw new Error('this browser cannot take a session');
+      return d.importCookies(url, raw);
+    }
     async function vision(question) {
       const data = await ensureDriver().screenshot();
       const bytes = Math.round(String(data || '').length * 3 / 4);
@@ -3955,7 +3963,7 @@
       const d = driver || null;
       return d && typeof d.attachedPort === 'function' ? d.attachedPort() : null;
     }
-    return { waitForProfile, reset, navigate, snapshot, click, type, press, hover, drag, select: selectOption, viewport, forward, upload, clearUpload, uploadDocAlive, clearStagedInputs, uploadStage, tabs, selectTab, closeTab, inspect, evalPublic, evalAllowed, wait, find, pdf, intercept, emulate, attach, detach, attachedToUser: () => attachedToUserBrowser, testInput, testEval, testState, testSnapshot, scroll, back, getText, challengeStatus, consoleLog, networkLog, dialog, vision, screenshot, login, handoffSurface, freeze, thaw, frozen, handTo, hasDriver, close, visible, headlessFallback, profileNote, attachedPort, lastResponse, _internals: { refs, version: () => version, navEpoch: () => navEpoch, localMode: () => localMode, localOrigin: () => localOrigin, leaseHeld: () => leaseHeld } };
+    return { waitForProfile, reset, navigate, snapshot, click, type, press, hover, drag, select: selectOption, viewport, forward, upload, clearUpload, uploadDocAlive, clearStagedInputs, uploadStage, tabs, selectTab, closeTab, inspect, evalPublic, evalAllowed, wait, find, pdf, intercept, emulate, attach, detach, attachedToUser: () => attachedToUserBrowser, testInput, testEval, testState, testSnapshot, scroll, back, getText, challengeStatus, consoleLog, networkLog, dialog, vision, screenshot, login, importCookies, handoffSurface, freeze, thaw, frozen, handTo, hasDriver, close, visible, headlessFallback, profileNote, attachedPort, lastResponse, _internals: { refs, version: () => version, navEpoch: () => navEpoch, localMode: () => localMode, localOrigin: () => localOrigin, leaseHeld: () => leaseHeld } };
   }
 
   function makeBrowserTools(deps) {

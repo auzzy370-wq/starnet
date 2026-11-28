@@ -327,6 +327,8 @@ function makeBrowserViews(deps) {
     let got;
     try {
       if (typeof st.session.waitForProfile === 'function') await st.session.waitForProfile();
+      // a fresh station browser has no tab yet; cookies are profile-wide, so one is opened and no page is loaded
+      if (typeof st.session.tabs === 'function') await st.session.tabs();
       got = await st.session.importCookies(target, cookie);
     } catch (e) { return { ok: false, error: String((e && e.message) || e) }; }
     if (!got || !got.set) return { ok: false, error: (got && got.refused && got.refused.length ? 'the site refused these cookies: ' + got.refused.join(', ') : 'none of those cookies could be set — copy the whole Cookie header') };
